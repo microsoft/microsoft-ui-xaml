@@ -42,7 +42,11 @@ internal static class ObjectToolSelfTests
         Expect.True(types.Any(item => item.Text("type") == GridType && item.Long("objects") == 1 && item.Long("events") == 3),
             "Root's Grid type has one object and three events.");
         Expect.True(types.Any(item => item.Text("kind") == "Visual" && item.Bool("typeUnknown")), "One visual's type isn't known.");
-        HasNote(result, "1 objects have no type");
+        HasNote(result, "1 object has no type: none of the events that mention it gave it.");
+        var twoParents = Write(Path.Combine(context.TempDirectory, "untyped.sqlite"),
+            [FrameStart(1.0, 1), VisualInserted(2.0, 0xA100, 0xB100), VisualInserted(2.5, 0xA200, 0xB200), FrameEnd(4.0, 1)]);
+        HasNote(Run(() => ObjectTools.Objects(sessionPath: twoParents)),
+            "2 objects have no type: none of the events that mention them gave it.");
 
         var visuals = Run(() => ObjectTools.Objects(sessionPath: main, kind: " visual "));
         Expect.Equal("Visual", visuals.Text("kind"), "The kind filter");
@@ -158,9 +162,9 @@ internal static class ObjectToolSelfTests
             Error(() => ObjectTools.Objects(sessionPath: main, kind: "x")), "An unknown kind");
         Expect.Equal("'shapes' isn't a view of objects. Use one of: types, list, history.",
             Error(() => ObjectTools.Objects(sessionPath: main, view: "shapes")), "An unknown view");
-        Expect.Equal("The history view needs one of objectId and address, not both. The list view gives both.",
+        Expect.Equal("The history view needs one of objectId and address, not both.",
             Error(() => ObjectTools.Objects(sessionPath: main, objectId: 1, address: "0x1000")), "Both objectId and address");
-        Expect.Equal("The history view needs one of objectId and address, not both. The list view gives both.",
+        Expect.Equal("The history view needs objectId or address. The list view gives both.",
             Error(() => ObjectTools.Objects(sessionPath: main, view: "history")), "Neither objectId nor address");
         Contains(Error(() => ObjectTools.Objects(sessionPath: main, address: "zz")), "A bad address", "'zz' isn't an address.");
         Contains(Error(() => ObjectTools.Objects(sessionPath: main, view: "types", type: "Button")), "type in the types view",

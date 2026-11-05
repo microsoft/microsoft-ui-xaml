@@ -24,9 +24,6 @@ internal static class SessionTools
     // The most processes a result lists.
     private const int MaxListed = 100;
 
-    // The end reason of a session file whose trace was read to its end.
-    private const string EndOfTrace = "End of trace";
-
     // The Win32 error a damaged or foreign file gives when it's opened as a trace (ERROR_FILE_CORRUPT).
     private const int FileCorrupt = unchecked((int)0x80070570);
 
@@ -46,14 +43,17 @@ internal static class SessionTools
         [Description(SessionCatalog.SessionPathDescription + " Read by the summary view.")] string? sessionPath = null,
         [Description("The folder to list, or to find sessionPath in. Omit it for the WinUI Profiler app's sessions folder.")]
         string? folder = null,
-        [Description("The list view: the most session files to describe, from 1 to 500; the newest are described first.")]
-        int limit = 50,
+        [Description("The list view: the most session files to describe, from 1 to 500; the newest are described first. " +
+            "Omit it for 50.")]
+        int? limit = null,
         CancellationToken cancellationToken = default)
     {
         var chosen = ToolArguments.Text(view) is null && ToolArguments.Text(sessionPath) is not null
             ? "summary"
             : ToolArguments.View(view, Views, "sessions");
-        ToolArguments.Range(limit, 1, 500, nameof(limit));
+        ToolArguments.OnlyFor(ToolArguments.Text(sessionPath) is not null, nameof(sessionPath), "sessions", chosen, "summary");
+        ToolArguments.OnlyFor(limit is not null, nameof(limit), "sessions", chosen, "list");
+        var count = ToolArguments.Range(limit ?? 50, 1, 500, nameof(limit));
         var directory = SessionCatalog.Folder(folder);
         if (File.Exists(directory))
         {
@@ -64,7 +64,7 @@ internal static class SessionTools
         {
             if (chosen == "list")
             {
-                return List(directory, limit, cancellationToken);
+                return List(directory, count, cancellationToken);
             }
 
             var path = SessionCatalog.Resolve(sessionPath, directory);
@@ -285,7 +285,8 @@ internal static class SessionTools
                     Progress = value,
                     Total = current.Progress is null ? null : 100,
                     Message = string.Create(CultureInfo.InvariantCulture,
-                        $"Read {current.ReadMilliseconds / 1000:F1} s of the trace; {events:N0} events of process {chosen.ProcessId}."),
+                        $"Read {current.ReadMilliseconds / 1000:F1} s of the trace; {EventJson.Count(events, "event", "events")} " +
+                        $"of process {chosen.ProcessId}."),
                 });
             }
 
@@ -297,6 +298,10 @@ internal static class SessionTools
             catch (OperationCanceledException)
             {
                 await replay.StopAsync().ConfigureAwait(false);
+
+                // The client gave up on the call, so it never learns of the part of the trace that was read. Left, that
+                // file would be the newest session, which the other tools read when no session is named.
+                DeleteSession(replay.Recording.Path);
                 throw;
             }
             finally
@@ -322,22 +327,25 @@ internal static class SessionTools
         var notes = new List<string>(SessionCatalog.Notes(info));
         if (status.OutOfOrderEvents > 0)
         {
-            notes.Add(string.Create(CultureInfo.InvariantCulture,
-                $"{status.OutOfOrderEvents} of the process's events have an earlier timestamp than the event before them; " +
-                $"the session keeps the trace's order."));
+            notes.Add((status.OutOfOrderEvents == 1
+                    ? "1 of the process's events has"
+                    : $"{EventJson.Count(status.OutOfOrderEvents, "event", "events")} of the process's events each have") +
+                " an earlier timestamp than the event before it; the session keeps the trace's order.");
         }
 
         var read = status.XamlEvents + status.ProfilerEvents + status.GpuMemoryEvents;
+        var events = EventJson.Count(read, "event", "events");
         var name = chosen.Name ?? "the process";
         var outcome = status.State switch
         {
             TraceReplayState.Finished => string.Create(CultureInfo.InvariantCulture,
-                $"Read {read:N0} events of {name} (PID {chosen.ProcessId}) from the trace into {sessionPath}."),
+                $"Read {events} of {name} (PID {chosen.ProcessId}) from the trace into {sessionPath}."),
             TraceReplayState.Failed => string.Create(CultureInfo.InvariantCulture,
-                $"Reading the trace failed after {read:N0} events of {name} (PID {chosen.ProcessId}): " +
+                $"Reading the trace failed after {events} of {name} (PID {chosen.ProcessId}): " +
                 $"{failure ?? "the reason isn't known"}. {sessionPath} holds the events stored before the failure."),
             _ => string.Create(CultureInfo.InvariantCulture,
-                $"Reading stopped after {read:N0} events of {name} (PID {chosen.ProcessId}); {sessionPath} holds them."),
+                $"Reading stopped after {events} of {name} (PID {chosen.ProcessId}); {sessionPath} holds " +
+                $"{(read == 1 ? "it" : "them")}."),
         };
         return new
         {
@@ -385,13 +393,13 @@ internal static class SessionTools
             try
             {
                 var info = SessionFile.ReadInfo(file.Path);
-                if (SessionCatalog.IsTrace(info) && info.ProcessId == processId && info.EndReason == EndOfTrace &&
+                if (SessionCatalog.IsTrace(info) && info.ProcessId == processId && info.EndReason == SessionCatalog.EndOfTrace &&
                     string.Equals(info.EtlPath, trace, StringComparison.OrdinalIgnoreCase))
                 {
                     return file.Path;
                 }
             }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidDataException or SqliteException)
+            catch (Exception error) when (SessionCatalog.ReadError(file.Path, error) is not null)
             {
                 // Not a session file this version reads.
             }
@@ -441,7 +449,7 @@ internal static class SessionTools
                 etlPath = info.EtlPath,
             };
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidDataException or SqliteException)
+        catch (Exception error) when (SessionCatalog.ReadError(file.Path, error) is { } message)
         {
             return new
             {
@@ -449,7 +457,7 @@ internal static class SessionTools
                 path = file.Path,
                 lastWrittenUtc = EventJson.Utc(file.LastWrittenUtc),
                 sizeMB = Megabytes(file.Bytes),
-                error = $"Not readable as a session file: {error.Message}",
+                error = message,
             };
         }
     }
@@ -583,6 +591,11 @@ internal static class SessionTools
         {
             return null;
         }
+        catch (McpException)
+        {
+            // The client answered the request with an error; the tool lists the processes instead.
+            return null;
+        }
 
         if (!result.IsAccepted || result.Content is not { } content || !content.TryGetValue("processId", out var element))
         {
@@ -607,7 +620,7 @@ internal static class SessionTools
             }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException)
             {
-                // Left for the user; the failure message names the trace.
+                // Left in the folder for the user to delete.
             }
         }
     }

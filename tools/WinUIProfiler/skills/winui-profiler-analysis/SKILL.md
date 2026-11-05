@@ -78,8 +78,9 @@ More answers come as the app gets processors for them.
 - **Read a recorded trace (.etl).** Call `record_trace` with the trace's full
   path, or open the trace in the app (connection mode **Recorded trace
   (.etl)**, then **Open trace**), or use the WinUI Profiler CLI's `record`
-  command. Reading a trace needs no elevation. The session file goes in the
-  same folder as live sessions.
+  command. Reading a trace needs no elevation. `record_trace` saves the session
+  file in the sessions folder unless it's given another `folder`, as the app
+  does; the CLI's `record` writes it where its `--out` option says.
 
 ### Recording a trace
 
@@ -92,13 +93,16 @@ the WinUI Profiler README:
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
 '{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
 '{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
-'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5' | Set-Content providers.txt
+'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5',
+'{8C416C79-D49B-4F01-A467-E56D3AA8234C} 0x2000 4' | Set-Content providers.txt
 logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
 # ... use the app ...
 logman stop XamlTrace -ets
 ```
 
-A trace that doesn't enable Microsoft-Windows-XAML at level 5 has no ticks.
+A trace that doesn't enable Microsoft-Windows-XAML at level 5 has no ticks,
+and one without Microsoft-Windows-Win32k (the last line) has no window focus
+changes, so no regions start at one.
 Recording a trace needs elevation or the Performance Log Users group, as
 recording live does.
 
@@ -155,8 +159,9 @@ recording live does.
   relative to it, if that's known; for a trace, the first of the process's
   events in the trace, because a trace doesn't say when the process was
   created.
-- `launch` also gives `msFromProcessStart` when the session knows when the
-  process was created; `measuredFrom` says what its frames count from.
+- `launch` also gives `msFromProcessStart` for a session recorded from process
+  start, when it knows when the process was created; `measuredFrom` says what
+  its frames count from.
 
 ## Builds
 

@@ -40,9 +40,7 @@ internal static class SessionFixtures
         EnteredTree(1.6, 0x1000, 0, "Root", 0x7000, 300, "", 0, 0),
         Enter(2.0, 0x2000, "OkButton", ButtonType, 101),
         EnteredTree(2.1, 0x2000, 0x1000, "OkButton", 0x7100, 400, "ms-appx:///MainWindow.xaml", 12, 5),
-        Tl(3.0, UiThread, XamlProvider.XamlProfiler, "WucVisualChildInserted", F("ParentVisualId", 0xA000L),
-            F("ChildVisualId", 0xB000L), F("OwnerCompNodeId", 0xC000L), F("Index", 0), F("VisualType", "ContainerVisual"),
-            F("Properties", "Size=0,0")),
+        VisualInserted(3.0, 0xA000, 0xB000),
         FrameEnd(4.0, 1),
         Tl(5.0, UiThread, XamlProvider.MicrosoftUIXaml, "FirstUiThreadFrameEnd"),
         Manifest(6.0, KernelThread, XamlProvider.DxgKrnl, "VidMmProcessUsageChange", 0, F("NewUsage", 1048576L),
@@ -87,6 +85,12 @@ internal static class SessionFixtures
 
     internal static FixtureEvent LeftTree(double ms, long element, long parent) =>
         Tl(ms, UiThread, XamlProvider.XamlProfiler, "ElementLeftTree", F("ElementId", element), F("ParentId", parent));
+
+    /// <summary>A ContainerVisual inserted into a parent visual: the event gives the child its type, but not the parent.</summary>
+    internal static FixtureEvent VisualInserted(double ms, long parent, long child) =>
+        Tl(ms, UiThread, XamlProvider.XamlProfiler, "WucVisualChildInserted", F("ParentVisualId", parent),
+            F("ChildVisualId", child), F("OwnerCompNodeId", 0xC000L), F("Index", 0), F("VisualType", "ContainerVisual"),
+            F("Properties", "Size=0,0"));
 
     /// <summary>A Diagnostics manifest event that names OkButton and Root, which doesn't make them objects.</summary>
     internal static FixtureEvent PropertyChanged(double ms) =>

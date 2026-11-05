@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using ModelContextProtocol;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
+using WinUIProfiler.Mcp.Sessions;
 using WinUIProfiler.Mcp.Tools;
 using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
 using static WinUIProfiler.Mcp.SelfTest.ToolResults;
@@ -11,7 +14,6 @@ namespace WinUIProfiler.Mcp.SelfTest;
 /// <summary>record_trace's argument checks, and its reuse of a session file already read from the same trace.</summary>
 internal static class RecordTraceSelfTests
 {
-    private const string EndOfTrace = "End of trace";
     private const string SessionName = "20261104-120000-FixtureApp-4242.sqlite";
 
     // The full path of a real trace to read end to end; without it, record_trace.real is skipped.
@@ -22,6 +24,7 @@ internal static class RecordTraceSelfTests
         new("record_trace.errors", Errors),
         new("record_trace.reuse", Reuse),
         new("record_trace.real", Real),
+        new("record_trace.cancel", Cancel),
     ];
 
     private static void Errors(SelfTestContext context)
@@ -80,6 +83,17 @@ internal static class RecordTraceSelfTests
         Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null, "No session with a write-ahead log");
         File.Delete(session + "-wal");
 
+        // A newer session file of the process that can't be read is passed over.
+        var damaged = Directory.CreateDirectory(Path.Combine(folder, "damaged")).FullName;
+        var good = WriteTraceSession(damaged, "20261104-110000-FixtureApp-4242.sqlite", trace);
+        var bad = WriteTraceSession(damaged, SessionName, trace);
+        Expect.Equal(1, SessionToolSelfTests.Update(bad, "UPDATE SessionInfo SET StartedUtc = $value", "not a date"),
+            "Session records given a start time that isn't a time");
+        Expect.True(!File.Exists(bad + "-wal"), "The damaged session file has no write-ahead log.");
+        File.SetLastWriteTimeUtc(good, DateTime.UtcNow.AddSeconds(-20));
+        File.SetLastWriteTimeUtc(bad, DateTime.UtcNow.AddSeconds(-10));
+        Expect.Equal(good, SessionTools.FindFinishedSession(damaged, trace, ProcessId), "The session after a damaged one");
+
         var result = Run(() => Record(trace, ProcessId, sessions));
         Expect.True(result.Bool("reused"), "The session was reused.");
         Expect.Equal(session, result.Property("session").Text("sessionPath"), "The reused session");
@@ -92,10 +106,7 @@ internal static class RecordTraceSelfTests
     /// <summary>Reads a real trace into a session file, then reuses that file, then reads the trace again.</summary>
     private static void Real(SelfTestContext context)
     {
-        var variable = Environment.GetEnvironmentVariable(TraceVariable);
-        var trace = string.IsNullOrWhiteSpace(variable)
-            ? throw Expect.Skip($"Set {TraceVariable} to the full path of a trace with XAML events to read one end to end.")
-            : variable;
+        var trace = RealTrace();
         var sessions = Path.Combine(context.TempDirectory, "sessions");
 
         var first = Run(() => Record(trace, null, sessions));
@@ -111,7 +122,7 @@ internal static class RecordTraceSelfTests
         var path = session.Text("sessionPath");
         Expect.True(File.Exists(path), $"The session file {path} exists.");
         Expect.Equal("Trace", session.Text("coverage"), "Its coverage");
-        Expect.Equal(EndOfTrace, session.Text("endReason"), "Its end reason");
+        Expect.Equal(SessionCatalog.EndOfTrace, session.Text("endReason"), "Its end reason");
         var read = first.Long("xamlEvents") + first.Long("profilerEvents") + first.Long("gpuMemoryEvents");
         Expect.True(read > 0, "Events were read.");
         Expect.Equal(read, first.Long("storedEvents"), "Stored events, which are all the events read");
@@ -127,6 +138,63 @@ internal static class RecordTraceSelfTests
         Expect.Equal(read, reread.Long("storedEvents"), "The events read again");
     }
 
+    /// <summary>A call cancelled while it reads a real trace deletes the session file it was writing.</summary>
+    private static void Cancel(SelfTestContext context)
+    {
+        var trace = RealTrace();
+        var processId = OfflineEtlSource.ListProcesses(trace).Processes.MaxBy(process => process.Events)?.ProcessId
+            ?? throw new SelfTestFailedException($"No process in {trace} has XAML events.");
+        var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "cancelled")).FullName;
+        using var cancellation = new CancellationTokenSource();
+        var progress = new CancelOnReport(cancellation);
+        try
+        {
+            SessionTools.RecordTraceCore(trace, processId, folder, true, null, progress, cancellation.Token)
+                .GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+            Expect.Equal("", string.Join(", ", Directory.GetFiles(folder).Select(Path.GetFileName)),
+                "Files left in the folder after the call was cancelled");
+            return;
+        }
+        finally
+        {
+            progress.Cancelling.GetAwaiter().GetResult();
+        }
+
+        throw Expect.Skip($"{trace} was read before the first progress report, so the read couldn't be cancelled part way.");
+    }
+
+    /// <summary>
+    /// Cancels a call the first time it reports progress. It cancels on another thread: the call reports from the reader's
+    /// timer, and stopping the read waits for that timer.
+    /// </summary>
+    private sealed class CancelOnReport(CancellationTokenSource cancellation) : IProgress<ProgressNotificationValue>
+    {
+        private Task? cancelling;
+
+        public Task Cancelling => Volatile.Read(ref cancelling) ?? Task.CompletedTask;
+
+        public void Report(ProgressNotificationValue value)
+        {
+            var task = new Task(cancellation.Cancel);
+            if (Interlocked.CompareExchange(ref cancelling, task, null) is null)
+            {
+                task.Start(TaskScheduler.Default);
+            }
+        }
+    }
+
+    /// <summary>The trace the variable names; skips the test without one.</summary>
+    private static string RealTrace()
+    {
+        var variable = Environment.GetEnvironmentVariable(TraceVariable);
+        return string.IsNullOrWhiteSpace(variable)
+            ? throw Expect.Skip($"Set {TraceVariable} to the full path of a trace with XAML events to read one end to end.")
+            : variable;
+    }
+
     private static Task<object> Record(string etlPath, int? processId, string? folder, bool reread = false) =>
         SessionTools.RecordTraceCore(etlPath, processId, folder, reread, null, null, CancellationToken.None);
 
@@ -140,12 +208,12 @@ internal static class RecordTraceSelfTests
     }
 
     /// <summary>A session file of the fixture process read from a trace to its end, as record_trace and the app write one.</summary>
-    private static string WriteTraceSession(string folder, string fileName, string trace, string endReason = EndOfTrace,
+    private static string WriteTraceSession(string folder, string fileName, string trace, string endReason = SessionCatalog.EndOfTrace,
         SessionCoverage coverage = SessionCoverage.Trace, string? etlPath = null) =>
         Write(Path.Combine(folder, fileName), MainEvents, endReason, coverage, etlPath: etlPath ?? trace);
 
     /// <summary>Writes one session file into a folder of its own, then looks there for a finished session of the trace.</summary>
-    private static string? FindAlone(string folder, string name, string trace, string endReason = EndOfTrace,
+    private static string? FindAlone(string folder, string name, string trace, string endReason = SessionCatalog.EndOfTrace,
         SessionCoverage coverage = SessionCoverage.Trace, string? etlPath = null, string fileName = SessionName,
         int processId = ProcessId)
     {

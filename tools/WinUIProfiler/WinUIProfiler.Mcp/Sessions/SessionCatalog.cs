@@ -28,6 +28,9 @@ internal static class SessionCatalog
 {
     internal const string Extension = ".sqlite";
 
+    // The end reason of a session file whose trace was read to its end, as the app, record_trace and the CLI write it.
+    internal const string EndOfTrace = "End of trace";
+
     internal const string SessionPathDescription =
         "The session file (.sqlite) to read: a full path, or a file name in the WinUI Profiler app's sessions folder. " +
         "Omit it to read the newest session file there.";
@@ -183,30 +186,35 @@ internal static class SessionCatalog
         {
             return read();
         }
-        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
+        catch (Exception error) when (ReadError(path, error) is { } message)
         {
-            throw new McpException($"The session file {path} was not found.", error);
-        }
-        catch (InvalidDataException error)
-        {
-            throw new McpException(error.Message.Contains(path, StringComparison.OrdinalIgnoreCase)
-                ? error.Message : $"{path}: {error.Message}", error);
-        }
-        catch (SqliteException error)
-        {
-            throw new McpException($"{path} couldn't be read as a session file: {error.Message}", error);
-        }
-        catch (ArgumentException error) when (error.GetType() == typeof(ArgumentException))
-        {
-            // Enum.Parse's error for a stored name, such as a provider or a row type, that this version doesn't know.
-            throw new McpException($"{path} holds a value this version of the WinUI Profiler plugin doesn't know; a newer " +
-                $"WinUI Profiler probably wrote it. {error.Message}", error);
-        }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-        {
-            throw new McpException($"{path} couldn't be read: {error.Message}", error);
+            throw new McpException(message, error);
         }
     }
+
+    /// <summary>
+    /// The message for a way reading a session file can fail; null for any other error, which isn't the file's.
+    /// </summary>
+    internal static string? ReadError(string path, Exception error) => error switch
+    {
+        FileNotFoundException or DirectoryNotFoundException => $"The session file {path} was not found.",
+        InvalidDataException => error.Message.Contains(path, StringComparison.OrdinalIgnoreCase)
+            ? error.Message
+            : $"{path}: {error.Message}",
+        SqliteException => $"{path} couldn't be read as a session file: {error.Message}",
+
+        // Enum.Parse's error for a stored name, such as a provider or a row type, that this version doesn't know.
+        ArgumentException when error.GetType() == typeof(ArgumentException) =>
+            $"{path} holds a value this version of the WinUI Profiler plugin doesn't know; a newer WinUI Profiler " +
+            $"probably wrote it. {error.Message}",
+
+        // A stored value, such as a time or a process ID, that isn't in the form WinUI Profiler writes.
+        FormatException or OverflowException =>
+            $"{path} holds a value that isn't in the form WinUI Profiler writes, so the file is damaged or another " +
+            $"program wrote it: {error.Message}",
+        IOException or UnauthorizedAccessException => $"{path} couldn't be read: {error.Message}",
+        _ => null,
+    };
 
     /// <summary>
     /// Reads what the summary needs from the shared views. A file whose views can't be read, such as one written by
@@ -292,6 +300,13 @@ internal static class SessionCatalog
                 "Results cover the events stored so far.");
         }
 
+        // Reading stopped or failed partway, in the app or here.
+        if (IsTrace(info) && info.EndReason is { } reason && reason != EndOfTrace)
+        {
+            notes.Add($"The trace wasn't read to its end (the session's end reason is \"{reason}\"); results cover only " +
+                "the events read before then.");
+        }
+
         if (info.CompleteFromSeq is { } completeFrom)
         {
             notes.Add(string.Create(CultureInfo.InvariantCulture,
@@ -299,18 +314,19 @@ internal static class SessionCatalog
                 $"results cover only the events after them."));
         }
 
-        if (info.LostByEtw is > 0)
+        if (info.LostByEtw is { } lost && lost > 0)
         {
+            var events = EventJson.Count(lost, "event", "events");
+            var some = lost == 1 ? "it" : "some";
             notes.Add(IsTrace(info)
-                ? string.Create(CultureInfo.InvariantCulture,
-                    $"The trace lost {info.LostByEtw} events while it was recorded, of any process; results may miss some.")
-                : string.Create(CultureInfo.InvariantCulture, $"ETW lost {info.LostByEtw} events while recording; results may miss some."));
+                ? $"The trace lost {events} while it was recorded, of any process; results may miss {some}."
+                : $"ETW lost {events} while recording; results may miss {some}.");
         }
 
-        if (info.DroppedByProfiler is > 0)
+        if (info.DroppedByProfiler is { } dropped && dropped > 0)
         {
-            notes.Add(string.Create(CultureInfo.InvariantCulture,
-                $"The profiler dropped {info.DroppedByProfiler} events because its queue was full; results miss them."));
+            notes.Add($"The profiler dropped {EventJson.Count(dropped, "event", "events")} because its queue was full; " +
+                $"results miss {(dropped == 1 ? "it" : "them")}.");
         }
 
         if (info.Coverage == SessionCoverage.Connection)

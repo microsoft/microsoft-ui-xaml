@@ -27,7 +27,8 @@ internal static class LaunchTools
         "change, the first region of interest and the first frame drawn. \"frames\": when each of the first ten ticks that " +
         "drew on the first UI thread ended, from the process's creation for a launch recorded from process start, else " +
         "from the start of the recording; with the time since the previous one and each tick's own duration. Times are in " +
-        "ms (see the session's timeBase); msFromProcessStart is given when the session knows when the process was created.")]
+        "ms (see the session's timeBase); msFromProcessStart is given for a session recorded from process start, when it " +
+        "knows when the process was created.")]
     public static Task<object> Launch(
         [Description("\"milestones\" or \"frames\". Omit it for the milestones.")] string? view = null,
         [Description(SessionCatalog.SessionPathDescription)] string? sessionPath = null,

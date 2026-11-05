@@ -227,15 +227,19 @@ internal static class FrameTools
         var unstarted = ticks.Count(tick => tick.StartMilliseconds is null);
         if (unstarted > 0)
         {
-            notes.Add(string.Create(CultureInfo.InvariantCulture,
-                $"{unstarted} tick(s) started before the recording, or their start was deleted, so their durations aren't known."));
+            notes.Add(unstarted == 1
+                ? "1 tick started before the recording, or its start was deleted, so its duration isn't known."
+                : $"{EventJson.Count(unstarted, "tick", "ticks")} started before the recording, or their starts were deleted, " +
+                    "so their durations aren't known.");
         }
 
         var running = ticks.Count(tick => tick.EndMilliseconds is null);
         if (running > 0)
         {
-            notes.Add(string.Create(CultureInfo.InvariantCulture,
-                $"{running} tick(s) hadn't ended when the recording stopped, so their durations aren't known."));
+            notes.Add(running == 1
+                ? "1 tick hadn't ended when the recording stopped, so its duration isn't known."
+                : $"{EventJson.Count(running, "tick", "ticks")} hadn't ended when the recording stopped, so their durations " +
+                    "aren't known.");
         }
 
         if (ticks.Any(tick => tick.Drawn is null))
@@ -264,11 +268,14 @@ internal static class FrameTools
         {
             ranked = [.. ticks.Where(tick => tick.TickMilliseconds is not null)
                 .OrderByDescending(tick => tick.TickMilliseconds).ThenBy(tick => tick.FrameId)];
-            if (ticks.Count > ranked.Count)
+            var unranked = ticks.Count - ranked.Count;
+            if (unranked > 0)
             {
-                notes.Add(string.Create(CultureInfo.InvariantCulture,
-                    $"{ticks.Count - ranked.Count} tick(s) aren't ranked because their duration isn't known: they started " +
-                    $"before the recording, or hadn't ended when it stopped."));
+                notes.Add(unranked == 1
+                    ? "1 tick isn't ranked because its duration isn't known: it started before the recording, or hadn't " +
+                        "ended when it stopped."
+                    : $"{EventJson.Count(unranked, "tick", "ticks")} aren't ranked because their durations aren't known: " +
+                        "they started before the recording, or hadn't ended when it stopped.");
             }
         }
 

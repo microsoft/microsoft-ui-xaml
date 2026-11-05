@@ -16,6 +16,7 @@ namespace WinUIProfiler.Mcp.SelfTest;
 internal static class SessionToolSelfTests
 {
     private const string Variable = "WINUIPROFILER_MCP_SELFTEST";
+    private const string NotReadToEnd = "wasn't read to its end";
 
     public static IEnumerable<SelfTestCase> Tests =>
     [
@@ -23,6 +24,7 @@ internal static class SessionToolSelfTests
         new("sessions.resolve", Resolve),
         new("sessions.summary", Summary),
         new("sessions.notes", Notes),
+        new("sessions.damaged", Damaged),
         new("sessions.recording", Recording),
         new("sessions.newer", Newer),
     ];
@@ -69,8 +71,9 @@ internal static class SessionToolSelfTests
             first.IsNull("etlPath") && first.IsNull("error"), "Nothing was lost, trimmed or read from a trace.");
         Expect.Equal(3L, sessions[1].Long("lostByEtw"), "Events ETW lost");
         Expect.Equal(2L, sessions[1].Long("droppedByProfiler"), "Events the profiler dropped");
-        Contains(sessions[2].Text("error"), "Another SQLite file's error", "Not readable as a session file:");
-        Contains(sessions[3].Text("error"), "A damaged file's error", "Not readable as a session file:");
+        Contains(sessions[2].Text("error"), "Another SQLite file's error", $"'{foreign}' is not a WinUI Profiler session file",
+            "found version 7");
+        Contains(sessions[3].Text("error"), "A damaged file's error", $"{garbage} couldn't be read as a session file:");
         Expect.True(sessions[3].IsNull("processId"), "A damaged file has no process.");
 
         var two = Run(() => SessionTools.Sessions(view: " LIST ", folder: folder, limit: 2));
@@ -80,6 +83,10 @@ internal static class SessionToolSelfTests
         Expect.Equal("limit must be from 1 to 500; it was 0.", Error(() => SessionTools.Sessions(folder: folder, limit: 0)), "limit 0");
         Expect.Equal("'files' isn't a view of sessions. Use one of: list, summary.",
             Error(() => SessionTools.Sessions(view: "files", folder: folder)), "An unknown view");
+        Expect.Equal("The list view of sessions doesn't read sessionPath; only the summary view does.",
+            Error(() => SessionTools.Sessions(view: "list", sessionPath: main, folder: folder)), "sessionPath in the list view");
+        Expect.Equal("The summary view of sessions doesn't read limit; only the list view does.",
+            Error(() => SessionTools.Sessions(sessionPath: main, limit: 5)), "limit in the summary view");
 
         var empty = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "empty")).FullName;
         var none = Run(() => SessionTools.Sessions(folder: empty));
@@ -195,9 +202,14 @@ internal static class SessionToolSelfTests
     {
         var lossy = Write(Path.Combine(context.TempDirectory, "lossy.sqlite"), MainEvents, lostByEtw: 3, droppedByProfiler: 2);
         var lossyNotes = Run(() => SessionTools.Sessions(sessionPath: lossy));
-        HasNote(lossyNotes, "ETW lost 3 events while recording");
-        HasNote(lossyNotes, "The profiler dropped 2 events because its queue was full");
+        HasNote(lossyNotes, "ETW lost 3 events while recording; results may miss some.");
+        HasNote(lossyNotes, "The profiler dropped 2 events because its queue was full; results miss them.");
         Expect.Equal(3L, lossyNotes.Long("lostByEtw"), "Events ETW lost");
+        var lostOne = Write(Path.Combine(context.TempDirectory, "lost-one.sqlite"), MainEvents, lostByEtw: 1, droppedByProfiler: 1);
+        var lostOneNotes = Run(() => SessionTools.Sessions(sessionPath: lostOne));
+        HasNote(lostOneNotes, "ETW lost 1 event while recording; results may miss it.");
+        HasNote(lostOneNotes, "The profiler dropped 1 event because its queue was full; results miss it.");
+        LacksNote(lossyNotes, NotReadToEnd);
 
         var trimmed = WriteMain(context, "trimmed.sqlite");
         SetCompleteFrom(trimmed, 5);
@@ -213,11 +225,47 @@ internal static class SessionToolSelfTests
         Contains(traceSummary.Property("session").Text("timeBase"), "A trace's time base", "the first of the process's events");
         HasNote(traceSummary, $"Read from the trace {etl}.");
         HasNote(traceSummary, "The trace lost 4 events while it was recorded, of any process");
+        LacksNote(traceSummary, NotReadToEnd);
+        var stopped = Write(Path.Combine(context.TempDirectory, "stopped.sqlite"), MainEvents, "Stopped", SessionCoverage.Trace,
+            etlPath: etl);
+        HasNote(Run(() => SessionTools.Sessions(sessionPath: stopped)), "The trace wasn't read to its end (the session's end " +
+            "reason is \"Stopped\"); results cover only the events read before then.");
 
         var connection = Write(Path.Combine(context.TempDirectory, "connection.sqlite"), MainEvents,
             coverage: SessionCoverage.Connection);
         HasNote(Run(() => SessionTools.Sessions(sessionPath: connection)),
             "The recording began when the profiler connected to the running process");
+    }
+
+    // Session records with values WinUI Profiler doesn't write: the list view still lists each file, with its error, and
+    // the summary view says what's wrong.
+    private static void Damaged(SelfTestContext context)
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "damaged")).FullName;
+        var coverage = Damage(Path.Combine(folder, "coverage.sqlite"), "Coverage", "Hologram");
+        var started = Damage(Path.Combine(folder, "started.sqlite"), "StartedUtc", "not a date");
+        var process = Damage(Path.Combine(folder, "process.sqlite"), "ProcessId", 5_000_000_000L);
+
+        var listed = Run(() => SessionTools.Sessions(folder: folder)).Items("sessions");
+        Expect.Equal(3, listed.Count, "Damaged session files listed");
+        foreach (var session in listed)
+        {
+            Expect.True(session.IsNull("processId") && !session.IsNull("error"), $"{session.Text("file")} is listed with an error.");
+        }
+
+        Contains(Error(() => SessionTools.Sessions(sessionPath: coverage)), "The error for a coverage this version doesn't know",
+            $"{coverage} holds a value this version of the WinUI Profiler plugin doesn't know", "'Hologram'");
+        Contains(Error(() => SessionTools.Sessions(sessionPath: started)), "The error for a start time that isn't a time",
+            $"{started} holds a value that isn't in the form WinUI Profiler writes");
+        Contains(Error(() => SessionTools.Sessions(sessionPath: process)), "The error for a process ID too large for one",
+            $"{process} holds a value that isn't in the form WinUI Profiler writes");
+    }
+
+    private static string Damage(string path, string column, object value)
+    {
+        Write(path, MainEvents);
+        Expect.Equal(1, Update(path, $"UPDATE SessionInfo SET {column} = $value", value), $"Session records given a bad {column}");
+        return path;
     }
 
     private static void Recording(SelfTestContext context)

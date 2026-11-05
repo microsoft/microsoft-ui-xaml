@@ -9,7 +9,7 @@ namespace WinUIProfiler.Mcp.Sessions;
 /// <summary>A provider whose events session files hold, with the name the tools show.</summary>
 internal sealed record ProviderInfo(XamlProvider Provider, string Name, Guid Guid);
 
-/// <summary>How the tools show providers, times and addresses.</summary>
+/// <summary>How the tools show providers, times, addresses and counts.</summary>
 internal static class EventJson
 {
     /// <summary>The providers, in the order of <see cref="XamlProvider"/>.</summary>
@@ -50,4 +50,8 @@ internal static class EventJson
     internal static string? Utc(DateTime? time) => time is { } value ? Utc(value) : null;
 
     internal static string Hex(long address) => "0x" + address.ToString("X", CultureInfo.InvariantCulture);
+
+    /// <summary>A count and its noun, such as "1 event" or "1,234 events".</summary>
+    internal static string Count(long count, string one, string many) =>
+        string.Create(CultureInfo.InvariantCulture, $"{count:N0} {(count == 1 ? one : many)}");
 }

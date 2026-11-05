@@ -90,9 +90,14 @@ internal static class ObjectTools
         long? wantedAddress = null;
         if (chosen == "history")
         {
-            if ((objectId is null) == (addressText is null))
+            if (objectId is null && addressText is null)
             {
-                throw new McpException("The history view needs one of objectId and address, not both. The list view gives both.");
+                throw new McpException("The history view needs objectId or address. The list view gives both.");
+            }
+
+            if (objectId is not null && addressText is not null)
+            {
+                throw new McpException("The history view needs one of objectId and address, not both.");
             }
 
             wantedAddress = addressText is null ? null : ToolArguments.Address(addressText);
@@ -287,9 +292,10 @@ internal static class ObjectTools
         var untyped = objects.Count(item => item.Type is null);
         if (untyped > 0)
         {
-            notes.Add(string.Create(CultureInfo.InvariantCulture,
-                $"{untyped} objects have no type: none of the events that mention them gave it. An element's type comes from " +
-                $"DependencyObject_Enter, a visual's from its insertion."));
+            notes.Add((untyped == 1
+                    ? "1 object has no type: none of the events that mention it gave it."
+                    : $"{EventJson.Count(untyped, "object", "objects")} have no type: none of the events that mention them gave it.") +
+                " An element's type comes from DependencyObject_Enter, a visual's from its insertion.");
         }
 
         return notes;

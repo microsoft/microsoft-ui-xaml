@@ -58,7 +58,7 @@ internal static class FrameToolSelfTests
         Expect.Equal(13L, thread.Property("events").Long("total"), "Events in the thread's ticks");
         Expect.Equal(0L, result.Property("regions").Long("count"), "Regions");
         Expect.Equal(1L, result.Property("firstFrame").Long("frameNumber"), "The first frame");
-        HasNote(result, "1 tick(s) hadn't ended when the recording stopped");
+        HasNote(result, "1 tick hadn't ended when the recording stopped, so its duration isn't known.");
         HasNote(result, FrameTools.NoRegions);
 
         var empty = Write(Path.Combine(context.TempDirectory, "empty.sqlite"), []);
@@ -77,13 +77,23 @@ internal static class FrameToolSelfTests
         Expect.Equal("2:4,1:3", string.Join(",", ticks.Select(tick => $"{tick.Long("frameNumber")}:{tick.Double("tickMs")}")),
             "The ticks, longest first");
         Expect.True(ticks.All(tick => tick.Bool("drew")), "Both ticks drew.");
-        HasNote(result, "1 tick(s) aren't ranked because their duration isn't known");
+        HasNote(result, "1 tick isn't ranked because its duration isn't known");
 
         var byEvents = Run(() => FrameTools.Frames(sessionPath: main, view: "slowest", orderBy: "events"));
         Expect.Equal(1L, byEvents.Items("ticks")[0].Long("frameNumber"), "The tick with the most events");
         var page = Run(() => FrameTools.Frames(sessionPath: main, view: "slowest", offset: 1, limit: 1));
         Expect.Equal(1L, page.Long("returned"), "Ticks on a page");
         Expect.Equal(1L, page.Items("ticks")[0].Long("frameNumber"), "The second slowest tick");
+
+        var open = Write(Path.Combine(context.TempDirectory, "open.sqlite"),
+        [
+            FrameStart(1.0, 1),
+            Tl(2.0, UiThread + 1, XamlProvider.Xaml, "CoreServices_Frame", F("IsStart", true), F("FrameNumber", 7u)),
+        ]);
+        HasNote(Run(() => FrameTools.Frames(sessionPath: open, view: "slowest")),
+            "2 ticks aren't ranked because their durations aren't known");
+        HasNote(Run(() => FrameTools.Frames(sessionPath: open)),
+            "2 ticks hadn't ended when the recording stopped, so their durations aren't known.");
     }
 
     private static void Regions(SelfTestContext context)

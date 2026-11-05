@@ -99,4 +99,9 @@ internal static class ToolResults
     internal static void HasNote(JsonElement result, string text) =>
         Expect.True(result.Strings("notes").Any(note => note?.Contains(text, StringComparison.Ordinal) == true),
             $"A note contains \"{text}\"; the notes were: {string.Join(" | ", result.Strings("notes"))}");
+
+    /// <summary>Checks that none of the notes contains some text.</summary>
+    internal static void LacksNote(JsonElement result, string text) =>
+        Expect.True(!result.Strings("notes").Any(note => note?.Contains(text, StringComparison.Ordinal) == true),
+            $"No note contains \"{text}\"; the notes were: {string.Join(" | ", result.Strings("notes"))}");
 }

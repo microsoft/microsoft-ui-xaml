@@ -39,8 +39,9 @@ type, and when the first frame drew.
 
 The longest ticks (`orderBy` `duration`, the default) or those with the most
 events (`events`), each with its `tickId`, frame number, whether it drew, its
-duration, events by bucket, and the region that ends with it. Ticks without a
-known duration aren't ranked; a note says how many. `limit` defaults to 20.
+duration, events by bucket, and the region that ends with it. By duration,
+ticks without a known duration aren't ranked; a note says how many. `limit`
+defaults to 20.
 
 ### `regions`
 
@@ -74,8 +75,9 @@ process start), when the recording started (not for a trace), the first tick,
 the first of each PerfXamlEvent operation (such as WinUI initializing on a
 thread) with its duration and count, graphics device creation, the first
 UpdateLayout pass in a region, the first navigation and focus change, the
-first region and the first frame drawn. Each has `ms`, and
-`msFromProcessStart` when the process's creation is known.
+first region and the first frame drawn. Each has `ms`, and, for a session
+recorded from process start, `msFromProcessStart` when the process's creation
+is known.
 
 ### `frames`
 
