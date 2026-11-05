@@ -24,6 +24,7 @@ internal static class SessionToolSelfTests
         new("sessions.resolve", Resolve),
         new("sessions.summary", Summary),
         new("sessions.notes", Notes),
+        new("sessions.times", Times),
         new("sessions.damaged", Damaged),
         new("sessions.recording", Recording),
         new("sessions.newer", Newer),
@@ -49,7 +50,7 @@ internal static class SessionToolSelfTests
         Expect.Equal(folder, result.Text("folder"), "The folder");
         Expect.Equal(4L, result.Long("total"), "Session files");
         Expect.Equal(4L, result.Long("returned"), "Session files described");
-        Expect.True(result.IsNull("note"), "There's no note.");
+        Expect.Equal(0, result.Strings("notes").Count, "Notes on a list of live sessions");
         var sessions = result.Items("sessions");
         Expect.Equal("main.sqlite,lossy.sqlite,foreign.sqlite,garbage.sqlite",
             string.Join(",", sessions.Select(item => item.Text("file"))), "The files, newest first");
@@ -79,7 +80,8 @@ internal static class SessionToolSelfTests
         var two = Run(() => SessionTools.Sessions(view: " LIST ", folder: folder, limit: 2));
         Expect.Equal(4L, two.Long("total"), "Session files when two are described");
         Expect.Equal(2L, two.Long("returned"), "Session files described");
-        Expect.Equal("Only the newest 2 of 4 session files are described; raise limit for more.", two.Text("note"), "The note");
+        Expect.Equal("Only the newest 2 of 4 session files are described; raise limit for more.",
+            string.Join(" | ", two.Strings("notes")), "The notes");
         Expect.Equal("limit must be from 1 to 500; it was 0.", Error(() => SessionTools.Sessions(folder: folder, limit: 0)), "limit 0");
         Expect.Equal("'files' isn't a view of sessions. Use one of: list, summary.",
             Error(() => SessionTools.Sessions(view: "files", folder: folder)), "An unknown view");
@@ -91,7 +93,9 @@ internal static class SessionToolSelfTests
         var empty = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "empty")).FullName;
         var none = Run(() => SessionTools.Sessions(folder: empty));
         Expect.Equal(0L, none.Long("total"), "Session files in an empty folder");
-        Contains(none.Text("note"), "An empty folder's note", $"There are no session files in {empty}.", "record_trace");
+        var emptyNotes = none.Strings("notes");
+        Expect.Equal(1, emptyNotes.Count, "An empty folder's notes");
+        Contains(emptyNotes[0], "An empty folder's note", $"There are no session files in {empty}.", "record_trace");
         Expect.Equal(0L, Run(() => SessionTools.Sessions(folder: Path.Combine(folder, "missing"))).Long("total"),
             "Session files in a missing folder");
         Expect.Equal($"{main} is a file, not a folder. Pass it as sessionPath to the summary view.",
@@ -235,6 +239,32 @@ internal static class SessionToolSelfTests
             coverage: SessionCoverage.Connection);
         HasNote(Run(() => SessionTools.Sessions(sessionPath: connection)),
             "The recording began when the profiler connected to the running process");
+    }
+
+    // A session file read from a trace is stamped with when it was read, so both views say so, and only for traces.
+    private static void Times(SelfTestContext context)
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "times")).FullName;
+        var live = Write(Path.Combine(folder, "live.sqlite"), MainEvents);
+        var trace = Write(Path.Combine(folder, "trace.sqlite"), MainEvents, "End of trace", SessionCoverage.Trace,
+            etlPath: Path.Combine(context.TempDirectory, "app.etl"));
+        var older = Write(Path.Combine(folder, "older.sqlite"), MainEvents);
+        File.SetLastWriteTimeUtc(live, DateTime.UtcNow.AddMinutes(-1));
+        File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddMinutes(-2));
+        File.SetLastWriteTimeUtc(older, DateTime.UtcNow.AddMinutes(-3));
+
+        var traceSummary = Run(() => SessionTools.Sessions(sessionPath: trace));
+        HasNote(traceSummary, SessionTools.TraceTimes);
+        Expect.True(!traceSummary.IsNull("startedUtc") && !traceSummary.IsNull("endedUtc"), "A trace's summary keeps its times.");
+        LacksNote(Run(() => SessionTools.Sessions(sessionPath: live)), SessionTools.TraceTimes);
+
+        var all = Run(() => SessionTools.Sessions(folder: folder));
+        Expect.Equal("live.sqlite,trace.sqlite,older.sqlite",
+            string.Join(",", all.Items("sessions").Select(item => item.Text("file"))), "The files, newest first");
+        Expect.Equal(SessionTools.ListTraceTimes, string.Join(" | ", all.Strings("notes")), "The notes on a list with a trace");
+        var newest = Run(() => SessionTools.Sessions(folder: folder, limit: 1));
+        Expect.Equal("Only the newest 1 of 3 session files are described; raise limit for more.",
+            string.Join(" | ", newest.Strings("notes")), "The notes on a list that leaves the trace out");
     }
 
     // Session records with values WinUI Profiler doesn't write: the list view still lists each file, with its error, and

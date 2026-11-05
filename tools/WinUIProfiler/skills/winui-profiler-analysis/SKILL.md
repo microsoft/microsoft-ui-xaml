@@ -162,6 +162,10 @@ recording live does.
   relative to it, if that's known; for a trace, the first of the process's
   events in the trace, because a trace doesn't say when the process was
   created.
+- For a session read from a trace, `startedUtc` and `endedUtc` are when the
+  trace was read into the session file, not when it was recorded, and the time
+  between them is how long the reading took. The file doesn't say when the
+  trace was recorded.
 - `launch` also gives `msFromProcessStart` for a session recorded from process
   start, when it knows when the process was created; `measuredFrom` says what
   its frames count from.

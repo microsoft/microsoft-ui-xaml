@@ -29,6 +29,14 @@ internal static class SessionTools
 
     internal static readonly string[] Views = ["list", "summary"];
 
+    // A session file read from a trace is stamped with the times it was read; the trace's recording time isn't stored.
+    internal const string TraceTimes = "startedUtc and endedUtc are when the trace was read into this file, not when the " +
+        "trace was recorded, which the file doesn't say; the time between them is how long the reading took. The events' " +
+        "times are the trace's own, in milliseconds from the origin session.timeBase gives.";
+
+    internal const string ListTraceTimes = "For a session read from a trace (coverage Trace), startedUtc is when the trace " +
+        "was read into the file, not when the trace was recorded, which the file doesn't say.";
+
     [McpServerTool(Name = "sessions", ReadOnly = true, Idempotent = true, OpenWorld = false), Description(
         "Finds and describes WinUI Profiler session files (.sqlite). Start here to choose the session the other tools read; " +
         "they read the newest one when sessionPath is omitted. Views: \"list\" lists the session files in a folder, newest " +
@@ -76,22 +84,30 @@ internal static class SessionTools
     {
         var files = SessionCatalog.Files(directory);
         var sessions = new List<object>();
+        var traces = false;
         foreach (var file in files.Take(limit))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            sessions.Add(DescribeFile(file));
+            var (row, trace) = DescribeFile(file);
+            sessions.Add(row);
+            traces |= trace;
         }
 
-        string? note = null;
+        var notes = new List<string>();
         if (files.Count == 0)
         {
-            note = $"There are no session files in {directory}. Record one with the WinUI Profiler app, or read a trace " +
-                "(.etl) into one with record_trace.";
+            notes.Add($"There are no session files in {directory}. Record one with the WinUI Profiler app, or read a trace " +
+                "(.etl) into one with record_trace.");
         }
         else if (files.Count > sessions.Count)
         {
-            note = string.Create(CultureInfo.InvariantCulture,
-                $"Only the newest {sessions.Count} of {files.Count} session files are described; raise limit for more.");
+            notes.Add(string.Create(CultureInfo.InvariantCulture,
+                $"Only the newest {sessions.Count} of {files.Count} session files are described; raise limit for more."));
+        }
+
+        if (traces)
+        {
+            notes.Add(ListTraceTimes);
         }
 
         return new
@@ -101,7 +117,7 @@ internal static class SessionTools
             total = files.Count,
             returned = sessions.Count,
             sessions,
-            note,
+            notes,
         };
     }
 
@@ -112,6 +128,11 @@ internal static class SessionTools
         var regions = rows.Count(row => row.Type == InterestingRowType.Region);
         var contents = new SessionContents(ticks.Count, regions, rows.Count - regions, launch.Count, error);
         var notes = new List<string>(SessionCatalog.Notes(info));
+        if (SessionCatalog.IsTrace(info))
+        {
+            notes.Add(TraceTimes);
+        }
+
         if (error is not null)
         {
             notes.Add(error);
@@ -422,12 +443,12 @@ internal static class SessionTools
         _ => $"{trace} couldn't be read: {error.Message}",
     };
 
-    private static object DescribeFile(SessionFileEntry file)
+    private static (object Row, bool IsTrace) DescribeFile(SessionFileEntry file)
     {
         try
         {
             var info = SessionFile.ReadInfo(file.Path);
-            return new
+            return (new
             {
                 file = Path.GetFileName(file.Path),
                 path = file.Path,
@@ -447,18 +468,18 @@ internal static class SessionTools
                 lostByEtw = info.LostByEtw > 0 ? info.LostByEtw : null,
                 droppedByProfiler = info.DroppedByProfiler > 0 ? info.DroppedByProfiler : null,
                 etlPath = info.EtlPath,
-            };
+            }, SessionCatalog.IsTrace(info));
         }
         catch (Exception error) when (SessionCatalog.ReadError(file.Path, error) is { } message)
         {
-            return new
+            return (new
             {
                 file = Path.GetFileName(file.Path),
                 path = file.Path,
                 lastWrittenUtc = EventJson.Utc(file.LastWrittenUtc),
                 sizeMB = Megabytes(file.Bytes),
                 error = message,
-            };
+            }, false);
         }
     }
 
