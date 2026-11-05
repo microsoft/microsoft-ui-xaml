@@ -714,7 +714,7 @@ namespace MUXControlsTestApp
             });
             ContextMenuTable.CellEditEnding += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
 
-            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.TableMenu })
+            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.RowTemplateMenu, Facts.TableMenu })
             {
                 var menu = (FlyoutBase)ContextMenuTableHost.Resources[key];
                 menu.Opening += (s, args) => OnContextMenuOpening(key, (FlyoutBase)s);
@@ -773,6 +773,7 @@ namespace MUXControlsTestApp
                 ContextMenuTable.ItemsSource = _contextMenuItems;
             }
             ContextMenuTable.FlowDirection = FlowDirection.LeftToRight;
+            SetRowTemplateMenu(null);
 
             _contextMenuLast = Facts.NoneValue;
             _contextMenuOpen = false;
@@ -831,6 +832,23 @@ namespace MUXControlsTestApp
         private void OnMirrorContextMenuTableClick(object sender, RoutedEventArgs e)
         {
             ContextMenuTable.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        // Puts RowTemplateMenu on the template root of every realized row; Reset removes it.
+        private void OnAttachRowTemplateMenuClick(object sender, RoutedEventArgs e)
+        {
+            SetRowTemplateMenu((FlyoutBase)ContextMenuTableHost.Resources[Facts.RowTemplateMenu]);
+        }
+
+        private void SetRowTemplateMenu(FlyoutBase menu)
+        {
+            foreach (var row in FindDescendants<TableViewRow>(ContextMenuTable))
+            {
+                if (VisualTreeHelper.GetChildrenCount(row) > 0 && VisualTreeHelper.GetChild(row, 0) is UIElement templateRoot)
+                {
+                    templateRoot.ContextFlyout = menu;
+                }
+            }
         }
 
         private void RefreshContextMenuReadout()

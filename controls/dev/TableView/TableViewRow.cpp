@@ -182,6 +182,17 @@ TableViewRow::TableViewRow()
             }
         });
 
+    // auto_revoke owns this self-event subscription until row destruction.
+    m_contextRequestedRevoker = ContextRequested(
+        winrt::auto_revoke,
+        [weakRow](winrt::UIElement const&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                strongRow->OnRowContextRequested(args);
+            }
+        });
+
     // Don't strand cell content out of the tab order if unloaded before the restore turn runs.
     m_unloadedRevoker = Unloaded(
         winrt::auto_revoke,
@@ -1166,16 +1177,11 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
             return;
         }
 
-        auto target = MakeRowContextMenuTarget();
-        if (!target)
+        // Resolve from the source only, as the ContextRequested that follows does. A pointer
+        // hit-test would pick the cell under the expander chevron, which belongs to the row.
+        auto const target = ResolveContextMenuTarget(source);
+        if (target && target->Column)
         {
-            return;
-        }
-
-        target->Column = ResolvePressedColumn(args.OriginalSource(), args.GetCurrentPoint(nullptr).Position());
-        if (target->Column)
-        {
-            target->Anchor = TableViewCellsPanel::CellForColumn(target->ScopeRoot, target->Column);
             winrt::get_self<TableView>(owner)->FocusContextMenuTargetFromPointer(*target);
         }
         return;
@@ -2997,6 +3003,24 @@ void TableViewRow::OnTemplateRootContextRequested(winrt::ContextRequestedEventAr
     }
 }
 
+// Row requests raised on the row itself: Shift+F10 / Menu key while the row (not a cell) has
+// focus. They start above the template root, so neither handler above sees them; without this
+// the row-template menu is skipped and the table fallback opens. Requests that bubbled up from
+// inside the row were already offered to the handlers above and keep bubbling.
+void TableViewRow::OnRowContextRequested(winrt::ContextRequestedEventArgs const& args)
+{
+    auto const source = args.OriginalSource().try_as<winrt::TableViewRow>();
+    if (args.Handled() || !source || winrt::get_self<TableViewRow>(source) != this)
+    {
+        return;
+    }
+
+    if (auto const target = ResolveContextMenuTarget(args); target && !target->Column)
+    {
+        ProcessContextRequest(*target, args);
+    }
+}
+
 bool TableViewRow::ShowContextMenuFromPeer()
 {
     auto const owner = GetOwningTableView();
@@ -3029,6 +3053,12 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::MakeRowContextM
 std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextMenuTarget(
     winrt::ContextRequestedEventArgs const& args)
 {
+    return ResolveContextMenuTarget(args.OriginalSource().try_as<winrt::DependencyObject>());
+}
+
+std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextMenuTarget(
+    winrt::DependencyObject const& source)
+{
     auto target = MakeRowContextMenuTarget();
     if (!target)
     {
@@ -3036,7 +3066,6 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     }
 
     winrt::TableViewRow const self = *this;
-    auto const source = args.OriginalSource().try_as<winrt::DependencyObject>();
     if (!TableViewDetails::IsOwnRequestSource(source, self))
     {
         return std::nullopt;

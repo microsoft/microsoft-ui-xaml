@@ -192,12 +192,15 @@ private:
         const winrt::Point& hostPoint);
     void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);
     void OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnRowContextRequested(winrt::ContextRequestedEventArgs const& args);
     void ProcessContextRequest(
         TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);
     std::optional<TableViewDetails::ContextMenuTarget> MakeRowContextMenuTarget();
     std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
         winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::DependencyObject const& source);
 
     void OnDataContextChanged(
         const winrt::FrameworkElement& sender,
@@ -264,6 +267,7 @@ private:
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_contextRequestedRevoker{};
     winrt::FlyoutBase::Opening_revoker m_contextFlyoutOpeningRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};

@@ -218,7 +218,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 
         // ---- Context menu fixture (ContextMenuTable) ----
         // Name: CellMenu + HeaderMenu; City: TemplateMenu on its template root; Age: none (row menu applies).
-        // Rows: RowMenu via implicit style; table: TableMenu. Blank space right of the columns and below the rows.
+        // Rows: RowMenu via implicit style (plus RowTemplateMenu on the template root, on request); table: TableMenu.
+        // Blank space right of the columns and below the rows.
 
         internal const string ContextMenuTable = "ContextMenuTable";
         internal const string ContextMenuPivotItem = "ContextMenu";
@@ -230,10 +231,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string MirrorContextMenuTableButton = "MirrorContextMenuTable";
         internal const string CancelEditorMenuCloseButton = "CancelEditorMenuClose";
 
+        // Puts RowTemplateMenu on each realized row's template root. Reset removes it.
+        internal const string AttachRowTemplateMenuButton = "AttachRowTemplateMenu";
+
         internal const string CellMenu = "CellMenu";
         internal const string HeaderMenu = "HeaderMenu";
         internal const string TemplateMenu = "TemplateMenu";
         internal const string RowMenu = "RowMenu";
+        internal const string RowTemplateMenu = "RowTemplateMenu";
         internal const string TableMenu = "TableMenu";
 
         // Each menu's single item has AutomationId "<menu>Item".

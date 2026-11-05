@@ -342,6 +342,9 @@ void TableView::ShowContextFlyout(
 {
     winrt::FlyoutShowOptions options;
     options.Placement(winrt::FlyoutPlacementMode::Auto);
+    // Match ShowAt(element): an options ShowMode of Auto opens as Standard and writes that back
+    // to the flyout, dropping a Transient mode for this and every later open.
+    options.ShowMode(candidate.Flyout.ShowMode());
 
     winrt::Point point{};
     if (args && args.TryGetPosition(candidate.Anchor, point))

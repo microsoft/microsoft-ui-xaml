@@ -249,6 +249,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Shift+F10 on a focused row opens a ContextFlyout on the row's template root before the row's own menu.")]
+        public void ShiftF10OnRowOpensRowTemplateMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!InvokeHostButton(AttachRowTemplateMenuButton)) { return; }
+                if (FocusRowAt(ContextMenuTable, 3) == null) { return; }
+
+                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+
+                VerifyMenuOpened(RowTemplateMenu, ContextMenuName(3), RowFocus(3));
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the Menu (Apps) key on a focused cell with no menu of its own opens the row's menu at that cell, still targeted at the row.")]
         public void MenuKeyOnPlainCellOpensRowMenuAtCell()
         {
