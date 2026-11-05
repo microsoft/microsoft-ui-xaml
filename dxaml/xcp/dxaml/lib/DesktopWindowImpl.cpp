@@ -1326,7 +1326,7 @@ _Check_return_ HRESULT DesktopWindowImpl::TryGetWin32RestoredClientSizeInDips(_O
     return S_OK;
 }
 
-// Gets outer width minus client width, and outer height minus client height, or the restored window, in pixels.
+// Gets outer width minus client width, and outer height minus client height, for the restored window, in pixels.
 // Uses the cached value if available, or estimates it from window styles if needed.
 _Check_return_ HRESULT DesktopWindowImpl::GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize)
 {
@@ -1340,7 +1340,7 @@ _Check_return_ HRESULT DesktopWindowImpl::GetSavedRestoreChromeSizeInPixels(_Out
     // ExtendsContentIntoTitleBar. Reuse it only while the title-bar setting still matches.
     // The cache can also hold an estimate if no matching measurement was available.
     // We special-case ExtendsContentIntoTitleBar because we already track it, but certainly the app
-    // could call other win32 APIs that will throw our estimates off.
+    // could call other Win32 APIs that will throw our estimates off.
     const bool extendsContentIntoTitleBar = m_windowChrome && m_windowChrome->IsChromeActive();
     if (m_trackedRestoredSize && m_trackedRestoredSize->extendsContentIntoTitleBar == extendsContentIntoTitleBar)
     {
@@ -2691,7 +2691,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
 
     if (constraint == SizeConstraint::All)
     {
-        // Clear the size constraints WinUI manages first so we don't put the window size into a strange state because 
+        // Clear the size constraints WinUI manages first so we don't put the window size into a strange state because
         // of the order in which we change them.
         IFC_RETURN(ClearOwnedConstraintsOnPresenterIfOverlapped());
         if (m_bIsClosed)

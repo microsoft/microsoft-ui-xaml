@@ -306,9 +306,9 @@ namespace DirectUI
         //
         // An empty optional means WinUI leaves the corresponding presenter size constraint alone.
         // A non-default value makes WinUI manage that size constraint. When the app sets a size constraint
-        //  to the default (0 for a minimum, +Infinity for a maximum) WinUI clears the presenter size constraint once,
+        // to the default (0 for a minimum, +Infinity for a maximum), WinUI clears the presenter size constraint once,
         // then resets the optional.
-        // If presenter other than OverlappedPresenter is active, keep the default value until the size constraint can be cleared.
+        // If a presenter other than OverlappedPresenter is active, keep the default value until the size constraint can be cleared.
         //
         // While WinUI manages a size constraint, the app should not set the corresponding PreferredMinimum/Maximum
         // property directly on OverlappedPresenter because WinUI will overwrite it.
