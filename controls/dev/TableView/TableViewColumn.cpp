@@ -319,8 +319,9 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         property == s_MinWidthProperty ||
         property == s_MaxWidthProperty)
     {
-        // Only an app-driven assignment replaces the authored width; a user resize does not.
-        if (property == s_WidthProperty && !m_inUserResize)
+        // Only an app-driven assignment replaces the authored width and ends the holds; a user resize does neither.
+        const bool appChange = property != s_WidthProperty || !m_inUserResize;
+        if (appChange && property == s_WidthProperty)
         {
             m_authoredWidth = ValueHelper<winrt::GridLength>::CastOrUnbox(args.NewValue());
         }
@@ -328,7 +329,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
-            if (property != s_WidthProperty || !m_inUserResize)
+            if (appChange)
             {
                 winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             }

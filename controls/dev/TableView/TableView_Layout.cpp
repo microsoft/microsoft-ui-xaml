@@ -233,7 +233,7 @@ void TableView::ResolveColumnWidths()
     // Before any early return: a change this pass doesn't size (e.g. a held column collapsing) must still end the holds.
     if (!m_lockedColumnHolds.empty() && LockedColumnHoldsSignature() != m_lockedColumnHoldsSignature)
     {
-        m_lockedColumnHolds.clear();
+        ClearLockedColumnHolds(false);
     }
 
     auto columns = Columns();
@@ -464,11 +464,7 @@ void TableView::ResolveColumnWidths()
             if (needed > layoutRound(viewport) + tolerance)
             {
                 held.clear();
-                m_lockedColumnHolds.clear();
-                if (m_activeColumnResizeDrag)
-                {
-                    m_activeColumnResizeDrag->lockedHoldsBefore.reset();
-                }
+                ClearLockedColumnHolds(false);
             }
         }
 
@@ -660,6 +656,11 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
 
     // The resized column turns Pixel on this write, so it leaves the Auto total the holds compare against.
     const bool resizingAuto = column.Width().GridUnitType == winrt::GridUnitType::Auto;
+    const size_t signature = holds.empty() ? 0 : LockedColumnHoldsSignature();
+    if (!holds.empty() && signature != m_lockedColumnHoldsSignature)
+    {
+        ClearLockedColumnHolds(false);
+    }
     if (!holds.empty() || (resizingAuto && !m_lockedColumnHolds.empty()))
     {
         state.lockedHoldsBefore.emplace(m_lockedColumnHolds, m_lockedColumnHoldsSignature);
@@ -690,11 +691,6 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
             hold.autoTotal = autoTotal;
         }
 
-        const size_t signature = LockedColumnHoldsSignature();
-        if (signature != m_lockedColumnHoldsSignature)
-        {
-            m_lockedColumnHolds.clear();
-        }
         for (auto const& hold : holds)
         {
             auto const heldColumn = hold.column.get();
@@ -752,11 +748,17 @@ size_t TableView::LockedColumnHoldsSignature()
 // matches again), so the inputs end the holds as they change.
 void TableView::ExpireLockedColumnHolds()
 {
-    if (!m_lockedColumnHolds.empty())
+    ClearLockedColumnHolds(true);
+}
+
+// Also drops the in-flight drag's snapshot, so canceling it cannot bring the holds back.
+void TableView::ClearLockedColumnHolds(bool invalidate)
+{
+    if (invalidate && !m_lockedColumnHolds.empty())
     {
-        m_lockedColumnHolds.clear();
         InvalidateMeasure();
     }
+    m_lockedColumnHolds.clear();
     if (m_activeColumnResizeDrag)
     {
         m_activeColumnResizeDrag->lockedHoldsBefore.reset();

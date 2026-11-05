@@ -1479,8 +1479,12 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
-    // Hash of every input that sizes the columns other than user resizes; holds die when it changes.
+    // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
+    // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
+    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
+    void ClearLockedColumnHolds(bool invalidate);
     winrt::ResizeGripper GetAvailableResizeGripper(const winrt::TableViewColumn& column);
     bool IsColumnResizeAllowed(const winrt::TableViewColumn& column);
     static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);
