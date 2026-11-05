@@ -2214,7 +2214,6 @@ namespace DirectUI
         DeferContextFlyoutInit = 61098986,
         GamepadKeyRouting = 63117108,
         CollectionMoveNotifications = 1503,
-        NotifySetterApplied = 1504,
     };
     DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
 

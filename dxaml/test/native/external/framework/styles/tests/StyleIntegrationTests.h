@@ -355,21 +355,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that the winning duplicate default-style value remains usable after an explicit Style "
                 L"override is removed, with and without retaining the original value.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges",
-                L"{OptimizeApplyStyles:true|NotifySetterApplied:true,OptimizeApplyStyles:true|NotifySetterApplied:false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
             TEST_METHOD_PROPERTY(L"Data:RetainOriginalStyle", L"{true,false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleSetterValuesStayDeferredWhileShadowed)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that notification does not realize a shadowed setter, and its value is created and retained when needed.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true|NotifySetterApplied:true}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(AppliedSingleSetterValueSurvivesOverride)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify peer protection for a single native or custom setter value, including BasedOn styles.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true|NotifySetterApplied:true}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
             TEST_METHOD_PROPERTY(L"Data:UseBasedOn", L"{false,true}")
             TEST_METHOD_PROPERTY(L"Data:UseCustomControl", L"{false,true}")
             TEST_METHOD_PROPERTY(L"Data:InitiallyShadowed", L"{false,true}")

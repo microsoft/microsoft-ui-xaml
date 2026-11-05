@@ -30,21 +30,6 @@ namespace OptionalChangeState
     constexpr int BitIndex_DeferContextFlyoutInit = 3;
     constexpr int BitIndex_GamepadKeyRouting = 4;
     constexpr int BitIndex_CollectionMoveNotifications = 5;
-    constexpr int BitIndex_NotifySetterApplied = 6;
-
-#if DBG
-    enum class NotifySetterAppliedMode : DWORD
-    {
-        Default = 0,
-        AlwaysNotifyAndRealize = 1,
-        SkipNotifyAndRealize = 2,
-        AlwaysNotifyRealized = 3,
-    };
-
-    // Debug experiment: HKCU\Software\Microsoft\WinUI\XAML\NotifySetterAppliedMode (DWORD 1-3).
-    // Overrides the notification opt-in, is cached on first use, and requires a process restart.
-    NotifySetterAppliedMode GetNotifySetterAppliedMode();
-#endif
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -80,10 +65,5 @@ namespace OptionalChangeState
     inline bool IsCollectionMoveNotificationsEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_CollectionMoveNotifications);
-    }
-
-    inline bool IsNotifySetterAppliedEnabled()
-    {
-        return IsOptionalChangeEnabled(BitIndex_NotifySetterApplied);
     }
 }

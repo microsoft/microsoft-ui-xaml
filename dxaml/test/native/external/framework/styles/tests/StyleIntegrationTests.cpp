@@ -4397,9 +4397,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         bool retainOriginalStyle = false;
         VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"RetainOriginalStyle", retainOriginalStyle));
         LOG_OUTPUT(L"Retain original Style: %s", retainOriginalStyle ? L"true" : L"false");
-        LOG_OUTPUT(L"Unconditional NotifySetterApplied: %s",
-            xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::NotifySetterApplied)
-                ? L"true" : L"false");
 
         auto verifyEffectiveWidth = [&](double expectedWidth)
         {

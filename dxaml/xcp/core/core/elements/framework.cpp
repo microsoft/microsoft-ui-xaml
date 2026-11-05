@@ -849,31 +849,11 @@ CFrameworkElement::OnStyleChanged(
             IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
             const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
 
-            // Preserve conditional notification unless unconditional notification is opted into.
-            // IsPropertySetByStyle conflates BuiltInStyle and Style, so it can also identify an
-            // effective default-style setter as overridden (for example, with duplicate setters).
-            bool useConditionalNotification = !OptionalChangeState::IsNotifySetterAppliedEnabled();
-#if DBG
-            const auto notificationMode = OptionalChangeState::GetNotifySetterAppliedMode();
-            if (notificationMode != OptionalChangeState::NotifySetterAppliedMode::Default)
-            {
-                useConditionalNotification = notificationMode == OptionalChangeState::NotifySetterAppliedMode::SkipNotifyAndRealize;
-            }
-#endif
-            const bool canSkipNotify = useConditionalNotification &&
-                OptionalChangeState::IsOptimizeApplyStylesEnabled() &&
-                baseValueSource != BaseValueSourceUnknown &&
-                baseValueSource < BaseValueSourceStyle &&
-                IsPropertySetByStyle(pDP);
-
             IGNOREHR(InvalidateProperty(pDP, baseValueSource));
 
             // Applying the value can create its peer. Notify afterward so the style can keep
             // that peer alive even when the value is subsequently overridden.
-            if (!canSkipNotify)
-            {
-                IFC(pNewStyle->NotifySetterApplied(i));
-            }
+            IFC(pNewStyle->NotifySetterApplied(i));
         }
 
         if (pNewStyle->HasMutableSetters() || shouldStoreSourceInfo)
