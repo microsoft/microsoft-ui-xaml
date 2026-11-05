@@ -340,6 +340,25 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
         {
             EditEndReportTextBlock.Text += args.EditAction + ";";
+            if (VetoCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                args.Cancel = true;
+            }
+
+            if (SortOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                // Raised while the edit is closing, so the control replays the sort once the commit completes.
+                TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+                if (age != null)
+                {
+                    BasicTableView.SortByColumn(age, SortDirection.Descending);
+                }
+            }
+
+            if (FocusHeaderInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic);
+            }
         }
 
         // Reports the editor an edit opened, by an in-process visual-tree walk. Posted at Low priority: the
@@ -1197,6 +1216,22 @@ namespace MUXControlsTestApp
             RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
             ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
             ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
+        }
+
+        private void OnAllowGroupedEditingToggled(object sender, RoutedEventArgs e)
+        {
+            GroupedTableView.IsReadOnly = ((CheckBox)sender).IsChecked != true;
+        }
+
+        private void OnHideScoreColumnToggled(object sender, RoutedEventArgs e)
+        {
+            ScoreColumn.Visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void OnShowExtraEditColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PairColumn.Visibility = visibility;
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the

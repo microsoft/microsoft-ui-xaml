@@ -70,6 +70,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ScrollCityMenuCheckBox = "ScrollCityMenuCheckBox";
         internal const string ScrollScrollingBodyButton = "ScrollScrollingBodyButton";
         internal const string CellHyperlink = "CellHyperlink";
+        internal const string VetoCommitCheckBox = "VetoCommitCheckBox";
+        internal const string SortOnCommitCheckBox = "SortOnCommitCheckBox";
+        internal const string AllowGroupedEditingCheckBox = "AllowGroupedEditingCheckBox";
+        internal const string HideScoreColumnCheckBox = "HideScoreColumnCheckBox";
+        internal const string ShowExtraEditColumnsCheckBox = "ShowExtraEditColumnsCheckBox";
+        internal const string FocusHeaderInCommitCheckBox = "FocusHeaderInCommitCheckBox";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
         internal const string ResetHierarchyButton = "ResetHierarchy";
