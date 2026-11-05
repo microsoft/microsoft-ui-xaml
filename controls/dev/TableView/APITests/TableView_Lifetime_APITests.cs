@@ -67,6 +67,151 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a TableViewSource whose shaping delegates capture the source is collected after its TableView unloads (GitHub #12474).")]
+        [TestProperty("data:Shaping", "{GroupBy, GroupByWithIdentity, Sort, Filter, ParentBy}")]
+        public void VerifyShapedSourceIsCollectedWhenItsDelegatesCaptureIt()
+        {
+            var shaping = ((string)TestContext.DataRow["Shaping"]).Trim();
+            var items = new ObservableCollection<Person>(MakeManyItems(40));
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() => CreateAndLoadSelfCapturingShapedTable(items, shaping, tracked));
+
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() => Content = null);
+
+            AssertCollected(tracked);
+
+            Verify.AreEqual(40, items.Count, "The items must still be alive after the source was collected.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cleared or replaced shaping delegate is released while its TableViewSource stays alive.")]
+        [TestProperty("data:Change", "{ClearGroupBy, ReplaceGroupBy, ClearFilter, ReplaceFilter, ClearSort, RemoveSort}")]
+        public void VerifyClearedOrReplacedDelegateIsReleasedWhileTheSourceLives()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            var items = new ObservableCollection<Person>(MakeManyItems(40));
+            var tracked = new Dictionary<string, WeakReference>();
+            TableViewSource source = null;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(items);
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 400, height: 300);
+                LoadContent(tableView);
+                tracked["Delegate"] = DeclareThenClearOrReplace(source, change);
+                tableView.UpdateLayout();
+            });
+
+            SettleAfterLoad();
+
+            AssertCollected(tracked);
+
+            // The replacement delegates must still shape a new item after the GC.
+            RunOnUIThread.Execute(() =>
+            {
+                items.Add(new Person { Name = "Person 40", Role = "Excluded" });
+                items.Add(new Person { Name = "Person 41", Role = "Role 41" });
+            });
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var projected = GetProjectedItems(tableView);
+                switch (change)
+                {
+                    case "ReplaceGroupBy":
+                        Verify.AreEqual(42 * 2, projected.Count, "Grouped by Name, every item must head its own group.");
+                        Verify.AreEqual(42, projected.OfType<Person>().Count(), "Every item, including the new one, must project once.");
+                        break;
+                    case "ReplaceFilter":
+                        Verify.AreEqual(41, projected.Count, "The replacement predicate must exclude the new Excluded item.");
+                        Verify.IsFalse(projected.OfType<Person>().Any(p => p.Role == "Excluded"), "The Excluded item must be filtered out.");
+                        break;
+                    default:
+                        Verify.AreEqual(42, projected.Count, "With the shaping cleared, every item must project as a plain row.");
+                        break;
+                }
+            });
+            GC.KeepAlive(source);
+            GC.KeepAlive(tableView);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a TableViewSource whose shaping delegates capture it keeps shaping across GCs, and after an unload and a reload into a new TableView.")]
+        [TestProperty("data:Shaping", "{GroupBy, GroupByWithIdentity, Sort, Filter, ParentBy}")]
+        public void VerifyShapedSourceKeepsShapingAcrossUnloadReloadAndCollection()
+        {
+            var shaping = ((string)TestContext.DataRow["Shaping"]).Trim();
+            var grouped = shaping.StartsWith("GroupBy");
+            var items = new ObservableCollection<Person>(
+                new[] { "A", "B", "A", "B", "C", "A" }.Select((role, i) => new Person { Name = $"Person {i}", Role = role }));
+            // GroupBy: 3 headers and 6 rows. Filter drops C; ParentBy nests C, collapsed, under Person 0.
+            var shapedCount = grouped ? 6 + 3 : shaping == "Sort" ? 6 : 5;
+            var firstTable = new Dictionary<string, WeakReference>();
+            TableViewSource source = null;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = CreateSelfCapturingShapedSource(items, shaping);
+                firstTable["TableView"] = LoadInNewTable(source);
+            });
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() => Content = null);
+            AssertCollected(firstTable);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 400, height: 600);
+                LoadContent(tableView);
+            });
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(shapedCount, GetProjectedCount(tableView), "A reloaded source must still be shaped.");
+                // From here only the loaded table keeps the source and its delegates alive.
+                source = null;
+            });
+
+            CollectGarbage();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items.Add(new Person { Name = "Person 6", Role = "D" });
+                // Filtered out, or a collapsed child of Person 0 under ParentBy.
+                items.Add(new Person { Name = "Person 7", Role = "C" });
+            });
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() =>
+            {
+                switch (shaping)
+                {
+                    case "Sort":
+                        Verify.AreEqual(shapedCount + 2, GetProjectedCount(tableView), "Both new items must project.");
+                        Verify.AreEqual("D", ((Person)GetProjectedItem(tableView, 0)).Role, "The key selector must still sort the new D item first, descending.");
+                        break;
+                    case "Filter":
+                    case "ParentBy":
+                        Verify.AreEqual(shapedCount + 1, GetProjectedCount(tableView), "Only the new D item may project as a new row.");
+                        Verify.IsFalse(GetProjectedItems(tableView).OfType<Person>().Any(p => p.Name == "Person 7"), "The delegates must still keep Person 7 out of the projection.");
+                        break;
+                    default:
+                        Verify.AreEqual(shapedCount + 2 + 1, GetProjectedCount(tableView), "The key selector must still bucket the new items: one into C, one into a new group D.");
+                        var keys = GetProjectedElements(tableView).OfType<TableViewGroupHeader>().Select(h => (h.Content as TableViewGroupInfo)?.Key as string).ToList();
+                        Verify.IsTrue(keys.Contains("D"), $"The new item must start group D; groups: {string.Join(", ", keys)}.");
+                        break;
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies realizing automation peers for a TableView does not keep the control alive after unload.")]
         public void VerifyAutomationPeersDoNotKeepTheTableAlive()
         {
@@ -182,6 +327,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             tracked["TableView"] = new WeakReference(tableView);
             tracked["TableViewSource"] = new WeakReference(source);
+        }
+
+        // Each delegate captures the source, as an app closure that also uses the source does.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void CreateAndLoadSelfCapturingShapedTable(object itemsSource, string shaping, Dictionary<string, WeakReference> tracked)
+        {
+            TableViewSource source = null;
+            source = TableViewSource.From(itemsSource);
+            var key = new TableViewKeySelector(item => source == null ? null : ((Person)item).Role);
+            switch (shaping)
+            {
+                case "GroupBy": source.GroupBy(key); break;
+                case "GroupByWithIdentity":
+                    var identity = new TableViewIdentitySelector(k => source == null ? null : (string)k);
+                    tracked["IdentitySelector"] = new WeakReference(identity);
+                    source.GroupBy(key, identity);
+                    break;
+                case "Sort": source.Sort(key, SortDirection.Descending); break;
+                case "Filter":
+                    var predicate = new TableViewPredicate(item => source != null);
+                    tracked["Predicate"] = new WeakReference(predicate);
+                    source.Filter(predicate);
+                    break;
+                case "ParentBy":
+                    var parentKey = new TableViewKeySelector(item => source == null ? "" : null);
+                    tracked["ParentKeySelector"] = new WeakReference(parentKey);
+                    source.ParentBy(key, parentKey);
+                    break;
+            }
+
+            var tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 400, height: 300);
+            LoadContent(tableView);
+            tableView.UpdateLayout();
+            Verify.IsGreaterThan(GetRealizedRows(tableView).Count, 0, "The shaped source must project rows.");
+
+            tracked["TableView"] = new WeakReference(tableView);
+            tracked["TableViewSource"] = new WeakReference(source);
+            if (shaping != "Filter")
+            {
+                tracked["KeySelector"] = new WeakReference(key);
+            }
+        }
+
+        // Captures 'change' so the compiler does not cache the delegates in static fields.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference DeclareThenClearOrReplace(TableViewSource source, string change)
+        {
+            var key = new TableViewKeySelector(item => change == null ? null : ((Person)item).Role);
+            var predicate = new TableViewPredicate(item => change != null);
+            switch (change)
+            {
+                case "ClearGroupBy": source.GroupBy(key).ClearGroupBy(); break;
+                case "ReplaceGroupBy": source.GroupBy(key).GroupBy(item => change == null ? null : ((Person)item).Name); break;
+                case "ClearFilter": source.Filter(predicate).ClearFilter(); return new WeakReference(predicate);
+                case "ReplaceFilter": source.Filter(predicate).Filter(item => change != null && ((Person)item).Role != "Excluded"); return new WeakReference(predicate);
+                case "ClearSort": source.Sort(key, SortDirection.Ascending).ClearSort(); break;
+                case "RemoveSort": source.Sort(key, SortDirection.Ascending).Sort(key, SortDirection.None); break;
+            }
+
+            return new WeakReference(key);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static TableViewSource CreateSelfCapturingShapedSource(object itemsSource, string shaping)
+        {
+            TableViewSource source = null;
+            source = TableViewSource.From(itemsSource);
+            TableViewKeySelector role = item => source == null ? null : ((Person)item).Role;
+            switch (shaping)
+            {
+                case "GroupBy": source.GroupBy(role); break;
+                case "GroupByWithIdentity": source.GroupBy(role, k => source == null ? null : (string)k); break;
+                case "Sort": source.Sort(role, SortDirection.Descending); break;
+                case "Filter": source.Filter(item => source != null && ((Person)item).Role != "C"); break;
+                case "ParentBy":
+                    source.ParentBy(
+                        item => source == null ? null : ((Person)item).Name,
+                        item => source == null || ((Person)item).Role != "C" ? null : "Person 0");
+                    break;
+            }
+
+            return source;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private WeakReference LoadInNewTable(TableViewSource source)
+        {
+            var tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 400, height: 600);
+            LoadContent(tableView);
+            return new WeakReference(tableView);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -350,6 +585,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Retried because a rooted object never becomes collectable, so retrying cannot hide a leak.
         private const int CollectionAttempts = 5;
 
+        internal static void CollectGarbage(int passes = CollectionAttempts)
+        {
+            for (var pass = 0; pass < passes; pass++)
+            {
+                IdleSynchronizer.Wait();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+
+            IdleSynchronizer.Wait();
+        }
+
         internal static void AssertCollected(Dictionary<string, WeakReference> tracked)
         {
             Verify.IsGreaterThan(tracked.Count, 0, "The fixture must have tracked at least one object.");
@@ -358,13 +606,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             for (var attempt = 1; attempt <= CollectionAttempts; attempt++)
             {
-                IdleSynchronizer.Wait();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
-                IdleSynchronizer.Wait();
+                CollectGarbage(passes: 1);
 
                 alive = tracked.Where(pair => pair.Value.IsAlive).Select(pair => pair.Key).ToList();
 

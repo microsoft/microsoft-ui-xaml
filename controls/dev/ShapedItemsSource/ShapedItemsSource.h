@@ -117,7 +117,7 @@ public:
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
         ShapingHelpers::KeySelector const& key,
-        winrt::Windows::Foundation::IUnknown const& keyIdentity,
+        void const* keyIdentity,
         winrt::hstring const& sortMemberPath,
         winrt::SortDirection direction);
     void ClearSorts();
@@ -152,7 +152,7 @@ public:
     bool HasParentBy() const noexcept { return static_cast<bool>(m_parentKeySelector); }
     bool HasSortAxis(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortAxis(axisToken); }
     bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortOtherThan(axisToken); }
-    bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+    bool HasMatchingSort(winrt::hstring const& axisToken, void const* keyIdentity) const noexcept
     {
         return m_pipeline.HasMatchingSort(axisToken, keyIdentity);
     }
