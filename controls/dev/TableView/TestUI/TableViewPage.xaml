@@ -59,6 +59,10 @@
                     AutomationProperties.Name="ToggleScorePinButton"
                     AutomationProperties.AutomationId="ToggleScorePinButton"
                     Click="OnToggleScorePinClick" />
+            <Button Content="Toggle Flow Direction"
+                    AutomationProperties.Name="ToggleBasicFlowDirectionButton"
+                    AutomationProperties.AutomationId="ToggleBasicFlowDirectionButton"
+                    Click="OnToggleBasicFlowDirectionClick" />
             <Button Content="Filter Source"
                     AutomationProperties.Name="FilterSourceButton"
                     AutomationProperties.AutomationId="FilterSourceButton"
@@ -680,7 +684,7 @@
                      IsReadOnly="True"
                      IsTabStop="False"
                      Text="" />
-            <!-- One entry per opened edit, "<EditorType>|<EditorAutomationName>|<EditorText>|focus=<bool>;".
+            <!-- One entry per opened edit, "<EditorType>|<EditorAutomationName>|<EditorText>|focus=<bool>|align=<...>;".
                  Written by an IN-PROCESS visual-tree walk posted from BeginningEdit, so no out-of-process
                  client ever asks a row peer for its children (finding #13). The walk itself creates no
                  automation peers, exactly like the row/group-header state hooks above. It runs at Low
