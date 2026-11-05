@@ -812,6 +812,14 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // Older deferred work runs first, so a provider it replaces does not make this request look stale.
+    FlushDeferredEditReshapes();
+    // That work may have removed the axis; a documented no-op must not end an open edit.
+    if (!m_tableViewSourceRowMetadata ||
+        !((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewSourceGrouped()))
+    {
+        return;
+    }
     const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
