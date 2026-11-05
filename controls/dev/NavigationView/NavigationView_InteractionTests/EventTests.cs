@@ -646,6 +646,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             VerifyNavigationViewDragStateReset();
         }
 
+        [TestMethod]
+        public void NavigationViewItemAppReleaseHandlerDoesNotCancelClick()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+            // An application PointerReleased handler on the item releases its pointer captures.
+            new CheckBox(FindElement.ById("ReleaseCaptureOnRelease")).Check();
+            Wait.ForIdle();
+            InputHelper.LeftClick(FindElement.ById("DragItem"));
+            Wait.ForIdle();
+            Verify.AreEqual("Mouse", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+            Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+            VerifyNavigationViewDragStateReset();
+        }
+
         private static void VerifyNavigationViewDragStateReset()
         {
             new Button(FindElement.ById("Snapshot")).Invoke();

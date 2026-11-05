@@ -48,6 +48,14 @@ namespace MUXControlsTestApp
                     DragItem.IsEnabled = false;
                 }
             }), true);
+            // Registered after the item's constructor, like an application's own handler.
+            DragItem.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (ReleaseCaptureOnRelease.IsChecked == true)
+                {
+                    DragItem.ReleasePointerCaptures();
+                }
+            }), true);
             foreach (var item in new[] { DragItem, NestedDragItem })
             {
                 item.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
