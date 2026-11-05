@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
+using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Cli;
@@ -18,10 +19,11 @@ internal static class CliApplication
 
     private const string Usage = """
         Usage:
-          WinUIProfiler.Cli processes <trace.etl | session.sqlite>
-          WinUIProfiler.Cli summary <trace.etl | session.sqlite> [--pid <pid>]
-          WinUIProfiler.Cli dump <trace.etl | session.sqlite> [--pid <pid>] [--name <text>] [--max <count>]
-          WinUIProfiler.Cli record <trace.etl> --pid <pid> --out <session.sqlite> [--limit-mb <size>]
+          WinUIProfiler.Cli processes <trace.etl | session.sqlite> [--markers <file>]
+          WinUIProfiler.Cli summary <trace.etl | session.sqlite> [--pid <pid>] [--markers <file>]
+          WinUIProfiler.Cli dump <trace.etl | session.sqlite> [--pid <pid>] [--name <text>] [--max <count>] [--markers <file>]
+          WinUIProfiler.Cli record <trace.etl> --pid <pid> --out <session.sqlite> [--limit-mb <size>] [--markers <file>]
+          WinUIProfiler.Cli launch <trace.etl | session.sqlite> [--pid <pid>] [--markers <file>]
           WinUIProfiler.Cli objects <session.sqlite> [--kind element|visual] [--type <text>] [--name <text>]
           WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other] [--filter <text>]]
@@ -35,6 +37,8 @@ internal static class CliApplication
                      name contains <text>; --max limits the output (default 1000, 0 = all).
           record     Writes one process's events from a trace to a new session file, as the
                      app does while connected. --limit-mb is the size limit (default 500).
+          launch     Prints the process's launch timeline: the milestones of the marker configuration
+                     it reached, in milliseconds from its creation, and those it did not reach.
           objects    Lists the UI elements and composition visuals in a session file. --kind keeps one kind;
                      --type and --name filter them (a visual's name is its owner element's).
           timeline   Prints the events that mention one object, marking the field that holds it.
@@ -52,13 +56,21 @@ internal static class CliApplication
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
           and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), the kernel's
-          GPU memory usage and budget events (DxgKrnl) and its window focus events (Win32k) of the
-          process. A trace needs --pid; a session file holds one process.
+          GPU memory usage and budget events (DxgKrnl) and its window focus events (Win32k), and the
+          marker providers' events of the process. A trace needs --pid; a session file holds one
+          process.
+
+          --markers names the marker configuration file: the marker providers read from a trace,
+          and the launch milestones; the command stops when it is not valid. Without it,
+          %LOCALAPPDATA%\WinUIProfiler\markers.json is used when it exists and is valid (otherwise a
+          warning says why), or else the default configuration. See "Launch timeline" in the README.
         """;
 
+    // Markers is the marker configuration, read for the commands that need it.
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
         string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket,
-        string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show)
+        string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show, string? MarkersPath,
+        MarkerConfig? Markers = null)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -81,11 +93,19 @@ internal static class CliApplication
 
         try
         {
+            // A trace's marker providers are read from it; launch also needs the milestones. Read before any file is
+            // written, so a configuration error leaves none behind.
+            if (options.Command == "launch" || !options.IsSessionFile)
+            {
+                options = options with { Markers = LoadMarkers(options.MarkersPath, error) };
+            }
+
             return options.Command switch
             {
                 "processes" => Processes(options, output, cancellationToken),
                 "summary" => Summary(options, output, cancellationToken),
                 "record" => Record(options, output, error, cancellationToken),
+                "launch" => Launch(options, output, error, cancellationToken),
                 "objects" => Objects(options, output),
                 "timeline" => Timeline(options, output, cancellationToken),
                 "frames" => Frames(options, output, cancellationToken),
@@ -98,6 +118,11 @@ internal static class CliApplication
             error.WriteLine("Cancelled.");
             return 4;
         }
+        catch (MarkerConfigException exception)
+        {
+            error.WriteLine(exception.Message);
+            return 3;
+        }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
             error.WriteLine($"Could not read '{options.InputPath}': {exception.Message}");
@@ -107,8 +132,8 @@ internal static class CliApplication
 
     private static Options Parse(string[] args)
     {
-        if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "objects" or "timeline" or "frames" or
-            "interesting"))
+        if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "launch" or "objects" or "timeline" or
+            "frames" or "interesting"))
         {
             throw new ArgumentException("Expected a command and a trace or session file path.");
         }
@@ -127,6 +152,7 @@ internal static class CliApplication
         var json = false;
         var list = false;
         string? show = null;
+        string? markersPath = null;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
         for (var i = 2; i < args.Length; i++)
@@ -198,6 +224,9 @@ internal static class CliApplication
                     regionId = long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var region) && region > 0
                         ? region : throw new ArgumentException("--region must be a region ID from 'frames --list'.");
                     break;
+                case "--markers" when args[0] is "processes" or "summary" or "dump" or "record" or "launch":
+                    markersPath = Path.GetFullPath(value);
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option {args[i]}.");
             }
@@ -206,10 +235,15 @@ internal static class CliApplication
         }
 
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
-            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show);
+            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath);
         if (options.Command is "objects" or "timeline" or "frames" or "interesting" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
+        }
+
+        if (markersPath is not null && options.IsSessionFile && options.Command != "launch")
+        {
+            throw new ArgumentException("--markers chooses the marker providers read from a trace; a session file holds the events recorded with it.");
         }
 
         if (options.Command == "timeline" && (objectId is null) == (address is null))
@@ -232,7 +266,7 @@ internal static class CliApplication
             throw new ArgumentException("--list and --json can't be used with --frame.");
         }
 
-        if (options.Command is "summary" or "dump" or "record" && !options.IsSessionFile && processId is null)
+        if (options.Command is "summary" or "dump" or "record" or "launch" && !options.IsSessionFile && processId is null)
         {
             throw new ArgumentException($"{args[0]} on a trace requires --pid.");
         }
@@ -250,7 +284,8 @@ internal static class CliApplication
     {
         if (!options.IsSessionFile)
         {
-            var result = OfflineEtlSource.Read(options.InputPath, processId, sink, cancellationToken);
+            var result = OfflineEtlSource.Read(options.InputPath, processId, MarkerProviders(options.Markers!),
+                sink, null, cancellationToken);
             return new(result.EventsDelivered, result.EventsLost, result.SessionDuration);
         }
 
@@ -284,12 +319,12 @@ internal static class CliApplication
             perProvider[(int)profilerEvent.Provider]++;
         }, cancellationToken);
 
-        // In a trace, every process that uses the GPU has GPU memory events, and every process with windows has focus
-        // events; only those with XAML events are listed.
+        // In a trace, every process that uses the GPU has GPU memory events, every process with windows has focus events,
+        // and any process can write a marker provider's events; only those with XAML events are listed.
         output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
         foreach (var (processId, perProvider) in counts
-            .Where(entry => options.IsSessionFile ||
-                entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] + entry.Value[(int)XamlProvider.Win32k])
+            .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] +
+                entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
             .OrderByDescending(entry => entry.Value.Sum()))
         {
             output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
@@ -308,7 +343,8 @@ internal static class CliApplication
     private static int Summary(Options options, TextWriter output, CancellationToken cancellationToken)
     {
         // One event name can have several field layouts (for example a start and a stop form), so they are counted apart.
-        var counts = new Dictionary<(XamlProvider Provider, string Name, string Fields), long>();
+        // So are providers, by ID: a marker provider can have a built-in provider's short name.
+        var counts = new Dictionary<(Guid ProviderId, string Name, string Fields), (string Label, long Count)>();
         double first = double.MaxValue, last = 0;
         var processId = options.ProcessId;
         var result = Read(options, options.ProcessId, profilerEvent =>
@@ -316,8 +352,8 @@ internal static class CliApplication
             processId = profilerEvent.ProcessId;
             first = Math.Min(first, profilerEvent.RelativeMilliseconds);
             last = Math.Max(last, profilerEvent.RelativeMilliseconds);
-            var key = (profilerEvent.Provider, profilerEvent.Name, string.Join(",", profilerEvent.Fields.Select(field => field.Name)));
-            counts[key] = counts.GetValueOrDefault(key) + 1;
+            var key = (profilerEvent.ProviderId, profilerEvent.Name, string.Join(",", profilerEvent.Fields.Select(field => field.Name)));
+            counts[key] = (ShortName(profilerEvent), counts.GetValueOrDefault(key).Count + 1);
         }, cancellationToken);
 
         if (result.EventsDelivered == 0)
@@ -330,9 +366,9 @@ internal static class CliApplication
         output.WriteLine($"Process {processId}: {result.EventsDelivered} events over {seconds:F1} s " +
             $"({result.EventsDelivered / seconds:F0}/s); {result.EventsLost} events lost in the {(options.IsSessionFile ? "session" : "trace")}.");
         output.WriteLine();
-        foreach (var (key, count) in counts.OrderByDescending(entry => entry.Value))
+        foreach (var (key, (label, count)) in counts.OrderByDescending(entry => entry.Value.Count))
         {
-            output.WriteLine($"{count,9}  {ShortName(key.Provider),-9} {key.Name}  [{key.Fields}]");
+            output.WriteLine($"{count,9}  {label,-9} {key.Name}  [{key.Fields}]");
         }
 
         return 0;
@@ -369,23 +405,13 @@ internal static class CliApplication
 
     private static int Record(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
     {
+        var markers = MarkerProviders(options.Markers!);
         // The trace's clock frequency is stored before any event, as the app stores it, so the file's times never depend
         // on how long the process ran.
         var writer = SessionWriter.Create(options.OutputPath!,
             new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
                 SessionCoverage.Trace, options.InputPath), options.LimitBytes);
-        long sequence = 0;
-        EtlReadResult? result = null;
-        try
-        {
-            result = OfflineEtlSource.Read(options.InputPath, options.ProcessId, profilerEvent => writer.Process(++sequence, profilerEvent),
-                cancellationToken);
-        }
-        finally
-        {
-            writer.Close(result is null ? "Reading the trace failed" : "End of trace", result?.EventsLost, 0);
-        }
-
+        var sequence = RecordTrace(options, markers, writer, cancellationToken);
         if (writer.Failure is { } failure)
         {
             error.WriteLine($"Writing '{writer.Path}' failed: {failure.Message}");
@@ -397,6 +423,160 @@ internal static class CliApplication
         output.WriteLine($"Session file: {writer.Path} ({writer.Status.FileBytes / 1024.0 / 1024:F1} MB)");
         return 0;
     }
+
+    // Stores the process's events from the trace, and when the process was created, and closes the writer. Returns how
+    // many events were stored.
+    private static long RecordTrace(Options options, IReadOnlyCollection<MarkerProvider> markers, SessionWriter writer,
+        CancellationToken cancellationToken)
+    {
+        long sequence = 0;
+        EtlReadResult? result = null;
+        try
+        {
+            result = OfflineEtlSource.Read(options.InputPath, options.ProcessId, markers,
+                profilerEvent => writer.Process(++sequence, profilerEvent), writer.SetProcessStart, cancellationToken);
+        }
+        finally
+        {
+            writer.Close(result is null ? "Reading the trace failed" : "End of trace", result?.EventsLost, 0);
+        }
+
+        return sequence;
+    }
+
+    private static int Launch(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
+    {
+        var config = options.Markers!;
+        if (options.IsSessionFile)
+        {
+            var info = SessionFile.ReadInfo(options.InputPath);
+            if (options.ProcessId is { } requested && requested != info.ProcessId)
+            {
+                output.WriteLine($"The session file holds process {info.ProcessId}, not {requested}.");
+                return 0;
+            }
+
+            WriteLaunch(new LaunchTimelineReader(options.InputPath, config).Read(cancellationToken), config, output);
+            return 0;
+        }
+
+        // The events are stored as 'record' stores them, so the timeline is the one the app shows for the trace. The file
+        // is temporary, so it has no size limit: trimming would delete the launch's events first.
+        var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-launch-{Guid.NewGuid():N}.sqlite");
+        try
+        {
+            var writer = SessionWriter.Create(path,
+                new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
+                    SessionCoverage.Trace, options.InputPath), long.MaxValue);
+            var sequence = RecordTrace(options, MarkerProviders(config), writer, cancellationToken);
+            if (writer.Failure is { } failure)
+            {
+                error.WriteLine($"Writing the temporary session file '{path}' failed: {failure.Message}");
+                return 3;
+            }
+
+            if (sequence == 0)
+            {
+                output.WriteLine($"No events from process {options.ProcessId}. Run 'processes' to list the PIDs.");
+                return 0;
+            }
+
+            WriteLaunch(new LaunchTimelineReader(path, config).Read(cancellationToken), config, output);
+            return 0;
+        }
+        finally
+        {
+            foreach (var file in new[] { path, path + "-wal", path + "-shm" })
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    error.WriteLine($"Could not delete the temporary file '{file}': {exception.Message}");
+                }
+            }
+        }
+    }
+
+    // The same in any culture, as the other commands' numbers.
+    private static void WriteLaunch(LaunchTimeline timeline, MarkerConfig config, TextWriter output)
+    {
+        var session = timeline.Session;
+        output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"Launch of {session.ProcessName ?? "the process"} (process {session.ProcessId}), ") + (timeline.Origin == LaunchOrigin.ProcessCreated
+            ? "in ms from the process's creation" + (timeline.RecordingStartMilliseconds is { } recordingStart
+                ? $"; the recording started {Milliseconds(Math.Abs(recordingStart))} ms {(recordingStart < 0 ? "before" : "after")} it."
+                : ".")
+            : "in ms from the start of the recording, since when the process was created is not known."));
+        output.WriteLine($"Marker configuration: {config.FilePath ?? "the default"}.");
+        output.WriteLine();
+        if (timeline.Milestones.Count + timeline.NotReached.Count == 0)
+        {
+            output.WriteLine("The marker configuration has no milestones for this process.");
+        }
+
+        var width = Math.Max("Milestone".Length, timeline.Milestones.Select(milestone => milestone.Label.Length)
+            .Concat(timeline.NotReached.Select(definition => MilestoneName(definition).Length)).DefaultIfEmpty().Max());
+        if (timeline.Milestones.Count > 0)
+        {
+            output.WriteLine($"{"Milestone".PadRight(width)}  {"Time (ms)",12} {"+Prev (ms)",12} {"Thread",7} {"Count",6}  Event");
+            foreach (var milestone in timeline.Milestones)
+            {
+                output.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"{milestone.Label.PadRight(width)}  {Milliseconds(milestone.Milliseconds),12} " +
+                    $"{Milliseconds(milestone.SincePreviousMilliseconds),12} {milestone.ThreadId?.ToString(CultureInfo.InvariantCulture) ?? "-",7} " +
+                    $"{milestone.Count,6}  {milestone.Definition.EventDescription ?? "built in"}"));
+            }
+        }
+
+        if (timeline.NotReached.Count > 0)
+        {
+            output.WriteLine();
+            output.WriteLine("Not reached:");
+            foreach (var definition in timeline.NotReached)
+            {
+                output.WriteLine($"{MilestoneName(definition).PadRight(width)}  {definition.EventDescription ?? "built in"}");
+            }
+        }
+
+        foreach (var note in Enum.GetValues<LaunchNotes>().Where(note => note != LaunchNotes.None && timeline.Notes.HasFlag(note)))
+        {
+            output.WriteLine();
+            output.WriteLine("Note: " + note switch
+            {
+                LaunchNotes.Attached => "the profiler connected to the running process, so the first frame drawn and the milestones before the recording started are missing.",
+                LaunchNotes.NoProcessStart => "when the process was created is not known; a trace has it when it has the kernel's process events.",
+                _ => "the session file deleted its oldest events to stay within its size limit before they were read, so milestones among them may be missing or show a later event."
+            });
+        }
+    }
+
+    // The configuration a path names, which must be valid. Without one, the user's, unless it is not valid: then, as in the
+    // app, a warning says why and the default is used, so a mistake in it never stops a command.
+    private static MarkerConfig LoadMarkers(string? path, TextWriter error)
+    {
+        if (path is not null)
+        {
+            return MarkerConfig.Load(path);
+        }
+
+        try
+        {
+            return MarkerConfig.Load();
+        }
+        catch (MarkerConfigException exception)
+        {
+            error.WriteLine($"Using the default marker configuration instead of the user's: {exception.Message}");
+            return MarkerConfig.Default;
+        }
+    }
+
+    // A milestone named by a field's values is named by the field.
+    private static string MilestoneName(MilestoneDefinition definition) => definition.Label ?? $"<{definition.LabelFrom}>";
+
+    private static MarkerProvider[] MarkerProviders(MarkerConfig config) => [.. config.Providers.Select(settings => settings.Provider)];
 
     private static int Objects(Options options, TextWriter output)
     {
@@ -564,8 +744,12 @@ internal static class CliApplication
         XamlProvider.MicrosoftUIXaml => "MUX",
         XamlProvider.MicrosoftUIXamlControls => "MUXC",
         XamlProvider.Win32k => "Win32k",
+        XamlProvider.Marker => "Marker",
         _ => "DxgKrnl"
     };
+
+    // A marker event shows its provider's name.
+    private static string ShortName(ProfilerEvent profilerEvent) => profilerEvent.Marker?.Name ?? ShortName(profilerEvent.Provider);
 
     private static string ShortType(string? type) => type is null ? "?" : type[(type.LastIndexOf('.') + 1)..];
 
@@ -575,7 +759,7 @@ internal static class CliApplication
     // tag is shown in brackets after the event name: the field that holds a timeline's element, or the event's bucket.
     private static string FormatEvent(ProfilerEvent profilerEvent, string? tag)
     {
-        return $"{profilerEvent.RelativeMilliseconds,12:F3} {profilerEvent.ThreadId,6} {ShortName(profilerEvent.Provider),-9} " +
+        return $"{profilerEvent.RelativeMilliseconds,12:F3} {profilerEvent.ThreadId,6} {ShortName(profilerEvent),-9} " +
             $"{profilerEvent.Name}{(tag is null ? "" : $" [{tag}]")} {EventFormat.Fields(profilerEvent)}";
     }
 

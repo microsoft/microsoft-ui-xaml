@@ -109,7 +109,7 @@ public static class OfflineEtlSource
         source.Kernel.ProcessEndGroup += OnProcess;
         var tallies = new Dictionary<int, ProcessTally>();
         var order = new List<ProcessTally>();
-        XamlEventSubscription.Match(source, null, (data, provider, processId) =>
+        XamlEventSubscription.Match(source, null, [], (data, provider, _, processId) =>
         {
             var time = data.TimeStampRelativeMSec;
             if (!tallies.TryGetValue(processId, out var tally))
@@ -158,11 +158,13 @@ public static class OfflineEtlSource
         return string.IsNullOrEmpty(name) ? null : name;
     }
 
-    // A null processId reads every process.
-    public static EtlReadResult Read(string path, int? processId, Action<ProfilerEvent> sink,
-        CancellationToken cancellationToken = default)
+    // A null processId reads every process. Markers are the marker providers whose events are read too. For one process,
+    // processStarted gets the QPC timestamp and executable name of the kernel's event for its creation, when the trace has it.
+    public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProvider> markers,
+        Action<ProfilerEvent> sink, Action<long, string?>? processStarted = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentNullException.ThrowIfNull(markers);
         ArgumentNullException.ThrowIfNull(sink);
         if (!File.Exists(path))
         {
@@ -171,7 +173,12 @@ public static class OfflineEtlSource
 
         using var source = new ETWTraceEventSource(path);
         long delivered = 0;
-        XamlEventSubscription.Subscribe(source, processId, profilerEvent =>
+        if (processId is { } id && processStarted is not null)
+        {
+            WatchProcessStart(source, id, () => delivered > 0, processStarted);
+        }
+
+        XamlEventSubscription.Subscribe(source, processId, markers, profilerEvent =>
         {
             delivered++;
             sink(profilerEvent);
@@ -183,6 +190,24 @@ public static class OfflineEtlSource
 
         cancellationToken.ThrowIfCancellationRequested();
         return new(delivered, source.EventsLost, source.SessionDuration);
+    }
+
+    // Calls started with the QPC timestamp and executable name of each kernel process start event for a process ID until
+    // seen returns true, which it does once an event of the process was read: a process ID can be reused within a trace,
+    // so the process's start is the last one before its first event. Only a trace with the kernel's process events has
+    // them.
+    internal static void WatchProcessStart(ETWTraceEventSource source, int processId, Func<bool> seen, Action<long, string?> started)
+    {
+        source.Kernel.ProcessStart += data =>
+        {
+#pragma warning disable CS0618 // The raw QPC timestamp is the clock the process's events are stored with.
+            var qpc = data.TimeStampQPC;
+#pragma warning restore CS0618
+            if (data.ProcessID == processId && qpc > 0 && !seen())
+            {
+                started(qpc, ExecutableName(data));
+            }
+        };
     }
 
     private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
