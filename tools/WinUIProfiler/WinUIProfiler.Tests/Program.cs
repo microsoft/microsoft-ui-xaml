@@ -8,6 +8,7 @@ using XamlTimeline;
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
 var visualPath = Path.ChangeExtension(path, "visuals.sqlite");
+var typePath = Path.ChangeExtension(path, "types.sqlite");
 try
 {
     using (var writer = SessionWriter.Create(path, new(1, "CompatibilityTests", null, 1_000_000, 0, SessionCoverage.Trace)))
@@ -60,6 +61,8 @@ try
     const long linkedElement = 0x6000;
     const long childElement = 0x7000;
     const long owner = 0x9000;
+    const long typedParentVisual = 0x11000;
+    const long typedChildVisual = 0x12000;
     using (var writer = SessionWriter.Create(visualPath, new(1, "VisualIdentityTests", null, 1_000_000, 0, SessionCoverage.Trace)))
     {
         ProfilerEvent VisualEvent(string name, params EventField[] fields) =>
@@ -96,10 +99,14 @@ try
             new("NewContentPeerHandle", 0xb000L)));
         writer.Process(14, VisualEvent("PopupOpened",
             new("PopupId", linkedElement), new("ChildId", childElement), new("ChildPeerHandle", 0xb000L)));
+        writer.Process(15, VisualEvent("WucVisualRootSet",
+            new("VisualId", typedParentVisual), new("TargetId", target), new("VisualType", "ContainerVisual")));
+        writer.Process(16, VisualEvent("WucVisualChildInserted",
+            new("ParentVisualId", typedParentVisual), new("ChildVisualId", typedChildVisual), new("VisualType", "SpriteVisual")));
     }
 
     var visuals = SessionFile.ReadObjects(visualPath, ObjectKind.Visual);
-    if (visuals.Count != 3 ||
+    if (visuals.Count != 5 ||
         visuals.Single(visual => visual.Address == parentVisual) is not { Type: null, Name: null, Events: 5 } ||
         visuals.Single(visual => visual.Address == childVisual) is not { Type: null, Name: null, Events: 4 } ||
         visuals.Single(visual => visual.Address == legacyVisual) is not { Type: "SpriteVisual", Name: "LegacyOwner" })
@@ -119,6 +126,14 @@ try
     Console.WriteLine("Passed: identity-only visual events preserve tree history without type or owner metadata.");
     Console.WriteLine("Passed: legacy visual type and owner labels remain supported.");
 
+    if (visuals.Single(visual => visual.Address == typedParentVisual) is not { Type: "ContainerVisual", Name: null, Events: 2 } ||
+        visuals.Single(visual => visual.Address == typedChildVisual) is not { Type: "SpriteVisual", Name: null, Events: 1 })
+    {
+        throw new InvalidOperationException("VisualType-only root and insertion events must preserve types without owner metadata.");
+    }
+
+    Console.WriteLine("Passed: VisualType-only root and insertion events preserve types without owner metadata.");
+
     var linked = SessionFile.ReadObjects(visualPath, ObjectKind.Element, address: linkedElement).Single();
     var linkedMentions = new List<string>();
     SessionFile.ReadTimeline(visualPath, linked.ObjectId, 0, -1,
@@ -131,6 +146,63 @@ try
     }
 
     Console.WriteLine("Passed: label-free composition links and UI tree events preserve element timelines.");
+
+    const long templated = 0xc000;
+    const long rendered = 0xd000;
+    const long reused = 0xe000;
+    const long entered = 0xf000;
+    const long untyped = 0x10000;
+    using (var writer = SessionWriter.Create(typePath, new(1, "TypeRecoveryTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+    {
+        ProfilerEvent TypeEvent(string name, params EventField[] fields) =>
+            new(1, 0.001, 1, 1, XamlProvider.Xaml, true, name, 0, fields);
+
+        writer.Process(1, TypeEvent("FrameworkElement_ApplyTemplate",
+            new("ObjectPointer", templated), new("ClassName", "Microsoft.UI.Xaml.WindowChrome"), new("Name", "Chrome")));
+        writer.Process(2, TypeEvent("RenderWalk_RenderElement",
+            new("ElementPointer", rendered), new("ClassName", "XamlIslandRoot")));
+        writer.Process(3, TypeEvent("PeerAssociated", new EventField("ElementId", reused)));
+        writer.Process(4, TypeEvent("RenderWalk_RenderElement",
+            new("ElementPointer", reused), new("ClassName", "WindowChrome")));
+        writer.Process(5, TypeEvent("DependencyObject_Enter",
+            new("ObjectPointer", reused), new("Type", "Microsoft.UI.Xaml.Controls.Control"), new("Name", "Original")));
+        writer.Process(6, TypeEvent("FrameworkElement_ApplyTemplate",
+            new("ObjectPointer", reused), new("ClassName", "Microsoft.UI.Xaml.WindowChrome"), new("Name", "Ignored")));
+        writer.Process(7, TypeEvent("ElementLeftTree", new("ElementId", reused), new("ParentId", 0L)));
+        writer.Process(8, TypeEvent("DependencyObject_Enter",
+            new("ObjectPointer", reused), new("Type", "Microsoft.UI.Xaml.Controls.Button"), new("Name", "Replacement")));
+        writer.Process(9, TypeEvent("ChildAdded", new("ParentId", 0L), new("ChildId", reused)));
+        writer.Process(10, TypeEvent("DependencyObject_Enter",
+            new("ObjectPointer", entered), new("Type", "Microsoft.UI.Xaml.Controls.Control"), new("Name", "Entered")));
+        writer.Process(11, TypeEvent("FrameworkElement_ApplyTemplate",
+            new("ObjectPointer", entered), new("ClassName", "CustomControl"), new("Name", "Ignored")));
+        writer.Process(12, TypeEvent("ChildAdded", new("ParentId", 0L), new("ChildId", untyped)));
+        writer.Close("End of type recovery test");
+        if (writer.Failure is { } failure)
+        {
+            throw new InvalidOperationException("Type recovery recording failed.", failure);
+        }
+    }
+
+    var typedObjects = SessionFile.ReadObjects(typePath);
+    if (typedObjects.Single(item => item.Address == templated) is not { Type: "Microsoft.UI.Xaml.WindowChrome", Name: "Chrome" } ||
+        typedObjects.Single(item => item.Address == rendered).Type != "XamlIslandRoot" ||
+        typedObjects.Single(item => item.Address == untyped).Type is not null)
+    {
+        throw new InvalidOperationException("Existing template/render metadata must fill missing types without inventing unknown types.");
+    }
+
+    var reusedObjects = typedObjects.Where(item => item.Address == reused).ToList();
+    if (reusedObjects.Count != 2 ||
+        reusedObjects[0] is not { Type: "Microsoft.UI.Xaml.Controls.Control", Name: "Original", Events: 5 } ||
+        reusedObjects[1] is not { Type: "Microsoft.UI.Xaml.Controls.Button", Name: "Replacement", Events: 2 } ||
+        typedObjects.Single(item => item.Address == entered) is not { Type: "Microsoft.UI.Xaml.Controls.Control", Name: "Entered" })
+    {
+        throw new InvalidOperationException("Fallback types must not split lifetimes or override enter types, and real pointer reuse must still split.");
+    }
+
+    Console.WriteLine("Passed: existing template/render metadata fills missing element types without inventing unknown types.");
+    Console.WriteLine("Passed: fallback metadata preserves enter types and pointer-reuse lifetime detection.");
 
     var regions = new RegionsLoader().Load(Path.Combine(AppContext.BaseDirectory, "XAML.regions.complete.with.startup.xml"));
     string[] activities =
@@ -200,7 +272,8 @@ try
 }
 finally
 {
-    foreach (var file in new[] { path, path + "-wal", path + "-shm", visualPath, visualPath + "-wal", visualPath + "-shm" })
+    foreach (var file in new[] { path, path + "-wal", path + "-shm", visualPath, visualPath + "-wal", visualPath + "-shm",
+        typePath, typePath + "-wal", typePath + "-shm" })
     {
         File.Delete(file);
     }

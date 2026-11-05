@@ -159,9 +159,10 @@ public:
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a WUC visual is inserted as a child of another WUC visual.
-    DEFINE_TRACELOGGING_EVENT_PARAM2(WucVisualChildInserted,
+    DEFINE_TRACELOGGING_EVENT_PARAM3(WucVisualChildInserted,
         uint64_t, ParentVisualId,
         uint64_t, ChildVisualId,
+        PCWSTR,   VisualType,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a WUC visual is removed from its parent's children collection.
@@ -174,9 +175,10 @@ public:
         uint64_t, ParentVisualId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM2(WucVisualRootSet,
+    DEFINE_TRACELOGGING_EVENT_PARAM3(WucVisualRootSet,
         uint64_t, VisualId,
         uint64_t, TargetId,
+        PCWSTR,   VisualType,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a composition target/island root is cleared (Root set to null).

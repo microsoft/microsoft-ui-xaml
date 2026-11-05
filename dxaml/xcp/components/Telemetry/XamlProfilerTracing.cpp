@@ -12,6 +12,37 @@ static std::atomic<bool> g_profilerEnabled{false};
 
 namespace
 {
+    PCWSTR VisualTypeName(_In_ IUnknown* visual)
+    {
+        wrl::ComPtr<WUComp::ISpriteVisual> sprite;
+        if (SUCCEEDED(visual->QueryInterface(IID_PPV_ARGS(&sprite))))
+        {
+            return L"SpriteVisual";
+        }
+        wrl::ComPtr<WUComp::ILayerVisual> layer;
+        if (SUCCEEDED(visual->QueryInterface(IID_PPV_ARGS(&layer))))
+        {
+            return L"LayerVisual";
+        }
+        wrl::ComPtr<WUComp::IShapeVisual> shape;
+        if (SUCCEEDED(visual->QueryInterface(IID_PPV_ARGS(&shape))))
+        {
+            return L"ShapeVisual";
+        }
+        wrl::ComPtr<WUComp::IRedirectVisual> redirect;
+        if (SUCCEEDED(visual->QueryInterface(IID_PPV_ARGS(&redirect))))
+        {
+            return L"RedirectVisual";
+        }
+        // Check the derived visual interfaces before their container base.
+        wrl::ComPtr<WUComp::IContainerVisual> container;
+        if (SUCCEEDED(visual->QueryInterface(IID_PPV_ARGS(&container))))
+        {
+            return L"ContainerVisual";
+        }
+        return L"Visual";
+    }
+
     // Normalize interface pointers to the IVisual identity used by visual-tree snapshots.
     uint64_t VisualId(_In_opt_ IUnknown* visual)
     {
@@ -55,7 +86,7 @@ void XamlProfilerTracing::NotifyChildInserted(
         return;
     }
 
-    WucVisualChildInserted(parentVisualId, childVisualId);
+    WucVisualChildInserted(parentVisualId, childVisualId, VisualTypeName(childVisual));
 }
 
 void XamlProfilerTracing::NotifyChildRemoved(
@@ -108,7 +139,7 @@ void XamlProfilerTracing::NotifyRootSet(
         return;
     }
 
-    WucVisualRootSet(visualId, targetId);
+    WucVisualRootSet(visualId, targetId, VisualTypeName(visual));
 }
 
 void XamlProfilerTracing::NotifyRootCleared(uint64_t targetId)

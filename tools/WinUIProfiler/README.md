@@ -380,14 +380,18 @@ Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
 - `DependencyObject_Enter`, `PeerAssociated` and `ContentChanged`'s content
   also carry other objects, so their mentions of an address are kept back until
   the address is known to be a UI element, then saved with it. The type and
-  `x:Name` come from `DependencyObject_Enter`.
+  `x:Name` come from `DependencyObject_Enter`. When its type was not observed,
+  existing template and render events can supply a fallback class name without
+  adding metadata to the runtime's profiler events.
 - The runtime reuses freed addresses. When `DependencyObject_Enter` reports a
   different type at a known address, a new element starts there. The new
   object's peer, parent and layout events can come first, so the old element's
   mentions since it (or its last child) left the tree move to the new one.
   Reuse by an object of the same type can't be told apart.
-- The type is the nearest built-in type: a `TabViewItem` shows as
-  `ListViewItem`, and an app's own control as its built-in base class.
+- `DependencyObject_Enter` reports the nearest built-in type: a `TabViewItem`
+  shows as `ListViewItem`, and an app's own control as its built-in base class.
+  Its type takes precedence over fallback class names; differences between a
+  fallback class name and an enter type do not imply pointer reuse.
 - Other objects (brushes, transforms, composition nodes, surfaces) are not
   indexed; they can still be found in `Events`.
 
@@ -398,9 +402,11 @@ visual surface events mention.
 
 - `ParentVisualId`, `ChildVisualId` and `VisualId` only ever hold an `IVisual`
   pointer, so a visual is known from its first mention.
-- Tree events carry only visual/parent/child IDs and, for root changes, the
-  target ID. They do not capture visual types, properties, insertion indices
-  or owner comp-node IDs.
+- Tree events carry visual/parent/child IDs and, for root changes, the target
+  ID. `WucVisualChildInserted` and `WucVisualRootSet` also capture the concrete
+  `VisualType`. They do not capture properties, insertion indices or owner
+  comp-node IDs. ID-only traces remain readable but show `type not seen` for
+  visuals unless a later event supplies their type.
 - Older traces can also supply a visual's type and owner comp node. The
   owner's `CompPeerLinked` label (the element's `x:Name`, or its class name)
   becomes the visual's name. A comp node usually
