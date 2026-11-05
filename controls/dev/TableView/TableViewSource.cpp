@@ -137,6 +137,12 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     return *this;
 }
 
+static uint64_t NextGroupByGeneration()
+{
+    static std::atomic<uint64_t> s_generation{ 0 };
+    return ++s_generation;
+}
+
 winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key)
 {
     return GroupBy(key, nullptr);
@@ -156,6 +162,7 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
     }
 
+    m_groupByGeneration = NextGroupByGeneration();
     tip.Apply([&]()
     {
         m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
@@ -175,6 +182,7 @@ winrt::TableViewSource TableViewSource::ClearFilter()
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
     ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
+    m_groupByGeneration = NextGroupByGeneration();
     tip.Apply([&]() { m_engine->ClearGroup(); });
     return *this;
 }

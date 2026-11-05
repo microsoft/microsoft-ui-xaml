@@ -7,6 +7,7 @@
 #include "TableViewRow.h"
 #include "TableViewGroupHeader.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewGroupHeaderAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewRowAutomationPeer.h"
@@ -29,6 +30,10 @@ namespace
         if (auto* const rowPeer = TableViewRowAutomationPeer::FromPeerInternal(peer))
         {
             return &rowPeer->ItemPeerBindingInternal();
+        }
+        if (auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr)
+        {
+            return &winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer)->ItemPeerBindingInternal();
         }
         return nullptr;
     }

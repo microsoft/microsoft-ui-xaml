@@ -18,6 +18,13 @@
 TableViewGroupHeaderAutomationPeer::TableViewGroupHeaderAutomationPeer(winrt::TableViewGroupHeader const& owner)
     : ReferenceTracker(owner)
 {
+    winrt::get_self<TableViewGroupHeader>(owner)->SyncAutomationPeerToGroupInternal(this);
+}
+
+TableViewGroupHeaderAutomationPeer::TableViewGroupHeaderAutomationPeer(winrt::TableViewGroupHeader const& owner, GroupPeerTag)
+    : ReferenceTracker(owner)
+{
+    m_ownerHeader.set(owner);
 }
 
 winrt::TableViewGroupHeader TableViewGroupHeaderAutomationPeer::GetHeader() const
@@ -25,29 +32,128 @@ winrt::TableViewGroupHeader TableViewGroupHeaderAutomationPeer::GetHeader() cons
     return Owner().try_as<winrt::TableViewGroupHeader>();
 }
 
+winrt::UIElement TableViewGroupHeaderAutomationPeer::ResolveBoundHeaderInternal() const
+{
+    auto const container = m_binding.Resolve(
+        [](winrt::UIElement const& element)
+        {
+            auto const header = element.try_as<winrt::TableViewGroupHeader>();
+            return header ? winrt::get_self<TableViewGroupHeader>(header)->GroupIdentityInternal() : winrt::hstring{};
+        },
+        [this](winrt::AutomationPeer const& source)
+        {
+            auto const peer = source ? source.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr;
+            return peer && winrt::get_self<TableViewGroupHeaderAutomationPeer>(peer) == this;
+        });
+
+    // A header the owner's current repeater does not hold (its template was reapplied) shows nothing.
+    auto const tableView = container ? winrt::get_self<TableViewGroupHeader>(container.as<winrt::TableViewGroupHeader>())->GetOwningTableView() : nullptr;
+    auto const repeater = tableView ? winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal() : nullptr;
+    return repeater && repeater.GetElementIndex(container) >= 0 ? container : nullptr;
+}
+
+winrt::TableViewGroupHeader TableViewGroupHeaderAutomationPeer::GetBoundHeader() const
+{
+    if (!m_binding.IsItemPeer())
+    {
+        return GetHeader();
+    }
+
+    auto const container = ResolveBoundHeaderInternal();
+    if (!container)
+    {
+        ThrowElementNotAvailable();
+    }
+    return container.as<winrt::TableViewGroupHeader>();
+}
+
+winrt::AutomationPeer TableViewGroupHeaderAutomationPeer::GetForwardingPeer() const
+{
+    if (!m_binding.IsItemPeer())
+    {
+        return nullptr;
+    }
+    return winrt::FrameworkElementAutomationPeer::FromElement(GetBoundHeader());
+}
+
+winrt::IInspectable TableViewGroupHeaderAutomationPeer::NavigateCore(winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection const& direction)
+{
+    // The framework's tree holds the header's own peer, not this one.
+    if (auto const peer = GetForwardingPeer())
+    {
+        return peer.Navigate(direction);
+    }
+    return __super::NavigateCore(direction);
+}
+
+// A group peer forwards to its bound header's own peer; a header's own peer answers for itself.
+#define TABLEVIEW_GROUP_HEADER_PEER_ROUTE(forwarded, selfValue) \
+    if (auto const forwardTo = GetForwardingPeer()) { return forwarded; } \
+    return selfValue;
+#define TABLEVIEW_GROUP_HEADER_PEER_FORWARD(name) TABLEVIEW_GROUP_HEADER_PEER_ROUTE(forwardTo.name(), __super::name##Core())
+// For overrides with no public AutomationPeer counterpart.
+#define TABLEVIEW_GROUP_HEADER_PEER_FORWARD_CORE(name) \
+    TABLEVIEW_GROUP_HEADER_PEER_ROUTE(forwardTo.as<winrt::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerOverrides>().name##Core(), __super::name##Core())
+
+winrt::IVector<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetChildrenCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetChildren) }
+winrt::Rect TableViewGroupHeaderAutomationPeer::GetBoundingRectangleCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetBoundingRectangle) }
+bool TableViewGroupHeaderAutomationPeer::IsOffscreenCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsOffscreen) }
+bool TableViewGroupHeaderAutomationPeer::IsEnabledCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsEnabled) }
+bool TableViewGroupHeaderAutomationPeer::HasKeyboardFocusCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(HasKeyboardFocus) }
+bool TableViewGroupHeaderAutomationPeer::IsKeyboardFocusableCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsKeyboardFocusable) }
+winrt::Point TableViewGroupHeaderAutomationPeer::GetClickablePointCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetClickablePoint) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetAutomationIdCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetAutomationId) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetHelpTextCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetHelpText) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetItemStatusCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetItemStatus) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetItemTypeCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetItemType) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetFullDescriptionCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetFullDescription) }
+winrt::Windows::Foundation::Collections::IIterable<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetDescribedByCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD_CORE(GetDescribedBy) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetAccessKeyCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetAccessKey) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetAcceleratorKeyCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetAcceleratorKey) }
+winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting TableViewGroupHeaderAutomationPeer::GetLiveSettingCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetLiveSetting) }
+winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationHeadingLevel TableViewGroupHeaderAutomationPeer::GetHeadingLevelCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetHeadingLevel) }
+int32_t TableViewGroupHeaderAutomationPeer::GetCultureCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetCulture) }
+bool TableViewGroupHeaderAutomationPeer::IsRequiredForFormCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsRequiredForForm) }
+bool TableViewGroupHeaderAutomationPeer::IsControlElementCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsControlElement) }
+bool TableViewGroupHeaderAutomationPeer::IsContentElementCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsContentElement) }
+int32_t TableViewGroupHeaderAutomationPeer::GetPositionInSetCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetPositionInSet) }
+int32_t TableViewGroupHeaderAutomationPeer::GetSizeOfSetCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetSizeOfSet) }
+winrt::Windows::Foundation::Collections::IVectorView<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetControlledPeersCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetControlledPeers) }
+winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLandmarkType TableViewGroupHeaderAutomationPeer::GetLandmarkTypeCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetLandmarkType) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetLocalizedLandmarkTypeCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetLocalizedLandmarkType) }
+winrt::Windows::Foundation::Collections::IIterable<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetFlowsToCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD_CORE(GetFlowsTo) }
+winrt::Windows::Foundation::Collections::IIterable<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetFlowsFromCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD_CORE(GetFlowsFrom) }
+bool TableViewGroupHeaderAutomationPeer::IsPeripheralCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsPeripheral) }
+bool TableViewGroupHeaderAutomationPeer::IsDataValidForFormCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsDataValidForForm) }
+winrt::IVector<winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation> TableViewGroupHeaderAutomationPeer::GetAnnotationsCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetAnnotations) }
+bool TableViewGroupHeaderAutomationPeer::IsDialogCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(IsDialog) }
+winrt::AutomationControlType TableViewGroupHeaderAutomationPeer::GetAutomationControlTypeCore() { TABLEVIEW_GROUP_HEADER_PEER_ROUTE(forwardTo.GetAutomationControlType(), winrt::AutomationControlType::Group) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetClassNameCore() { TABLEVIEW_GROUP_HEADER_PEER_ROUTE(forwardTo.GetClassName(), winrt::hstring{ L"TableViewGroupHeader" }) }
+winrt::hstring TableViewGroupHeaderAutomationPeer::GetLocalizedControlTypeCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetLocalizedControlType) }
+winrt::AutomationPeer TableViewGroupHeaderAutomationPeer::GetLabeledByCore() { TABLEVIEW_GROUP_HEADER_PEER_FORWARD(GetLabeledBy) }
+
+#undef TABLEVIEW_GROUP_HEADER_PEER_FORWARD_CORE
+#undef TABLEVIEW_GROUP_HEADER_PEER_FORWARD
+#undef TABLEVIEW_GROUP_HEADER_PEER_ROUTE
+
 winrt::IInspectable TableViewGroupHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
     // Unconditional, unlike the old adaptive row peer: this container is only ever a group
     // header, so the pattern never has to be withdrawn. Non-expandable groups are reported as
     // LeafNode by ExpandCollapseState rather than by hiding the pattern, which is what the
     // in-box Expander / NavigationViewItem peers do.
+    GetBoundHeader();
     if (patternInterface == winrt::PatternInterface::ExpandCollapse ||
         patternInterface == winrt::PatternInterface::GridItem)
     {
         return *this;
     }
 
+    if (auto const peer = GetForwardingPeer())
+    {
+        return peer.GetPattern(patternInterface);
+    }
     return __super::GetPatternCore(patternInterface);
-}
-
-winrt::AutomationControlType TableViewGroupHeaderAutomationPeer::GetAutomationControlTypeCore()
-{
-    return winrt::AutomationControlType::Group;
-}
-
-winrt::hstring TableViewGroupHeaderAutomationPeer::GetClassNameCore()
-{
-    return winrt::hstring{ L"TableViewGroupHeader" };
 }
 
 winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
@@ -59,6 +165,10 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
     // "({0})"), so the two parts are joined with the same single space the default template puts
     // between them. Anything richer belongs in a dedicated localized format string rather than
     // being assembled here.
+    if (auto const peer = GetForwardingPeer())
+    {
+        return peer.GetName();
+    }
     if (auto const header = GetHeader())
     {
         if (auto const name = winrt::AutomationProperties::GetName(header); !name.empty())
@@ -88,14 +198,11 @@ void TableViewGroupHeaderAutomationPeer::SetFocusCore()
 {
     // Base peer focuses as Programmatic, which FocusManager coerces (e.g. to Pointer: no focus
     // visual, and group-expansion focus restore skips it), hence explicit Keyboard.
-    if (auto const header = GetHeader())
+    if (auto const header = GetBoundHeader())
     {
-        if (header.Focus(winrt::FocusState::Keyboard))
-        {
-            return;
-        }
+        header.Focus(winrt::FocusState::Keyboard);
+        return;
     }
-
     __super::SetFocusCore();
 }
 
@@ -110,11 +217,21 @@ void TableViewGroupHeaderAutomationPeer::ShowContextMenuCore()
         return;
     }
 
+    if (auto const peer = GetForwardingPeer())
+    {
+        peer.ShowContextMenu();
+        return;
+    }
     __super::ShowContextMenuCore();
 }
 
 int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
 {
+    if (auto const peer = GetForwardingPeer())
+    {
+        return peer.GetLevel();
+    }
+
     // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
     if (const auto provided = __super::GetLevelCore(); provided > 0)
     {
@@ -164,7 +281,7 @@ void TableViewGroupHeaderAutomationPeer::Collapse()
 
 void TableViewGroupHeaderAutomationPeer::SetExpansion(bool expand)
 {
-    auto const header = GetHeader();
+    auto const header = GetBoundHeader();
     if (!header || !header.IsExpandable())
     {
         return;
@@ -187,7 +304,7 @@ void TableViewGroupHeaderAutomationPeer::SetExpansion(bool expand)
 
 winrt::ExpandCollapseState TableViewGroupHeaderAutomationPeer::ExpandCollapseState()
 {
-    if (auto const header = GetHeader())
+    if (auto const header = GetBoundHeader())
     {
         if (!header.IsExpandable())
         {
@@ -200,9 +317,9 @@ winrt::ExpandCollapseState TableViewGroupHeaderAutomationPeer::ExpandCollapseSta
     return winrt::ExpandCollapseState::LeafNode;
 }
 
-winrt::TableView TableViewGroupHeaderAutomationPeer::GetOwningTableView() const
+winrt::TableView TableViewGroupHeaderAutomationPeer::GetOwningTableView()
 {
-    if (auto const header = GetHeader())
+    if (auto const header = GetBoundHeader())
     {
         return winrt::get_self<TableViewGroupHeader>(header)->GetOwningTableView();
     }
@@ -213,7 +330,7 @@ winrt::TableView TableViewGroupHeaderAutomationPeer::GetOwningTableView() const
 // TableViewAutomationPeer::GetItem reports for a header row.
 int32_t TableViewGroupHeaderAutomationPeer::Row()
 {
-    if (auto const header = GetHeader())
+    if (auto const header = GetBoundHeader())
     {
         if (auto const owner = GetOwningTableView())
         {
@@ -232,11 +349,13 @@ int32_t TableViewGroupHeaderAutomationPeer::Row()
 
 int32_t TableViewGroupHeaderAutomationPeer::Column()
 {
+    GetBoundHeader();
     return 0;
 }
 
 int32_t TableViewGroupHeaderAutomationPeer::RowSpan()
 {
+    GetBoundHeader();
     return 1;
 }
 

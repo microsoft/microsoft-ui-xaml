@@ -8,6 +8,7 @@
 #include "TableViewGroupHeaderToggleRequestedEventArgs.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
+#include "TableViewAutomationPeer.h"
 
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 
@@ -28,6 +29,74 @@ TableViewGroupHeader::TableViewGroupHeader()
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 {
     return winrt::make<TableViewGroupHeaderAutomationPeer>(*this);
+}
+
+void TableViewGroupHeader::SyncAutomationPeerToGroupInternal(TableViewGroupHeaderAutomationPeer* containerPeer)
+{
+    winrt::TableViewGroupHeaderAutomationPeer existing{ nullptr };
+    if (!containerPeer)
+    {
+        existing = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewGroupHeaderAutomationPeer>();
+        if (!existing)
+        {
+            return;
+        }
+        containerPeer = winrt::get_self<TableViewGroupHeaderAutomationPeer>(existing);
+    }
+    if (m_groupIdentity.empty())
+    {
+        // No group to bind to: UIA sees this header's own peer.
+        if (containerPeer->EventsSource())
+        {
+            containerPeer->EventsSource(nullptr);
+        }
+        return;
+    }
+
+    winrt::TableViewAutomationPeer tablePeer{ nullptr };
+    if (auto const owner = GetOwningTableView())
+    {
+        tablePeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner).try_as<winrt::TableViewAutomationPeer>();
+    }
+
+    auto const current = containerPeer->EventsSource();
+    auto const bindingOf = [this](winrt::AutomationPeer const& peer) -> TableViewItemPeerBinding*
+    {
+        auto const headerPeer = peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>();
+        auto* const impl = headerPeer ? winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer) : nullptr;
+        if (!impl)
+        {
+            return nullptr;
+        }
+        // Another header still showing the same identity keeps its peer.
+        if (auto const other = impl->ResolveBoundHeaderInternal(); other && other != *this)
+        {
+            return nullptr;
+        }
+        return &impl->ItemPeerBindingInternal();
+    };
+    auto const groupPeer = TableViewItemPeers::Resolve(
+        tablePeer ? &winrt::get_self<TableViewAutomationPeer>(tablePeer)->GroupHeaderPeerCacheInternal() : nullptr,
+        current, m_groupIdentity, *this, bindingOf,
+        // Always the base type; an app-derived header peer is reached by forwarding to this header's own peer.
+        [this]() -> winrt::AutomationPeer { return winrt::make<TableViewGroupHeaderAutomationPeer>(*this, TableViewGroupHeaderAutomationPeer::GroupPeerTag{}); });
+    if (!groupPeer)
+    {
+        MUX_ASSERT_MSG(false, L"Two realized group headers show the same group identity.");
+        containerPeer->EventsSource(nullptr);
+        return;
+    }
+    if (groupPeer == current)
+    {
+        return;
+    }
+
+    containerPeer->EventsSource(groupPeer);
+    if (existing && FocusState() != winrt::FocusState::Unfocused &&
+        winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::AutomationFocusChanged))
+    {
+        groupPeer.RaiseAutomationEvent(winrt::AutomationEvents::AutomationFocusChanged);
+    }
 }
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
@@ -230,9 +299,7 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
 
     // FromElement only: no live peer means no listener, so creating one purely to announce would
     // materialize automation objects a client never asked for.
-    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-
-    if (auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr)
+    if (auto const headerPeer = TableViewItemPeers::ItemPeerOfContainer(*this, false).try_as<winrt::TableViewGroupHeaderAutomationPeer>())
     {
         winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer)->RaiseExpandCollapseAutomationEvent(
             oldState, newState);

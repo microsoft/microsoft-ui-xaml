@@ -9,6 +9,8 @@
 #include "TableViewGroupHeader.g.h"
 #include "TableViewGroupHeader.properties.h"
 
+class TableViewGroupHeaderAutomationPeer;
+
 // Templated group-header band. See TableViewGroupHeader.idl for the part / visual-state
 // contract.
 //
@@ -98,6 +100,14 @@ public:
     winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
     void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
 
+    // Group identity resolved at prepare; empty while pooled.
+    winrt::hstring const& GroupIdentityInternal() const noexcept { return m_groupIdentity; }
+    void SetGroupIdentityInternal(winrt::hstring const& identity) { m_groupIdentity = identity; }
+
+    // Points this container's peer (the internal forwarder) at its group's peer. Pass the peer
+    // while it is being constructed; otherwise the existing one is used.
+    void SyncAutomationPeerToGroupInternal(TableViewGroupHeaderAutomationPeer* containerPeer = nullptr);
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateDefaultCountOpacity();
@@ -132,4 +142,6 @@ private:
     // Guards against double-hooking when the same container is prepared many times after pool
     // recycling: one subscription per container lifetime, not per prepare.
     bool m_toggleHooked{ false };
+
+    winrt::hstring m_groupIdentity{};
 };

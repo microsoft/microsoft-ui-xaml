@@ -1978,6 +1978,444 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held group header peer stays bound to its group when collapse, expand or scrolling rebinds its container (#12443).")]
+        public void VerifyHeldGroupHeaderPeerStaysBoundToItsGroup()
+        {
+            const int groupCount = 8;
+            TableView tableView = null;
+            TableViewGroupHeader heldContainer = null;
+            AutomationPeer held = null;
+            IExpandCollapseProvider heldProvider = null;
+            var containerRebound = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable(groupCount);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                heldContainer = (TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0);
+                held = GroupHeaderPeerOf(heldContainer);
+                Verify.IsTrue(held is TableViewGroupHeaderAutomationPeer, "Precondition: UIA is handed a group header peer.");
+                Verify.AreNotSame(FrameworkElementAutomationPeer.CreatePeerForElement(heldContainer), held,
+                    "UIA must be handed the group's peer, not the container's own peer.");
+                heldProvider = held.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), $"Precondition: the held peer is G0's header, saw '{held.GetName()}'.");
+            });
+
+            var g0Collapsed = false;
+            foreach (var step in new[] { "Collapse", "Expand", "Collapse", "Expand", "Scroll", "Collapse", "ScrollBack", "Collapse" })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    if (step.StartsWith("Scroll"))
+                    {
+                        GetBodyScroller(tableView).ChangeView(null, step == "Scroll" ? 100000.0 : 0.0, null, true);
+                        return;
+                    }
+
+                    try
+                    {
+                        if (step == "Collapse") { heldProvider.Collapse(); } else { heldProvider.Expand(); }
+                        g0Collapsed = step == "Collapse";
+                        Log.Comment($"{step}: the held peer acted on its own group.");
+                    }
+                    catch (Exception e) when (e.HResult == UIA_E_ELEMENTNOTAVAILABLE)
+                    {
+                        Log.Comment($"{step}: the held peer reported ElementNotAvailable.");
+                    }
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    string name = null;
+                    try
+                    {
+                        name = held.GetName();
+                    }
+                    catch (Exception e) when (e.HResult == UIA_E_ELEMENTNOTAVAILABLE)
+                    {
+                        Log.Comment($"After {step}: the held peer's Name reported ElementNotAvailable.");
+                    }
+                    Verify.IsTrue(name == null || name.StartsWith("G0 "),
+                        $"After {step}, the held peer must report G0 or ElementNotAvailable, not another group; saw '{name}'.");
+
+                    var heldKey = (heldContainer.Content as TableViewGroupInfo)?.Key as string;
+                    containerRebound |= GetRowsRepeater(tableView).GetElementIndex(heldContainer) >= 0 && heldKey != "G0";
+
+                    var present = new HashSet<string>(GetProjectedItems(tableView).OfType<Person>().Select(p => p.Role));
+                    var collapsed = Enumerable.Range(0, groupCount).Select(g => $"G{g}").Where(role => !present.Contains(role));
+                    Verify.AreEqual(g0Collapsed ? "G0" : "", string.Join(",", collapsed),
+                        $"After {step}, only the held peer's own group may have been toggled.");
+
+                    foreach (var header in GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>())
+                    {
+                        var key = (header.Content as TableViewGroupInfo)?.Key as string;
+                        var peer = GroupHeaderPeerOf(header);
+                        var headerName = peer.GetName();
+                        Verify.IsTrue(headerName.StartsWith(key + " "),
+                            $"After {step}, the realized {key} header's peer must name its own group; saw '{headerName}'.");
+                        if (key == "G0")
+                        {
+                            Verify.AreSame(held, peer, $"After {step}, G0 must be exposed through the same peer (one RuntimeId).");
+                        }
+                    }
+                });
+            }
+
+            Verify.IsTrue(containerRebound, "Precondition: the held peer's original container must have been rebound to another group.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies group header peers navigate as their containers after the containers are rebound: listed by the parent, with sibling round trips (#12443).")]
+        public void VerifyReboundGroupHeaderPeerNavigation()
+        {
+            TableView tableView = null;
+            var peersByGroup = new Dictionary<string, AutomationPeer>();
+            var rebound = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable(8);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var g0 = (TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0);
+                peersByGroup["G0"] = GroupHeaderPeerOf(g0);
+            });
+
+            // Collapsing G0 reshapes the rows in place, and scrolling recycles containers across groups.
+            var steps = new List<object> { "Collapse", "Expand" };
+            steps.AddRange(Enumerable.Range(0, 16).Select(i => (object)(i * 200.0)));
+            steps.Add(0.0);
+            foreach (var step in steps)
+            {
+                var offset = step;
+                RunOnUIThread.Execute(() =>
+                {
+                    if (step is double y)
+                    {
+                        GetBodyScroller(tableView).ChangeView(null, y, null, true);
+                    }
+                    else
+                    {
+                        var provider = (IExpandCollapseProvider)peersByGroup["G0"].GetPattern(PatternInterface.ExpandCollapse);
+                        if ((string)step == "Collapse") { provider.Collapse(); } else { provider.Expand(); }
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    PrimeAutomationParents(RequireTablePeer(tableView), 6);
+                    var headers = GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>().ToList();
+                    foreach (var header in headers)
+                    {
+                        var key = (header.Content as TableViewGroupInfo)?.Key as string;
+                        var peer = GroupHeaderPeerOf(header);
+                        if (peersByGroup.TryGetValue(key, out var earlier))
+                        {
+                            Verify.AreSame(earlier, peer, $"After step {offset}, {key} must keep the peer it had when last realized.");
+                        }
+                        peersByGroup[key] = peer;
+                        if (((FrameworkElementAutomationPeer)peer).Owner == header)
+                        {
+                            continue;
+                        }
+                        rebound++;
+
+                        var parent = peer.Navigate(AutomationNavigationDirection.Parent) as AutomationPeer;
+                        Verify.IsNotNull(parent, $"After step {offset}, {key}'s rebound peer must have a parent.");
+                        var children = (parent.GetChildren() ?? new List<AutomationPeer>()).Select(ResolveEventsSource).ToList();
+                        Verify.IsTrue(children.Contains(peer), $"After step {offset}, {key}'s rebound peer must be listed among its parent's children.");
+                        Verify.AreEqual(children.Count, children.Distinct().Count(),
+                            $"After step {offset}, no two of the parent's children may resolve to the same peer.");
+
+                        var next = ResolveEventsSource(peer.Navigate(AutomationNavigationDirection.NextSibling) as AutomationPeer);
+                        var previous = ResolveEventsSource(peer.Navigate(AutomationNavigationDirection.PreviousSibling) as AutomationPeer);
+                        Verify.IsTrue(next != null || previous != null, $"After step {offset}, {key}'s rebound peer must have a sibling.");
+                        if (next != null)
+                        {
+                            Verify.AreSame(peer, ResolveEventsSource(next.Navigate(AutomationNavigationDirection.PreviousSibling) as AutomationPeer),
+                                $"After step {offset}, Next then Previous from {key} must come back to {key}.");
+                        }
+                        if (previous != null)
+                        {
+                            Verify.AreSame(peer, ResolveEventsSource(previous.Navigate(AutomationNavigationDirection.NextSibling) as AutomationPeer),
+                                $"After step {offset}, Previous then Next from {key} must come back to {key}.");
+                        }
+                    }
+                });
+            }
+
+            Verify.AreEqual(8, peersByGroup.Count, "Precondition: every group was realized.");
+            Verify.IsTrue(rebound > 0, "Precondition: at least one group must have come back in a container other than its peer's owner.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies object- and null-keyed group headers, mixed with string keys, keep one peer per group across recycling (#12443).")]
+        public void VerifyObjectAndNullKeyedGroupHeaderPeersStayBound()
+        {
+            TableView tableView = null;
+            var peersByGroup = new Dictionary<string, AutomationPeer>();
+            var rebound = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var objectKeys = new[] { new ObjectGroupKey("O1"), new ObjectGroupKey("O2") };
+                var people = new List<Person>();
+                foreach (var role in new[] { "O1", null, "O2", "G0", "G1", "G2", "G3", "G4", "G5" })
+                {
+                    for (var i = 0; i < 10; i++)
+                    {
+                        people.Add(new Person { Name = $"P{role}-{i}", Role = role });
+                    }
+                }
+                var source = TableViewSource.From(people);
+                source.GroupBy(
+                    item => ((Person)item).Role is string role && role.StartsWith("O") ? objectKeys.First(k => k.Id == role) : (object)((Person)item).Role,
+                    key => GroupToken(key));
+                tableView = CreateTableViewShell(source, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            // Collapsing the first group reshapes the rows in place, and scrolling recycles containers across groups.
+            var steps = new List<object> { "Collapse", "Expand" };
+            steps.AddRange(Enumerable.Range(0, 12).Select(i => (object)(i * 200.0)));
+            steps.Add(0.0);
+            foreach (var offset in steps)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    if (offset is double y)
+                    {
+                        GetBodyScroller(tableView).ChangeView(null, y, null, true);
+                        return;
+                    }
+                    var first = GroupHeaderPeerOf((TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0));
+                    var provider = (IExpandCollapseProvider)first.GetPattern(PatternInterface.ExpandCollapse);
+                    if ((string)offset == "Collapse") { provider.Collapse(); } else { provider.Expand(); }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var header in GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>())
+                    {
+                        var info = (TableViewGroupInfo)header.Content;
+                        var token = GroupToken(info.Key);
+                        var peer = GroupHeaderPeerOf(header);
+                        Verify.AreNotSame(FrameworkElementAutomationPeer.FromElement(header), peer,
+                            $"At {offset}, the {token} header must expose its group's peer.");
+                        Verify.IsTrue(peer.GetName().StartsWith(info.KeyText),
+                            $"At {offset}, the {token} header's peer must name its own group; saw '{peer.GetName()}'.");
+                        if (peersByGroup.TryGetValue(token, out var earlier))
+                        {
+                            Verify.AreSame(earlier, peer, $"At {offset}, {token} must keep the peer it had when last realized.");
+                        }
+                        peersByGroup[token] = peer;
+                        rebound += ((FrameworkElementAutomationPeer)peer).Owner == header ? 0 : 1;
+                    }
+                });
+            }
+
+            Verify.IsTrue(peersByGroup.ContainsKey("null") && peersByGroup.ContainsKey("O1") && peersByGroup.ContainsKey("O2"),
+                $"Precondition: the null- and object-keyed groups were realized; saw {string.Join(",", peersByGroup.Keys)}.");
+            Verify.IsTrue(rebound > 0, "Precondition: at least one group must have come back in a container other than its peer's owner.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies two groups with equal keys get distinct header peers, each acting on its own group (#12443).")]
+        public void VerifyEqualKeyedGroupHeadersHaveDistinctPeers()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var keys = new[] { new ObjectGroupKey("A") { Equal = true }, new ObjectGroupKey("B") { Equal = true } };
+                var people = Enumerable.Range(0, 3).Select(i => new Person { Name = $"A-{i}", Role = "A" })
+                    .Concat(Enumerable.Range(0, 3).Select(i => new Person { Name = $"B-{i}", Role = "B" })).ToList();
+                var source = TableViewSource.From(people);
+                source.GroupBy(item => keys.First(k => k.Id == ((Person)item).Role), key => ((ObjectGroupKey)key).Id);
+                tableView = CreateTableViewShell(source, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            AutomationPeer second = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var headers = GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>().ToList();
+                Verify.AreEqual(2, headers.Count, "Precondition: both equal-keyed groups are realized.");
+                Verify.IsTrue(Equals(((TableViewGroupInfo)headers[0].Content).Key, ((TableViewGroupInfo)headers[1].Content).Key),
+                    "Precondition: the two group keys are equal.");
+                var peers = headers.Select(GroupHeaderPeerOf).ToList();
+                Verify.AreNotSame(peers[0], peers[1], "Equal-keyed groups must not share a peer.");
+                for (var i = 0; i < 2; i++)
+                {
+                    Verify.AreEqual(GetRowsRepeater(tableView).GetElementIndex(headers[i]), ((IGridItemProvider)peers[i].GetPattern(PatternInterface.GridItem)).Row,
+                        $"Group {i}'s peer must report its own header's row.");
+                }
+                second = peers[1];
+                ((IExpandCollapseProvider)second.GetPattern(PatternInterface.ExpandCollapse)).Collapse();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var names = GetProjectedItems(tableView).OfType<Person>().Select(p => p.Name).ToList();
+                Verify.IsTrue(names.Contains("A-0") && !names.Contains("B-0"),
+                    $"Collapse on the second group's peer must collapse only that group; saw {string.Join(",", names)}.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, ((IExpandCollapseProvider)second.GetPattern(PatternInterface.ExpandCollapse)).ExpandCollapseState);
+            });
+        }
+
+        private static string GroupToken(object key) => key == null ? "null" : key is ObjectGroupKey k ? k.Id : (string)key;
+
+        private sealed class ObjectGroupKey
+        {
+            public ObjectGroupKey(string id) => Id = id;
+            public string Id { get; }
+            // Makes every key with Equal set compare equal to every other.
+            public bool Equal { get; set; }
+            public override bool Equals(object obj) => obj is ObjectGroupKey other && (other == this || (Equal && other.Equal));
+            public override int GetHashCode() => Equal ? 1 : base.GetHashCode();
+            public override string ToString() => Equal ? "Same" : Id;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held group peer bound to a header other than the one that created it stays usable after every header is torn down and collected (#12443).")]
+        public void VerifyReboundGroupHeaderPeerOutlivesItsCreatingHeader()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+            // Held like a client would, so each group keeps its peer while its container is recycled.
+            var seen = new List<AutomationPeer>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable(8);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            // Collapsing the first group reshapes the rows in place, and scrolling recycles containers across groups.
+            var steps = new List<object> { "Collapse", "Expand" };
+            steps.AddRange(Enumerable.Range(0, 16).Select(i => (object)(i * 200.0)));
+            steps.AddRange(Enumerable.Range(0, 16).Select(i => (object)((15 - i) * 200.0)));
+            foreach (var step in steps)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    if (step is double y)
+                    {
+                        GetBodyScroller(tableView).ChangeView(null, y, null, true);
+                        return;
+                    }
+                    var first = GroupHeaderPeerOf((TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0));
+                    var provider = (IExpandCollapseProvider)first.GetPattern(PatternInterface.ExpandCollapse);
+                    if ((string)step == "Collapse") { provider.Collapse(); } else { provider.Expand(); }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var bound = GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>()
+                        .Select(header => (header, peer: GroupHeaderPeerOf(header))).ToList();
+                    seen.AddRange(bound.Select(b => b.peer));
+                    held = bound.Where(b => ((FrameworkElementAutomationPeer)b.peer).Owner != b.header).Select(b => b.peer).FirstOrDefault();
+                });
+                if (held != null)
+                {
+                    break;
+                }
+            }
+            Verify.IsNotNull(held, "Precondition: a group peer must be bound to a header other than the one that created it.");
+            seen.Clear();
+
+            // Tear down every header, including the one that created the held peer.
+            RunOnUIThread.Execute(() =>
+            {
+                var template = tableView.Template;
+                tableView.Template = null;
+                tableView.UpdateLayout();
+                tableView.Template = template;
+            });
+            IdleSynchronizer.Wait();
+            for (var i = 0; i < 2; ++i)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(new ProviderPeerProbe().ToProvider(held), "The held group peer must still produce a provider.");
+                try
+                {
+                    var name = held.GetName();
+                    Verify.IsTrue(name.StartsWith("G"), $"A held group peer that answers must name a group; saw '{name}'.");
+                }
+                catch (Exception e) when (e.HResult == UIA_E_ELEMENTNOTAVAILABLE)
+                {
+                    Log.Comment("The held group peer reports ElementNotAvailable.");
+                }
+            });
+        }
+
+        private static TableView CreateManyGroupsTable(int groupCount)
+        {
+            var tableView = CreateTableViewShell(CreateManyGroupsSource(groupCount), 600, 300);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            tableView.Columns.Add(MakeTextColumn("Role"));
+            return tableView;
+        }
+
+        private static TableViewSource CreateManyGroupsSource(int groupCount)
+        {
+            var people = new List<Person>();
+            for (var g = 0; g < groupCount; g++)
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    people.Add(new Person { Name = $"P{g}-{i}", Role = $"G{g}" });
+                }
+            }
+            var source = TableViewSource.From(people);
+            source.GroupBy(item => (object)((Person)item).Role);
+            return source;
+        }
+
+        private static AutomationPeer ResolveEventsSource(AutomationPeer peer) => peer?.EventsSource ?? peer;
+
+        private static void PrimeAutomationParents(AutomationPeer peer, int depth)
+        {
+            if (depth == 0 || peer == null)
+            {
+                return;
+            }
+            foreach (var child in peer.GetChildren() ?? new List<AutomationPeer>())
+            {
+                PrimeAutomationParents(child, depth - 1);
+            }
+        }
+
+        private const int UIA_E_ELEMENTNOTAVAILABLE = unchecked((int)0x80040201);
+
         private static void VerifyGridItemRowThrowsElementNotAvailable(IGridItemProvider gridItem, string subject)
             => VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", subject);
 
