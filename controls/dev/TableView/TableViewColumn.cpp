@@ -328,6 +328,10 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
+            if (property != s_WidthProperty || !m_inUserResize)
+            {
+                winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
+            }
             winrt::get_self<TableView>(owner)->OnColumnWidthChanged(*this);
         }
     }
@@ -384,6 +388,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         // Adds or removes this column's gripper, so the header band has to be rebuilt.
         if (auto owner = GetOwningTableView())
         {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             winrt::get_self<TableView>(owner)->QueueRebuildHeaders();
         }
     }
@@ -391,6 +396,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     {
         if (auto owner = GetOwningTableView())
         {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
