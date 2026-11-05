@@ -78,6 +78,7 @@ private:
     winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
     winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_flyoutUnloadedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     winrt::Thickness m_templateContentMargin{};
     double m_indicatorReserve{ 0.0 };

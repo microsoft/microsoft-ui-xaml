@@ -7,6 +7,7 @@
     <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
     <!-- Abuts the inner native focus stroke; vertical focus extends 1px outside the row. -->
     <Thickness x:Key="TableViewSelectionIndicatorMargin">3,2,3,2</Thickness>
+    <Thickness x:Key="TableViewGroupHeaderInteractionMargin">0,2,0,2</Thickness>
     <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
@@ -116,11 +117,37 @@
         <Setter Property="Width" Value="{ThemeResource TableViewHeaderFlyoutButtonWidth}" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="FocusVisualMargin" Value="-1" />
+        <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewHeaderFlyoutButtonFocusVisualMargin}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DropDownButton">
                     <Grid Background="Transparent">
+                        <Grid.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Light">
+                                        <Style x:Key="HeaderFlyoutChevronStyle" TargetType="FontIcon" />
+                                        <Style x:Key="HeaderFlyoutChromeStyle" TargetType="Border">
+                                            <Setter Property="Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundBrush}" />
+                                        </Style>
+                                    </ResourceDictionary>
+                                    <ResourceDictionary x:Key="Default">
+                                        <Style x:Key="HeaderFlyoutChevronStyle" TargetType="FontIcon" />
+                                        <Style x:Key="HeaderFlyoutChromeStyle" TargetType="Border">
+                                            <Setter Property="Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundBrush}" />
+                                        </Style>
+                                    </ResourceDictionary>
+                                    <ResourceDictionary x:Key="HighContrast">
+                                        <Style x:Key="HeaderFlyoutChevronStyle" TargetType="FontIcon">
+                                            <Setter Property="Foreground" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
+                                        </Style>
+                                        <Style x:Key="HeaderFlyoutChromeStyle" TargetType="Border">
+                                            <Setter Property="Background" Value="{ThemeResource SystemColorButtonFaceColorBrush}" />
+                                        </Style>
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -168,14 +195,14 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Border x:Name="Chrome"
-                                Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
+                                Style="{ThemeResource HeaderFlyoutChromeStyle}"
                                 BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
                                 BorderThickness="1,0,0,0">
                             <FontIcon x:Name="Chevron"
+                                      Style="{ThemeResource HeaderFlyoutChevronStyle}"
                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                       FontSize="12"
                                       Glyph="&#xE70D;"
-                                      Foreground="{TemplateBinding Foreground}"
                                       HighContrastAdjustment="None"
                                       AutomationProperties.AccessibilityView="Raw" />
                         </Border>
@@ -201,8 +228,10 @@
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="TabFocusNavigation" Value="Once" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewFocusVisualMargin}" />
         <!-- Without a fill the padding takes no pointer input, killing the tooltip and click-to-sort there. -->
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundBrush}" />
         <Setter Property="FontSize" Value="{ThemeResource TableViewHeaderFontSize}" />
         <Setter Property="FontWeight" Value="{ThemeResource TableViewHeaderFontWeight}" />
@@ -222,16 +251,19 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPointerOverBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPressedBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        <Setter Target="PART_HeaderFlyoutButton.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -257,14 +289,26 @@
 
                             <VisualStateGroup x:Name="HighContrastStates">
                                 <VisualState x:Name="HighContrastNormal" />
+                                <VisualState x:Name="HighContrastSortable">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundSortableBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderSortableBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="HighContrastPointerOver">
                                     <VisualState.Setters>
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="HighContrastPressed">
                                     <VisualState.Setters>
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
@@ -291,9 +335,12 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Round the fill, not the content or the resize hit targets. -->
+                        <!-- Extend the solid fill under the stroke to avoid a seam between them. -->
                         <Border x:Name="PART_Background"
                                 Background="{TemplateBinding Background}"
+                                BackgroundSizing="OuterBorderEdge"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{ThemeResource TableViewHeaderInteractionBorderThickness}"
                                 IsHitTestVisible="False"
                                 AutomationProperties.AccessibilityView="Raw" />
 
@@ -308,15 +355,6 @@
                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           AutomationProperties.AccessibilityView="Raw" />
 
-                        <Border x:Name="PART_GridLine"
-                                Grid.ColumnSpan="2"
-                                Width="1"
-                                HorizontalAlignment="Right"
-                                Background="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
-                                IsHitTestVisible="False"
-                                Visibility="Collapsed"
-                                AutomationProperties.AccessibilityView="Raw" />
-
                         <Border x:Name="PART_SortIndicatorHost"
                                 Margin="{TemplateBinding Padding}"
                                 Padding="4,0,4,0"
@@ -329,8 +367,18 @@
                         <DropDownButton x:Name="PART_HeaderFlyoutButton"
                                         Grid.Column="1"
                                         Style="{StaticResource TableViewHeaderFlyoutButtonStyle}"
-                                        Foreground="{Binding Foreground, ElementName=PART_ContentPresenter}"
+                                        Foreground="{TemplateBinding Foreground}"
                                         Visibility="Collapsed" />
+
+                        <!-- Above opaque dropdown chrome, including High Contrast ButtonFace. -->
+                        <Border x:Name="PART_GridLine"
+                                Grid.ColumnSpan="2"
+                                Width="1"
+                                HorizontalAlignment="Right"
+                                Background="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                IsHitTestVisible="False"
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw" />
 
                         <!-- Last, so the gripper wins the hit test on the shared edge. -->
                         <Border x:Name="PART_ResizeGripperHost" Grid.ColumnSpan="2" />
@@ -362,7 +410,7 @@
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="FocusVisualMargin" Value="0,-1,0,-1" />
+        <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewRowFocusVisualMargin}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewRow">
@@ -374,6 +422,38 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
+                                <!-- HC reuses the selection border without replacing app content,
+                                     the resting row background, or its inherited foreground. -->
+                                <VisualState x:Name="HighContrastPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SelectionIndicator.Opacity" Value="1" />
+                                        <Setter Target="PART_SelectionIndicator.BorderBrush" Value="{ThemeResource SystemColorHighlightColorBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HighContrastPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SelectionIndicator.Opacity" Value="1" />
+                                        <Setter Target="PART_SelectionIndicator.BorderBrush" Value="{ThemeResource SystemColorHighlightColorBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HighContrastSelected">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SelectionIndicator.Opacity" Value="1" />
+                                        <Setter Target="PART_SelectionIndicator.BorderBrush" Value="{ThemeResource SystemColorHighlightColorBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HighContrastSelectedPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SelectionIndicator.Opacity" Value="1" />
+                                        <Setter Target="PART_SelectionIndicator.BorderBrush" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HighContrastSelectedPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SelectionIndicator.Opacity" Value="1" />
+                                        <Setter Target="PART_SelectionIndicator.BorderBrush" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RootBorder.Margin" Value="{ThemeResource TableViewSelectionIndicatorMargin}" />
@@ -554,10 +634,8 @@
                                  The presenter exists so the Selected* states have something with a
                                  Foreground to animate: PART_RootBorder is a Border and has none, and
                                  cell text inherits Foreground down from here. Without it the selected
-                                 foreground brushes are unreachable, which is only cosmetic in
-                                 light/dark (the selected fill is ~4% alpha) but makes a selected row
-                                 illegible in High Contrast, where the fill is the opaque
-                                 SystemColorHighlightColor. -->
+                                 foreground brushes are unreachable. HC outline states leave this
+                                 inherited foreground and the resting background unchanged. -->
                             <ContentPresenter x:Name="PART_CellForegroundPresenter"
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="Stretch"
@@ -667,6 +745,7 @@
              handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewFocusVisualMargin}" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
         <Setter Property="Template">
@@ -679,7 +758,9 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceGroupHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Root.Margin" Value="{ThemeResource TableViewGroupHeaderInteractionMargin}" />
+                                        <Setter Target="PART_Root.BorderBrush" Value="{ThemeResource TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
@@ -688,7 +769,9 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceGroupHeaderBackgroundPressedBrush}" />
+                                        <Setter Target="PART_Root.Margin" Value="{ThemeResource TableViewGroupHeaderInteractionMargin}" />
+                                        <Setter Target="PART_Root.BorderBrush" Value="{ThemeResource TabularSurfaceGroupHeaderInteractionBorderPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
@@ -735,6 +818,9 @@
                               AutomationProperties.AccessibilityView="Raw">
                             <Border x:Name="PART_Root"
                                     Background="{TemplateBinding Background}"
+                                    BackgroundSizing="OuterBorderEdge"
+                                    BorderBrush="{ThemeResource TabularSurfaceGroupHeaderInteractionBorderBrush}"
+                                    BorderThickness="{ThemeResource TableViewHeaderInteractionBorderThickness}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
                         </Grid>
                         <Border x:Name="PART_ContentHost" Padding="{TemplateBinding Padding}">

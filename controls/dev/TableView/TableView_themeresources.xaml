@@ -16,6 +16,11 @@
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
+            <x:Double x:Key="TableViewHeaderTextVerticalOffset">-1</x:Double>
+            <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
+            <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
+            <Thickness x:Key="TableViewHeaderFlyoutButtonFocusVisualMargin">-1</Thickness>
+            <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
             <!-- The header's bottom edge and internal column edges meet gridlines. -->
             <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
@@ -46,6 +51,11 @@
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
+            <x:Double x:Key="TableViewHeaderTextVerticalOffset">-1</x:Double>
+            <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
+            <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
+            <Thickness x:Key="TableViewHeaderFlyoutButtonFocusVisualMargin">-1</Thickness>
+            <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
             <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
@@ -74,6 +84,11 @@
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
+            <x:Double x:Key="TableViewHeaderTextVerticalOffset">-1</x:Double>
+            <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
+            <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
+            <Thickness x:Key="TableViewHeaderFlyoutButtonFocusVisualMargin">0</Thickness>
+            <Thickness x:Key="TableViewHeaderInteractionBorderThickness">1</Thickness>
             <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>

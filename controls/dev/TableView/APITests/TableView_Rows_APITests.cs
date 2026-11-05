@@ -799,7 +799,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var row = RequireFirstRow(tableView);
                 Verify.IsTrue(row.IsSelected, "Precondition: the selected row must report IsSelected before scrolling.");
-                Verify.AreEqual("Selected", GetCommonState(row),
+                var highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+                Verify.AreEqual(highContrast ? "HighContrastSelected" : "Selected", GetCommonState(row),
                     "Precondition: the selected row must be in the Selected state before scrolling.");
             });
 
@@ -1063,7 +1064,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rows = GetRealizedRows(tableView);
                 Verify.IsGreaterThan(rows.Count, 1, "Several rows should be realized.");
 
-                Verify.AreEqual("Selected", GetCommonState(rows[0]), "A selected row enters Selected.");
+                var highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+                Verify.AreEqual(highContrast ? "HighContrastSelected" : "Selected", GetCommonState(rows[0]),
+                    "A selected row enters the theme-specific selected state.");
                 Verify.AreEqual("Normal", GetCommonState(rows[1]), "An unselected row stays Normal.");
 
                 // Set on the TableView, not on the rows: that is what an app does, and it additionally

@@ -58,6 +58,7 @@ public:
     void RefreshGridLines();
     void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh = true);
     void RefreshRowBackground();
+    void RefreshVisualState();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
     // this is the main entry point that both publishes the DP and re-enters the CommonStates VSM
@@ -284,6 +285,7 @@ private:
 
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     // originalLocalValue: raw local value (UnsetValue, boxed bool, or BindingExpression).
     struct SuppressedContentTabStop

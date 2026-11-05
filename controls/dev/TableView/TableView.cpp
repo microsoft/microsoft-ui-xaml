@@ -795,6 +795,10 @@ void TableView::OnThemeSettingsChanged(
     {
         RebuildHeaders();
         RefreshGridLinesOnRealizedRows();
+        ForEachRealizedRow([](winrt::TableViewRow const& row)
+        {
+            winrt::get_self<TableViewRow>(row)->RefreshVisualState();
+        });
         QueueTerminalGridLineRefresh();
         // Lead-cell padding and indent are imperative; re-derive from the new metrics.
         RefreshRealizedRowHierarchyState();
@@ -1101,6 +1105,10 @@ try
                     // Rebuild headers and realized rows so grid-line brushes re-resolve.
                     strongThis->RebuildHeaders();
                     strongThis->RefreshGridLinesOnRealizedRows();
+                    strongThis->ForEachRealizedRow([](winrt::TableViewRow const& row)
+                    {
+                        winrt::get_self<TableViewRow>(row)->RefreshVisualState();
+                    });
                     strongThis->QueueTerminalGridLineRefresh();
                     // Re-apply indent and lead-cell reservation against the new theme's metrics.
                     strongThis->RefreshRealizedRowHierarchyState();
@@ -3257,6 +3265,12 @@ void TableView::RebuildHeadersCore()
 
     const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
+    const double headerTextVerticalOffset = winrt::unbox_value_or<double>(
+        LookupElementResource(*this, L"TableViewHeaderTextVerticalOffset"), -1.0);
+    if (!std::isfinite(headerTextVerticalOffset))
+    {
+        throw winrt::hresult_invalid_argument(L"TableViewHeaderTextVerticalOffset must be finite.");
+    }
     const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
     const double extraCompactHeaderFontSize = extraCompact
         ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeExtraCompact"), 12.0)
@@ -3349,6 +3363,10 @@ void TableView::RebuildHeadersCore()
                 headerBlock.Text(headerText);
                 headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+                // Center the visible label without trimming the full line box needed by accents and descenders.
+                winrt::TranslateTransform opticalOffset;
+                opticalOffset.Y(headerTextVerticalOffset);
+                headerBlock.RenderTransform(opticalOffset);
                 // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 header.Content(headerBlock);

@@ -248,6 +248,16 @@ TableViewRow::TableViewRow()
             }
         });
 
+    m_loadedRevoker = Loaded(
+        winrt::auto_revoke,
+        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                strongRow->RefreshVisualState();
+            }
+        });
+
     // Don't strand cell content out of the tab order if unloaded before the restore turn runs.
     m_unloadedRevoker = Unloaded(
         winrt::auto_revoke,
@@ -1451,7 +1461,24 @@ void TableViewRow::UpdateVisualState(bool useTransitions)
                                   : L"Normal"sv;
     }
 
+    if (IsLoaded() && IsEnabled() && state != L"Normal"sv)
+    {
+        if (auto const owner = GetOwningTableView(); owner && winrt::get_self<TableView>(owner)->IsHighContrast())
+        {
+            // Older app templates may only implement the original CommonStates names.
+            if (winrt::VisualStateManager::GoToState(*this, L"HighContrast" + hstring{ state }, useTransitions))
+            {
+                return;
+            }
+        }
+    }
+
     winrt::VisualStateManager::GoToState(*this, hstring{ state }, useTransitions);
+}
+
+void TableViewRow::RefreshVisualState()
+{
+    UpdateVisualState(false /* useTransitions */);
 }
 
 void TableViewRow::SetIsSelectedInternal(bool isSelected)

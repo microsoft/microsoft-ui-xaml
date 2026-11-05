@@ -19,6 +19,15 @@ static constexpr std::wstring_view s_FlyoutButtonPartName{ L"PART_HeaderFlyoutBu
 TableViewColumnHeader::TableViewColumnHeader()
 {
     SetDefaultStyleKey(this);
+    // Rebuilt headers must finish loading their template bindings before HC resting setters run.
+    m_loadedRevoker = Loaded(winrt::auto_revoke,
+        [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->UpdateVisualStates(false);
+            }
+        });
 }
 
 void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winrt::TableViewColumn const& column)
@@ -445,11 +454,12 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     }
 
     const wchar_t* highContrastState = L"HighContrastNormal";
-    if (commonState != std::wstring_view{ L"Normal" } && commonState != std::wstring_view{ L"Disabled" })
+    if (IsLoaded() && IsEnabled() && m_isSortable)
     {
         if (auto const owner = GetOwningTableView(); owner && winrt::get_self<TableView>(owner)->IsHighContrast())
         {
-            highContrastState = m_isPressed ? L"HighContrastPressed" : L"HighContrastPointerOver";
+            highContrastState = commonState == std::wstring_view{ L"Pressed" } ? L"HighContrastPressed" :
+                commonState == std::wstring_view{ L"PointerOver" } ? L"HighContrastPointerOver" : L"HighContrastSortable";
         }
     }
 

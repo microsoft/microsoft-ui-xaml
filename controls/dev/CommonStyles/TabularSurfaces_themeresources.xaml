@@ -69,11 +69,21 @@
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#15FFFFFF" />                        <!-- DividerStrokeColorDefault -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#0FFFFFFF" />            <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#0AFFFFFF" />                <!-- SubtleFillColorTertiary -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundSortableBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderSortableBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPointerOverBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPressedBrush" Color="#00FFFFFF" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#C5FFFFFF" />             <!-- TextFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="#C5FFFFFF" />                 <!-- TextFillColorSecondary -->
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#00FFFFFF" />                <!-- SubtleFillColorTransparent -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="#0AFFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" Color="#00FFFFFF" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.77</x:Double>                                       <!-- TextFillColorSecondary over TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="#15FFFFFF" />                    <!-- DividerStrokeColorDefault -->
@@ -118,11 +128,21 @@
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- DividerStrokeColorDefault (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#09000000" />            <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#06000000" />                <!-- SubtleFillColorTertiary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundSortableBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderSortableBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPointerOverBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPressedBrush" Color="#00FFFFFF" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#9E000000" />            <!-- TextFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="#9E000000" />                <!-- TextFillColorSecondary (Light) -->
 
             <!-- Group header surfaces (parity with Default theme) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#00FFFFFF" />                <!-- SubtleFillColorTransparent -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="#09000000" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="#06000000" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" Color="#00FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" Color="#00FFFFFF" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>                                        <!-- TextFillColorSecondary over TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="#0F000000" />                    <!-- DividerStrokeColorDefault (Light) -->
@@ -164,12 +184,22 @@
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundSortableBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderSortableBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">1.0</x:Double>
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,1,0,1</Thickness>
