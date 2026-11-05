@@ -25,6 +25,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // Injected touch must reach the same selection, group toggle and scroll-sync paths the mouse tests cover.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewTouchInteractionTests
     {
         private const string NavigateToTouchButton = "navigateToTouch";

@@ -8,12 +8,14 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// A real-time ETW session that reads one process's events from the XAML providers, and the kernel's GPU memory
-// events for it, while the profiler is connected.
+// A real-time ETW session that reads one process's events from the XAML providers, and the kernel's GPU memory and
+// window focus events for it, while the profiler is connected.
 public sealed class LiveEtwSource : IDisposable
 {
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
     private const ulong GpuMemoryKeyword = 0x4;
+    // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
+    private const ulong FocusKeyword = 0x2000;
     private const string SessionPrefix = "WinUIProfiler-";
 
     private readonly object gate = new();
@@ -112,6 +114,7 @@ public sealed class LiveEtwSource : IDisposable
             _ = session.Source;
             EnableProviders(session, options);
             EnableGpuMemory(session);
+            EnableFocus(session);
             return new(session);
         }
         catch
@@ -151,6 +154,20 @@ public sealed class LiveEtwSource : IDisposable
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             Trace.TraceWarning($"Could not enable the kernel's GPU memory events: {error.Message}");
+        }
+    }
+
+    // Window focus changes start regions of interest (InterestingRows). Like DxgKrnl, Win32k writes from the
+    // kernel for every process, once per focus change; XamlEventSubscription keeps the target's. Best effort, as above.
+    private static void EnableFocus(TraceEventSession session)
+    {
+        try
+        {
+            session.EnableProvider(XamlProviders.Win32k, TraceEventLevel.Informational, FocusKeyword);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not enable the kernel's window focus events: {error.Message}");
         }
     }
 

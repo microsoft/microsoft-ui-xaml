@@ -32,6 +32,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ScrollingTable = "ScrollingTableView";
         internal const string HierarchyTable = "HierarchyTable";
         internal const string HierarchyRtlTable = "HierarchyRtlTable";
+        internal const string CellControlsTable = "CellControlsTableView";
+        internal const string ToggleCellControlsHeadersButton = "ToggleCellControlsHeadersButton";
 
         // ---- Page controls (AutomationId) ----
 
@@ -40,12 +42,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string AddColumnButton = "AddColumnButton";
         internal const string RemoveColumnButton = "RemoveColumnButton";
         internal const string ToggleScorePinButton = "ToggleScorePinButton";
+        internal const string ToggleNameCanResizeButton = "ToggleNameCanResizeButton";
+        internal const string SetAgeAutoScoreStarButton = "SetAgeAutoScoreStarButton";
+        internal const string ReportBasicColumnWidthsButton = "ReportBasicColumnWidthsButton";
+        internal const string ScaleBasicTableVerticallyButton = "ScaleBasicTableVerticallyButton";
         internal const string FilterSourceButton = "FilterSourceButton";
         internal const string ExpandAllGroupsButton = "ExpandAllGroupsButton";
         internal const string CollapseAllGroupsButton = "CollapseAllGroupsButton";
         internal const string DelayedUnloadButton = "DelayedUnloadButton";
         internal const string DelayedGripperCaptureLossButton = "DelayedGripperCaptureLossButton";
         internal const string DelayedDisableButton = "DelayedDisableButton";
+        internal const string PinNameOnHeaderToolTipDetachButton = "PinNameOnHeaderToolTipDetachButton";
+        internal const string PinNameRebuildOnHeaderToolTipAttachButton = "PinNameRebuildOnHeaderToolTipAttachButton";
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
@@ -60,6 +68,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string GroupedPagingPivotItem = "GroupedPaging";
         internal const string ScrollingPivotItem = "Scrolling";
         internal const string HierarchyPivotItem = "Hierarchy";
+        internal const string CellControlsPivotItem = "CellControls";
 
         internal static string GoToButton(string pivotItem) => "GoTo" + pivotItem + "Button";
 
@@ -221,6 +230,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static readonly int[] ContextMenuColumnWidths = { 160, 160, 100 };
         internal const int ContextMenuTableWidth = 600;
         internal const int ContextMenuItemCount = 6;
+        internal const int CellControlsItemCount = 12;
 
         internal const int ContextMenuNameColumn = 0;
         internal const int ContextMenuCityColumn = 1;

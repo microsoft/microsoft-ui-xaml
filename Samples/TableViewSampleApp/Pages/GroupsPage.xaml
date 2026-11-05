@@ -39,6 +39,11 @@
         </DataTemplate>
         <!-- /snippet -->
 
+        <!-- Lets the Expansion readout follow toggles that raise no input event (UI Automation ExpandCollapse). -->
+        <Style TargetType="tv:TableViewGroupHeader">
+            <Setter Property="pages:GroupsPage.ReportsExpansion" Value="True"/>
+        </Style>
+
         <!-- MaxWidth: the row area measures at infinite width, so uncapped text lays out as one wide line. -->
         <DataTemplate x:Key="GroupsEmptyTemplate" x:DataType="system:Object">
             <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
