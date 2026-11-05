@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
@@ -109,7 +110,7 @@ public static class OfflineEtlSource
         source.Kernel.ProcessEndGroup += OnProcess;
         var tallies = new Dictionary<int, ProcessTally>();
         var order = new List<ProcessTally>();
-        XamlEventSubscription.Match(source, null, (data, provider, processId) =>
+        XamlEventSubscription.Match(source, null, [], (data, provider, _, processId) =>
         {
             var time = data.TimeStampRelativeMSec;
             if (!tallies.TryGetValue(processId, out var tally))
@@ -152,17 +153,21 @@ public static class OfflineEtlSource
             length < TimeSpan.MaxValue.TotalMilliseconds ? TimeSpan.FromMilliseconds(length) : TimeSpan.MaxValue);
     }
 
-    private static string? ExecutableName(ProcessTraceData data)
+    internal static string? ExecutableName(ProcessTraceData data)
     {
         var name = Path.GetFileNameWithoutExtension(data.ImageFileName);
         return string.IsNullOrEmpty(name) ? null : name;
     }
 
-    // A null processId reads every process.
-    public static EtlReadResult Read(string path, int? processId, Action<ProfilerEvent> sink,
-        CancellationToken cancellationToken = default)
+    // A null processId reads every process. Markers are the marker providers whose events are read too. For one process,
+    // processStarted gets the kernel's event for its creation, when the trace has it, and the events of the launcher
+    // providers (MarkerProviderSettings.Launcher) of the process that created it are read too, those that are part of the
+    // launch (LaunchWatcher); they come after the process's first event, and some after later ones.
+    public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
+        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentNullException.ThrowIfNull(markers);
         ArgumentNullException.ThrowIfNull(sink);
         if (!File.Exists(path))
         {
@@ -171,17 +176,40 @@ public static class OfflineEtlSource
 
         using var source = new ETWTraceEventSource(path);
         long delivered = 0;
-        XamlEventSubscription.Subscribe(source, processId, profilerEvent =>
+        LaunchWatcher? watcher = null;
+        void Deliver(ProfilerEvent profilerEvent)
         {
             delivered++;
             sink(profilerEvent);
-        });
+        }
+
+        if (processId is { } id)
+        {
+            var launch = new LaunchWatcher(source, id, processStarted, Deliver);
+            watcher = launch;
+            XamlEventSubscription.Match(source, id, markers, (data, provider, marker, owner) =>
+                {
+                    Deliver(XamlEventSubscription.Capture(data, provider, marker, owner));
+                    // Not an event another process wrote about it, such as the System process's GPU memory event.
+                    if (data.ProcessID == id)
+                    {
+                        launch.ProcessEvent(data.TimeStampRelativeMSec);
+                    }
+                },
+                launch.OtherProcessEvent);
+        }
+        else
+        {
+            XamlEventSubscription.Subscribe(source, null, markers, Deliver);
+        }
+
         using (cancellationToken.Register(source.StopProcessing))
         {
             source.Process();
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        watcher?.Complete();
         return new(delivered, source.EventsLost, source.SessionDuration);
     }
 
