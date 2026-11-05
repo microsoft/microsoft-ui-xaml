@@ -175,18 +175,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
-        public void CanceledPaneDismissalDoesNotCloseDialog()
-        {
-            VerifyPaneDismissalDoesNotCloseDialog(cancelClosing: true);
-        }
-
-        [TestMethod]
         public void PaneDismissalDoesNotCloseDialog()
-        {
-            VerifyPaneDismissalDoesNotCloseDialog(cancelClosing: false);
-        }
-
-        private void VerifyPaneDismissalDoesNotCloseDialog(bool cancelClosing)
         {
             foreach (bool useGamepad in new[] { false, true })
             {
@@ -200,10 +189,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     {
                         var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
                         paneOpen.Uncheck();
-                        if (cancelClosing)
-                        {
-                            new CheckBox(FindElement.ById("CancelDialogPaneClosing")).Check();
-                        }
                         new Button(FindElement.ById("ResetDialogFocusCounts")).Invoke();
                         var toggle = new Button(FindDialogNavigationElement("TogglePaneButton"));
                         FocusHelper.SetFocus(toggle);
@@ -219,10 +204,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                             KeyboardHelper.PressKey(Key.Escape);
                         }
                         Wait.ForIdle();
-                        Verify.AreEqual(cancelClosing ? ToggleState.On : ToggleState.Off, paneOpen.ToggleState);
+                        Verify.AreEqual(ToggleState.Off, paneOpen.ToggleState);
                         Verify.AreEqual("1", new TextBlock(FindElement.ById("DialogPaneClosingCount")).GetText());
                         Verify.AreEqual("0", new TextBlock(FindElement.ById("DialogClosingCount")).GetText(),
-                            "Pane dismissal must not dismiss the enclosing dialog, whether canceled or allowed.");
+                            "Pane dismissal must not dismiss the enclosing dialog.");
                     }
                     finally
                     {

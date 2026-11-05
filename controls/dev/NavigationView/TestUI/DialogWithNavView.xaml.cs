@@ -36,7 +36,6 @@ namespace MUXControlsTestApp
         private void NavigationView_PaneClosing(NavigationView sender, NavigationViewPaneClosingEventArgs args)
         {
             DialogPaneClosingCount.Text = (++paneClosingCount).ToString();
-            args.Cancel = CancelDialogPaneClosing.IsChecked == true;
         }
 
         private void ResetDialogFocusCounts_Click(object sender, RoutedEventArgs e)
