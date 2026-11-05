@@ -32,6 +32,7 @@
             <StackPanel Margin="8" Spacing="4">
                 <CheckBox x:Name="DialogPaneOpen" Content="Pane open"
                           IsChecked="{Binding IsPaneOpen, ElementName=navigationView, Mode=TwoWay}"/>
+                <CheckBox x:Name="CancelDialogPaneClosing" Content="Cancel pane closing"/>
                 <CheckBox x:Name="KeepDialogOpen" Content="Keep dialog open"/>
                 <TextBlock x:Name="DialogPaneClosingCount" Text="0"/>
                 <TextBlock x:Name="DialogClosingCount" Text="0"/>

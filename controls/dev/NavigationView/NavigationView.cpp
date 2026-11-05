@@ -1792,10 +1792,6 @@ void NavigationView::OnSplitViewClosedCompactChanged(const winrt::DependencyObje
 
 void NavigationView::OnSplitViewPaneClosed(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
-    if (!IsPaneOpen())
-    {
-        m_paneOpeningFocusedElement = nullptr;
-    }
     m_paneClosedEventSource(*this, nullptr);
 }
 
@@ -3177,10 +3173,6 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
     bool handled = false;
     m_TabKeyPrecedesFocusChange = false;
-    if (eventArgs.OriginalKey() == winrt::VirtualKey::GamepadB)
-    {
-        m_shouldConsumeGamepadBKeyUp = false;
-    }
 
     switch (key)
     {
@@ -3202,7 +3194,6 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     case winrt::VirtualKey::GamepadB:
         if (IsPaneOpen() && IsLightDismissible())
         {
-            m_shouldConsumeGamepadBKeyUp = eventArgs.OriginalKey() == winrt::VirtualKey::GamepadB;
             AttemptClosePaneLightly();
             handled = true;
         }
@@ -3269,16 +3260,6 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     eventArgs.Handled(handled);
 
     __super::OnKeyDown(e);
-}
-
-void NavigationView::OnKeyUp(winrt::KeyRoutedEventArgs const& args)
-{
-    if (args.OriginalKey() == winrt::VirtualKey::GamepadB && m_shouldConsumeGamepadBKeyUp)
-    {
-        m_shouldConsumeGamepadBKeyUp = false;
-        args.Handled(true);
-    }
-    __super::OnKeyUp(args);
 }
 
 bool NavigationView::BumperNavigation(int offset)
@@ -4473,7 +4454,6 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
 // So we do hook it in Loaded and Unhook it in Unloaded
 void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    m_shouldConsumeGamepadBKeyUp = false;
     m_titleBarMetricsChangedRevoker.revoke();
     m_titleBarIsVisibleChangedRevoker.revoke();
 }

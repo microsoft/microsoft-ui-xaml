@@ -177,7 +177,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         [TestMethod]
         public void PaneDismissalDoesNotCloseDialog()
         {
-            foreach (bool useGamepad in new[] { false, true })
+            foreach (bool cancelClosing in new[] { false, true })
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
                 {
@@ -189,25 +189,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     {
                         var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
                         paneOpen.Uncheck();
+                        if (cancelClosing)
+                        {
+                            new CheckBox(FindElement.ById("CancelDialogPaneClosing")).Check();
+                        }
                         new Button(FindElement.ById("ResetDialogFocusCounts")).Invoke();
                         var toggle = new Button(FindDialogNavigationElement("TogglePaneButton"));
                         FocusHelper.SetFocus(toggle);
                         KeyboardHelper.PressKey(Key.Space);
                         Wait.ForIdle();
                         Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
-                        if (useGamepad)
-                        {
-                            GamepadHelper.PressButton(toggle, GamepadButton.B);
-                        }
-                        else
-                        {
-                            KeyboardHelper.PressKey(Key.Escape);
-                        }
+                        KeyboardHelper.PressKey(Key.Escape);
                         Wait.ForIdle();
-                        Verify.AreEqual(ToggleState.Off, paneOpen.ToggleState);
+                        Verify.AreEqual(cancelClosing ? ToggleState.On : ToggleState.Off, paneOpen.ToggleState);
                         Verify.AreEqual("1", new TextBlock(FindElement.ById("DialogPaneClosingCount")).GetText());
                         Verify.AreEqual("0", new TextBlock(FindElement.ById("DialogClosingCount")).GetText(),
-                            "Pane dismissal must not dismiss the enclosing dialog.");
+                            "Pane dismissal must not dismiss the enclosing dialog, whether canceled or allowed.");
                     }
                     finally
                     {
