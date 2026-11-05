@@ -3,7 +3,7 @@
 
 namespace WinUIProfiler.App.ViewModels;
 
-// The session file the Frames and Elements tabs show: the connection's recording, or a file the user opened, which stays
+// The session file the Frames and Objects tabs show: the connection's recording, or a file the user opened, which stays
 // until the next connection's recording.
 public sealed class SessionSource
 {
@@ -35,6 +35,14 @@ public sealed class SessionSource
     {
         following = false;
         Set(path, false);
+    }
+
+    // A new connection or trace replaces the file shown, even one the user opened, before its own file exists.
+    public void BeginRecording()
+    {
+        recordingPath = null;
+        following = true;
+        Set(null, false);
     }
 
     private void Set(string? path, bool live)

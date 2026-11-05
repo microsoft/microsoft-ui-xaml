@@ -33,14 +33,16 @@ private:
     void ArrangeItem(const winrt::NonVirtualizingLayoutContext& context, int index, float& accumulatedWidths, float maxElementHeight);
     void HideItem(const winrt::UIElement& breadcrumbItem);
     void HideItem(const winrt::NonVirtualizingLayoutContext& context, int index);
-    int GetFirstBreadcrumbBarItemToArrange(winrt::NonVirtualizingLayoutContext const& context);
-    float GetBreadcrumbBarItemsHeight(winrt::NonVirtualizingLayoutContext const& context, int firstItemToRender);
+    int GetFirstBreadcrumbBarItemToArrange(
+        winrt::IVectorView<winrt::UIElement> const& children,
+        winrt::Size const& availableSize,
+        bool& constrainedAncestor);
+    float GetBreadcrumbBarItemsHeight(winrt::IVectorView<winrt::UIElement> const& children, int firstItemToRender);
 
     uint32_t GetItemCount(winrt::NonVirtualizingLayoutContext const& context);
     winrt::UIElement GetElementAt(winrt::NonVirtualizingLayoutContext const& context, uint32_t index);
 
-    winrt::Size m_availableSize{};
-    winrt::BreadcrumbBarItem m_ellipsisButton{nullptr};
+    winrt::UIElement m_ellipsisButton{nullptr};
     winrt::weak_ref<winrt::BreadcrumbBar> m_breadcrumb{ nullptr };  // weak_ref because the BreadcrumbBar already points to us via m_itemsRepeaterLayout
 
     bool m_ellipsisIsRendered{};

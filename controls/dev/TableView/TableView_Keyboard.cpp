@@ -995,7 +995,7 @@ void TableView::OnKeyDownForNavigation(
 
     int32_t newRow = currentRow;
     bool consumeKey = true;
-    // Absolute/page keys are consumed at boundaries; Up/Down may escape the table.
+    // Absolute/page keys are consumed at boundaries; cell-level Up/Down may escape the table.
     bool absoluteRowNav = false;
     std::optional<double> alignRatio{};
 
@@ -1058,9 +1058,23 @@ void TableView::OnKeyDownForNavigation(
         {
             // Up/Down preserve the starting level per ARIA treegrid: row-to-row or same-column
             // cell-to-cell.
-            const bool moved = hasCellAnchor
+            bool moved = hasCellAnchor
                 ? FocusCell(newRow, anchorColumn, alignRatio)
                 : FocusRowContainer(newRow, alignRatio);
+            // Row-level Up/Down steps over rows that refuse focus (disabled), as ListView does.
+            if (!moved && !hasCellAnchor && !absoluteRowNav)
+            {
+                const int32_t step = newRow > currentRow ? 1 : -1;
+                for (int32_t next = newRow + step; next >= 0 && next < rowCount; next += step)
+                {
+                    if (FocusRowContainer(next, alignRatio))
+                    {
+                        newRow = next;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
             if (moved)
             {
                 if (!isControlDown)
@@ -1080,12 +1094,19 @@ void TableView::OnKeyDownForNavigation(
         {
             args.Handled(true);
         }
+
+        // Unhandled, the body scroller would focus a control inside this row's cells.
+        if (!args.Handled() && m_navKeyHandledEarly && !hasCellAnchor &&
+            (key == winrt::Windows::System::VirtualKey::Up || key == winrt::Windows::System::VirtualKey::Down))
+        {
+            args.Handled(true);
+        }
     }
 }
 
-// Rows forward Left/Right before PART_BodyScroller scrolls on them; the handledEventsToo KeyDown
-// then skips the key, since hierarchy Left/Right is not idempotent.
-void TableView::HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
+// Rows forward Left/Right (and row-level Up/Down) before PART_BodyScroller acts on them; the
+// handledEventsToo KeyDown then skips the key, since hierarchy Left/Right is not idempotent.
+void TableView::HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = true;
     OnKeyDownForNavigation(nullptr, args);
@@ -2130,11 +2151,54 @@ void TableView::RevealFocusedBodyElement(winrt::UIElement const& element)
     }
 }
 
+// GetOrCreateElement makes its element the repeater's layout anchor, and only the repeater's own
+// bring-into-view handling releases it (no public API cancels it). Raise a request for the repeater
+// through one of its children, and swallow it once the repeater has seen it, so nothing scrolls.
+void TableView::ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor)
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || winrt::VisualTreeHelper::GetChildrenCount(repeater) == 0)
+    {
+        return;
+    }
+
+    auto target = anchor;
+    if (!target || winrt::VisualTreeHelper::GetParent(target) != repeater)
+    {
+        target = winrt::VisualTreeHelper::GetChild(repeater, 0).try_as<winrt::UIElement>();
+    }
+    if (!target)
+    {
+        return;
+    }
+
+    std::erase_if(m_anchorReleaseTargets, [](auto const& pending) { return !pending.get(); });
+    m_anchorReleaseTargets.push_back(winrt::make_weak(target));
+    winrt::BringIntoViewOptions options;
+    options.AnimationDesired(false);
+    options.TargetRect(winrt::Rect{});
+    target.StartBringIntoView(options);
+}
+
 // XAML pads a keyboard-focus bring-into-view by 20 DIPs (or the focus visual margin), so focusing a
 // row that is already fully in view would still nudge the body, e.g. a first PageDown would scroll.
 // Drop only the vertical padding; the horizontal request still reveals a focused cell.
 void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args)
 {
+    // Routed asynchronously, so matched by its target and empty rect.
+    if (args.TargetRect().Width == 0.0f && args.TargetRect().Height == 0.0f)
+    {
+        auto const releaseTarget = args.TargetElement();
+        if (auto const it = std::find_if(m_anchorReleaseTargets.begin(), m_anchorReleaseTargets.end(),
+                [&releaseTarget](auto const& pending) { return pending.get() == releaseTarget; });
+            it != m_anchorReleaseTargets.end())
+        {
+            m_anchorReleaseTargets.erase(it);
+            args.Handled(true);
+            return;
+        }
+    }
+
     auto const repeater = m_rowsRepeater.get();
     auto const target = args.TargetElement().try_as<winrt::FrameworkElement>();
     if (!repeater || !target)
@@ -2826,7 +2890,7 @@ void TableView::SetCellCursorActiveInternal(bool active)
     m_cellCursorActive = active;
 }
 
-void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
+void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::DependencyObject const& focusedElement)
 {
     if (!row)
     {
@@ -2842,21 +2906,19 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
     const int32_t rowIndex = repeater.GetElementIndex(row);
 
-    winrt::UIElement focusedCell{ nullptr };
-    if (auto const root = XamlRoot())
-    {
-        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>())
-        {
-            focusedCell = rowImpl->FindOwnCellInternal(focused, false /* requireExact */);
-        }
-    }
+    // GotFocus is async and live focus may have moved on (e.g. into a context menu), so use the element that got it.
+    winrt::UIElement const focusedCell = focusedElement
+        ? rowImpl->FindOwnCellInternal(focusedElement, false /* requireExact */)
+        : nullptr;
 
     if (!focusedCell)
     {
-        // Focus is on the ROW container itself - the body's entry level. Record the row so a later
-        // re-entry comes back here, and make sure the two-level cursor agrees that no cell is
-        // current, including releasing whichever row was previously drilled in.
-        if (rowIndex >= 0)
+        auto const root = XamlRoot();
+        winrt::DependencyObject const rowObject = row;
+        const bool focusStillOnRow = root && winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() == rowObject;
+
+        // Focus went to the ROW container itself - the body's entry level. Record the row.
+        if ((focusedElement == rowObject || focusStillOnRow) && rowIndex >= 0)
         {
             m_currentCellRow = rowIndex;
             m_rememberedEntryColumn = -1;
@@ -2864,6 +2926,8 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
             winrt::IInspectable item{ nullptr };
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
+
+        // Even if focus has moved on: this row focus is newer than any cell focus already handled.
         SetCellCursorActiveInternal(false);
         return;
     }

@@ -869,6 +869,7 @@ namespace Microsoft.UI.Xaml
             Double MinHeight;
             Double MaxWidth;
             Double MaxHeight;
+            String PlacementId;
         }
     };
 

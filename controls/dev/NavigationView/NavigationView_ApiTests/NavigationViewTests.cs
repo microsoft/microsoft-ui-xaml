@@ -818,6 +818,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Re-templating a NavigationView whose pane the app closed (IsPaneOpen=false) keeps the pane closed when PaneDisplayMode doesn't change (GitHub #7609).")]
+        public void VerifyRetemplateKeepsForceClosedPaneClosed()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact })
+            {
+                Log.Comment($"PaneDisplayMode={paneDisplayMode}");
+                var navView = SetupForceClosedNavViewForRetemplate(paneDisplayMode);
+
+                RunOnUIThread.Execute(() => navView.Template = LoadRetemplateTestTemplate());
+                IdleSynchronizer.Wait();
+                VerifyRetemplatedPaneState(navView, paneDisplayMode, expectedIsPaneOpen: false, "re-templating");
+
+                RunOnUIThread.Execute(() => navView.Template = LoadRetemplateTestTemplate());
+                IdleSynchronizer.Wait();
+                VerifyRetemplatedPaneState(navView, paneDisplayMode, expectedIsPaneOpen: false, "re-templating again");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A custom VisualStateManager that switches PaneDisplayMode LeftCompact -> Left while a new template is applied still clears the force-close flag, so the pane opens as it did before #7609.")]
+        public void VerifyPaneDisplayModeChangeDuringRetemplateReopensPane()
+        {
+            var navView = SetupForceClosedNavViewForRetemplate(NavigationViewPaneDisplayMode.LeftCompact);
+            RetemplateTestVisualStateManager vsm = null;
+            RunOnUIThread.Execute(() =>
+            {
+                vsm = new RetemplateTestVisualStateManager();
+                // The new template root template-binds this as its custom VisualStateManager while the template is
+                // expanded, before NavigationView.OnApplyTemplate runs.
+                navView.Tag = vsm;
+                navView.Template = LoadRetemplateTestTemplate(bindCustomVisualStateManagerToTag: true);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(vsm.SwitchedInState, "The custom VisualStateManager should have switched PaneDisplayMode while the template was applied");
+                Log.Comment($"PaneDisplayMode switched in GoToStateCore('{vsm.SwitchedInState}')");
+            });
+            VerifyRetemplatedPaneState(navView, NavigationViewPaneDisplayMode.Left, expectedIsPaneOpen: true, "LeftCompact -> Left during re-templating");
+        }
+
+        private NavigationView SetupForceClosedNavViewForRetemplate(NavigationViewPaneDisplayMode paneDisplayMode)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "MenuItem" });
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.IsPaneOpen = false;
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+            VerifyRetemplatedPaneState(navView, paneDisplayMode, expectedIsPaneOpen: false, "launch");
+            return navView;
+        }
+
+        private static void VerifyRetemplatedPaneState(NavigationView navView, NavigationViewPaneDisplayMode expectedPaneDisplayMode, bool expectedIsPaneOpen, string step)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(expectedPaneDisplayMode, navView.PaneDisplayMode, $"PaneDisplayMode after {step}");
+                Verify.AreEqual(expectedPaneDisplayMode == NavigationViewPaneDisplayMode.Left ? NavigationViewDisplayMode.Expanded : NavigationViewDisplayMode.Compact,
+                    navView.DisplayMode, $"DisplayMode after {step}");
+                Verify.AreEqual(expectedIsPaneOpen, navView.IsPaneOpen, $"NavigationView.IsPaneOpen after {step}");
+
+                var splitView = VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView") as SplitView;
+                Verify.IsNotNull(splitView);
+                Verify.AreEqual(expectedIsPaneOpen, splitView.IsPaneOpen, $"RootSplitView.IsPaneOpen after {step}");
+            });
+        }
+
+        // A new, minimal ControlTemplate instance with the parts the pane open/close logic uses. It has no menu ItemsRepeater:
+        // re-applying a template with one while MenuItems holds NavigationViewItem instances hits a chk-build ItemsRepeater
+        // assert (VirtualizationInfo::MoveOwnershipToLayoutFromElementFactory). Optionally template-binds the root's custom
+        // VisualStateManager to the NavigationView's Tag.
+        private static ControlTemplate LoadRetemplateTestTemplate(bool bindCustomVisualStateManagerToTag = false)
+        {
+            var customVisualStateManagerAttribute = bindCustomVisualStateManagerToTag ? "VisualStateManager.CustomVisualStateManager='{TemplateBinding Tag}'" : "";
+            return (ControlTemplate)XamlReader.Load($@"
+                <ControlTemplate
+                    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                    TargetType='controls:NavigationView'>
+                    <Grid {customVisualStateManagerAttribute}>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name='ClosedCompactGroup'>
+                                <VisualState x:Name='NotClosedCompact' />
+                                <VisualState x:Name='ClosedCompact' />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <SplitView x:Name='RootSplitView' DisplayMode='Inline'
+                            IsPaneOpen='{{Binding RelativeSource={{RelativeSource TemplatedParent}}, Path=IsPaneOpen, Mode=TwoWay}}' />
+                    </Grid>
+                </ControlTemplate>");
+        }
+        [TestMethod]
         public void VerifyDefaultsAndBasicSetting()
         {
             NavigationView navView = null;
@@ -1123,6 +1222,204 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 navView.IsPaneOpen = true;
                 Verify.AreEqual(true, navView.IsPaneOpen);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyUnrealizedChildInitiallySelected()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                NavigationView navView = null;
+                NavigationViewItem parent = null;
+                NavigationViewItem child = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = (NavigationView)XamlReader.Load(
+                        "<NavigationView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        "Width='1000' Height='600'><NavigationView.MenuItems>" +
+                        "<NavigationViewItem Content='Parent'><NavigationViewItem.MenuItems>" +
+                        "<NavigationViewItem Content='Child' IsSelected='True' />" +
+                        "</NavigationViewItem.MenuItems></NavigationViewItem>" +
+                        "</NavigationView.MenuItems></NavigationView>");
+                    navView.PaneDisplayMode = mode;
+                    parent = (NavigationViewItem)navView.MenuItems[0];
+                    child = (NavigationViewItem)parent.MenuItems[0];
+                    Content = navView;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(child, navView.SelectedItem);
+                    Verify.IsNull(VisualTreeHelper.GetParent(child));
+                    Verify.IsTrue(parent.IsChildSelected);
+                    Verify.IsFalse(parent.IsExpanded);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyUnrealizedChildSelectionChanges()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var sourceKind in new[] { "MenuItems", "Collection", "ItemsSourceView" })
+                {
+                    var navView = SetupNavigationView(mode);
+                    var children = new ObservableCollection<object>();
+                    NavigationViewItem parent = null;
+                    NavigationViewItem child = null;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        parent = (NavigationViewItem)navView.MenuItems[0];
+                        child = new NavigationViewItem { Content = "Unrealized child" };
+                        if (sourceKind != "MenuItems")
+                        {
+                            parent.MenuItemsSource = sourceKind == "ItemsSourceView" ? new ItemsSourceView(children) : children;
+                            children.Add(child);
+                        }
+                        else
+                        {
+                            parent.MenuItems.Add(child);
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(VisualTreeHelper.GetParent(child));
+                        child.IsSelected = true;
+                        Verify.AreEqual(child, navView.SelectedItem);
+                        Verify.IsTrue(parent.IsChildSelected);
+                        Verify.IsFalse(parent.IsExpanded);
+                        Verify.IsNull(VisualTreeHelper.GetParent(child));
+
+                        child.IsSelected = false;
+                        Verify.IsNull(navView.SelectedItem);
+                        Verify.IsFalse(parent.IsChildSelected);
+
+                        if (sourceKind != "MenuItems")
+                        {
+                            children.Remove(child);
+                        }
+                        else
+                        {
+                            parent.MenuItems.Remove(child);
+                        }
+                        navView.SelectedItem = parent;
+                        child.IsSelected = true;
+                        Verify.AreEqual(parent, navView.SelectedItem, "A removed child must not select itself in its former NavigationView.");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFooterRootPrecedesUnrealizedChildSelection()
+        {
+            NavigationView navView = null;
+            NavigationViewItem child = null;
+            NavigationViewItem footerRoot = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView { Width = 1000, Height = 600, PaneDisplayMode = NavigationViewPaneDisplayMode.Left };
+                var parent = new NavigationViewItem { Content = "Parent" };
+                child = new NavigationViewItem { Content = "Child", IsSelected = true };
+                parent.MenuItems.Add(child);
+                navView.MenuItems.Add(parent);
+                footerRoot = new NavigationViewItem { Content = "Footer", IsSelected = true };
+                navView.FooterMenuItems.Add(footerRoot);
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(footerRoot, navView.SelectedItem);
+                Verify.IsTrue(footerRoot.IsSelected);
+                Verify.IsFalse(child.IsSelected, "Only the first preselected item stays selected.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyChildAddedToUnrealizedMenuItemsSourceIsSelected()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.Left);
+            var children = new ObservableCollection<object>();
+            NavigationViewItem added = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var parent = (NavigationViewItem)navView.MenuItems[0];
+                children.Add(new NavigationViewItem { Content = "Existing" });
+                parent.MenuItemsSource = children;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                added = new NavigationViewItem { Content = "Added", IsSelected = true };
+                children.Add(added);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(VisualTreeHelper.GetParent(added));
+                Verify.AreEqual(added, navView.SelectedItem);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedBoundContainerIsSelectedResetCompletes()
+        {
+            NavigationView navView = null;
+            ObservableCollection<Category> categories = null;
+            Category removed = null;
+            bool containerDeselected = false;
+            ManualResetEvent loadedEvent = new(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                removed = new("Menu Item 2", "MI2", "Icon", null, false);
+                categories = new ObservableCollection<Category> {
+                    new("Menu Item 1", "MI1", "Icon", null, false),
+                    removed
+                };
+
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' IsSelected='{Binding SelectsOnInvoked, Mode=TwoWay}'/>
+</DataTemplate>")
+                };
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => navView.SelectedItem = removed);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var container = (NavigationViewItem)navView.ContainerFromMenuItem(removed);
+                Verify.IsTrue(container.IsSelected);
+                // Clearing the removed container's DataContext resets its bound IsSelected while it is still in the repeater.
+                container.RegisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, (sender, dp) => containerDeselected = !container.IsSelected);
+                categories.Remove(removed);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(containerDeselected);
+                Verify.IsNull(navView.SelectedItem);
             });
         }
 
@@ -2659,6 +2956,314 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyTopNavigationViewVisualPropertyChangesRefreshOverflowWidths()
+        {
+            foreach (var property in new[] { "Icon", "InfoBadge", "Content" })
+            {
+                foreach (var useSource in new[] { false, true })
+                {
+                    foreach (var openOverflow in new[] { false, true })
+                    {
+                        NavigationView navView = null;
+                        NavigationViewItem first = null;
+                        NavigationViewItem changing = null;
+                        ItemsRepeater primaryRepeater = null;
+                        Button overflowButton = null;
+                        Action<bool> setWide = null;
+                        double availableWidth = 0;
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            first = new NavigationViewItem { Content = "First", Width = 100 };
+                            changing = new NavigationViewItem { Content = "Item" };
+                            if (property != "Icon") { changing.Icon = new SymbolIcon(Symbol.Home); }
+                            var items = new ObservableCollection<NavigationViewItem> { first, changing };
+                            navView = new NavigationView
+                            {
+                                PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                                IsSettingsVisible = false,
+                                IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                                Width = 800,
+                                Height = 300
+                            };
+                            if (useSource) { navView.MenuItemsSource = items; }
+                            else { foreach (var item in items) { navView.MenuItems.Add(item); } }
+                            navView.SelectedItem = first;
+                            setWide = wide =>
+                            {
+                                switch (property)
+                                {
+                                    case "Icon": changing.Icon = wide ? new SymbolIcon(Symbol.Home) : null; break;
+                                    case "InfoBadge": changing.InfoBadge = wide ? new InfoBadge { Value = 99, Width = 80 } : null; break;
+                                    case "Content": changing.Content = wide ? "A much longer navigation item label" : "Item"; break;
+                                }
+                            };
+                            Content = navView;
+                            Content.UpdateLayout();
+                            primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                            var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                            var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                            topGrid.Measure(infiniteSize);
+                            var smallWidth = topGrid.DesiredSize.Width;
+                            setWide(true);
+                            Content.UpdateLayout();
+                            topGrid.Measure(infiniteSize);
+                            Verify.IsTrue(topGrid.DesiredSize.Width - smallWidth >= 20);
+                            availableWidth = (smallWidth + topGrid.DesiredSize.Width) / 2;
+                            navView.Width = availableWidth;
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                            overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                            if (openOverflow)
+                            {
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                                provider.Invoke();
+                            }
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() => setWide(false));
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(availableWidth, navView.Width);
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                                property + ": shrinking an overflow item must invalidate its cached width.");
+                            Verify.AreEqual(first, navView.SelectedItem);
+                            Verify.AreEqual(0, changing.MenuItems.Count);
+                            overflowButton.Flyout.Hide();
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewIconOnlyChevronFits()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    Width = 1008
+                };
+                var item = new NavigationViewItem { Icon = new SymbolIcon(Symbol.Home) };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+
+                var chevron = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(item, "ExpandCollapseChevron");
+                var presenter = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                var layoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                var leafWidth = layoutRoot.ActualWidth;
+                Verify.AreEqual(Visibility.Collapsed, chevron.Visibility);
+
+                item.MenuItems.Add(new NavigationViewItem { Content = "Child" });
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Visible, chevron.Visibility);
+                Verify.IsTrue(chevron.ActualWidth > 0 && chevron.ActualHeight > 0);
+                var bounds = chevron.TransformToVisual(layoutRoot).TransformBounds(
+                    new global::Windows.Foundation.Rect(0, 0, chevron.ActualWidth, chevron.ActualHeight));
+                Verify.IsTrue(bounds.Left >= -0.5 && bounds.Right <= layoutRoot.ActualWidth + 0.5,
+                    "The visible chevron must fit inside the icon-only item's layout root.");
+
+                item.MenuItems.Clear();
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Collapsed, chevron.Visibility);
+                Verify.AreEqual(leafWidth, layoutRoot.ActualWidth, "Removing children should restore the icon-only leaf width.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewRecoversAfterChildrenAreRemoved()
+        {
+            foreach (bool useMenuItemsSource in new[] { false, true })
+            {
+                foreach (string childrenKind in new[] { "MenuItems", "SourceCollection", "SourceReplacement", "Unrealized" })
+                {
+                    foreach (bool openOverflow in new[] { false, true })
+                    {
+                        Log.Comment($"MenuItemsSource={useMenuItemsSource}, children={childrenKind}, open overflow={openOverflow}");
+                        NavigationView navView = null;
+                        NavigationViewItem parent = null;
+                        ItemsRepeater primaryRepeater = null;
+                        Button overflowButton = null;
+                        var children = new ObservableCollection<NavigationViewItem>();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            navView = new NavigationView
+                            {
+                                PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                                IsSettingsVisible = false,
+                                IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                                Width = 800,
+                                Height = 300
+                            };
+                            var first = new NavigationViewItem { Content = "First", Width = 100 };
+                            parent = new NavigationViewItem { Icon = new SymbolIcon(Symbol.Home) };
+                            if (childrenKind == "SourceCollection")
+                            {
+                                parent.MenuItemsSource = children;
+                            }
+                            if (useMenuItemsSource)
+                            {
+                                navView.MenuItemsSource = new ObservableCollection<NavigationViewItem> { first, parent };
+                            }
+                            else
+                            {
+                                navView.MenuItems.Add(first);
+                                navView.MenuItems.Add(parent);
+                            }
+                            navView.SelectedItem = first;
+                            Content = navView;
+                            Content.UpdateLayout();
+
+                            primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count);
+                            var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                            var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                            topGrid.Measure(infiniteSize);
+                            var leafWidth = topGrid.DesiredSize.Width;
+
+                            var child = new NavigationViewItem { Content = "Child" };
+                            switch (childrenKind)
+                            {
+                                case "MenuItems": parent.MenuItems.Add(child); break;
+                                case "SourceCollection": children.Add(child); break;
+                                case "SourceReplacement": parent.MenuItemsSource = new[] { child }; break;
+                                case "Unrealized": parent.HasUnrealizedChildren = true; break;
+                            }
+                            Content.UpdateLayout();
+                            topGrid.Measure(infiniteSize);
+                            var parentWidth = topGrid.DesiredSize.Width;
+                            Verify.IsTrue(parentWidth > leafWidth);
+                            navView.Width = (leafWidth + parentWidth) / 2;
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                            overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                            Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                            if (openOverflow)
+                            {
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                                Verify.IsNotNull(provider);
+                                provider.Invoke();
+                            }
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            switch (childrenKind)
+                            {
+                                case "MenuItems": parent.MenuItems.Clear(); break;
+                                case "SourceCollection": children.Clear(); break;
+                                case "SourceReplacement": parent.MenuItemsSource = null; break;
+                                case "Unrealized": parent.HasUnrealizedChildren = false; break;
+                            }
+                            navView.InvalidateMeasure();
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                                "The smaller leaf must return from overflow without resizing NavigationView.");
+                            Verify.AreEqual(Visibility.Collapsed, navView.TemplateSettings.OverflowButtonVisibility);
+                            overflowButton.Flyout.Hide();
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTopNavigationViewRecoversWithDataTemplatedItems()
+        {
+            NavigationView navView = null;
+            ItemsRepeater primaryRepeater = null;
+            Button overflowButton = null;
+            var parent = new Category(null, "Parent", null, new ObservableCollection<Category>(), true);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = new Category("First navigation item", "First", null, new ObservableCollection<Category>(), true);
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                    Width = 800,
+                    Height = 300,
+                    MenuItemsSource = new ObservableCollection<Category> { first, parent },
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <NavigationViewItem Icon='Home' Content='{Binding Content}' MenuItemsSource='{Binding Children}'/>
+                          </DataTemplate>")
+                };
+                navView.SelectedItem = first;
+                Content = navView;
+                Content.UpdateLayout();
+                primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count);
+                var topGrid = (Grid)VisualTreeUtils.FindVisualChildByName(navView, "TopNavGrid");
+                var infiniteSize = new global::Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+                topGrid.Measure(infiniteSize);
+                var leafWidth = topGrid.DesiredSize.Width;
+
+                parent.Children.Add(new Category("Child", "Child", null, new ObservableCollection<Category>(), true));
+                Content.UpdateLayout();
+                topGrid.Measure(infiniteSize);
+                var parentWidth = topGrid.DesiredSize.Width;
+                Verify.IsTrue(parentWidth > leafWidth);
+                navView.Width = (leafWidth + parentWidth) / 2;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, primaryRepeater.ItemsSourceView.Count);
+                overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                Verify.IsNotNull(provider);
+                provider.Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parent.Children.Clear();
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, primaryRepeater.ItemsSourceView.Count,
+                    "Recycling data-templated containers must not keep invalidating the width cache.");
+                Verify.AreEqual(Visibility.Collapsed, navView.TemplateSettings.OverflowButtonVisibility);
+                overflowButton.Flyout.Hide();
+            });
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonRemainsVisibleAfterSelectingOnlyOverflowItem()
         {
             foreach (bool useMenuItemsSource in new[] { false, true })
@@ -3410,6 +4015,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             IdleSynchronizer.Wait();
+        }
+    }
+
+    // An app-style custom VisualStateManager: the first time NavigationView goes to a ClosedCompactGroup state on the
+    // template it's attached to (NavigationView.UpdateIsClosedCompact, called from OnApplyTemplate), it switches
+    // PaneDisplayMode LeftCompact -> Left synchronously.
+    public partial class RetemplateTestVisualStateManager : VisualStateManager
+    {
+        public string SwitchedInState { get; private set; }
+
+        protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
+        {
+            var result = base.GoToStateCore(control, templateRoot, stateName, group, state, useTransitions);
+
+            if (SwitchedInState == null && (stateName == "ClosedCompact" || stateName == "NotClosedCompact")
+                && control is NavigationView navView && navView.PaneDisplayMode == NavigationViewPaneDisplayMode.LeftCompact)
+            {
+                SwitchedInState = stateName;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+            }
+
+            return result;
         }
     }
 }

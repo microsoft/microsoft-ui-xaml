@@ -111,6 +111,15 @@ struct ColumnResizeFrozenColumn
     winrt::IInspectable width{ nullptr };
 };
 
+// A locked Star column before a resized one, held at the width it rendered when the resize began.
+struct LockedColumnHold
+{
+    winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+    double width{ 0.0 };
+    // What the Auto columns took when the hold was latched; growth past it can make the hold stale.
+    double autoTotal{ 0.0 };
+};
+
 // One in-flight resize drag. The gripper owns the gesture; this is only the host's anchor for it,
 // kept reachable so Escape can cancel the drag in flight.
 struct ColumnResizeDragState
@@ -132,6 +141,12 @@ struct ColumnResizeDragState
     bool didDelta{ false };
     // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
     std::vector<ColumnResizeFrozenColumn> frozen;
+    // The table's locked-column holds before the first write, restored if the drag is canceled.
+    std::optional<std::pair<std::vector<LockedColumnHold>, size_t>> lockedHoldsBefore;
+    // A double-click fit writes a Pixel width even when an Auto or Star column already has its size.
+    bool commitPixelWidth{ false };
+    uint64_t lastPressTimestamp{ 0 };
+    winrt::Point lastPressPosition{};
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -289,7 +304,10 @@ public:
     // UIA Transform support for the column header peer. Driven through the column's gripper so the
     // bounds, Star handling and announcement match a pointer or Alt+Arrow resize exactly.
     bool CanResizeColumnFromAutomation(const winrt::TableViewColumn& column);
-    bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width);
+    bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width, bool commitPixelWidth = false);
+    bool AutoFitColumn(const winrt::TableViewColumn& column);
+    static double DoubleClickSlop(const winrt::UIElement& element);
+    static uint64_t DoubleClickIntervalMicroseconds();
     void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
     // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /
@@ -312,6 +330,9 @@ public:
     // measure pass re-resolves column widths (ResolveColumnWidths then re-pins frozen columns and
     // refreshes gridline visuals from the resolved widths).
     void OnColumnWidthChanged(const winrt::TableViewColumn& column);
+
+    // Internal - ends the locked-column holds; called when an input they were latched against changes.
+    void ExpireLockedColumnHolds();
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
@@ -344,13 +365,15 @@ public:
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
+    // Releases the rows repeater's layout anchor, made by GetOrCreateElement(anchor's index), without scrolling.
+    void ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor);
 
     // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
     // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
     // default, or that row's current cell once the user has drilled in with Right.
     bool FocusRow(int32_t index);
 
-    void HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
+    void HandleBodyKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
 
 
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
@@ -430,7 +453,7 @@ public:
     // Shared header/body column cursor, in visible-column coordinates.
     int32_t CurrentColumnCursorInternal() const noexcept { return m_currentCellColumn; }
 
-    void OnRowCellFocusChanged(winrt::TableViewRow const& row);
+    void OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::DependencyObject const& focusedElement);
 
     bool TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool requireExactCell) const;
 
@@ -524,6 +547,9 @@ public:
     void QueueReshapeAfterEditCloses(std::function<void()> operation);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
+    void QueueDeferredEditReshapeDrain();
+    void FlushDeferredEditReshapes();
+    bool IsActiveSourceOwnedByOther() const;
 
     // ----- Editing input gestures (TableView_EditingInput.cpp) -----
     // The pointer gesture lives on TableViewRow: the row owns its cells, so it is the level that
@@ -555,6 +581,8 @@ public:
     // Centralises the mode gate only. Modifier-aware routing (interacted vs focused, per
     // SelectorBase) is what Multiple/Extended will add on top.
     bool CanSelectRows();
+    // Always false while only None and Single exist; Multiple must derive it from SelectionMode.
+    bool CanSelectMultipleRows() const noexcept { return false; }
 
     // Shared by the pointer gesture, keyboard navigation and the row peer. No-op when off.
     // The one-arg form reads Ctrl live and toggles; automation passes toggle=false, because UIA
@@ -818,6 +846,7 @@ private:
     // replay order matches arrival order.
     std::deque<std::function<void()>> m_pendingEditReshapes;
     std::deque<std::function<void()>> m_reshapesAfterEditCloses;
+    bool m_editReshapeDrainQueued{ false };
 
     // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
     // inside an EditEnding handler stays valid once the edit closes.
@@ -1235,6 +1264,15 @@ private:
     // re-enter the collection that is still mutating, so the reshape runs on the next turn.
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
+    // Removes `column` from the sort state; queues the clear when it was sorted.
+    void PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& column);
+    // IObservableVector has no Move, so RemoveAt + InsertAt of the same instance before the queued
+    // clear runs is a move: the column gets its sort back and the clear finds nothing to do.
+    void RestoreSortOfMovedColumn(const winrt::TableViewColumn& column);
+    // Any other change to the sort or to the columns while the column is out makes the restore stale.
+    void CancelPendingSortRestore() { m_sortedColumnPendingRemoval = nullptr; }
+    winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
+    winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected
@@ -1252,6 +1290,8 @@ private:
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
+    // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
+    std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
 
     winrt::event_token m_rowElementPreparedToken{};
@@ -1263,6 +1303,8 @@ private:
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
+    std::vector<LockedColumnHold> m_lockedColumnHolds;
+    size_t m_lockedColumnHoldsSignature{ 0 };
     // True while a control-initiated sort verb is mutating the source. Its own mutations must not
     // be mistaken for the app declaring a sort behind the control's back.
     bool m_isApplyingControlInitiatedSort{ false };
@@ -1405,7 +1447,7 @@ private:
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
-    void ReleaseThemeSettings();
+    void ReleaseThemeSettings() noexcept;
     bool m_rowsSourceDrained{ false };
     // Unloaded released ownership of m_activeSource; Loaded reclaims it.
     bool m_activeSourceReleased{ false };
@@ -1450,7 +1492,9 @@ private:
     bool IsColumnResizePinned(const winrt::TableViewColumn& column);
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
-    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen);
+    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
+    // Hash of every input that sizes the columns other than user resizes; holds die when it changes.
+    size_t LockedColumnHoldsSignature();
     winrt::ResizeGripper GetAvailableResizeGripper(const winrt::TableViewColumn& column);
     bool IsColumnResizeAllowed(const winrt::TableViewColumn& column);
     static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);

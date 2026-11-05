@@ -89,11 +89,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("::DependencyObject const& dependencyObject);\r\n        void DisconnectUnloadedObje" +
                     "ct(int32_t connectionId);\r\n");
   foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
+        string fieldType = fieldData.FieldType != null ? fieldData.FieldType.FullName.CppWinRTName() : Projection(fieldData.FieldTypeName);
         if (fieldData.IsDeprecated) { 
             this.Write("#pragma warning(push)\r\n#pragma warning(disable : 4973)\r\n");
       }
             this.Write("\r\n        ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(fieldData.FieldTypeName)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(fieldType));
             this.Write(" ");
             this.Write(this.ToStringHelper.ToStringWithCulture(fieldData.FieldName));
             this.Write("()\r\n        {\r\n            return _");
@@ -101,7 +102,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(";\r\n        }\r\n        void ");
             this.Write(this.ToStringHelper.ToStringWithCulture(fieldData.FieldName));
             this.Write("(");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(fieldData.FieldTypeName)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(fieldType));
             this.Write(" value)\r\n        {\r\n            _");
             this.Write(this.ToStringHelper.ToStringWithCulture(fieldData.FieldName));
             this.Write(" = value;\r\n        }\r\n");
@@ -122,15 +123,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(";\r\n");
   }
             this.Write("\r\n");
-  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) { 
+  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
+        string fieldType = fieldData.FieldType != null ? fieldData.FieldType.FullName.CppWinRTName() : Projection(fieldData.FieldTypeName);
+        string initializer = fieldData.IsValueType || fieldData.FieldTypeName == typeof(string).FullName ? "" : "nullptr"; 
       if (fieldData.IsDeprecated) { 
             this.Write("#pragma warning(push)\r\n#pragma warning(disable : 4973)\r\n");
       }
             this.Write("        ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(fieldData.FieldTypeName)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(fieldType));
             this.Write(" _");
             this.Write(this.ToStringHelper.ToStringWithCulture(fieldData.FieldName));
-            this.Write("{nullptr};\r\n");
+            this.Write("{");
+            this.Write(this.ToStringHelper.ToStringWithCulture(initializer));
+            this.Write("};\r\n");
       if (fieldData.IsDeprecated) { 
             this.Write("#pragma warning(pop)\r\n");
       }

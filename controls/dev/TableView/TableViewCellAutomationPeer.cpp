@@ -887,7 +887,9 @@ void TableViewCellAutomationPeer::RealizeCore()
 
     if (auto const row = element.try_as<winrt::TableViewRow>())
     {
-        if (!IsTrackedRow(row, tableView))
+        // The peer is bound to its own cell element; if the repeater realized the item into another
+        // row, this provider cannot describe it, so fail rather than report a realized element.
+        if (!IsTrackedRow(row, tableView) || row != m_row.get() || !IsOwnerCurrentCellOfRow(row))
         {
             ThrowElementNotAvailable();
         }

@@ -236,12 +236,7 @@ private:
         bool increase
         );
 
-#ifdef XAMLPROFILER_ENABLED
-    void TraceProfilerMemoryChange(bool isAllocation);
-    void TraceProfilerTextureObserved(
-        _In_ IUnknown* updateObject,
-        const POINT& offset) noexcept;
-#endif
+    void TraceSurfaceInit(DXGI_FORMAT format);
 
     _Check_return_ HRESULT CopySubresource(
         _In_ const XRECT& destRect,
@@ -283,6 +278,7 @@ private:
     bool m_isVirtual : 1;
     bool m_isHDR : 1;
     bool m_requestAtlas : 1;
+    bool m_graphicsResourceTracked = false;
 
     // DComp, and SurfaceImageSource both allow calling BeginDraw multiple
     // times while an EndDraw is outstanding (for performance reasons).
