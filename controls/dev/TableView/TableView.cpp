@@ -1333,6 +1333,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
         // stale content no longer pins the columns.
         ResetColumnDesiredWidths();
+        ExpireLockedColumnHolds();
 
         // A different collection invalidates any projection we synthesized over the old one, so the
         // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here

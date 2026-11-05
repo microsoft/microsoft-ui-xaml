@@ -2040,6 +2040,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("Columns", t => { var c = t.Columns[3]; t.Columns.RemoveAt(3); t.Columns.Add(c); }),
                 ("CanUserResizeColumns", t => { t.CanUserResizeColumns = false; t.CanUserResizeColumns = true; }),
                 ("viewport", t => { t.Width = 500.0; t.UpdateLayout(); t.Width = 600.0; }),
+                ("ItemsSource", t => t.ItemsSource = ((global::System.Collections.IEnumerable)t.ItemsSource).Cast<object>().ToList()),
             };
 
             foreach (var (name, change) in inputs)
