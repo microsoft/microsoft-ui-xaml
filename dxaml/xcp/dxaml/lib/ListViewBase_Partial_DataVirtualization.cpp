@@ -28,6 +28,22 @@ _Check_return_ HRESULT ListViewBase::ProcessDataVirtualizationScrollOffsets()
 
     if (spPaginatedPanel && m_tpScrollViewer && !m_isLoadAsyncInProgress)
     {
+        if (m_scrollHostOffsetChangeAction == ScrollHostOffsetChangeAction_IncrementalEdgeTrigger &&
+            ctl::is<IModernCollectionBasePanel>(spItemsHost))
+        {
+            const auto itemsHost = static_cast<CUIElement*>(spItemsHost.Cast<Panel>()->GetHandle());
+            if (itemsHost->GetIsMeasureDirty() ||
+                itemsHost->GetIsOnMeasureDirtyPath() ||
+                itemsHost->GetIsMeasuringSelf())
+            {
+                // Data notifications can precede item measurement. Retry after virtualization
+                // finishes instead of loading against the previous measure's viewport and extent.
+                m_isIncrementalLoadingCheckPending = TRUE;
+                return S_OK;
+            }
+        }
+
+        m_isIncrementalLoadingCheckPending = FALSE;
         ctl::ComPtr<IScrollInfo> spScrollInfo;
         INT lastItemInViewport = -1;
 
@@ -253,7 +269,15 @@ _Check_return_ HRESULT ListViewBase::LoadMoreItemsAsyncInternal(
 // overridden from ItemsControl (IGeneratorHost)
 _Check_return_ IFACEMETHODIMP ListViewBase::VirtualizationFinished()
 {
-    return InvokeDataSourceRangesChanged();
+    IFC_RETURN(InvokeDataSourceRangesChanged());
+
+    if (m_isIncrementalLoadingCheckPending && IsInLiveTree())
+    {
+        m_isIncrementalLoadingCheckPending = FALSE;
+        IFC_RETURN(ProcessDataVirtualizationScrollOffsets());
+    }
+
+    return S_OK;
 }
 
 // Stores a handle to the items source as an IItemsRangeInfo if possible
