@@ -273,7 +273,8 @@ foreach (var capture in new SnapshotResourceCapture?[] { null, unavailableResour
 Console.WriteLine("Passed: older/unavailable/empty captures retain all four groups without fabricating graphics rows.");
 
 // A recorded trace's session file times its events with this machine's frequency until they span a second and it derives
-// the trace's, so a launch timeline that follows the file must not keep times from before.
+// the trace's, so a launch timeline that follows the file must not keep times from before, the launcher's included. A
+// snapshot of the file reads the launcher's events with the info that names their launcher.
 var launchPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-LaunchTimeline-{Guid.NewGuid():N}.sqlite");
 try
 {
@@ -287,9 +288,10 @@ try
           "version": 1,
           "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
           "milestones": [
-            { "builtin": "ProcessCreated" },
-            { "label": "Ready", "provider": "Contoso.Launch", "event": "Ready" },
-            { "builtin": "FirstFrameDrawn" }
+          { "label": "Clicked", "provider": "Contoso.Launch", "event": "Clicked", "from": "launcher" },
+          { "builtin": "ProcessCreated" },
+          { "label": "Ready", "provider": "Contoso.Launch", "event": "Ready" },
+          { "builtin": "FirstFrameDrawn" }
           ]
         }
         """);
@@ -317,20 +319,38 @@ try
         }
     }
 
-    writer.SetProcessStart(new(Qpc(-5), "Contoso", 100, "explorer"));
     Store(Frame(0, 1, true), Frame(40, 1, false), Frame(60, 2, true),
         new(Qpc(100), 100, 200, 1, XamlProvider.Marker, true, "Ready", 0, [], contoso));
+    (Guid, string)[] clicked = [(contoso.Id, "Clicked")];
+    using (var before = SessionFile.OpenSnapshot(launchPath))
+    {
+        writer.SetProcessStart(new(Qpc(-5), "Contoso", 100, "explorer"));
+        Store(new ProfilerEvent(Qpc(-50), -50, 100, 7, XamlProvider.Marker, true, "Clicked", 0, [], contoso));
+        var seen = new List<ProfilerEvent>();
+        var seenTo = before.ReadEvents(clicked, null, seen.Add);
+        using var after = SessionFile.OpenSnapshot(launchPath);
+        var stored = new List<ProfilerEvent>();
+        var storedTo = after.ReadEvents(clicked, null, stored.Add);
+        if (before.Info.LauncherProcessId is not null || seen.Count != 0 || seenTo != 4 ||
+            after.Info.LauncherProcessId != 100 || stored is not [{ ProcessId: 100, ThreadId: 7 }] || storedTo != 5)
+        {
+            throw new InvalidOperationException(
+                "A snapshot must read the events stored when it was opened, with the info that names their launcher.");
+        }
+    }
+
     var following = new LaunchTimelineReader(launchPath, config);
     following.Read();
     Store(Frame(1500, 2, false));
     var followed = Describe(following.Read());
     var fresh = Describe(new LaunchTimelineReader(launchPath, config).Read());
-    if (followed != fresh || fresh != "Process created 0 ms, First frame drawn 45 ms, Ready 105 ms")
+    if (followed != fresh || fresh != "Clicked 0 ms, Process created 45 ms, First frame drawn 90 ms, Ready 150 ms")
     {
         throw new InvalidOperationException(
             $"A launch timeline read before the trace's frequency was known must be timed with it once it is: followed '{followed}', afresh '{fresh}'.");
     }
 
+    Console.WriteLine("Passed: a snapshot of a session file reads its launcher's events with the info that names it.");
     Console.WriteLine("Passed: a launch timeline that follows a recorded trace's session file is retimed once its frequency is known.");
 }
 finally
