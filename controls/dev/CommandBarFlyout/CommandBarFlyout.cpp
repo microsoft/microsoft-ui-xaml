@@ -159,6 +159,8 @@ CommandBarFlyout::CommandBarFlyout()
     Opening({
         [this](auto const&, auto const&)
         {
+            m_isClosingWithoutShowing = false;
+
             // The CommandBarFlyout is shown in standard mode in the case
             // where it's being opened as a context menu, rather than as a selection flyout.
             // In that circumstance, we want to have the flyout be open from the start.
@@ -182,6 +184,13 @@ CommandBarFlyout::CommandBarFlyout()
                 SharedHelpers::QueueCallbackForCompositionRendering(
                     [strongThis = get_strong(), commandBar]
                     {
+                        // This runs after Opened, so the flyout may have closed itself again in the
+                        // meantime because it had nothing to show.
+                        if (strongThis->m_isClosingWithoutShowing)
+                        {
+                            return;
+                        }
+
                         if (auto const commandBarFlyoutCommandBar = winrt::get_self<CommandBarFlyoutCommandBar>(commandBar))
                         {
                             auto const scopeGuard = gsl::finally([commandBarFlyoutCommandBar]()
@@ -210,6 +219,17 @@ CommandBarFlyout::CommandBarFlyout()
     Opened({
         [this](auto const&, auto const&)
         {
+            if (ShouldCloseWithoutShowing())
+            {
+                // Opened is raised after layout but before the frame is rendered, so closing now
+                // means the flyout is never actually drawn. The Closing handler below skips the
+                // close animation for this case, which would otherwise keep an empty flyout on
+                // screen for the duration of the animation.
+                m_isClosingWithoutShowing = true;
+                Hide();
+                return;
+            }
+
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
                 if (commandBar->HasOpenAnimation())
@@ -235,7 +255,7 @@ CommandBarFlyout::CommandBarFlyout()
                 // So we need to remove it in all cases.
                 RemoveDropShadow();
 
-                if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
+                if (!m_isClosingAfterCloseAnimation && !m_isClosingWithoutShowing && commandBar->HasCloseAnimation())
                 {
                     args.Cancel(true);
 
