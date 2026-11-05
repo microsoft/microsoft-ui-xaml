@@ -5,10 +5,17 @@
 {
   "version": 1,
 
-  // Providers to record along with the XAML providers, from the target process only. A "name" alone gets the GUID
-  // EventSource and TraceLogging derive from the name; give the "guid" of any other provider. Optional: "level" (default 5,
-  // verbose) and "keywords" (default all).
+  // Providers to record along with the XAML providers, from the target process and, for a provider that a launcher
+  // milestone names, from the process that launched it too. A "name" alone gets the GUID EventSource and TraceLogging
+  // derive from the name; give the "guid" of any other provider. Optional: "level" (default 5, verbose) and "keywords"
+  // (default all).
   "providers": [
+    // Windows' launch events: the shell's click on an app, a packaged desktop app's activation, ShellExecute, and the
+    // app's launch measures.
+    { "name": "Microsoft.Windows.AppLifeCycle.UI" },
+    { "name": "Microsoft.Windows.ApplicationModel.DesktopAppx" },
+    { "name": "Microsoft.Windows.ShellExecute", "guid": "382b5e24-181e-417f-a8d6-2155f749e724" },
+    { "name": "Microsoft.Windows.AppLifeCycle", "guid": "ef00584a-2655-462c-bc24-e7de630e7fbf" },
     { "name": "Microsoft-Windows-Store" },
     // An app's own provider, such as an EventSource named Contoso.App:
     // { "name": "Contoso.App" },
@@ -17,12 +24,23 @@
   // A milestone is built in ("builtin": ProcessCreated or FirstFrameDrawn), or the first "event" from a "provider" (one
   // above, or a XAML provider such as Microsoft.UI.Xaml) whose fields have the values in "where", if given. "label" names
   // it; with "labelFrom" instead, the first event with each value of that field is a milestone named by the value.
-  // "process" (an executable name, with or without .exe) shows the milestone for that app only.
+  // "process" (an executable name, with or without .exe) shows the milestone for that app only. "from": "launcher" takes
+  // the event from the process that launched the app instead: of its events within 10 seconds of the app's creation
+  // that are part of the launch, the one nearest the creation (see "Launcher milestones" in the README). The timeline's
+  // times are from the earliest launcher milestone before the creation, or else from the creation.
   "milestones": [
+    // The shell's event for a user's click that launched the app (not written for a launch by UI Automation).
+    { "provider": "Microsoft.Windows.AppLifeCycle.UI", "event": "AppLaunch_UserClick", "label": "User click", "from": "launcher" },
+    // A packaged desktop app's activation.
+    { "provider": "Microsoft.Windows.ApplicationModel.DesktopAppx", "event": "TryActivateDesktopAppXApplication/Start", "label": "Activation requested", "from": "launcher" },
+    { "provider": "Microsoft.Windows.ShellExecute", "event": "ShellExecuteExW/Start", "label": "ShellExecute", "from": "launcher" },
     { "builtin": "ProcessCreated", "label": "Process created" },
     // WinUI's event at the end of the first UI thread frame, whether or not it drew.
     { "provider": "Microsoft.UI.Xaml", "event": "FirstUiThreadFrameEnd", "label": "First UI thread frame" },
     { "builtin": "FirstFrameDrawn", "label": "First frame drawn" },
+    // Windows' measures of the app's launch, which some apps log, such as Paint.
+    { "provider": "Microsoft.Windows.AppLifeCycle", "event": "ModernAppLaunch_UIResponsive/Stop", "label": "UI responsive" },
+    { "provider": "Microsoft.Windows.AppLifeCycle", "event": "ModernAppLaunch_VisibleComplete/Stop", "label": "Visible complete" },
     // The Microsoft Store's launch scenarios, such as FirstShimmer and VisibleComplete.
     { "provider": "Microsoft-Windows-Store", "event": "PerfMetrics", "labelFrom": "scenario", "process": "WinStore.App" },
     // An app's own milestone:

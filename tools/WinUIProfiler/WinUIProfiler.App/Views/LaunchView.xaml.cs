@@ -184,11 +184,19 @@ public sealed partial class LaunchView : UserControl
     private void ShowTimeline(LaunchTimeline timeline)
     {
         var session = timeline.Session;
-        var process = session.ProcessName is { } name ? Format("MilestoneProcessFormat", name, session.ProcessId)
-            : Format("MilestonePidFormat", session.ProcessId);
-        SetLine(LaunchSummary, timeline.Origin == LaunchOrigin.RecordingStart ? Format("LaunchFromRecordingStartFormat", process)
-            : timeline.RecordingStartMilliseconds is > 0 and var late ? Format("LaunchFromCreationLateFormat", process, late)
-            : Format("LaunchFromCreationFormat", process));
+        var process = ProcessText(session.ProcessName, session.ProcessId);
+        if (session.LauncherProcessId is { } launcher)
+        {
+            process = Format("LaunchProcessLauncherFormat", process, ProcessText(session.LauncherName, launcher));
+        }
+
+        SetLine(LaunchSummary, timeline.Origin switch
+        {
+            LaunchOrigin.RecordingStart => Format("LaunchFromRecordingStartFormat", process),
+            LaunchOrigin.LauncherMilestone => Format("LaunchFromLauncherFormat", process, timeline.OriginLabel),
+            _ when timeline.RecordingStartMilliseconds is > 0 and var late => Format("LaunchFromCreationLateFormat", process, late),
+            _ => Format("LaunchFromCreationFormat", process)
+        });
 
         // Each bar runs from the milestone before, or the origin for the first, to its milestone, scaled to the last.
         var end = Math.Max(1, timeline.Milestones.Select(milestone => milestone.Milliseconds).DefaultIfEmpty().Max());
@@ -232,8 +240,7 @@ public sealed partial class LaunchView : UserControl
         var definition = milestone.Definition;
         var time = milestone.Milliseconds.ToString("N1", CultureInfo.CurrentCulture);
         var since = milestone.SincePreviousMilliseconds is { } value ? Format("MilestoneSincePreviousFormat", value) : "";
-        var eventText = definition.EventDescription ?? Text(definition.BuiltIn == BuiltInMilestone.ProcessCreated
-            ? "MilestoneBuiltInProcessCreated" : "MilestoneBuiltInFirstFrame");
+        var eventText = EventText(definition);
         var thread = milestone.ThreadId?.ToString(CultureInfo.CurrentCulture) ?? "";
         var count = milestone.Count.ToString("N0", CultureInfo.CurrentCulture);
         var accessibleName = string.Join(". ", new[]
@@ -250,8 +257,19 @@ public sealed partial class LaunchView : UserControl
     private string NotReachedName(MilestoneDefinition definition)
     {
         var name = definition.Label ?? Format("MilestoneLabelFromFormat", definition.LabelFrom);
-        return definition.EventDescription is { } description ? Format("MilestoneNotReachedItemFormat", name, description) : name;
+        return definition.EventDescription is null ? name : Format("MilestoneNotReachedItemFormat", name, EventText(definition));
     }
+
+    // The provider and event that mark the milestone, and whether they are the launcher's.
+    private string EventText(MilestoneDefinition definition)
+    {
+        var text = definition.EventDescription ?? Text(definition.BuiltIn == BuiltInMilestone.ProcessCreated
+            ? "MilestoneBuiltInProcessCreated" : "MilestoneBuiltInFirstFrame");
+        return definition.From == MilestoneSource.Launcher ? Format("MilestoneLauncherEventFormat", text) : text;
+    }
+
+    private string ProcessText(string? name, int processId) =>
+        name is null ? Format("MilestonePidFormat", processId) : Format("MilestoneProcessFormat", name, processId);
 
     // A one-line text that may be cut off; its tooltip shows all of it.
     private static void SetLine(TextBlock line, string text)

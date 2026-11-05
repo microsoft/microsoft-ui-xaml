@@ -126,10 +126,11 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         Notify();
     }
 
-    // Reads process's events, and those of the marker providers, from the trace at etlPath into a new session file in
-    // sessionDirectory. Completes once the reading has started; State then follows it to TraceFinished, TraceStopped or
-    // TraceFailed.
-    public Task OpenTraceAsync(string etlPath, TraceProcess process, string sessionDirectory, IReadOnlyCollection<MarkerProvider> markers)
+    // Reads process's events, those of the marker providers, and those of the launcher providers of the process that
+    // created it, from the trace at etlPath into a new session file in sessionDirectory. Completes once the reading has
+    // started; State then follows it to TraceFinished, TraceStopped or TraceFailed.
+    public Task OpenTraceAsync(string etlPath, TraceProcess process, string sessionDirectory,
+        IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         if (!CanConnect)
         {
@@ -141,7 +142,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     }
 
     private async Task OpenTraceCoreAsync(string etlPath, TraceProcess process, string sessionDirectory,
-        IReadOnlyCollection<MarkerProvider> markers)
+        IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         IsBusy = true;
         state = "TraceOpening";

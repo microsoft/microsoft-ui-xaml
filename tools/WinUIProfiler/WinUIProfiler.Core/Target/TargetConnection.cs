@@ -328,7 +328,8 @@ History);
             }
             else
             {
-                etw.StartReading(process.Id, events.Post);
+                // The profiler launched the process, so its launcher providers' events are the launch's too.
+                etw.StartReading(process.Id, etwFromProcessStart ? Environment.ProcessId : null, events.Post);
             }
 
             pipeline = events;
@@ -346,7 +347,8 @@ History);
         }
     }
 
-    // One file per connection; time zero of the recording is when ETW started listening.
+    // One file per connection; time zero of the recording is when ETW started listening. For a launch, the profiler is the
+    // launcher.
     private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
     {
         if (directory is null)
@@ -360,7 +362,9 @@ History);
             return SessionWriter.Create(path, new(process.Id, process.ProcessName,
                 creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null, Stopwatch.Frequency,
                 etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
-                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection));
+                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
+                LauncherProcessId: etwFromProcessStart ? Environment.ProcessId : null,
+                LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

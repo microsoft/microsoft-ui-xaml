@@ -17,6 +17,16 @@ public enum BuiltInMilestone
     FirstFrameDrawn
 }
 
+// The process whose event marks a milestone.
+public enum MilestoneSource
+{
+    // The target process.
+    App,
+    // The target's launcher, the process that launched it: the profiler for a launch from the app, or in a trace, the
+    // process that created it, such as File Explorer or a shell.
+    Launcher
+}
+
 // A field value an event needs to mark a milestone. A number matches a numeric field with that value; any other value
 // matches the field's value as text, case-insensitively.
 public sealed record FieldMatch(string Field, string Value, decimal? Number = null)
@@ -47,9 +57,11 @@ public sealed record FieldMatch(string Field, string Value, decimal? Number = nu
 
 // A milestone of the launch timeline: built in, or the first event of a type from a provider, among those with the field
 // values Where gives. Label names it; with LabelFrom instead, the first event with each value of that field is a milestone
-// named by the value. Process, an executable name without .exe, limits the milestone to that app's sessions.
+// named by the value. Process, an executable name without .exe, limits the milestone to that app's sessions. From is the
+// process whose event marks it: for the launcher, the event nearest the target's creation, within
+// MarkerProviderSettings.LauncherWindow of it.
 public sealed record MilestoneDefinition(string? Label, BuiltInMilestone? BuiltIn, MarkerProvider? Provider, string? Event,
-    string? LabelFrom, IReadOnlyList<FieldMatch> Where, string? Process)
+    string? LabelFrom, IReadOnlyList<FieldMatch> Where, string? Process, MilestoneSource From = MilestoneSource.App)
 {
     // The provider and event, and the field values the event needs, such as "Contoso.App/ReadyToInteract"; null for a
     // built-in milestone.
@@ -85,9 +97,10 @@ public sealed record MilestoneDefinition(string? Label, BuiltInMilestone? BuiltI
     }
 }
 
-// The marker configuration: the providers the profiler records along with the XAML providers, for the target process
-// only, and the launch timeline's milestones. A JSON file, which can have comments and trailing commas; Launch\markers.json
-// is the default and the README's "Launch timeline" describes it.
+// The marker configuration: the providers the profiler records along with the XAML providers, for the target process and,
+// when a launcher milestone names one, for the process that launched it, and the launch timeline's milestones. A JSON
+// file, which can have comments and trailing commas; Launch\markers.json is the default and the README's "Launch
+// timeline" describes it.
 public sealed class MarkerConfig
 {
     public const int Version = 1;
@@ -235,7 +248,12 @@ public sealed class MarkerConfig
 
             var milestones = Items(root, "milestones", "milestone", required: true)
                 .Select(item => ReadMilestone(item.Element, item.Where, known)).ToList();
-            return new(path, providers, milestones);
+
+            // Only a launcher milestone's provider is read from the launcher.
+            var launcherProviders = milestones.Where(milestone => milestone.From == MilestoneSource.Launcher)
+                .Select(milestone => milestone.Provider!.Id).ToHashSet();
+            return new(path, [.. providers.Select(provider => launcherProviders.Contains(provider.Provider.Id) ? provider with { Launcher = true } : provider)],
+                milestones);
         }
 
         private MarkerProviderSettings ReadProvider(JsonElement element, string where, Dictionary<string, MarkerProvider> known,
@@ -293,7 +311,7 @@ public sealed class MarkerConfig
 
         private MilestoneDefinition ReadMilestone(JsonElement element, string where, Dictionary<string, MarkerProvider> known)
         {
-            Allow(element, where, "label", "builtin", "provider", "event", "labelFrom", "where", "process");
+            Allow(element, where, "label", "builtin", "provider", "event", "labelFrom", "where", "process", "from");
             var label = String(element, "label", where);
             var process = String(element, "process", where) is { } name ? WithoutExe(name) : null;
             if (String(element, "builtin", where) is { } builtInName)
@@ -302,7 +320,7 @@ public sealed class MarkerConfig
                     .Cast<BuiltInMilestone?>()
                     .FirstOrDefault(value => value.ToString()!.Equals(builtInName, StringComparison.OrdinalIgnoreCase))
                     ?? throw Error(where, $"\"builtin\" must be {string.Join(" or ", Enum.GetNames<BuiltInMilestone>())}");
-                if (Array.Find(["provider", "event", "labelFrom", "where"], other => element.TryGetProperty(other, out _)) is { } extra)
+                if (Array.Find(["provider", "event", "labelFrom", "where", "from"], other => element.TryGetProperty(other, out _)) is { } extra)
                 {
                     throw Error(where, $"a built-in milestone has no \"{extra}\"");
                 }
@@ -323,7 +341,21 @@ public sealed class MarkerConfig
                 throw Error(where, "needs either \"label\" or \"labelFrom\"");
             }
 
-            return new(label, null, provider, eventName, labelFrom, Conditions(element, where), process);
+            var from = MilestoneSource.App;
+            if (String(element, "from", where) is { } fromName)
+            {
+                from = Enum.GetValues<MilestoneSource>()
+                    .Cast<MilestoneSource?>()
+                    .FirstOrDefault(value => value.ToString()!.Equals(fromName, StringComparison.OrdinalIgnoreCase))
+                    ?? throw Error(where, "\"from\" must be app or launcher");
+            }
+
+            if (from == MilestoneSource.Launcher && XamlProviders.IsBuiltIn(provider.Id))
+            {
+                throw Error(where, $"the profiler records {provider.Name} only from the target, so a launcher milestone needs a provider from \"providers\"");
+            }
+
+            return new(label, null, provider, eventName, labelFrom, Conditions(element, where), process, from);
         }
 
         private List<FieldMatch> Conditions(JsonElement element, string where)

@@ -19,7 +19,8 @@ internal static class SessionSchema
             ProcessName TEXT,
             ProcessCreatedUtc TEXT,
             QpcFrequency INTEGER,      -- for a recorded trace, derived from the events
-            StartQpc INTEGER,          -- time zero of the recording; for a recorded trace, its first event
+            StartQpc INTEGER,          -- time zero of the recording; for a recorded trace, the target's first event (the
+                                       -- launcher's events can be earlier)
             StartedUtc TEXT NOT NULL,
             StartedQpc INTEGER,        -- QPC read with StartedUtc, to place UTC times such as ProcessCreatedUtc on the QPC clock (live)
             Source TEXT NOT NULL,      -- Live or Trace
@@ -32,7 +33,10 @@ internal static class SessionSchema
             EndReason TEXT,
             LostByEtw INTEGER,
             DroppedByProfiler INTEGER,
-            ProcessStartQpc INTEGER);  -- a recorded trace's process creation, from the kernel's process start event, if recorded
+            ProcessStartQpc INTEGER,   -- a recorded trace's process creation, from the kernel's process start event, if recorded
+            LauncherProcessId INTEGER, -- the process that launched the target, when known: the profiler for a launch from
+                                       -- the app, or for a recorded trace the parent the kernel's process start event names
+            LauncherName TEXT);        -- its executable name without .exe, when known
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
             Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl; Marker for a marker provider
@@ -42,7 +46,8 @@ internal static class SessionSchema
             FieldTypes TEXT NOT NULL,  -- comma-separated .NET type names (FieldType), one per value
             TraceLogging INTEGER NOT NULL, -- 1 for a TraceLogging event, 0 for a manifest event
             ProviderName TEXT NOT NULL, -- the ETW provider's name, such as Microsoft.UI.Xaml, or a marker provider's
-            ProviderId TEXT NOT NULL);  -- the ETW provider's GUID
+            ProviderId TEXT NOT NULL,  -- the ETW provider's GUID
+            Launcher INTEGER NOT NULL); -- 1 for a marker event of the launcher (SessionInfo.LauncherProcessId), 0 for the target's
         CREATE TABLE Events (
             Seq INTEGER PRIMARY KEY,   -- arrival order: 1, 2, 3...
             Qpc INTEGER NOT NULL,
