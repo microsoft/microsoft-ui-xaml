@@ -171,6 +171,8 @@ internal static class SessionToolSelfTests
         Expect.Equal(2L, threads[0].Long("drew"), "Ticks that drew");
         Expect.Equal(0L, threads[0].Long("slow"), "Slow ticks");
         Expect.Equal(4.0, threads[0].Double("firstDrawnEndMs"), "When the first tick that drew ended");
+        Expect.Equal(1.0, threads[0].Double("firstStartMs"), "When the first tick started");
+        Expect.Equal(20.0, threads[0].Double("lastEndMs"), "When the last tick that ended ended; the third is still running");
 
         Expect.Equal(0L, summary.Long("regions"), "Regions");
         Expect.Equal(0, summary.Property("interestingRows").EnumerateObject().Count(), "Interesting rows");

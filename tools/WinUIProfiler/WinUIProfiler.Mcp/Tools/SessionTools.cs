@@ -160,8 +160,10 @@ internal static class SessionTools
                 ticks = thread.Count(),
                 drew = thread.Count(tick => tick.Drawn == true),
                 slow = thread.Count(tick => tick.Slow),
+                firstStartMs = EventJson.Ms(thread.Min(tick => tick.StartMilliseconds)),
                 firstDrawnEndMs = EventJson.Ms(thread.FirstOrDefault(tick => tick.Drawn == true && tick.EndMilliseconds is not null)
                     ?.EndMilliseconds),
+                lastEndMs = EventJson.Ms(thread.Max(tick => tick.EndMilliseconds)),
             }).ToList(),
             regions,
             interestingRows = rows.Where(row => row.Type != InterestingRowType.Region).GroupBy(row => row.Type)

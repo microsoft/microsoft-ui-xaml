@@ -42,6 +42,7 @@ Each tool has views; `view` picks one, and the first is the default.
 | --- | --- |
 | Which sessions are there? | `sessions`, view `list` |
 | What does this session or trace hold? | `sessions`, view `summary` |
+| How long does the session run? | `sessions`, view `summary`: `uiThreads` |
 | How did the launch go? | `launch`, view `milestones` |
 | How soon did the first frames draw? | `launch`, view `frames` |
 | Does the app draw slowly? | `frames`, view `summary`, then `slowest` |
@@ -166,6 +167,10 @@ recording live does.
   trace was read into the session file, not when it was recorded, and the time
   between them is how long the reading took. The file doesn't say when the
   trace was recorded.
+- How long a session runs: each of the summary's `uiThreads` says when its
+  first tick started (`firstStartMs`) and when its last finished tick ended
+  (`lastEndMs`). For a session recorded live, the time from `startedUtc` to
+  `endedUtc` is how long the recording ran. A trace's own length isn't stored.
 - `launch` also gives `msFromProcessStart` for a session recorded from process
   start, when it knows when the process was created; `measuredFrom` says what
   its frames count from.
