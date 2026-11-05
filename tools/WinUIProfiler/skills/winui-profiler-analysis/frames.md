@@ -67,9 +67,10 @@ visuals they mention, counted by kind and type, for the 20 types with the
 most objects; and a page of its events in order, each with its bucket and
 the objects it mentions. `limit` defaults to 20. `eventNames` and
 `objectTypes` say how many names and types there are, and a note counts any
-left out. `bucket` keeps one bucket's events, names and types; `total` still
-counts all the tick's events, and `matching` the bucket's. Events' field
-values aren't shown.
+left out. Objects that no event gave a type are counted in one row per kind,
+marked `typeUnknown`, with a note. `bucket` keeps one bucket's events, names
+and types; `total` still counts all the tick's events, and `matching` the
+bucket's. Events' field values aren't shown.
 
 ## `launch`
 

@@ -468,6 +468,12 @@ internal static class FrameTools
                 $"{EventJson.Count(unlisted.Sum(group => group.Count()), "object", "objects")}."));
         }
 
+        var untyped = objects.Values.Count(mention => mention.Type is null);
+        if (untyped > 0)
+        {
+            notes.Add(ObjectTools.UntypedNote(untyped));
+        }
+
         return new
         {
             session = SessionCatalog.Header(path, info),
@@ -487,6 +493,7 @@ internal static class FrameTools
             {
                 kind = group.Key.Kind.ToString(),
                 type = group.Key.Type,
+                typeUnknown = group.Key.Type is null ? true : (bool?)null,
                 objects = group.Count(),
             }).ToList(),
             total,

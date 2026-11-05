@@ -140,6 +140,9 @@ recording live does.
   object lives from its first to its last mention. A freed object's address
   can be reused; when two objects had an address, `history` lists them and
   asks for one's `objectId`.
+- An object that no event gave a type has none. Its row, in view `types` and
+  in the `frames` tick view, has `typeUnknown`, and a note counts such objects.
+  Don't call it a type of its own.
 
 ## Evidence rules
 

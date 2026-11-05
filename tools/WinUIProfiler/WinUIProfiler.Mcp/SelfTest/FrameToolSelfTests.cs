@@ -205,6 +205,14 @@ internal static class FrameToolSelfTests
         Expect.Equal(7L, result.Long("total"), "Events listed");
         var objectKinds = result.Items("objects").Select(item => item.Text("kind")).Distinct().Order(StringComparer.Ordinal);
         Expect.Equal("Element,Visual", string.Join(",", objectKinds), "The kinds of objects the tick's events mention");
+        var untyped = result.Items("objects").Where(item => item.Text("type") is null).ToList();
+        Expect.Equal("Visual:1", string.Join(",", untyped.Select(item => $"{item.Text("kind")}:{item.Long("objects")}")),
+            "The tick's objects without a type: the parent visual");
+        Expect.True(untyped.All(item => item.Bool("typeUnknown")), "A row of objects without a type says so.");
+        Expect.True(result.Items("objects").Where(item => item.Text("type") is not null).All(item => item.IsNull("typeUnknown")),
+            "A row of typed objects doesn't have typeUnknown.");
+        HasNote(result, "1 object has no type: none of the events that mention it gave it. An element's type comes from " +
+            "DependencyObject_Enter, a visual's from its insertion.");
         var mentions = result.Items("page").SelectMany(item => item.Items("mentions")).Select(item => item.Text("name")).OfType<string>();
         Expect.True(mentions.Contains("OkButton"), "The tick's events mention OkButton.");
 
@@ -216,6 +224,7 @@ internal static class FrameToolSelfTests
             "The names of the tick's Composition events");
         Expect.Equal("Visual", string.Join(",", composition.Items("objects").Select(item => item.Text("kind")).Distinct()),
             "The kinds of objects the tick's Composition events mention");
+        HasNote(composition, "1 object has no type");
         var page = Run(() => FrameTools.Frames(sessionPath: main, tickId: first, offset: 2, limit: 2));
         Expect.Equal(2L, page.Long("returned"), "Events on a page");
         Expect.Equal(4L, page.Long("nextOffset"), "The next page");
@@ -246,6 +255,8 @@ internal static class FrameToolSelfTests
             "The type with the most objects comes first");
         Expect.Equal("Fixture.Type18", types[^1].Text("type"), "The last type listed");
         HasNote(result, "Only the 20 of 25 types with the most objects are listed; the other 5 types have 10 objects.");
+        Expect.True(types.All(item => item.IsNull("typeUnknown")), "Every object in the busy tick has a type.");
+        LacksNote(result, "no type");
         Expect.Equal(20L, result.Long("returned"), "Events on the default page");
         Expect.Equal(20L, result.Long("nextOffset"), "The next page");
 

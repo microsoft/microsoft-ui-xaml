@@ -292,14 +292,18 @@ internal static class ObjectTools
         var untyped = objects.Count(item => item.Type is null);
         if (untyped > 0)
         {
-            notes.Add((untyped == 1
-                    ? "1 object has no type: none of the events that mention it gave it."
-                    : $"{EventJson.Count(untyped, "object", "objects")} have no type: none of the events that mention them gave it.") +
-                " An element's type comes from DependencyObject_Enter, a visual's from its insertion.");
+            notes.Add(UntypedNote(untyped));
         }
 
         return notes;
     }
+
+    /// <summary>Explains objects that have no type, here and in the frames tool's tick view.</summary>
+    internal static string UntypedNote(long untyped) =>
+        (untyped == 1
+            ? "1 object has no type: none of the events that mention it gave it."
+            : $"{EventJson.Count(untyped, "object", "objects")} have no type: none of the events that mention them gave it.") +
+        " An element's type comes from DependencyObject_Enter, a visual's from its insertion.";
 
     private static object Row(SessionObject item) => new
     {
