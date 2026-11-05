@@ -303,6 +303,125 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a cell's GotFocus raised after focus already left the table still records that cell and keeps its row at cell level (GH #12442).")]
+        public void VerifyLateCellGotFocusKeepsCellLevelAndRecordsColumn()
+        {
+            TableView tableView = null;
+            TableViewRow row = null;
+            Button after = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(MakeManyItems(20), height: 300, columns: new[]
+                {
+                    ("A", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("B", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("C", new GridLength(120.0, GridUnitType.Pixel)),
+                });
+                after = new Button { Content = "After" };
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(after);
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                row = GetRowsRepeater(tableView).TryGetElement(2) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: row 2 is realized.");
+                GetCellPeer(row, 0).SetFocus();
+            });
+
+            SettleLayout(tableView);
+
+            // Raise the cell's GotFocus after focus has moved on, as when a context menu opens.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetRowCell(row, 2).Focus(FocusState.Keyboard), "Precondition: cell 2 takes focus.");
+                Verify.IsTrue(after.Focus(FocusState.Keyboard), "Precondition: the button takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(row.IsTabStop, "The row must stay at cell level.");
+                Verify.IsTrue(GetRowCell(row, 2).IsTabStop, "Cell 2 must stay focusable.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Previous,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Shift+Tab from the button must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(ReferenceEquals(GetRowCell(row, 2), FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "Shift+Tab back in must land on cell 2, the cell that last got focus."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row's GotFocus raised after focus already left the table still releases cell level, so re-entry lands on that row (GH #12442).")]
+        public void VerifyLateRowGotFocusLeavesCellLevel()
+        {
+            TableView tableView = null;
+            TableViewRow drilledRow = null;
+            TableViewRow row = null;
+            Button after = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(MakeManyItems(20), height: 300, columns: new[]
+                {
+                    ("A", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("B", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("C", new GridLength(120.0, GridUnitType.Pixel)),
+                });
+                after = new Button { Content = "After" };
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(after);
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                drilledRow = GetRowsRepeater(tableView).TryGetElement(2) as TableViewRow;
+                row = GetRowsRepeater(tableView).TryGetElement(4) as TableViewRow;
+                Verify.IsNotNull(drilledRow, "Precondition: row 2 is realized.");
+                Verify.IsNotNull(row, "Precondition: row 4 is realized.");
+                GetCellPeer(drilledRow, 2).SetFocus();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(drilledRow.IsTabStop, "Precondition: row 2 is at cell level.");
+                Verify.IsTrue(row.IsTabStop, "Precondition: row 4 is at row level.");
+                Verify.IsTrue(row.Focus(FocusState.Programmatic), "Precondition: row 4 takes focus.");
+                Verify.IsTrue(after.Focus(FocusState.Keyboard), "Precondition: the button takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(drilledRow.IsTabStop, "Row 2 must be back at row level.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Previous,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Shift+Tab from the button must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreSame(row, FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    $"Shift+Tab back in must land on row 4 itself; was {FocusManager.GetFocusedElement(tableView.XamlRoot)}."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Tab from the header band at cell level that lands on a viewport group header leaves cell level.")]
         public void VerifyTabFromHeaderBandOntoGroupHeaderLeavesCellLevel()
         {

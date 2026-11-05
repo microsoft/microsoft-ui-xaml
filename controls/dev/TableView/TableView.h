@@ -430,7 +430,7 @@ public:
     // Shared header/body column cursor, in visible-column coordinates.
     int32_t CurrentColumnCursorInternal() const noexcept { return m_currentCellColumn; }
 
-    void OnRowCellFocusChanged(winrt::TableViewRow const& row);
+    void OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::DependencyObject const& focusedElement);
 
     bool TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool requireExactCell) const;
 

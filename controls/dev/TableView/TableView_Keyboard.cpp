@@ -2712,7 +2712,7 @@ void TableView::SetCellCursorActiveInternal(bool active)
     m_cellCursorActive = active;
 }
 
-void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
+void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::DependencyObject const& focusedElement)
 {
     if (!row)
     {
@@ -2728,26 +2728,26 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
     const int32_t rowIndex = repeater.GetElementIndex(row);
 
-    winrt::UIElement focusedCell{ nullptr };
-    if (auto const root = XamlRoot())
-    {
-        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>())
-        {
-            focusedCell = rowImpl->FindOwnCellInternal(focused, false /* requireExact */);
-        }
-    }
+    // GotFocus is async and live focus may have moved on (e.g. into a context menu), so use the element that got it.
+    winrt::UIElement const focusedCell = focusedElement
+        ? rowImpl->FindOwnCellInternal(focusedElement, false /* requireExact */)
+        : nullptr;
 
     if (!focusedCell)
     {
-        // Focus is on the ROW container itself - the body's entry level. Record the row so a later
-        // re-entry comes back here, and make sure the two-level cursor agrees that no cell is
-        // current, including releasing whichever row was previously drilled in.
-        if (rowIndex >= 0)
+        auto const root = XamlRoot();
+        winrt::DependencyObject const rowObject = row;
+        const bool focusStillOnRow = root && winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() == rowObject;
+
+        // Focus went to the ROW container itself - the body's entry level. Record the row.
+        if ((focusedElement == rowObject || focusStillOnRow) && rowIndex >= 0)
         {
             m_currentCellRow = rowIndex;
             winrt::IInspectable item{ nullptr };
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
+
+        // Even if focus has moved on: this row focus is newer than any cell focus already handled.
         SetCellCursorActiveInternal(false);
         return;
     }
