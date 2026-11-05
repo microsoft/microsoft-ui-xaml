@@ -79,7 +79,7 @@ hash-verified and staged in `ConnectionPayloads`. The host's native metric DLL
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
-Run the event compatibility regression checks from this directory:
+Run the event compatibility and snapshot resource regression checks from this directory:
 
 ```powershell
 dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
@@ -87,7 +87,9 @@ dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
 
 These check object timelines across new TraceLogging and legacy manifest events,
 and verify that migrated performance regions distinguish Start/Stop without
-also matching legacy manifest events.
+also matching legacy manifest events. Snapshot checks cover allocator deltas,
+named graphics resources, untracked versus observed lifetimes, four-group
+classification, missing captures and full-range 64-bit graphics comparisons.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -102,9 +104,15 @@ instead (see "Recorded, from a trace file" below).
 
 Each capture also calls the target's private `IXamlDiagnosticsPrivate::GetResourceSnapShot`
 once, before tree enumeration, and saves the result and its QPC interval in the
-snapshot JSON (schema 4, `resourceSnapshot`). The resource view currently shows
-the five allocator/GC metrics and any populated graphics counter slots, identified
-by their fixed array index rather than a generated string name. Comparison shows **Before**, **After**, and
+snapshot JSON (schema 4, `resourceSnapshot`). The **Resource allocations** view shows
+four collapsible groups: **Allocation statistics**, **Composition objects**,
+**D2D objects**, and **WinUI wrappers**. Each allocator metric or populated graphics
+type occupies one row. Composition and raw D2D objects show only creation totals,
+with a group-level note that destruction and live counts are not tracked. Native
+WinUI wrappers show observed creation, destruction and live counts, not the lifetime
+of underlying graphics objects or GPU allocations. Unknown slots appear separately
+with their numeric labels and raw counters, without assigning an invented category.
+The same groups in comparisons show **Before**, **After**, and
 signed **Delta (After - Before)** values, in counts or bytes; resource-only changes
 are included even when the trees are unchanged. Deltas preserve the full 64-bit
 counter range, including decreases. All five allocator/GC metrics use signed 64-bit
@@ -129,8 +137,11 @@ be unbalanced. Disabled or unrepresentable allocator metrics are returned as `-1
 retained internal totals are not presented as measured zeros when tracking stops.
 `AllocatedMemory` is the independent managed-runtime GC heuristic and returns `-1`
 when managed-memory tracking is disabled. Resource and tree intervals are not atomic.
-Graphics counters are still unimplemented;
-all-zero placeholder slots are omitted, not reported as measured zeros.
+Graphics counters require a target runtime containing rendering resource diagnostics
+and an enabled profiler provider. Totals accumulate across enabled profiling periods
+and exclude earlier creations; they are not scoped to the captured tree nodes.
+All-zero slots are omitted: an empty graphics section can mean unsupported or disabled
+tracking, or no observed creations, not that no graphics resources exist.
 
 As soon as a connection succeeds after the genuine TAP hello, the app
 automatically captures and saves an **Initial snapshot** as the first snapshot
