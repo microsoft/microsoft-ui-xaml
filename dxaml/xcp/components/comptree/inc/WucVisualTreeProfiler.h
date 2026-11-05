@@ -13,7 +13,7 @@
 // Every "inserted"/"root set" notification extracts and ships the inserted visual's full
 // property set (same XML-attribute format DCompTreeHelper uses), so the consumer never has
 // to read back from the live tree. All extraction work is gated behind
-// XamlProfilerTracing::IsEnabled(), so these calls are nearly free when no one is listening.
+// XamlProfilerTracing::IsProfilerEnabled(), so these calls are nearly free when no one is listening.
 //
 // Visuals are passed as IUnknown* purely for identity/extraction; the helper QIs to
 // WUComp::IVisual internally. Pass any interface pointer of the visual - the emitted id is
@@ -27,7 +27,7 @@
 namespace WucVisualTreeProfiler
 {
     // Cheap cached check: true only when a session is subscribed to the XamlProfilerTracing
-    // provider. Forwards to XamlProfilerTracing::IsEnabled() (a cached bool kept fresh by ETW's
+    // provider. Forwards to XamlProfilerTracing::IsProfilerEnabled() (a cached bool kept fresh by ETW's
     // enable/disable callback - no per-call syscall). Call sites use this to skip ALL emit work
     // (including building the arguments passed to the Notify* helpers below) when nobody listens.
     bool IsEnabled();

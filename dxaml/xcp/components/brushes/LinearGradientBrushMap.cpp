@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "LinearGradientBrushMap.h"
 
 #include <microsoft.ui.composition.h>
@@ -16,6 +18,10 @@ wrl::ComPtr<WUComp::ICompositionBrush> LinearGradientBrushMap::GetBrush(
     {
         wrl::ComPtr<WUComp::ICompositionLinearGradientBrush> linearGradientBrush;
         IFCFAILFAST(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+        }
 
         wrl::ComPtr<WUComp::ICompositionBrush> gradientAsCBrush;
         IFCFAILFAST(linearGradientBrush.As(&gradientAsCBrush));

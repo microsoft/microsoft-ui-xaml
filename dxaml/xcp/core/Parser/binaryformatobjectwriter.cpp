@@ -1539,6 +1539,18 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::TypeConvertValue(
 
     if (createValueTypeAsObject)
     {
+        // Type conversion can create the root object outside of CreateInstanceFromType(), 
+        // so we need to ensure it's recorded if that happens.
+        if (!m_rootObjectCreated)
+        {
+            m_rootObjectCreated = spConvertedInstance;
+
+            if(m_rootObjectCreated && m_spContext->get_RootNamescope())
+            {
+                // If the name scope helper doesn't have a namescope owner yet, use this one.  (This establishes the root.)
+                m_spContext->get_RootNamescope()->EnsureNamescopeOwner(spConvertedInstance->GetDependencyObject());
+            }    
+        }
         m_spContext->Current().set_Instance(spConvertedInstance);
         m_spContext->Current().set_Type(spType);
     }

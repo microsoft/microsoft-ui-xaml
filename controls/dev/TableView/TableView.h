@@ -132,6 +132,10 @@ struct ColumnResizeDragState
     bool didDelta{ false };
     // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
     std::vector<ColumnResizeFrozenColumn> frozen;
+    // A double-click fit writes a Pixel width even when an Auto or Star column already has its size.
+    bool commitPixelWidth{ false };
+    uint64_t lastPressTimestamp{ 0 };
+    winrt::Point lastPressPosition{};
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -289,7 +293,10 @@ public:
     // UIA Transform support for the column header peer. Driven through the column's gripper so the
     // bounds, Star handling and announcement match a pointer or Alt+Arrow resize exactly.
     bool CanResizeColumnFromAutomation(const winrt::TableViewColumn& column);
-    bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width);
+    bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width, bool commitPixelWidth = false);
+    bool AutoFitColumn(const winrt::TableViewColumn& column);
+    static double DoubleClickSlop(const winrt::UIElement& element);
+    static uint64_t DoubleClickIntervalMicroseconds();
     void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
     // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /
@@ -344,6 +351,8 @@ public:
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
+    // Releases the rows repeater's layout anchor, made by GetOrCreateElement(anchor's index), without scrolling.
+    void ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor);
 
     // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
     // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
@@ -1245,6 +1254,8 @@ private:
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
+    // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
+    std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
 
     winrt::event_token m_rowElementPreparedToken{};

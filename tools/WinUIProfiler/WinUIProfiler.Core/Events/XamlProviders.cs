@@ -17,7 +17,11 @@ public enum XamlProvider
     // Microsoft.UI.Xaml.Controls, the controls' telemetry events.
     MicrosoftUIXamlControls,
     // The kernel's GPU memory usage and budget for the process (Microsoft-Windows-DxgKrnl).
-    DxgKrnl
+    DxgKrnl,
+    // Window focus changes in the process (Microsoft-Windows-Win32k).
+    Win32k,
+    // A provider from the marker configuration; the event's Marker names it.
+    Marker
 }
 
 public static class XamlProviders
@@ -28,8 +32,9 @@ public static class XamlProviders
     public static readonly Guid MicrosoftUIXaml = new("2dc72f6e-e4d1-5f58-3245-09a4243799dd");
     public static readonly Guid MicrosoftUIXamlControls = new("21e0ae07-56a7-55b5-12f9-011e6bc08cca");
     public static readonly Guid DxgKrnl = new("802ec45a-1e99-4b83-9920-87c98277ba9d");
+    public static readonly Guid Win32k = new("8c416c79-d49b-4f01-a467-e56d3aa8234c");
 
-    // The XAML providers, whose events are all read. DxgKrnl events are matched by ID in XamlEventSubscription.
+    // The XAML providers, whose events are all read. DxgKrnl and Win32k events are matched by ID in XamlEventSubscription.
     private static readonly Dictionary<Guid, XamlProvider> XamlProviderIds = new()
     {
         [Xaml] = XamlProvider.Xaml,
@@ -43,4 +48,34 @@ public static class XamlProviders
 
     public static bool TryGet(Guid providerId, out XamlProvider provider) =>
         XamlProviderIds.TryGetValue(providerId, out provider);
+
+    // Whether the profiler reads the provider's events anyway: a XAML provider, DxgKrnl or Win32k.
+    public static bool IsBuiltIn(Guid providerId) =>
+        providerId == DxgKrnl || providerId == Win32k || XamlProviderIds.ContainsKey(providerId);
+
+    // The provider's ETW ID; Guid.Empty for Marker, whose events carry their provider.
+    public static Guid IdOf(XamlProvider provider) => provider switch
+    {
+        XamlProvider.Xaml => Xaml,
+        XamlProvider.XamlDiagnostics => XamlDiagnostics,
+        XamlProvider.XamlProfiler => XamlProfiler,
+        XamlProvider.MicrosoftUIXaml => MicrosoftUIXaml,
+        XamlProvider.MicrosoftUIXamlControls => MicrosoftUIXamlControls,
+        XamlProvider.DxgKrnl => DxgKrnl,
+        XamlProvider.Win32k => Win32k,
+        _ => Guid.Empty
+    };
+
+    // The provider's ETW name, which the marker configuration also knows it by.
+    public static string NameOf(XamlProvider provider) => provider switch
+    {
+        XamlProvider.Xaml => "Microsoft-Windows-XAML",
+        XamlProvider.XamlDiagnostics => "Microsoft-Windows-XAML-Diagnostics",
+        XamlProvider.XamlProfiler => "Microsoft-Windows-XAML-Profiler",
+        XamlProvider.MicrosoftUIXaml => "Microsoft.UI.Xaml",
+        XamlProvider.MicrosoftUIXamlControls => "Microsoft.UI.Xaml.Controls",
+        XamlProvider.DxgKrnl => "Microsoft-Windows-DxgKrnl",
+        XamlProvider.Win32k => "Microsoft-Windows-Win32k",
+        _ => "Marker"
+    };
 }

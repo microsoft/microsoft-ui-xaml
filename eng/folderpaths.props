@@ -225,6 +225,12 @@
     <LiftedMRTIncludePaths>$(LiftedMRTGeneratedIncludePath)</LiftedMRTIncludePaths>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- TODO: Rename all the above LiftedMRT* properties to WinAppSDKFoundation* properties -->
+    <WinAppSDKFoundationRuntimesPath>$(LiftedMRTRuntimesPath)</WinAppSDKFoundationRuntimesPath>
+    <WinAppSDKFoundationWinmdPath>$(LiftedMRTWinmdPath)</WinAppSDKFoundationWinmdPath>
+  </PropertyGroup>
+
   <!-- Localized Resources paths -->
   <PropertyGroup>
     <LocalizedMUIFilesPath>$(NugetPackageDirectory)\$(LocalizedMUIFilesPackageName).$(LocalizedMUIFilesPackageVersion)\LocalizedResources\BuildOutput\Temp\localizationResources</LocalizedMUIFilesPath>

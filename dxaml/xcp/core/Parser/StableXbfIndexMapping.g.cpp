@@ -4483,6 +4483,7 @@ namespace Parser
         KnownPropertyIndex::Window_MaxWidth,
         KnownPropertyIndex::Window_MinHeight,
         KnownPropertyIndex::Window_MinWidth,
+        KnownPropertyIndex::Window_PlacementId,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4957,6 +4958,7 @@ namespace Parser
         StableXbfPropertyIndex::Window_MaxWidth,
         StableXbfPropertyIndex::Window_MinHeight,
         StableXbfPropertyIndex::Window_MinWidth,
+        StableXbfPropertyIndex::Window_PlacementId,
         StableXbfPropertyIndex::Window_SystemBackdrop,
         StableXbfPropertyIndex::Window_Title,
         StableXbfPropertyIndex::Window_TransparentBackground,

@@ -3482,6 +3482,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         Window_MaxWidth = 2472,
         Window_MinHeight = 2473,
         Window_MinWidth = 2474,
+        Window_PlacementId = 2475,
     }
 
     // Define the stable XBF event indices
@@ -5205,6 +5206,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.Window_MaxWidth, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MaxWidth", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_MinHeight, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MinHeight", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_MinWidth, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MinWidth", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_PlacementId, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.PlacementId", StableXbfTypeIndex.String, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_SystemBackdrop, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.SystemBackdrop", StableXbfTypeIndex.SystemBackdrop, StableXbfTypeIndex.Window, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.Window_Title, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.Title", StableXbfTypeIndex.String, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_TransparentBackground, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.TransparentBackground", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },

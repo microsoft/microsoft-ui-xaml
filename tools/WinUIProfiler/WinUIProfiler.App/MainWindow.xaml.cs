@@ -63,6 +63,7 @@ public sealed partial class MainWindow : Window
         ObjectsPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
         ObjectsPanel.Source = session;
+        LaunchPanel.Source = session;
         FramesPanel.ObjectRequested += (_, mention) =>
         {
             Tabs.SelectedItem = ObjectsTab;
@@ -607,6 +608,7 @@ Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
 SessionsDirectory,
+LaunchPanel.LoadConfig().Providers,
 PrivateRuntime);
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
@@ -617,6 +619,7 @@ PrivateRuntime);
 
                 model.ReportProgress(value);
             }));
+            session.BeginRecording();
             await model.ConnectAsync(options, progress);
             if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
             {
@@ -642,9 +645,10 @@ PrivateRuntime);
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
         Tabs.SelectedItem = FramesTab;
+        session.BeginRecording();
         try
         {
-            await model.OpenTraceAsync(path, process, SessionsDirectory);
+            await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
         catch (Exception error)
         {
