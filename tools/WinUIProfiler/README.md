@@ -678,6 +678,71 @@ from the trace, and the Frames and Objects tabs follow it as it grows.
 - A trace has no running process, so there are no live metrics or tree
   snapshots for it.
 
+## Copilot plugin
+
+This folder is also a plugin for GitHub Copilot CLI, `winui-profiler`. It
+answers questions about session files from what the app's processors stored:
+how the launch went, UI-thread ticks and slow ticks, regions of interest, and
+the UI elements and composition visuals the events mention. Its MCP server,
+`WinUIProfiler.Mcp`, reads session files with `SessionFile` and the views
+above, where they are and without changing them, even while the app is still
+recording one. It never reads the events' field values. It can also read a
+recorded trace (`.etl`) into a session file, as **Open trace** does.
+
+To install it from a clone, run from this directory:
+
+```powershell
+copilot plugin marketplace add $PWD.Path
+copilot plugin install winui-profiler@microsoft-ui-xaml
+```
+
+`marketplace.json` makes this folder a plugin marketplace, `microsoft-ui-xaml`,
+whose one plugin is this folder, so Copilot loads the plugin from the clone and
+doesn't copy it. To use the plugin in one session without installing it, start
+Copilot with `copilot --plugin-dir $PWD.Path` from this directory.
+
+The first time Copilot starts the server, and again after its sources or the
+.NET SDK change, `scripts\Start-McpServer.ps1` builds it into
+`%LOCALAPPDATA%\WinUIProfiler\Mcp\<hash>`. Building needs the .NET SDK that
+`global.json` names and usually takes well under a minute. When NuGet doesn't
+have the packages yet, the first build also downloads them (about 36 MB). The
+build logs are in the `logs` folder there, and each build deletes the builds
+that no session has started for 30 days.
+
+| Tool | Views | What they answer |
+| --- | --- | --- |
+| `sessions` | `list`, `summary` | Which session files there are; what one holds, and which tools have data in it |
+| `record_trace` | | Reads one process's events from a recorded trace into a session file, or returns the session file that already holds them |
+| `launch` | `milestones`, `frames` | How the launch went, from `LaunchSummary`, `InterestingRows` and `Ticks`, and how soon the first frames drew |
+| `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
+| `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
+
+Two skills tell Copilot how to use the tools. Copilot reads
+`winui-profiler-analysis` for questions about a WinUI app's performance.
+`/winui-profiler:open-session [session.sqlite | folder | trace.etl]`
+summarizes a session, after reading a trace into one, or lists a folder's
+sessions. When no session file is given, the tools use the newest one in
+`%LOCALAPPDATA%\WinUIProfiler\Sessions`.
+
+The plugin answers only what a processor stores. It doesn't answer questions
+about the events' field values, GPU memory, CPU samples, call stacks, thread
+waits or the XAML and composition trees; tools for them come with the
+processors that store them.
+
+Run the server's checks from this directory:
+
+```powershell
+dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
+$mcp = '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe'
+& $mcp --listtools          # the tools' names
+& $mcp --selftest           # all the self-tests
+& $mcp --selftest frames    # the self-tests whose names contain "frames"
+```
+
+The self-tests write their session files with the app's `SessionWriter`, so
+the processors build the tables the tools read, and also check the plugin's
+manifests and skills.
+
 ## Limitations
 
 CPU uses processor-time utilization, not Task Manager's frequency-adjusted

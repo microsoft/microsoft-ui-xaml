@@ -1,0 +1,16 @@
+{
+  "name": "microsoft-ui-xaml",
+  "owner": {
+    "name": "Microsoft"
+  },
+  "metadata": {
+    "description": "Copilot plugins from the WinUI repository."
+  },
+  "plugins": [
+    {
+      "name": "winui-profiler",
+      "description": "Answers questions about WinUI Profiler sessions: launch, UI-thread ticks, regions of interest, and the UI elements and visuals the events mention.",
+      "source": "./"
+    }
+  ]
+}
