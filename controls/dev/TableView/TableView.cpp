@@ -2896,16 +2896,8 @@ static winrt::DataTemplate SelectStyleHeaderTemplate(
     const winrt::ContentControl& header,
     const winrt::IInspectable& headerContent)
 {
-    try
-    {
-        header.Content(headerContent);
-        return styleSelector.SelectTemplate(headerContent, header);
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
-        return nullptr;
-    }
+    header.Content(headerContent);
+    return styleSelector.SelectTemplate(headerContent, header);
 }
 
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
@@ -3360,7 +3352,18 @@ void TableView::RebuildHeadersCore()
                 winrt::DataTemplate selected{ nullptr };
                 if (styleContentTemplateSelector)
                 {
-                    selected = SelectStyleHeaderTemplate(styleContentTemplateSelector, header, column.Header());
+                    // Contained, unlike a column's HeaderTemplateSelector that the framework calls: TableView calls this
+                    // one while it rebuilds the band, so a throw would leave the band half built.
+                    try
+                    {
+                        selected = SelectStyleHeaderTemplate(styleContentTemplateSelector, header, column.Header());
+                    }
+                    catch (...)
+                    {
+                        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
+                        NoteRecoveredAppFault(TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh,
+                            TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
+                    }
                 }
                 if (selected)
                 {
@@ -3636,7 +3639,7 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
         // A sort cannot run while an edit is opening, and must not close it once open; clear once no edit is open.
         if (m_editState == EditState::Beginning)
         {
-            QueueReshapeAfterEditCloses([this]()
+            QueueReshapeAfterEditCloses(TableViewTip::Operation::Sort, [this]()
             {
                 // A source sort the app declared since the opt-out is newer: adopt it before clearing.
                 if (std::exchange(m_sortReconcileQueued, false))
@@ -3668,7 +3671,7 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     {
         if (m_editState == EditState::Beginning)
         {
-            QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
+            QueueReshapeAfterEditCloses(TableViewTip::Operation::Sort, [this, weakColumn = winrt::make_weak(column)]()
             {
                 // A source sort the app declared since the opt-out is newer: adopt it before clearing.
                 if (std::exchange(m_sortReconcileQueued, false))

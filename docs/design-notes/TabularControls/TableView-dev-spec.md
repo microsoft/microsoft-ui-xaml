@@ -400,6 +400,10 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
   the category (callback, validation, write, factory or data).
 - An app fault TableView recovers from (a throwing `BeginningEdit` or `CellEditEnding` handler,
   validation read, editing template or display factory) is reported, and the outcome stays TableView's.
+- A sort or expansion deferred past an edit close is replayed later, from a dispatcher callback or ahead of a newer
+  request, where no caller can see its exception. TableView swallows the exception there and reports it as a recovered
+  app fault under that deferred operation (sort, group expansion or hierarchy expansion). A header `Style`'s
+  `ContentTemplateSelector` that throws is reported the same way under the header refresh, and the header falls back to its text.
 - The exception carries the blame. Each call into app code rethrows the app's exception tagged with the category,
   as a `CallerError` with the same HRESULT and error info (running out of memory stays a `std::bad_alloc`), and the
   shaping engine throws the app's collection and contract failures the same way; the catch that decides an outcome
