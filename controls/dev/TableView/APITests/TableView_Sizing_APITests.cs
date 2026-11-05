@@ -1963,6 +1963,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies dragging an Auto column's gripper under a locked Star column's resize hold keeps the held width while the held layout fits, and releases it once an Auto column outgrows the room.")]
+        public void VerifyAutoColumnDragUnderLockedStarHold()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("Locked", new GridLength(2.0, GridUnitType.Star)),
+                    ("Third", new GridLength(1.0, GridUnitType.Star)),
+                    ("Fourth", new GridLength(1.0, GridUnitType.Star)));
+                tableView.Columns[0].CanResize = false;
+                tableView.Columns.Insert(0, MakeTemplateColumn("A1", CreateFixedWidthTemplate(200.0), GridLength.Auto));
+                tableView.Columns.Add(MakeTemplateColumn("A2", CreateFixedWidthTemplate(80.0), GridLength.Auto));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            double heldLocked = 0.0;
+            double slack = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                DragAndVerify(tableView, 2, 20.0);
+                heldLocked = tableView.Columns[1].ActualWidth;
+
+                // A2 is after the locked column and nothing after it can take width, so shrinking it leaves empty space.
+                DragAndVerify(tableView, 4, -20.0);
+                Verify.AreEqual(GridUnitType.Pixel, tableView.Columns[4].Width.GridUnitType, "The dragged Auto column must turn Pixel.");
+
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"after the Auto drag: viewport={viewport}, widths={string.Join(", ", widths)}.");
+                VerifyNear(heldLocked, widths[1], 0.5, "The Auto column drag must keep the locked column at its held width");
+                slack = viewport - widths.Sum();
+                Verify.IsTrue(slack >= 10.0, $"Precondition: the drag must leave empty space (got {slack}).");
+
+                ((TableViewTemplateColumn)tableView.Columns[0]).CellTemplate = CreateFixedWidthTemplate(200.0 + (slack / 2.0));
+                tableView.UpdateLayout();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"after growth that fits: widths={string.Join(", ", widths)}.");
+                VerifyNear(heldLocked, widths[1], 0.5, "Auto growth that still fits must keep the held width");
+
+                ((TableViewTemplateColumn)tableView.Columns[0]).CellTemplate = CreateFixedWidthTemplate(200.0 + slack + 30.0);
+                tableView.UpdateLayout();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var viewport = GetBodyViewportWidth(tableView);
+                var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                Log.Comment($"after growth that does not fit: viewport={viewport}, widths={string.Join(", ", widths)}.");
+                Verify.IsLessThan(widths[1], heldLocked - 1.0, "The locked Star column must let go of its held width.");
+                Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, "The columns must fill the viewport once the hold is released.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies setting a 0* column's MinWidth to its default value ends a held locked Star column's hold, even when the hold still fits.")]
         public void VerifyLocalDefaultMinWidthOnZeroStarEndsLockedStarHold()
         {
