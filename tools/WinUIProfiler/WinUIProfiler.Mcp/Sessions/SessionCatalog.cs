@@ -14,10 +14,11 @@ internal sealed record SessionFileEntry(string Path, DateTime LastWrittenUtc, lo
 
 /// <summary>
 /// What a session's processed data holds, for <see cref="SessionCatalog.Analyses"/>: its ticks, regions of interest,
-/// interesting rows outside regions, and launch frames. ViewError says why the shared views couldn't be read, if they
-/// couldn't.
+/// interesting rows outside regions, launch frames, and the launch milestones it observed (all but when the process was
+/// created and the recording started). ViewError says why the shared views couldn't be read, if they couldn't.
 /// </summary>
-internal sealed record SessionContents(int Ticks, int Regions, int Rows, int LaunchFrames, string? ViewError);
+internal sealed record SessionContents(int Ticks, int Regions, int Rows, int LaunchFrames, int LaunchMilestones,
+    string? ViewError);
 
 /// <summary>
 /// Finds the session files the tools read, describes what one holds, and turns the ways reading one can fail into
@@ -279,13 +280,18 @@ internal static class SessionCatalog
         return "Milliseconds from the start of the recording; when the process was created isn't known.";
     }
 
-    /// <summary>Which analyses have data in a session, and which tool and views give them.</summary>
+    /// <summary>
+    /// Which analyses have data in a session, and which tool and views give them. The launch's milestones don't need a
+    /// drawn frame, so a launch that never drew one still has them; a trimmed file lost its launch.
+    /// </summary>
     internal static IReadOnlyList<SessionAnalysis> Analyses(SessionFileInfo info, SessionContents contents) =>
     [
         Analysis("frames", contents.Ticks > 0, "frames", ["summary", "slowest", "tick"], contents.ViewError ?? FrameTools.NoTicks),
         Analysis("regions", contents.Regions + contents.Rows > 0, "frames", ["regions", "rows"],
             contents.ViewError ?? FrameTools.NoRegions),
-        Analysis("launch", contents.LaunchFrames > 0, "launch", ["milestones", "frames"],
+        Analysis("launch", info.CompleteFromSeq is null && contents.LaunchMilestones > 0, "launch", ["milestones"],
+            contents.ViewError ?? (info.CompleteFromSeq is null ? LaunchTools.NoMilestones : LaunchTools.LaunchDeleted)),
+        Analysis("launchFrames", contents.LaunchFrames > 0, "launch", ["frames"],
             contents.ViewError ?? LaunchTools.NoLaunch(info, contents.Ticks)),
         Analysis("objects", info.UIElements + info.Visuals > 0, "objects", ["types", "list", "history"], ObjectTools.NoObjects),
     ];

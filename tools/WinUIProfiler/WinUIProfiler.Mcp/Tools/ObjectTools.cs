@@ -62,7 +62,8 @@ internal static class ObjectTools
         string? name = null,
         [Description("The history view: the object, by the objectId the list view gives.")] long? objectId = null,
         [Description("The history view: the object, by its address, in hex with 0x as the tools show it, or as a decimal " +
-            "number. When several objects had the address during the session, they're listed instead.")]
+            "number. When several objects had the address during the session, they're listed instead, a page at a time " +
+            "(offset and limit).")]
         string? address = null,
         [Description("The list view: \"time\" (the default, first mentioned first) or \"events\" (most events first).")]
         string? orderBy = null,
@@ -205,6 +206,7 @@ internal static class ObjectTools
 
         if (matches.Count > 1)
         {
+            var objects = matches.Skip(offset).Take(count).Select(Row).ToList();
             return new
             {
                 session = SessionCatalog.Header(path, info),
@@ -213,7 +215,11 @@ internal static class ObjectTools
                 message = string.Create(CultureInfo.InvariantCulture,
                     $"{matches.Count} objects had {what} during the session: the runtime reuses an address once its " +
                     $"object is freed. Call the history view again with one's objectId."),
-                objects = matches.Select(Row).ToList(),
+                total = matches.Count,
+                offset,
+                returned = objects.Count,
+                nextOffset = ToolArguments.NextOffset(offset, objects.Count, matches.Count),
+                objects,
                 notes = SessionCatalog.Notes(info),
             };
         }

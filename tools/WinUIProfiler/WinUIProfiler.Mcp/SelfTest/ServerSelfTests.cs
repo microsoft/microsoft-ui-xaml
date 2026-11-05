@@ -291,7 +291,7 @@ internal static partial class ServerSelfTests
     private static partial Regex ProviderLine();
 
     /// <summary>
-    /// Finds the plugin folder: the one the plugin host names in PLUGIN_ROOT, or the first folder above
+    /// Finds the plugin folder: the one Copilot CLI names in PLUGIN_ROOT, or the first folder above
     /// the current folder or the server's folder that holds this server's plugin.json.
     /// </summary>
     internal static string? FindPluginRoot()

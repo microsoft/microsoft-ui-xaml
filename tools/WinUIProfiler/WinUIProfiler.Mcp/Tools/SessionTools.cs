@@ -126,7 +126,8 @@ internal static class SessionTools
         var info = SessionFile.ReadInfo(path);
         var (ticks, rows, launch, error) = SessionCatalog.ReadViews(path);
         var regions = rows.Count(row => row.Type == InterestingRowType.Region);
-        var contents = new SessionContents(ticks.Count, regions, rows.Count - regions, launch.Count, error);
+        var contents = new SessionContents(ticks.Count, regions, rows.Count - regions, launch.Count,
+            LaunchTools.ObservedMilestones(info, launch, ticks, rows), error);
         var notes = new List<string>(SessionCatalog.Notes(info));
         if (SessionCatalog.IsTrace(info))
         {

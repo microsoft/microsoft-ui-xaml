@@ -139,8 +139,8 @@ recording live does.
 - An element's type is the nearest built-in XAML type, so an app's own control
   shows as its base class. A visual's name is its owner element's label. An
   object lives from its first to its last mention. A freed object's address
-  can be reused; when two objects had an address, `history` lists them and
-  asks for one's `objectId`.
+  can be reused; when two objects had an address, `history` lists them, a page
+  at a time, and asks for one's `objectId`.
 - An object that no event gave a type has none. Its row, in view `types` and
   in the `frames` tick view, has `typeUnknown`, and a note counts such objects.
   Don't call it a type of its own.

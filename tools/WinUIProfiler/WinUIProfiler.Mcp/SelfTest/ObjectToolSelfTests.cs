@@ -146,6 +146,18 @@ internal static class ObjectToolSelfTests
         Expect.Equal("2 objects had the address 0x3000 during the session: the runtime reuses an address once its object is " +
             "freed. Call the history view again with one's objectId.", both.Text("message"), "The message");
         Expect.Equal(2, both.Items("objects").Count, "The objects it could be");
+        Expect.Equal(2L, both.Long("total"), "How many objects had the address");
+        Expect.True(both.IsNull("nextOffset"), "One page holds both objects.");
+
+        var first = Run(() => ObjectTools.Objects(sessionPath: path, address: "0x3000", limit: 1));
+        Expect.Equal(1L, first.Long("returned"), "Objects on a page of one");
+        Expect.Equal(2L, first.Long("total"), "How many objects had the address, on a page of one");
+        Expect.Equal(1L, first.Long("nextOffset"), "Where the next page of objects starts");
+        Expect.Equal("Label", first.Items("objects").Single().Text("name"), "The first object on the address");
+        var second = Run(() => ObjectTools.Objects(sessionPath: path, address: "0x3000", offset: 1));
+        Expect.Equal(1L, second.Long("returned"), "Objects on the page after the first");
+        Expect.Equal("Frame", second.Items("objects").Single().Text("name"), "The next object on the address");
+        Expect.True(second.IsNull("nextOffset"), "The second page is the last.");
 
         var label = Run(() => ObjectTools.Objects(sessionPath: path, objectId: objects[0].Long("objectId")));
         Expect.Equal("DependencyObject_Enter[ObjectPointer]@1.5#1,ElementEnteredTree[ElementId]@1.6#1,ElementLeftTree[ElementId]@2#1",

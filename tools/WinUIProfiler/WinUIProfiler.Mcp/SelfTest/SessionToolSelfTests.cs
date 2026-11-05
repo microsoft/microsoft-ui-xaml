@@ -188,7 +188,13 @@ internal static class SessionToolSelfTests
         }
 
         Expect.True(Analysis(summary, "frames").Bool("available"), "The frames analysis has data.");
-        Expect.True(Analysis(summary, "launch").Bool("available"), "The launch analysis has data.");
+        var launch = Analysis(summary, "launch");
+        Expect.True(launch.Bool("available"), "The launch analysis has data.");
+        Expect.Equal("milestones", string.Join(",", launch.Strings("views")), "The launch analysis's views");
+        var launchFrames = Analysis(summary, "launchFrames");
+        Expect.True(launchFrames.Bool("available"), "The launch frames analysis has data.");
+        Expect.Equal("launch", launchFrames.Text("tool"), "The launch frames analysis's tool");
+        Expect.Equal("frames", string.Join(",", launchFrames.Strings("views")), "The launch frames analysis's views");
         Expect.True(Analysis(summary, "objects").Bool("available"), "The objects analysis has data.");
         var regions = Analysis(summary, "regions");
         Expect.True(!regions.Bool("available"), "The regions analysis has no data.");
@@ -201,7 +207,12 @@ internal static class SessionToolSelfTests
         Expect.True(nothing.IsNull("firstFrame"), "An empty session has no first frame.");
         Expect.Equal(FrameTools.NoTicks, Analysis(nothing, "frames").Text("why"), "Why an empty session has no frames");
         Expect.Equal(ObjectTools.NoObjects, Analysis(nothing, "objects").Text("why"), "Why an empty session has no objects");
-        Expect.True(!Analysis(nothing, "launch").Bool("available"), "An empty session has no launch.");
+        var noLaunch = Analysis(nothing, "launch");
+        Expect.True(!noLaunch.Bool("available"), "An empty session has no launch.");
+        Expect.Equal(LaunchTools.NoMilestones, noLaunch.Text("why"), "Why an empty session has no launch");
+        var noLaunchFrames = Analysis(nothing, "launchFrames");
+        Expect.True(!noLaunchFrames.Bool("available"), "An empty session has no launch frames.");
+        Expect.Equal(FrameTools.NoTicks, noLaunchFrames.Text("why"), "Why an empty session has no launch frames");
     }
 
     private static void Notes(SelfTestContext context)
@@ -222,6 +233,12 @@ internal static class SessionToolSelfTests
         var trimmedSummary = Run(() => SessionTools.Sessions(sessionPath: trimmed));
         Expect.Equal(5L, trimmedSummary.Long("trimmedBeforeSeq"), "Where the trimmed file's events begin");
         HasNote(trimmedSummary, "The oldest events, before Seq 5, were deleted to keep the file within");
+        var trimmedLaunch = Analysis(trimmedSummary, "launch");
+        Expect.True(!trimmedLaunch.Bool("available"), "A trimmed file's launch was deleted, though its ticks remain.");
+        Expect.Equal(LaunchTools.LaunchDeleted, trimmedLaunch.Text("why"), "Why a trimmed file has no launch");
+        var trimmedFrames = Analysis(trimmedSummary, "launchFrames");
+        Expect.True(!trimmedFrames.Bool("available"), "A trimmed file has no launch frames.");
+        Contains(trimmedFrames.Text("why"), "Why a trimmed file has no launch frames", "with the launch's first frames, were deleted");
 
         var etl = Path.Combine(context.TempDirectory, "app.etl");
         var trace = Write(Path.Combine(context.TempDirectory, "trace.sqlite"), MainEvents, "End of trace", SessionCoverage.Trace,
@@ -359,7 +376,7 @@ internal static class SessionToolSelfTests
             .OfType<string>(),
     ];
 
-    private static JsonElement Analysis(JsonElement summary, string name) =>
+    internal static JsonElement Analysis(JsonElement summary, string name) =>
         summary.Items("analyses").FirstOrDefault(item => item.Text("name") == name) is { ValueKind: JsonValueKind.Object } analysis
             ? analysis
             : throw new SelfTestFailedException($"The summary lists the {name} analysis.");

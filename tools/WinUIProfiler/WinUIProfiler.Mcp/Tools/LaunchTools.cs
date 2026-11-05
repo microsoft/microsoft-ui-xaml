@@ -38,6 +38,13 @@ internal static class LaunchTools
         return SessionCatalog.RunAsync(sessionPath, path => chosen == "frames" ? Frames(path) : Milestones(path), cancellationToken);
     }
 
+    internal const string NoMilestones = "The session has none of the launch's milestones: no tick started on a UI " +
+        "thread, no frame was drawn, and it recorded no region of interest, navigation, PerfXamlEvent operation, window " +
+        "focus change or graphics device creation.";
+
+    internal const string LaunchDeleted =
+        "The oldest events, with the launch, were deleted to keep the file within its size limit.";
+
     /// <summary>Why a session has no launch frames.</summary>
     internal static string NoLaunch(SessionFileInfo info, int ticks) =>
         info.CompleteFromSeq is not null
@@ -90,14 +97,56 @@ internal static class LaunchTools
         var launch = SessionFile.ReadLaunchSummary(path);
         var ticks = SessionFile.ReadFrames(path);
         var rows = SessionFile.ReadInterestingRows(path);
+        var milestones = BuildMilestones(info, launch, ticks, rows);
+        var notes = Notes(info, launch, ticks.Count, LaunchTicks(launch, ticks));
+        if (!rows.Any(row => row.Type is InterestingRowType.UpdateLayout))
+        {
+            notes.Add("UpdateLayout passes are listed only inside regions of interest, and the session has none there.");
+        }
+
+        if (info.CompleteFromSeq is null && !milestones.Any(item => IsObserved(item.Milestone)))
+        {
+            notes.Add(NoMilestones);
+        }
+
+        return new
+        {
+            session = SessionCatalog.Header(path, info),
+            view = "milestones",
+            firstFrame = launch.Count == 0 ? null : new
+            {
+                frameNumber = launch[0].FrameNumber,
+                ms = EventJson.Ms(launch[0].Milliseconds),
+                measuredFrom = MeasuredFrom(launch),
+            },
+            milestones = milestones.OrderBy(item => item.Ms).ThenBy(item => item.Order).Select(item => item.Item).ToList(),
+            notes,
+        };
+    }
+
+    /// <summary>
+    /// How many of the launch's milestones a session's processed data holds, other than when the process was created
+    /// and when the recording started, which every session recorded live has. A launch that never drew a frame can
+    /// still have some.
+    /// </summary>
+    internal static int ObservedMilestones(SessionFileInfo info, IReadOnlyList<LaunchFrame> launch,
+        IReadOnlyList<SessionFrame> ticks, IReadOnlyList<InterestingRow> rows) =>
+        BuildMilestones(info, launch, ticks, rows).Count(item => IsObserved(item.Milestone));
+
+    private static bool IsObserved(string milestone) => milestone is not ("ProcessCreated" or "RecordingStarted");
+
+    /// <summary>The launch's milestones, in the order they're found; Order breaks ties between equal times.</summary>
+    private static List<(string Milestone, double Ms, int Order, object Item)> BuildMilestones(SessionFileInfo info,
+        IReadOnlyList<LaunchFrame> launch, IReadOnlyList<SessionFrame> ticks, IReadOnlyList<InterestingRow> rows)
+    {
         var launchTicks = LaunchTicks(launch, ticks);
         var processStart = info.Coverage == SessionCoverage.ProcessStart ? info.ProcessStartMilliseconds : null;
-        var milestones = new List<(double Ms, int Order, object Item)>();
+        var milestones = new List<(string Milestone, double Ms, int Order, object Item)>();
 
         void Add(string milestone, double ms, int? threadId = null, double? durationMs = null, string? name = null,
             string? trigger = null, long? count = null, long? tickId = null, long? frameNumber = null, long? regionId = null,
             long? endsWithTickId = null) =>
-            milestones.Add((ms, milestones.Count, new
+            milestones.Add((milestone, ms, milestones.Count, new
             {
                 milestone,
                 ms = EventJson.Ms(ms),
@@ -171,25 +220,7 @@ internal static class LaunchTools
             }
         }
 
-        var notes = Notes(info, launch, ticks.Count, launchTicks);
-        if (!rows.Any(row => row.Type is InterestingRowType.UpdateLayout))
-        {
-            notes.Add("UpdateLayout passes are listed only inside regions of interest, and the session has none there.");
-        }
-
-        return new
-        {
-            session = SessionCatalog.Header(path, info),
-            view = "milestones",
-            firstFrame = launch.Count == 0 ? null : new
-            {
-                frameNumber = launch[0].FrameNumber,
-                ms = EventJson.Ms(launch[0].Milliseconds),
-                measuredFrom = MeasuredFrom(launch),
-            },
-            milestones = milestones.OrderBy(item => item.Ms).ThenBy(item => item.Order).Select(item => item.Item).ToList(),
-            notes,
-        };
+        return milestones;
     }
 
     private static string? MeasuredFrom(IReadOnlyList<LaunchFrame> launch) =>
