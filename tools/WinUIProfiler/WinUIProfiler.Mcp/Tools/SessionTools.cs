@@ -44,7 +44,7 @@ internal static class SessionTools
         [Description("The folder to list, or to find sessionPath in. Omit it for the WinUI Profiler app's sessions folder.")]
         string? folder = null,
         [Description("The list view: the most session files to describe, from 1 to 500; the newest are described first. " +
-            "Omit it for 50.")]
+            "Omit it for 20.")]
         int? limit = null,
         CancellationToken cancellationToken = default)
     {
@@ -53,7 +53,7 @@ internal static class SessionTools
             : ToolArguments.View(view, Views, "sessions");
         ToolArguments.OnlyFor(ToolArguments.Text(sessionPath) is not null, nameof(sessionPath), "sessions", chosen, "summary");
         ToolArguments.OnlyFor(limit is not null, nameof(limit), "sessions", chosen, "list");
-        var count = ToolArguments.Range(limit ?? 50, 1, 500, nameof(limit));
+        var count = ToolArguments.Range(limit ?? 20, 1, 500, nameof(limit));
         var directory = SessionCatalog.Folder(folder);
         if (File.Exists(directory))
         {

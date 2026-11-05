@@ -48,6 +48,7 @@ defaults to 20.
 The regions of interest, longest first (`orderBy` `duration`) or in order
 (`time`), each with its `regionId`, trigger, thread, start, stop, duration,
 the tick it ends with and its rows by type; and the rows outside every region.
+`limit` defaults to 20.
 
 ### `rows`
 
@@ -61,10 +62,14 @@ CreateGraphicsDevice, Navigating or Navigated. `limit` defaults to 50.
 
 One tick, by `tickId`: its thread, frame number, whether it drew, start, end,
 duration and events by bucket; the region it ends; its events counted by
-provider and name; the elements and visuals they mention, by kind and type;
-and a page of its events in order, each with its bucket and the objects it
-mentions. `bucket` lists only one bucket's events; the counts cover all.
-Events' field values aren't shown.
+provider and name, for the 30 names with the most events; the elements and
+visuals they mention, counted by kind and type, for the 20 types with the
+most objects; and a page of its events in order, each with its bucket and
+the objects it mentions. `limit` defaults to 20. `eventNames` and
+`objectTypes` say how many names and types there are, and a note counts any
+left out. `bucket` keeps one bucket's events, names and types; `total` still
+counts all the tick's events, and `matching` the bucket's. Events' field
+values aren't shown.
 
 ## `launch`
 

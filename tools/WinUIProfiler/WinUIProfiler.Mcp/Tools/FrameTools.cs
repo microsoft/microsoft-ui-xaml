@@ -33,6 +33,10 @@ internal static class FrameTools
 
     private const int MaxLimit = 500;
 
+    // The tick view lists at most this many event names and object types, so a busy tick's answer stays small.
+    private const int TickNames = 30;
+    private const int TickTypes = 20;
+
     private static readonly string[] SlowestOrders = ["duration", "events"];
 
     private static readonly string[] RegionOrders = ["duration", "time"];
@@ -51,9 +55,10 @@ internal static class FrameTools
         "longest first or in order, each with its trigger, duration, the tick it ends with and its rows by type, and the " +
         "rows outside every region. \"rows\": the interesting rows (ticks and UpdateLayout passes inside regions; " +
         "operations, navigations, focus changes and graphics device creations always), in order or longest first, " +
-        "optionally of one region or one type. \"tick\": one tick: its events by provider and name, the UI elements and " +
-        "visuals they mention, and a page of its events with their bucket and mentions. Times are in ms (see the session's " +
-        "timeBase). Events' field values aren't shown.")]
+        "optionally of one region or one type. \"tick\": one tick: its events counted by provider and name (the 30 names " +
+        "with the most events), the UI elements and visuals they mention counted by type (the 20 types with the most " +
+        "objects), and a page of its events with their bucket and mentions. Times are in ms (see the session's timeBase). " +
+        "Events' field values aren't shown.")]
     public static Task<object> Frames(
         [Description("\"summary\", \"slowest\", \"regions\", \"rows\" or \"tick\". Omit it for the summary, or for the tick " +
             "view when tickId is given, or the rows view when regionId or type is given.")]
@@ -66,7 +71,8 @@ internal static class FrameTools
         [Description("The rows view: only rows of this type: Frame, UpdateLayout, Operation, FocusChange, " +
             "CreateGraphicsDevice, Navigating or Navigated.")]
         string? type = null,
-        [Description("The tick view: list only the events of this bucket: Xaml, Composition or Other. The counts cover all.")]
+        [Description("The tick view: only the events of this bucket: Xaml, Composition or Other. The event names, the " +
+            "objects and the page then cover that bucket; the tick's own counts still cover all its events.")]
         string? bucket = null,
         [Description("The slowest view: \"duration\" (the default) or \"events\". The regions view: \"duration\" (the " +
             "default, longest first) or \"time\". The rows view: \"time\" (the default) or \"duration\".")]
@@ -74,7 +80,7 @@ internal static class FrameTools
         [Description("The slowest, regions, rows and tick views: how many items to skip, for the next page.")]
         int offset = 0,
         [Description("The slowest, regions, rows and tick views: the most items to return, from 1 to 500. Omit it for 20 " +
-            "ticks or regions, or 50 rows or events.")]
+            "ticks, regions or events, or 50 rows.")]
         int? limit = null,
         CancellationToken cancellationToken = default)
     {
@@ -91,7 +97,7 @@ internal static class FrameTools
         ToolArguments.OnlyFor(offset != 0, nameof(offset), "frames", chosen, "slowest", "regions", "rows", "tick");
         ToolArguments.OnlyFor(limit is not null, nameof(limit), "frames", chosen, "slowest", "regions", "rows", "tick");
         ToolArguments.NotNegative(offset, nameof(offset));
-        var count = ToolArguments.Range(limit ?? (chosen is "rows" or "tick" ? 50 : 20), 1, MaxLimit, nameof(limit));
+        var count = ToolArguments.Range(limit ?? (chosen == "rows" ? 50 : 20), 1, MaxLimit, nameof(limit));
         if (chosen == "tick" && tickId is null)
         {
             throw new McpException("The tick view needs tickId. The slowest, regions and rows views give tick IDs.");
@@ -401,17 +407,17 @@ internal static class FrameTools
         long matching = 0;
         var total = SessionFile.ReadFrameEvents(path, tickId, null, null, 0, -1, (profilerEvent, eventBucket, mentions) =>
         {
+            if (bucket is not null && eventBucket != bucket)
+            {
+                return;
+            }
+
             var provider = EventJson.Provider(profilerEvent.Provider).Name;
             var key = (provider, profilerEvent.Name, eventBucket);
             kinds[key] = kinds.GetValueOrDefault(key) + 1;
             foreach (var mention in mentions)
             {
                 objects.TryAdd(mention.ObjectId, mention);
-            }
-
-            if (bucket is not null && eventBucket != bucket)
-            {
-                return;
             }
 
             if (matching >= offset && matching < (long)offset + limit)
@@ -436,30 +442,53 @@ internal static class FrameTools
 
             matching++;
         }, cancellationToken);
+        var names = kinds.OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key.Provider, StringComparer.Ordinal)
+            .ThenBy(pair => pair.Key.Name, StringComparer.Ordinal).ToList();
+        var types = objects.Values.GroupBy(mention => (mention.Kind, mention.Type))
+            .OrderByDescending(group => group.Count()).ThenBy(group => group.Key.Kind)
+            .ThenBy(group => group.Key.Type, StringComparer.Ordinal).ToList();
         var notes = new List<string>(SessionCatalog.Notes(info));
         AddTickNotes([tick], notes);
+        if (names.Count > TickNames)
+        {
+            var unlisted = names.Skip(TickNames).ToList();
+            notes.Add(string.Create(CultureInfo.InvariantCulture,
+                $"Only the {TickNames} of {names.Count:N0} event names with the most events are listed; the other " +
+                $"{EventJson.Count(unlisted.Count, "name has", "names have")} " +
+                $"{EventJson.Count(unlisted.Sum(pair => pair.Value), "event", "events")}.") +
+                (bucket is null ? " Pass bucket (Xaml, Composition or Other) to list one bucket's names." : ""));
+        }
+
+        if (types.Count > TickTypes)
+        {
+            var unlisted = types.Skip(TickTypes).ToList();
+            notes.Add(string.Create(CultureInfo.InvariantCulture,
+                $"Only the {TickTypes} of {types.Count:N0} types with the most objects are listed; the other " +
+                $"{EventJson.Count(unlisted.Count, "type has", "types have")} " +
+                $"{EventJson.Count(unlisted.Sum(group => group.Count()), "object", "objects")}."));
+        }
+
         return new
         {
             session = SessionCatalog.Header(path, info),
             view = "tick",
             tick = DescribeTick(tick, region),
             region = region is null ? null : DescribeRegion(region),
-            events = kinds.OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key.Provider, StringComparer.Ordinal)
-                .ThenBy(pair => pair.Key.Name, StringComparer.Ordinal).Select(pair => new
-                {
-                    provider = pair.Key.Provider,
-                    name = pair.Key.Name,
-                    bucket = pair.Key.Bucket,
-                    count = pair.Value,
-                }).ToList(),
-            objects = objects.Values.GroupBy(mention => (mention.Kind, mention.Type))
-                .OrderByDescending(group => group.Count()).ThenBy(group => group.Key.Kind)
-                .ThenBy(group => group.Key.Type, StringComparer.Ordinal).Select(group => new
-                {
-                    kind = group.Key.Kind.ToString(),
-                    type = group.Key.Type,
-                    objects = group.Count(),
-                }).ToList(),
+            eventNames = names.Count,
+            events = names.Take(TickNames).Select(pair => new
+            {
+                provider = pair.Key.Provider,
+                name = pair.Key.Name,
+                bucket = pair.Key.Bucket,
+                count = pair.Value,
+            }).ToList(),
+            objectTypes = types.Count,
+            objects = types.Take(TickTypes).Select(group => new
+            {
+                kind = group.Key.Kind.ToString(),
+                type = group.Key.Type,
+                objects = group.Count(),
+            }).ToList(),
             total,
             bucket,
             matching,
