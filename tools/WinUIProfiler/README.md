@@ -878,23 +878,36 @@ says which, and names the launcher.
 - A UWP app's process is created by a Windows service, svchost.exe, rather
   than by the process that launched it, so its launcher is that service.
 
-A trace has the launcher milestones only if it has the kernel's process events
-and Windows' launch providers, and tells overlapping launches apart with the
-kernel's thread events. WPR records them all in one file with
-`scripts\LaunchTrace.wprp`, which has the XAML providers and the default
-configuration's other providers too. From an elevated prompt in this
-directory, with `$cli` as above:
+A trace has the launcher milestones only if it has, in one file, the kernel's
+process events and the configuration's providers, and tells overlapping
+launches apart with the kernel's thread events. The `logman` commands of
+[Recorded, from a trace file](#recorded-from-a-trace-file) don't record the
+kernel's process and thread events. WPR can record them in one file with the
+providers: use a profile with the kernel's process and thread events, the
+providers in `providers.txt`, and the configuration's providers, such as an
+app's own. Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k write from
+the kernel, so only to a session in nonpaged memory, which WPR uses only for a
+provider with `NonPagedMemory="true"`: give them that, in a small collector of
+their own, or their GPU memory and window focus events are lost. The default
+configuration's providers are:
+
+| Provider | GUID |
+| --- | --- |
+| Microsoft.Windows.AppLifeCycle.UI | `ee97cdc4-b095-5c70-6e37-a541eb74c2b5` |
+| Microsoft.Windows.ApplicationModel.DesktopAppx | `5526aed1-f6e5-5896-cbf0-27d9f59b6be7` |
+| Microsoft.Windows.ShellExecute | `382b5e24-181e-417f-a8d6-2155f749e724` |
+| Microsoft.Windows.AppLifeCycle | `ef00584a-2655-462c-bc24-e7de630e7fbf` |
+| Microsoft-Windows-Store | `9c2a37f3-e5fd-5cae-bcd1-43dafeee1ff0` |
+
+Then, with the profile in `launch.wprp` and `$cli` as above:
 
 ```powershell
-wpr -start .\scripts\LaunchTrace.wprp -filemode
-# ... launch the app, such as from File Explorer ...
+wpr -start launch.wprp -filemode               # from an elevated prompt, before the launch
+# ... launch the app ...
 wpr -stop launch.etl
 & $cli processes launch.etl                    # to find the app's PID
 & $cli launch launch.etl --pid <pid>
 ```
-
-To record an app's own provider too, add it to the profile, as its comment
-says.
 
 ## Limitations
 
