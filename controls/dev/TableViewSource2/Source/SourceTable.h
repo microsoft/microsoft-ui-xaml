@@ -118,7 +118,11 @@
 //   - All table state and both handlers belong to the bound thread, or before binding to the
 //     thread the app uses it on.
 //   - Source and child collection notifications must arrive on that thread (the contract every
-//     XAML collection consumer imposes); they are not marshalled.
+//     XAML collection consumer imposes); they are not marshalled. A bound table throws
+//     hresult_wrong_thread (and asserts in debug) for a root notification raised on another
+//     thread, before locking the table: an index-based change can only be applied against the
+//     collection as it was when raised, and TVS2 keeps no shadow copy to marshal against (WPF's
+//     EnableCollectionSynchronization does). An unbound table applies it inline.
 //   - Item PropertyChanged: bound and on the bound thread, or unbound -> delivered inline. Bound
 //     and on another thread -> posted to the bound queue with only weak pointers and the property
 //     name; the weak pointers are locked there. A failed TryEnqueue means the queue is shutting
@@ -158,8 +162,6 @@
 //     safe_get().
 class SourceTable : public std::enable_shared_from_this<SourceTable>, private ISourceHierarchyHost
 {
-    struct PrivateToken { explicit PrivateToken() = default; };
-
 public:
     using SourceChangedHandler = std::function<void(SourceChange const& change)>;
     using ItemChangedHandler = std::function<void(SourceRecord* record, winrt::hstring const& propertyName)>;
@@ -171,9 +173,6 @@ public:
     static std::shared_ptr<SourceTable> Create(
         ITrackerHandleManager const* owner,
         winrt::Windows::Foundation::IInspectable const& source);
-
-    // Public only so std::make_shared can reach it; PrivateToken restricts callers to Create().
-    SourceTable(PrivateToken, ITrackerHandleManager const* owner);
 
     // Asserts the table was detached by Clear(); never touches m_trackerOwner.
     ~SourceTable();
@@ -243,7 +242,8 @@ public:
     // for a reason other than validation is reported again at the next outermost EndFreeze. A
     // table diverged only by a rejected change does not report true: re-reading it would fail
     // validation again on every commit; the next notification re-reads instead. Item
-    // PropertyChanged is not affected (it never mutates the table).
+    // PropertyChanged is not affected (it never mutates the table). EndFreeze also reports a
+    // hierarchy left parked by a hold that ended inside the freeze.
     void BeginFreeze() noexcept;
     [[nodiscard]] bool EndFreeze() noexcept;
     bool IsFrozen() const noexcept;
@@ -255,9 +255,10 @@ public:
     // multi-item change reported as one) is skipped, and from then on later notifications are
     // skipped as under a freeze until the re-read. Hierarchy verbs are parked (m_pendingHierarchy);
     // the current tree keeps receiving changes. Nests. EndHoldResets returns true when the
-    // outermost hold ends with m_rereadDue set or a hierarchy parked; the caller then calls
-    // Refresh(), which re-reads once and commits the parked hierarchy. Like EndFreeze, it does not
-    // clear m_rereadDue.
+    // outermost hold ends with no freeze open and m_rereadDue set or a hierarchy parked; the
+    // caller then calls Refresh(), which re-reads once and commits the parked hierarchy. A hold
+    // that ends inside a freeze reports nothing: the outermost EndFreeze reports it instead. Like
+    // EndFreeze, it does not clear m_rereadDue.
     void BeginHoldResets() noexcept;
     [[nodiscard]] bool EndHoldResets() noexcept;
 
@@ -274,6 +275,20 @@ public:
     // only by a successful Refresh(). IsRereadDue is read by the posted resync, which does nothing
     // once the re-read has happened (a notification already re-read) or is no longer owed.
     bool IsRereadDue() const noexcept;
+
+    // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
+    // does; it only runs on the UI thread, so it does not depend on m_binding) unless one is
+    // already posted (m_rereadPosted). Public for ShapingManager::ResyncSource's posted retry. The
+    // callback holds weak_from_this() and returns if the table is gone or detached; it clears
+    // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
+    // nor held (otherwise the owed re-read is left for that freeze's or hold's report point).
+    // Decided (#7, revised): a throw from that Refresh() is not swallowed; it propagates out of
+    // the callback to the dispatcher (Application.UnhandledException), as WPF does for its posted
+    // work, so an app fault is visible instead of leaving the rows silently stale. The flags
+    // follow Refresh()'s failure rules and the callback does not re-post: a non-validation
+    // failure stays owed until the next report point. No queue (headless or test): nothing is
+    // posted and the re-read stays owed until the next report point or Refresh().
+    void PostReread() noexcept;
 
     // ---- Source tree (hierarchy) ------------------------------------------------------------
 
@@ -336,6 +351,10 @@ public:
     SourceRecord* TryFindByIdentity(winrt::hstring const& identity) const;
 
 private:
+    // Reachable only from Create(), which owns the result through std::shared_ptr(new ...): two
+    // allocations instead of make_shared's one, once per table.
+    explicit SourceTable(ITrackerHandleManager const* owner);
+
     // Called by Create() once the object is owned by a shared_ptr: binds m_sourceAccessor,
     // subscribes to source changes with weak_from_this(), and performs the initial Refresh().
     void AttachSource(winrt::Windows::Foundation::IInspectable const& source);
@@ -390,23 +409,18 @@ private:
     // SourceChanged inside a freeze (BeginFreeze / EndFreeze around the handler call; nothing is
     // queued: a re-entrant change is skipped), then destroys the records that left;
     // records in `removed` must already be out of their owner, the tree and the lookups. It fills
-    // m_removedView from `removed` for SourceChange::Removed (see SourceRecord.h).
+    // m_removedView from `removed` for SourceChange::Removed (see SourceRecord.h). When the
+    // handler throws, the caller's DrainPendingChanges is skipped, so it calls PostRereadIfOwed()
+    // before rethrowing; every raiser (the edits, Refresh(), the strategies) shares that path.
 
     // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
     // true (re-read due, outermost, no hold), Refresh() (one Reset). This is the turn's one
     // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
     void DrainPendingChanges();
 
-    // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
-    // does; it only runs on the UI thread, so it does not depend on m_binding) unless one is
-    // already posted (m_rereadPosted). The
-    // callback holds weak_from_this() and returns if the table is gone or detached; it clears
-    // m_rereadPosted, then calls Refresh() only if IsRereadDue() and the table is neither frozen
-    // nor held (otherwise the owed re-read is left for that freeze's or hold's report point). A
-    // throw from it is swallowed: the flags follow Refresh()'s failure rules. No queue (headless
-    // or test): nothing is posted and the re-read stays owed until the next report point or
-    // Refresh().
-    void PostReread() noexcept;
+    // PostReread() when a re-read is owed and no freeze or hold is open to report it. Refresh()'s
+    // epilogue and RaiseSourceChanged's handler-fault path.
+    void PostRereadIfOwed() noexcept;
 
     void AddToLookups(SourceRecord* record);
 
@@ -416,7 +430,9 @@ private:
     // The PropertyChanged lambda captures weak_from_this(), the record's weak_ptr and m_binding.
     // Bound and off the bound thread, it posts to the bound queue (a failed post is ignored);
     // otherwise it locks the table and calls OnRecordPropertyChanged, which locks the record.
-    void SubscribeRecordPropertyChanged(SourceRecordPtr const& record);
+    // noexcept: a failed subscribe marks the item NotObservable (no retry) rather than unwinding a
+    // commit with freed records left in the lookups; that item's edits are not live-shaped.
+    void SubscribeRecordPropertyChanged(SourceRecordPtr const& record) noexcept;
     void UnsubscribeRecordPropertyChanged(SourceRecord* record) noexcept;
     void OnRecordPropertyChanged(SourceRecordWeakPtr const& weakRecord, winrt::hstring const& propertyName);
 
@@ -509,6 +525,10 @@ private:
         std::atomic<DWORD> threadId{ 0 };
     };
     std::shared_ptr<ThreadBinding> m_binding{ std::make_shared<ThreadBinding>() };
+
+    // Root-collection lambdas, before locking the table: throws hresult_wrong_thread (asserting in
+    // debug) when bound and the current thread is not the bound one (see Threading).
+    static void ThrowIfOffBoundThread(ThreadBinding const& binding);
 
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;

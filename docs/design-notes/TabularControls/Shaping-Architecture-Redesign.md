@@ -73,7 +73,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 1 | Public verb API | `TableViewSource2.idl` | Declared |
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h/.cpp` | Implemented |
-| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | `SourceRecord` implemented; the rest declared, not implemented |
+| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | `SourceRecord` and flat `SourceTable` implemented (hierarchy verbs throw `hresult_not_implemented`); the strategies declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h` | `ShapedNode` and `FenwickTree` implemented; the rest declared, not implemented |
 | 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
@@ -1039,7 +1039,7 @@ identity index     Identity      -> SourceRecord*   shaped only; selection, focu
 
 | Operation | Visibility | Behaviour |
 |---|---|---|
-| `Create(owner, source)` | Public (static) | The only way to build a table. `make_shared<SourceTable>(PrivateToken{}, owner)`, then private `AttachSource(source)`: resolves `CollectionAccessor2(owner, source)`, subscribes to change notifications (storing `m_sourceEventToken`), and performs the initial `Refresh()`. `owner` is the enclosing `TableViewSource2`'s `ITrackerHandleManager const*`. The constructor takes a private `PrivateToken`, so it is reachable by `make_shared` but not by callers; there is no default constructor. |
+| `Create(owner, source)` | Public (static) | The only way to build a table. `std::shared_ptr<SourceTable>(new SourceTable(owner))`, then private `AttachSource(source)`: resolves `CollectionAccessor2(owner, source)`, subscribes to change notifications (storing `m_sourceEventToken`), and performs the initial `Refresh()`. `owner` is the enclosing `TableViewSource2`'s `ITrackerHandleManager const*`. The constructor is private, so only `Create()` can call it (not `make_shared`; the cost is a separate control-block allocation per table); there is no default constructor. |
 | `Refresh()` | Public | Re-enumerates `m_sourceAccessor` (and the hierarchy) and reconciles against existing records, reusing every record whose item is still in the same collection (initial load, `Reset`, out-of-sync recovery, the end of a freeze or reset hold, or explicit `Refresh()` for non-observable sources). One `Reset`. No-op when detached. See *Refresh: record reuse (decided)*. |
 | `Clear()` | Public | Teardown, called by `~TableViewSource2()` on the UI thread while the owner is alive. Nulls both handlers (raises nothing), drops `m_pendingHierarchy`, releases `m_hierarchy` (`SourceHierarchy::Release`: unsubscribes every child collection via `safe_get`, destroys the child feeds and their records, drops the selectors and key index), unsubscribes from the source, clears the lookups wholesale, then destroys every root record, resets `m_sourceAccessor`, and nulls `m_trackerOwner`. Idempotent. Afterwards the table is detached. |
 | `TopLevel()` / `HasHierarchy()` / `SetParentKeyHierarchy` / `SetChildCollectionHierarchy` / `ClearHierarchy` | Public | Source tree. See *Hierarchy: the source tree (`SourceTable` + `SourceHierarchy`)*. |
@@ -1140,7 +1140,9 @@ table's state ("skip" = not applied; sets both bits):
   - `PostReread()` posts one callback (`m_rereadPosted`) to the current thread's `DispatcherQueue`
     (as `PostLiveDrain` does, so it does not depend on `m_binding`). It runs `Refresh()`
     only if `IsRereadDue()` and the table is neither frozen nor held (otherwise that freeze's or
-    hold's report point takes it) and swallows a throw (the flags follow the failure rules above).
+    hold's report point takes it). It does not catch: a throw propagates to the dispatcher
+    (`Application.UnhandledException`), the flags follow `Refresh()`'s failure rules above, and
+    nothing is re-posted.
   - No queue (headless or test): nothing is posted; the re-read stays owed until the next report
     point or `Refresh()`.
   - An app that mutates on every `Reset` still gets one re-read per turn, but the dispatcher keeps
@@ -1222,7 +1224,7 @@ untracked strong reference.
 |---|---|
 | Owning thread | `Create()` may run on any thread. If the thread has a `DispatcherQueue`, it binds the table there; otherwise the table stays unbound. `ShapingManager::SetOwner(non-null)` calls `BindOwnerThread()`, which binds an unbound table once to the owner's (UI) thread. A bound table keeps its binding; `BindOwnerThread()` on a different thread only asserts in debug. All table state and both handlers belong to the bound thread. |
 | Binding storage | `m_binding` is a `shared_ptr<ThreadBinding>` (`queue`, `atomic<DWORD> threadId`), shared with every item lambda so they never lock the table off-thread. `threadId` 0 means unbound; `queue` is written first and `threadId` stored with release order, loaded with acquire. The single unbound → bound write needs no lock: nothing could be posted while unbound, so no stale post exists. |
-| Source collection changes | Must arrive on the owning thread, the contract every XAML collection consumer imposes. Not marshalled: marshalling would let `m_records` drift from the live collection between the event and its delivery. |
+| Source collection changes | Must arrive on the owning thread, the contract every XAML collection consumer imposes. A bound table throws `hresult_wrong_thread` (and asserts in debug) for a root notification raised on another thread, before locking the table; an unbound table applies it inline. Not marshalled: TVS2 keeps no shadow copy of the source (WPF's `EnableCollectionSynchronization` does), so marshalling would let `m_records` drift from the live collection between the event and its delivery. |
 | Item change inline | On the bound thread, or while unbound: lock table → `OnRecordPropertyChanged` → lock record → `m_itemChanged`. |
 | Item change off-thread, bound | `queue.TryEnqueue` posts a lambda holding only the two weak pointers and the property name; they are locked on the bound thread. Order is preserved per raising thread only; a record removed before the post runs fails its lock and the change is dropped (correct, since it left the table). Off-thread marshalling is kept as a convenience (v1 parity). |
 | Failed `TryEnqueue` | Happens only while the queue shuts down (UI thread exiting); ignored. |
@@ -3332,7 +3334,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
     `EnumerateResolved`, the typed `As*` getters.
   - `SourceRecord.cpp`: canonical `IUnknown` QI (`AddressOf`), lazy hex `Identity()` and its inverse
     `TryParseIdentity`, `~SourceRecord()` token revoke.
-  - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
+  - `SourceTable.cpp` (flat path implemented; hierarchy verbs, `Reparent` and child-record
+    live shaping land with 1.5): `SourceTable::Create` / `AttachSource`,
     upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_diverged` recovery), the `Refresh()` match
     (`MatchRecords` / `CommitRecords`: position → raw pointer → address; per-feed `MatchForRefresh`), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
     `RaiseSourceChanged` ordering, the freeze (`BeginFreeze` / `EndFreeze`, dispatch included, `m_diverged` → `Refresh`, #19), source change subscriptions, and
@@ -3386,9 +3389,10 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `LiveChange`, `Rebuild` scoped to dirty records (E7).
 - [x] Surgical placement and tie order: `PlacementIndex`, `ShapeFlags::PlacementMark`,
       `StagedEdit::ShapedIndex` (E5).
-- [ ] Shaped tree node types `ShapedNode` (`Engine/ShapeState.h`), `GroupNode` (`Engine/ShapedTree.h`):
+- [x] Shaped tree node types `ShapedNode` (`Engine/ShapeState.h`), `GroupNode` (`Engine/ShapedTree.h`):
       `ShapedNode` implemented (`Engine/ShapeState.cpp`: `AsRecord` / `AsGroup`, `ShapedParent`,
-      `ShapedChildCount`, `ShapedChildAt`); `GroupNode` is data only.
+      `ShapedChildCount`, `ShapedChildAt`); `GroupNode` is complete in its header (data plus inline
+      constructor and `IsRoot`); its fields are written by the engine and `ShapedTree`.
 - [x] Implement `FenwickTree` (`Engine/FenwickTree.cpp`; the `Build` template inline in the
       header): linear O(k) build, `Add` / `PrefixSum` in O(log k), `Find` as one power-of-two
       descent, `Clear` frees the storage.
