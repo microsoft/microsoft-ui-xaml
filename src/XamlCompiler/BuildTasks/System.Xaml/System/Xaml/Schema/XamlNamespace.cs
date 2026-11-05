@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Xaml.MS.Impl;
 using MS.Internal.Xaml.Parser;
 using System.IO;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace System.Xaml.Schema
 {
@@ -129,7 +130,7 @@ namespace System.Xaml.Schema
             }
 
             // Close it
-            Type closedType = openType.MakeGenericType(typeArgs);
+            Type closedType = openType.MakeGenericTypeLmr(typeArgs);
             if (!string.IsNullOrEmpty(subscript))
             {
                 closedType = MakeArrayType(closedType, subscript);
@@ -152,7 +153,7 @@ namespace System.Xaml.Schema
                 {
                     return null; // subscript parse error
                 }
-                type = (rank == 1) ? type.MakeArrayType() : type.MakeArrayType(rank);
+                type = (rank == 1) ? type.MakeArrayTypeLmr() : type.MakeArrayTypeLmr(rank);
             }
             while (pos < subscript.Length);
             return type;
@@ -236,7 +237,7 @@ namespace System.Xaml.Schema
                     }
                     string clrPrefix = assemblyNamespacePair.ClrNamespace;
 
-                    Type[] types = asm.GetTypes();
+                    Type[] types = asm.GetTypesLmr();
 
                     foreach (Type t in types)
                     {
@@ -276,7 +277,7 @@ namespace System.Xaml.Schema
                 }
                 string longName = assemblyNamespacePair.ClrNamespace + "." + shortName;
 
-                Type type = asm.GetType(longName);
+                Type type = asm.GetTypeLmr(longName);
                 if (type != null)
                     return type;
             }
