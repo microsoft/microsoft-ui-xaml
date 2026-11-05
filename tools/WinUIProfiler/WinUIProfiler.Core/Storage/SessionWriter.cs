@@ -23,9 +23,17 @@ public enum SessionCoverage
 
 // Where a session's events come from. For a recorded trace, pass the trace's QpcFrequency
 // (OfflineEtlSource.ReadQpcFrequency): a null one is derived from the events once they span a second, and until then
-// readers time events with this machine's frequency. A null StartQpc makes the first event time zero.
+// readers time events with this machine's frequency. A null StartQpc makes the target's first event time zero.
+// LauncherProcessId is the process that launched the target, when known, as the profiler for a launch from the app,
+// though Windows may create a packaged app's process: the events of another process the session receives are that
+// process's (MarkerProviderSettings.Launcher).
 public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? ProcessCreatedUtc, long? QpcFrequency,
-    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null);
+    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null, int? LauncherProcessId = null, string? LauncherName = null);
+
+// For a recorded trace: when the target process was created, on the events' clock, and its executable name without .exe,
+// from the kernel's process start event, and the process that created it, its launcher, which the event names.
+// LauncherName is null when the trace doesn't have it.
+public sealed record TraceProcessStart(long Qpc, string? Name, int LauncherProcessId, string? LauncherName);
 
 // CompleteFromSeconds is set once older events were dropped to stay within the limit: the file holds every event
 // from that many seconds after the recording started.
@@ -33,7 +41,8 @@ public sealed record RecordingStatus(string Path, long StoredEvents, long FileBy
 
 // Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the object index
 // (ObjectIndex) and the frame index (FrameIndex) in the same transactions. Process waits while the writer is
-// behind, so the ETW reader's queue stays the only place events are dropped.
+// behind, so the ETW reader's queue stays the only place events are dropped. An event of another process than the
+// target's is the launcher's: it is stored as one, and not indexed.
 public sealed class SessionWriter : IEventProcessor, IDisposable
 {
     public const long DefaultLimitBytes = 500L * 1024 * 1024;
@@ -55,9 +64,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly SqliteCommand insertType;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
-    // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name and opcode.
-    // Usually one layout each; a field that is sometimes null gives a second.
-    private readonly Dictionary<(XamlProvider, Guid, bool, string, int), List<EventLayout>> types = [];
+    private readonly int processId;
+    // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode and
+    // whether the launcher wrote them. Usually one layout each; a field that is sometimes null gives a second.
+    private readonly Dictionary<(XamlProvider, Guid, bool, string, int, bool), List<EventLayout>> types = [];
     private long typeCount;
     private readonly ArrayBufferWriter<byte> payload = new();
     private readonly Utf8JsonWriter json;
@@ -72,7 +82,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private long fileBytes;
     private long completeFromQpc;
     // A process start SetProcessStart gave that is not stored yet.
-    private PendingProcessStart? pendingProcessStart;
+    private TraceProcessStart? pendingProcessStart;
     private volatile Exception? failure;
     private int closed;
 
@@ -81,6 +91,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         Path = path;
         LimitBytes = limitBytes;
         this.connection = connection;
+        processId = start.ProcessId;
         derivesFrequency = start.QpcFrequency is null;
         qpcFrequency = start.QpcFrequency ?? 0;
         startQpc = start.StartQpc ?? 0;
@@ -91,11 +102,12 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer), ("$thread", SqliteType.Integer), ("$type", SqliteType.Integer),
             ("$payload", SqliteType.Text));
         insertType = Sql.Prepare(connection, """
-            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, ProviderName, ProviderId)
-            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging, $providerName, $providerId)
+            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, ProviderName, ProviderId,
+                Launcher)
+            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging, $providerName, $providerId, $launcher)
             """, ("$id", SqliteType.Integer), ("$provider", SqliteType.Text), ("$name", SqliteType.Text), ("$opcode", SqliteType.Integer),
             ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer),
-            ("$providerName", SqliteType.Text), ("$providerId", SqliteType.Text));
+            ("$providerName", SqliteType.Text), ("$providerId", SqliteType.Text), ("$launcher", SqliteType.Integer));
 
         // The payload is never embedded in HTML, so only the escaping JSON requires is applied and type names stay readable.
         json = new(payload, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
@@ -163,8 +175,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 var startedUtc = DateTime.UtcNow;
                 Sql.Execute(connection, """
                     INSERT INTO SessionInfo (SessionId, ProcessId, ProcessName, ProcessCreatedUtc, QpcFrequency, StartQpc,
-                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes)
-                    VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $startedQpc, $source, $etl, $coverage, $limit)
+                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes, LauncherProcessId, LauncherName)
+                    VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $startedQpc, $source, $etl, $coverage, $limit,
+                        $launcher, $launcherName)
                     """, transaction,
                     ("$id", Guid.NewGuid().ToString()), ("$pid", start.ProcessId), ("$name", start.ProcessName),
                     ("$created", start.ProcessCreatedUtc?.ToString("O", CultureInfo.InvariantCulture)),
@@ -172,7 +185,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     ("$started", startedUtc.ToString("O", CultureInfo.InvariantCulture)),
                     ("$startedQpc", start.EtlPath is null ? startedQpc : null),
                     ("$source", start.EtlPath is null ? "Live" : "Trace"), ("$etl", start.EtlPath),
-                    ("$coverage", start.Coverage.ToString()), ("$limit", limitBytes));
+                    ("$coverage", start.Coverage.ToString()), ("$limit", limitBytes),
+                    ("$launcher", start.LauncherProcessId), ("$launcherName", start.LauncherName));
                 transaction.Commit();
             }
 
@@ -207,13 +221,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // For a recorded trace: when the process was created, on the events' clock, and its executable name without .exe,
-    // from the kernel's process start event. Stored with the next batch of events, or when the file is closed; a later
-    // call replaces it. The name is stored only when the session has none.
-    public void SetProcessStart(long qpc, string? processName = null)
+    // For a recorded trace: when the process was created and by which process, from the kernel's process start event.
+    // Stored with the next batch of events, or when the file is closed; a later call replaces it. The process's name is
+    // stored only when the session has none.
+    public void SetProcessStart(TraceProcessStart processStart)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(qpc);
-        Interlocked.Exchange(ref pendingProcessStart, new(qpc, processName));
+        ArgumentNullException.ThrowIfNull(processStart);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processStart.Qpc);
+        Interlocked.Exchange(ref pendingProcessStart, processStart);
     }
 
     private void Run()
@@ -274,18 +289,23 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             for (var i = 0; i < batch.Count; i++)
             {
                 var (sequence, profilerEvent) = batch[i];
-                var typeId = TypeId(profilerEvent);
+                var launcher = profilerEvent.ProcessId != processId;
+                var typeId = TypeId(profilerEvent, launcher);
                 insertEvent.Parameters["$seq"].Value = sequence;
                 insertEvent.Parameters["$qpc"].Value = profilerEvent.TimestampQpc;
                 insertEvent.Parameters["$thread"].Value = profilerEvent.ThreadId;
                 insertEvent.Parameters["$type"].Value = typeId;
                 insertEvent.Parameters["$payload"].Value = payloads[i];
                 insertEvent.ExecuteNonQuery();
-                objects.Add(sequence, typeId, profilerEvent, transaction);
-                frames.Add(sequence, typeId, profilerEvent, transaction);
+                // The indexes describe the target's objects and UI threads.
+                if (!launcher)
+                {
+                    objects.Add(sequence, typeId, profilerEvent, transaction);
+                    frames.Add(sequence, typeId, profilerEvent, transaction);
+                }
             }
 
-            UpdateTimeBase(batch[0].Event, batch[^1].Event, transaction);
+            UpdateTimeBase(batch, transaction);
             transaction.Commit();
         }
 
@@ -298,11 +318,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
     }
 
-    private long TypeId(ProfilerEvent profilerEvent)
+    private long TypeId(ProfilerEvent profilerEvent, bool launcher)
     {
         var fields = profilerEvent.Fields;
         var key = (profilerEvent.Provider, profilerEvent.Marker?.Id ?? Guid.Empty, profilerEvent.TraceLogging, profilerEvent.Name,
-            profilerEvent.Opcode);
+            profilerEvent.Opcode, launcher);
         if (!types.TryGetValue(key, out var layouts))
         {
             types[key] = layouts = [];
@@ -327,6 +347,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         insertType.Parameters["$tracelogging"].Value = profilerEvent.TraceLogging;
         insertType.Parameters["$providerName"].Value = profilerEvent.ProviderName;
         insertType.Parameters["$providerId"].Value = profilerEvent.ProviderId.ToString();
+        insertType.Parameters["$launcher"].Value = launcher;
         insertType.ExecuteNonQuery();
         layouts.Add(layout);
         typeCount = layout.Id;
@@ -354,19 +375,22 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // A recorded trace gives no start: time zero is its first event. Its frequency is normally given; if not, it comes
-    // from the events' QPC timestamps and their milliseconds since the trace started, measured over at least a second.
-    private void UpdateTimeBase(ProfilerEvent first, ProfilerEvent last, SqliteTransaction transaction)
+    // A recorded trace gives no start: time zero is the target's first event, so the launcher's events before it have
+    // negative times. Its frequency is normally given; if not, it comes from the events' QPC timestamps and their
+    // milliseconds since the trace started, measured over at least a second.
+    private void UpdateTimeBase(List<(long Sequence, ProfilerEvent Event)> batch, SqliteTransaction transaction)
     {
         var changed = false;
-        if (Interlocked.Read(ref startQpc) == 0)
+        if (Interlocked.Read(ref startQpc) == 0 &&
+            batch.Find(item => item.Event.ProcessId == processId).Event is { } targetFirst)
         {
-            Interlocked.Exchange(ref startQpc, first.TimestampQpc);
+            Interlocked.Exchange(ref startQpc, targetFirst.TimestampQpc);
             changed = true;
         }
 
         if (derivesFrequency && Interlocked.Read(ref qpcFrequency) == 0)
         {
+            var (first, last) = (batch[0].Event, batch[^1].Event);
             firstEventTime ??= (first.TimestampQpc, first.RelativeMilliseconds);
             var milliseconds = last.RelativeMilliseconds - firstEventTime.Value.Milliseconds;
             if (milliseconds >= 1000)
@@ -380,7 +404,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         if (changed)
         {
             Sql.Execute(connection, "UPDATE SessionInfo SET StartQpc = $start, QpcFrequency = $frequency", transaction,
-                ("$start", Interlocked.Read(ref startQpc)), ("$frequency", qpcFrequency == 0 ? null : qpcFrequency));
+                ("$start", Interlocked.Read(ref startQpc) is var start and not 0 ? start : (long?)null),
+                ("$frequency", qpcFrequency == 0 ? null : qpcFrequency));
         }
 
         StoreProcessStart(transaction);
@@ -390,13 +415,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     {
         if (Interlocked.Exchange(ref pendingProcessStart, null) is { } processStart)
         {
-            Sql.Execute(connection,
-                "UPDATE SessionInfo SET ProcessStartQpc = $processStart, ProcessName = COALESCE(ProcessName, $name)", transaction,
-                ("$processStart", processStart.Qpc), ("$name", processStart.Name));
+            Sql.Execute(connection, """
+                UPDATE SessionInfo SET ProcessStartQpc = $processStart, ProcessName = COALESCE(ProcessName, $name),
+                    LauncherProcessId = $launcher, LauncherName = $launcherName
+                """, transaction,
+                ("$processStart", processStart.Qpc), ("$name", processStart.Name),
+                ("$launcher", processStart.LauncherProcessId), ("$launcherName", processStart.LauncherName));
         }
     }
-
-    private sealed record PendingProcessStart(long Qpc, string? Name);
 
     // Deletes the oldest events until the stored data plus the incoming batch fits under the trim point.
     private void TrimIfNeeded(long incomingBytes)
@@ -418,7 +444,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 objects.Trim(cutoff, transaction);
                 frames.Trim(cutoff, transaction);
                 Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
-                qpc = Sql.Scalar(connection, "SELECT Qpc FROM Events WHERE Seq = $cutoff", transaction, ("$cutoff", cutoff));
+                // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
+                // process's first event from the cutoff, or else the cutoff's.
+                qpc = Sql.Scalar(connection, """
+                    SELECT COALESCE(
+                        (SELECT Qpc FROM Events WHERE Seq >= $cutoff
+                            AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
+                        (SELECT Qpc FROM Events WHERE Seq = $cutoff))
+                    """, transaction, ("$cutoff", cutoff));
                 Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
                     ("$cutoff", cutoff), ("$qpc", qpc));
                 transaction.Commit();

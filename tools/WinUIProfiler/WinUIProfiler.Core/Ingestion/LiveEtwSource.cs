@@ -9,7 +9,8 @@ using WinUIProfiler.Engine.Events;
 namespace WinUIProfiler.Engine.Ingestion;
 
 // A real-time ETW session that reads one process's events from the XAML providers and the marker providers, and the
-// kernel's GPU memory and window focus events for it, while the profiler is connected.
+// kernel's GPU memory and window focus events for it, while the profiler is connected. For a launch, the launcher
+// providers' (MarkerProviderSettings.Launcher) events of the profiler, which launches the target, are read too.
 public sealed class LiveEtwSource : IDisposable
 {
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
@@ -57,12 +58,12 @@ public sealed class LiveEtwSource : IDisposable
         Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        var source = Create(ForProcess(processId), markers);
+        var source = Create(ForProcess(processId), ForProcess(processId), markers);
         try
         {
             lock (source.gate)
             {
-                source.BeginReading(processId, sink);
+                source.BeginReading(processId, null, sink);
             }
 
             return source;
@@ -76,18 +77,29 @@ public sealed class LiveEtwSource : IDisposable
 
     // For a launch: call before the process is created, then call StartReading with its ID. The process has
     // no ID yet, so until then ETW filters on the executable name and keeps the events in the session's
-    // buffers. The launched process is not delayed or suspended.
+    // buffers. The launched process is not delayed or suspended. The launcher providers are enabled for the
+    // profiler's executable too, so the session has the events the profiler writes as it launches the target.
     public static LiveEtwSource StartBeforeLaunch(IReadOnlyCollection<string> executableNames,
         IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         ArgumentNullException.ThrowIfNull(executableNames);
         ArgumentOutOfRangeException.ThrowIfZero(executableNames.Count);
-        return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] }, markers);
+        List<string> launcherNames = [.. executableNames];
+        if (Path.GetFileName(Environment.ProcessPath) is { Length: > 0 } profiler &&
+            !launcherNames.Contains(profiler, StringComparer.OrdinalIgnoreCase))
+        {
+            launcherNames.Add(profiler);
+        }
+
+        return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] },
+            new TraceEventProviderOptions { ProcessNameFilter = launcherNames }, markers);
     }
 
     // Narrows the session to the launched process and delivers its events, including those buffered since
-    // the session started. The same session keeps running, so nothing is lost while the filter changes.
-    public void StartReading(int processId, Action<ProfilerEvent> sink)
+    // the session started, and the events of launcherProcessId, the process that launched it, from the launcher
+    // providers: those written before the session was narrowed. The same session keeps running, so nothing is lost
+    // while the filter changes.
+    public void StartReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
         lock (gate)
@@ -98,9 +110,9 @@ public sealed class LiveEtwSource : IDisposable
                 throw new InvalidOperationException("The session is already reading.");
             }
 
-            // Other processes with the same executable name stop writing to the session.
-            EnableProviders(session, ForProcess(processId), markers);
-            BeginReading(processId, sink);
+            // Other processes with the same executable name, and the profiler, stop writing to the session.
+            EnableProviders(session, ForProcess(processId), ForProcess(processId), markers);
+            BeginReading(processId, launcherProcessId, sink);
         }
     }
 
@@ -108,7 +120,8 @@ public sealed class LiveEtwSource : IDisposable
 
     // Needs an elevated process or membership in the local Performance Log Users group;
     // otherwise starting the session throws UnauthorizedAccessException.
-    private static LiveEtwSource Create(TraceEventProviderOptions options, IReadOnlyCollection<MarkerProviderSettings> markers)
+    private static LiveEtwSource Create(TraceEventProviderOptions options, TraceEventProviderOptions launcherOptions,
+        IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         ArgumentNullException.ThrowIfNull(markers);
         IReadOnlyList<MarkerProviderSettings> enabled =
@@ -122,7 +135,7 @@ public sealed class LiveEtwSource : IDisposable
         {
             // Open the consumer side before enabling, so events written before reading starts are kept.
             _ = session.Source;
-            EnableProviders(session, options, enabled);
+            EnableProviders(session, options, launcherOptions, enabled);
             EnableGpuMemory(session);
             EnableFocus(session);
             return new(session, enabled);
@@ -143,10 +156,11 @@ public sealed class LiveEtwSource : IDisposable
     // it parses (which ElementCreatedWithSource and, in builds with XamlProfilerEnabled, ElementEnteredTree carry),
     // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
     // parsed while it is enabled has positions, so a launch has them from the start.
-    // The marker providers get the level and keywords their configuration names, and the same process filter. ETW
-    // enables a provider that has not registered yet when it does, so an app's provider needs no special order.
+    // The marker providers get the level and keywords their configuration names, and the same process filter, or for a
+    // launcher provider launcherOptions. ETW enables a provider that has not registered yet when it does, so an app's
+    // provider needs no special order.
     private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
-        IReadOnlyList<MarkerProviderSettings> markers)
+        TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers)
     {
         foreach (var provider in XamlProviders.XamlIds)
         {
@@ -155,7 +169,8 @@ public sealed class LiveEtwSource : IDisposable
 
         foreach (var marker in markers)
         {
-            session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords, options);
+            session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
+                marker.Launcher ? launcherOptions : options);
         }
     }
 
@@ -245,9 +260,9 @@ public sealed class LiveEtwSource : IDisposable
 
     // The process ID check also skips events other processes with the same executable name wrote before the
     // session was narrowed to one process.
-    private void BeginReading(int processId, Action<ProfilerEvent> sink)
+    private void BeginReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink)
     {
-        XamlEventSubscription.Subscribe(session.Source, processId, [.. markers.Select(marker => marker.Provider)], sink);
+        XamlEventSubscription.Subscribe(session.Source, processId, markers, sink, launcherProcessId);
         CaptureGpuMemoryState();
         reader.Start();
         reading = true;

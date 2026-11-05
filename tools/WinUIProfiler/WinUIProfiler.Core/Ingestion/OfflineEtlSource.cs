@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
@@ -152,16 +153,18 @@ public static class OfflineEtlSource
             length < TimeSpan.MaxValue.TotalMilliseconds ? TimeSpan.FromMilliseconds(length) : TimeSpan.MaxValue);
     }
 
-    private static string? ExecutableName(ProcessTraceData data)
+    internal static string? ExecutableName(ProcessTraceData data)
     {
         var name = Path.GetFileNameWithoutExtension(data.ImageFileName);
         return string.IsNullOrEmpty(name) ? null : name;
     }
 
     // A null processId reads every process. Markers are the marker providers whose events are read too. For one process,
-    // processStarted gets the QPC timestamp and executable name of the kernel's event for its creation, when the trace has it.
-    public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProvider> markers,
-        Action<ProfilerEvent> sink, Action<long, string?>? processStarted = null, CancellationToken cancellationToken = default)
+    // processStarted gets the kernel's event for its creation, when the trace has it, and the events of the launcher
+    // providers (MarkerProviderSettings.Launcher) of the process that created it are read too, those that are part of the
+    // launch (LaunchWatcher); they come after the process's first event, and some after later ones.
+    public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
+        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         ArgumentNullException.ThrowIfNull(markers);
@@ -173,41 +176,41 @@ public static class OfflineEtlSource
 
         using var source = new ETWTraceEventSource(path);
         long delivered = 0;
-        if (processId is { } id && processStarted is not null)
-        {
-            WatchProcessStart(source, id, () => delivered > 0, processStarted);
-        }
-
-        XamlEventSubscription.Subscribe(source, processId, markers, profilerEvent =>
+        LaunchWatcher? watcher = null;
+        void Deliver(ProfilerEvent profilerEvent)
         {
             delivered++;
             sink(profilerEvent);
-        });
+        }
+
+        if (processId is { } id)
+        {
+            var launch = new LaunchWatcher(source, id, processStarted, Deliver);
+            watcher = launch;
+            XamlEventSubscription.Match(source, id, markers, (data, provider, marker, owner) =>
+                {
+                    Deliver(XamlEventSubscription.Capture(data, provider, marker, owner));
+                    // Not an event another process wrote about it, such as the System process's GPU memory event.
+                    if (data.ProcessID == id)
+                    {
+                        launch.ProcessEvent(data.TimeStampRelativeMSec);
+                    }
+                },
+                launch.OtherProcessEvent);
+        }
+        else
+        {
+            XamlEventSubscription.Subscribe(source, null, markers, Deliver);
+        }
+
         using (cancellationToken.Register(source.StopProcessing))
         {
             source.Process();
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        watcher?.Complete();
         return new(delivered, source.EventsLost, source.SessionDuration);
-    }
-
-    // Calls started with the QPC timestamp and executable name of each kernel process start event for a process ID until
-    // seen returns true, which it does once an event of the process was read: a process ID can be reused within a trace,
-    // so the process's start is the last one before its first event. Only a trace with the kernel's process events has
-    // them.
-    internal static void WatchProcessStart(ETWTraceEventSource source, int processId, Func<bool> seen, Action<long, string?> started)
-    {
-        source.Kernel.ProcessStart += data =>
-        {
-#pragma warning disable CS0618 // The raw QPC timestamp is the clock the process's events are stored with.
-            var qpc = data.TimeStampQPC;
-#pragma warning restore CS0618
-            if (data.ProcessID == processId && qpc > 0 && !seen())
-            {
-                started(qpc, ExecutableName(data));
-            }
-        };
     }
 
     private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)

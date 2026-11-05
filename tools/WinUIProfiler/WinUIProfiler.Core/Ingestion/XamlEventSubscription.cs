@@ -6,11 +6,12 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's events from the XAML providers and the marker providers, and the kernel's GPU memory and window
-// focus events for it, from a TraceEvent source (an .etl file or a live session). TraceLogging events carry their own
-// field names and types. Manifest events are decoded with the manifest Windows registers for their provider: system
-// XAML's for Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's
-// for DxgKrnl and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared
+// Delivers one process's events from the XAML providers and the marker providers, and the kernel's GPU memory and
+// window focus events for it, from a TraceEvent source (an .etl file or a live session), and the launcher providers'
+// events of the process that launched it, when that is known. TraceLogging events carry their own field names and
+// types. Manifest events are decoded with the manifest Windows registers for their provider: system XAML's for
+// Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for
+// DxgKrnl and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared
 // event whose fields differ, so it is decoded here. A marker provider's events are decoded the same ways, or with the
 // manifest an EventSource writes into the trace.
 internal static class XamlEventSubscription
@@ -34,27 +35,37 @@ internal static class XamlEventSubscription
     // drew (TraceFrameInfo in xcpcore.cpp). System XAML's manifest describes four UInt32 fields instead.
     private const int FrameInfo = 64;
 
-    internal static void Subscribe(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProvider> markers,
-        Action<ProfilerEvent> sink)
+    // LauncherProcessId is the process that launched the target, whose events from the launcher providers
+    // (MarkerProviderSettings.Launcher) are delivered too.
+    internal static void Subscribe(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
+        Action<ProfilerEvent> sink, int? launcherProcessId = null)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        Match(source, processId, markers, (data, provider, marker, owner) => sink(Capture(data, provider, marker, owner)));
+        Match(source, processId, markers, (data, provider, marker, owner) => sink(Capture(data, provider, marker, owner)),
+            launcherProcessId is not { } launcher ? null : (data, marker) =>
+            {
+                if (data.ProcessID == launcher)
+                {
+                    sink(Capture(data, XamlProvider.Marker, marker, launcher));
+                }
+            });
     }
 
     // Calls match for each event Subscribe delivers, with its provider (and for a marker event, the marker provider) and
     // the process it belongs to, without copying it. TraceEvent reuses the event object after the call. A marker provider
-    // that is a XAML provider, DxgKrnl or Win32k is not read again.
-    internal static void Match(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProvider> markers,
-        Action<TraceEvent, XamlProvider, MarkerProvider?, int> match)
+    // that is a XAML provider, DxgKrnl or Win32k is not read again. For one process, otherProcess, if given, gets the
+    // events of the launcher providers (MarkerProviderSettings.Launcher) from every other process.
+    internal static void Match(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
+        Action<TraceEvent, XamlProvider, MarkerProvider?, int> match, Action<TraceEvent, MarkerProvider>? otherProcess = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(markers);
         ArgumentNullException.ThrowIfNull(match);
 
-        var markerIds = new Dictionary<Guid, MarkerProvider>();
-        foreach (var marker in markers.Where(marker => !XamlProviders.IsBuiltIn(marker.Id)))
+        var markerIds = new Dictionary<Guid, MarkerProviderSettings>();
+        foreach (var marker in markers.Where(marker => !XamlProviders.IsBuiltIn(marker.Provider.Id)))
         {
-            markerIds.TryAdd(marker.Id, marker);
+            markerIds.TryAdd(marker.Provider.Id, marker);
         }
 
         IgnoreOtherProviders(source, markerIds);
@@ -84,7 +95,7 @@ internal static class XamlEventSubscription
                 return;
             }
 
-            MarkerProvider? marker = null;
+            MarkerProviderSettings? marker = null;
             if (!XamlProviders.TryGet(data.ProviderGuid, out var provider))
             {
                 if (!markerIds.TryGetValue(data.ProviderGuid, out marker) || (int)data.ID == EventSourceManifest)
@@ -97,10 +108,15 @@ internal static class XamlEventSubscription
 
             if (processId is { } targetProcessId && data.ProcessID != targetProcessId)
             {
+                if (marker is { Launcher: true } && otherProcess is not null)
+                {
+                    otherProcess(data, marker.Provider);
+                }
+
                 return;
             }
 
-            match(data, provider, marker, data.ProcessID);
+            match(data, provider, marker?.Provider, data.ProcessID);
         };
     }
 
@@ -115,7 +131,7 @@ internal static class XamlEventSubscription
     //   provider is that GUID and whose ID is that sum.
     // - AllEvents still sees the events of a template that does nothing; TraceReplay and ListProcesses count on it.
     // If either of the first two changes, each type goes to TDH as it did without this handler.
-    private static void IgnoreOtherProviders(TraceEventDispatcher source, IReadOnlyDictionary<Guid, MarkerProvider> markers)
+    private static void IgnoreOtherProviders(TraceEventDispatcher source, IReadOnlyDictionary<Guid, MarkerProviderSettings> markers)
     {
         var services = (ITraceParserServices)source;
         var ignored = new HashSet<(Guid, ushort)>();
