@@ -685,6 +685,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Star columns that violate MinWidth and MaxWidth at once fill the viewport whichever comes first.")]
+        public void VerifyStarMinAndMaxClampsDoNotDependOnColumnOrder()
+        {
+            foreach (var minFirst in new[] { true, false })
+            {
+                TableView tableView = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateTableViewWithColumns(
+                        width: 600,
+                        columns: new[]
+                        {
+                            ("A", new GridLength(1.0, GridUnitType.Star)),
+                            ("B", new GridLength(1.0, GridUnitType.Star)),
+                        });
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var viewport = GetBodyViewportWidth(tableView);
+                    var minColumn = tableView.Columns[minFirst ? 0 : 1];
+                    var maxColumn = tableView.Columns[minFirst ? 1 : 0];
+                    // Each column's half violates its bound; the MaxWidth clamp frees more than the MinWidth clamp needs.
+                    minColumn.MinWidth = Math.Floor(viewport * 0.75);
+                    maxColumn.MaxWidth = Math.Floor(viewport / 8.0);
+                    tableView.UpdateLayout();
+
+                    Log.Comment($"minFirst={minFirst}, viewport={viewport}, min={minColumn.ActualWidth}, max={maxColumn.ActualWidth}.");
+                    VerifyNear(maxColumn.MaxWidth, maxColumn.ActualWidth, 1.0, "The MaxWidth column must stop at its MaxWidth");
+                    VerifyNear(viewport - maxColumn.MaxWidth, minColumn.ActualWidth, 1.0, "The MinWidth column must take the rest, leaving no unused space");
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a 0* column takes no width by default but honors an explicitly-set MinWidth.")]
         public void VerifyZeroStarColumnTakesNoWidthUnlessMinWidthSet()
         {

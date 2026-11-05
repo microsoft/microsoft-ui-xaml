@@ -55,9 +55,10 @@ namespace
             : NonNegativeFiniteOrZero(column.MinWidth());
     }
 
-    // Divides `available` in proportion to each column's Star factor. A column that would clamp at
-    // its Min/MaxWidth is fixed there and dropped, then the rest re-divide what is left (the WPF
-    // ComputeStarColumnWidths shape).
+    // Divides `available` in proportion to each column's Star factor. Columns that would clamp at
+    // their Min/MaxWidth are fixed there and dropped, then the rest re-divide what is left. When
+    // both bounds are violated, only the side with the larger total violation is fixed per pass
+    // (as Grid does), so the result does not depend on column order.
     template <typename TFactor, typename TRound, typename TResolve>
     void DistributeStarWidths(
         std::vector<winrt::TableViewColumn> pool,
@@ -76,32 +77,59 @@ namespace
             return total;
         };
 
-        for (bool adjusted = true; adjusted && !pool.empty(); )
+        struct Share
         {
-            adjusted = false;
-
+            double desired;
+            double lo;
+            double hi;
+        };
+        std::vector<Share> shares;
+        while (!pool.empty())
+        {
             const double factorSum = totalFactor();
             const double unit = factorSum > 0.0 ? available / factorSum : 0.0;
 
+            shares.clear();
+            double minViolation = 0.0;
+            double maxViolation = 0.0;
+            for (auto const& c : pool)
+            {
+                const double factor = NonNegativeFiniteOrZero(factorOf(c));
+                const double lo = MinWidthForStarFactor(c, factor);
+                const Share share{ unit * factor, lo, MaxWidthForColumn(c, lo) };
+                if (share.desired < share.lo)
+                {
+                    minViolation += share.lo - share.desired;
+                }
+                else if (share.desired > share.hi)
+                {
+                    maxViolation += share.desired - share.hi;
+                }
+                shares.push_back(share);
+            }
+            if (minViolation == 0.0 && maxViolation == 0.0)
+            {
+                break;
+            }
+
+            const bool fixMin = minViolation >= maxViolation;
+            const bool fixMax = maxViolation >= minViolation;
+            std::vector<winrt::TableViewColumn> rest;
             for (size_t i = 0; i < pool.size(); ++i)
             {
-                auto const& c = pool[i];
-                const double factor = NonNegativeFiniteOrZero(factorOf(c));
-                const double desired = unit * factor;
-                const double lo = MinWidthForStarFactor(c, factor);
-                const double hi = MaxWidthForColumn(c, lo);
-                const double clamped = std::clamp(desired, lo, hi);
-                // std::clamp returns desired exactly when it is already in [lo, hi], so any
-                // inequality is a real Min/MaxWidth clamp.
-                if (clamped != desired)
+                auto const& share = shares[i];
+                if ((fixMin && share.desired < share.lo) || (fixMax && share.desired > share.hi))
                 {
-                    resolve(c, clamped);
+                    const double clamped = std::clamp(share.desired, share.lo, share.hi);
+                    resolve(pool[i], clamped);
                     available -= clamped;
-                    pool.erase(pool.begin() + i);
-                    adjusted = true;
-                    break;
+                }
+                else
+                {
+                    rest.push_back(pool[i]);
                 }
             }
+            pool = std::move(rest);
         }
 
         const double factorSum = totalFactor();
