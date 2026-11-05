@@ -53,6 +53,7 @@ public sealed class TraceReplay : IAsyncDisposable
     // Used only on the reader thread.
     private long lastQpc = long.MinValue;
     private bool halted;
+    private bool processSeen;
 
     private int state;
     private int lostEvents;
@@ -60,7 +61,8 @@ public sealed class TraceReplay : IAsyncDisposable
     private double readMilliseconds;
     private volatile Exception? failure;
 
-    private TraceReplay(string etlPath, int processId, string? processName, ETWTraceEventSource source, SessionWriter writer)
+    private TraceReplay(string etlPath, int processId, string? processName, ETWTraceEventSource source, SessionWriter writer,
+        IReadOnlyCollection<MarkerProvider> markers)
     {
         EtlPath = etlPath;
         ProcessId = processId;
@@ -77,7 +79,9 @@ public sealed class TraceReplay : IAsyncDisposable
         try
         {
             source.AllEvents += OnAnyEvent;
-            XamlEventSubscription.Match(source, processId, OnEvent);
+            // Times the launch timeline from the process's creation.
+            OfflineEtlSource.WatchProcessStart(source, processId, () => processSeen || halted, writer.SetProcessStart);
+            XamlEventSubscription.Match(source, processId, markers, OnEvent);
             changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
             new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
         }
@@ -119,9 +123,10 @@ public sealed class TraceReplay : IAsyncDisposable
     public string? RecordingError => writer.Failure is { } error ? $"Recording stopped: {error.Message}" : null;
 
     // Reads processId's events from the trace at etlPath into a new session file in sessionDirectory, named like a live
-    // session's file after processName, or after the trace when the name is not known.
+    // session's file after processName, or after the trace when the name is not known. Markers are the marker providers
+    // whose events are read too.
     public static TraceReplay Start(string etlPath, int processId, string? processName, string sessionDirectory,
-        long limitBytes = SessionWriter.DefaultLimitBytes)
+        long limitBytes = SessionWriter.DefaultLimitBytes, IReadOnlyCollection<MarkerProvider>? markers = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(etlPath);
         ArgumentException.ThrowIfNullOrEmpty(sessionDirectory);
@@ -142,7 +147,7 @@ public sealed class TraceReplay : IAsyncDisposable
         {
             writer = SessionWriter.Create(SessionPath(sessionDirectory, processName ?? Path.GetFileNameWithoutExtension(path), processId),
                 new(processId, processName, null, frequency, null, SessionCoverage.Trace, path), limitBytes);
-            return new(path, processId, processName, source, writer);
+            return new(path, processId, processName, source, writer, markers ?? []);
         }
         catch
         {
@@ -239,16 +244,17 @@ public sealed class TraceReplay : IAsyncDisposable
         }
     }
 
-    private void OnEvent(TraceEvent data, XamlProvider provider, int processId)
+    private void OnEvent(TraceEvent data, XamlProvider provider, MarkerProvider? marker, int processId)
     {
         if (halted)
         {
             return;
         }
 
+        processSeen = true;
         try
         {
-            var profilerEvent = XamlEventSubscription.Capture(data, provider, processId);
+            var profilerEvent = XamlEventSubscription.Capture(data, provider, marker, processId);
             if (profilerEvent.TimestampQpc < lastQpc)
             {
                 Interlocked.Increment(ref outOfOrderEvents);

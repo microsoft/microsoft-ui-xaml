@@ -55,9 +55,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly SqliteCommand insertType;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
-    // Event types written so far, by provider, kind (TraceLogging or manifest), name and opcode. Usually one layout
-    // each; a field that is sometimes null gives a second.
-    private readonly Dictionary<(XamlProvider, bool, string, int), List<EventLayout>> types = [];
+    // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name and opcode.
+    // Usually one layout each; a field that is sometimes null gives a second.
+    private readonly Dictionary<(XamlProvider, Guid, bool, string, int), List<EventLayout>> types = [];
     private long typeCount;
     private readonly ArrayBufferWriter<byte> payload = new();
     private readonly Utf8JsonWriter json;
@@ -71,6 +71,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private long newestSequence;
     private long fileBytes;
     private long completeFromQpc;
+    // A process start SetProcessStart gave that is not stored yet.
+    private PendingProcessStart? pendingProcessStart;
     private volatile Exception? failure;
     private int closed;
 
@@ -89,10 +91,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer), ("$thread", SqliteType.Integer), ("$type", SqliteType.Integer),
             ("$payload", SqliteType.Text));
         insertType = Sql.Prepare(connection, """
-            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging)
-            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging)
+            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, ProviderName, ProviderId)
+            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging, $providerName, $providerId)
             """, ("$id", SqliteType.Integer), ("$provider", SqliteType.Text), ("$name", SqliteType.Text), ("$opcode", SqliteType.Integer),
-            ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer));
+            ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer),
+            ("$providerName", SqliteType.Text), ("$providerId", SqliteType.Text));
 
         // The payload is never embedded in HTML, so only the escaping JSON requires is applied and type names stay readable.
         json = new(payload, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
@@ -204,6 +207,15 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
+    // For a recorded trace: when the process was created, on the events' clock, and its executable name without .exe,
+    // from the kernel's process start event. Stored with the next batch of events, or when the file is closed; a later
+    // call replaces it. The name is stored only when the session has none.
+    public void SetProcessStart(long qpc, string? processName = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(qpc);
+        Interlocked.Exchange(ref pendingProcessStart, new(qpc, processName));
+    }
+
     private void Run()
     {
         var batch = new List<(long Sequence, ProfilerEvent Event)>(BatchSize);
@@ -289,7 +301,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private long TypeId(ProfilerEvent profilerEvent)
     {
         var fields = profilerEvent.Fields;
-        var key = (profilerEvent.Provider, profilerEvent.TraceLogging, profilerEvent.Name, profilerEvent.Opcode);
+        var key = (profilerEvent.Provider, profilerEvent.Marker?.Id ?? Guid.Empty, profilerEvent.TraceLogging, profilerEvent.Name,
+            profilerEvent.Opcode);
         if (!types.TryGetValue(key, out var layouts))
         {
             types[key] = layouts = [];
@@ -312,6 +325,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         insertType.Parameters["$names"].Value = string.Join(',', layout.Names);
         insertType.Parameters["$types"].Value = string.Join(',', layout.Types);
         insertType.Parameters["$tracelogging"].Value = profilerEvent.TraceLogging;
+        insertType.Parameters["$providerName"].Value = profilerEvent.ProviderName;
+        insertType.Parameters["$providerId"].Value = profilerEvent.ProviderId.ToString();
         insertType.ExecuteNonQuery();
         layouts.Add(layout);
         typeCount = layout.Id;
@@ -367,7 +382,21 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             Sql.Execute(connection, "UPDATE SessionInfo SET StartQpc = $start, QpcFrequency = $frequency", transaction,
                 ("$start", Interlocked.Read(ref startQpc)), ("$frequency", qpcFrequency == 0 ? null : qpcFrequency));
         }
+
+        StoreProcessStart(transaction);
     }
+
+    private void StoreProcessStart(SqliteTransaction? transaction)
+    {
+        if (Interlocked.Exchange(ref pendingProcessStart, null) is { } processStart)
+        {
+            Sql.Execute(connection,
+                "UPDATE SessionInfo SET ProcessStartQpc = $processStart, ProcessName = COALESCE(ProcessName, $name)", transaction,
+                ("$processStart", processStart.Qpc), ("$name", processStart.Name));
+        }
+    }
+
+    private sealed record PendingProcessStart(long Qpc, string? Name);
 
     // Deletes the oldest events until the stored data plus the incoming batch fits under the trim point.
     private void TrimIfNeeded(long incomingBytes)
@@ -414,6 +443,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             if (failure is null)
             {
+                StoreProcessStart(null);
                 Sql.Execute(connection,
                     "UPDATE SessionInfo SET EndedUtc = $ended, EndReason = $reason, LostByEtw = $lost, DroppedByProfiler = $dropped",
                     null, ("$ended", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)), ("$reason", endReason),

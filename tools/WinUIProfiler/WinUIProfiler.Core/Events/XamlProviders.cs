@@ -19,7 +19,9 @@ public enum XamlProvider
     // The kernel's GPU memory usage and budget for the process (Microsoft-Windows-DxgKrnl).
     DxgKrnl,
     // Window focus changes in the process (Microsoft-Windows-Win32k).
-    Win32k
+    Win32k,
+    // A provider from the marker configuration; the event's Marker names it.
+    Marker
 }
 
 public static class XamlProviders
@@ -46,4 +48,34 @@ public static class XamlProviders
 
     public static bool TryGet(Guid providerId, out XamlProvider provider) =>
         XamlProviderIds.TryGetValue(providerId, out provider);
+
+    // Whether the profiler reads the provider's events anyway: a XAML provider, DxgKrnl or Win32k.
+    public static bool IsBuiltIn(Guid providerId) =>
+        providerId == DxgKrnl || providerId == Win32k || XamlProviderIds.ContainsKey(providerId);
+
+    // The provider's ETW ID; Guid.Empty for Marker, whose events carry their provider.
+    public static Guid IdOf(XamlProvider provider) => provider switch
+    {
+        XamlProvider.Xaml => Xaml,
+        XamlProvider.XamlDiagnostics => XamlDiagnostics,
+        XamlProvider.XamlProfiler => XamlProfiler,
+        XamlProvider.MicrosoftUIXaml => MicrosoftUIXaml,
+        XamlProvider.MicrosoftUIXamlControls => MicrosoftUIXamlControls,
+        XamlProvider.DxgKrnl => DxgKrnl,
+        XamlProvider.Win32k => Win32k,
+        _ => Guid.Empty
+    };
+
+    // The provider's ETW name, which the marker configuration also knows it by.
+    public static string NameOf(XamlProvider provider) => provider switch
+    {
+        XamlProvider.Xaml => "Microsoft-Windows-XAML",
+        XamlProvider.XamlDiagnostics => "Microsoft-Windows-XAML-Diagnostics",
+        XamlProvider.XamlProfiler => "Microsoft-Windows-XAML-Profiler",
+        XamlProvider.MicrosoftUIXaml => "Microsoft.UI.Xaml",
+        XamlProvider.MicrosoftUIXamlControls => "Microsoft.UI.Xaml.Controls",
+        XamlProvider.DxgKrnl => "Microsoft-Windows-DxgKrnl",
+        XamlProvider.Win32k => "Microsoft-Windows-Win32k",
+        _ => "Marker"
+    };
 }

@@ -7,4 +7,8 @@
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- The default marker configuration (MarkerConfig.Default). -->
+    <EmbeddedResource Include="Launch\markers.json" LogicalName="WinUIProfiler.Engine.Launch.markers.json" />
+  </ItemGroup>
 </Project>
