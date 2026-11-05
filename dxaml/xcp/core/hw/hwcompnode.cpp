@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "palgfx.h"
 #ifdef XAMLPROFILER_ENABLED
@@ -638,7 +640,7 @@ HWCompTreeNode::InsertChild(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
+    if (XamlProfilerTracing::IsProfilerEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
     {
@@ -685,7 +687,7 @@ HWCompTreeNode::InsertChildAtBeginning(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
+    if (XamlProfilerTracing::IsProfilerEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
     {
@@ -722,7 +724,7 @@ HWCompTreeNode::RemoveChild(
 
 #ifdef XAMLPROFILER_ENABLED
             // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-            if (XamlProfilerTracing::IsEnabled() &&
+            if (XamlProfilerTracing::IsProfilerEnabled() &&
                 !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
                 !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
             {
@@ -1085,6 +1087,10 @@ HWCompMediaNode::SetMedia(
         else
         {
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1148,6 +1154,10 @@ _Check_return_ HRESULT HWCompMediaNode::EnsureVisual(_In_opt_ DCompTreeHost* pDC
     {
         ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
     }
     return S_OK;
 }
@@ -1269,6 +1279,10 @@ HWCompSwapChainNode::SetSwapChain(
         else
         {
             IFC_RETURN(compositorNoRef->CreateColorBrush(&colorBrush));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x00000000)));
             IFC_RETURN(colorBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1289,6 +1303,10 @@ HWCompSwapChainNode::SetSwapChain(
         else
         {
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
@@ -1390,6 +1408,10 @@ _Check_return_ HRESULT HWCompSwapChainNode::EnsureVisual(_In_opt_ DCompTreeHost*
         {
             ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
             IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
         }
     }
     return S_OK;

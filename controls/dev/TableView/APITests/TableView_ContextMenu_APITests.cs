@@ -541,6 +541,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "A row-level menu request records its row as the current row even though the menu has taken focus by the time the row's GotFocus runs (GH #12442).")]
+        public void RowRequestRecordsRowAsCurrentWhileMenuHasFocus()
+        {
+            Button after = null;
+            var f = LoadFixture(configure: x =>
+            {
+                // Headers hidden: the body is the table's tab stop.
+                x.Table.HeadersVisibility = TableViewHeadersVisibility.None;
+                after = new Button { Content = "After" };
+                x.Root.Child = null;
+                var panel = new StackPanel();
+                panel.Children.Add(x.Table);
+                panel.Children.Add(after);
+                x.Root.Child = panel;
+            });
+            FocusRow(f, 1);
+
+            RequestOnRow(f, 4);
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), f.P(4), "UIA on row 4's peer");
+
+            // A menu command that moves focus out of the table, so closing the menu does not refocus row 4.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(after.Focus(FocusState.Keyboard), "Precondition: the button takes focus.");
+                f.Recorder.HideAll();
+                f.Recorder.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(after, FocusManager.GetFocusedElement(f.Table.XamlRoot), "Precondition: focus stays on the button.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Previous,
+                    new FindNextElementOptions { SearchRoot = f.Table.XamlRoot.Content }), "Shift+Tab from the button must move focus.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreSame(RowOf(f, 4), FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                $"Shift+Tab back in must return to row 4, the row the menu was opened on; was {Describe(FocusManager.GetFocusedElement(f.Table.XamlRoot) as DependencyObject)}."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A row menu requested in the same turn as a cell focus on that drilled-in row leaves the row at row level, so closing the menu restores focus to the row (GH #12442).")]
+        public void RowRequestAfterSameTurnCellFocusKeepsRowLevel()
+        {
+            var f = LoadFixture(configure: x => x.OfficeColumn.CellContextFlyout = x.CellMenu);
+            RunOnUIThread.Execute(() => GetCellPeer(f.Table, f.P(4), NameCol).SetFocus());
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsFalse(RowOf(f, 4).IsTabStop, "Precondition: row 4 is at cell level."));
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(CellOf(f, 4, OfficeCol).Focus(FocusState.Keyboard), "Precondition: the Office cell takes focus.");
+                GetRowPeer(RowOf(f, 4)).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), f.P(4), "UIA on row 4's peer");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(RowOf(f, 4).IsTabStop, "Row 4 must be at row level while its row menu is open.");
+                Verify.IsFalse(CellOf(f, 4, OfficeCol).IsTabStop, "Row 4's cells must be out of the tab order.");
+            });
+
+            CloseMenus(f);
+            RunOnUIThread.Execute(() => Verify.AreSame(RowOf(f, 4), FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                $"Closing the menu must restore focus to row 4; was {Describe(FocusManager.GetFocusedElement(f.Table.XamlRoot) as DependencyObject)}."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "A row menu opened from a request on an inactive cell focuses that cell's row and leaves the selection unchanged.")]
         public void RowMenuFromInactiveCellRequestFocusesRow()
         {

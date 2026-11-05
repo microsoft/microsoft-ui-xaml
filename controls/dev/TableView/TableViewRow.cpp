@@ -165,11 +165,11 @@ TableViewRow::TableViewRow()
 
     m_gotFocusRevoker = GotFocus(
         winrt::auto_revoke,
-        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const& args)
         {
             if (auto strongRow = weakRow.get())
             {
-                strongRow->OnRowGotFocus();
+                strongRow->OnRowGotFocus(args.OriginalSource().try_as<winrt::DependencyObject>());
             }
         });
 
@@ -853,11 +853,11 @@ void TableViewRow::EnableRowFocusInternal()
     IsTabStop(true);
 }
 
-void TableViewRow::OnRowGotFocus()
+void TableViewRow::OnRowGotFocus(winrt::DependencyObject const& focusedElement)
 {
     if (auto const owner = GetOwningTableView())
     {
-        winrt::get_self<TableView>(owner)->OnRowCellFocusChanged(*this);
+        winrt::get_self<TableView>(owner)->OnRowCellFocusChanged(*this, focusedElement);
     }
 }
 

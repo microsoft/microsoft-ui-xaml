@@ -1183,10 +1183,14 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
             // Viewport resize (ViewChanged only covers scroll/zoom) must rerun table-level measure
             // so Star widths resolve after the subtree has refreshed its measured-width caches.
             m_bodyScrollerSizeChangedRevoker = bodyScroller.SizeChanged(winrt::auto_revoke,
-                [weakThis](winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& /*args*/)
+                [weakThis](winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
                 {
                     if (auto strongThis = weakThis.get())
                     {
+                        if (args.NewSize().Width != args.PreviousSize().Width)
+                        {
+                            strongThis->ExpireLockedColumnHolds();
+                        }
                         strongThis->InvalidateMeasure();
                         strongThis->RefreshFrozenColumns();
                         strongThis->QueueTerminalGridLineRefresh();
@@ -1340,6 +1344,9 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         // projection, so the reported sort state and the chevron go with it - otherwise they describe
         // an order the new rows are not in.
         ResetSortStateForNewItemsSource();
+        // Deferred reshapes target the discarded data set.
+        m_pendingEditReshapes.clear();
+        m_reshapesAfterEditCloses.clear();
         AdoptItemsSource();
         RefreshRowsPipeline();
     }
@@ -2846,6 +2853,60 @@ static bool StyleSetsProperty(const winrt::Style& style, const winrt::Dependency
     return false;
 }
 
+// The setter a sealed Style applies: the last one in the most-derived Style that has one, even null.
+static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const winrt::DependencyProperty& property)
+{
+    for (auto current = style; current; current = current.BasedOn())
+    {
+        bool found = false;
+        winrt::IInspectable value{ nullptr };
+        for (auto const& setterBase : current.Setters())
+        {
+            if (auto const setter = setterBase.try_as<winrt::Setter>(); setter && setter.Property() == property)
+            {
+                found = true;
+                value = nullptr;
+                try
+                {
+                    value = setter.Value();
+                }
+                catch (winrt::hresult_error const& e)
+                {
+                    // Reading an {x:Null} Setter.Value of a typed property fails with E_FAIL, yet the Style applies null.
+                    if (e.code() != E_FAIL)
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+        if (found)
+        {
+            return value;
+        }
+    }
+    return nullptr;
+}
+
+// Asked once, with the header's real content in place; the caller applies the result locally so the
+// framework does not ask the selector again with a possibly different answer.
+static winrt::DataTemplate SelectStyleHeaderTemplate(
+    const winrt::DataTemplateSelector& styleSelector,
+    const winrt::ContentControl& header,
+    const winrt::IInspectable& headerContent)
+{
+    try
+    {
+        header.Content(headerContent);
+        return styleSelector.SelectTemplate(headerContent, header);
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
+        return nullptr;
+    }
+}
+
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
 // may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
 // the ContentPresenter's content model.
@@ -3244,6 +3305,15 @@ void TableView::RebuildHeadersCore()
             // never-accessed Setters reseals it and re-merges its BasedOn setters.
             const bool styleSetsMinHeight = StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty());
             const bool styleSetsPadding = StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty());
+            const bool styleSetsCornerRadius = StyleSetsProperty(headerStyle, winrt::Control::CornerRadiusProperty());
+            auto const styleContentTemplate = StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateProperty()).try_as<winrt::DataTemplate>();
+            auto const styleContentTemplateSelector = styleContentTemplate ? winrt::DataTemplateSelector{ nullptr } :
+                StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateSelectorProperty()).try_as<winrt::DataTemplateSelector>();
+            if (styleContentTemplateSelector)
+            {
+                // Held off locally so the Style's selector is only asked by the probe below.
+                header.ContentTemplateSelector(nullptr);
+            }
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3251,7 +3321,10 @@ void TableView::RebuildHeadersCore()
 
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
-            AttachFocusCornerRadius(header);
+            if (!styleSetsCornerRadius)
+            {
+                AttachFocusCornerRadius(header);
+            }
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -3267,9 +3340,13 @@ void TableView::RebuildHeadersCore()
                 header.Padding(cachedHeaderCellPadding);
             }
 
+            header.Tag(column);
+
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
                 header.Content(column.Header());
+                // A local null keeps a Style's ContentTemplate from outranking the selector.
+                header.ContentTemplate(nullptr);
                 header.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
@@ -3277,25 +3354,40 @@ void TableView::RebuildHeadersCore()
                 header.Content(column.Header());
                 header.ContentTemplate(headerTemplate);
             }
-            else if (!headerText.empty() && IsPlainStringHeader(column))
+            else if (!headerText.empty() && IsPlainStringHeader(column) && !styleContentTemplate)
             {
-                // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
-                // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
-                winrt::TextBlock headerBlock;
-                headerBlock.Text(headerText);
-                headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
-                headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The header's peer already announces this text.
-                winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
-                header.Content(headerBlock);
-                headerImpl->SetOwnsContentInternal(true);
+                winrt::DataTemplate selected{ nullptr };
+                if (styleContentTemplateSelector)
+                {
+                    selected = SelectStyleHeaderTemplate(styleContentTemplateSelector, header, column.Header());
+                }
+                if (selected)
+                {
+                    header.Content(column.Header());
+                    header.ContentTemplate(selected);
+                }
+                else
+                {
+                    // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
+                    // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
+                    winrt::TextBlock headerBlock;
+                    headerBlock.Text(headerText);
+                    headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
+                    headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+                    // The header's peer already announces this text.
+                    winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
+                    header.Content(headerBlock);
+                    headerImpl->SetOwnsContentInternal(true);
+                }
             }
             else
             {
+                if (styleContentTemplateSelector)
+                {
+                    header.ClearValue(winrt::ContentControl::ContentTemplateSelectorProperty());
+                }
                 header.Content(column.Header());
             }
-
-            header.Tag(column);
 
             TableViewDetails::ApplyHeaderToolTip(header, column.HeaderToolTip());
 
@@ -3539,11 +3631,17 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     // sorted order with no affordance to change it would strand the user.
     if (!CanUserSortColumns())
     {
+        CancelPendingSortRestore();
         // A sort cannot run while an edit is opening, and must not close it once open; clear once no edit is open.
         if (m_editState == EditState::Beginning)
         {
             QueueReshapeAfterEditCloses([this]()
             {
+                // A source sort the app declared since the opt-out is newer: adopt it before clearing.
+                if (std::exchange(m_sortReconcileQueued, false))
+                {
+                    ReconcileSortStateWithSource();
+                }
                 if (!CanUserSortColumns())
                 {
                     ClearSortInternal(false);
@@ -3571,6 +3669,11 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
         {
             QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
             {
+                // A source sort the app declared since the opt-out is newer: adopt it before clearing.
+                if (std::exchange(m_sortReconcileQueued, false))
+                {
+                    ReconcileSortStateWithSource();
+                }
                 if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort() && !IsSortLitOnlyByApp())
                 {
                     SortByColumnInternal(optedOut, winrt::SortDirection::None, false, false);
@@ -3720,6 +3823,10 @@ void TableView::ReclaimItemsSource()
     }
 
     AdoptItemsSource(true /* reclaimActiveSource */);
+    if (!m_activeSourceReleased)
+    {
+        QueueDeferredEditReshapeDrain();
+    }
     // While drained, OnRowsRepeaterLoaded re-sources the repeater.
     if (!m_rowsSourceDrained)
     {
@@ -3950,7 +4057,7 @@ bool TableView::ApplyColumnResizeDrag(TableView* owner, const winrt::TableViewCo
     auto const columnImpl = winrt::get_self<TableViewColumn>(col);
     if (!state.didWrite && owner)
     {
-        owner->FreezeColumnsBeforeResize(col, state.frozen);
+        owner->FreezeColumnsBeforeResize(col, state);
     }
     auto const resizeScope = columnImpl->BeginUserResizeScope();
     col.Width(winrt::GridLengthHelper::FromPixels(next));
@@ -4013,6 +4120,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         state->didWrite = false;
         state->didDelta = false;
         state->frozen.clear();
+        state->lockedHoldsBefore.reset();
         state->lastPressTimestamp = 0;
         state->commitPixelWidth = false;
 
@@ -4084,6 +4192,13 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
 
         if (cargs.Canceled())
         {
+            // Before the widths below: restoring them runs app code that may end the holds again.
+            if (strongThis && state->lockedHoldsBefore)
+            {
+                std::tie(strongThis->m_lockedColumnHolds, strongThis->m_lockedColumnHoldsSignature) = std::move(*state->lockedHoldsBefore);
+                strongThis->InvalidateMeasure();
+            }
+
             // Only when a write actually happened, so a press that never moved cannot pin an
             // Auto/Star column.
             // Non-empty only when a freeze actually ran, so this needs no didWrite gate: a write
@@ -4401,5 +4516,6 @@ void TableView::OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPro
         return;
     }
 
+    ExpireLockedColumnHolds();
     RebuildHeaders();
 }

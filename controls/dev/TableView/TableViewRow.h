@@ -171,7 +171,7 @@ private:
     void SuppressCellContentTabStopsForTabWalkInternal();
     void RestoreCellContentTabStopsInternal();
 
-    void OnRowGotFocus();
+    void OnRowGotFocus(winrt::DependencyObject const& focusedElement);
     // Routes an expansion-state transition to this row's automation peer, if a client is listening.
     void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
