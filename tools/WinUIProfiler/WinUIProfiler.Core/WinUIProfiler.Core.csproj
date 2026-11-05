@@ -11,4 +11,7 @@
     <!-- The default marker configuration (MarkerConfig.Default). -->
     <EmbeddedResource Include="Launch\markers.json" LogicalName="WinUIProfiler.Engine.Launch.markers.json" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WinUIProfiler.Tests" />
+  </ItemGroup>
 </Project>
