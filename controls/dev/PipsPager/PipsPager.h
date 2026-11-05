@@ -67,7 +67,9 @@ private:
         const wstring_view& disabledStateName);
     winrt::Size GetDesiredPipSize(const winrt::Style& style);
     void ScrollToCenterOfViewport(const winrt::UIElement sender, const int index);
+    void RequestScrollToSelectedPip(const int index);
     double CalculateScrollViewerSize(const double defaultPipSize, const double selectedPipSize, const int numberOfPages, int maxVisualIndicators);
+    winrt::UIElement GetOrCreatePip(const int index);
     void UpdateSelectedPip(const int index);
     void UpdatePipOrientation(const winrt::Control& pip);
     void ApplyStyleToPipAndUpdateOrientation(const winrt::FrameworkElement& pip, const winrt::Style& style);
@@ -86,6 +88,7 @@ private:
 
     /* Event listeners */
     void OnItemsRepeaterLayoutChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
+    void OnLayoutUpdatedAfterPipRealized(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
@@ -106,6 +109,7 @@ private:
     winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
     winrt::FxScrollViewer::BringIntoViewRequested_revoker m_scrollViewerBringIntoViewRequestedRevoker{};
     PropertyChanged_revoker m_itemsRepeaterStackLayoutChangedRevoker{};
+    winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     /* Items */
     winrt::IObservableVector<int> m_pipsPagerItems{};
 
@@ -113,6 +117,7 @@ private:
     winrt::Size m_defaultPipSize{ 0.0,0.0 };
     winrt::Size m_selectedPipSize{ 0.0, 0.0 };
     int m_lastSelectedPageIndex{ -1 };
+    int m_pendingScrollToPipIndex{ -1 };
     bool m_isPointerOver{ false };
     bool m_isFocused{ false };
     winrt::weak_ref<winrt::StackLayout> m_itemsRepeaterStackLayout{ nullptr };
