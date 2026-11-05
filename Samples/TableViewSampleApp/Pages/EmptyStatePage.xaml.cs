@@ -37,11 +37,14 @@ public sealed partial class EmptyStatePage : SamplePageBase
         TrackItems(People, OnPersonChanged);
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
+    public TableViewSource Source { get; }
+    // </snippet>
+
     // ---- Data source: the ways of being empty ---------------------------------------------
 
     private void OnDataSourceChanged(object sender, SelectionChangedEventArgs e)
@@ -63,6 +66,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
         });
     }
 
+    // <snippet>
     private void ApplyDataSource(string tag)
     {
         switch (tag)
@@ -90,7 +94,9 @@ public sealed partial class EmptyStatePage : SamplePageBase
                 break;
         }
     }
+    // </snippet>
 
+    // <snippet>
     private void AttachSource()
     {
         if (!_sourceAttached)
@@ -154,17 +160,17 @@ public sealed partial class EmptyStatePage : SamplePageBase
     // <snippet>
     private void OnFilterToZeroClick(object sender, RoutedEventArgs e)
     {
-        if (!_sourceAttached)
-        {
-            SetLastAction("ItemsSource is null; choose Populated first.");
-            return;
-        }
+        if (!_sourceAttached) // snippet:skip
+        { // snippet:skip
+            SetLastAction("ItemsSource is null; choose Populated first."); // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         // Nobody joins in the future, so the filter matches nothing while the collection keeps
         // every row. Filter mutates the source in place, like GroupBy.
         var today = DateTimeOffset.Now;
         Source.Filter(item => item is Person p && p.JoinDate > today);
-        _filteredToZero = true;
+        _filteredToZero = true; // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to people who joined after today: 0 of {0:N0} match", People.Count));
     }
     // </snippet>

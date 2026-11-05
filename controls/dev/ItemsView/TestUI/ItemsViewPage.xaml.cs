@@ -26,65 +26,47 @@ namespace MUXControlsTestApp
             navigateToBlank.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewBlankPage), 0); };
             navigateToTransitionProvider.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewTransitionPage), 0); };
             navigateToPictureLibrary.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewPictureLibraryPage), 0); };
+
+            ApplyDebugLoggingOptions();
         }
 
         private void CmbItemsViewOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (chkItemsView != null && chkItemsView.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "ItemsView",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
+            ApplyDebugLoggingOptions();
+        }
 
-            if (chkScrollView != null && chkScrollView.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "ScrollView",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
+        private void ChkOutputDebugStringLevel_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            ApplyDebugLoggingOptions();
+        }
 
-            if (chkScrollPresenter != null && chkScrollPresenter.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "ScrollPresenter",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
+        // Applies the OutputDebugString logging level selected in the ComboBox to every checked type, and
+        // turns logging off for unchecked types. Reading the current ComboBox selection together with all
+        // CheckBox states makes the configuration order-independent: the user can toggle the checkboxes and
+        // pick the ComboBox value in any order and still get the requested logging.
+        private void ApplyDebugLoggingOptions()
+        {
+            int selectedLevel = cmbItemsViewOutputDebugStringLevel?.SelectedIndex ?? 0;
+            bool isLoggingInfoLevel = selectedLevel == 1 || selectedLevel == 2;
+            bool isLoggingVerboseLevel = selectedLevel == 2;
 
-            if (chkItemContainer != null && chkItemContainer.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "ItemContainer",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
+            SetOutputDebugStringLevelForType("ItemsView", chkItemsView, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("ScrollView", chkScrollView, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("ScrollPresenter", chkScrollPresenter, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("ItemContainer", chkItemContainer, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("ItemsRepeater", chkItemsRepeater, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("LinedFlowLayout", chkLinedFlowLayout, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("AnnotatedScrollBar", chkAnnotatedScrollBar, isLoggingInfoLevel, isLoggingVerboseLevel);
+        }
 
-            if (chkItemsRepeater != null && chkItemsRepeater.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "ItemsRepeater",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
+        private static void SetOutputDebugStringLevelForType(string type, CheckBox checkBox, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)
+        {
+            bool isChecked = checkBox != null && checkBox.IsChecked == true;
 
-            if (chkLinedFlowLayout != null && chkLinedFlowLayout.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "LinedFlowLayout",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
-
-            if (chkAnnotatedScrollBar != null && chkAnnotatedScrollBar.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "AnnotatedScrollBar",
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 1 || cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2,
-                    cmbItemsViewOutputDebugStringLevel.SelectedIndex == 2);
-            }
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                type,
+                isChecked && isLoggingInfoLevel,
+                isChecked && isLoggingVerboseLevel);
         }
     }
 }

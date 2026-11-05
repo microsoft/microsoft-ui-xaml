@@ -16,7 +16,6 @@ using TableViewSampleApp.Models;
 // Microsoft.UI.Xaml.Controls.Tabular.SortDirection { None, Ascending, Descending }.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -26,7 +25,7 @@ public sealed partial class SortPage : SamplePageBase
 {
     private bool _isResorting;
     private TableViewColumn? _reportedSortColumn;
-    private TableViewSortDirection _reportedSortDirection;
+    private SortDirection _reportedSortDirection;
 
     // Edits made in the same dispatcher turn, re-applied together by one queued callback.
     private readonly HashSet<string> _pendingProperties = new();
@@ -41,72 +40,98 @@ public sealed partial class SortPage : SamplePageBase
         Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key)));
+        TeamsTable.SelectionChanged += OnTeamsSelectionChanged;
+        InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key), LeagueData.ParentClub));
         TrackItems(Teams, OnTeamChanged);
 
         // A callback queued just before the page unloaded never runs; start clean on the next Loaded.
         TrackLifetime(_pendingProperties.Clear);
     }
 
+    // <snippet>
     public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
+    public TableViewSource Source { get; }
+    // </snippet>
+
     // ---- Programmatic sort: one column at a time; a new sort replaces the previous one -------
 
-    private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, TableViewSortDirection.Descending);
+    // <snippet>
+    private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, SortDirection.Descending);
+    // </snippet>
 
-    private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, TableViewSortDirection.Ascending);
+    // <snippet>
+    private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, SortDirection.Ascending);
+    // </snippet>
 
-    private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, TableViewSortDirection.Descending);
+    // <snippet>
+    private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, SortDirection.Descending);
+    // </snippet>
 
-    private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, TableViewSortDirection.Ascending);
+    // <snippet>
+    private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, SortDirection.Ascending);
+    // </snippet>
 
-    private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, TableViewSortDirection.Ascending);
+    // <snippet>
+    private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, SortDirection.Ascending);
+    // </snippet>
 
-    private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, TableViewSortDirection.Descending);
+    // <snippet>
+    private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, SortDirection.Descending);
+    // </snippet>
 
-    private void SortBy(TableViewColumn column, TableViewSortDirection direction)
+    // <snippet>
+    // Sorting is not live: after a sorted value changes, sort again to move the row.
+    private void SortBy(TableViewColumn column, SortDirection direction)
     {
         TeamsTable.SortByColumn(column, direction);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn({0}, {1})", ColumnLabel(column), direction));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnTogglePointsClick(object sender, RoutedEventArgs e)
     {
         TeamsTable.ToggleSortDirection(PointsColumn);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "ToggleSortDirection(Pts) -> {0}", PointsColumn.SortDirection));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnClearSortClick(object sender, RoutedEventArgs e)
     {
         TeamsTable.ClearSort();
         SetLastAction("ClearSort(): rows are back in source order");
     }
+    // </snippet>
 
-    // Sorted fires after the sort state is applied and the header arrow is published: header
-    // clicks and the API calls above alike. Column is null when the sort was cleared.
+
+    // <snippet>
+    // Sorted fires after the sort is applied and the header arrow is shown: header clicks and the
+    // API calls above alike. Column is null when the sort was cleared.
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
-        _sortedFiredCount++;
-        _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
+        _sortedFiredCount++; // snippet:skip
+        _lastSortedColumn = args.Column is null ? "cleared" : string.Format(CultureInfo.CurrentCulture, "{0} {1}", args.Column.Header, args.Direction);
 
-        // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction,
-        // possibly on a later turn: that is not a new sort, so keep the action's own narration.
-        var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection;
-        _reportedSortColumn = args.Column;
-        _reportedSortDirection = args.Direction;
-        if (_isResorting || unchanged)
-        {
-            RefreshReadouts();
-            return;
-        }
+        // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction, // snippet:skip
+        // possibly on a later turn: that is not a new sort, so keep the action's own narration. // snippet:skip
+        var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection; // snippet:skip
+        _reportedSortColumn = args.Column; // snippet:skip
+        _reportedSortDirection = args.Direction; // snippet:skip
+        if (_isResorting || unchanged) // snippet:skip
+        { // snippet:skip
+            RefreshReadouts(); // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        SetLastAction(args.Column is null
-            ? "Sort cleared"
-            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction));
+        SetLastAction(args.Column is null // snippet:skip
+            ? "Sort cleared" // snippet:skip
+            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction)); // snippet:skip
     }
+    // </snippet>
 
     // ---- Re-sorting after a value change -----------------------------------------------------
     //
@@ -140,7 +165,12 @@ public sealed partial class SortPage : SamplePageBase
 
     private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not LeagueTeam team || IsBulkUpdating || e.PropertyName is null)
+        if (IsBulkUpdating)
+        {
+            return;
+        }
+
+        if (sender is not LeagueTeam team || e.PropertyName is null)
         {
             return;
         }
@@ -188,17 +218,16 @@ public sealed partial class SortPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // </snippet>
 
     // ---- Actions ----------------------------------------------------------------------------
 
     private void OnAwardWinClick(object sender, RoutedEventArgs e)
     {
-        // The lowest-ranked team that has a loss to overturn, against the strongest rival in its
-        // group that has a win to give back. Both keep Played = W + D + L, and the two extra goals
+        // The lowest-ranked senior club that has a loss to overturn, against the strongest rival in
+        // its group that has a win to give back. Both keep Played = W + D + L, and the two extra goals
         // count once as goals for and once as goals against, so the group's ΣGF = ΣGA still holds.
         var team = Teams
-            .Where(t => t.Losses > 0 && Teams.Any(r => r != t && r.Group == t.Group && r.Wins > 0))
+            .Where(t => t.ParentId is null && t.Losses > 0 && Teams.Any(r => r != t && r.ParentId is null && r.Group == t.Group && r.Wins > 0))
             .OrderBy(t => t.Points).ThenBy(t => t.GoalDifference)
             .FirstOrDefault();
         if (team is null)
@@ -208,7 +237,7 @@ public sealed partial class SortPage : SamplePageBase
         }
 
         var rival = Teams
-            .Where(r => r != team && r.Group == team.Group && r.Wins > 0)
+            .Where(r => r != team && r.ParentId is null && r.Group == team.Group && r.Wins > 0)
             .OrderByDescending(r => r.Points).ThenByDescending(r => r.GoalDifference)
             .First();
 
@@ -236,7 +265,6 @@ public sealed partial class SortPage : SamplePageBase
             resorted ? "; re-sorted, so the row moved" : string.Empty));
     }
 
-    // <snippet>
     private void OnPostponeClick(object sender, RoutedEventArgs e)
     {
         if (TeamsTable.SelectedItem is not LeagueTeam team)
@@ -245,7 +273,7 @@ public sealed partial class SortPage : SamplePageBase
             return;
         }
 
-        var from = team.NextMatchText; // snippet:skip
+        var from = team.NextMatchText;
         using (BeginBulkUpdate())
         {
             team.NextMatchDate = team.NextMatchDate.AddDays(7);
@@ -260,7 +288,6 @@ public sealed partial class SortPage : SamplePageBase
             team.NextMatchText,
             resorted ? "; re-sorted, so the row moved" : string.Empty));
     }
-    // </snippet>
 
     private void OnTeamsSelectionChanged(TableView sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs args) => RefreshReadouts();
 
@@ -274,7 +301,7 @@ public sealed partial class SortPage : SamplePageBase
     private void OnSortAsTextClick(object sender, RoutedEventArgs e)
     {
         SetTextDateColumnVisible(true);
-        TeamsTable.SortByColumn(NextMatchTextColumn, TableViewSortDirection.Ascending);
+        TeamsTable.SortByColumn(NextMatchTextColumn, SortDirection.Ascending);
 
         // Find the first neighbouring pair the alphabetical order gets wrong.
         var byText = Teams.OrderBy(t => t.NextMatchText, StringComparer.CurrentCulture).ToList();
@@ -309,10 +336,11 @@ public sealed partial class SortPage : SamplePageBase
 
     private void OnRemoveTeamClick(object sender, RoutedEventArgs e)
     {
-        var team = Teams.LastOrDefault(t => t.Group == "A");
+        // A senior club with no B or U21 side, so no row is left without its parent.
+        var team = Teams.LastOrDefault(t => t.Group == "A" && t.ParentId is null && !Teams.Any(c => c.ParentId == t.Id));
         if (team is null)
         {
-            SetLastAction("Group A is already empty.");
+            SetLastAction("Group A has no club left to remove; a seed keeps its B and U21 sides.");
             return;
         }
 

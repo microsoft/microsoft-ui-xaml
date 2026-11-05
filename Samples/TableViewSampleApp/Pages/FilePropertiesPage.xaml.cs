@@ -41,6 +41,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         // <snippet>
         Source = TableViewSource.From(Entries);    // created once; never rebuilt
         InitializeComponent();
+        PropTable.SelectionChanged += OnPropSelectionChanged; // snippet:skip
 
         PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
@@ -51,9 +52,13 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         TrackLifetime(ListFilesOnce);
     }
 
+    // <snippet>
     public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
+    // </snippet>
 
     private async void ListFilesOnce()
     {
@@ -181,17 +186,17 @@ public sealed partial class FilePropertiesPage : SamplePageBase
     private static string SizeText(long bytes) =>
         string.Format(CultureInfo.CurrentCulture, "{0} ({1:N0} bytes)", FileSystemEntry.FormatSize(bytes), bytes);
 
-    // <snippet>
     // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
 
+    // <snippet>
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (FilterSelector is null)
-        {
-            return;
-        }
+        if (FilterSelector is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        switch (SampleShaping.SelectedTag(FilterSelector, "all"))
+        switch ((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag)
         {
             case "dates":
                 Source.Filter(item => item is FilePropertyEntry { IsDate: true });
@@ -207,11 +212,11 @@ public sealed partial class FilePropertiesPage : SamplePageBase
                 break;
         }
 
-        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
-        if (IsLoaded)
-        {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleEntries().Count()));
-        }
+        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only. // snippet:skip
+        if (IsLoaded) // snippet:skip
+        { // snippet:skip
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleEntries().Count())); // snippet:skip
+        } // snippet:skip
     }
     // </snippet>
 
@@ -225,7 +230,6 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
     // ---- Actions ------------------------------------------------------------------------
 
-    // <snippet>
     private void OnMoveSectionClick(object sender, RoutedEventArgs e)
     {
         if (PropTable.SelectedItem is not FilePropertyEntry entry)
@@ -239,8 +243,8 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
         // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
         ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
-        // A nested row stays in its parent property's group. // snippet:skip
-        var shownIn = GroupingRowOf(Entries)(entry); // snippet:skip
+        // A nested row stays in its parent property's group.
+        var shownIn = GroupingRowOf(Entries)(entry);
         SetLastAction(ReferenceEquals(shownIn, entry) || !IsGrouped
             ? string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section)
             : string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}; it stays under {3} in the {4} group", entry.Property, from, entry.Section, shownIn.Property, KeyOf(shownIn, AppliedGroupKey)));
@@ -258,7 +262,6 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         Entries.Remove(entry);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from {1}", entry.Property, entry.Section));
     }
-    // </snippet>
 
     private void OnRestoreClick(object sender, RoutedEventArgs e)
     {
@@ -290,12 +293,10 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // <snippet>
     // Never blank: TableViewSource fails fast on an empty group identity.
     private static object KeyOf(FilePropertyEntry? entry, string key)
     {
         var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
-    // </snippet>
 }

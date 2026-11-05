@@ -26,6 +26,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // State comes from the page's readout (TableViewVirtualizationPageFacts.Readout): which item a row shows,
     // which rows hold editors and which are on screen are not observable from UIA alone.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewVirtualizationInteractionTests
     {
         // One wheel notch (WHEEL_DELTA).

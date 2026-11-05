@@ -21,8 +21,19 @@
   line is "// snippet:manual" or "<!-- snippet:manual -->" is the opt-out: it is never generated
   or checked (SamplePresenter does not display that marker line).
 
-  Each region is dedented; regions are joined with a "..." separator line. Elision (C# only):
-    * whole statements starting with SetLastAction( or RefreshReadouts(); are dropped (narration
+  A snippet shows the page's real code verbatim: choose the region boundaries (and keep the page
+  source clean) rather than relying on rewriting. A XAML region inside
+  <controls:SamplePresenter.Options> (the rail) is ignored, so the page's option controls never
+  appear; the C# regions show the TableView calls those controls make. The only rewriting:
+    * XAML: AutomationProperties.AutomationId is removed (pages keep it for the UIA scripts), and
+      on a region's top-level elements the attributes that place the example in the sample's page
+      layout are removed (Grid.Row, Grid.Column, Grid.RowSpan, Grid.ColumnSpan, Margin, MinHeight,
+      MaxHeight, HorizontalAlignment, VerticalAlignment). A HeaderToolTip or ToolTipService.ToolTip whose
+      literal value is a sentence is removed too: it narrates the sample page to its user. A line left
+      empty by a removal is dropped.
+    * C#: the narration elision below.
+  Each region is dedented; regions are joined with a blank line. Elision (C# only):
+    * whole statements starting with SetLastAction*( or RefreshReadouts(); are dropped (narration
       and readouts are not the feature), paren-balanced across lines; parentheses inside string
       and character literals and comments are not counted;
     * a block left with no statement by that elision gets a "// ..." line, so no empty
@@ -73,14 +84,17 @@ function Get-Regions([string]$path) {
     $lines = [System.IO.File]::ReadAllText($path) -split "`r?`n"
     $regions = @()
     $current = $null
+    $inOptions = $false
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $line = $lines[$i]
+        if ($isXaml -and $line -match '<\w+:SamplePresenter\.Options>') { $inOptions = $true }
+        if ($isXaml -and $line -match '</\w+:SamplePresenter\.Options>') { $inOptions = $false }
         if ($null -eq $current) {
             $m = [regex]::Match($line, $start)
             if ($m.Success) {
                 $tags = @()
                 if ($m.Groups['tags'].Success) { $tags = @($m.Groups['tags'].Value -split '\s+' | Where-Object { $_ }) }
-                $current = [pscustomobject]@{ File = $path; Tags = $tags; Lines = New-Object System.Collections.Generic.List[string]; IsXaml = $isXaml; Line = $i + 1 }
+                $current = [pscustomobject]@{ File = $path; Tags = $tags; Lines = New-Object System.Collections.Generic.List[string]; IsXaml = $isXaml; Line = $i + 1; InOptions = $inOptions }
             }
         }
         elseif ([regex]::IsMatch($line, $end)) {
@@ -142,10 +156,10 @@ function Remove-Narration([string[]]$lines, [string]$where) {
     $i = 0
     while ($i -lt $lines.Count) {
         $trim = $lines[$i].Trim()
-        if ($trim -match '=>\s*(SetLastAction|RefreshReadouts)\(') {
+        if ($trim -match '=>\s*(SetLastAction\w*|RefreshReadouts)\(') {
             throw "${where}: an expression-bodied narration ('=> $($Matches[1])(...)') cannot be elided from a snippet; keep it outside the region or mark the line // snippet:skip"
         }
-        if ($trim.StartsWith('SetLastAction(') -or $trim.StartsWith('RefreshReadouts();')) {
+        if ($trim -match '^SetLastAction\w*\(' -or $trim.StartsWith('RefreshReadouts();')) {
             # Skip until the statement's parentheses balance and it ends with ';'.
             $indent = $lines[$i].Substring(0, $lines[$i].Length - $lines[$i].TrimStart().Length)
             $depth = 0
@@ -190,8 +204,40 @@ function Remove-Narration([string[]]$lines, [string]$where) {
     return , $result.ToArray()
 }
 
+$pageLayoutAttributes = @('Grid.Row', 'Grid.Column', 'Grid.RowSpan', 'Grid.ColumnSpan', 'Margin', 'MinHeight', 'MaxHeight', 'HorizontalAlignment', 'VerticalAlignment')
+
+# Removes AutomationIds, and the page-layout attributes of the region's top-level elements, from the
+# XAML text in place; everything else is left as written.
+function Remove-PageAttributes([string[]]$lines) {
+    $text = $lines -join "`n"
+    $pattern = '(?<comment><!--[\s\S]*?-->)|(?<end></[^>]+>)|<(?<name>[A-Za-z_][\w:.]*)(?<attrs>(?:\s+[\w:.]+\s*=\s*(?:"[^"]*"|''[^'']*''))*)\s*(?<close>/?>)'
+    $cuts = New-Object System.Collections.Generic.List[object]
+    $depth = 0
+    foreach ($m in [regex]::Matches($text, $pattern)) {
+        if ($m.Groups['comment'].Success) { continue }
+        if ($m.Groups['end'].Success) { $depth--; continue }
+        $attrs = $m.Groups['attrs']
+        foreach ($a in [regex]::Matches($attrs.Value, '\s+(?<n>[\w:.]+)\s*=\s*(?:"(?<v>[^"]*)"|''(?<v>[^'']*)'')')) {
+            $n = $a.Groups['n'].Value
+            $value = $a.Groups['v'].Value
+            $narration = ($n -eq 'HeaderToolTip' -or $n -eq 'ToolTipService.ToolTip') -and -not $value.StartsWith('{') -and ($value.EndsWith('.') -or $value.Contains('. '))
+            if ($n -eq 'AutomationProperties.AutomationId' -or $narration -or ($depth -eq 0 -and $pageLayoutAttributes -contains $n)) {
+                $cuts.Add(@(($attrs.Index + $a.Index), $a.Length))
+            }
+        }
+        if ($m.Groups['close'].Value -eq '>') { $depth++ }
+    }
+    # A cut starts at the whitespace before the attribute, so one on its own line takes the line with it.
+    for ($k = $cuts.Count - 1; $k -ge 0; $k--) {
+        $text = $text.Remove($cuts[$k][0], $cuts[$k][1])
+    }
+    $out = @($text -split "`n")
+    return , $out
+}
+
 function Format-Region($region) {
     $lines = @($region.Lines | Where-Object { $_ -notmatch '//\s*snippet:skip\s*$' -and $_ -notmatch '<!--\s*snippet:skip\s*-->\s*$' })
+    if ($region.IsXaml) { $lines = Remove-PageAttributes $lines }
     if (-not $region.IsXaml) { $lines = Remove-Narration $lines "$($region.File):$($region.Line)" }
 
     $lines = @($lines | ForEach-Object { $_.TrimEnd() })
@@ -215,11 +261,10 @@ function Format-Region($region) {
 }
 
 function Join-Snippet($regions, [bool]$isXaml) {
-    $sep = if ($isXaml) { "<!-- $ellipsis -->" } else { "// $ellipsis" }
     $parts = New-Object System.Collections.Generic.List[string]
     $first = $true
     foreach ($r in $regions) {
-        if (-not $first) { $parts.Add(''); $parts.Add($sep); $parts.Add('') }
+        if (-not $first) { $parts.Add('') }
         $first = $false
         if ($r.Tags.Count -gt 0) {
             $rel = $r.File.Substring($ProjectDir.Length + 1)
@@ -243,6 +288,7 @@ foreach ($file in $allFiles) {
     if ($text -notmatch '(<!--\s*/?snippet[\s>-])|(//\s*</?snippet[\s>])') { continue }
     $regions = Get-Regions $file.FullName
     foreach ($r in $regions) {
+        if ($r.InOptions) { continue }
         if ($r.Tags.Count -gt 0) { $named.Add($r); continue }
         $m = [regex]::Match($file.Name, '^(?<tag>\w+)Page\.xaml(?<cs>\.cs)?$')
         if ($file.DirectoryName -ne $pagesDir -or -not $m.Success) {

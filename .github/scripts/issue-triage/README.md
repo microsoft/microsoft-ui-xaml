@@ -12,6 +12,8 @@ The trusted `prepare` step fetches and bounds the issue evidence. A
 prompt, before the model starts. The model receives the complete evidence in its
 initial input: it does not need to discover a filename, paginate a native file
 reader, search JSON, or build a temporary result file.
+The same hook inserts the trusted [priority policy](priority-policy.md) before,
+and outside, the untrusted JSON block.
 
 The hook runs after gh-aw has rendered and downloaded the activation prompt.
 This is deliberately not `${{ steps.prepare.outputs.context }}` interpolation:
@@ -48,10 +50,14 @@ still rebuilds live evidence independently.
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
+| BUG clearly specific to WinUI 2 UWP, with supporting report evidence | Add the existing `appModel-UWP` label independently of area confidence, unless context is truncated or a human app-model label conflicts. |
 | BUG assessment with an insufficient repro and an actionable REPRODUCTION request | Ask for the specified details and add `needs-repro`, unless the intake is a feature or context is truncated. |
 | Missing version but otherwise actionable reproduction | Ask for the version in the comment; do not add `needs-repro` for that alone. |
 | Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
 | Intake type and content assessment disagree | Preserve existing type labels and surface the discrepancy for human triage; do not fail otherwise valid routing. |
+| Supported BUG assessment, repository Type missing | Set the actual issue Type to `Bug`, not a `bug` label. Preserve an existing Type; feature intake or truncated context defers the update. |
+| Supported impact and workaround assessment | Derive project Priority from the single [priority policy table](priority-policy.md). |
+| Existing WinUI project Priority or archived item | Preserve it; fill only missing values on active items. |
 | Non-bug reproduction rating or incomplete repro without an actionable request | Reconcile applicability or defer the affected request/label; keep useful summary/routing and explain the review requirement. |
 | Strong evidence of a duplicate | Suggest up to five older issues in the canonical comment, for human confirmation. |
 | Subsequent author follow-up or title/body edit | Re-analyze and update the same bot-owned comment. |
@@ -59,7 +65,8 @@ still rebuilds live evidence independently.
 
 The workflow **never** creates labels, removes labels, applies
 `needs-author-feedback` or `duplicate`, closes an issue, submits a duplicate-close
-suggestion, changes assignees/milestones, or sets severity or priority. It leaves
+suggestion, changes assignees/milestones, or sets severity. Priority is restricted
+to the configured WinUI project policy below. It leaves
 `needs-triage` in place.
 
 Existing `needs-repro` labels remain until a maintainer confirms the new
@@ -75,6 +82,9 @@ author's comment cannot make the publisher edit it.
 
 The canonical comment uses a compact, decorated triage-summary layout:
 
+- A brief thank-you is the first visible line, before the triage heading. The
+  wording applies to bugs, feature proposals, and questions without mentioning
+  the author or making commitments.
 - An **issue-author** section appears only when there is an actual information
   request. The request stays visible outside collapsed details, without adding
   new mention/notification behavior.
@@ -90,7 +100,19 @@ The metadata uses the preserved/planned routing, not a model suggestion that
 would be ignored. Sufficient reproduction details are not presented as a claim
 that the automation reproduced the bug. All issue-derived prose and package
 metadata remain escaped, and the canonical marker remains the first line so
-updates do not create additional comments.
+updates do not create additional comments. Routing is explicitly an
+assessment-time snapshot: later maintainer label changes take precedence.
+This does not introduce label-change triggers or retroactively refresh old comments.
+
+Prepared evidence includes up to six non-author, non-bot follow-ups carrying
+GitHub `OWNER`, `MEMBER`, or `COLLABORATOR` association, in addition to the
+author's existing bounded follow-ups. These associations identify repository
+affiliation, not verified area ownership or policy authority. The first three
+and last three are retained with author/association provenance; omitted or
+oversized context is flagged. Affiliated comments participate in the input
+fingerprint, so changing them during analysis invalidates publication. Comment
+bodies remain untrusted evidence and cannot override workflow policy. Existing
+author-only re-triage triggers and human-label preservation are unchanged.
 
 ## Ownership mapping
 
@@ -100,9 +122,8 @@ there is no separate mapping approval or activation step.
 
 The team-maintained configuration maps area labels to their default owners;
 `area-External` and `area-Performance` deliberately have no default owner.
-It also provides keyword guidance, ownership confidence, and nine
-conditional routes: eight declared override rules and the explicit
-AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
+It also provides keyword guidance, ownership confidence, and
+conditional routes. Teams are derived from this configuration,
 never accepted as arbitrary model output.
 
 Parent relationships are maintained separately in `team-parent-map.json`:
@@ -143,8 +164,21 @@ Each area entry contains:
 
 The model picks an area and either `default` or a rule ID configured for that
 area. Conditional choices require a short evidence-based explanation. The
-default rule may also carry a useful explanation; it does not require an empty
-rationale. Unknown rule IDs remain errors. A cross-area rule can be normalized
+default rule requires a supporting explanation for HIGH area confidence.
+An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
+without discarding the summary, reproduction assessment, or duplicate handling.
+This checks for a missing rationale, not its semantic correctness.
+First-level routing does not require independently verifying the root cause.
+A clear reporter diagnosis identifying the failing component, operation, or
+boundary can support HIGH area confidence and the configured team route.
+The rationale attributes the diagnosis to the reporter rather than presenting
+it as a verified finding. Unverified root cause alone is not a reason to lower
+routing confidence; contradictory observations or unresolved competing areas
+outside the initial-investigation defaults below still require an advisory
+assessment. A bare label request or unsupported guess
+is not diagnostic evidence, and human labels and configured routing rules remain
+authoritative. This is model guidance, not a publisher-side confidence promotion.
+Unknown rule IDs remain errors. A cross-area rule can be normalized
 to `default` only if the selected area has no conditional rules and its fixed
 default owner exactly matches the unambiguous owner of that known rule. This
 cannot introduce a new owner or bypass a selected area's conditions, and the
@@ -152,6 +186,36 @@ adjustment is recorded in the result, comment, and workflow log.
 For example, `area-Scrolling` normally maps to `team-Controls`, but its
 `compositor-input` rule maps compositor-thread interaction tracker/input-latency
 problems to `team-CompInput`.
+
+For a window-behavior report that does not distinguish XAML/WinUI Window from
+AppWindow, prefer `area-XamlWindow` for initial investigation. A working
+AppWindow alternative is not required: maintainers can redirect later. HIGH
+confidence can express this clear initial route, not a verified root cause;
+the rationale explains the report and policy. Direct AppWindow failures and
+clearly identified control/content-layout failures retain their own areas.
+Existing human areas and teams are never replaced by this default.
+
+The AppWindow `xaml-window-facade` rule handles an evidenced XAML/WinUI Window
+size-propagation or activation-ordering failure when the corresponding direct
+AppWindow operation works. Its stable identifier is retained for compatibility;
+the descriptions refer directly to XAML/WinUI Window. This exception preserves
+an existing AppWindow area rather than replacing the human area decision.
+`area-WebView` defaults to `team-Controls` across product generations, without
+a version-specific exception or inherited Rendering/Core labels. Area selection
+must still distinguish WinUI control/integration defects from evidenced external
+browser-runtime failures. These distinctions use report evidence without adding
+other product/app-model labels. UWP-specific bugs are assessed separately from
+area ownership, as described below.
+
+`area-TitleBar` defaults to `team-Controls`; its existing `pointer-handling`
+exception still routes evidenced hit-testing, drag-region input, or caption-button
+pointer handling to `team-CompInput`. Existing human team labels are preserved.
+`ExtendsContentIntoTitleBar` is a Window/AppWindow API, not a TitleBar control
+property. Custom title-bar integration reports can start in `area-TitleBar`
+when the control/window boundary is unclear, without claiming API ownership or
+a verified control defect. Failures isolated to Window/AppWindow properties or
+operations follow the window guidance instead. The property name alone does
+not select the TitleBar area.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
 changes. An absent entry or a `null` default team means "do not auto-assign a
@@ -162,6 +226,33 @@ If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
 
 ## Assessment reconciliation
+
+### UWP app model
+
+The model returns a boolean `uwp_specific` assessment and bounded `uwp_reason`
+alongside its area/routing assessment. Clear report evidence of a WinUI 2 UWP
+failure, such as a CoreWindow reproduction tied to a WinUI 2-only handler, can
+support the existing `appModel-UWP` label without independent root-cause
+verification. A UWP mention, WinUI 2 version alone, migration/comparison example,
+shared failure, or bare label request is not sufficient. Uncertain app models
+and FEATURE/OTHER assessments return false.
+
+The publisher validates the types and requires a nonempty supporting rationale.
+It adds only the fixed existing label, never an arbitrary model-supplied name,
+and only for a BUG assessment that is not a feature intake. Missing rationale,
+truncated context, or an existing conflicting `appModel-*` label defers this
+label and surfaces a review note without discarding valid area/team triage.
+No existing app-model label is removed or replaced. Area confidence does not
+gate this independent classification. No other product/app-model label is added.
+As with area rationale, validation checks for an explanation, not its semantic
+correctness; the model must establish UWP specificity from the supplied evidence.
+
+Older output artifacts without both app-model fields remain usable but cannot
+authorize app-model labels; the omission is recorded in the comment and log.
+Partially present or malformed fields fail closed. Label existence, changed-input,
+preview, threat-detection and canonical-comment publication checks still apply.
+
+### Issue kind and reproduction
 
 The prepared issue kind is a label/template-based hint, not a verdict about the
 report's content. The model assesses BUG, FEATURE, or OTHER independently, while
@@ -193,6 +284,105 @@ unconfigured routes, and out-of-set duplicate suggestions still fail closed.
 
 ## Operation
 
+### Issue Type and WinUI project Priority
+
+The BUG assessment in the comment and the repository's issue Type are separate.
+On an eligible publishing run, a supported BUG assessment fills a missing Type
+with `Bug` using GitHub's issue API. It does not add a `bug` label, change an
+existing Type (including Task/Feature), or set a feature intake's Type to Bug.
+Truncated context defers this metadata update. Current Type participates in the
+input fingerprint, so a concurrent human Type edit invalidates stale output.
+
+The [priority policy table](priority-policy.md) is the single source of truth
+for impact definitions, row precedence, applicable issue kinds and the priority
+with/without a reported workaround. The prompt handoff inserts this trusted
+Markdown outside the untrusted issue-evidence block. The publisher's
+`assess_priority` function reads that same table, validates the model's structured
+assessment and applies the selected row. There are no impact-specific priority
+branches in Python or duplicate bucket definitions in the workflow/README.
+
+To change priority mappings, descriptions or issue-kind applicability, edit the
+table and run the existing tests. Adding/removing an impact also requires
+updating the workflow's typed `impact` enum and regenerating its lock file;
+a contract test verifies that enum matches the table. The policy's hash
+participates in the input fingerprint, so an assessment prepared under a
+different policy cannot publish as current. Invalid/duplicate policy rows fail
+closed before publication.
+
+Older artifacts without priority fields remain usable but cannot authorize
+priority. Partial/malformed fields fail closed. These checks validate structure
+and applicability, not semantic model accuracy.
+
+The fixed target is [microsoft's WinUI project 1868](https://github.com/orgs/microsoft/projects/1868).
+The trusted publisher verifies its title is `WinUI`, discovers its existing
+single-select `Priority` field and exact `P0`, `P1`, `P2` option IDs, paginates issue
+project memberships (including archived items), and fills
+only an empty Priority. It never creates fields/options or changes another
+project, and never inserts an issue into the project. Configure the project's
+built-in auto-add workflow, or have a maintainer add the issue first. Missing
+membership defers Priority without blocking normal triage; a later eligible
+run can fill the value after insertion. Existing values, including options outside P0/P1/P2, and archived items
+are preserved. Priority does not depend on area confidence or reproduction
+completeness. The comment records an assessment, not a claim that the project
+write succeeded.
+
+**Required project setup:** configure the repository Actions **secret**
+`WINUI_TRIAGE_PROJECT_TOKEN` with an organization-approved PAT. Its owner must
+already have write access to the WinUI project; token permissions cannot grant
+access the owner lacks. For a fine-grained PAT:
+
+| Setting | Required value |
+|---------|----------------|
+| Resource owner | `microsoft` |
+| Repository access | Only select repositories: `microsoft-ui-xaml` |
+| Organization permissions: Projects | Read and write |
+| Repository permissions: Issues | Read-only |
+| Repository permissions: Metadata | Read-only (automatically included) |
+| Expiration/approval | Organization-approved lifetime and any required administrator approval |
+
+For a classic PAT, use the `project` scope (not just `read:project`) and authorize
+organization SSO if required. Public issue reads do not need broad `repo` access;
+private repository access, if ever required, needs the relevant scope. No
+`workflow`, repository administration, or Issues write permission is needed
+for this project credential. Set expiry/rotation and never paste it into issues,
+logs, source, or chat. Store it under Settings > Secrets and variables > Actions
+> Secrets, not Variables. No GitHub App credentials are used.
+
+Only the separate trusted publisher receives this PAT through
+`TRIAGE_PROJECT_TOKEN`; the LLM, analysis and detection jobs do not receive it.
+The job-scoped `GITHUB_TOKEN` cannot write organization Projects. A PAT always
+authenticates as its owner: Priority edits may be attributed to that user in
+project history. The triager cannot impersonate `github-actions[bot]` with a
+PAT. Avoiding project insertion in the triager prevents a PAT-authored
+"added to project" event; insertion performed by GitHub's built-in project
+automation retains that automation's bot attribution.
+No elevated repository issue credential is substituted: Bug Type, comment and
+label writes continue to use job-scoped `GITHUB_TOKEN` with `issues: write`.
+No project IDs/options or free-form mutations are accepted from the model.
+If the PAT is absent, expired, revoked, unauthorized, or project discovery
+fails, Priority is advisory/deferred with a workflow warning and summary.
+Normal comments, routing/UWP/reproduction labels and Bug Type updates continue
+using the job-scoped `GITHUB_TOKEN`, independently of the PAT. Project API failures
+after preflight are also isolated; an ambiguous mutation is reported as
+unverified rather than retried or falsely claimed successful. This isolation
+does not suppress issue API errors, invalid model output, or stale/ineligible
+issue checks: those normal-triage safety failures still stop publication.
+Preview discovers the plan read-only and never mutates issue Type or Projects.
+
+Issue content and Type are rechecked before writes, and project Priority is
+re-read after normal triage, immediately before an eligible Priority update.
+The publisher verifies the applied priority. GitHub does not offer a transaction
+across comments, labels, Type and project fields, nor an atomic "set only if
+empty" project mutation: a human edit in the final read/write interval remains
+a race. Failed/ambiguous mutations are not retried; inspect partial writes
+before manually rerunning. Existing values on a later run are preserved.
+
+This is not a bulk backfill and does not retroactively update existing comments
+or issues. Only normal eligible triage runs and explicit approved dispatches
+apply metadata; simply merging does not revisit old assessments.
+
+### Activation and dispatch
+
 **Automatic intake starts when the workflow merges to the default branch.**
 The approved mapping is picked up from the trusted workflow commit. There is
 no repository activation variable or post-merge mapping review process.
@@ -201,11 +391,12 @@ GitHub Actions and Copilot agentic workflow access must be permitted under the
 organization's policy, including the Copilot CLI policy **Allow use of Copilot
 CLI billed to the organization**. The generated analysis job requests
 `copilot-requests: write`; issue reads and writes use job-scoped `GITHUB_TOKEN`.
-Do not add a broad personal access token to make the analysis job work.
+Do not add a broad personal access token to make the analysis job work. The
+optional project credential above is limited to the separate publisher.
 
 An optional manual dispatch with an existing `issue_number` and `publish=false`
 (the manual default) runs analysis but only writes the validated comment and
-proposed label list to the Actions job summary. It does not disable or gate
+proposed label, Type and priority plan to the Actions job summary. It does not disable or gate
 automatic intake. Preview still consumes AI credits. A fork with the same label
 catalog can exercise `publish=true` without affecting real reporter issues; the
 workflow must be on the fork's default branch to receive automatic issue events.
@@ -219,8 +410,9 @@ a comment. It excludes pull requests, closed/locked issues, bot-authored issues,
 For an emergency stop, disable `AI Issue Triage` in Actions and cancel active
 runs. Re-enable that workflow in Actions to resume intake.
 
-The initial rollout does not modify project boards, internal mirroring, existing
-stale handling, or the maintainer's acceptance/closure process.
+Apart from the explicitly configured WinUI project item/Priority updates, this
+does not modify other project boards, internal mirroring, existing stale
+handling, or the maintainer's acceptance/closure process.
 
 ## Detection reports
 
@@ -278,15 +470,18 @@ authoritative.
   `issues: write` checks out the trusted workflow commit, rebuilds current
   evidence, and verifies the exact output schema, hash, labels, and candidate
   membership. It never trusts model-written evidence files.
-- The fingerprint includes title, body, author comments, and current labels.
+- The fingerprint includes title, body, author/repository follow-ups, current
+  labels and issue Type.
   The publisher checks it again immediately before commenting and before
   additive label writes. GitHub does not provide a transaction across these
-  operations; a concurrent edit can stop label publication after the comment
-  was written. A later run safely refreshes the single comment.
-- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added.
-  The current parent configuration permits at most five additions per run (one
+  operations; a concurrent edit can stop later metadata publication after the
+  comment was written. A later run safely refreshes the single comment.
+- Only allowlisted routing labels, `appModel-UWP`, `needs-triage`, and `needs-repro` can be added.
+  The current parent configuration permits at most six label additions per run (one
   area, its specific team, the optional parent, and the two workflow-state
-  labels). The publisher uses additive label writes, never replacement.
+  labels, plus UWP when applicable). The publisher uses additive label writes,
+  never replacement. Issue Type and project Priority are separate metadata
+  updates, restricted to the policy above.
 - Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
   issue authors: pre-activation is not a Microsoft organization-membership gate.
   Its repository-permission lookup only exempts `admin`, `maintain`, and `write`
