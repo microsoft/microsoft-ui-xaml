@@ -156,6 +156,9 @@ public:
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
+    // For a Tab that closed an editor and continues from its cell, as OnKeyDown does for a focused cell.
+    void PrepareTabWalkFromCellInternal();
+
 private:
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);

@@ -215,6 +215,118 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnScaleBasicTableVerticallyClick" />
+            <!-- UIA Toggle only. When checked, BasicTableView's CellEditEnding cancels every Commit. -->
+            <CheckBox x:Name="VetoCommitCheckBox"
+                      Content="Veto commit"
+                      AutomationProperties.Name="VetoCommitCheckBox"
+                      AutomationProperties.AutomationId="VetoCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding sorts it by Age descending. -->
+            <CheckBox x:Name="SortOnCommitCheckBox"
+                      Content="Sort on commit"
+                      AutomationProperties.Name="SortOnCommitCheckBox"
+                      AutomationProperties.AutomationId="SortOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's or ScrollingTableView's CellEditEnding posts a
+                 High-priority focus move to AfterTableButton, ahead of anything the control posts at Normal priority. -->
+            <CheckBox x:Name="FocusAwayOnCommitCheckBox"
+                      Content="Focus away on commit"
+                      AutomationProperties.Name="FocusAwayOnCommitCheckBox"
+                      AutomationProperties.AutomationId="FocusAwayOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding posts a High-priority
+                 focus move to BasicTableView's first column header, ahead of anything the control posts at Normal priority. -->
+            <CheckBox x:Name="FocusHeaderOnCommitCheckBox"
+                      Content="Focus header on commit"
+                      AutomationProperties.Name="FocusHeaderOnCommitCheckBox"
+                      AutomationProperties.AutomationId="FocusHeaderOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, GroupedTableView allows editing (ScrollingTableView and RtlTableView are editable unless IsReadOnlyCheckBox is checked),
+                 and GroupedTableView's source live-shapes. -->
+            <CheckBox x:Name="AllowSecondaryTableEditingCheckBox"
+                      Content="Allow editing in Scrolling, Grouped and Rtl"
+                      AutomationProperties.Name="AllowSecondaryTableEditingCheckBox"
+                      AutomationProperties.AutomationId="AllowSecondaryTableEditingCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnAllowSecondaryTableEditingToggled"
+                      Unchecked="OnAllowSecondaryTableEditingToggled" />
+            <!-- UIA Toggle only. When checked, BasicTableView's BeginningEdit cancels every edit of the Age column. -->
+            <CheckBox x:Name="CancelAgeBeginEditCheckBox"
+                      Content="Cancel Age edits"
+                      AutomationProperties.Name="CancelAgeBeginEditCheckBox"
+                      AutomationProperties.AutomationId="CancelAgeBeginEditCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, BasicTableView's Score column is collapsed. -->
+            <CheckBox x:Name="HideScoreColumnCheckBox"
+                      Content="Hide Score"
+                      AutomationProperties.Name="HideScoreColumnCheckBox"
+                      AutomationProperties.AutomationId="HideScoreColumnCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnHideScoreColumnToggled"
+                      Unchecked="OnHideScoreColumnToggled" />
+            <!-- UIA Toggle only. When checked, BasicTableView's Pair and XBind columns are visible. -->
+            <CheckBox x:Name="ShowExtraEditColumnsCheckBox"
+                      Content="Show Pair and XBind"
+                      AutomationProperties.Name="ShowExtraEditColumnsCheckBox"
+                      AutomationProperties.AutomationId="ShowExtraEditColumnsCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnShowExtraEditColumnsToggled"
+                      Unchecked="OnShowExtraEditColumnsToggled" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding focuses its first
+                 column header synchronously, inside the handler. -->
+            <CheckBox x:Name="FocusHeaderInCommitCheckBox"
+                      Content="Focus header inside commit"
+                      AutomationProperties.Name="FocusHeaderInCommitCheckBox"
+                      AutomationProperties.AutomationId="FocusHeaderInCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, ScrollingTableView shows its items grouped by City with live shaping, and
+                 only FrozenName and ScrollCity are editable. -->
+            <CheckBox x:Name="LiveGroupScrollingCheckBox"
+                      Content="Live-group Scrolling by City"
+                      AutomationProperties.Name="LiveGroupScrollingCheckBox"
+                      AutomationProperties.AutomationId="LiveGroupScrollingCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnLiveGroupScrollingToggled"
+                      Unchecked="OnLiveGroupScrollingToggled" />
+            <!-- UIA Toggle only. When checked, only ScrollingTableView's FrozenName column is editable. -->
+            <CheckBox x:Name="SingleEditableScrollingCheckBox"
+                      Content="Only FrozenName editable"
+                      AutomationProperties.Name="SingleEditableScrollingCheckBox"
+                      AutomationProperties.AutomationId="SingleEditableScrollingCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnSingleEditableScrollingToggled"
+                      Unchecked="OnSingleEditableScrollingToggled" />
+            <!-- UIA Toggle only. When checked, every Commit in ScrollingTableView posts a High-priority removal of the
+                 item just above the edited one. -->
+            <CheckBox x:Name="RemoveRowAboveOnCommitCheckBox"
+                      Content="Remove row above on commit"
+                      AutomationProperties.Name="RemoveRowAboveOnCommitCheckBox"
+                      AutomationProperties.AutomationId="RemoveRowAboveOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -278,8 +390,10 @@
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
                         <controls:TableViewTemplateColumn.CellEditingTemplate>
-                            <DataTemplate x:DataType="local:TableViewTestPerson">
-                                <TextBox Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <!-- Classic {Binding}, Explicit: the base commit discovers editor bindings with
+                                 GetBindingExpression, which cannot see compiled {x:Bind} (see the API spec). -->
+                            <DataTemplate>
+                                <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
                                          AutomationProperties.Name="TemplateCellEditor"
                                          AutomationProperties.AutomationId="TemplateCellEditor" />
                             </DataTemplate>
@@ -293,6 +407,43 @@
                                         VerticalAlignment="Center" />
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <!-- Shown by ShowExtraEditColumnsCheckBox. Pair's editor holds two tab stops. -->
+                    <controls:TableViewTemplateColumn x:Name="PairColumn" Header="Pair" Width="220" Visibility="Collapsed">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <TextBlock Text="{x:Bind City, Mode=OneWay}" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                        <controls:TableViewTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBox Width="100"
+                                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
+                                             AutomationProperties.Name="PairFirstEditor"
+                                             AutomationProperties.AutomationId="PairFirstEditor" />
+                                    <TextBox Width="100"
+                                             Text="{Binding City, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
+                                             AutomationProperties.Name="PairSecondEditor"
+                                             AutomationProperties.AutomationId="PairSecondEditor" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellEditingTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <!-- Compiled {x:Bind}: the base commit cannot discover it, so a commit writes nothing. -->
+                    <controls:TableViewTemplateColumn x:Name="XBindColumn" Header="XBind" Width="200" Visibility="Collapsed">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                        <controls:TableViewTemplateColumn.CellEditingTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <TextBox Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.Name="XBindCellEditor"
+                                         AutomationProperties.AutomationId="XBindCellEditor" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellEditingTemplate>
                     </controls:TableViewTemplateColumn>
                 </controls:TableView>
             </Grid>
@@ -367,9 +518,9 @@
                                                   FrozenEdge="Leading"
                                                   Binding="{Binding Name}"
                                                   CellToolTipBinding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="ScrollCity" Width="220" Binding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
-                    <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
+                    <controls:TableViewTextColumn x:Name="ScrollCityColumn" Header="ScrollCity" Width="220" Binding="{Binding City}" />
+                    <controls:TableViewTextColumn x:Name="ScrollAgeColumn" Header="ScrollAge" Width="220" Binding="{Binding Age}" />
+                    <controls:TableViewTextColumn x:Name="ScrollIdColumn" Header="ScrollId" Width="220" Binding="{Binding Id}" />
                 </controls:TableView>
                 <!-- Publishes PART_BodyScroller's offsets and the frozen band's rendered geometry for
                      out-of-process tests. See ReportScrollOffsets in the code-behind. -->

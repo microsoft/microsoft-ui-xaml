@@ -655,20 +655,26 @@ TableView::TableView()
                     strongThis->m_cellIntentColumn = -1;
                     strongThis->m_drillInOffset = -1.0;
                     strongThis->m_drillRestoreOffset = -1.0;
+                    strongThis->CancelPendingTabEdit();
                     strongThis->CancelReshapeFocusRestoreForUserInput();
                 }
             })),
         true /* handledEventsToo */);
 
     // The body scroller handles the wheel. Any wheel scroll is the user's own, so Left no longer undoes
-    // the drill-in's reveal; Ctrl+wheel zooms rather than scrolls.
+    // the drill-in's reveal, and a pending Tab edit no longer applies; Ctrl+wheel zooms rather than scrolls.
     AddHandler(
         winrt::UIElement::PointerWheelChangedEvent(),
         winrt::box_value(winrt::PointerEventHandler(
             [weakThis](winrt::IInspectable const&, winrt::PointerRoutedEventArgs const& args)
             {
                 auto const strongThis = weakThis.get();
-                if (strongThis && (args.KeyModifiers() & winrt::Windows::System::VirtualKeyModifiers::Control) != winrt::Windows::System::VirtualKeyModifiers::Control)
+                if (!strongThis)
+                {
+                    return;
+                }
+                strongThis->CancelPendingTabEdit();
+                if ((args.KeyModifiers() & winrt::Windows::System::VirtualKeyModifiers::Control) != winrt::Windows::System::VirtualKeyModifiers::Control)
                 {
                     strongThis->m_drillInOffset = -1.0;
                     strongThis->m_drillRestoreOffset = -1.0;
@@ -1929,11 +1935,11 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             }
         });
         AttachSourceTip(tableViewSource);
-        // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
+        // Live reshape must not end the user's edit or a pending Tab edit; DrainCoalescedEditReshape and CancelPendingTabEdit resume it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
             auto strongThis = weakThis.get();
-            return strongThis && strongThis->IsEditing();
+            return strongThis && (strongThis->IsEditing() || strongThis->m_pendingTabEditActive);
         });
         // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
         sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
@@ -2242,6 +2248,7 @@ void TableView::OnRowsSourceResetForFocus(
 
     SuppressBodyFocusTrackingForThisTurn();
 
+    CancelPendingTabEdit();
     CaptureBodyFocusForReshape();
 
     // Close the edit before the repeater recycles the editor's container for another record.
@@ -3853,6 +3860,7 @@ void TableView::OnTableViewUnloaded()
     TableViewTelemetry::EndSession(m_telemetrySession);
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
+    CancelPendingTabEdit();
     ForgetBodyFocusPosition();
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
