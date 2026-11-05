@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Storage;
@@ -359,4 +360,88 @@ finally
     {
         File.Delete(file);
     }
+}
+
+// A launcher, process 100, whose activities A and B, on its threads 1 and 2, overlap and each launch an app, 201 or 202.
+// The parent of a process's first thread is the thread that created it, so each app's launch has the events of the
+// activity whose thread created its process, or that no other activity's thread did.
+{
+    var shellExecute = new MarkerProvider("Microsoft.Windows.ShellExecute", Guid.Parse("382b5e24-181e-417f-a8d6-2155f749e724"));
+    Guid a = Guid.NewGuid(), b = Guid.NewGuid();
+    Action<LaunchWatcher, int> Shell(double time, string name, Guid activity, int thread) => (watcher, _) =>
+        watcher.ReadLauncherProviderEvent(new(1_000_000_000L + (long)(time * 10_000), time, 100, thread, XamlProvider.Marker,
+            true, name, name.EndsWith("/Start", StringComparison.Ordinal) ? 1 : 2, [], shellExecute), activity);
+    static Action<LaunchWatcher, int> Created(int id, double time) =>
+        (watcher, _) => watcher.ReadCreation(id, 100, null, 1_000_000_000L + (long)(time * 10_000), time);
+    static Action<LaunchWatcher, int> FirstThread(int id, int parentProcessId, int parentThreadId, double time) =>
+        (watcher, _) => watcher.ReadThreadStart(id, parentProcessId, parentThreadId, time);
+    static Action<LaunchWatcher, int> FirstEvent(int id, double time) => (watcher, target) =>
+    {
+        if (target == id)
+        {
+            watcher.ProcessEvent(time);
+        }
+    };
+    static string Launch(int target, params Action<LaunchWatcher, int>[] trace)
+    {
+        var delivered = new List<ProfilerEvent>();
+        var watcher = new LaunchWatcher(target, null, delivered.Add);
+        foreach (var step in trace)
+        {
+            step(watcher, target);
+        }
+
+        watcher.Complete();
+        return string.Join(",", delivered.OrderBy(launcherEvent => launcherEvent.RelativeMilliseconds)
+            .Select(launcherEvent => $"{launcherEvent.Name}@{launcherEvent.RelativeMilliseconds:R}"));
+    }
+
+    // B's thread creates 202 during A, before or after A's thread creates 201.
+    Action<LaunchWatcher, int>[] before =
+    [
+        Shell(0, "A/Start", a, 1), Shell(80, "B/Start", b, 2), Created(202, 90), FirstThread(202, 100, 2, 95),
+        Created(201, 100), FirstThread(201, 100, 1, 104), Shell(105, "B/Stop", b, 2), Shell(110, "A/Stop", a, 1),
+        FirstEvent(202, 120), FirstEvent(201, 130)
+    ];
+    Action<LaunchWatcher, int>[] after =
+    [
+        Shell(0, "A/Start", a, 1), Shell(80, "B/Start", b, 2), Created(201, 100), FirstThread(201, 100, 1, 104),
+        Created(202, 105), FirstThread(202, 100, 2, 109), Shell(110, "A/Stop", a, 1), Shell(112, "B/Stop", b, 2),
+        FirstEvent(201, 120), FirstEvent(202, 130)
+    ];
+    if (Launch(201, before) != "A/Start@0,A/Stop@110" || Launch(202, before) != "B/Start@80,B/Stop@105" ||
+        Launch(201, after) != "A/Start@0,A/Stop@110" || Launch(202, after) != "B/Start@80,B/Stop@112")
+    {
+        throw new InvalidOperationException("Each of a launcher's overlapping launches must have only its own activity's events.");
+    }
+
+    // A service creates 201 for the launcher, so A's events count for it once the trace says B's thread created 202.
+    Action<LaunchWatcher, int>[] forLauncher =
+    [
+        Shell(0, "A/Start", a, 1), Shell(80, "B/Start", b, 2), Created(201, 100), FirstThread(201, 999, 5, 102),
+        FirstEvent(201, 104), Created(202, 108), Shell(110, "A/Stop", a, 1), Shell(112, "B/Stop", b, 2),
+        FirstThread(202, 100, 2, 113)
+    ];
+    if (Launch(201, forLauncher) != "A/Start@0,A/Stop@110" || Launch(201, forLauncher[..^1]) != "")
+    {
+        throw new InvalidOperationException(
+            "A launch whose process another process created must wait for the thread that created the launcher's other process.");
+    }
+
+    // Without the kernel's thread events, an activity during which the launcher created both apps counts for neither.
+    Action<LaunchWatcher, int>[] unknown =
+    [
+        Shell(0, "A/Start", a, 1), Shell(10, "B/Start", b, 2), Created(201, 50), FirstEvent(201, 51), Created(202, 60),
+        FirstEvent(202, 61), Shell(70, "B/Stop", b, 2), Shell(80, "A/Stop", a, 1)
+    ];
+    if (Launch(201, unknown) != "" || Launch(202, unknown) != "" ||
+        Launch(201, unknown[0], unknown[2], unknown[3], unknown[7]) != "A/Start@0,A/Stop@80")
+    {
+        throw new InvalidOperationException(
+            "Without thread events, only an activity during which the launcher created no other process must count.");
+    }
+
+    Console.WriteLine("Passed: a launcher's overlapping launches each have the events of the activity whose thread created the app.");
+    Console.WriteLine("Passed: a launch whose process another process created waits for the thread that created the launcher's next app.");
+    Console.WriteLine("Passed: without thread events, an activity during which the launcher created two apps counts for neither.");
 }

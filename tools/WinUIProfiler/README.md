@@ -836,11 +836,19 @@ says which, and names the launcher.
   each app a script launches gets its own:
   - An event with an activity ID, as the start and stop events of
     `ShellExecuteExW` and `TryActivateDesktopAppXApplication` have, counts
-    when the launcher created the process during the activity, and no other
-    process after it before the activity's stop event, when that is at most
-    10 seconds after the creation. Such a call starts up to hundreds of
-    milliseconds before the creation, so its start can be nearer the
-    launcher's previous creation; and a call that created no process, as
+    when the launcher created the process during the activity, whose stop
+    event is at most 10 seconds after the creation, and the thread of the
+    activity's start event created the process; or else no thread created it
+    while running another of the launcher's activities, but one did create
+    each other process the launcher created during the activity. So when a
+    script's launches overlap, each app gets its own; but when the trace
+    doesn't say which threads created them, an activity during which the
+    launcher created more than one process counts for none of them. The
+    thread that created a process is the parent of its first thread, from the
+    kernel's thread events, when it is a thread of the process's parent. Such
+    a call starts up to hundreds of milliseconds before the creation, so its
+    start can be nearer the launcher's previous creation; it can create the
+    process on another of its threads; and a call that created no process, as
     when the launch's process is created by another process, doesn't count
     for a process the launcher creates later.
   - An event without an activity ID counts as an event of the activity its
@@ -871,7 +879,8 @@ says which, and names the launcher.
   than by the process that launched it, so its launcher is that service.
 
 A trace has the launcher milestones only if it has the kernel's process events
-and Windows' launch providers. WPR records both in one file with
+and Windows' launch providers, and tells overlapping launches apart with the
+kernel's thread events. WPR records them all in one file with
 `scripts\LaunchTrace.wprp`, which has the XAML providers and the default
 configuration's other providers too. From an elevated prompt in this
 directory, with `$cli` as above:
