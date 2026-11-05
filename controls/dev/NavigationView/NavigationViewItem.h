@@ -120,6 +120,7 @@ private:
     bool IsOnLeftNav() const;
     bool IsOnTopPrimary() const;
     bool IsOutOfControlBounds(const winrt::Point& point);
+    bool IsPointerOverPresenter(const winrt::PointerRoutedEventArgs& args);
 
     void UpdateRepeaterItemsSource();
     winrt::IInspectable GetChildrenSource();
@@ -161,9 +162,6 @@ private:
     RoutedEventHandler_revoker m_presenterPointerExitedRevoker{};
     RoutedEventHandler_revoker m_presenterPointerCanceledRevoker{};
     RoutedEventHandler_revoker m_presenterPointerCaptureLostRevoker{};
-    RoutedEventHandler_revoker m_itemPointerReleasedRevoker{};
-    RoutedEventHandler_revoker m_itemPointerCanceledRevoker{};
-    RoutedEventHandler_revoker m_itemPointerCaptureLostRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};

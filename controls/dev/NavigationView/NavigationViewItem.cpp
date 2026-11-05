@@ -48,6 +48,14 @@ NavigationViewItem::NavigationViewItem()
     m_isEnabledPropertyChangedRevoker = RegisterPropertyChanged(*this, winrt::Control::IsEnabledProperty(), { this, &NavigationViewItem::OnIsEnabledPropertyChanged });
     // Leaving the tree drops capture without a reliable notification.
     Unloaded({ this, &NavigationViewItem::OnUnloaded });
+    // Item-owned presses end in these handlers. Like DragStarting, register them before application handlers on the
+    // item, so app PointerReleased code that releases capture can't cancel the press before its click is processed.
+    if (auto const self = try_as<winrt::UIElement>())
+    {
+        self.AddHandler(winrt::UIElement::PointerReleasedEvent(), winrt::box_value(winrt::PointerEventHandler({ this, &NavigationViewItem::OnItemPointerReleased })), true /*handledEventsToo*/);
+        self.AddHandler(winrt::UIElement::PointerCanceledEvent(), winrt::box_value(winrt::PointerEventHandler({ this, &NavigationViewItem::OnItemPointerCanceled })), true /*handledEventsToo*/);
+        self.AddHandler(winrt::UIElement::PointerCaptureLostEvent(), winrt::box_value(winrt::PointerEventHandler({ this, &NavigationViewItem::OnItemPointerCanceled })), true /*handledEventsToo*/);
+    }
 
     // Items outside a NavigationView-owned repeater are only prepared on load (see OnLoaded), and they can be
     // moved to a different host later (for example from MenuItems to PaneFooter or Content).
@@ -1299,15 +1307,6 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
     const bool captureOnItem = CanDrag() &&
         (pointerDeviceType == winrt::PointerDeviceType::Mouse || pointerDeviceType == winrt::PointerDeviceType::Pen);
     const auto owner = captureOnItem ? this->try_as<winrt::UIElement>() : presenter;
-    if (owner != presenter && !m_itemPointerReleasedRevoker)
-    {
-        m_itemPointerReleasedRevoker = AddRoutedEventHandler<RoutedEventType::PointerReleased>(
-            owner, { this, &NavigationViewItem::OnItemPointerReleased }, true /*handledEventsToo*/);
-        m_itemPointerCanceledRevoker = AddRoutedEventHandler<RoutedEventType::PointerCanceled>(
-            owner, { this, &NavigationViewItem::OnItemPointerCanceled }, true /*handledEventsToo*/);
-        m_itemPointerCaptureLostRevoker = AddRoutedEventHandler<RoutedEventType::PointerCaptureLost>(
-            owner, { this, &NavigationViewItem::OnItemPointerCanceled }, true /*handledEventsToo*/);
-    }
     if (owner.CapturePointer(pointer))
     {
         m_capturedPointer = pointer;
@@ -1337,7 +1336,9 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
         const bool isPointerInBounds = !IsOutOfControlBounds(args.GetCurrentPoint(*this).Position());
         if (m_captureOwnerIsItem)
         {
-            m_isPointerOver = isPointerInBounds;
+            // Item capture suppressed the presenter's PointerExited. Hover follows the presenter's hit area,
+            // which is smaller than the item when TopNavigationViewItemMargin is set; invocation uses the item.
+            m_isPointerOver = IsPointerOverPresenter(args);
         }
 
         if (isPointerInBounds && IsInNavigationViewOwnedRepeater())
@@ -1511,7 +1512,10 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     // We do this check because PointerCaptureLost can sometimes take the place of PointerReleased events.
     // In these cases we need to test if the pointer is over the item to maintain the proper state.
     // In the case of touch input, we want to cancel anyway since there will be no pointer exited due to the pointer being cancelled.
-    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()) ||
+    const bool isOutOfBounds = m_captureOwnerIsItem ?
+        !IsPointerOverPresenter(args) :
+        IsOutOfControlBounds(args.GetCurrentPoint(*this).Position());
+    if (isOutOfBounds ||
         args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Touch)
     {
         m_isPointerOver = false;
@@ -1522,6 +1526,19 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     m_captureOwnerIsItem = false;
     ResetTrackedPointerId();
     UpdateVisualState(true);
+}
+
+bool NavigationViewItem::IsPointerOverPresenter(const winrt::PointerRoutedEventArgs& args)
+{
+    if (auto const presenter = GetPresenterOrItem().try_as<winrt::FrameworkElement>())
+    {
+        // Same conservative edge tolerance as IsOutOfControlBounds.
+        const auto tolerance = 1.0;
+        const auto point = args.GetCurrentPoint(presenter).Position();
+        return point.X >= tolerance && point.X <= presenter.ActualWidth() - tolerance &&
+            point.Y >= tolerance && point.Y <= presenter.ActualHeight() - tolerance;
+    }
+    return !IsOutOfControlBounds(args.GetCurrentPoint(*this).Position());
 }
 
 bool NavigationViewItem::IsOutOfControlBounds(const winrt::Point& point) {
@@ -1608,9 +1625,6 @@ void NavigationViewItem::UnhookInputEvents()
     m_presenterPointerExitedRevoker.revoke();
     m_presenterPointerCanceledRevoker.revoke();
     m_presenterPointerCaptureLostRevoker.revoke();
-    m_itemPointerReleasedRevoker.revoke();
-    m_itemPointerCanceledRevoker.revoke();
-    m_itemPointerCaptureLostRevoker.revoke();
 }
 
 void NavigationViewItem::UnhookEventsAndClearFields()
