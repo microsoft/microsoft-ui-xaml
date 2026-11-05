@@ -6,7 +6,7 @@
 namespace MU_XAP_NAMESPACE
 {
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V12]
 [webhosthidden]
 unsealed runtimeclass InkToolbarStrokeWidthSliderAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.SliderAutomationPeer
 {
