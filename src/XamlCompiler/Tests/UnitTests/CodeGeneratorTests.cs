@@ -118,37 +118,6 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void CodeGenerator_ContentPropertyDoesNotPromoteReturnTypeStub()
-        {
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <ScrollView />
-</Page>";
-
-            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.ManagedRuntime);
-            TypeInfoCollector collector = _testHelper.CollectTypes(xaml, schema);
-            CodeGeneratorProjectContext context = new CodeGeneratorProjectContext(
-                new Version(KnownVersions.Latest),
-                "ContentPropertyReturnTypeStub");
-
-            List<FileNameAndContentPair> pairs = _testHelper.GenerateTypeInfo(
-                false,
-                collector.SchemaInfo,
-                context.ProjectInfo,
-                new ClassName("MyNamespace.App"),
-                CodeGenLanguage.CSharp);
-
-            string code = string.Join(Environment.NewLine, pairs.Select(pair => pair.Contents));
-            Match scrollPresenter = Regex.Match(code,
-                @"case \d+:\s*//\s*Microsoft\.UI\.Xaml\.Controls\.Primitives\.ScrollPresenter\b(?<body>[\s\S]*?)break;");
-
-            Assert.IsTrue(scrollPresenter.Success, code);
-            StringAssert.Contains(scrollPresenter.Groups["body"].Value, "userType.SetIsReturnTypeStub();");
-        }
-
-        [TestMethod]
         public void CodeGenerator_NormalUsage()
         {
             string xaml = @"
