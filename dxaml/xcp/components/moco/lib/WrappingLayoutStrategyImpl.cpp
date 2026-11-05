@@ -927,12 +927,15 @@ double WrappingLayoutStrategyImpl::GetItemsPerPage(
 {
     double itemsPerPage = 0.0;
     const float virtualizingExtent = window.*SizeFromRectInVirtualizingDirection();
+    const float stackingExtent = window.*SizeFromRectInNonVirtualizingDirection();
 
     if (m_cellSizeSet &&
         (!IsGrouping() || m_headerSizeSet) &&
         window.Width > 0 &&
         window.Height > 0 &&
         !DoubleUtil::IsInfinity(virtualizingExtent) &&
+        // An unbounded stacking extent needs a real limit, not the layout safety cap.
+        (!DoubleUtil::IsInfinity(stackingExtent) || m_maxRowsOrColumns > 0) &&
         !DoubleUtil::IsNaN(m_cellSize.Width) &&
         !DoubleUtil::IsNaN(m_cellSize.Height) &&
         DoubleUtil::GreaterThan(m_cellSize.Width, 0) &&

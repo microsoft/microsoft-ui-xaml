@@ -33,6 +33,56 @@ void WrappingLayoutStrategyUnitTests::ItemsPerPageHonorsLimitWithUnboundedStacki
     }
 }
 
+void WrappingLayoutStrategyUnitTests::ItemsPerPageRequiresLimitWithUnboundedStackingExtent()
+{
+    const float infinity = std::numeric_limits<float>::infinity();
+
+    for (const OrientationBasedMeasures& orientation : OrientationBasedMeasures::GetOrientations())
+    {
+        WrappingLayoutStrategyImpl strategy;
+        strategy.SetVirtualizationDirection(orientation.GetOrientation());
+        strategy.RegisterSpecialContainerSize(0, { 100.0f, 100.0f });
+
+        const wf::Rect window = orientation.IsHorizontal()
+            ? wf::Rect{ 0.0f, 0.0f, 350.0f, infinity }
+            : wf::Rect{ 0.0f, 0.0f, infinity, 350.0f };
+
+        VERIFY_ARE_EQUAL(0.0, strategy.GetItemsPerPage(window));
+    }
+}
+
+void WrappingLayoutStrategyUnitTests::ItemsPerPageRequiresLimitAfterClearingMaximumRowsOrColumns()
+{
+    const float infinity = std::numeric_limits<float>::infinity();
+
+    for (const OrientationBasedMeasures& orientation : OrientationBasedMeasures::GetOrientations())
+    {
+        for (const int clearedLimit : { -1, 0 })
+        {
+            WrappingLayoutStrategyImpl strategy;
+            strategy.SetVirtualizationDirection(orientation.GetOrientation());
+            strategy.RegisterSpecialContainerSize(0, { 100.0f, 100.0f });
+            strategy.SetMaximumRowsOrColumns(2);
+
+            const wf::Rect unboundedWindow = orientation.IsHorizontal()
+                ? wf::Rect{ 0.0f, 0.0f, 350.0f, infinity }
+                : wf::Rect{ 0.0f, 0.0f, infinity, 350.0f };
+            const wf::Rect finiteWindow = orientation.IsHorizontal()
+                ? wf::Rect{ 0.0f, 0.0f, 350.0f, 600.0f }
+                : wf::Rect{ 0.0f, 0.0f, 600.0f, 350.0f };
+
+            VERIFY_ARE_EQUAL(8.0, strategy.GetItemsPerPage(unboundedWindow));
+
+            strategy.SetMaximumRowsOrColumns(clearedLimit);
+            VERIFY_ARE_EQUAL(0.0, strategy.GetItemsPerPage(unboundedWindow));
+            VERIFY_ARE_EQUAL(24.0, strategy.GetItemsPerPage(finiteWindow));
+
+            strategy.SetMaximumRowsOrColumns(2);
+            VERIFY_ARE_EQUAL(8.0, strategy.GetItemsPerPage(unboundedWindow));
+        }
+    }
+}
+
 void WrappingLayoutStrategyUnitTests::ItemsPerPageHonorsLimitWithFiniteStackingExtent()
 {
     for (const OrientationBasedMeasures& orientation : OrientationBasedMeasures::GetOrientations())

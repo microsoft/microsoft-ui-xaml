@@ -16,6 +16,8 @@ public:
     END_TEST_CLASS()
 
     TEST_METHOD(ItemsPerPageHonorsLimitWithUnboundedStackingExtent);
+    TEST_METHOD(ItemsPerPageRequiresLimitWithUnboundedStackingExtent);
+    TEST_METHOD(ItemsPerPageRequiresLimitAfterClearingMaximumRowsOrColumns);
     TEST_METHOD(ItemsPerPageHonorsLimitWithFiniteStackingExtent);
     TEST_METHOD(ItemsPerPageCountsCompleteStackingLines);
     TEST_METHOD(ItemsPerPageAccountsForGroupPaddingAndParallelHeader);
