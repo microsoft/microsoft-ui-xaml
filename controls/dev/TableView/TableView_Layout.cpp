@@ -421,20 +421,26 @@ void TableView::ResolveColumnWidths()
     {
         // A locked Star column keeps its authored share while that fits beside the other Star columns'
         // MinWidth, else shares by factor; a hold from FreezeColumnsBeforeResize overrides both.
-        // A copy: resolving a width runs app callbacks that can end the holds partway through this pass.
-        auto holds = m_lockedColumnHolds;
-        auto const heldWidth = [&holds](winrt::TableViewColumn const& c) -> std::optional<double>
+        // Resolved once, and a copy: resolving a width runs app callbacks that can end the holds partway through this pass.
+        std::vector<std::pair<winrt::TableViewColumn, double>> held;
+        held.reserve(m_lockedColumnHolds.size());
+        for (auto const& hold : m_lockedColumnHolds)
         {
-            for (auto const& hold : holds)
+            if (auto column = hold.column.get())
             {
-                if (hold.column.get() == c)
-                {
-                    return hold.width;
-                }
+                held.emplace_back(std::move(column), hold.width);
             }
-            return std::nullopt;
+        }
+        auto const heldWidth = [&](winrt::TableViewColumn const& c) -> double const*
+        {
+            if (!isLocked(c))
+            {
+                return nullptr;
+            }
+            auto const it = std::find_if(held.begin(), held.end(), [&c](auto const& entry) { return entry.first == c; });
+            return it != held.end() ? &it->second : nullptr;
         };
-        auto const isHeld = [&](winrt::TableViewColumn const& c) { return isLocked(c) && heldWidth(c).has_value(); };
+        auto const isHeld = [&](winrt::TableViewColumn const& c) { return heldWidth(c) != nullptr; };
         auto const starFactorOf = [&](winrt::TableViewColumn const& c)
         {
             return std::max(0.0, isLocked(c) ? authoredOf(c).Value : c.Width().Value);
@@ -446,17 +452,18 @@ void TableView::ResolveColumnWidths()
         // An Auto column can grow (scrolling, a header or template change) without changing the hold
         // signature, so a hold that no longer fits once the Auto columns outgrow what they took when
         // it was latched is stale. Only growth counts: a resize may start from an overflowing table.
-        if (!holds.empty() &&
-            std::any_of(holds.begin(), holds.end(), [&](LockedColumnHold const& hold) { return autoTotal > hold.autoTotal + tolerance; }))
+        if (std::any_of(m_lockedColumnHolds.begin(), m_lockedColumnHolds.end(),
+                [&](LockedColumnHold const& hold) { return autoTotal > hold.autoTotal + tolerance; }))
         {
             double needed = fixedTotal;
             for (auto const& c : starColumns)
             {
-                needed += isHeld(c) ? *heldWidth(c) : MinWidthForStarFactor(c, starFactorOf(c));
+                auto const width = heldWidth(c);
+                needed += width ? *width : MinWidthForStarFactor(c, starFactorOf(c));
             }
             if (needed > layoutRound(viewport) + tolerance)
             {
-                holds.clear();
+                held.clear();
                 m_lockedColumnHolds.clear();
                 if (m_activeColumnResizeDrag)
                 {
@@ -467,9 +474,9 @@ void TableView::ResolveColumnWidths()
 
         for (auto const& c : starColumns)
         {
-            if (isHeld(c))
+            if (auto const width = heldWidth(c))
             {
-                changed |= setResolvedActualWidth(c, *heldWidth(c));
+                changed |= setResolvedActualWidth(c, *width);
                 fixedTotal += c.ActualWidth();
             }
         }
