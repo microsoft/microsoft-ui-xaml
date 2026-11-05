@@ -62,9 +62,9 @@ public sealed record FrameListItem(long ListIndex, FrameListItemType ItemType, S
 // or from the start of the recording.
 public sealed record LaunchFrame(long FrameNumber, double Milliseconds, bool FromProcessStart);
 
-// The first frame drawn on the first UI thread: its number and when its last tick ended, as a QPC timestamp of the events'
-// clock (SessionFile.Snapshot.Milliseconds converts it).
-public sealed record DrawnFrame(int ThreadId, long FrameNumber, long EndQpc);
+// The first tick that drew on the first UI thread (the LaunchSummary view's first row): its ID, its thread, and when it
+// ended, in milliseconds from the start of the recording.
+public sealed record DrawnFrame(long TickId, int ThreadId, double EndMilliseconds);
 
 // Reads a session file written by SessionWriter, also while it is still being written.
 public static class SessionFile
@@ -149,32 +149,15 @@ public static class SessionFile
             return lastSeq;
         }
 
-        // The first tick that drew on the UI thread with the first stored tick, the first of the ticks the Frames tab's
-        // launch line gives (the LaunchSummary view); null while there is none, and once the file has deleted its
-        // oldest events to stay within its size limit, since the first ticks may have been among them (the Frames tab
-        // then shows no launch line either). A tick drew when the thread's next tick has a higher frame number, as in
-        // the Ticks view: several ticks can carry a number, and only the last one draws.
+        // The first of the ticks the Frames tab's launch line gives (the LaunchSummary view's first row). Null while
+        // there is none, while the file's start or frequency is not known, and once the file has deleted its oldest
+        // events to stay within its size limit, since the first ticks may have been among them.
         public DrawnFrame? ReadFirstDrawnFrame()
         {
-            if (Info.CompleteFromSeq is not null)
-            {
-                return null;
-            }
-
-            using var command = Command(connection, transaction, """
-                WITH FramesDrawn AS (
-                        SELECT FrameId, ThreadId, FrameNumber, EndQpc,
-                            LEAD(FrameNumber) OVER (PARTITION BY ThreadId ORDER BY FrameId) > FrameNumber AS Drawn
-                        FROM Frames
-                        WHERE ThreadId = (SELECT ThreadId FROM Frames ORDER BY FrameId LIMIT 1))
-                SELECT ThreadId, FrameNumber, EndQpc
-                FROM FramesDrawn
-                WHERE Drawn AND EndQpc IS NOT NULL
-                ORDER BY FrameId
-                LIMIT 1
-                """);
+            using var command = Command(connection, transaction,
+                "SELECT TickId, ThreadId, EndMs FROM LaunchSummary ORDER BY Position LIMIT 1");
             using var reader = command.ExecuteReader();
-            return reader.Read() ? new(reader.GetInt32(0), reader.GetInt64(1), reader.GetInt64(2)) : null;
+            return reader.Read() ? new(reader.GetInt64(0), reader.GetInt32(1), reader.GetDouble(2)) : null;
         }
 
         public void Dispose()

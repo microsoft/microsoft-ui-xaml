@@ -56,6 +56,8 @@ public sealed class LaunchTimelineReader
     // The first event of each milestone found so far, by the index of its definition and its label. Times are kept on the
     // events' clock and converted on each Read, as a recorded trace's frequency can become known after the events were read.
     private Dictionary<(int Definition, string Label), Reached> reached = [];
+    // The first frame drawn, once found. Its time is kept in milliseconds: LaunchSummary has no rows until the file's
+    // start and frequency are known, and neither changes after.
     private DrawnFrame? firstFrame;
     private long? lastSeq;
     private bool trimmed;
@@ -116,8 +118,7 @@ public sealed class LaunchTimelineReader
                     milestones.Add(new(definition.Label!, definition, 0, null, 1, null));
                     break;
                 case BuiltInMilestone.FirstFrameDrawn when firstFrame is { } frame:
-                    milestones.Add(new(definition.Label!, definition, snapshot.Milliseconds(frame.EndQpc) - origin, null, 1,
-                        frame.ThreadId));
+                    milestones.Add(new(definition.Label!, definition, frame.EndMilliseconds - origin, null, 1, frame.ThreadId));
                     break;
                 case null:
                     var count = milestones.Count;
