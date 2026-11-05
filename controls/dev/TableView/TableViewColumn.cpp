@@ -302,6 +302,23 @@ winrt::TableView TableViewColumn::GetOwningTableView()
     return m_owningTableView.get();
 }
 
+// A local MinWidth equal to the default still changes a 0* column's minimum, but the property system
+// raises no change for it.
+void TableViewColumn::MinWidth(double value)
+{
+    const bool wasLocal = ReadLocalValue(s_MinWidthProperty) != winrt::DependencyProperty::UnsetValue();
+    const double before = TableViewColumnProperties::MinWidth();
+    TableViewColumnProperties::MinWidth(value);
+    if (!wasLocal && before == value)
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
+            winrt::get_self<TableView>(owner)->OnColumnWidthChanged(*this);
+        }
+    }
+}
+
 uint32_t TableViewColumn::AutomationIdentity()
 {
     if (m_automationIdentity == 0)

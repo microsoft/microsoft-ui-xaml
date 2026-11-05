@@ -1670,6 +1670,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyLockedStarLayout(tableView, "after a MaxWidth change ends the hold");
             });
         }
+
         [TestMethod]
         [TestProperty("Description", "Verifies collapsing a held locked Star column ends its hold, so resizes while it is hidden cannot leave a stale hold that overflows the viewport when it returns.")]
         public void VerifyCollapsingHeldLockedColumnEndsItsHold()
@@ -1758,6 +1759,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(Math.Abs(widths.Sum() - viewport) <= 1.0, "The columns must fill the viewport.");
             });
         }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a MaxWidth that does not bind leaves a resized table with a locked Star column unchanged.")]
         public void VerifyNonBindingMaxWidthKeepsLockedStarLayout()
@@ -1982,7 +1984,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var zero = tableView.Columns[4];
                 zero.MinWidth = zero.MinWidth;
-                tableView.InvalidateMeasure();
                 tableView.UpdateLayout();
 
                 var viewport = GetBodyViewportWidth(tableView);
@@ -2038,6 +2039,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("authored Width", t => { t.Columns[3].Width = new GridLength(1.0, GridUnitType.Star); t.Columns[3].Width = new GridLength(3.0, GridUnitType.Star); }),
                 ("CanResize", t => { t.Columns[2].CanResize = false; t.Columns[2].CanResize = true; }),
                 ("Columns", t => { var c = t.Columns[3]; t.Columns.RemoveAt(3); t.Columns.Add(c); }),
+                ("held column", t => { var c = t.Columns[1]; t.Columns.RemoveAt(1); t.Columns.Insert(1, c); }),
                 ("CanUserResizeColumns", t => { t.CanUserResizeColumns = false; t.CanUserResizeColumns = true; }),
                 ("viewport", t => { t.Width = 500.0; t.UpdateLayout(); t.Width = 600.0; }),
                 ("ItemsSource", t => t.ItemsSource = ((global::System.Collections.IEnumerable)t.ItemsSource).Cast<object>().ToList()),
