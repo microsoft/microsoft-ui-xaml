@@ -365,6 +365,13 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnHeaderToolTipChanged(*this);
         }
     }
+    else if (property == s_HeaderFlyoutProperty)
+    {
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->RefreshHeaderFlyouts();
+        }
+    }
     else if (property == s_HeaderStyleProperty)
     {
         if (auto owner = GetOwningTableView())

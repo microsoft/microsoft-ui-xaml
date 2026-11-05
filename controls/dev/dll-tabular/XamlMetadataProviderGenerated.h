@@ -244,6 +244,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderContextFlyoutProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HeaderFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"HeaderStyle", L"Microsoft.UI.Xaml.Style", statics.HeaderStyleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.HeaderTemplateProperty(), false /* isContent */);

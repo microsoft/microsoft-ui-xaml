@@ -1452,10 +1452,18 @@ void TableView::ApplyGridLinesToHeader()
         {
             const bool leadingEdge = i == firstVisibleHeaderCell;
             const bool trailingEdge = m_suppressTrailingGridLine && i == lastVisibleHeaderCell;
-            const wchar_t* edgeState = leadingEdge && trailingEdge ? L"SingleHeader" :
+            auto const button = winrt::get_self<TableViewColumnHeader>(header)->GetFlyoutButtonInternal();
+            const bool hasFlyoutButton = button && button.Visibility() == winrt::Visibility::Visible;
+            const bool contentTrailingEdge = trailingEdge && !hasFlyoutButton;
+            const wchar_t* edgeState = leadingEdge && contentTrailingEdge ? L"SingleHeader" :
                 leadingEdge ? (isRtl ? L"RightEdgeHeader" : L"LeftEdgeHeader") :
-                trailingEdge ? (isRtl ? L"LeftEdgeHeader" : L"RightEdgeHeader") : L"InteriorHeader";
+                contentTrailingEdge ? (isRtl ? L"LeftEdgeHeader" : L"RightEdgeHeader") : L"InteriorHeader";
             winrt::VisualStateManager::GoToState(header, edgeState, false);
+            if (button)
+            {
+                winrt::VisualStateManager::GoToState(button, trailingEdge && hasFlyoutButton
+                    ? (isRtl ? L"LeftEdgeHeader" : L"RightEdgeHeader") : L"InteriorHeader", false);
+            }
 
             if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
@@ -1554,9 +1562,11 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
     }
 
     winrt::FrameworkElement candidate{ nullptr };
+    const auto repeater = m_rowsRepeater.get();
     ForEachRealizedRow([&](winrt::TableViewRow const& row)
     {
-        if (!candidate)
+        // Repeater children awaiting reuse keep their old cell geometry after a filter reset.
+        if (!candidate && repeater && repeater.GetElementIndex(row) >= 0)
         {
             candidate = winrt::get_self<TableViewRow>(row)->GetLastVisibleCellInternal();
         }
@@ -2999,6 +3009,10 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope
     for (auto const& headerCell : cells)
     {
         TableViewDetails::ClearOwnedToolTip(headerCell);
+        if (auto const header = headerCell.try_as<winrt::TableViewColumnHeader>())
+        {
+            winrt::get_self<TableViewColumnHeader>(header)->ReleaseFlyoutInternal();
+        }
     }
     for (auto const& headerCell : cells)
     {
@@ -3357,8 +3371,13 @@ void TableView::RebuildHeadersCore()
                 // Weak: the handler is owned by a visual the control also owns, so a strong
                 // capture would keep the TableView alive through its own header.
                 auto weakThis = get_weak();
-                header.Tapped([weakThis, column](auto const&, winrt::TappedRoutedEventArgs const& args)
+                header.Tapped([weakThis, column](auto const& sender, winrt::TappedRoutedEventArgs const& args)
                 {
+                    if (args.Handled() || winrt::get_self<TableViewColumnHeader>(
+                        sender.template as<winrt::TableViewColumnHeader>())->IsInsideFlyoutButton(args.OriginalSource()))
+                    {
+                        return;
+                    }
                     if (auto strongThis = weakThis.get())
                     {
                         if (strongThis->ToggleSortDirection(column))

@@ -755,6 +755,7 @@ Template parts. All are optional; a missing part disables only its feature:
 | `PART_GridLine` | `Border` | Vertical separator. Shown when the table's `HeaderGridLinesVisibility` includes vertical lines, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort icon on a sortable column. Its margin follows header padding, with another 4px on each horizontal side: a 4px text gap and a 16px trailing inset with the default 12px header padding. The icon always follows `PART_ContentPresenter`'s `Foreground`: secondary text for regular headers, primary text for strong headers, and matching custom, disabled, or High Contrast foregrounds. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
+| `PART_HeaderFlyoutButton` | `DropDownButton` | Optional trailing dropdown, visible only when the column has a `HeaderFlyout`. The default template reserves a separate 26px segment (`TableViewHeaderFlyoutButtonWidth`), outside the text/sort region and mirrored in RTL. The resize gripper retains priority at the shared column edge. |
 
 Visual states:
 
@@ -775,6 +776,46 @@ The icon sits at the trailing edge (mirrored placement in RTL) and is centered w
 
 The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
 
+### Header dropdowns
+
+Set `TableViewColumn.HeaderFlyout` to an app-owned `FlyoutBase` to show a separate dropdown button.
+It is independent of `HeaderContextFlyout` (right-click, Menu key, or Shift+F10), and works on columns
+that cannot sort. Activating the header still sorts; activating the dropdown does not.
+Left/Right moves between each header's sort area and dropdown in visual order, mirrored in RTL.
+Enter/Space on the sort area sorts; on the dropdown it opens the flyout.
+From a focused header or its dropdown, Alt+Down or F4 opens the dropdown. The native flyout supplies keyboard
+navigation, Escape/light dismissal, and focus restoration; its button exposes `ExpandCollapse`
+as a child of the header's automation peer, named "Options for [column header]".
+The dropdown remains focusable for keyboard opening and native flyout focus restoration.
+The intended Tab policy remains one stop for the header band, with Tab/Shift+Tab moving
+between bands and arrows reaching dropdown buttons. Known issue: despite
+`TabFocusNavigation="Once"` on the header host and default column header, Tab from a header
+with a dropdown can still focus its button instead of leaving the band. Focus routing remains
+to be corrected, followed by accessibility review of the keyboard model and focus restoration.
+
+```xml
+<tabular:TableViewTextColumn Header="Status" Binding="{Binding Status}">
+    <tabular:TableViewTextColumn.HeaderFlyout>
+        <MenuFlyout Placement="BottomEdgeAlignedRight">
+            <MenuFlyoutItem Text="All statuses" Click="ClearStatusFilter" />
+            <MenuFlyoutItem Text="Ready" Click="FilterReadyStatus" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.HeaderFlyout>
+</tabular:TableViewTextColumn>
+```
+
+The app owns menu content, commands, placement, and any filter indication. Commands may call
+`TableViewSource.Filter(predicate)` or `ClearFilter()` on the existing source; this API adds no
+filter model or automatic distinct-value discovery. The source's public filter is one replaceable
+predicate, not a separate filter per column: apps combine their column predicates themselves.
+Changing `HeaderFlyout` updates the realized header without rebuilding it or resetting accumulated
+body Auto widths. Setting it to null removes the dropdown and closes a flyout opened by that button.
+Disabling the header, removing/retemplating it, or unloading it also closes its own open flyout;
+a shared flyout currently anchored elsewhere is not dismissed.
+While a cell is editing, the dropdown stays visible but disabled and has no attached flyout, including
+during BeginningEdit and CellEditEnding. Existing right-click context-menu precedence is unchanged.
+Custom header templates may omit the part, disabling only the dropdown.
+
 ## TableViewColumn class
 
 Base class for TableView columns.
@@ -789,6 +830,7 @@ Base class for TableView columns.
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
 | `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
+| `HeaderFlyout` | `FlyoutBase` | `null` | App-supplied flyout opened by the optional header dropdown, independently of sorting and `HeaderContextFlyout`. |
 | `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns. |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |

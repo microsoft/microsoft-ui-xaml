@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "TableViewColumnHeader.h"
 #include "ResizeGripper.h"
 #include "TableViewGroupHeader.h"
 #include "GridCoordinateHelper.h"
@@ -503,9 +504,43 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
     const int32_t step = forward ? 1 : -1;
     const int32_t targetIndex = std::clamp(currentIndex + step, 0, count - 1);
 
-    if (liveIndex != targetIndex)
+    const auto focusFlyoutButton = [](const winrt::FrameworkElement& cell)
     {
-        FocusVisibleHeaderFrom(targetIndex, targetIndex == currentIndex ? 0 : step);
+        if (auto const header = cell.try_as<winrt::TableViewColumnHeader>())
+        {
+            if (auto const button = winrt::get_self<TableViewColumnHeader>(header)->GetFlyoutButtonInternal();
+                button && button.IsEnabled() && button.Visibility() == winrt::Visibility::Visible)
+            {
+                return button.Focus(winrt::FocusState::Keyboard);
+            }
+        }
+        return false;
+    };
+    auto const currentCell = cells[static_cast<size_t>(currentIndex)];
+    if (forward && args.OriginalSource().try_as<winrt::DependencyObject>() == currentCell &&
+        focusFlyoutButton(currentCell))
+    {
+        args.Handled(true);
+        return true;
+    }
+    if (!forward)
+    {
+        if (auto const header = currentCell.try_as<winrt::TableViewColumnHeader>();
+            header && winrt::get_self<TableViewColumnHeader>(header)->IsInsideFlyoutButton(args.OriginalSource()))
+        {
+            header.Focus(winrt::FocusState::Keyboard);
+            args.Handled(true);
+            return true;
+        }
+    }
+
+    if (targetIndex != currentIndex || liveIndex != targetIndex)
+    {
+        const auto focusedIndex = FocusVisibleHeaderFrom(targetIndex, targetIndex == currentIndex ? 0 : step);
+        if (!forward && focusedIndex >= 0)
+        {
+            focusFlyoutButton(cells[static_cast<size_t>(focusedIndex)]);
+        }
     }
 
     // Consume bounds/refusals so directional focus navigation cannot walk out of the table.

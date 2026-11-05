@@ -146,6 +146,9 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderFlyout { get; set; };
+
     overridable String GetSortMemberPathCore();
     Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
     overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
@@ -170,6 +173,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderFlyoutProperty { get; };
 }
 
 [MUX_PREVIEW]
