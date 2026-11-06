@@ -156,6 +156,283 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void CodeGenerator_CppWinRTNamedResourceStrings()
+        {
+            // Named resources need fields; resources with only x:Key must not generate fields.
+            AssertCppWinRTNamedStrings(@"
+    <Grid>
+        <Grid.Resources>
+            <x:String x:Name='namedText'>Resource value</x:String>
+            <x:String x:Key='emptyKey' x:Name='emptyText'></x:String>
+            <x:String x:Key='unnamedText'>Unnamed value</x:String>
+        </Grid.Resources>
+        <Button x:Name='button' />
+    </Grid>", "NamedResourceStrings");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTNamedInlineStrings()
+        {
+            // Property-element strings need the same field projection as resource strings.
+            AssertCppWinRTNamedStrings(@"
+    <StackPanel>
+        <TextBlock>
+            <TextBlock.Text><x:String x:Name='namedText'>Inline value</x:String></TextBlock.Text>
+        </TextBlock>
+        <TextBlock>
+            <TextBlock.Text><x:String x:Name='emptyText'></x:String></TextBlock.Text>
+        </TextBlock>
+        <TextBlock><TextBlock.Text><x:String>Unnamed value</x:String></TextBlock.Text></TextBlock>
+        <Button x:Name='button' />
+    </StackPanel>", "NamedInlineStrings");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTLoadClearsNamedStrings()
+        {
+            // Unloading must clear string values without changing reference-field cleanup.
+            AssertCppWinRTDeferredNamedStrings("x:Load='False'", "LoadNamedStrings");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTDeferLoadStrategyClearsNamedStrings()
+        {
+            // Lazy creation must use the same string cleanup contract as x:Load.
+            AssertCppWinRTDeferredNamedStrings("x:DeferLoadStrategy='Lazy'", "DeferLoadNamedStrings");
+        }
+
+        private void AssertCppWinRTDeferredNamedStrings(string directive, string projectName)
+        {
+            // Cover resource, nonempty inline, and empty inline fields under one deferred ancestor.
+            string xaml = @"
+<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    x:Class='MyNamespace.MyPage'>
+    <Grid x:Name='deferredPanel' " + directive + @">
+        <Grid.Resources>
+            <x:String x:Name='resourceText'>Resource value</x:String>
+        </Grid.Resources>
+        <TextBlock>
+            <TextBlock.Text><x:String x:Name='inlineText'>Inline value</x:String></TextBlock.Text>
+        </TextBlock>
+        <TextBlock>
+            <TextBlock.Text><x:String x:Name='emptyText'></x:String></TextBlock.Text>
+        </TextBlock>
+        <Button x:Name='button' />
+    </Grid>
+</Page>";
+            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.ManagedRuntime);
+            var context = new CodeGeneratorProjectContext(new Version(KnownVersions.Latest), projectName);
+            List<FileNameAndContentPair> pairs = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, CodeGenLanguage.CppWinRT);
+
+            Assert.AreEqual(1, pairs.Count);
+            // hstring(nullptr) is deleted, but reference handles must still clear to nullptr.
+            foreach (string name in new[] { "resourceText", "inlineText", "emptyText" })
+            {
+                StringAssert.Contains(pairs[0].Contents, name + "(::winrt::hstring{});");
+                Assert.IsFalse(pairs[0].Contents.Contains(name + "(nullptr);"));
+            }
+            StringAssert.Contains(pairs[0].Contents, "deferredPanel(nullptr);");
+            StringAssert.Contains(pairs[0].Contents, "button(nullptr);");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CSharpNamedStringsGuardNullTargets()
+        {
+            // Only C#/WinRT string casts need a null guard; control and legacy casts stay unchanged.
+            string xaml = @"
+<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    x:Class='MyNamespace.MyPage'>
+    <Page.Resources>
+        <x:String x:Name='resourceText'>Resource value</x:String>
+        <x:String x:Key='emptyKey' x:Name='emptyText'></x:String>
+    </Page.Resources>
+    <StackPanel>
+        <TextBlock><TextBlock.Text><x:String x:Name='inlineText'>Inline value</x:String></TextBlock.Text></TextBlock>
+        <Button x:Name='button' />
+    </StackPanel>
+</Page>";
+            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.ManagedRuntime);
+            var context = new CodeGeneratorProjectContext(new Version(KnownVersions.Latest), "CSharpNamedStrings");
+            context.ProjectInfo.UsingCSWinRT = true;
+            List<FileNameAndContentPair> pairs = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, CodeGenLanguage.CSharp);
+            Assert.AreEqual(1, pairs.Count);
+            foreach (string name in new[] { "resourceText", "emptyText", "inlineText" })
+            {
+                StringAssert.Contains(pairs[0].Contents, "this." + name +
+                    " = target == null ? null : global::WinRT.CastExtensions.As<global::System.String>(target);");
+            }
+            StringAssert.Contains(pairs[0].Contents,
+                "global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)");
+            Assert.IsFalse(pairs[0].Contents.Contains(
+                "target == null ? null : global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>"));
+            context.ProjectInfo.UsingCSWinRT = false;
+            pairs = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, CodeGenLanguage.CSharp);
+            foreach (string name in new[] { "resourceText", "emptyText", "inlineText" })
+            {
+                StringAssert.Contains(pairs[0].Contents, "this." + name + " = (global::System.String)target;");
+            }
+            Assert.IsFalse(pairs[0].Contents.Contains("target == null ? null :"));
+        }
+
+        private void AssertCppWinRTNamedStrings(string content, string projectName)
+        {
+            // Check field declarations in pass 1 and connection callbacks in pass 2.
+            string xaml = @"
+<Page
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    x:Class='MyNamespace.MyPage'>" + content + "</Page>";
+            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.ManagedRuntime);
+            var context = new CodeGeneratorProjectContext(new Version(KnownVersions.Latest), projectName);
+            context.ProjectInfo.ClassToHeaderFileMap = new Dictionary<string, string>();
+            context.IsPass1 = true;
+            List<FileNameAndContentPair> pass1 = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, CodeGenLanguage.CppWinRT);
+
+            Assert.AreEqual(1, pass1.Count);
+            foreach (string name in new[] { "namedText", "emptyText" })
+            {
+                StringAssert.Contains(pass1[0].Contents, "::winrt::hstring " + name + "()");
+                StringAssert.Contains(pass1[0].Contents, "return _" + name + ";");
+                StringAssert.Contains(pass1[0].Contents, "void " + name + "(::winrt::hstring value)");
+                StringAssert.Contains(pass1[0].Contents, "_" + name + " = value;");
+                StringAssert.Contains(pass1[0].Contents, "::winrt::hstring _" + name + "{};");
+            }
+            Assert.IsFalse(pass1[0].Contents.Contains("::winrt::System::String"));
+            Assert.IsFalse(pass1[0].Contents.Contains("_unnamedText"));
+            StringAssert.Contains(pass1[0].Contents, "::winrt::Microsoft::UI::Xaml::Controls::Button _button{nullptr};");
+
+            context.IsPass1 = false;
+            XamlDomValidator validator = _testHelper.ValidateXAML(xaml, schema);
+            Assert.AreEqual(0, validator.Errors.Count,
+                String.Join(", ", validator.Errors.Select(error => error.ErrorCode + ": " + error.Message)));
+            List<FileNameAndContentPair> pass2 = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, CodeGenLanguage.CppWinRT);
+            Assert.AreEqual(1, pass2.Count);
+            foreach (string name in new[] { "namedText", "emptyText" })
+            {
+                StringAssert.Contains(pass2[0].Contents, "this->" + name + "(targetElement);");
+            }
+            StringAssert.Contains(pass2[0].Contents,
+                "auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};");
+            StringAssert.Contains(pass2[0].Contents,
+                "auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();");
+            Assert.IsFalse(pass2[0].Contents.Contains("::winrt::System::String"));
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTMultipleViewsKeepBoxedStrings_StringFirst()
+        {
+            AssertCppWinRTMultipleViewStrings(false, null);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTMultipleViewsKeepBoxedStrings_ObjectFirst()
+        {
+            AssertCppWinRTMultipleViewStrings(true, null);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTMultipleViewsLoadClearsMergedStrings()
+        {
+            AssertCppWinRTMultipleViewStrings(false, "x:Load='False'");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTMultipleViewsDeferLoadClearsMergedStrings()
+        {
+            AssertCppWinRTMultipleViewStrings(true, "x:DeferLoadStrategy='Lazy'");
+        }
+
+        private void AssertCppWinRTMultipleViewStrings(bool objectViewFirst, string directive)
+        {
+            string pageStart = @"
+<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    x:Class='MyNamespace.MyPage'>
+    <Grid x:Name='panel' " + directive + ">";
+            string stringView = pageStart + @"
+        <Grid.Resources>
+            <x:String x:Name='sharedText'>Resource value</x:String>
+            <x:String x:Name='emptySharedText'></x:String>
+            <x:String x:Name='stringText'>String value</x:String>
+        </Grid.Resources>
+    </Grid>
+</Page>";
+            string objectView = pageStart + @"
+        <Grid.Resources>
+            <x:String x:Name='stringText'>Other string value</x:String>
+        </Grid.Resources>
+        <StackPanel>
+            <Button x:Name='sharedText' Click='OnClick'/>
+            <Button x:Name='emptySharedText'/>
+            <Button Click='OnClick'/>
+        </StackPanel>
+    </Grid>
+</Page>";
+            var views = objectViewFirst
+                ? new List<string> { objectView, stringView }
+                : new List<string> { stringView, objectView };
+            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.ManagedRuntime);
+            var context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest), "MultipleViewStrings_" + objectViewFirst + "_" + (directive == null ? "Immediate" : "Deferred"));
+            context.ProjectInfo.ClassToHeaderFileMap = new Dictionary<string, string>();
+            context.IsPass1 = true;
+            List<FileNameAndContentPair> pass1 = _testHelper.GenerateCodeBehind(
+                context, views, schema, CodeGenLanguage.CppWinRT);
+
+            Assert.AreEqual(1, pass1.Count);
+            foreach (string name in new[] { "sharedText", "emptySharedText" })
+            {
+                StringAssert.Contains(pass1[0].Contents,
+                    "void " + name + "(::winrt::Windows::Foundation::IInspectable value)");
+            }
+            StringAssert.Contains(pass1[0].Contents, "void stringText(::winrt::hstring value)");
+
+            context.IsPass1 = false;
+            List<FileNameAndContentPair> pass2 = _testHelper.GenerateCodeBehind(
+                context, views, schema, CodeGenLanguage.CppWinRT);
+            Assert.AreEqual(1, pass2.Count);
+            string code = pass2[0].Contents;
+
+            if (directive != null)
+            {
+                foreach (string name in new[] { "sharedText", "emptySharedText" })
+                {
+                    StringAssert.Contains(code, name + "(nullptr);");
+                    Assert.IsFalse(code.Contains(name + "(::winrt::hstring{});"),
+                        "Merged object cleanup must not receive an hstring for " + name);
+                }
+                StringAssert.Contains(code, "stringText(::winrt::hstring{});");
+                StringAssert.Contains(code, "panel(nullptr);");
+            }
+
+            string stringTarget = @"auto targetElement = target \? target\.as<::winrt::hstring>\(\) : ::winrt::hstring\{\};\s*";
+            string buttonTarget = @"auto targetElement = target\.as<::winrt::Microsoft::UI::Xaml::Controls::Button>\(\);\s*";
+            foreach (string name in new[] { "sharedText", "emptySharedText" })
+            {
+                Assert.IsTrue(Regex.IsMatch(code,
+                    @"case \d+:\s*\{\s*this->" + name + @"\(target\);\s*\}\s*break;"),
+                    "The boxed string connection must not declare or convert an unused targetElement for " + name);
+                Assert.IsTrue(Regex.IsMatch(code, buttonTarget + @"this->" + name + @"\(targetElement\);"),
+                    "The button connection must retain its concrete type for " + name);
+            }
+            Assert.IsTrue(Regex.IsMatch(code, stringTarget + @"this->stringText\(targetElement\);"),
+                "A string-only field must receive the null-safe hstring value.");
+            Assert.IsTrue(Regex.IsMatch(code, buttonTarget +
+                @"this->sharedText\(targetElement\);\s*auto weakThis = [^\r\n]+;\s*targetElement\.Click\(\[weakThis\]"),
+                "The shared button field must retain a typed local for event hookup.");
+            Assert.IsTrue(Regex.IsMatch(code, buttonTarget +
+                @"auto weakThis = [^\r\n]+;\s*targetElement\.Click\(\[weakThis\]"),
+                "An event-only connection must retain a typed local without a field assignment.");
+        }
+
+        [TestMethod]
         public void CodeGenerator_MultipleViewUsage()
         {
             string xaml1 = @"

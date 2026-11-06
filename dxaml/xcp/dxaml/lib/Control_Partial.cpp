@@ -104,7 +104,10 @@ _Check_return_ HRESULT Control::GetTemplateChildImpl(
 
     if (auto child = static_cast<CControl*>(GetHandle())->GetTemplateChild(XSTRING_PTR_EPHEMERAL_FROM_HSTRING(childName)))
     {
-        IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(child.get(), returnValue));
+        if (child->GetTypeIndex() != KnownTypeIndex::String)
+        {
+            IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(child.get(), returnValue));
+        }
     }
 
     return S_OK;

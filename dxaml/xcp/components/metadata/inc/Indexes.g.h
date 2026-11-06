@@ -1542,6 +1542,7 @@ enum class KnownPropertyIndex: UINT16
     Window_MaxWidth,
     Window_MinHeight,
     Window_MinWidth,
+    Window_PlacementId,
     Window_SystemBackdrop,
     Window_Title,
     Window_TransparentBackground,

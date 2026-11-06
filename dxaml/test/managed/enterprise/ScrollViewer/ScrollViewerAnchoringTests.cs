@@ -314,17 +314,6 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
                  Verify.AreEqual(scrollViewer.HorizontalOffset, horizontalOffset);
                  Verify.AreEqual(scrollViewer.VerticalOffset, verticalOffset);
              });
-
-            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-            UIExecutor.Execute(() =>
-            {
-                scrollViewer = null;
-            });
-            scrollViewerLoadedEvent.Dispose();
-            scrollViewerViewChangedEvent.Dispose();
-            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            GC.WaitForPendingFinalizers();
-            TestServices.WindowHelper.WaitForIdle();
         }
 
         [TestMethod]

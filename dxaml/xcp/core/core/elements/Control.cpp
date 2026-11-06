@@ -1154,7 +1154,7 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFCPTR(ppStyle);
 
-    TraceGetBuiltInStyleBegin();
+    XamlTelemetry::GetBuiltInStyleBegin(this);
 
     // If the CLR is initialized, then get the builtin style from the managed side.
     // else, retrieve the native builtin style.
@@ -1165,18 +1165,15 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
 
-    if (EventEnabledGetBuiltInStyleEnd())
+    if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::ParserKeyword))
     {
+        xstring_ptr strStyle;
         if (pStyle)
         {
-            xstring_ptr strStyle;
             IFC(pStyle->GetTargetTypeName(&strStyle));
-            TraceGetBuiltInStyleEnd(strStyle.GetBuffer());
         }
-        else
-        {
-            TraceGetBuiltInStyleEnd(L"None");
-        }
+
+        XamlTelemetry::GetBuiltInStyleEnd(this, pStyle ? strStyle.GetBuffer() : L"None");
     }
 
     *ppStyle = pStyle;

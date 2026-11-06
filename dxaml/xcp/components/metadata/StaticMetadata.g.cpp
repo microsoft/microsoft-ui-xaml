@@ -14639,7 +14639,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        18, // Property slot count
+        19, // Property slot count
     },
     // Microsoft.UI.Xaml.WindowCreatedEventArgs
     {
@@ -26576,6 +26576,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
     {
         KnownPropertyIndex::Window_MinWidth, // Index name
         KnownTypeIndex::Double, // Property type
+        KnownTypeIndex::Window, // Declaring type
+        KnownTypeIndex::Window, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Window.PlacementId
+    {
+        KnownPropertyIndex::Window_PlacementId, // Index name
+        KnownTypeIndex::String, // Property type
         KnownTypeIndex::Window, // Declaring type
         KnownTypeIndex::Window, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
@@ -38941,7 +38949,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::Window_MaxWidth, // Window_MaxHeight
     KnownPropertyIndex::Window_MinHeight, // Window_MaxWidth
     KnownPropertyIndex::Window_MinWidth, // Window_MinHeight
-    KnownPropertyIndex::Window_SystemBackdrop, // Window_MinWidth
+    KnownPropertyIndex::Window_PlacementId, // Window_MinWidth
+    KnownPropertyIndex::Window_SystemBackdrop, // Window_PlacementId
     KnownPropertyIndex::Window_Title, // Window_SystemBackdrop
     KnownPropertyIndex::Window_TransparentBackground, // Window_Title
     KnownPropertyIndex::Window_Width, // Window_TransparentBackground
@@ -40902,10 +40911,11 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     11, // Window_MaxWidth
     12, // Window_MinHeight
     13, // Window_MinWidth
-    14, // Window_SystemBackdrop
-    15, // Window_Title
-    16, // Window_TransparentBackground
-    17, // Window_Width
+    14, // Window_PlacementId
+    15, // Window_SystemBackdrop
+    16, // Window_Title
+    17, // Window_TransparentBackground
+    18, // Window_Width
     8, // XamlUICommand_AccessKey
     9, // XamlUICommand_Command
     10, // XamlUICommand_Description
@@ -42862,6 +42872,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"MaxWidth"),
     XSTRING_PTR_STORAGE(L"MinHeight"),
     XSTRING_PTR_STORAGE(L"MinWidth"),
+    XSTRING_PTR_STORAGE(L"PlacementId"),
     XSTRING_PTR_STORAGE(L"SystemBackdrop"),
     XSTRING_PTR_STORAGE(L"Title"),
     XSTRING_PTR_STORAGE(L"TransparentBackground"),

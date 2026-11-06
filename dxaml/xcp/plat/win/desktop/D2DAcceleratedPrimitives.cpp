@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <XamlProfilerTracing.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"
@@ -232,11 +233,19 @@ Cleanup:
 CD2DStrokeStyle::CD2DStrokeStyle()
     : m_pStrokeStyle(NULL)
 {
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DStrokeStyleWrapper);
+    }
 }
 
 CD2DStrokeStyle::~CD2DStrokeStyle()
 {
     ReleaseInterface(m_pStrokeStyle);
+    if (m_graphicsResourceTracked)
+    {
+        RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::D2DStrokeStyleWrapper);
+    }
 }
 
 _Check_return_ HRESULT

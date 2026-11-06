@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 
 #include "Storyboard.h"
 #include "ParallelTimeline.h"
@@ -651,7 +652,7 @@ HRESULT CTransition::OnLayoutChanged(_In_ CUIElement* pTarget)
     CLayoutManager* pLayoutManager = NULL;
     LayoutTransitionStorage* pStorage = NULL;
     TransitionTrigger currentTrigger = DirectUI::TransitionTrigger::NoTrigger;
-    TraceProcessLayoutForTransitionBegin();
+    XamlTelemetry::ProcessLayoutForTransitionBegin(pTarget);
 
     IFCEXPECT(pTarget);
 
@@ -804,7 +805,7 @@ Cleanup:
     {
         CTransition::SetNextGenerationInformationFromLayout(pTarget, pStorage, pLayoutManager->GetNextLayoutCounter());
     }
-    TraceProcessLayoutForTransitionEnd();
+    XamlTelemetry::ProcessLayoutForTransitionEnd(pTarget);
     RRETURN(hr);
 }
 
@@ -1424,7 +1425,7 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
     bool bWasUnloading = false;
     CLayoutTransitionElement* pDestinationElement = NULL;
 
-    TraceCancelTransitionsBegin();
+    XamlTelemetry::CancelTransitionsBegin(pTarget);
 
     // it is expected that storage does not have a valid pointer to the transition at this point
     // since it is removed in RegisterTransition on layoutmanager before calling this method.
@@ -1477,7 +1478,7 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
         }
     }
 Cleanup:
-    TraceCancelTransitionsEnd();
+    XamlTelemetry::CancelTransitionsEnd(pTarget);
     RRETURN(hr);
 }
 

@@ -376,8 +376,8 @@ bool closed = OrdersTable.CommitEdit();   // false if no edit is open, or it was
 ```
 
 - **Header content.** `Header` is the header content. `HeaderTemplateSelector`, when set, takes precedence over `HeaderTemplate`.
-- **Header styles.** `TableView.ColumnHeaderStyle` applies to every header. A column's `HeaderStyle` replaces it for that column (the two are not merged). Either style is layered over the default header style, so it doesn't need `BasedOn`. Its `TargetType` must be `TableViewColumnHeader` or one of its base types; a style with any other or no `TargetType` is ignored.
-- **Tooltips.** `CellToolTipBinding` is evaluated against each row's item; `HeaderToolTip` is set directly. In both, the value is the tooltip *content* (null or empty means none); the control owns the `ToolTip`, so a `ToolTip` value is rejected. String tooltips are also exposed to UI Automation; non-string content is visual-only, so use text when it matters.
+- **Header styles.** `TableView.ColumnHeaderStyle` applies to every header. A column's `HeaderStyle` replaces it for that column (the two are not merged). Either style is layered over the default header style, so it doesn't need `BasedOn`. Its `TargetType` must be `TableViewColumnHeader` or one of its base types; a style with any other or no `TargetType` is ignored. A style's `ContentTemplate`, or a `ContentTemplateSelector` that returns a template, also renders a string `Header`; the column's `HeaderTemplate`/`HeaderTemplateSelector` wins over it. A keyboard-focused header takes the `TableView`'s `CornerRadius` so its focus visual is rounded, unless the applied style sets `CornerRadius`.
+- **Tooltips.** `CellToolTipBinding` is evaluated against each row's item; `HeaderToolTip` is set directly. In both, the value is the tooltip *content* (null or empty means none); the control owns the `ToolTip`, so a `ToolTip` value is rejected. String tooltips are also exposed to UI Automation; non-string content is visual-only, so use text when it matters. A header tooltip covers the whole header except the resize gripper: while the pointer is on the gripper the tooltip is suppressed, so the resize cursor is not reset under a resting pointer; it returns when the pointer leaves the gripper or the gripper is withdrawn.
 - **Context menus.** The first available flyout opens; the target receives focus and selection does not change. No menu opens while a cell is being edited, or on a collapsed column.
 
 | Target | Precedence (first wins) |
@@ -386,7 +386,8 @@ bool closed = OrdersTable.CommitEdit();   // false if no edit is open, or it was
 | Column header | A `ContextFlyout` from the header style or `HeaderTemplate` → `TableViewColumn.HeaderContextFlyout` → `TableView.ContextFlyout` |
 | Group header | The group header style's `ContextFlyout` → `TableView.ContextFlyout` |
 
-- **Resizing.** A column can be resized when `TableView.CanUserResizeColumns` and its `CanResize` are both `true` (the defaults): drag the header gripper, or press Alt+Left/Right on a focused header (add Shift for a larger step). Esc during a drag restores the column's original `Width`. Widths stay within `MinWidth`/`MaxWidth`; a Star column with no later Star column to trade width with cannot be resized, and a Pixel or Auto column with no column to give width to can only shrink.
+- **Resizing.** A column has a gripper while `TableView.CanUserResizeColumns` and its `CanResize` are both `true` (the defaults), its `MinWidth` is less than its `MaxWidth`, and, for a Star column, a resizable Star column follows it to trade width with. Drag the header gripper, double-click it (mouse only) to fit the column to its header and the widest **realized** row cell, or press Alt+Left/Right on a focused header (8 DIPs; 32 with Shift). Esc, a lost capture or unloading the table during a drag restores the column's original `Width`. A gesture that changes the width writes a Pixel `Width` and announces the new width, so an Auto or Star column becomes Pixel, as in File Explorer; a double-click fit always does, even when the size is unchanged. Widths stay within `MinWidth`/`MaxWidth` and the resize bounds: when the table has Star columns, a column can grow only by taking width from a resizable Star column after it (up to the viewport less the other columns), and with no such column a Pixel or Auto column can only shrink — a double-click fit is not widened past those bounds.
+- **Resize holds.** While `CanUserResizeColumns` is `true`, a Star column with `CanResize="False"` holds the width its Star factor gives it in the authored layout, so resizing other columns does not move it. It stops holding that width when the width no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth` (for example after a `MinWidth`/`MaxWidth` change or a narrower viewport), and is then divided with the other Star columns by factor; crossing between the two states can move it. Resizing a later column (by pointer, keyboard or UI Automation) never moves an earlier Star column: it is held at the width it rendered, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. That hold lasts until something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or the viewport width), or until an Auto column grows so that it no longer fits. Trimming a locked column never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
 - **Theming.** `RowBackground` and `AlternatingRowBackground` are null by default (no banding). Colors come from `TabularSurface*` theme brushes, which apps can override; for example, set `TabularSurfaceHeaderSeparatorBrush` to `Transparent` to hide the header separators.
 
 # API Pages
@@ -715,6 +716,8 @@ The row height and padding preset: `Compact`, `Standard` or `Comfortable`.
 
 Exposes a `TableView` to UI Automation with the Grid, Table, Selection and ItemContainer patterns. Selection is reported only while `SelectionMode` isn't `None`; `CanSelectMultiple` is `false`.
 
+`GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item without realizing the row: a `DataItem` named from its text columns' values (else from the item), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns to the row's peer but keeps its own `RuntimeId`; `GetSelection()` then returns the row's peer, and the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer (a boxed value is tied to its row index). A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
+
 ### TableViewRowAutomationPeer class
 
 Exposes a `TableViewRow` with the SelectionItem pattern, plus ExpandCollapse for rows of a hierarchy.
@@ -725,7 +728,7 @@ Exposes a cell with the GridItem and TableItem patterns, plus the Value pattern 
 
 ### TableViewColumnHeaderAutomationPeer class
 
-Exposes a column header with the Invoke pattern, which sorts the column. At run time it also exposes the Transform pattern to resize the column (`Resize` takes physical pixels; it can't move or rotate), but `ITransformProvider` isn't declared in the IDL. The constructor throws `E_INVALIDARG` unless `column` belongs to `owner`.
+Exposes a column header with the Invoke pattern, which sorts the column. At run time it also exposes the Transform pattern to resize the column (`Resize` takes physical pixels; it can't move or rotate), but `ITransformProvider` isn't declared in the IDL. The constructor throws `E_INVALIDARG` unless `column` belongs to `owner`. Transform is exposed while `CanUserResizeColumns` and the column's `CanResize` are both `true`; `ITransformProvider.CanResize` follows the gripper's visibility rule, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column) and raises a property-changed event when that changes. `Resize` converts physical pixels to DIPs with `XamlRoot.RasterizationScale` and runs the same path as a drag or Alt+Arrow.
 
 ### TableViewGroupHeaderAutomationPeer class
 
@@ -1083,17 +1086,19 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
 ## Accessibility and keyboard
 
-`TableView` has two tab stops, the header band and the body, which share one column position. The control itself isn't a tab stop. All arrow keys mirror in right-to-left layouts.
+`TableView` is one tab stop (`TabNavigation="Once"`): the column header row. Tab and Shift+Tab land on the header in the current column, else the first actionable header; the next Tab or Shift+Tab leaves the table. When no header is actionable or headers are hidden, the body is the stop, entered at the remembered row if in view, else the selected row, else the first row in view (a row selected after the remembered one wins); an empty table's focusable `EmptyTemplate` content is the stop instead (its last control for Shift+Tab). The header row and the body share one column position. All arrow keys mirror in right-to-left layouts.
+
+Only actionable headers and cells take keyboard focus. A header is actionable when it can sort (has a sort key), resize, or has a context menu, tooltip or interactive content. A cell is actionable when it is editable, has interactive content (a control, an inline `Hyperlink` or a nested `TableView`), a context menu or a tooltip. Rows always take focus. `Focus()` on an inactive header or cell does not move focus, and UIA `SetFocus` fails with `UIA_E_INVALIDOPERATION`; inactive headers and cells stay in the UIA grid, so screen readers still reach them. See the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model).
 
 | Where | Keys | Result |
 |---|---|---|
-| Header band | Left, Right | Move between headers. |
-| | Down | Move into the body. |
+| Header row | Left, Right | Move between actionable headers. |
+| | Down | Move into the body (the remembered row if in view, else the selected row, else the first row in view). |
 | | Enter, Space | Sort the focused column. |
 | | Alt+Left/Right, Alt+Shift+Left/Right | Resize the focused column (small or large step). |
-| Body | Up, Down, PageUp, PageDown | Move between rows; selection follows. |
-| | Right, Left | Move from a row into its cells and back; move between cells. |
-| | Home, End; Ctrl+Home, Ctrl+End | First or last cell in the row; first or last cell in the table. |
+| Body | Up, Down, PageUp, PageDown | Move between rows, to the same visible column (the nearest actionable cell, else the row); selection follows. Up from the first row returns to the header row. |
+| | Right, Left | Move from a row into its actionable cells and back; move between actionable cells. |
+| | Home, End; Ctrl+Home, Ctrl+End | First or last actionable cell in the row; first or last row in the table. |
 | | Ctrl+navigation key | Move focus without changing the selection. |
 | | Space; Ctrl+Space | Select the focused row; toggle its selection. |
 | | Enter on a cell with a control; Esc | Move focus into the control; return to the cell. |

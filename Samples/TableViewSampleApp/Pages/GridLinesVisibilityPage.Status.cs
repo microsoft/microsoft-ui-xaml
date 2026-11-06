@@ -11,6 +11,7 @@ public sealed partial class GridLinesVisibilityPage
     {
         Status.Rows = SampleShaping.RowCountText(People.Count);
         GridLinesText.Text = PeopleTable.GridLinesVisibility.ToString();
+        HeaderLinesText.Text = SampleShaping.Label(HeaderLinesSelector);
         RowBandingText.Text = SampleShaping.Label(RowBandingSelector);
     }
 }

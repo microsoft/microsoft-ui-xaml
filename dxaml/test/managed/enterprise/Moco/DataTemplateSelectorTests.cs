@@ -390,104 +390,78 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             ListView list = null;
             var listLoaded = new AutoResetEvent(false);
             var data = new ObservableCollection<DataObject>(Enumerable.Range(0, 15).Select(i => new DataObject($"Item #{i}", false)));
-            RoutedEventHandler listLoadedHandler = null;
 
-            try
+            //
+            // We will prepare a ListView with 15 items, 8 of which are realized.
+            // The realization window is going to be equal to the visible window
+            // because we set ItemsStackPanel.CacheLength to zero.
+            // All items will initially have the same template.
+            //
+            // Step 1:
+            // We will resize the viewport to a smaller size such as the
+            // containers at the end become candidate for "lazy" recycling.
+            // Step 2:
+            // We will then insert a "special item" at index 1 and a regular item
+            // at index 8 (i.e. right before the last realized container).
+            // The special item has a different template. During the next layout pass,
+            // ItemsStackPanel will have to generate a container for our special container.
+            // It will try to pick one with a compatible template which we don't have.
+            // In doing so, it will iterate over our sentinel. A sentinel is a recently
+            // added container that hasn't been realized yet. Sentinel may appear
+            // *inside* a realized range but never at its beginning or end.
+            // We need to make sure we don't crash when we iterate over them.
+            //
+
+            UIExecutor.Execute(() =>
             {
-                //
-                // We will prepare a ListView with 15 items, 8 of which are realized.
-                // The realization window is going to be equal to the visible window
-                // because we set ItemsStackPanel.CacheLength to zero.
-                // All items will initially have the same template.
-                //
-                // Step 1:
-                // We will resize the viewport to a smaller size such as the
-                // containers at the end become candidate for "lazy" recycling.
-                // Step 2:
-                // We will then insert a "special item" at index 1 and a regular item
-                // at index 8 (i.e. right before the last realized container).
-                // The special item has a different template. During the next layout pass,
-                // ItemsStackPanel will have to generate a container for our special container.
-                // It will try to pick one with a compatible template which we don't have.
-                // In doing so, it will iterate over our sentinel. A sentinel is a recently
-                // added container that hasn't been realized yet. Sentinel may appear
-                // *inside* a realized range but never at its beginning or end.
-                // We need to make sure we don't crash when we iterate over them.
-                //
-
-                UIExecutor.Execute(() =>
+                Log.Comment("Preparing ListView.");
+                list = new ListView
                 {
-                    Log.Comment("Preparing ListView.");
-                    list = new ListView
-                    {
-                        ItemsSource = data,
-                        ItemTemplateSelector = new MoCoDataTemplateSelector1(),
-                        Height = 390
-                    };
+                    ItemsSource = data,
+                    ItemTemplateSelector = new MoCoDataTemplateSelector1(),
+                    Height = 390
+                };
 
-                    listLoadedHandler = (s, e) =>
-                    {
-                        Log.Comment("ListView loaded. Setting ISP.CacheLength to zero.");
-                        ((ItemsStackPanel)list.ItemsPanelRoot).CacheLength = 0;
-                        listLoaded.Set();
-                    };
-                    list.Loaded += listLoadedHandler;
-                    TestServices.WindowHelper.WindowContent = list;
-                });
-
-                Verify.IsTrue(listLoaded.WaitOne(TimeSpan.FromSeconds(10)), "Didn't receive loaded event from list");
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() =>
+                list.Loaded += (s, e) =>
                 {
-                    Log.Comment("Resizing the viewport to 300 so that containers from the realized range become candidate for lazy recycling.");
-                    list.Height = 300;
-                    list.UpdateLayout();
+                    Log.Comment("ListView loaded. Setting ISP.CacheLength to zero.");
+                    ((ItemsStackPanel)list.ItemsPanelRoot).CacheLength = 0;
+                    listLoaded.Set();
+                };
+                TestServices.WindowHelper.WindowContent = list;
+            });
 
-                    Log.Comment("Inserting a special item (with a different template than the others) at index 1.");
-                    data.Insert(1, new DataObject("Special Item", true));
+            Verify.IsTrue(listLoaded.WaitOne(TimeSpan.FromSeconds(10)), "Didn't receive loaded event from list");
+            TestServices.WindowHelper.WaitForIdle();
 
-                    Log.Comment("Inserting a sentinel in the realized range.");
-                    data.Insert(8, new DataObject("Sentinel", false));
-                    // We used to crash during this call.
-                    list.UpdateLayout();
-
-                    Log.Comment("Validating the realized range.");
-                    {
-                        for (int i = 0; i < 8; ++i)
-                        {
-                            Verify.AreEqual(data[i], list.ItemFromContainer(list.ContainerFromIndex(i)));
-                        }
-
-                        // All containers from the sentinel to the end of the realized range should have been recycled now.
-                        for (int i = 8; i < data.Count; ++i)
-                        {
-                            Verify.AreEqual(null, list.ContainerFromIndex(i));
-                        }
-                    }
-                });
-            }
-            finally
+            UIExecutor.Execute(() =>
             {
-                TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-                UIExecutor.Execute(() =>
+                Log.Comment("Resizing the viewport to 300 so that containers from the realized range become candidate for lazy recycling.");
+                list.Height = 300;
+                list.UpdateLayout();
+
+                Log.Comment("Inserting a special item (with a different template than the others) at index 1.");
+                data.Insert(1, new DataObject("Special Item", true));
+
+                Log.Comment("Inserting a sentinel in the realized range.");
+                data.Insert(8, new DataObject("Sentinel", false));
+                // We used to crash during this call.
+                list.UpdateLayout();
+
+                Log.Comment("Validating the realized range.");
                 {
-                    if (list != null)
+                    for (int i = 0; i < 8; ++i)
                     {
-                        list.Loaded -= listLoadedHandler;
-                        list.ItemsSource = null;
-                        list.ItemTemplateSelector = null;
+                        Verify.AreEqual(data[i], list.ItemFromContainer(list.ContainerFromIndex(i)));
                     }
 
-                    data.Clear();
-                    list = null;
-                    listLoadedHandler = null;
-                });
-                listLoaded.Dispose();
-                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-                GC.WaitForPendingFinalizers();
-                TestServices.WindowHelper.WaitForIdle();
-            }
+                    // All containers from the sentinel to the end of the realized range should have been recycled now.
+                    for (int i = 8; i < data.Count; ++i)
+                    {
+                        Verify.AreEqual(null, list.ContainerFromIndex(i));
+                    }
+                }
+            });
         }
 
         /// <summary>

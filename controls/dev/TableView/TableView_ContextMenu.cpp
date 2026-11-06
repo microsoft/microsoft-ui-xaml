@@ -8,6 +8,7 @@
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
 #include "SharedHelpers.h"
+#include "TableViewAutomationHelpers.h"
 
 bool TableView::IsContextMenuColumn(winrt::TableViewColumn const& column) const
 {
@@ -187,27 +188,6 @@ void TableView::OnHeaderContextRequested(winrt::ContextRequestedEventArgs const&
 
 namespace
 {
-    bool IsTextControl(winrt::DependencyObject const& element)
-    {
-        return element.try_as<winrt::TextBlock>() || element.try_as<winrt::RichTextBlock>() ||
-            element.try_as<winrt::RichTextBlockOverflow>() || element.try_as<winrt::TextBox>() ||
-            element.try_as<winrt::RichEditBox>() || element.try_as<winrt::PasswordBox>();
-    }
-
-    bool HasAppContextFlyout(winrt::UIElement const& element)
-    {
-        if (!element.ContextFlyout())
-        {
-            return false;
-        }
-
-        // Text controls carry a built-in copy/select flyout as their default value; only a flyout the
-        // app set on the element itself counts. A Style-set flyout on a text control is therefore
-        // skipped here (documented on TableViewColumn.CellContextFlyout).
-        return !IsTextControl(element) ||
-            element.ReadLocalValue(winrt::UIElement::ContextFlyoutProperty()) != winrt::DependencyProperty::UnsetValue();
-    }
-
     // The row's own XAML menu: the first app ContextFlyout from just above the cell (or the row
     // itself, for a row target) up to and including the row. Covers a row style setter and row
     // template elements, anchored on the element that owns it, as the framework would show it.
@@ -433,7 +413,8 @@ bool TableView::FocusContextMenuTarget(
         auto const rowImpl = winrt::get_self<TableViewRow>(target.Row);
         if (int32_t const column = rowImpl->GetVisibleCellIndexInternal(target.Anchor); column >= 0)
         {
-            FocusRealizedRowCell(target.Row, column, winrt::FocusState::Programmatic);
+            // The exact cell; an inactive one leaves focus on its row.
+            rowImpl->FocusVisibleCellInternal(column, winrt::FocusState::Programmatic);
         }
     }
 

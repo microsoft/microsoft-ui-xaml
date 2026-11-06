@@ -37,6 +37,22 @@ namespace
         return false;
     }
 
+    // Realizing and focusing a CellEditingTemplate's content runs the app's code, so a throw there leaves tagged as the
+    // app's; the rest of the editing hooks is TableView's own code.
+    template <class Call>
+    auto RunEditorContent(bool appContent, Call&& call)
+    {
+        try
+        {
+            return call();
+        }
+        catch (...)
+        {
+            if (appContent) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Factory); }
+            throw;
+        }
+    }
+
 }
 
 TableViewColumn::TableViewColumn()
@@ -102,12 +118,15 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
         return nullptr;
     }
 
+    // A CellEditingTemplate's content is the app's (see GenerateEditingElementCore); TableView's own editor is not.
+    bool const appContent = CellEditingTemplate() != nullptr;
+
     // Focus so typing goes straight into the editor; otherwise the row keeps focus and the user has
     // to click the editor they just opened. The editing root is not necessarily focusable - a
     // template column produces a ContentPresenter - so fall back to its first focusable descendant.
     auto const root = editingElement.XamlRoot();
     auto const initialFocus = root ? winrt::FocusManager::GetFocusedElement(root) : nullptr;
-    if (!TryFocusEditor(editingElement))
+    if (!RunEditorContent(appContent, [&] { return TryFocusEditor(editingElement); }))
     {
         if (root && winrt::FocusManager::GetFocusedElement(root) != initialFocus)
         {
@@ -129,7 +148,7 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
 
         // The editing ContentPresenter may not have instantiated its DataTemplate.
         // Realize it before returning from F2 so the first keystroke has a target.
-        editingElement.UpdateLayout();
+        RunEditorContent(appContent, [&] { editingElement.UpdateLayout(); });
 
         // Layout can run application code and recycle the row or end the edit.
         if (owner && (GetOwningTableView() != owner ||
@@ -145,7 +164,7 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
             // A Loaded/focus handler chose another target; preserve that choice.
             return nullptr;
         }
-        if (!TryFocusEditor(editingElement))
+        if (!RunEditorContent(appContent, [&] { return TryFocusEditor(editingElement); }))
         {
             TVDiag::LogRetailF(L"[TableView] The realized cell editor has no available keyboard focus target.");
         }
@@ -309,6 +328,10 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
+            if (property != s_WidthProperty || !m_inUserResize)
+            {
+                winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
+            }
             winrt::get_self<TableView>(owner)->OnColumnWidthChanged(*this);
         }
     }
@@ -365,6 +388,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         // Adds or removes this column's gripper, so the header band has to be rebuilt.
         if (auto owner = GetOwningTableView())
         {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             winrt::get_self<TableView>(owner)->QueueRebuildHeaders();
         }
     }
@@ -372,6 +396,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     {
         if (auto owner = GetOwningTableView())
         {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
@@ -394,6 +419,10 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     }
 
     m_customSortComparer = value;
+    if (auto owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+    }
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
     // the active direction rather than leaving the rows in the old comparer's order.
@@ -469,6 +498,31 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             return false;
         }
         m_owningTableView = winrt::make_weak(owner);
+        // These have no generated change callback: a menu makes cells actionable, a sort key the header.
+        if (!m_cellContextFlyoutToken)
+        {
+            m_cellContextFlyoutToken = RegisterPropertyChangedCallback(s_CellContextFlyoutProperty,
+                [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                {
+                    auto const strongThis = weakThis.get();
+                    if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
+                    {
+                        winrt::get_self<TableView>(owner)->RefreshCellFocusLevelsInternal();
+                    }
+                });
+            for (winrt::DependencyProperty const& property : std::initializer_list<winrt::DependencyProperty>{ s_SortMemberPathProperty, s_HeaderContextFlyoutProperty })
+            {
+                RegisterPropertyChangedCallback(property,
+                    [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                    {
+                        auto const strongThis = weakThis.get();
+                        if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
+                        {
+                            winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+                        }
+                    });
+            }
+        }
         return true;
     }
     else
