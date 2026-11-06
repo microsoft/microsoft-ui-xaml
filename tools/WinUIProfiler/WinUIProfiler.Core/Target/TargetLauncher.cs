@@ -120,9 +120,7 @@ applicationId.Any(char.IsWhiteSpace))
         var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var fullName in GetPackageFullNames(applicationId[..separator]))
         {
-            using var reader = XmlReader.Create(Path.Combine(GetPackagePath(fullName), "AppxManifest.xml"),
-                new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
-            var manifest = XDocument.Load(reader);
+            var manifest = LoadManifest(GetPackagePath(fullName));
             var foundation = manifest.Root!.Name.Namespace;
             foreach (var application in manifest.Root.Elements(foundation + "Applications").Elements(foundation + "Application"))
             {
@@ -136,6 +134,79 @@ applicationId.Any(char.IsWhiteSpace))
         }
 
         return [.. names];
+    }
+
+    // The package, the AUMID as Windows reports it for the running app, and the executable that activating a desktop
+    // (full trust) application starts. The family must have exactly one package registered for the current user.
+    public static (string PackageFullName, string ApplicationUserModelId, string Executable) GetPackagedApplication(
+        string applicationId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(applicationId);
+        var separator = applicationId.IndexOf('!');
+        if (applicationId.Length > 128 ||
+            separator < 1 ||
+            separator == applicationId.Length - 1 ||
+            applicationId.LastIndexOf('!') != separator ||
+            applicationId.Any(char.IsWhiteSpace))
+        {
+            throw new ArgumentException("Enter a packaged application AUMID: PackageFamilyName!ApplicationId.", nameof(applicationId));
+        }
+
+        var packages = GetPackageFullNames(applicationId[..separator]);
+        if (packages.Length != 1)
+        {
+            throw new InvalidOperationException(
+                $"The AUMID must identify exactly one package installed for this user; {packages.Length} were found.");
+        }
+
+        var directory = GetPackagePath(packages[0]);
+        var manifest = LoadManifest(directory);
+        var foundation = manifest.Root!.Name.Namespace;
+        var applications = manifest.Root.Elements(foundation + "Applications").Elements(foundation + "Application")
+            .Where(application => string.Equals((string?)application.Attribute("Id"), applicationId[(separator + 1)..],
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (applications is not [var found] ||
+            (string?)found.Attribute("Executable") is not { } executable ||
+            !executable.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new NotSupportedException("The packaged application must declare a desktop executable.");
+        }
+
+        if ((string?)found.Attribute("EntryPoint") != "Windows.FullTrustApplication" &&
+            !found.Attributes().Any(attribute => attribute.Name.LocalName == "TrustLevel" && attribute.Value == "mediumIL"))
+        {
+            throw new NotSupportedException("Private WinUI DLLs cannot be loaded into a UWP (AppContainer) application.");
+        }
+
+        return (packages[0], $"{GetPackageFamilyName(packages[0])}!{(string)found.Attribute("Id")!}",
+            Path.GetFullPath(Path.Combine(directory, executable)));
+    }
+
+    private static XDocument LoadManifest(string packagePath)
+    {
+        using var reader = XmlReader.Create(Path.Combine(packagePath, "AppxManifest.xml"),
+            new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
+        return XDocument.Load(reader);
+    }
+
+    private static string GetPackageFamilyName(string packageFullName)
+    {
+        uint length = 0;
+        var result = PackageFamilyNameFromFullName(packageFullName, ref length, null);
+        if (result != 122)
+        {
+            throw new Win32Exception(result, "Cannot read the package's family name.");
+        }
+
+        var name = new char[length];
+        result = PackageFamilyNameFromFullName(packageFullName, ref length, name);
+        if (result != 0)
+        {
+            throw new Win32Exception(result, "Cannot read the package's family name.");
+        }
+
+        return new string(name, 0, checked((int)length)).TrimEnd('\0');
     }
 
     private static string[] GetPackageFullNames(string packageFamilyName)
@@ -206,4 +277,9 @@ out uint processId);
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern int GetPackagePathByFullName(string packageFullName, ref uint pathLength, [Out] char[]? path);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int PackageFamilyNameFromFullName(string packageFullName, ref uint packageFamilyNameLength,
+        [Out] char[]? packageFamilyName);
 }
