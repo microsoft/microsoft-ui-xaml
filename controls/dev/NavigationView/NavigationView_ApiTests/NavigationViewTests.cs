@@ -3995,6 +3995,1516 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return hasSelectionIndicator;
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem forwards the Selected visual states to an AnimatedIcon whose source defines markers for them, and keeps the legacy states for icons that don't (GitHub #11080).")]
+        public void VerifyAnimatedIconReceivesSelectedStates()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+
+                NavigationView navView = null;
+                NavigationViewItem selectedAwareItem = null;
+                NavigationViewItem legacyItem = null;
+                AnimatedIcon selectedAwareIcon = null;
+                AnimatedIcon legacyIcon = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var legacyMarkers = CreateLegacyAnimatedIconMarkers();
+                    var selectedAwareMarkers = CreateSelectionAwareAnimatedIconMarkers();
+
+                    selectedAwareIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(selectedAwareMarkers) };
+                    legacyIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(legacyMarkers) };
+                    selectedAwareItem = new NavigationViewItem() { Content = "SelectedAware", Icon = selectedAwareIcon };
+                    legacyItem = new NavigationViewItem() { Content = "Legacy", Icon = legacyIcon };
+
+                    navView = new NavigationView() { PaneDisplayMode = paneDisplayMode, IsSettingsVisible = false };
+                    navView.MenuItems.Add(selectedAwareItem);
+                    navView.MenuItems.Add(legacyItem);
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(selectedAwareIcon), "Unselected item with selected-aware icon");
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(legacyIcon), "Unselected item with legacy icon");
+                });
+
+                SelectItem(navView, selectedAwareItem);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(selectedAwareItem.IsSelected);
+                    Verify.AreEqual("Selected", AnimatedIcon.GetState(selectedAwareIcon), "Selected item with selected-aware icon");
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(legacyIcon), "Unselected item with legacy icon");
+                });
+
+                SelectItem(navView, legacyItem);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(legacyItem.IsSelected);
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(selectedAwareIcon), "Deselected item with selected-aware icon");
+                    // Icons without Selected markers keep the pre-existing behavior: the Selected state maps to Normal.
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(legacyIcon), "Selected item with legacy icon");
+                });
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that hover/press/exit on a selected NavigationViewItem gives a selection-aware AnimatedIcon the PointerOverSelected/PressedSelected/Selected states, and keeps the legacy states for icons without those markers (GitHub #11080).")]
+        public void VerifyAnimatedIconReceivesSelectedPointerStates()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+
+                NavigationView navView = null;
+                NavigationViewItem selectedAwareItem = null;
+                NavigationViewItem legacyItem = null;
+                AnimatedIcon selectedAwareIcon = null;
+                AnimatedIcon legacyIcon = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    selectedAwareIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                    legacyIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) };
+                    selectedAwareItem = new NavigationViewItem() { Content = "SelectedAware", Icon = selectedAwareIcon };
+                    legacyItem = new NavigationViewItem() { Content = "Legacy", Icon = legacyIcon };
+
+                    navView = new NavigationView() { PaneDisplayMode = paneDisplayMode, IsSettingsVisible = false };
+                    navView.MenuItems.Add(selectedAwareItem);
+                    navView.MenuItems.Add(legacyItem);
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                // NavigationViewItem drives these exact state names on its presenter from its pointer handlers.
+                // AnimatedIcon.State is a custom property, so the template's setters are applied on a deferred tick;
+                // wait for it before checking the icon.
+                var expectations = new[]
+                {
+                    new { VisualState = "PointerOverSelected", SelectedAwareIconState = "PointerOverSelected", LegacyIconState = "PointerOver" },
+                    new { VisualState = "PressedSelected", SelectedAwareIconState = "PressedSelected", LegacyIconState = "Pressed" },
+                    new { VisualState = "PointerOverSelected", SelectedAwareIconState = "PointerOverSelected", LegacyIconState = "PointerOver" },
+                    new { VisualState = "Selected", SelectedAwareIconState = "Selected", LegacyIconState = "Normal" },
+                };
+
+                foreach (var item in new[] { selectedAwareItem, legacyItem })
+                {
+                    SelectItem(navView, item);
+
+                    foreach (var expectation in expectations)
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                            Verify.IsNotNull(presenter);
+                            Verify.IsTrue(VisualStateManager.GoToState(presenter, expectation.VisualState, true));
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var icon = item == selectedAwareItem ? selectedAwareIcon : legacyIcon;
+                            var expected = item == selectedAwareItem ? expectation.SelectedAwareIconState : expectation.LegacyIconState;
+                            Verify.AreEqual(expected, AnimatedIcon.GetState(icon), (string)item.Content + " icon after GoToState(" + expectation.VisualState + ")");
+                        });
+                    }
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem re-evaluates the AnimatedIcon state when the icon's Source changes between selection-aware and legacy markers, including a Source set after the item is already selected (GitHub #11080).")]
+        public void VerifyAnimatedIconSelectedStateFollowsSourceChanges()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            NavigationViewItem otherItem = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Source is intentionally not set yet: it arrives after the item is selected.
+                icon = new AnimatedIcon();
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+                otherItem = new NavigationViewItem() { Content = "Other" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(otherItem);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+
+            Action<Func<IAnimatedVisualSource2>, string, string> setSourceAndVerify = (createSource, expected, message) =>
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    icon.Source = createSource();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(expected, AnimatedIcon.GetState(icon), message);
+                });
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Selected item, icon without Source");
+            });
+
+            setSourceAndVerify(() => new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()), "Selected", "Selected item, Source set to selection-aware after selection");
+            setSourceAndVerify(() => new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()), "Normal", "Selected item, Source swapped selection-aware -> legacy");
+            setSourceAndVerify(() => new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()), "Selected", "Selected item, Source swapped legacy -> selection-aware");
+            setSourceAndVerify(() => new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()), "Normal", "Selected item, Source swapped selection-aware -> legacy again");
+
+            SelectItem(navView, otherItem);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(item.IsSelected);
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Deselected item after Source swap");
+            });
+
+            setSourceAndVerify(() => new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()), "Normal", "Deselected item, Source swapped legacy -> selection-aware");
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Reselected item with selection-aware Source");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a selected NavigationViewItem keeps a selection-aware AnimatedIcon in the selected states across runtime PaneDisplayMode changes (re-templated presenter), Icon replacement and IsEnabled changes (GitHub #11080).")]
+        public void VerifyAnimatedIconSelectedStateSurvivesRuntimeChanges()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Other" });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+
+            Action<Action, string, string> changeAndVerify = (change, expected, message) =>
+            {
+                RunOnUIThread.Execute(change);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(expected, AnimatedIcon.GetState(icon), message);
+                });
+            };
+
+            changeAndVerify(() => { }, "Selected", "Selected item in Left mode");
+            changeAndVerify(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top, "Selected", "Selected item after switching to Top");
+            changeAndVerify(() =>
+            {
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            }, "PointerOverSelected", "Hovered selected item in Top mode");
+            changeAndVerify(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact, "Selected", "Selected item after switching to LeftCompact");
+            changeAndVerify(() => item.IsEnabled = false, "Selected", "Disabled selected item");
+            changeAndVerify(() => item.IsEnabled = true, "Selected", "Re-enabled selected item");
+
+            AnimatedIcon oldIcon = icon;
+            changeAndVerify(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item.Icon = icon;
+            }, "Selected", "Selected item after replacing its Icon");
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(oldIcon), "Replaced icon hands back the unselected state");
+            });
+
+            // The replaced icon is no longer observed: if it were, re-evaluating it for this selected item would give it
+            // a selected state again.
+            changeAndVerify(() =>
+            {
+                oldIcon.Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers());
+                oldIcon.Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+            }, "Selected", "New icon after changing the replaced icon's Source");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(oldIcon), "Replaced icon is no longer observed by the item");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an AnimatedIcon detached from a selected NavigationViewItem and reattached after the item was deselected does not keep a selected state (GitHub #11080).")]
+        public void VerifyReattachedAnimatedIconDoesNotKeepSelectedState()
+        {
+            foreach (bool detachBySettingNull in new[] { false, true })
+            {
+                Log.Comment("Detach by " + (detachBySettingNull ? "setting Icon to null" : "replacing the Icon"));
+
+                NavigationView navView = null;
+                NavigationViewItem item = null;
+                NavigationViewItem otherItem = null;
+                AnimatedIcon iconA = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    iconA = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                    item = new NavigationViewItem() { Content = "Item", Icon = iconA };
+                    otherItem = new NavigationViewItem() { Content = "Other" };
+
+                    navView = new NavigationView() { IsSettingsVisible = false };
+                    navView.MenuItems.Add(item);
+                    navView.MenuItems.Add(otherItem);
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                SelectItem(navView, item);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Selected", AnimatedIcon.GetState(iconA), "Selected item");
+                    item.Icon = detachBySettingNull ? null : new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                });
+                IdleSynchronizer.Wait();
+
+                SelectItem(navView, otherItem);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(item.IsSelected);
+                    item.Icon = iconA;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(iconA), "Reattached icon on a deselected item");
+                });
+
+                SelectItem(navView, item);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Selected", AnimatedIcon.GetState(iconA), "Reattached icon on a reselected item");
+                });
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a selected state is only given to an AnimatedIcon when its markers let AnimatedIcon resolve a transition INTO that state; a source with only outgoing PointerOverSelected markers keeps the legacy hover state instead of cutting to frame 0 (GitHub #11080).")]
+        public void VerifyAnimatedIconSelectedStateRequiresResolvableMarkers()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Selected is reachable (NormalToSelected_End). PointerOverSelected only has OUTGOING markers, which
+                // AnimatedIcon::TransitionStates never uses to enter PointerOverSelected.
+                var markers = new Dictionary<string, double>(CreateLegacyAnimatedIconMarkers())
+                {
+                    { "NormalToSelected_Start", 0.0 }, { "NormalToSelected_End", 0.5 },
+                    { "SelectedToNormal_Start", 0.5 }, { "SelectedToNormal_End", 0.0 },
+                    { "PointerOverSelectedToSelected_Start", 0.6 }, { "PointerOverSelectedToSelected_End", 0.5 },
+                };
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(markers) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            Verify.IsTrue(WaitForAnimatedIconSegment(icon, segment => segment == "NormalToSelected"), "Selecting plays NormalToSelected");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item");
+                Verify.AreEqual("NormalToSelected_End", Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon), "Selected resolves to its marker");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            // AnimatedIcon plays the transition on a later layout pass; wait until it has left Selected.
+            Verify.IsTrue(WaitForAnimatedIconSegment(icon, segment => segment.StartsWith("SelectedTo")), "Hovering plays a transition out of Selected");
+            RunOnUIThread.Execute(() =>
+            {
+                var segmentEnd = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon);
+                Log.Comment("Hovered: State=" + AnimatedIcon.GetState(icon) + ", resolved segment end=" + segmentEnd);
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Hovered selected item without markers into PointerOverSelected");
+                Verify.AreNotEqual("0.0", segmentEnd, "Hover resolves to a marker, not frame 0");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Source whose only Selected markers are OUTGOING (SelectedToNormal_Start/_End) does not opt the icon into Selected, which AnimatedIcon could not resolve and would cut to frame 0 (GitHub #11080, PR review).")]
+        public void VerifyAnimatedIconOutgoingOnlySelectedMarkersKeepLegacyState()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var markers = new Dictionary<string, double>(CreateLegacyAnimatedIconMarkers())
+                {
+                    { "Normal", 0.0 },
+                    { "SelectedToNormal_Start", 0.5 }, { "SelectedToNormal_End", 0.0 },
+                };
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(markers) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Other" });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+
+            // Give AnimatedIcon's deferred transition a chance to play: with the bug it plays NormalToSelected and cuts to
+            // frame 0; with the fix the state never leaves Normal, so no NormalTo* transition happens and this times out.
+            WaitForAnimatedIconSegment(icon, segment => segment.StartsWith("NormalTo"), 2000);
+            RunOnUIThread.Execute(() =>
+            {
+                var segmentEnd = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon);
+                Log.Comment("Selected: State=" + AnimatedIcon.GetState(icon) + ", resolved segment end=" + segmentEnd);
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Selected item whose Source has only outgoing Selected markers");
+                Verify.AreNotEqual("0.0", segmentEnd, "No cut to frame 0");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that two NavigationViewItems sharing one AnimatedIcon with opposite selection don't fight over its state (no unbounded recursion), and the item that hosts the icon wins (GitHub #11080).")]
+        public void VerifySharedAnimatedIconIsDrivenOnlyByHostingItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem hostItem = null;
+            NavigationViewItem otherItem = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                hostItem = new NavigationViewItem() { Content = "Host", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(hostItem);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, hostItem);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected hosting item");
+
+                // An unselected item that isn't in the tree also references the same icon (e.g. a shared resource).
+                otherItem = new NavigationViewItem() { Content = "Other", Icon = icon };
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "After a non-hosting unselected item references the icon");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(hostItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(icon), "Hosting item's state wins on hover");
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(hostItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "Selected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Hosting item re-maps a propagated Normal");
+                otherItem.Icon = null;
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Releasing the icon from the non-hosting item doesn't touch it");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a selected NavigationViewItem that references, but doesn't host, an AnimatedIcon doesn't give it selected states while its unselected hosting item drives it (GitHub #11080).")]
+        public void VerifySharedAnimatedIconIgnoresSelectedNonHostingItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem hostItem = null;
+            NavigationViewItem selectedItem = null;
+            NavigationViewItem otherItem = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                hostItem = new NavigationViewItem() { Content = "Host", Icon = icon };
+                selectedItem = new NavigationViewItem() { Content = "Selected" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(hostItem);
+                navView.MenuItems.Add(selectedItem);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, selectedItem);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Unselected hosting item");
+
+                // A selected item that isn't in the tree also references the same icon (e.g. a shared resource).
+                otherItem = new NavigationViewItem() { Content = "Other" };
+                otherItem.IsSelected = true;
+                otherItem.Icon = icon;
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "After a selected non-hosting item references the icon");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(hostItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOver", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Hovered unselected hosting item");
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(hostItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "Normal", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Unselected hosting item after hover");
+                otherItem.Icon = null;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem doesn't reset an AnimatedIcon state it never set when the Icon is cleared (GitHub #11080).")]
+        public void VerifyAppSetAnimatedIconStateIsNotResetOnDetach()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                AnimatedIcon.SetState(icon, "Selected");
+
+                var item = new NavigationViewItem() { Content = "Item" };
+                item.Icon = icon;
+                item.Icon = null;
+
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "App-set state survives being assigned to and cleared from an item");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a previously used AnimatedIcon gets the Selected state once it is re-attached to the same selected item, or moved to another already-selected item, without needing a pointer or selection change (GitHub #11080).")]
+        public void VerifyMovedAnimatedIconGetsSelectedStateFromNewHost()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                itemA = new NavigationViewItem() { Content = "A", Icon = icon };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemA);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Re-attach to the same item, which stays selected.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Icon released by A");
+                itemA.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Icon re-attached to selected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Move to another item that is already selected and templated.
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Icon released by A again");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Icon moved to selected item B");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an AnimatedIcon carrying a pointer state from a hovered item takes the pointer state of the selected, non-hovered item it moves to, while an app-defined state is preserved (GitHub #11080).")]
+        public void VerifyMovedAnimatedIconTakesPointerStateOfNewHost()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                itemA = new NavigationViewItem() { Content = "A", Icon = icon };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemA);
+            RunOnUIThread.Execute(() =>
+            {
+                var presenterA = (Control)VisualTreeUtils.FindVisualChildByName(itemA, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterA, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(icon), "Hovered selected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // B is selected and not hovered. A is still hovered, so the released icon keeps A's template-driven
+            // pointer state, and AnimatedIcon doesn't copy B's state on load because it already has one.
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                var presenterA = (Control)VisualTreeUtils.FindVisualChildByName(itemA, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterA, "PointerOver", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Precondition: released icon retains hovered A's pointer state");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Icon moved from hovered A to selected, non-hovered B");
+
+                var presenterB = (Control)VisualTreeUtils.FindVisualChildByName(itemB, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterB, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(icon), "Hovered selected item B");
+                var presenterB = (Control)VisualTreeUtils.FindVisualChildByName(itemB, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterB, "Selected", true));
+                itemB.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // An app-defined state is not a template-driven pointer state and is left alone when the icon loads.
+            RunOnUIThread.Execute(() =>
+            {
+                AnimatedIcon.SetState(icon, "Custom");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Custom", AnimatedIcon.GetState(icon), "App-defined state survives moving into selected item B");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem doesn't reset a hosted AnimatedIcon's state on detach once the app has changed it, even if the app restored the value the item wrote (GitHub #11080).")]
+        public void VerifyAppRestoredAnimatedIconStateIsNotResetOnDetach()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item wrote Selected");
+
+                AnimatedIcon.SetState(icon, "Custom");
+                Verify.AreEqual("Custom", AnimatedIcon.GetState(icon), "App-defined state on a hosted icon");
+                AnimatedIcon.SetState(icon, "Selected");
+
+                item.Icon = null;
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "App-restored state survives clearing the Icon");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the reset of a replaced AnimatedIcon causes the app to replace NavigationViewItem.Icon again, the latest icon is the one the item observes (GitHub #11080).")]
+        public void VerifyAnimatedIconReplacedDuringResetIsObserved()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon iconA = null;
+            AnimatedIcon iconB = null;
+            AnimatedIcon iconC = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                iconA = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                iconB = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                iconC = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Item", Icon = iconA };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(iconA), "Selected item with icon A");
+
+                bool replaced = false;
+                iconA.RegisterPropertyChangedCallback(AnimatedIcon.StateProperty, (sender, dp) =>
+                {
+                    if (!replaced && AnimatedIcon.GetState(iconA) == "Normal")
+                    {
+                        replaced = true;
+                        item.Icon = iconC;
+                    }
+                });
+
+                item.Icon = iconB;
+                Verify.IsTrue(replaced, "Precondition: resetting icon A replaced the Icon again");
+                Verify.AreEqual(iconC, item.Icon, "Latest replacement wins");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(iconC), "Latest icon C on the selected item");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(iconC), "Latest icon C gets the deferred hover state mapped");
+                iconC.Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(iconC), "Latest icon C follows its Source change");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an explicitly set State on an AnimatedIcon without selected markers is kept when its non-hovered item loads for the first time, as AnimatedIcon itself does (GitHub #11080).")]
+        public void VerifyExplicitLegacyAnimatedIconStateIsKeptOnInitialLoad()
+        {
+            NavigationView navView = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) };
+                AnimatedIcon.SetState(icon, "PointerOver");
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item", Icon = icon });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Explicit legacy state after the initial load");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an explicitly set State on an AnimatedIcon without selected markers is kept when its non-hovered item is unloaded and loaded again (GitHub #11080).")]
+        public void VerifyExplicitLegacyAnimatedIconStateIsKeptOnReload()
+        {
+            NavigationView navView = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item", Icon = icon });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                AnimatedIcon.SetState(icon, "PointerOver");
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Explicit legacy state on a loaded item");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Explicit legacy state after unload");
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Explicit legacy state after reload");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an AnimatedIcon keeps an explicitly set State when attached to an already-loaded, non-hovered item, whether or not its Source has selected markers, while a selection-aware icon without an explicit State takes the selected state of the item it is attached to (GitHub #11080).")]
+        public void VerifyExplicitLegacyAnimatedIconStateIsKeptWhenAttachedToLoadedItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon legacyIcon = null;
+            AnimatedIcon awareIcon = null;
+            AnimatedIcon templateDrivenIcon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemA = new NavigationViewItem() { Content = "A" };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                legacyIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) };
+                AnimatedIcon.SetState(legacyIcon, "PointerOver");
+                itemA.Icon = legacyIcon;
+
+                awareIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                AnimatedIcon.SetState(awareIcon, "PointerOver");
+                itemB.Icon = awareIcon;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(legacyIcon), "Explicit legacy state after attaching to loaded, non-hovered item A");
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(awareIcon), "Explicit state of a selection-aware icon after attaching to selected, non-hovered item B");
+
+                templateDrivenIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                itemB.Icon = templateDrivenIcon;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(templateDrivenIcon), "Selection-aware icon without an explicit state attached to selected, non-hovered item B");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a legacy AnimatedIcon carrying a pointer state from a hovered item takes the selected, non-hovered host's state once its Source becomes selection-aware (GitHub #11080).")]
+        public void VerifyMovedLegacyAnimatedIconPromotedToSelectionAwareSourceTakesHostState()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) };
+                itemA = new NavigationViewItem() { Content = "A", Icon = icon };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                var presenterA = (Control)VisualTreeUtils.FindVisualChildByName(itemA, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterA, "PointerOver", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Hovered unselected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Clearing the Icon re-applies A's visual state, so hover A again: the released icon keeps following A.
+            RunOnUIThread.Execute(() =>
+            {
+                var presenterA = (Control)VisualTreeUtils.FindVisualChildByName(itemA, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenterA, "PointerOver", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Precondition: released icon retains hovered A's pointer state");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Precondition: legacy icon keeps its pointer state when it loads in selected, non-hovered item B");
+                icon.Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Source promoted to selection-aware in selected, non-hovered item B");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an AnimatedIcon whose Source is supplied later takes the selected, non-hovered host's state once the Source is selection-aware, while legacy Sources and states the app set are left alone (GitHub #11080).")]
+        public void VerifyLateSelectionAwareSourceTakesHostState()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon icon = null;
+            AnimatedIcon customIcon = null;
+            AnimatedIcon templateDrivenIcon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemA = new NavigationViewItem() { Content = "A" };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon();
+                AnimatedIcon.SetState(icon, "PointerOver");
+                itemB.Icon = icon;
+
+                customIcon = new AnimatedIcon();
+                AnimatedIcon.SetState(customIcon, "Custom");
+                itemA.Icon = customIcon;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Precondition: Source-less icon keeps its state in selected, non-hovered item B");
+                icon.Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Late legacy Source keeps the state");
+                icon.Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+                customIcon.Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "App-set state survives a late selection-aware Source in selected, non-hovered item B");
+                Verify.AreEqual("Custom", AnimatedIcon.GetState(customIcon), "App-defined state survives a late selection-aware Source");
+
+                templateDrivenIcon = new AnimatedIcon();
+                itemB.Icon = templateDrivenIcon;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(templateDrivenIcon), "Precondition: Source-less icon takes the template's state in selected item B");
+                templateDrivenIcon.Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(templateDrivenIcon), "Late selection-aware Source in selected, non-hovered item B");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem leaves AnimatedIcon states the app sets alone: selected states on unselected items (e.g. SelectsOnInvoked=False toggles) are not demoted, and a pointer state the template didn't propagate is not promoted (GitHub #11080).")]
+        public void VerifyAppSetAnimatedIconStatesAreNotRemapped()
+        {
+            NavigationView navView = null;
+            NavigationViewItem unselectedItem = null;
+            NavigationViewItem legacyItem = null;
+            NavigationViewItem toggleItem = null;
+            NavigationViewItem selectedItem = null;
+            AnimatedIcon unselectedIcon = null;
+            AnimatedIcon legacyIcon = null;
+            AnimatedIcon toggleIcon = null;
+            AnimatedIcon selectedIcon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                unselectedIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                legacyIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) };
+                toggleIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                selectedIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                unselectedItem = new NavigationViewItem() { Content = "Unselected", Icon = unselectedIcon };
+                legacyItem = new NavigationViewItem() { Content = "Legacy", Icon = legacyIcon };
+                toggleItem = new NavigationViewItem() { Content = "Toggle", Icon = toggleIcon, SelectsOnInvoked = false };
+                selectedItem = new NavigationViewItem() { Content = "Selected", Icon = selectedIcon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(unselectedItem);
+                navView.MenuItems.Add(legacyItem);
+                navView.MenuItems.Add(toggleItem);
+                navView.MenuItems.Add(selectedItem);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, selectedItem);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(selectedIcon), "Precondition: selected item");
+
+                foreach (var state in new[] { "PointerOverSelected", "PressedSelected", "Selected" })
+                {
+                    AnimatedIcon.SetState(unselectedIcon, state);
+                    Verify.AreEqual(state, AnimatedIcon.GetState(unselectedIcon), "App-set state on an unselected item");
+                    AnimatedIcon.SetState(legacyIcon, state);
+                    Verify.AreEqual(state, AnimatedIcon.GetState(legacyIcon), "App-set state on an unselected item with a legacy icon");
+                }
+
+                AnimatedIcon.SetState(toggleIcon, "Selected");
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(toggleIcon), "App-set toggle state on a SelectsOnInvoked=False item");
+
+                AnimatedIcon.SetState(selectedIcon, "PointerOver");
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(selectedIcon), "App-set pointer state the template didn't propagate");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(unselectedIcon), "App-set state after a layout pass");
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(toggleIcon), "App-set toggle state after a layout pass");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(unselectedIcon), "App-set state after reload");
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(toggleIcon), "App-set toggle state after reload");
+
+                // The template's own values are still mapped.
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(selectedItem, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOverSelected", AnimatedIcon.GetState(selectedIcon), "Propagated hover on the selected item");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an app handler that sets an AnimatedIcon's State back to the unselected state while the NavigationViewItem writes a selected state wins, instead of the two rewriting each other until the stack overflows (GitHub #11080).")]
+        public void VerifyAppVetoOfSelectedAnimatedIconStateDoesNotRecurse()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            NavigationViewItem otherItem = null;
+            AnimatedIcon icon = null;
+            long token = 0;
+            int vetoCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Vetoed", Icon = icon };
+                otherItem = new NavigationViewItem() { Content = "Other" };
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(otherItem);
+                Content = navView;
+                Content.UpdateLayout();
+
+                // An app that opts out of the selected states by mapping them back, as the default template does.
+                token = icon.RegisterPropertyChangedCallback(AnimatedIcon.StateProperty, (sender, dp) =>
+                {
+                    var state = AnimatedIcon.GetState(icon);
+                    if (state.EndsWith("Selected") && vetoCount < 100)
+                    {
+                        vetoCount++;
+                        var legacyState = state == "Selected" ? "Normal" : state.Substring(0, state.Length - "Selected".Length);
+                        AnimatedIcon.SetState(icon, legacyState);
+                    }
+                });
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "App-vetoed selected state");
+                Log.Comment($"Vetoes after selection: {vetoCount}");
+                Verify.IsTrue(vetoCount > 0 && vetoCount < 10, "The item doesn't rewrite a state the app vetoed while it was writing it");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "App-vetoed hover state");
+                Log.Comment($"Vetoes after hover: {vetoCount}");
+                Verify.IsTrue(vetoCount < 10, "The item doesn't rewrite a hover state the app vetoed");
+                icon.UnregisterPropertyChangedCallback(AnimatedIcon.StateProperty, token);
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "Selected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected state once the app stops vetoing");
+
+                // The app explicitly shows the unselected look on the selected item.
+                AnimatedIcon.SetState(icon, "Normal");
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "App-set Normal on a selected, non-hovered item");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "App-set Normal on a selected, non-hovered item after a layout pass");
+            });
+
+            SelectItem(navView, otherItem);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Deselected item");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem doesn't reset an AnimatedIcon state on detach when an app handler replaced it and restored the item's value from inside its State callback (GitHub #11080).")]
+        public void VerifyAppRestoreInsideStateCallbackIsNotResetOnDetach()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+
+                // Registered before the item observes the icon, so it runs first: when the app shows its own "Custom"
+                // look, it immediately restores "Selected" (e.g. the look was rejected).
+                icon.RegisterPropertyChangedCallback(AnimatedIcon.StateProperty, (sender, dp) =>
+                {
+                    if (AnimatedIcon.GetState(icon) == "Custom")
+                    {
+                        AnimatedIcon.SetState(icon, "Selected");
+                    }
+                });
+
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item wrote Selected");
+
+                AnimatedIcon.SetState(icon, "Custom");
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "App restored Selected from its State callback");
+
+                item.Icon = null;
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "App-restored state survives clearing the Icon");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when reading an AnimatedIcon Source's markers runs app code that sets the icon's State, the NavigationViewItem doesn't overwrite that newer state with one computed from the old state (GitHub #11080).")]
+        public void VerifyAnimatedIconStateSetWhileReadingMarkersIsKept()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+            ControlledAnimatedVisualSource source = null;
+            int calloutCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+                icon = new AnimatedIcon() { Source = source };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item");
+
+                // Only the item's mapping reads the markers while the icon holds the propagated "PointerOver": the
+                // item maps it to "PointerOverSelected" in the same callback, before AnimatedIcon plays anything.
+                source.MarkersRead = () =>
+                {
+                    if (calloutCount == 0 && AnimatedIcon.GetState(icon) == "PointerOver")
+                    {
+                        calloutCount++;
+                        AnimatedIcon.SetState(icon, "Custom");
+                    }
+                };
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source.MarkersRead = null;
+                Verify.AreEqual(1, calloutCount, "Precondition: the markers callout set the State");
+                Verify.AreEqual("Custom", AnimatedIcon.GetState(icon), "State set while the item read the markers");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an AnimatedIcon whose selection-aware Source can't create its visual, and that therefore shows an AnimatedIconSource fallback without selected markers, keeps the legacy states (GitHub #11080).")]
+        public void VerifyAnimatedIconShowingFallbackKeepsLegacyStates()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon()
+                {
+                    Source = new NullVisualAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()),
+                    FallbackIconSource = new AnimatedIconSource() { Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()) },
+                };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Other" });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                var fallbackIcon = FindDescendantAnimatedIcon(icon);
+                Verify.IsNotNull(fallbackIcon, "Precondition: the fallback AnimatedIcon is shown");
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Selected item whose Source failed");
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(fallbackIcon), "Displayed fallback icon on the selected item");
+
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("PointerOver", AnimatedIcon.GetState(icon), "Hovered selected item whose Source failed");
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "Selected", true));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Selected item whose Source failed, after hover");
+                icon.Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Source that creates its visual");
+                icon.Source = new NullVisualAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers());
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Source that fails again");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        static AnimatedIcon FindDescendantAnimatedIcon(DependencyObject root)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is AnimatedIcon animatedIcon)
+                {
+                    return animatedIcon;
+                }
+                if (FindDescendantAnimatedIcon(child) is AnimatedIcon descendant)
+                {
+                    return descendant;
+                }
+            }
+            return null;
+        }
+
+        // AnimatedIconTestHooks records the transition AnimatedIcon last resolved (e.g. "NormalToSelected"); it is
+        // updated on the layout pass after the State change, so poll for it.
+        static bool WaitForAnimatedIconSegment(AnimatedIcon icon, Func<string, bool> predicate, int timeoutMs = 5000)
+        {
+            var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+            while (true)
+            {
+                string segment = null;
+                RunOnUIThread.Execute(() => segment = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegment(icon) ?? string.Empty);
+                if (predicate(segment))
+                {
+                    return true;
+                }
+                if (stopwatch.ElapsedMilliseconds > timeoutMs)
+                {
+                    Log.Comment("Last AnimatedIcon segment: " + segment);
+                    return false;
+                }
+                Thread.Sleep(50);
+            }
+        }
+
+        static Dictionary<string, double> CreateLegacyAnimatedIconMarkers()
+        {
+            return new Dictionary<string, double>
+            {
+                { "NormalToPointerOver_Start", 0.0 }, { "NormalToPointerOver_End", 0.1 },
+                { "PointerOverToNormal_Start", 0.1 }, { "PointerOverToNormal_End", 0.0 },
+                { "PointerOverToPressed_Start", 0.1 }, { "PointerOverToPressed_End", 0.2 },
+                { "PressedToPointerOver_Start", 0.2 }, { "PressedToPointerOver_End", 0.1 },
+                { "PressedToNormal_Start", 0.2 }, { "PressedToNormal_End", 0.0 },
+            };
+        }
+
+        static Dictionary<string, double> CreateSelectionAwareAnimatedIconMarkers()
+        {
+            return new Dictionary<string, double>(CreateLegacyAnimatedIconMarkers())
+            {
+                { "NormalToSelected_Start", 0.0 }, { "NormalToSelected_End", 0.5 },
+                { "SelectedToNormal_Start", 0.5 }, { "SelectedToNormal_End", 0.0 },
+                { "SelectedToPointerOverSelected_Start", 0.5 }, { "SelectedToPointerOverSelected_End", 0.6 },
+                { "PointerOverToPointerOverSelected_Start", 0.1 }, { "PointerOverToPointerOverSelected_End", 0.6 },
+                { "PointerOverSelectedToSelected_Start", 0.6 }, { "PointerOverSelectedToSelected_End", 0.5 },
+                { "PointerOverSelectedToPressedSelected_Start", 0.6 }, { "PointerOverSelectedToPressedSelected_End", 0.7 },
+                { "PressedSelectedToPointerOverSelected_Start", 0.7 }, { "PressedSelectedToPointerOverSelected_End", 0.6 },
+            };
+        }
+
         static void SelectItem(NavigationView navView, object item, ManualResetEvent selectionChangedEvent = null)
         {
             IdleSynchronizer.Wait();

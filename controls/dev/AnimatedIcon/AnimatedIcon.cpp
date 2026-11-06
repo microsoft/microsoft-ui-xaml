@@ -94,7 +94,7 @@ void AnimatedIcon::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs c
 
     if (unbox_value<winrt::hstring>(GetValue(property)).empty())
     {
-        SetValue(property, stateValue);
+        SetValueFromTemplate(stateValue);
     }
 
     if (ancestorWithState)
@@ -202,7 +202,34 @@ void AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyProperty& args)
 {
-    SetValue(AnimatedIconProperties::s_StateProperty, sender.GetValue(args));
+    SetValueFromTemplate(sender.GetValue(args));
+}
+
+void AnimatedIcon::SetStateFromTemplate(winrt::hstring const& state)
+{
+    SetValueFromTemplate(winrt::box_value(state));
+}
+
+void AnimatedIcon::SetValueFromTemplate(winrt::IInspectable const& state)
+{
+    // OnStatePropertyChanged consumes the flag before any other State callback runs, so values that those
+    // callbacks set in response count as set by the app.
+    const bool isUnchanged = ValueHelper<winrt::hstring>::CastOrUnbox(GetValue(AnimatedIconProperties::s_StateProperty)) == ValueHelper<winrt::hstring>::CastOrUnbox(state);
+    {
+        m_isApplyingTemplateState = true;
+        auto const resetApplyingTemplateState = gsl::finally([this]()
+        {
+            m_isApplyingTemplateState = false;
+        });
+        SetValue(AnimatedIconProperties::s_StateProperty, state);
+    }
+
+    // An unchanged value raises no State change notification, so OnStatePropertyChanged doesn't run.
+    if (isUnchanged && !m_isStateFromTemplate)
+    {
+        m_isStateFromTemplate = true;
+        m_templateStateReapplied();
+    }
 }
 
 // When we receive a state change it might be erroneous. This is because these state changes often come from Animated Icon's parent control's
@@ -213,6 +240,7 @@ void AnimatedIcon::OnAncestorAnimatedIconStatePropertyChanged(
 // enough to ensure that a layout updated will trigger, so we must also invalidate a layout property, arrange was chosen arbitrarily.
 void AnimatedIcon::OnStatePropertyChanged()
 {
+    m_isStateFromTemplate = std::exchange(m_isApplyingTemplateState, false);
     m_pendingState = ValueHelper<winrt::hstring>::CastOrUnbox(this->GetValue(AnimatedIconStateProperty()));
     m_layoutUpdatedRevoker = this->LayoutUpdated(winrt::auto_revoke, { this, &AnimatedIcon::OnLayoutUpdatedAfterStateChanged });
     SharedHelpers::QueueCallbackForCompositionRendering(
