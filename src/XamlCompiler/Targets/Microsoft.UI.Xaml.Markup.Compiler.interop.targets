@@ -645,6 +645,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
     <Target Name="MarkupCompilePass2"
             DependsOnTargets="$(MarkupCompilePass2DependsOn)"
+            BeforeTargets="FixupCLCompileOptions"
             Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
 
         <PropertyGroup>
