@@ -14512,13 +14512,19 @@ Cleanup:
 _Check_return_ HRESULT 
 LoopingSelectorPanelGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-LoopingSelectorPanelGenerated::InitializeImpl()
+LoopingSelectorPanelGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
+
+    UNREFERENCED_PARAMETER(pOuter);
+
+    // When types are created internally there is no guarantee that
+    // the factory has been previously instantiated. 
+    IFC_RETURN(LoopingSelectorPanelFactory::EnsureProperties());
 
     IFC_RETURN(RegisterEventSource(m_HorizontalSnapPointsChangedEventSource)); 
     IFC_RETURN(RegisterEventSource(m_VerticalSnapPointsChangedEventSource)); 
@@ -14898,6 +14904,51 @@ _Check_return_ HRESULT LoopingSelectorPanelGenerated::PopulatePropertyInfoOverri
 Cleanup:
     RRETURN(hr);
 }
+
+// Dependency Property references.
+
+// Initializers.
+_Check_return_ HRESULT LoopingSelectorPanelFactory::RuntimeClassInitialize()
+{
+    HRESULT hr = S_OK;
+
+    IFC(EnsureProperties());
+
+Cleanup:
+    RRETURN(hr);
+}
+
+_Check_return_ HRESULT LoopingSelectorPanelFactory::EnsureProperties()
+{
+
+    return S_OK;
+}
+
+void LoopingSelectorPanelFactory::ClearProperties()
+{
+}
+
+IFACEMETHODIMP LoopingSelectorPanelFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorPanel** ppInstance)
+{
+    HRESULT hr = S_OK;
+
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorPanel,
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorPanel>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
+
+Cleanup:
+    RRETURN(hr);
+}
+// Static properties.
+
+// Dependency properties.
+
+// Attached properties.
+
+// Static methods.
 
 _Check_return_ HRESULT
 PickerFlyoutBaseGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
