@@ -10,8 +10,11 @@ namespace WinUIProfiler.Engine.Target;
 public sealed record PrivateRuntimeLaunch(string RuntimeDirectory, string SourceDirectory, bool RedirectControls,
     string LaunchDirectory, string LauncherDirectory);
 
-// The launcher's launch.json. Error is a Win32 error code; Stage is "ready", or the step that failed.
-public sealed record NativeLaunchResult(int ProcessId, uint Error, string Stage, string PackageFullName, string ApplicationUserModelId);
+// The launcher's launch.json. Error is a Win32 error code; Stage is "ready", or the step that failed. ProcessId and
+// CreationTimeFileTime (a UTC FILETIME) name the app's process instance, since a later process can reuse the ID.
+// ProcessId is 0 when no process started; CreationTimeFileTime is 0 when the launcher could not read it.
+public sealed record NativeLaunchResult(int ProcessId, long CreationTimeFileTime, uint Error, string Stage,
+    string PackageFullName, string ApplicationUserModelId);
 
 // The private WinUI launcher's command line and result files (WinUIProfiler.Launcher\README.md).
 public static class NativeLaunchProtocol
@@ -83,30 +86,32 @@ public static class NativeLaunchProtocol
         if (root.ValueKind != JsonValueKind.Object ||
             Number(root, "schemaVersion") != 1 ||
             Number(root, "pid") is not { } pid || pid is < 0 or > int.MaxValue ||
+            Number(root, "creationTimeFileTime") is not { } created || created < 0 ||
             Number(root, "error") is not { } error || error is < 0 or > uint.MaxValue ||
             Text(root, "stage") is not { Length: > 0 } stage ||
-            (error == 0 && (pid == 0 || stage != "ready")))
+            (error == 0 && (pid == 0 || created == 0 || stage != "ready")))
         {
             throw new InvalidDataException("The private WinUI launcher wrote an invalid result.");
         }
 
-        return new((int)pid, (uint)error, stage, Text(root, "packageFullName") ?? "", Text(root, "aumid") ?? "");
+        return new((int)pid, created, (uint)error, stage, Text(root, "packageFullName") ?? "", Text(root, "aumid") ?? "");
     }
 
-    // The launcher's process ID from the owner file it writes as it starts.
-    public static int ParseOwner(string json)
+    // The launcher's process ID and creation time from the owner file it writes as it starts.
+    public static (int ProcessId, long CreationTimeFileTime) ParseOwner(string json)
     {
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object ||
             Number(root, "schemaVersion") != 1 ||
             Text(root, "stage") != "launcher" ||
-            Number(root, "pid") is not { } pid || pid is < 1 or > int.MaxValue)
+            Number(root, "pid") is not { } pid || pid is < 1 or > int.MaxValue ||
+            Number(root, "creationTimeFileTime") is not { } created || created < 1)
         {
             throw new InvalidDataException("The private WinUI launcher wrote an invalid owner file.");
         }
 
-        return (int)pid;
+        return ((int)pid, created);
     }
 
     private static long? Number(JsonElement root, string name) =>

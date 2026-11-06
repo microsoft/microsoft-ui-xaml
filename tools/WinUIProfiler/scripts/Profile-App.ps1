@@ -541,19 +541,29 @@ function Get-RedirectedFiles([string] $Log, [string] $Runtime) {
     return , $files
 }
 
-function Close-LaunchedApp([int] $ProcessId, [string] $Executable, [datetime] $Since) {
+function Close-LaunchedApp([int] $ProcessId, [long] $CreationTime, [string] $Executable) {
     try { $process = [Diagnostics.Process]::GetProcessById($ProcessId) }
     catch [ArgumentException] { return $true }
     try {
-        if ($process.HasExited) { return $true }
-        # A reused process ID belongs to another process; the launched app has exited.
-        if ($process.StartTime -lt $Since -or -not (Test-SameFile $process.MainModule.FileName $Executable)) { return $true }
+        # PowerShell returns $null when a property getter throws, so this calls the getters as methods.
+        # The open handle keeps the process ID from being reused while this checks and closes the process.
+        try { $null = $process.get_SafeHandle() }
+        catch [ComponentModel.Win32Exception] {
+            # Another process that reused the ID may deny this handle, but its creation time still shows that.
+            if ($process.get_StartTime().ToFileTimeUtc() -ne $CreationTime) { return $true }
+            throw
+        }
+        # A process ID and its creation time name one process; another creation time means the ID was reused.
+        if ($process.get_HasExited() -or $process.get_StartTime().ToFileTimeUtc() -ne $CreationTime -or
+            -not (Test-SameFile $process.get_MainModule().FileName $Executable)) { return $true }
         Write-Host "Closing the app (PID $ProcessId)."
         if ($process.CloseMainWindow() -and $process.WaitForExit(15000)) { return $true }
         $process.Kill()
         return $process.WaitForExit(5000)
     }
-    catch [InvalidOperationException], [ComponentModel.Win32Exception] {
+    # The process exited before or during the checks.
+    catch [InvalidOperationException] { return $true }
+    catch [ComponentModel.Win32Exception] {
         Write-Warning "Could not close the app (PID $ProcessId): $($_.Exception.Message)"
         return $false
     }
@@ -572,16 +582,14 @@ function Invoke-ProfileAppElevated([string] $ScriptPath, [Collections.IDictionar
     $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $log)
     $arguments = @('-NoProfile', '-ExecutionPolicy', [string](Get-ExecutionPolicy),
         '-WorkingDirectory', $PWD.ProviderPath, '-File', $ScriptPath)
+    # -File reads a value such as -v after -Arguments as a parameter; after -Arguments: it takes the value verbatim.
     foreach ($entry in $Parameters.GetEnumerator()) {
         if ($entry.Value -is [switch]) {
             if ($entry.Value.IsPresent) { $arguments += "-$($entry.Key)" }
         }
-        else {
-            $arguments += "-$($entry.Key)"
-            $arguments += [string]$entry.Value
-        }
+        else { $arguments += "-$($entry.Key):", [string]$entry.Value }
     }
-    $arguments += '-ElevatedLogPath', $log
+    $arguments += '-ElevatedLogPath:', $log
     Write-Host 'Live ETW and the private runtime links need administrator rights. Approve the Windows UAC prompt to continue.'
     try {
         $child = Start-Process -FilePath ([Environment]::ProcessPath) -Verb RunAs -WindowStyle Hidden -PassThru `
@@ -695,8 +703,8 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
         $records = @(Get-LaunchRecords $launches)
         $closed = $true
         foreach ($record in $records) {
-            if ($null -ne $started -and $record.result -and $record.result.pid -gt 0) {
-                $closed = (Close-LaunchedApp ([int]$record.result.pid) $executable $started.AddSeconds(-1)) -and $closed
+            if ($record.result -and $record.result.pid -gt 0) {
+                $closed = (Close-LaunchedApp ([int]$record.result.pid) ([long]$record.result.creationTimeFileTime) $executable) -and $closed
             }
         }
         $removed = $true

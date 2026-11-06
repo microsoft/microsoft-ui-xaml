@@ -175,7 +175,9 @@ directly:
 | `--connect` | Connects once the window opens. |
 
 `--private-runtime`, `--runtime-source` and `--launch-directory` go together,
-as full paths.
+as full paths. Each launch runs the launcher from `<n>\native` in the launch
+directory; see Limits in `WinUIProfiler.Launcher\README.md` for the characters
+that path can have.
 
 ## Tree snapshots
 

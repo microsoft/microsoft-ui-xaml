@@ -81,7 +81,7 @@ function Read-FixtureResult([string] $Path) {
 
 function Invoke-RedirectCase([string] $Name, [string] $Mode = 'full', [bool] $Controls = $true,
     [string] $Aumid = '', [string] $PackageFullName = '', [string] $Executable = $fixture,
-    [string] $Original = $source) {
+    [string] $Original = $source, [string] $LauncherPath = $launcher) {
     $caseDirectory = Join-Path $output $Name
     $null = New-Item -ItemType Directory -Path $caseDirectory
     $result = Join-Path $caseDirectory 'launch.json'
@@ -92,7 +92,7 @@ function Invoke-RedirectCase([string] $Name, [string] $Mode = 'full', [bool] $Co
         '--log', (Join-Path $caseDirectory 'redirect.jsonl'), '--result', $result)
     if ($Aumid) { $arguments += '--aumid', $Aumid, '--package', $PackageFullName, '--expected-aumid', $Aumid }
     else { $arguments += '--arguments', "`"$appResult`" $Mode" }
-    $null = Invoke-FixtureProcess $launcher $arguments
+    $null = Invoke-FixtureProcess $LauncherPath $arguments
     $launch = Read-FixtureResult $result
     $app = Read-FixtureResult $appResult
     if ($launch.error -ne 0 -or $launch.stage -cne 'ready' -or $app.mux -ne 2 -or
@@ -100,6 +100,9 @@ function Invoke-RedirectCase([string] $Name, [string] $Mode = 'full', [bool] $Co
         throw "Incorrect native selection in $Name; see $caseDirectory."
     }
     if ($Mode -eq 'unrelated' -and $app.unrelated -ne 3) { throw 'An unrelated same-named DLL was redirected.' }
+    if ($launch.creationTimeFileTime -le 0 -or $launch.creationTimeFileTime -ne $app.creationTimeFileTime) {
+        throw "The launch result does not name the app's process instance in $Name."
+    }
     if ($Aumid -and ($launch.aumid -cne $Aumid -or $launch.packageFullName -cne $PackageFullName)) {
         throw 'The packaged fixture lost its package identity.'
     }
@@ -146,6 +149,24 @@ foreach ($mode in @('full', 'bare', 'kernelbase', 'loadlibrary', 'extended', 'un
     Invoke-RedirectCase "native-$mode" $mode
 }
 Invoke-RedirectCase 'core-only' -Controls $false
+# The app loads <folder>\Microsoft.UI.Xaml.dll by full path; other spellings of --source must still match it.
+Invoke-RedirectCase 'source-trailing-separator' -Original "$source\"
+Invoke-RedirectCase 'source-forward-slashes' -Original "$($source.Replace('\', '/'))/"
+# The app's import table names the helper by its 8.3 short path or, where the volume has none (a Dev Drive, for
+# example), by its path in the system's ANSI code page. Either way, a non-ASCII letter from that code page must work.
+$ansiCodePage = [int](Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage' -Name ACP)
+$ansi = [Text.Encoding]::GetEncoding($ansiCodePage, [Text.EncoderFallback]::ExceptionFallback,
+    [Text.DecoderFallback]::ExceptionFallback)
+$letter = [char[]]@(0xe9, 0x434, 0x3b1, 0x5e9, 0xe01, 0x65e5) | Where-Object {
+    try { $ansi.GetString($ansi.GetBytes([string]$_)) -ceq $_ } catch { $false }
+} | Select-Object -First 1
+if (-not $letter) { throw "No test letter is in ANSI code page $ansiCodePage." }
+$launcherDirectory = Join-Path $output "launcher $letter"
+$null = New-Item -ItemType Directory -Path $launcherDirectory
+foreach ($name in @('ProfilerLauncher.exe', 'ProfilerRedirect.dll')) {
+    Copy-Item -LiteralPath (Join-Path $native $name) -Destination $launcherDirectory
+}
+Invoke-RedirectCase 'non-ascii-launcher-folder' -LauncherPath (Join-Path $launcherDirectory 'ProfilerLauncher.exe')
 if (Test-Path -LiteralPath $marker) { throw 'Native selection must not leave a DotLocal marker.' }
 
 foreach ($case in @(
@@ -159,7 +180,8 @@ foreach ($case in @(
         '--private', $private, '--controls', $case.Controls,
         '--log', (Join-Path $caseDirectory 'redirect.jsonl'), '--result', $result) -AllowFailure
     $failure = Read-FixtureResult $result
-    if ($code -ne $case.Error -or $failure.error -ne $case.Error -or $failure.pid -ne 0) {
+    if ($code -ne $case.Error -or $failure.error -ne $case.Error -or $failure.pid -ne 0 -or
+        $failure.creationTimeFileTime -ne 0) {
         throw "Native input failure did not remain explicit: $($case.Name)"
     }
     $tests.Add(@{ name = $case.Name; error = $failure.error })

@@ -75,6 +75,21 @@ namespace profiler
         return index == std::wstring::npos ? std::wstring{} : path.substr(0, index);
     }
 
+    // A folder's full path without trailing separators, so that appending L"\\" and a file name gives the loader's form.
+    inline std::wstring DirectoryPath(const std::wstring& path)
+    {
+        std::wstring result = path;
+        const DWORD length = path.empty() ? 0 : GetFullPathNameW(path.c_str(), 0, nullptr, nullptr);
+        if (length)
+        {
+            std::wstring full(length, L'\0');
+            const DWORD copied = GetFullPathNameW(path.c_str(), length, full.data(), nullptr);
+            if (copied && copied < length) result.assign(full.data(), copied);
+        }
+        while (!result.empty() && (result.back() == L'\\' || result.back() == L'/')) result.pop_back();
+        return result;
+    }
+
     inline std::wstring ShortPath(const std::wstring& path)
     {
         const DWORD length = GetShortPathNameW(path.c_str(), nullptr, 0);
@@ -86,18 +101,22 @@ namespace profiler
         return result;
     }
 
+    // Detours names the helper in the app's import table, which the loader decodes with the system's ANSI code page
+    // unless the app's manifest sets another. The 8.3 short path is ASCII where one exists; otherwise the path must
+    // survive a round trip through the code page, so that a best-fit character cannot name a different file.
     inline std::string ImportPath(const std::wstring& path)
     {
         const auto shortPath = ShortPath(path);
-        for (wchar_t ch : shortPath)
-        {
-            if (ch > 127)
-            {
-                SetLastError(ERROR_NO_UNICODE_TRANSLATION);
-                return {};
-            }
-        }
-        return Utf8(shortPath);
+        const int size = static_cast<int>(shortPath.size());
+        const int length = WideCharToMultiByte(CP_ACP, 0, shortPath.data(), size, nullptr, 0, nullptr, nullptr);
+        std::string result(static_cast<size_t>(length), '\0');
+        std::wstring decoded(shortPath.size(), L'\0');
+        if (length &&
+            WideCharToMultiByte(CP_ACP, 0, shortPath.data(), size, result.data(), length, nullptr, nullptr) == length &&
+            MultiByteToWideChar(CP_ACP, 0, result.data(), length, decoded.data(), size) == size && decoded == shortPath)
+            return result;
+        SetLastError(ERROR_NO_UNICODE_TRANSLATION);
+        return {};
     }
 
     inline bool EqualPath(std::wstring_view left, std::wstring_view right)

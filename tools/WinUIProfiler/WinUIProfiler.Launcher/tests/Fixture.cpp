@@ -64,8 +64,12 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
         if (!build) return ERROR_PROC_NOT_FOUND;
         otherBuild = build();
     }
+    FILETIME created{}, exited{}, kernel{}, user{};
+    if (!GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user)) return static_cast<int>(GetLastError());
+    const auto creation = (static_cast<ULONGLONG>(created.dwHighDateTime) << 32) | created.dwLowDateTime;
     const auto result = "{\"mux\":" + std::to_string(coreBuild()) + ",\"muxc\":" +
         std::to_string(controlsBuild()) + ",\"unrelated\":" + std::to_string(otherBuild) +
+        ",\"creationTimeFileTime\":" + std::to_string(creation) +
         ",\"muxPath\":" + profiler::Json(profiler::ModulePath(mux)) +
         ",\"muxcPath\":" + profiler::Json(profiler::ModulePath(muxc)) + "}\n";
     const auto temporary = output + L".tmp";

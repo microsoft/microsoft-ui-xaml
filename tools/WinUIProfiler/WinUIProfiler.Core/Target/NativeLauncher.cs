@@ -62,8 +62,7 @@ public static class NativeLauncher
         var result = Path.Combine(directory, NativeLaunchProtocol.ResultFile);
         var log = Path.Combine(directory, NativeLaunchProtocol.LogFile);
         var commandLine = NativeLaunchProtocol.BuildArguments(executable, runtime, arguments, log, result, applicationId, package);
-        var started = DateTime.Now;
-        using var owner = await StartAsync(launcher, commandLine, native, result + NativeLaunchProtocol.OwnerSuffix, started, token)
+        using var owner = await StartAsync(launcher, commandLine, native, result + NativeLaunchProtocol.OwnerSuffix, token)
             .ConfigureAwait(false);
         var launch = await WaitForResultAsync(result, owner, token).ConfigureAwait(false);
         if (launch.Error != 0)
@@ -80,7 +79,10 @@ public static class NativeLauncher
         var process = Process.GetProcessById(launch.ProcessId);
         try
         {
-            if (process.StartTime < started.AddSeconds(-1) || !IsSameFile(process.MainModule?.FileName, executable))
+            // The handle keeps the ID from being reused, so this Process stays the launched instance.
+            _ = process.SafeHandle;
+            if (process.StartTime.ToFileTimeUtc() != launch.CreationTimeFileTime ||
+                !IsSameFile(process.MainModule?.FileName, executable))
             {
                 throw new InvalidOperationException($"PID {launch.ProcessId} is not the launched {executable}.");
             }
@@ -202,7 +204,7 @@ public static class NativeLauncher
 
     // Returns the launcher process, or null when it already exited before it could be opened.
     private static async Task<Process?> StartAsync(string launcher, string commandLine, string directory, string owner,
-        DateTime started, CancellationToken token)
+        CancellationToken token)
     {
         if (!Environment.IsPrivilegedProcess)
         {
@@ -225,12 +227,12 @@ public static class NativeLauncher
             }
         }
 
-        var pid = NativeLaunchProtocol.ParseOwner(ReadBounded(owner));
+        var (pid, created) = NativeLaunchProtocol.ParseOwner(ReadBounded(owner));
         Process process;
         try
         {
             process = Process.GetProcessById(pid);
-            // Keeps a handle, so the exit code stays readable after the launcher exits.
+            // Keeps a handle, so the exit code stays readable after the launcher exits and its ID is not reused.
             _ = process.SafeHandle;
         }
         catch (ArgumentException)
@@ -240,7 +242,14 @@ public static class NativeLauncher
 
         try
         {
-            if (process.StartTime < started.AddSeconds(-1) || !IsSameFile(process.MainModule?.FileName, launcher))
+            if (process.StartTime.ToFileTimeUtc() != created)
+            {
+                // Another creation time means the ID was reused: this launch's launcher already exited.
+                process.Dispose();
+                return null;
+            }
+
+            if (!IsSameFile(process.MainModule?.FileName, launcher))
             {
                 throw new InvalidOperationException($"PID {pid} is not this launch's private WinUI launcher.");
             }
@@ -293,9 +302,16 @@ public static class NativeLauncher
 
     private static string Describe(NativeLaunchResult launch, string log)
     {
-        var reason = launch is { Stage: "helper_ready", Error: 1460 }
-            ? "the app did not report the private WinUI helper ready within 30 seconds"
-            : new Win32Exception(unchecked((int)launch.Error)).Message;
+        var reason = launch switch
+        {
+            { Stage: "helper_ready", Error: 1460 } => "the app did not report the private WinUI helper ready within 30 seconds",
+            // ERROR_NO_UNICODE_TRANSLATION: the app's import table cannot name the helper (WinUIProfiler.Launcher\README.md).
+            { Stage: "create_process" or "package_debugger", Error: 1113 } =>
+                "the launch folder's path has characters outside the system's ANSI code page and no 8.3 short name, " +
+                "so the app cannot load the private WinUI helper from it; use a launch folder whose path uses only " +
+                "characters in that code page",
+            _ => new Win32Exception(unchecked((int)launch.Error)).Message,
+        };
         var helper = "";
         try
         {

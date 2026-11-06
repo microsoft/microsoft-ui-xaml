@@ -64,15 +64,24 @@ namespace
         return it == args.end() ? std::wstring{} : it->second;
     }
 
-    bool SaveResult(const std::wstring& output, DWORD pid, DWORD error, std::wstring_view stage,
-        std::wstring_view package = {}, std::wstring_view aumid = {})
+    bool CreationTime(HANDLE process, FILETIME& created)
     {
+        FILETIME exited{}, kernel{}, user{};
+        return GetProcessTimes(process, &created, &exited, &kernel, &user) != FALSE;
+    }
+
+    // A process ID can be reused after the process exits; the ID and its creation time name one process.
+    bool SaveResult(const std::wstring& output, DWORD pid, const FILETIME& created, DWORD error,
+        std::wstring_view stage, std::wstring_view package = {}, std::wstring_view aumid = {})
+    {
+        const auto creation = (static_cast<ULONGLONG>(created.dwHighDateTime) << 32) | created.dwLowDateTime;
         const auto temporary = output + L".tmp";
         {
             profiler::Handle file(CreateFileW(temporary.c_str(), GENERIC_WRITE, 0, nullptr,
                 CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
             if (!file) return false;
             if (!profiler::WriteAll(file.get(), "{\"schemaVersion\":1,\"pid\":" + std::to_string(pid) +
+                ",\"creationTimeFileTime\":" + std::to_string(creation) +
                 ",\"error\":" + std::to_string(error) + ",\"stage\":" + profiler::Json(stage) +
                 ",\"packageFullName\":" + profiler::Json(package) + ",\"aumid\":" + profiler::Json(aumid) + "}\n"))
                 return false;
@@ -80,12 +89,13 @@ namespace
         return MoveFileExW(temporary.c_str(), output.c_str(), MOVEFILE_WRITE_THROUGH) != FALSE;
     }
 
-    std::vector<wchar_t> ProfileEnvironment(const Arguments& args, const std::wstring& signal)
+    std::vector<wchar_t> ProfileEnvironment(const Arguments& args, const std::wstring& source,
+        const std::wstring& target, const std::wstring& signal)
     {
         const std::pair<const wchar_t*, std::wstring> values[] = {
             {L"WINUI_PROFILER_EXE", Value(args, L"--exe")},
-            {L"WINUI_PROFILER_SOURCE", Value(args, L"--source")},
-            {L"WINUI_PROFILER_PRIVATE", Value(args, L"--private")},
+            {L"WINUI_PROFILER_SOURCE", source},
+            {L"WINUI_PROFILER_PRIVATE", target},
             {L"WINUI_PROFILER_LOG", Value(args, L"--log")},
             {L"WINUI_PROFILER_READY", signal},
             {L"WINUI_PROFILER_CONTROLS", Value(args, L"--controls")}
@@ -207,7 +217,7 @@ namespace
         // Even a rejected callback must not strand a package-created process suspended.
         if (thread && GetProcessIdOfThread(thread.get()) == pid &&
             ResumeThread(thread.get()) == static_cast<DWORD>(-1) && !error) error = GetLastError();
-        if (!SaveResult(context.data->result, pid, error, L"package_debugger") && !error) error = GetLastError();
+        if (!SaveResult(context.data->result, pid, created, error, L"package_debugger") && !error) error = GetLastError();
         InterlockedCompareExchange(&context.data->error, static_cast<LONG>(error), ERROR_IO_PENDING);
         return error;
     }
@@ -216,8 +226,9 @@ namespace
     {
         const auto output = Value(args, L"--result");
         const auto exe = Value(args, L"--exe");
-        const auto source = Value(args, L"--source");
-        const auto target = Value(args, L"--private");
+        // The helper matches "<source>\Microsoft.UI.Xaml.dll", so C:\App\ and C:/App must become C:\App.
+        const auto source = profiler::DirectoryPath(Value(args, L"--source"));
+        const auto target = profiler::DirectoryPath(Value(args, L"--private"));
         const auto log = Value(args, L"--log");
         const auto dll = profiler::ParentPath(profiler::ModulePath(nullptr)) + L"\\ProfilerRedirect.dll";
         DWORD error = ERROR_SUCCESS;
@@ -225,7 +236,9 @@ namespace
         std::wstring stage = L"configuration";
         if (output.empty() || exe.empty() || source.empty() || target.empty() || log.empty())
             return ERROR_INVALID_PARAMETER;
-        if (!SaveResult(output + L".owner.json", GetCurrentProcessId(), ERROR_SUCCESS, L"launcher"))
+        FILETIME launcherCreated{};
+        if (!CreationTime(GetCurrentProcess(), launcherCreated) ||
+            !SaveResult(output + L".owner.json", GetCurrentProcessId(), launcherCreated, ERROR_SUCCESS, L"launcher"))
             return GetLastError();
         if (exe.size() >= profiler::MaxPathCharacters || source.size() >= profiler::MaxPathCharacters ||
             target.size() >= profiler::MaxPathCharacters || output.size() + 32 >= profiler::MaxPathCharacters ||
@@ -233,7 +246,7 @@ namespace
             (Value(args, L"--controls") != L"0" && Value(args, L"--controls") != L"1") ||
             Value(args, L"--aumid").empty() != Value(args, L"--package").empty())
         {
-            SaveResult(output, 0, ERROR_INVALID_PARAMETER, L"configuration");
+            SaveResult(output, 0, {}, ERROR_INVALID_PARAMETER, L"configuration");
             return ERROR_INVALID_PARAMETER;
         }
 
@@ -245,7 +258,7 @@ namespace
         const std::wstring eventName = std::wstring(L"Local\\WinUIPerfTools.Redirect.") + guid;
         profiler::Handle ready(CreateEventW(nullptr, TRUE, FALSE, eventName.c_str()));
         if (!ready) return GetLastError();
-        auto environment = ProfileEnvironment(args, eventName);
+        auto environment = ProfileEnvironment(args, source, target, eventName);
         PROCESS_INFORMATION processInfo{};
         const auto aumid = Value(args, L"--aumid");
         PackageLaunchState packageState;
@@ -421,7 +434,13 @@ namespace
                 stage = L"package_identity";
             }
         }
-        if (!SaveResult(output, pid, error, stage, actualPackage, actualAumid)) return GetLastError();
+        FILETIME created{};
+        if (process && !CreationTime(process.get(), created) && !error)
+        {
+            error = GetLastError();
+            stage = L"process_times";
+        }
+        if (!SaveResult(output, pid, created, error, stage, actualPackage, actualAumid)) return GetLastError();
         return error;
     }
 }

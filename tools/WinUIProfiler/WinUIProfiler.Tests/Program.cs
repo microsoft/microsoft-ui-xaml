@@ -512,21 +512,28 @@ ExpectThrows<ArgumentException>(() => NativeLaunchProtocol.BuildArguments(@"C:\A
 ExpectThrows<ArgumentException>(() => NativeLaunchProtocol.BuildArguments(@"C:\Apps\App.exe", runtime, "", log, result,
     "Fabrikam.App_8wekyb3d8bbwe!App", null), "A packaged launch must name its package.");
 Expect(NativeLaunchProtocol.ParseResult(
-        """{"schemaVersion":1,"pid":1234,"error":0,"stage":"ready","packageFullName":"P","aumid":"F!A"}""") ==
-    new NativeLaunchResult(1234, 0, "ready", "P", "F!A") &&
-    NativeLaunchProtocol.ParseResult("""{"schemaVersion":1,"pid":0,"error":2147942405,"stage":"package_activate"}""") ==
-    new NativeLaunchResult(0, 0x80070005, "package_activate", "", "") &&
+        """{"schemaVersion":1,"pid":1234,"creationTimeFileTime":133000000000000000,"error":0,"stage":"ready","packageFullName":"P","aumid":"F!A"}""") ==
+    new NativeLaunchResult(1234, 133000000000000000, 0, "ready", "P", "F!A") &&
+    NativeLaunchProtocol.ParseResult(
+        """{"schemaVersion":1,"pid":0,"creationTimeFileTime":0,"error":2147942405,"stage":"package_activate"}""") ==
+    new NativeLaunchResult(0, 0, 0x80070005, "package_activate", "", "") &&
     NativeLaunchProtocol.ParseOwner(
-        """{"schemaVersion":1,"pid":42,"error":0,"stage":"launcher","packageFullName":"","aumid":""}""") == 42,
+        """{"schemaVersion":1,"pid":42,"creationTimeFileTime":133000000000000000,"error":0,"stage":"launcher","packageFullName":"","aumid":""}""") ==
+    (42, 133000000000000000L),
     "Launcher results must be read.");
 string[] invalidResults =
 [
-    """{"schemaVersion":2,"pid":1,"error":0,"stage":"ready"}""",
-    """{"schemaVersion":1,"pid":0,"error":0,"stage":"ready"}""",
-    """{"schemaVersion":1,"pid":1,"error":0,"stage":"helper_ready"}""",
-    """{"schemaVersion":1,"pid":-1,"error":5,"stage":"configuration"}""",
-    """{"schemaVersion":1,"pid":"1","error":0,"stage":"ready"}""",
-    """{"schemaVersion":1,"pid":1,"error":5,"stage":""}""",
+    """{"schemaVersion":2,"pid":1,"creationTimeFileTime":1,"error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":0,"creationTimeFileTime":1,"error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":1,"creationTimeFileTime":1,"error":0,"stage":"helper_ready"}""",
+    """{"schemaVersion":1,"pid":-1,"creationTimeFileTime":0,"error":5,"stage":"configuration"}""",
+    """{"schemaVersion":1,"pid":"1","creationTimeFileTime":1,"error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":1,"creationTimeFileTime":0,"error":5,"stage":""}""",
+    // A launched app needs its creation time, since a later process can reuse its ID.
+    """{"schemaVersion":1,"pid":1,"error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":1,"creationTimeFileTime":0,"error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":1,"creationTimeFileTime":"1","error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":0,"creationTimeFileTime":-1,"error":5,"stage":"configuration"}""",
     "[]"
 ];
 foreach (var json in invalidResults)
@@ -534,8 +541,17 @@ foreach (var json in invalidResults)
     ExpectThrows<InvalidDataException>(() => NativeLaunchProtocol.ParseResult(json), $"Must reject the result {json}");
 }
 
-ExpectThrows<InvalidDataException>(() => NativeLaunchProtocol.ParseOwner("""{"schemaVersion":1,"pid":42,"error":0,"stage":"ready"}"""),
-    "An owner file must come from the launcher stage.");
+string[] invalidOwners =
+[
+    """{"schemaVersion":1,"pid":42,"creationTimeFileTime":1,"error":0,"stage":"ready"}""",
+    """{"schemaVersion":1,"pid":42,"error":0,"stage":"launcher"}""",
+    """{"schemaVersion":1,"pid":42,"creationTimeFileTime":0,"error":0,"stage":"launcher"}"""
+];
+foreach (var json in invalidOwners)
+{
+    ExpectThrows<InvalidDataException>(() => NativeLaunchProtocol.ParseOwner(json), $"Must reject the owner file {json}");
+}
+
 Console.WriteLine("Passed: launcher results are read, and invalid or inconsistent results are rejected.");
 
 static void Expect(bool condition, string message)
