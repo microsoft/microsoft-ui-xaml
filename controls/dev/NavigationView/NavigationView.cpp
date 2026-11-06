@@ -131,6 +131,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_titleBarMetricsChangedRevoker.revoke();
     m_titleBarIsVisibleChangedRevoker.revoke();
     m_paneToggleButtonClickRevoker.revoke();
+    m_paneOpeningFocusedElement = nullptr;
 
     m_settingsItem.set(nullptr);
 
@@ -1094,7 +1095,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
-    ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+    ClosePaneIfNeccessaryAfterItemIsClicked(nvi, true /*isItemInvoked*/);
 
     if (updateSelection)
     {
@@ -1708,6 +1709,50 @@ void NavigationView::UpdatePaneLayout()
 
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    const auto paneToggleButton = m_paneToggleButton.get();
+    winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
+    winrt::SplitView::PaneOpening_revoker paneOpeningRevoker{};
+    winrt::ISplitViewPrivate focusOperationOwner{ nullptr };
+    winrt::TypedEventHandler<winrt::SplitView, winrt::IInspectable> previousCompletionCallback{ nullptr };
+    auto restoreCompletionCallback = gsl::finally([&]()
+    {
+        if (focusOperationOwner)
+        {
+            focusOperationOwner.PaneFocusOperationCompletedCallback(previousCompletionCallback);
+        }
+    });
+    if (!IsPaneOpen() && IsLightDismissible() && paneToggleButton &&
+        paneToggleButton.FocusState() != winrt::FocusState::Unfocused)
+    {
+        if (const auto splitView = m_rootSplitView.get())
+        {
+            focusOperationOwner = splitView.as<winrt::ISplitViewPrivate>();
+            previousCompletionCallback = focusOperationOwner.PaneFocusOperationCompletedCallback();
+            focusOperationOwner.PaneFocusOperationCompletedCallback(
+                [&gettingFocusRevoker](auto const&, auto const&) { gettingFocusRevoker.revoke(); });
+            paneOpeningRevoker = splitView.PaneOpening(winrt::auto_revoke,
+                [this, splitView, paneToggleButton, &gettingFocusRevoker](auto const&, auto const&)
+                {
+                    // The NavigationView PaneOpening handlers run before this handler.
+                    const auto xamlRoot = XamlRoot();
+                    if (xamlRoot && winrt::FocusManager::GetFocusedElement(xamlRoot) == paneToggleButton)
+                    {
+                        const auto defaultTarget = winrt::FocusManager::FindFirstFocusableElement(splitView.Pane());
+                        gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
+                            [paneToggleButton, defaultTarget, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
+                            {
+                                if (!args.Cancel() && !args.Handled() &&
+                                    args.OldFocusedElement() == paneToggleButton && args.NewFocusedElement() == defaultTarget)
+                                {
+                                    args.Handled(args.TrySetNewFocusedElement(paneToggleButton));
+                                }
+                                gettingFocusRevoker.revoke();
+                            });
+                    }
+                });
+        }
+    }
+
     if (IsPaneOpen())
     {
         m_wasForceClosed = true;
@@ -1838,6 +1883,13 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
     }
 
     m_paneOpeningEventSource(*this, nullptr);
+
+    m_paneOpeningFocusedElement = nullptr;
+    if (const auto xamlRoot = XamlRoot())
+    {
+        m_paneOpeningFocusedElement = winrt::make_weak(
+            winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>());
+    }
 }
 
 void NavigationView::UpdateIsClosedCompact()
@@ -2399,6 +2451,7 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
     const bool isSettingsItem = IsSettingsItem(nextItem);
+    const bool isItemInvoked = m_shouldRaiseItemInvokedAfterSelection;
 
     if (IsSelectionSuppressed(nextItem))
     {
@@ -2482,7 +2535,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             const bool isUnrealizedDescendant = !winrt::VisualTreeHelper::GetParent(nvi) && selectedIndex && selectedIndex.GetSize() > 2 && m_selectionModel.SelectedItem() == nextItem;
             AnimateSelectionChanged(isUnrealizedDescendant ? FindLowestLevelContainerToDisplaySelectionIndicator() : nvi);
             RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
-            ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+            ClosePaneIfNeccessaryAfterItemIsClicked(nvi, isItemInvoked);
         }
         else
         {
@@ -3213,6 +3266,14 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
             handled = AttemptClosePaneLightly();
         }
         break;
+    case winrt::VirtualKey::Escape:
+    case winrt::VirtualKey::GamepadB:
+        if (IsPaneOpen() && IsLightDismissible())
+        {
+            AttemptClosePaneLightly();
+            handled = true;
+        }
+        break;
     case winrt::VirtualKey::GamepadLeftShoulder:
         handled = BumperNavigation(-1);
         break;
@@ -3223,6 +3284,42 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         // arrow keys navigation through ItemsRepeater don't get here
         // so handle tab key to distinguish between tab focus and arrow focus navigation
         m_TabKeyPrecedesFocusChange = true;
+        if (IsPaneOpen() && IsLightDismissible())
+        {
+            const auto xamlRoot = XamlRoot();
+            const auto isPaneButton = [this](winrt::DependencyObject const& element)
+            {
+                return element && (element == m_paneToggleButton.get() ||
+                    element == m_backButton.get() || element == m_closeButton.get());
+            };
+            if (xamlRoot && isPaneButton(winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>()))
+            {
+                if (const auto splitView = m_rootSplitView.get())
+                {
+                    const auto pane = splitView.Pane();
+                    const bool reverse = (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Shift)
+                        & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::None;
+                    const auto direction = reverse ? winrt::FocusNavigationDirection::Previous : winrt::FocusNavigationDirection::Next;
+                    const winrt::FindNextElementOptions options;
+                    options.SearchRoot(xamlRoot.Content());
+                    const auto next = winrt::FocusManager::FindNextElement(direction, options);
+                    if (pane && !isPaneButton(next) && next != pane && !SharedHelpers::IsAncestor(next, pane))
+                    {
+                        const auto target = reverse ? winrt::FocusManager::FindLastFocusableElement(pane)
+                            : winrt::FocusManager::FindFirstFocusableElement(pane);
+                        if (const auto element = target.try_as<winrt::UIElement>())
+                        {
+                            element.Focus(winrt::FocusState::Keyboard);
+                        }
+                        else if (const auto hyperlink = target.try_as<winrt::Hyperlink>())
+                        {
+                            hyperlink.Focus(winrt::FocusState::Keyboard);
+                        }
+                        handled = true;
+                    }
+                }
+            }
+        }
         break;
     case winrt::VirtualKey::Left:
         const auto altState = winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Menu);
@@ -4961,10 +5058,47 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
     UpdateTitleBarPadding();
 }
 
-void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer)
+void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer, bool isItemInvoked)
 {
     if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer) && !m_shouldIgnoreNextSelectionChange)
     {
+        winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
+        winrt::ISplitViewPrivate focusOperationOwner{ nullptr };
+        winrt::TypedEventHandler<winrt::SplitView, winrt::IInspectable> previousCompletionCallback{ nullptr };
+        auto restoreCompletionCallback = gsl::finally([&]()
+        {
+            if (focusOperationOwner)
+            {
+                focusOperationOwner.PaneFocusOperationCompletedCallback(previousCompletionCallback);
+            }
+        });
+        const auto splitView = m_rootSplitView.get();
+        const auto opener = m_paneOpeningFocusedElement.get();
+        const auto canRetainFocus = [selectedContainer, splitView]()
+        {
+            return splitView && splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay &&
+                splitView.CompactPaneLength() > 0 &&
+                winrt::get_self<NavigationViewItem>(selectedContainer)->IsTopLevelItem() &&
+                (!selectedContainer.SelectsOnInvoked() || selectedContainer.IsSelected());
+        };
+        if (isItemInvoked && canRetainFocus() && opener &&
+            selectedContainer.FocusState() != winrt::FocusState::Unfocused)
+        {
+            focusOperationOwner = splitView.as<winrt::ISplitViewPrivate>();
+            previousCompletionCallback = focusOperationOwner.PaneFocusOperationCompletedCallback();
+            focusOperationOwner.PaneFocusOperationCompletedCallback(
+                [&gettingFocusRevoker](auto const&, auto const&) { gettingFocusRevoker.revoke(); });
+            gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
+                [selectedContainer, opener, canRetainFocus, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
+                {
+                    if (!args.Cancel() && !args.Handled() && canRetainFocus() &&
+                        args.OldFocusedElement() == selectedContainer && args.NewFocusedElement() == opener)
+                    {
+                        args.Handled(args.TrySetNewFocusedElement(selectedContainer));
+                    }
+                    gettingFocusRevoker.revoke();
+                });
+        }
         ClosePane();
     }
 }

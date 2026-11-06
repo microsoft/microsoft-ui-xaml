@@ -45,6 +45,7 @@ namespace Microsoft.UI.Xaml.Controls
     [InstanceCountTelemetry]
     [Guids(ClassGuid = "abe890c2-bd57-423e-98f3-dd3ccd2d974c")]
     [Implements(typeof(Microsoft.Internal.FrameworkUdk.IBackButtonPressedListener))]
+    [Implements(typeof(ISplitViewPrivate))]
     public class SplitView
      : Microsoft.UI.Xaml.Controls.Control
     {
@@ -96,6 +97,21 @@ namespace Microsoft.UI.Xaml.Controls
         public event Microsoft.UI.Xaml.Controls.SplitViewPaneOpenedEventHandler PaneOpened;
 
         public SplitView() { }
+    }
+
+    // Interfaces that reference SplitView must follow its definition for model generation.
+    [DXamlIdlGroup("Controls2")]
+    [Platform(typeof(PrivateApiContract), 1)]
+    [TypeTable(IsExcludedFromCore = true)]
+    public interface ISplitViewPrivate
+    {
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        Windows.Foundation.TypedEventHandler<SplitView, Windows.Foundation.Object> PaneFocusOperationCompletedCallback
+        {
+            get;
+            set;
+        }
     }
 
     [StubDelegate]

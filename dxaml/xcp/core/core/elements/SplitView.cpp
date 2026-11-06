@@ -529,7 +529,10 @@ _Check_return_ HRESULT CSplitView::RestoreSavedFocusElement()
             auto pFocusManager = VisualTree::GetFocusManagerForElement(pPrevFocusedElement);
             if (pFocusManager && pFocusManager->IsFocusable(pPrevFocusedElement))
             {
-                const FocusMovementResult result = pFocusManager->SetFocusedElement(FocusMovement(pPrevFocusedElement, DirectUI::FocusNavigationDirection::None, m_prevFocusState));
+                const auto focusState = pFocusManager->GetFocusedElementNoRef() == pPrevFocusedElement
+                    ? pFocusManager->GetRealFocusStateForFocusedElement()
+                    : m_prevFocusState;
+                const FocusMovementResult result = pFocusManager->SetFocusedElement(FocusMovement(pPrevFocusedElement, DirectUI::FocusNavigationDirection::None, focusState));
                 IFC_RETURN(result.GetHResult());
                 wasFocusRestored = result.WasMoved();
             }

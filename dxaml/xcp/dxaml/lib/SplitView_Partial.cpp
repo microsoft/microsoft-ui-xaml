@@ -468,6 +468,41 @@ SplitView::ChangeVisualState(_In_ bool useTransitions)
 }
 
 _Check_return_ HRESULT
+SplitView::get_PaneFocusOperationCompletedCallbackImpl(
+    _Outptr_result_maybenull_ PaneFocusOperationCompletedCallbackType** callback)
+{
+    return m_paneFocusOperationCompletedCallback.CopyTo(callback);
+}
+
+_Check_return_ HRESULT
+SplitView::put_PaneFocusOperationCompletedCallbackImpl(
+    _In_opt_ PaneFocusOperationCompletedCallbackType* callback)
+{
+    SetPtrValue(m_paneFocusOperationCompletedCallback, callback);
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+SplitView::RunPaneFocusOperation(bool isOpen)
+{
+    ctl::ComPtr<PaneFocusOperationCompletedCallbackType> callback;
+    IFC_RETURN(m_paneFocusOperationCompletedCallback.CopyTo(callback.GetAddressOf()));
+    if (callback)
+    {
+        // A nested pane transition must not complete the outer operation's scope.
+        m_paneFocusOperationCompletedCallback.Clear();
+    }
+
+    const auto core = static_cast<CSplitView*>(GetHandle());
+    const HRESULT focusResult = isOpen ? core->OnPaneOpening() : core->OnPaneClosing();
+    const HRESULT completionResult = callback
+        ? callback->Invoke(static_cast<xaml_controls::ISplitView*>(this), nullptr)
+        : S_OK;
+    IFC_RETURN(focusResult);
+    return completionResult;
+}
+
+_Check_return_ HRESULT
 SplitView::OnIsPaneOpenChanged(bool isOpen)
 {
     IFC_RETURN(RegisterForDisplayModeStatesChangedEvent());
@@ -484,7 +519,7 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
         IFC_RETURN(eventSource->Raise(this, nullptr /*args*/));
 
         // Call into the core object to set focus to the pane on opening.
-        IFC_RETURN(static_cast<CSplitView*>(GetHandle())->OnPaneOpening());
+        IFC_RETURN(RunPaneFocusOperation(true));
 
         if (DXamlCore::GetCurrent()->GetHandle()->BackButtonSupported())
         {
@@ -496,7 +531,7 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     {
         // Call into the core object to raise the PaneClosing event, which is raised asynchronously.
         // This will also restore focus to whichever element had focus when the pane opened.
-        IFC_RETURN(static_cast<CSplitView*>(GetHandle())->OnPaneClosing());
+        IFC_RETURN(RunPaneFocusOperation(false));
 
         IFC_RETURN(BackButtonIntegration_UnregisterListener(this));
         IFC_RETURN(TeardownOuterDismissLayer());
