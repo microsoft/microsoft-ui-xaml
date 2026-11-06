@@ -282,6 +282,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     InputHelper.LeftClick(navView, 1, 1);
                     Wait.ForIdle();
                     Verify.AreEqual("Back was requested", textBlock.DocumentText);
+
+                    resetButton.Invoke();
+                    Wait.ForIdle();
+                    Log.Comment("Click the NavigationView's top edge above the back button");
+                    InputHelper.LeftClick(navView, backBounds.X - navViewBounds.X + backBounds.Width / 3, 1);
+                    Wait.ForIdle();
+                    Verify.AreEqual("Back was requested", textBlock.DocumentText);
                 }
             }
         }

@@ -2634,14 +2634,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 VerifyElementOffset(navView, paneToggleButton, isMinimal ? 40.0 : 0.0, isMinimal ? 4.0 : 44.0, "Pane toggle button");
                             }
 
-                            // Right of the backplate nothing changes: the pane toggle (LeftMinimal) or the first top pane item
-                            // (Top, whose visual starts at x = 48) still gets the click.
-                            Verify.IsFalse(IsBackButtonHit(navView, backButton, 4.0 + backplateWidth + 1.0, 20.0), "Right of the backplate doesn't reach the back button");
+                            // Right of the backplate nothing changes owner: the pane toggle (LeftMinimal) or the first top pane item
+                            // (Top; its visual starts at x = 48) still gets the click.
+                            double rightOfBackplate = 4.0 + backplateWidth + 1.0;
+                            Verify.IsFalse(IsHitWithin(navView, backButton, rightOfBackplate, 20.0), "Right of the backplate doesn't reach the back button");
+                            if (isMinimal)
+                            {
+                                Verify.IsTrue(IsHitWithin(navView, paneToggleButton, rightOfBackplate, 20.0), "Right of the backplate reaches the pane toggle button");
+                            }
+                            else if (isTop)
+                            {
+                                var firstItem = navView.ContainerFromMenuItem(navView.MenuItems[0]) as NavigationViewItem;
+                                Verify.IsTrue(IsHitWithin(navView, firstItem, Math.Max(rightOfBackplate, 49.0), 20.0), "Right of the backplate reaches the first top pane item");
+                            }
 
                             // The fix: the window corner and the edges next to the backplate reach the back button.
                             foreach (var point in new[] { new global::Windows.Foundation.Point(0.5, 0.5), new global::Windows.Foundation.Point(4.0 + backplateWidth / 2, 0.5), new global::Windows.Foundation.Point(0.5, 24.0) })
                             {
-                                if (!IsBackButtonHit(navView, backButton, point.X, point.Y))
+                                if (!IsHitWithin(navView, backButton, point.X, point.Y))
                                 {
                                     cornerMisses.Add($"{scenario}: ({point.X}, {point.Y})");
                                 }
@@ -2742,11 +2752,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyElementOffset(navView, backplate, 4.0, 6.0, "Back button backplate");
                 VerifyLength(40.0, backplate.ActualWidth, "Back button backplate width");
                 VerifyLength(36.0, backplate.ActualHeight, "Back button backplate height");
-                Verify.IsTrue(IsBackButtonHit(navView, backButton, 0.5, 0.5), "The corner reaches the back button");
+                Verify.IsTrue(IsHitWithin(navView, backButton, 0.5, 0.5), "The corner reaches the back button");
             });
         }
 
-        private bool IsBackButtonHit(NavigationView navView, Button backButton, double x, double y)
+        // True if the top-most element hit at (x, y) in the NavigationView's coordinates is owner or inside it.
+        private bool IsHitWithin(NavigationView navView, DependencyObject owner, double x, double y)
         {
             var hostPoint = navView.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(x, y));
             foreach (var element in VisualTreeHelper.FindElementsInHostCoordinates(hostPoint, navView))
@@ -2754,7 +2765,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Elements are returned top-most first; the first one decides who gets the click.
                 for (DependencyObject current = element; current != null; current = VisualTreeHelper.GetParent(current))
                 {
-                    if (current == backButton)
+                    if (current == owner)
                     {
                         return true;
                     }
