@@ -307,6 +307,69 @@ function Build-Server([string] $Base, [string] $Hash, [string] $Target) {
     }
 }
 
+# Opens the build's .last-used file, stamps it with the time and returns it. The caller holds it open
+# while the server runs, so cleanup in another session can't rename or delete the build. Cleanup can
+# remove the build before the file is open, so this checks the build again once it is, and throws
+# when the build isn't all there.
+function Open-Lease([string] $Target) {
+    $lease = New-Object System.IO.FileStream((Join-Path $Target $lastUsedFileName), [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::ReadWrite)
+    try {
+        $complete = Join-Path $Target $completeFileName
+        if (-not [IO.File]::Exists($complete)) {
+            throw "The build has no $completeFileName."
+        }
+
+        if (-not [IO.File]::Exists((Join-Path $Target $serverFileName))) {
+            # Builds are moved into place whole, so the server was deleted since. Without its marker,
+            # the build is replaced when it's built again.
+            try { [IO.File]::Delete($complete) } catch { }
+            throw "The build has no $serverFileName."
+        }
+    } catch {
+        # Closed, so that building again can replace the build.
+        $lease.Dispose()
+        throw
+    }
+
+    # The open file is what keeps cleanup away. The time only tells cleanup when the build was last
+    # used, once no server holds it.
+    try {
+        $stamp = $utf8.GetBytes([DateTime]::UtcNow.ToString('o'))
+        $lease.SetLength(0)
+        $lease.Write($stamp, 0, $stamp.Length)
+        $lease.Flush()
+    } catch {
+        Write-Status "Couldn't record that this build is in use: $($_.Exception.GetBaseException().Message)"
+    }
+
+    return $lease
+}
+
+# Builds the server unless it's built, and returns the build's lease (see Open-Lease). When the build
+# is gone or damaged by the time this holds it, as when cleanup in another session removed it, this
+# builds it again.
+function Lock-Build([string] $Base, [string] $Hash, [string] $Target) {
+    $attempt = 0
+    while ($true) {
+        $attempt++
+        if (-not [IO.File]::Exists((Join-Path $Target $completeFileName))) {
+            Build-Server $Base $Hash $Target
+        }
+
+        try {
+            return Open-Lease $Target
+        } catch {
+            $reason = $_.Exception.GetBaseException().Message
+            if ($attempt -ge 3) {
+                throw "Couldn't hold the server's build in $Target while the server runs: $reason"
+            }
+
+            Write-Status "Couldn't hold the server's build in $Target, so trying again: $reason"
+            Start-Sleep -Milliseconds 500
+        }
+    }
+}
+
 $lease = $null
 try {
     $requiredSdk = ''
@@ -331,20 +394,7 @@ try {
     $hash = Get-SourceHash @("dotnet=$dotnet", "sdk=$sdkVersion")
     $base = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'WinUIProfiler\Mcp'
     $target = Join-Path $base $hash
-    if (-not [IO.File]::Exists((Join-Path $target $completeFileName))) {
-        Build-Server $base $hash $target
-    }
-
-    # Held open while the server runs, so cleanup in another session can't rename or delete this build.
-    try {
-        $lease = New-Object System.IO.FileStream((Join-Path $target $lastUsedFileName), [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::ReadWrite)
-        $stamp = $utf8.GetBytes([DateTime]::UtcNow.ToString('o'))
-        $lease.SetLength(0)
-        $lease.Write($stamp, 0, $stamp.Length)
-        $lease.Flush()
-    } catch {
-        Write-Status "Couldn't record that this build is in use: $($_.Exception.Message)"
-    }
+    $lease = Lock-Build $base $hash $target
 
     # Not redirected: the server reads and writes this script's standard input and output directly.
     $startInfo = New-Object System.Diagnostics.ProcessStartInfo
