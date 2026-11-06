@@ -415,6 +415,11 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CanNotReenterPopupDialogFromApplyTemplate)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that ShowAsync re-entry from OnApplyTemplate does not corrupt the original dialog show.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(CanNotShowTwoSiblingInPlaceDialogsAtSameTime)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that two InPlace dialogs that aren't under the same parent can't be shown at the same time.")
     END_TEST_METHOD()

@@ -232,16 +232,19 @@ IFACEMETHODIMP PrintDocumentSource::GetPreviewPageCollection(
     // This call make come in on a worker thread, post it on the UI-thread since we need to access our objects.
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
-    spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
+    if (pPrintDocument)
+    {
+        spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
 
-    IFC(ctl::make(&spContext));
-    SetInterface(spContext->m_pPrintPackageTarget, docPackageTarget);
+        IFC(ctl::make(&spContext));
+        SetInterface(spContext->m_pPrintPackageTarget, docPackageTarget);
 
-    IFC(spPrintDocumentDO->GetXamlDispatcherNoRef()->RunAsync(
-        MakeCallback(
-            ctl::WeakRefPtr(m_pPrintDocument),
-            &PrintDocument::GetPreviewPageCollectionImpl,
-            spContext)));
+        IFC(spPrintDocumentDO->GetXamlDispatcherNoRef()->RunAsync(
+            MakeCallback(
+                ctl::WeakRefPtr(m_pPrintDocument),
+                &PrintDocument::GetPreviewPageCollectionImpl,
+                spContext)));
+    }
 
     ctl::addref_interface(this);
     *docPageCollection = static_cast<IPrintPreviewPageCollection*>(this);
@@ -270,6 +273,11 @@ IFACEMETHODIMP PrintDocumentSource::Paginate(
     ctl::ComPtr<wgr::Printing::IPrintTaskOptionsCore> spPrintTaskOptionsCore = NULL;
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return S_OK;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
     if (docSettings)
     {
@@ -314,6 +322,11 @@ IFACEMETHODIMP PrintDocumentSource::MakePage(
     // This call make come in on a worker thread, post it on the UI-thread since we need to access our objects.
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return S_OK;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
 
     IFC(ctl::ComObject<PrintDocumentInvokeContext>::CreateInstance(spContext.GetAddressOf()));
@@ -349,6 +362,11 @@ HRESULT PrintDocumentSource::MakeDocument(
     ctl::ComPtr<wgr::Printing::IPrintTaskOptionsCore> spPrintTaskOptionsCore = NULL;
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return S_OK;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
 
     // MakeDocument may be called on a worker therad. We post a dispatcher callback to do most of our

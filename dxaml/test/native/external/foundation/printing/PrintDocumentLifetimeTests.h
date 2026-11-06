@@ -22,7 +22,7 @@ public:
     TEST_METHOD_CLEANUP(TestCleanup)
 
     BEGIN_TEST_METHOD(MakeDocumentAfterOwnerReleaseDoesNotCrash)
-        TEST_METHOD_PROPERTY(L"Description", L"Validates that PrintDocumentSource handles a successfully expired weak reference when MakeDocument is called.")
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that retained PrintDocumentSource callbacks handle live and expired owners without crashing.")
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
     END_TEST_METHOD();
 };

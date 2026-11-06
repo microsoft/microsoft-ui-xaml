@@ -33,6 +33,41 @@ void PrintDocumentLifetimeTests::MakeDocumentAfterOwnerReleaseDoesNotCrash()
     Microsoft::WRL::ComPtr<IPrintDocumentPageSource> documentSource;
     Platform::WeakReference printDocumentWeakReference;
 
+    struct CallResults
+    {
+        HRESULT initializeResult = E_FAIL;
+        HRESULT makeDocumentResult = E_FAIL;
+        HRESULT getPreviewCollectionResult = E_FAIL;
+        HRESULT paginateResult = E_FAIL;
+        HRESULT makePageResult = E_FAIL;
+    };
+
+    auto callPrintMethods = [&]()
+    {
+        CallResults results;
+        std::thread worker([&]()
+        {
+            results.initializeResult = ::RoInitialize(RO_INIT_MULTITHREADED);
+            if (SUCCEEDED(results.initializeResult))
+            {
+                results.makeDocumentResult = documentSource->MakeDocument(nullptr, nullptr);
+
+                Microsoft::WRL::ComPtr<IPrintPreviewPageCollection> previewCollection;
+                results.getPreviewCollectionResult = documentSource->GetPreviewPageCollection(nullptr, &previewCollection);
+                if (SUCCEEDED(results.getPreviewCollectionResult) && previewCollection)
+                {
+                    results.paginateResult = previewCollection->Paginate(0, nullptr);
+                    results.makePageResult = previewCollection->MakePage(1, 100.0f, 100.0f);
+                }
+
+                ::RoUninitialize();
+            }
+        });
+        worker.join();
+        return results;
+    };
+
+    CallResults liveOwnerResults;
     RunOnUIThread([&]()
     {
         PrintDocument^ printDocument = ref new PrintDocument();
@@ -42,27 +77,24 @@ void PrintDocumentLifetimeTests::MakeDocumentAfterOwnerReleaseDoesNotCrash()
         VERIFY_SUCCEEDED(documentSourceInspectable->QueryInterface(IID_PPV_ARGS(&documentSource)));
         printDocumentWeakReference = Platform::WeakReference(printDocument);
 
+        liveOwnerResults = callPrintMethods();
         printDocument = nullptr;
-        managedDocumentSource = nullptr;
-
         VERIFY_IS_NULL(printDocumentWeakReference.Resolve<PrintDocument>());
     });
 
-    HRESULT initializeResult = E_FAIL;
-    HRESULT makeDocumentResult = E_FAIL;
-    std::thread worker([&]()
-    {
-        initializeResult = ::RoInitialize(RO_INIT_MULTITHREADED);
-        if (SUCCEEDED(initializeResult))
-        {
-            makeDocumentResult = documentSource->MakeDocument(nullptr, nullptr);
-            ::RoUninitialize();
-        }
-    });
-    worker.join();
+    VERIFY_SUCCEEDED(liveOwnerResults.initializeResult);
+    VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.makeDocumentResult);
+    VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.getPreviewCollectionResult);
+    VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.paginateResult);
+    VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.makePageResult);
+    TestServices::WindowHelper->WaitForIdle();
 
-    VERIFY_SUCCEEDED(initializeResult);
-    LOG_OUTPUT(L"MakeDocument returned 0x%08X after owner expiry.", makeDocumentResult);
+    const auto expiredOwnerResults = callPrintMethods();
+    VERIFY_SUCCEEDED(expiredOwnerResults.initializeResult);
+    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.makeDocumentResult);
+    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.getPreviewCollectionResult);
+    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.paginateResult);
+    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.makePageResult);
 }
 
 } } } } } }

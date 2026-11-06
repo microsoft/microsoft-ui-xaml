@@ -63,6 +63,50 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     };
 
+    ref class ReentrantContentDialog sealed : public xaml_controls::ContentDialog
+    {
+    public:
+        ReentrantContentDialog() :
+            m_reenterFromApplyTemplate(false),
+            m_reentrantHResult(S_OK)
+        {
+        }
+
+        void ReenterOnNextApplyTemplate()
+        {
+            m_reenterFromApplyTemplate = true;
+        }
+
+        int GetReentrantHResult()
+        {
+            return static_cast<int>(m_reentrantHResult);
+        }
+
+    protected:
+        virtual void OnApplyTemplate() override
+        {
+            xaml_controls::ContentDialog::OnApplyTemplate();
+
+            if (m_reenterFromApplyTemplate)
+            {
+                m_reenterFromApplyTemplate = false;
+                try
+                {
+                    ShowAsync();
+                    m_reentrantHResult = E_UNEXPECTED;
+                }
+                catch (Platform::Exception^ exception)
+                {
+                    m_reentrantHResult = exception->HResult;
+                }
+            }
+        }
+
+    private:
+        bool m_reenterFromApplyTemplate;
+        HRESULT m_reentrantHResult;
+    };
+
     bool ContentDialogIntegrationTests::ClassSetup()
     {
         CommonTestSetupHelper::CommonTestClassSetup();
@@ -3702,6 +3746,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         openedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
         VERIFY_IS_NOT_NULL(firstShowOperation);
+
+        CloseContentDialog(dialog);
+        create_task(firstShowOperation).wait();
+
+        auto secondShowOperation = OpenContentDialog(dialog);
+        CloseContentDialog(dialog);
+        create_task(secondShowOperation).wait();
+    }
+
+    void ContentDialogIntegrationTests::CanNotReenterPopupDialogFromApplyTemplate()
+    {
+        TestCleanupWrapper cleanup;
+        ReentrantContentDialog^ dialog = nullptr;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Opened);
+        auto openedEvent = std::make_shared<Event>();
+        wf::IAsyncOperation<xaml_controls::ContentDialogResult>^ firstShowOperation = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            dialog = ref new ReentrantContentDialog();
+            openedRegistration.Attach(dialog, [&]() { openedEvent->Set(); });
+            dialog->CloseButtonText = L"Close";
+            dialog->Content = L"ContentDialog re-entrancy regression";
+            auto host = ref new xaml_controls::Grid();
+            host->Children->Append(dialog);
+            TestServices::WindowHelper->WindowContent = host;
+            dialog->XamlRoot = host->XamlRoot;
+            dialog->ReenterOnNextApplyTemplate();
+
+            firstShowOperation = dialog->ShowAsync();
+            VERIFY_ARE_EQUAL(E_ASYNC_OPERATION_NOT_STARTED, dialog->GetReentrantHResult());
+        });
+
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
 
         CloseContentDialog(dialog);
         create_task(firstShowOperation).wait();
