@@ -39,16 +39,25 @@ void DirectUI::SymbolIcon::SetFontSize(_In_ float fontSize)
 
 _Check_return_ HRESULT SymbolIconFactory::CreateInstanceWithSymbolImpl(
     xaml_controls::Symbol symbol,
+    _In_opt_ IInspectable* pOuter,
+    _Outptr_ IInspectable** ppInner,
     _Outptr_ xaml_controls::ISymbolIcon** ppInstance)
 {
-    HRESULT hr = S_OK;
     ctl::ComPtr<SymbolIcon> spInstance;
+    ctl::ComPtr<IInspectable> spInner;
 
-    IFC(ctl::make(&spInstance));
-    IFC(spInstance->put_Symbol(symbol));
+    IFCEXPECT_RETURN(pOuter == nullptr || ppInner != nullptr);
+    IFC_RETURN(CheckActivationAllowed());
+
+    IFC_RETURN(ctl::BetterAggregableCoreObjectActivationFactory::ActivateInstance(pOuter, &spInner));
+    IFC_RETURN(spInner.As(&spInstance));
+    IFC_RETURN(spInstance->put_Symbol(symbol));
+
+    if (ppInner)
+    {
+        *ppInner = spInner.Detach();
+    }
 
     *ppInstance = spInstance.Detach();
-
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
