@@ -23,9 +23,11 @@
 
 // other
 #include <corep.h>
+#include <MsResourceHelpers.h>
 #include <MUX-ETWEvents.h>
 #include <palnetwork.h>
 #include <PalResourceManager.h>
+#include <UriXStringGetters.h>
 
 typedef ImageAsyncCallback<ImageCache> ImageCacheAsyncTask;
 
@@ -237,8 +239,29 @@ static HRESULT MakeEncodedImageData(_In_ IPALDownloadResponse* response, bool is
     xref_ptr<IPALMemory> imageMemory;
     IFC_RETURN(response->Lock(imageMemory.ReleaseAndGetAddressOf()));
 
+    xstring_ptr scheme;
+    if (resource)
+    {
+        IFC_RETURN(UriXStringGetters::GetScheme(resource->GetResourceUriNoRef(), &scheme));
+    }
+
+    wistd::unique_ptr<IRawData> rawData;
+    if (scheme.Equals(MsUriHelpers::GetAppDataScheme(), xstrCompareCaseInsensitive))
+    {
+        // ms-appdata files are writable by the app, and their memory is a mapped view that keeps the file open
+        // without write sharing. Keep a copy, like file:// and SetSource do, so the file isn't locked by the image.
+        auto copy = wil::make_unique_failfast<RawData>();
+        copy->Allocate(imageMemory->GetSize());
+        memcpy(copy->GetData(), imageMemory->GetAddress(), copy->GetSize());
+        rawData = std::move(copy);
+    }
+    else
+    {
+        rawData = wil::make_unique_failfast<PALMemoryProxy>(imageMemory);
+    }
+
     auto encodedImageData = std::make_shared<EncodedImageData>(
-        wil::make_unique_failfast<PALMemoryProxy>(imageMemory),
+        std::move(rawData),
         resource ? resource->GetScalePercentage() : 0u,
         isSvg);
 
