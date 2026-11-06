@@ -168,7 +168,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                         allApiInformations.AddRange(bindUniverse.BoundEventAssignments.Where(e => e.ApiInformation != null).Select(e => e.ApiInformation));
                     }
 
-                    _allApiInformations = allApiInformations.Distinct().OrderBy(a => a.UniqueName);
+                    _allApiInformations = allApiInformations.Distinct().OrderBy(a => a.UniqueName, StringComparer.Ordinal);
                 }
                 return _allApiInformations;
             }
@@ -307,7 +307,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                         {
                             return value;
                         }
-                    }).ToList();
+                    }, StringComparer.Ordinal).ToList();
 
                 _neededXamlHeaderFilesCalculated = true;
             }
