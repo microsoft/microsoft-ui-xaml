@@ -37,11 +37,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("\"\r\n");
   }
             this.Write(@"
+#include <unknwn.h>
 #include <memory>
 #include <string>
 #include <regex>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
@@ -304,39 +305,39 @@ namespace winrt::");
                     "void XamlUserType::AddEnumValue(::winrt::hstring const& name, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
             this.Write("::IInspectable value)\r\n    {\r\n        _enumValues.insert_or_assign(name.data(), v" +
-                    "alue);\r\n    }\r\n\r\n    uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hs" +
-                    "tring const& input) const\r\n    {\r\n        bool found = false;\r\n\r\n        const s" +
-                    "td::wregex regularExpression(L\"^\\\\s+|\\\\s*,\\\\s*|\\\\s+$\");\r\n        uint32_t val = " +
-                    "0;\r\n\r\n        for (std::wcregex_token_iterator it{ input.begin(), input.end(), r" +
-                    "egularExpression, -1 }, end; it != end; ++it)\r\n        {\r\n            std::wcsub" +
-                    "_match const& subMatch = *it;\r\n            if (subMatch.length() == 0)\r\n        " +
-                    "    {\r\n                continue;\r\n            }\r\n\r\n            auto lookup{ subM" +
-                    "atch.str() };\r\n\r\n            try\r\n            {\r\n                auto entry = _e" +
-                    "numValues.find(lookup);\r\n                if (entry != _enumValues.end())\r\n      " +
-                    "          {\r\n                    val = winrt::unbox_value<int>(entry->second);\r\n" +
-                    "                }\r\n                else\r\n                {\r\n                    " +
-                    "val |= std::stoi(subMatch);\r\n                }\r\n                found = true;\r\n " +
-                    "           }\r\n            catch (std::invalid_argument const&)\r\n            {\r\n " +
-                    "               found = false;\r\n                break;\r\n            }\r\n        }\r" +
-                    "\n\r\n        if (found)\r\n        {\r\n            return val;\r\n        }\r\n        th" +
-                    "row ::winrt::hresult_invalid_argument {};\r\n    }\r\n\r\n \r\n    XamlMember::XamlMembe" +
-                    "r(\r\n        std::shared_ptr<XamlTypeInfoProvider> const& provider, \r\n        ::w" +
-                    "inrt::hstring const& name, \r\n        ::winrt::hstring const& typeName)\r\n        " +
-                    "    : _provider(provider)\r\n            , _name(name)\r\n            , _typeName(ty" +
-                    "peName)\r\n    {\r\n    }\r\n\r\n    void XamlMember::TargetTypeName(::winrt::hstring co" +
-                    "nst& value)\r\n    { \r\n        _targetTypeName = value; \r\n    }\r\n\r\n    bool XamlMe" +
-                    "mber::IsAttachable() const\r\n    {\r\n        return _isAttachable;\r\n    }\r\n\r\n    v" +
-                    "oid XamlMember::IsAttachable(bool value)\r\n    {\r\n        _isAttachable = value;\r" +
-                    "\n    }\r\n\r\n    bool XamlMember::IsDependencyProperty() const\r\n    {\r\n        retu" +
-                    "rn _isDependencyProperty;\r\n    }\r\n\r\n    void XamlMember::IsDependencyProperty(bo" +
-                    "ol value)\r\n    {\r\n        _isDependencyProperty = value;\r\n    }\r\n\r\n    bool Xaml" +
-                    "Member::IsReadOnly() const\r\n    {\r\n        return _isReadOnly;\r\n    }\r\n\r\n    voi" +
-                    "d XamlMember::IsReadOnly(bool value)\r\n    {\r\n        _isReadOnly = value;\r\n    }" +
-                    "\r\n\r\n    ::winrt::hstring XamlMember::Name() const\r\n    {\r\n        return _name;\r" +
-                    "\n    }\r\n\r\n    IXamlType XamlMember::Type() const\r\n    {\r\n        return _provide" +
-                    "r->GetXamlTypeByName(_typeName);\r\n    }\r\n\r\n    IXamlType XamlMember::TargetType(" +
-                    ") const\r\n    {\r\n        return _provider->GetXamlTypeByName(_targetTypeName);\r\n " +
-                    "   }\r\n\r\n    ");
+                    "alue);\r\n    }\r\n\r\n    std::uint32_t XamlUserType::CreateEnumUIntFromString(::winr" +
+                    "t::hstring const& input) const\r\n    {\r\n        bool found = false;\r\n\r\n        co" +
+                    "nst std::wregex regularExpression(L\"^\\\\s+|\\\\s*,\\\\s*|\\\\s+$\");\r\n        std::uint3" +
+                    "2_t val = 0;\r\n\r\n        for (std::wcregex_token_iterator it{ input.begin(), inpu" +
+                    "t.end(), regularExpression, -1 }, end; it != end; ++it)\r\n        {\r\n            " +
+                    "std::wcsub_match const& subMatch = *it;\r\n            if (subMatch.length() == 0)" +
+                    "\r\n            {\r\n                continue;\r\n            }\r\n\r\n            auto lo" +
+                    "okup{ subMatch.str() };\r\n\r\n            try\r\n            {\r\n                auto " +
+                    "entry = _enumValues.find(lookup);\r\n                if (entry != _enumValues.end(" +
+                    "))\r\n                {\r\n                    val = winrt::unbox_value<int>(entry->" +
+                    "second);\r\n                }\r\n                else\r\n                {\r\n          " +
+                    "          val |= std::stoi(subMatch);\r\n                }\r\n                found " +
+                    "= true;\r\n            }\r\n            catch (std::invalid_argument const&)\r\n      " +
+                    "      {\r\n                found = false;\r\n                break;\r\n            }\r\n" +
+                    "        }\r\n\r\n        if (found)\r\n        {\r\n            return val;\r\n        }\r\n" +
+                    "        throw ::winrt::hresult_invalid_argument {};\r\n    }\r\n\r\n \r\n    XamlMember:" +
+                    ":XamlMember(\r\n        std::shared_ptr<XamlTypeInfoProvider> const& provider, \r\n " +
+                    "       ::winrt::hstring const& name, \r\n        ::winrt::hstring const& typeName)" +
+                    "\r\n            : _provider(provider)\r\n            , _name(name)\r\n            , _t" +
+                    "ypeName(typeName)\r\n    {\r\n    }\r\n\r\n    void XamlMember::TargetTypeName(::winrt::" +
+                    "hstring const& value)\r\n    { \r\n        _targetTypeName = value; \r\n    }\r\n\r\n    b" +
+                    "ool XamlMember::IsAttachable() const\r\n    {\r\n        return _isAttachable;\r\n    " +
+                    "}\r\n\r\n    void XamlMember::IsAttachable(bool value)\r\n    {\r\n        _isAttachable" +
+                    " = value;\r\n    }\r\n\r\n    bool XamlMember::IsDependencyProperty() const\r\n    {\r\n  " +
+                    "      return _isDependencyProperty;\r\n    }\r\n\r\n    void XamlMember::IsDependencyP" +
+                    "roperty(bool value)\r\n    {\r\n        _isDependencyProperty = value;\r\n    }\r\n\r\n   " +
+                    " bool XamlMember::IsReadOnly() const\r\n    {\r\n        return _isReadOnly;\r\n    }\r" +
+                    "\n\r\n    void XamlMember::IsReadOnly(bool value)\r\n    {\r\n        _isReadOnly = val" +
+                    "ue;\r\n    }\r\n\r\n    ::winrt::hstring XamlMember::Name() const\r\n    {\r\n        retu" +
+                    "rn _name;\r\n    }\r\n\r\n    IXamlType XamlMember::Type() const\r\n    {\r\n        retur" +
+                    "n _provider->GetXamlTypeByName(_typeName);\r\n    }\r\n\r\n    IXamlType XamlMember::T" +
+                    "argetType() const\r\n    {\r\n        return _provider->GetXamlTypeByName(_targetTyp" +
+                    "eName);\r\n    }\r\n\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
             this.Write("::IInspectable XamlMember::GetValue(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));

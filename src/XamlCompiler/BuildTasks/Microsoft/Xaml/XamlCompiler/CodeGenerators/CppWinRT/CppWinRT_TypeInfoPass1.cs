@@ -32,11 +32,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //------------------------------------------------------------------------------
 #pragma once
 
+#include <unknwn.h>
+
 #include <functional>
 #include <map>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
@@ -209,7 +211,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         void SetBoxedType(IXamlType boxedType);
         void AddMemberName(::winrt::hstring const& shortName);
         void AddEnumValue(::winrt::hstring const& name, IInspectable value);
-        uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
+        std::uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
 
     private:
         std::shared_ptr<XamlTypeInfoProvider> _provider;
