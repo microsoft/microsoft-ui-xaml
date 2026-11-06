@@ -1891,6 +1891,8 @@ void TableView::OnTableViewLosingFocusForBodyTracking(
     const winrt::IInspectable& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args)
 {
+    ClearBystanderQuietReveal();
+
     if (m_suppressBodyFocusTracking)
     {
         // The re-shape's own focus rescue; see TrackBodyFocusPosition.
@@ -2110,6 +2112,17 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
+    // Likewise a bystander restore after a toggle, armed or still waiting for the toggle to apply:
+    // focus the user moves is not pulled back.
+    if (!m_armedBystanderIdentity.empty() && m_pendingGroupFocusLayoutToken.value)
+    {
+        CancelContainerFocusRestore();
+    }
+    else if (!m_pendingGroupFocusBystanderIdentity.empty())
+    {
+        ClearPendingContainerFocus();
+    }
+    ClearBystanderQuietReveal();
     if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
     {
         CancelReshapeFocusRestore();
@@ -2429,6 +2442,104 @@ bool TableView::BringRowElementIntoView(winrt::UIElement const& element, std::op
     // RevealFocusedBodyElement bubbles once the row is really in view.
     ScrollBodyToRowElement(element, alignRatio);
     return true;
+}
+
+bool TableView::ScrollBodyToUnarrangedRowInternal(int32_t index)
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const scroller = m_bodyScroller.get();
+    if (!repeater || !scroller || index < 0 || !(scroller.ViewportHeight() > 0.0))
+    {
+        return false;
+    }
+
+    // Rows between the target and the nearest arranged row are taken at that row's height.
+    int32_t nearestIndex = -1;
+    double nearestTop = 0.0;
+    double nearestHeight = 0.0;
+    const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+    for (int32_t i = 0; i < childCount; ++i)
+    {
+        auto const child = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>();
+        const int32_t childIndex = child ? repeater.GetElementIndex(child) : -1;
+        if (childIndex < 0 || !IsRowElementArranged(child) ||
+            (nearestIndex >= 0 && std::abs(childIndex - index) >= std::abs(nearestIndex - index)))
+        {
+            continue;
+        }
+        try
+        {
+            nearestTop = child.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+        }
+        catch (winrt::hresult_error const&)
+        {
+            continue;
+        }
+        nearestIndex = childIndex;
+        nearestHeight = child.ActualHeight();
+    }
+    if (nearestIndex < 0 || !(nearestHeight > 0.0))
+    {
+        return false;
+    }
+
+    ClearBystanderQuietReveal();
+    const double top = nearestTop + (index - nearestIndex) * nearestHeight;
+    const double target = scroller.VerticalOffset() + top - 0.5 * (scroller.ViewportHeight() - nearestHeight);
+    RequestBodyVerticalOffset(std::clamp(target, 0.0, std::max(0.0, scroller.ScrollableHeight())));
+
+    // The estimate lands near the row; once layout places it, reveal it exactly.
+    if (auto const element = repeater.TryGetElement(index))
+    {
+        ArmUnarrangedRowReveal(winrt::make_weak(element), s_unarrangedRowRevealAttempts);
+    }
+    return true;
+}
+
+void TableView::RevokeUnarrangedRowReveal()
+{
+    if (m_unarrangedRowRevealToken.value)
+    {
+        LayoutUpdated(m_unarrangedRowRevealToken);
+        m_unarrangedRowRevealToken = {};
+    }
+}
+
+void TableView::ArmUnarrangedRowReveal(winrt::weak_ref<winrt::UIElement> const& weakElement, int32_t attemptsLeft)
+{
+    RevokeUnarrangedRowReveal();
+    m_unarrangedRowRevealToken = LayoutUpdated(
+        [weakThis = get_weak(), weakElement, attemptsLeft](winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            auto strongThis = weakThis.get();
+            if (!strongThis)
+            {
+                return;
+            }
+            strongThis->RevokeUnarrangedRowReveal();
+
+            // A layout callback: an escaping exception would fail the process fast.
+            try
+            {
+                auto const element = weakElement.get();
+                auto const repeater = strongThis->m_rowsRepeater.get();
+                if (!element || !repeater || repeater.GetElementIndex(element) < 0)
+                {
+                    return;
+                }
+                if (!strongThis->IsBodyScrollInFlight() && IsRowElementArranged(element))
+                {
+                    strongThis->StartExplicitBringIntoViewInternal(element);
+                }
+                else if (attemptsLeft > 1)
+                {
+                    strongThis->ArmUnarrangedRowReveal(weakElement, attemptsLeft - 1);
+                }
+            }
+            catch (...)
+            {
+            }
+        });
 }
 
 bool TableView::ScrollBodyToRowElement(winrt::UIElement const& element, std::optional<double> alignRatio)
@@ -2838,6 +2949,22 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         {
             args.Handled(true);
             return;
+        }
+
+        // A toggle's repeater rescue and bystander restore queue focus reveals that arrive a frame
+        // later; the row the restore kept focused stays where it is.
+        if (bodyItem == m_bystanderQuietReveal.get())
+        {
+            // Non-keyboard focus asks for the focused element's bounds without padding.
+            auto const root = XamlRoot();
+            const bool focusBounds = root && winrt::FocusManager::GetFocusedElement(root) == target &&
+                requested.X == 0.0f && requested.Y == 0.0f &&
+                requested.Width == static_cast<float>(target.ActualWidth()) && requested.Height == static_cast<float>(target.ActualHeight());
+            if (focusPadded || focusBounds)
+            {
+                args.Handled(true);
+                return;
+            }
         }
 
         // While the table drives the body to a row it has not reached yet, the request focus raises

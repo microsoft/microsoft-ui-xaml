@@ -2,9 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -865,6 +867,350 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling another row in a grouped tree (the chevron path) keeps keyboard focus on the focused item, keeps the viewport and selection, and the next Down move continues from that item (#12456).")]
+        public void VerifyGroupedTreeToggleOfAnotherRowKeepsFocusOnItsItem()
+        {
+            var tableView = PlaceScrollingGroupedTree();
+            double offsetBefore = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(ProjectedIndexOf(tableView, "Eng3"));
+                Verify.IsTrue(RealizedTreeRow(tableView, "Eng3").Focus(FocusState.Keyboard), "Precondition: Eng3 takes keyboard focus.");
+                offsetBefore = GetBodyScroller(tableView).VerticalOffset;
+            });
+            SettleLayout(tableView);
+
+            // Above the focused row first (its index shifts), then below it.
+            foreach (var other in new[] { "Eng1", "Eng4" })
+            {
+                RunOnUIThread.Execute(() => GetRowExpandCollapse(RealizedTreeRow(tableView, other)).Expand());
+                SettleLayout(tableView);
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var context = $"after expanding {other}";
+                    Verify.IsTrue(RealizedTreeRow(tableView, other).IsExpanded, $"{other} expands ({context}).");
+                    VerifyFocusedTreeRow(tableView, "Eng3", FocusState.Keyboard, context);
+                    Verify.AreEqual("Eng3", SelectedName(tableView), $"Selection does not follow the toggle ({context}).");
+                    Verify.IsTrue(Math.Abs(GetBodyScroller(tableView).VerticalOffset - offsetBefore) < 0.5, $"The body does not scroll ({context}): {offsetBefore:F1} -> {GetBodyScroller(tableView).VerticalOffset:F1}.");
+                });
+            }
+
+            // Eng3's stale reveals are dropped only while they drain: once scrolled just out of view, revealing it scrolls back.
+            WaitFrames(10);
+            double hiddenOffset = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RealizedTreeRow(tableView, "Eng3");
+                var scroller = GetBodyScroller(tableView);
+                hiddenOffset = scroller.VerticalOffset + row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y + row.ActualHeight + 1.0;
+            });
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, hiddenOffset);
+            RunOnUIThread.Execute(() => RealizedTreeRow(tableView, "Eng3").StartBringIntoView());
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                Verify.IsTrue(scroller.VerticalOffset < hiddenOffset - 0.5,
+                    $"A later bring-into-view of Eng3 scrolls the body back toward it: {hiddenOffset:F1} -> {scroller.VerticalOffset:F1}.");
+            });
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Down, new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }),
+                    "Down moves focus."));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyFocusedTreeRow(tableView, "Eng4", null, "Down after the toggles"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing the parent of the focused row in a grouped tree moves keyboard focus to that parent, in view, without selecting it (#12456).")]
+        public void VerifyGroupedTreeCollapseOfFocusedRowsParentFocusesParent()
+        {
+            var tableView = PlaceScrollingGroupedTree();
+            RunOnUIThread.Execute(() => GetRowExpandCollapse(RealizedTreeRow(tableView, "Eng2")).Expand());
+            SettleLayout(tableView);
+
+            double offsetBefore = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(ProjectedIndexOf(tableView, "Eng2.1"));
+                Verify.IsTrue(RealizedTreeRow(tableView, "Eng2.1").Focus(FocusState.Keyboard), "Precondition: Eng2.1 takes keyboard focus.");
+                offsetBefore = GetBodyScroller(tableView).VerticalOffset;
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => GetRowExpandCollapse(RealizedTreeRow(tableView, "Eng2")).Collapse());
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(RealizedTreeRow(tableView, "Eng2").IsExpanded, "Eng2 collapses.");
+                var row = VerifyFocusedTreeRow(tableView, "Eng2", FocusState.Keyboard, "after collapsing the focused row's parent");
+                var scroller = GetBodyScroller(tableView);
+                var top = row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    $"The focused parent is in view: top {top:F1}, viewport {scroller.ViewportHeight:F1}.");
+                Verify.IsTrue(Math.Abs(scroller.VerticalOffset - offsetBefore) < 0.5, $"The body does not scroll: {offsetBefore:F1} -> {scroller.VerticalOffset:F1}.");
+                Verify.AreEqual("null", SelectedName(tableView), "The collapse clears the hidden row's selection and does not select the parent.");
+            });
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Down, new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }),
+                    "Down moves focus."));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyFocusedTreeRow(tableView, "Eng3", null, "Down after the collapse"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling a visible row below a focused row scrolled out of view keeps focus on that row without scrolling the body back to it or re-realizing the rows in view (#12456).")]
+        public void VerifyGroupedTreeToggleKeepsFocusOnOffscreenRowWithoutScrolling()
+        {
+            VerifyToggleKeepsFocusOnOffscreenRow("Eng1", focusedRowAbove: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling a visible row above a focused row scrolled out of view, which shifts that row's index, keeps focus on the row without scrolling or re-realizing the rows in view (#12456).")]
+        public void VerifyGroupedTreeToggleAboveOffscreenFocusedRowKeepsFocusWithoutScrolling()
+        {
+            VerifyToggleKeepsFocusOnOffscreenRow("Ops6", focusedRowAbove: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies UIA ScrollItem on a focused row the repeater holds off-screen after a toggle above it scrolls to that row, not to the top (#12456).")]
+        public void VerifyScrollItemRevealsOffscreenFocusedRowAfterToggleAboveIt()
+        {
+            var tableView = PlaceScrollingGroupedTree(rootsPerDept: 30);
+            IScrollItemProvider scrollItem = null;
+
+            // An item peer is handed out while the row is not realized; a client keeps it.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(ProjectedIndexOf(tableView, "Ops28")), "Precondition: Ops28 is not realized.");
+                tableView.Select(ProjectedIndexOf(tableView, "Ops28"));
+                var selection = (ISelectionProvider)FrameworkElementAutomationPeer.CreatePeerForElement(tableView).GetPattern(PatternInterface.Selection);
+                scrollItem = new PeerProbe().ToPeer(selection.GetSelection()[0]) as IScrollItemProvider;
+                Verify.IsNotNull(scrollItem, "Precondition: the selection hands out Ops28's item peer.");
+            });
+
+            double bottom = 0.0;
+            RunOnUIThread.Execute(() => bottom = GetBodyScroller(tableView).ScrollableHeight - 1.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, bottom);
+            FocusTreeRowOrCell(tableView, "Ops28", -1);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
+
+            RunOnUIThread.Execute(() => GetRowExpandCollapse(RealizedTreeRow(tableView, "Eng0")).Expand());
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusedTreeRow(tableView, "Ops28", FocusState.Keyboard, "after expanding Eng0");
+                Verify.IsTrue(GetBodyScroller(tableView).VerticalOffset < 0.5, "The body does not scroll to Ops28.");
+                scrollItem.ScrollIntoView();
+            });
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var row = RealizedTreeRow(tableView, "Ops28");
+                var top = row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    $"ScrollItem brings Ops28 into view, not the top: offset {scroller.VerticalOffset:F1}, top {top:F1}, viewport {scroller.ViewportHeight:F1}.");
+            });
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling a row above an off-screen focused cell, which shifts its row's index, keeps focus on that cell (#12456).")]
+        public void VerifyGroupedTreeToggleAboveOffscreenFocusedCellKeepsCell()
+        {
+            VerifyToggleKeepsFocusOnOffscreenRow("Ops6", focusedRowAbove: false, column: 1);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling another row in a grouped tree keeps keyboard focus on the focused cell, not just its row (#12456).")]
+        public void VerifyGroupedTreeToggleKeepsFocusOnFocusedCell()
+        {
+            var tableView = PlaceScrollingGroupedTree(withDeptColumn: true);
+            FocusTreeRowOrCell(tableView, "Eng3", 1);
+            double offsetBefore = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                offsetBefore = GetBodyScroller(tableView).VerticalOffset;
+                GetRowExpandCollapse(RealizedTreeRow(tableView, "Eng1")).Expand();
+            });
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(RealizedTreeRow(tableView, "Eng1").IsExpanded, "Eng1 expands.");
+                VerifyFocusedTreeRowOrCell(tableView, "Eng3", 1, "after expanding Eng1");
+                Verify.IsTrue(Math.Abs(GetBodyScroller(tableView).VerticalOffset - offsetBefore) < 0.5, "The body does not scroll.");
+            });
+        }
+
+        // column >= 0 focuses that cell (cell level) instead of the row container.
+        private void VerifyToggleKeepsFocusOnOffscreenRow(string focusedName, bool focusedRowAbove, int column = -1, Action<TableView> then = null)
+        {
+            var tableView = PlaceScrollingGroupedTree(withDeptColumn: column >= 0);
+            double bottom = 0.0;
+            RunOnUIThread.Execute(() => bottom = GetBodyScroller(tableView).ScrollableHeight - 1.0);
+            if (!focusedRowAbove)
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, bottom);
+            }
+
+            FocusTreeRowOrCell(tableView, focusedName, column);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, focusedRowAbove ? bottom : 0.0);
+
+            double offsetBefore = 0.0;
+            string visibleRoot = null;
+            var firstPrepared = new Dictionary<int, UIElement>();
+            var recycledAfterPrepare = new List<UIElement>();
+            TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> onPrepared = (s, e) =>
+            {
+                if (!firstPrepared.ContainsKey(e.Index))
+                {
+                    firstPrepared[e.Index] = e.Element;
+                }
+            };
+            TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> onClearing = (s, e) =>
+            {
+                if (firstPrepared.ContainsValue(e.Element))
+                {
+                    recycledAfterPrepare.Add(e.Element);
+                }
+            };
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                offsetBefore = scroller.VerticalOffset;
+                visibleRoot = GetRealizedRows(tableView)
+                    .Where(r => r.IsExpandable && !r.IsExpanded)
+                    .Select(r => (Row: r, Top: r.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y))
+                    .Where(r => r.Top >= 0.0 && r.Top + r.Row.ActualHeight <= scroller.ViewportHeight)
+                    .Select(r => NameOf(r.Row.DataContext))
+                    .FirstOrDefault();
+                Verify.IsNotNull(visibleRoot, "Precondition: a collapsed root is fully in view.");
+                Verify.AreNotEqual(focusedName, visibleRoot, $"Precondition: {focusedName} is scrolled out of view.");
+                Verify.AreEqual(focusedRowAbove, ProjectedIndexOf(tableView, focusedName) < ProjectedIndexOf(tableView, visibleRoot),
+                    $"Precondition: {focusedName} is {(focusedRowAbove ? "above" : "below")} {visibleRoot}.");
+
+                // The toggle's Reset re-realizes every row once; restoring focus must not re-realize the rows in view again.
+                var repeater = GetRowsRepeater(tableView);
+                repeater.ElementPrepared += onPrepared;
+                repeater.ElementClearing += onClearing;
+                GetRowExpandCollapse(RealizedTreeRow(tableView, visibleRoot)).Expand();
+            });
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                repeater.ElementPrepared -= onPrepared;
+                repeater.ElementClearing -= onClearing;
+
+                var context = $"after expanding {visibleRoot}";
+                var root = RealizedTreeRow(tableView, visibleRoot);
+                Verify.IsTrue(root.IsExpanded, $"{visibleRoot} expands.");
+                var focusedRow = VerifyFocusedTreeRowOrCell(tableView, focusedName, column, context);
+                var scroller = GetBodyScroller(tableView);
+                var offsetAfter = scroller.VerticalOffset;
+                // A 1px settle near the end of the extent (seen on RS5) is not a reveal, which would move it by rows.
+                Verify.IsTrue(Math.Abs(offsetAfter - offsetBefore) < 1.5, $"The body does not scroll back to {focusedName} ({context}): {offsetBefore:F1} -> {offsetAfter:F1}.");
+
+                var inView = GetRealizedRows(tableView)
+                    .Where(r =>
+                    {
+                        var top = r.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                        return top + r.ActualHeight > 0.0 && top < scroller.ViewportHeight;
+                    })
+                    .ToList();
+                Verify.IsTrue(inView.Contains(root), $"Precondition: {visibleRoot} is in view.");
+                Verify.IsFalse(inView.Contains(focusedRow) && focusedRow.ActualHeight > 0.0, $"{focusedName} is not drawn in view ({context}).");
+                foreach (var row in inView)
+                {
+                    Verify.IsTrue(firstPrepared.TryGetValue(repeater.GetElementIndex(row), out var prepared) && ReferenceEquals(prepared, row) && !recycledAfterPrepare.Contains(row),
+                        $"{NameOf(row.DataContext)} keeps the container the toggle realized it into ({context}).");
+                }
+            });
+
+            if (!focusedRowAbove)
+            {
+                then?.Invoke(tableView);
+                return;
+            }
+
+            // The restore drops the row's stale reveals only while they drain; a later explicit reveal scrolls.
+            WaitFrames(10);
+            RunOnUIThread.Execute(() => RealizedTreeRow(tableView, focusedName).StartBringIntoView());
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                var offset = GetBodyScroller(tableView).VerticalOffset;
+                Verify.IsTrue(Math.Abs(offset - offsetBefore) > 100.0, $"A later bring-into-view of {focusedName} scrolls the body: {offsetBefore:F1} -> {offset:F1}.");
+            });
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling a row above a focused group header in a grouped tree keeps keyboard focus on that header without scrolling (#12456).")]
+        public void VerifyGroupedTreeToggleKeepsFocusOnGroupHeader()
+        {
+            var tableView = PlaceScrollingGroupedTree();
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(RealizedTreeGroupHeader(tableView, "Ops").Focus(FocusState.Keyboard), "Precondition: the Ops header takes keyboard focus."));
+            SettleLayout(tableView);
+
+            double offsetBefore = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                offsetBefore = GetBodyScroller(tableView).VerticalOffset;
+                GetRowExpandCollapse(RealizedTreeRow(tableView, "Eng7")).Expand();
+            });
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(RealizedTreeRow(tableView, "Eng7").IsExpanded, "Eng7 expands.");
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewGroupHeader;
+                Verify.AreEqual("Ops", (focused?.Content as TableViewGroupInfo)?.Key as string, "Focus stays on the Ops header.");
+                Verify.AreEqual(FocusState.Keyboard, focused?.FocusState ?? FocusState.Unfocused, "The header keeps keyboard focus.");
+                Verify.IsTrue(focused != null && ReferenceEquals(focused, RealizedTreeGroupHeader(tableView, "Ops")),
+                    "The focused header is the group's live container.");
+                var offsetAfter = GetBodyScroller(tableView).VerticalOffset;
+                Verify.IsTrue(Math.Abs(offsetAfter - offsetBefore) < 0.5, $"The body does not scroll: {offsetBefore:F1} -> {offsetAfter:F1}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing the parent of the focused row in an ungrouped tree moves keyboard focus to that parent.")]
+        public void VerifyTreeCollapseOfFocusedRowsParentFocusesParent()
+        {
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
+            var tableView = Place(source);
+            Toggle(tableView, "Ada", true);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(FindTreeRow(tableView, "Ben").Focus(FocusState.Keyboard), "Precondition: Ben takes keyboard focus."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => GetRowExpandCollapse(FindTreeRow(tableView, "Ada")).Collapse());
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, Roots, "Ada collapsed");
+                VerifyFocusedTreeRow(tableView, "Ada", FocusState.Keyboard, "after collapsing Ben's parent");
+            });
+        }
+
         #endregion
 
         #region 3.7 Re-entrancy and robustness
@@ -1353,6 +1699,145 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() => ToggleTreeRow(tableView, name, expand));
             SettleLayout(tableView);
+        }
+
+        // [Eng] Eng0..Eng7 [Ops] Ops0..Ops7 (rootsPerDept roots each), each root with two reports (EngN.0, EngN.1), in a body
+        // short enough to scroll.
+        private TableView PlaceScrollingGroupedTree(bool withDeptColumn = false, int rootsPerDept = 8)
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var list = new ObservableCollection<TreeEmployee>();
+                var id = 1;
+                foreach (var dept in new[] { "Eng", "Ops" })
+                {
+                    for (var r = 0; r < rootsPerDept; r++)
+                    {
+                        var rootId = id++;
+                        list.Add(new TreeEmployee { Id = rootId, Name = $"{dept}{r}", Dept = dept });
+                        list.Add(new TreeEmployee { Id = id++, ManagerId = rootId, Name = $"{dept}{r}.0", Dept = dept });
+                        list.Add(new TreeEmployee { Id = id++, ManagerId = rootId, Name = $"{dept}{r}.1", Dept = dept });
+                    }
+                }
+
+                EnsureTabularControlsResources();
+                tableView = CreateTreeTable(Tree(list).GroupBy(ByDept));
+                tableView.Height = 300;
+                if (withDeptColumn)
+                {
+                    // Cells take focus (cell level) only when they are actionable.
+                    tableView.IsReadOnly = false;
+                    tableView.Columns.Add(new TableViewTextColumn
+                    {
+                        Header = "Dept",
+                        Binding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Dept") },
+                        Width = new GridLength(1, GridUnitType.Star),
+                    });
+                }
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.IsTrue(GetBodyScroller(tableView).ScrollableHeight > 0, "Precondition: the body scrolls."));
+            return tableView;
+        }
+
+        private static int ProjectedIndexOf(TableView tableView, string name)
+            => GetProjectedItems(tableView).FindIndex(item => NameOf(item) == name);
+
+        // FindTreeRow for a body that does not realize every row.
+        private static TableViewRow RealizedTreeRow(TableView tableView, string name)
+        {
+            var row = GetRowsRepeater(tableView).TryGetElement(ProjectedIndexOf(tableView, name)) as TableViewRow;
+            Verify.IsNotNull(row, $"Row '{name}' is realized.");
+            return row;
+        }
+
+        // Keyboard focus on the row container, or with column >= 0 on that cell (cell level).
+        private static void FocusTreeRowOrCell(TableView tableView, string name, int column)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RealizedTreeRow(tableView, name);
+                if (column >= 0)
+                {
+                    GetCellPeer(row, column).SetFocus();
+                }
+                else
+                {
+                    Verify.IsTrue(row.Focus(FocusState.Keyboard), $"Precondition: {name} takes keyboard focus.");
+                }
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyFocusedTreeRowOrCell(tableView, name, column, "precondition"));
+        }
+
+        private static TableViewRow VerifyFocusedTreeRowOrCell(TableView tableView, string name, int column, string context)
+        {
+            var row = VerifyFocusedTreeRow(tableView, name, column >= 0 ? null : FocusState.Keyboard, context);
+            if (column >= 0 && row != null)
+            {
+                Verify.IsTrue(ReferenceEquals(GetRowCell(row, column), FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    $"Focus is on {name}'s cell {column} ({context}); focused: {FocusManager.GetFocusedElement(tableView.XamlRoot)?.GetType().Name ?? "null"}.");
+            }
+
+            return row;
+        }
+
+        private sealed class PeerProbe : FrameworkElementAutomationPeer
+        {
+            public PeerProbe() : base(new Microsoft.UI.Xaml.Controls.Border()) { }
+
+            public AutomationPeer ToPeer(IRawElementProviderSimple provider) => PeerFromProvider(provider);
+        }
+
+        private static TableViewGroupHeader RealizedTreeGroupHeader(TableView tableView, string key)
+        {
+            var repeater = GetRowsRepeater(tableView);
+            var header = Enumerable.Range(0, Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(repeater))
+                .Select(i => Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(repeater, i) as TableViewGroupHeader)
+                .FirstOrDefault(h => h != null && repeater.GetElementIndex(h) >= 0 && Equals((h.Content as TableViewGroupInfo)?.Key, key));
+            Verify.IsNotNull(header, $"Group header '{key}' is realized.");
+            return header;
+        }
+
+        private static void WaitFrames(int count)
+        {
+            using var done = new global::System.Threading.ManualResetEventSlim(false);
+            var frames = 0;
+            EventHandler<object> onRendering = null;
+            onRendering = (s, e) =>
+            {
+                if (++frames == count)
+                {
+                    Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= onRendering;
+                    done.Set();
+                }
+            };
+            RunOnUIThread.Execute(() => Microsoft.UI.Xaml.Media.CompositionTarget.Rendering += onRendering);
+            Verify.IsTrue(done.Wait(TimeSpan.FromSeconds(20)), $"{count} frames render.");
+        }
+
+        // The row holding focus must show the named item; state is checked on the focused control when given.
+        private static TableViewRow VerifyFocusedTreeRow(TableView tableView, string name, FocusState? state, string context)
+        {
+            var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+            TableViewRow row = null;
+            for (var node = focused; node != null && row == null; node = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(node))
+            {
+                row = node as TableViewRow;
+            }
+
+            Verify.IsNotNull(row, $"Focus is on a row ({context}); focused: {focused?.GetType().Name ?? "null"}.");
+            Verify.AreEqual(name, row == null ? "none" : NameOf(row.DataContext), $"Focus stays on the item ({context}).");
+            Verify.IsTrue(row != null && GetRowsRepeater(tableView).GetElementIndex(row) == ProjectedIndexOf(tableView, name),
+                $"The focused row is the item's live container ({context}).");
+            if (state.HasValue)
+            {
+                Verify.AreEqual(state.Value, (focused as Control)?.FocusState ?? FocusState.Unfocused, $"Focus state ({context}).");
+            }
+
+            return row;
         }
 
         // Data-row names of a freshly placed table over the source, header rows skipped.

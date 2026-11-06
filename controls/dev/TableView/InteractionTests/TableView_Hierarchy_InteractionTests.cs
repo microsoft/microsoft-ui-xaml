@@ -449,6 +449,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a mouse click on another row's chevron keeps keyboard focus on the focused row, and the next Down continues from it (#12456).")]
+        public void ChevronClickKeepsKeyboardFocusOnAnotherRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectHierarchyPivotAndGetTable() == null) { return; }
+
+                UIObject eve = FindTreeRow(HierarchyTable, "Eve");
+                if (eve == null) { return; }
+                eve.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(FindTreeRow(HierarchyTable, "Eve").HasKeyboardFocus, "Precondition: Eve takes keyboard focus.");
+
+                UIObject ada = FindTreeRow(HierarchyTable, "Ada");
+                if (ada == null) { return; }
+                ClickRowAtColumnOffset(ada, HierarchyRootChevronCentreX);
+                Verify.AreEqual(HierarchyAdaExpanded, WaitForHierarchyField(TreeField, HierarchyAdaExpanded), "Precondition: the chevron click must expand Ada.");
+
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Focus after the chevron click: '{0}'.", focused == null ? "<none>" : focused.Name);
+                Verify.IsTrue(focused != null && global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\bEve\b"),
+                    "A chevron click on Ada must leave keyboard focus on Eve.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                focused = UIObject.Focused;
+                Log.Comment("Focus after Down: '{0}'.", focused == null ? "<none>" : focused.Name);
+                Verify.IsTrue(focused != null && global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\bGus\b"),
+                    "Down must continue from Eve to the next row, Gus.");
+            }
+        }
+
         #endregion
 
         #region Helpers

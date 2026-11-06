@@ -306,7 +306,11 @@ void TableViewRowAutomationPeer::RealizeRowAt(
         }
         ThrowElementNotAvailable();
     }
-    row.StartBringIntoView();
+    if (!TableView::IsRowElementArrangedInternal(row) && tableImpl->ScrollBodyToUnarrangedRowInternal(rowIndex))
+    {
+        return;
+    }
+    tableImpl->StartExplicitBringIntoViewInternal(row);
 }
 
 winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const
