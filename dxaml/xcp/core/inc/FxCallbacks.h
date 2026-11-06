@@ -299,6 +299,8 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT FrameworkCallbacks_ClearDataContext(_In_ CFrameworkElement* pElement);
 
+    _Check_return_ HRESULT FrameworkCallbacks_SupportInitializeBeginInit(_In_ CDependencyObject* nativeTarget);
+
     _Check_return_ HRESULT FrameworkCallbacks_SupportInitializeEndInit(_In_ CDependencyObject* nativeTarget, _In_ const std::shared_ptr<XamlServiceProviderContext>& context);
 
     _Check_return_ HRESULT FrameworkCallbacks_CheckPeerType(_In_ CDependencyObject* nativeRoot, _In_ const xstring_ptr& strPeerType, _In_ XINT32 bCheckExact);

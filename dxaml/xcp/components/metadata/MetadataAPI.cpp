@@ -658,6 +658,7 @@ _Check_return_ HRESULT MetadataAPI::ImportClassInfo(_In_ xaml_markup::IXamlType*
     }
 
     // Resolve type flags.
+    if (pBaseType->IsISupportInitialize())                           eTypeFlags |= MetaDataTypeInfoFlags::IsISupportInitialize;
     if (SUCCEEDED(pXamlType->get_IsConstructible(&bFlag)) && bFlag)     eTypeFlags |= MetaDataTypeInfoFlags::IsConstructible;
     if (SUCCEEDED(pXamlType->get_IsCollection(&bFlag)) && bFlag)        eTypeFlags |= MetaDataTypeInfoFlags::IsCollection;
     if (SUCCEEDED(pXamlType->get_IsDictionary(&bFlag)) && bFlag)        eTypeFlags |= MetaDataTypeInfoFlags::IsDictionary;

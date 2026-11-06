@@ -34,7 +34,6 @@ _Check_return_ HRESULT XamlParserCallbacks::XamlManagedRuntimeRPInvokes_CreateIn
 
     const CClassInfo* pType = nullptr;
     ctl::ComPtr<IInspectable> spInstance;
-    ctl::ComPtr<ISupportInitialize> spInitializable;
     DirectUI::XamlQualifiedObject* pValue = NULL;
 
     IFCEXPECT(tokType.GetProviderKind() != tpkUnknown);
@@ -44,15 +43,9 @@ _Check_return_ HRESULT XamlParserCallbacks::XamlManagedRuntimeRPInvokes_CreateIn
     // Get the type.
     pType = MetadataAPI::GetClassInfoByIndex(tokType.GetHandle());
 
-    // Create a new instance.
+    // Create a new instance. ISupportInitialize::BeginInit is called by the parser's
+    // initialization guard, paired with EndInit.
     IFC(ActivationAPI::ActivateInstance(pType, &spInstance));
-
-    // If the object is an ISupportInitialize call it now.
-    if (pType->IsISupportInitialize())
-    {
-        IFC(spInstance.As(&spInitializable));
-        IFC(spInitializable->BeginInit());
-    }
 
     // Store the instance in the XQO.
     pValue = (DirectUI::XamlQualifiedObject*)pqoInstance;

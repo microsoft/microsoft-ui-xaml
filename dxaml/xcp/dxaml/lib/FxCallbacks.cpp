@@ -310,6 +310,24 @@ public:
         RRETURN(hr);
     }
 
+    static _Check_return_ HRESULT FrameworkCallbacks_SupportInitializeBeginInit(
+        _In_ CDependencyObject* nativeTarget)
+    {
+        ctl::ComPtr<DependencyObject> spDO;
+        IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(nativeTarget, &spDO));
+
+        ctl::ComPtr<IInspectable> spObject;
+        CValueBoxer::UnwrapExternalObjectReferenceIfPresent(ctl::as_iinspectable(spDO.Get()), &spObject);
+
+        auto spInitialize = spObject.AsOrNull<ISupportInitialize>();
+        if (spInitialize)
+        {
+            IFC_RETURN(spInitialize->BeginInit());
+        }
+
+        return S_OK;
+    }
+
     static _Check_return_ HRESULT FrameworkCallbacks_SupportInitializeEndInit(
         _In_ CDependencyObject* nativeTarget,
         _In_ const std::shared_ptr<::XamlServiceProviderContext>& context)
@@ -1018,6 +1036,9 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT FrameworkCallbacks_ClearDataContext(_In_ CFrameworkElement* pElement)
         { return AgCoreCallbacks::FrameworkCallbacks_ClearDataContext(pElement); }
+
+    _Check_return_ HRESULT FrameworkCallbacks_SupportInitializeBeginInit(_In_ CDependencyObject* nativeTarget)
+        { return AgCoreCallbacks::FrameworkCallbacks_SupportInitializeBeginInit(nativeTarget); }
 
     _Check_return_ HRESULT FrameworkCallbacks_SupportInitializeEndInit(_In_ CDependencyObject* nativeTarget, _In_ const std::shared_ptr< ::XamlServiceProviderContext>& context)
         { return AgCoreCallbacks::FrameworkCallbacks_SupportInitializeEndInit(nativeTarget, context); }
