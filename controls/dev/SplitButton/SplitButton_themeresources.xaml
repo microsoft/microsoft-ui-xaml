@@ -17,7 +17,7 @@
       <StaticResource x:Key="SplitButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
       <StaticResource x:Key="SplitButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
       <StaticResource x:Key="SplitButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
-      <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
       <StaticResource x:Key="SplitButtonForegroundSecondary" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="SplitButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush" />
       <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
@@ -49,7 +49,7 @@
       <StaticResource x:Key="SplitButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
       <StaticResource x:Key="SplitButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
       <StaticResource x:Key="SplitButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
-      <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="SplitButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
       <StaticResource x:Key="SplitButtonForegroundSecondary" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="SplitButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush" />
       <StaticResource x:Key="SplitButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
@@ -162,6 +162,15 @@
                 <VisualState x:Name="Disabled">
                   <VisualState.Setters>
                     <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushDisabled}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedDisabled">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedDisabled}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AppBarToggleButtonBackgroundCheckedDisabled}" />
+                    <Setter Target="Border.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushCheckedDisabled}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedDisabled}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundCheckedDisabled}" />
                   </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="FlyoutOpen">
