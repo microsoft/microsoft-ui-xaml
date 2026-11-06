@@ -568,6 +568,7 @@ namespace Controls {
     interface IIconSourceFactory;
     interface IIconSourceStatics;
     interface IImage;
+    interface IImageFactory;
     interface IImage2;
     interface IImage3;
     interface IImageStatics;
