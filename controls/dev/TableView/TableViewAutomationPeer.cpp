@@ -380,6 +380,99 @@ static int32_t VisibleColumnToChildIndex(TChildren const& children, int32_t visi
     return -1;
 }
 
+namespace
+{
+    // The body ScrollViewer's percent is computed against the repeater's estimated extent, which
+    // grows as rows near the end are realized, so a single SetScrollPercent(100) could land short.
+    class TableViewScrollProvider : public winrt::implements<TableViewScrollProvider, winrt::IScrollProvider>
+    {
+    public:
+        TableViewScrollProvider(winrt::TableView const& table, winrt::IScrollProvider const& inner)
+            : m_table(winrt::make_weak(table)), m_inner(inner)
+        {
+        }
+
+        bool HorizontallyScrollable() { return m_inner.HorizontallyScrollable(); }
+        double HorizontalScrollPercent() { return m_inner.HorizontalScrollPercent(); }
+        double HorizontalViewSize() { return m_inner.HorizontalViewSize(); }
+        bool VerticallyScrollable() { return m_inner.VerticallyScrollable(); }
+        double VerticalViewSize() { return m_inner.VerticalViewSize(); }
+        void Scroll(winrt::ScrollAmount const& horizontal, winrt::ScrollAmount const& vertical) { m_inner.Scroll(horizontal, vertical); }
+
+        double VerticalScrollPercent()
+        {
+            const double percent = m_inner.VerticalScrollPercent();
+            return percent != winrt::ScrollPatternIdentifiers::NoScroll() && IsLastRowAtBottom() ? 100.0 : percent;
+        }
+
+        void SetScrollPercent(double horizontalPercent, double verticalPercent)
+        {
+            auto const table = m_table.get();
+            auto const scroller = table ? winrt::get_self<TableView>(table)->GetBodyScrollerInternal() : nullptr;
+            if (!scroller || verticalPercent == winrt::ScrollPatternIdentifiers::NoScroll())
+            {
+                m_inner.SetScrollPercent(horizontalPercent, verticalPercent);
+                return;
+            }
+
+            const double oldExtent = scroller.ExtentHeight();
+            m_inner.SetScrollPercent(horizontalPercent, verticalPercent);
+            scroller.UpdateLayout();
+            if (verticalPercent >= 100.0 - 1e-9)
+            {
+                // Each pass realizes rows nearer the end, so the extent converges on the true one.
+                for (int attempt = 0; attempt < 8 && !IsLastRowAtBottom(); ++attempt)
+                {
+                    if (!m_inner.VerticallyScrollable())
+                    {
+                        break;
+                    }
+                    m_inner.SetScrollPercent(winrt::ScrollPatternIdentifiers::NoScroll(), 100.0);
+                    scroller.UpdateLayout();
+                }
+            }
+            else if (std::abs(scroller.ExtentHeight() - oldExtent) >= 0.5)
+            {
+                m_inner.SetScrollPercent(winrt::ScrollPatternIdentifiers::NoScroll(), verticalPercent);
+                scroller.UpdateLayout();
+            }
+        }
+
+    private:
+        bool IsLastRowAtBottom() const
+        {
+            auto const table = m_table.get();
+            auto const tableImpl = table ? winrt::get_self<TableView>(table) : nullptr;
+            auto const scroller = tableImpl ? tableImpl->GetBodyScrollerInternal() : nullptr;
+            auto const repeater = tableImpl ? tableImpl->GetRowsRepeaterInternal() : nullptr;
+            auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+            if (!scroller || !view || view.Count() == 0 || !(scroller.ViewportHeight() > 0.0))
+            {
+                return false;
+            }
+
+            auto const last = repeater.TryGetElement(view.Count() - 1).try_as<winrt::FrameworkElement>();
+            if (!last || !(last.ActualHeight() > 0.0))
+            {
+                return false;
+            }
+            try
+            {
+                const double bottom = last.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y + last.ActualHeight();
+                return std::abs(bottom - scroller.ViewportHeight()) <= 0.5 &&
+                    scroller.ScrollableHeight() - scroller.VerticalOffset() <= 0.5;
+            }
+            catch (winrt::hresult_error const&)
+            {
+                return false;
+            }
+        }
+
+        winrt::weak_ref<winrt::TableView> m_table;
+        winrt::IScrollProvider m_inner;
+    };
+}
+
 winrt::IInspectable TableViewAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
     if (Owner().try_as<winrt::TableView>())
@@ -408,7 +501,7 @@ winrt::IInspectable TableViewAutomationPeer::GetPatternCore(winrt::PatternInterf
             }
         }
 
-        // Forward Scroll to the body ScrollViewer's peer.
+        // Scroll is answered by TableViewScrollProvider, which wraps the body ScrollViewer peer's provider.
         if (patternInterface == winrt::PatternInterface::Scroll)
         {
             if (auto const impl = GetImpl())
@@ -417,9 +510,9 @@ winrt::IInspectable TableViewAutomationPeer::GetPatternCore(winrt::PatternInterf
                 {
                     if (auto svPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(bodyScroller))
                     {
-                        if (auto provider = svPeer.GetPattern(winrt::PatternInterface::Scroll))
+                        if (auto provider = svPeer.GetPattern(winrt::PatternInterface::Scroll).try_as<winrt::IScrollProvider>())
                         {
-                            return provider;
+                            return winrt::make<TableViewScrollProvider>(Owner().as<winrt::TableView>(), provider);
                         }
                     }
                 }
