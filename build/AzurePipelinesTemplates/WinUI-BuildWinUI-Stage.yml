@@ -20,6 +20,7 @@ parameters:
   # Variable group supplying WinUIInternalFeedUri. Standalone WinUI uses the WinUI-project
   # group; the monobuild test pipeline overrides to the OS-project WinAppSDK-WinUI-InternalFeed.
   internalFeedVariableGroup: 'WinUI-InternalFeed'
+  collectCodeCoverage: false
   dependsOn: ''
   # Optional OneBranch host SKU for the BuildMUX jobs (e.g. D64). Empty = inherit the
   # pipeline-level WindowsHostVersion, which currently draws an 8-vCPU host.
@@ -142,6 +143,9 @@ stages:
             normalizedConfiguration: 'chk'
             shouldPgo: false
     variables:
+      ${{ if eq(parameters.collectCodeCoverage, true) }}:
+        # MSBuild imports environment variables as properties.
+        WinUICollectCodeCoverage: true
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
       ${{ if eq(length(parameters.codeSignValidationExcludes), 0) }}:
