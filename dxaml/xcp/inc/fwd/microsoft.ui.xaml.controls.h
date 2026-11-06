@@ -613,6 +613,7 @@ namespace Controls {
     interface IListBoxStatics;
     interface IListBoxStatics2;
     interface IListPickerFlyout;
+    interface IListPickerFlyoutFactory;
     interface IListPickerFlyoutPresenter;
     interface IListPickerFlyoutStatics;
     interface IListView;
