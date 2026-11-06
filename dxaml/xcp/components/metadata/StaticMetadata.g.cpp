@@ -4774,7 +4774,7 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
     {
         KnownTypeIndex::Selector, // Index name
         KnownTypeIndex::ItemsControl, // Base index name
-        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsISupportInitialize)), // Type flags
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::IsISupportInitialize) | static_cast<UINT>(MetaDataTypeInfoFlags::RequiresPeerActivation)), // Type flags
     },
     // Microsoft.UI.Xaml.Controls.Primitives.SelectorItem
     {

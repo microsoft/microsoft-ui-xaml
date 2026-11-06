@@ -5357,8 +5357,8 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Selector
     {
-        nullptr, // Core constructor
-        nullptr, // Framework constructor
+        &OnCoreCreateSelector, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::Selector>, // Framework constructor
     },
     // Microsoft.UI.Xaml.Controls.Primitives.SelectorItem
     {

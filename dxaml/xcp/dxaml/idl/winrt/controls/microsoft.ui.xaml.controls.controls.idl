@@ -2977,6 +2977,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     unsealed runtimeclass Selector
         : Microsoft.UI.Xaml.Controls.ItemsControl
     {
+        [method_name("CreateInstance")] protected Selector();
         Int32 SelectedIndex;
         Object SelectedItem;
         Object SelectedValue;
