@@ -1397,10 +1397,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ItemsStackPanel
+    unsealed runtimeclass ItemsStackPanel
         : Microsoft.UI.Xaml.Controls.Panel
     {
-        ItemsStackPanel();
+        [method_name("CreateInstance")] ItemsStackPanel();
         Microsoft.UI.Xaml.Thickness GroupPadding;
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
         Int32 FirstCacheIndex{ get; };

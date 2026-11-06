@@ -5400,7 +5400,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IOrientedPanel))]
     [NativeName("CItemsStackPanel")]
     [Guids(ClassGuid = "9a58eb99-67ae-4361-b09f-6901cb9da053")]
-    public sealed class ItemsStackPanel
+    public class ItemsStackPanel
         : Microsoft.UI.Xaml.Controls.ModernCollectionBasePanel
     {
         [TypeTable(IsExcludedFromCore = true)]
