@@ -2193,6 +2193,162 @@
             <Event TID="true" PID="true" />
           </Match>
         </Region>
+        <Region Guid="{A72C6400-7EF2-4355-B231-E38FE4D63A85}" Name="PutRootVisualTraceLogging" FriendlyName="PutRootVisual">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="PutRootVisual" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="PutRootVisual" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{CABE0CE7-8E44-430A-877B-2CABA2A5227E}" Name="LayoutTraceLogging" FriendlyName="Layout">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Layout" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Layout" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{475921E0-1CDB-4467-BB77-EE009F516047}" Name="MeasureTraceLogging" FriendlyName="Measure">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Measure" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Measure" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{4EB265AE-95B3-4CE3-8908-2F9F0B2F5951}" Name="ArrangeTraceLogging" FriendlyName="Arrange">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Arrange" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Arrange" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{BE75C388-7935-453E-B2CA-4905F63FF813}" Name="FireLayoutUpdatedTraceLogging" FriendlyName="FireLayoutUpdated">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="FireLayoutUpdated" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="FireLayoutUpdated" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{E48697DE-F9E6-42FD-8367-381445068A8D}" Name="FireSizeChangedTraceLogging" FriendlyName="FireSizeChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="FireSizeChanged" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="FireSizeChanged" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{0638a158-511e-41f2-9dcf-d0d2a4cf3850}" Name="IndividualSizeChangedTraceLogging" FriendlyName="IndividualSizeChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="IndividualSizeChanged" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="IndividualSizeChanged" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{50041979-93fe-4d29-9e1a-b191779decc6}" Name="CancelTransitionsTraceLogging" FriendlyName="CancelTransitions">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="CancelTransitions" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="CancelTransitions" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{CC830311-86B3-4387-BC38-D54F304E66BA}" Name="ProcessLayoutForTransitionTraceLogging" FriendlyName="ProcessLayoutForTransition">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="ProcessLayoutForTransition" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="ProcessLayoutForTransition" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{E9091EFB-6C81-44D6-A33D-5598AD6D1A66}" Name="XYFocusEnteredTraceLogging" FriendlyName="XYFocusEntered">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="XYFocusEntered" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="XYFocusEntered" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{F4895669-A49B-475E-92B4-02C5A861BC77}" Name="GetBuiltInStyleTraceLogging" FriendlyName="GetBuiltInStyle">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GetBuiltInStyle" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="GetBuiltInStyle" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{792DCAAD-3DA8-439A-A0E8-B48A9BB0DE44}" Name="HitTestTraceLogging" FriendlyName="HitTest">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="HitTest" Opcode="1" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="HitTest" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
+        <Region Guid="{BEAC5E3F-338F-411C-A0D5-7972C058FE13}" Name="Start-To-LayoutTraceLogging" FriendlyName="Start-To-Layout">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="0" Name="Layout" Opcode="2" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+          <Metadata><ExactTaskName>true</ExactTaskName></Metadata>
+        </Region>
       </RegionRoot>
     </Regions>
   </Instrumentation>
