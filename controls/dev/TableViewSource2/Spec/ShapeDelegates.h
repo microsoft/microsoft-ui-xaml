@@ -49,16 +49,21 @@ public:
 
     // Registration. Null delegates are rejected by the verb before reaching here. Returns the
     // existing Id when the same delegate object is already registered, and a new Version always.
+    // May throw (QueryInterface, allocation). The verb calls Register before it edits the desired
+    // spec, so a throw leaves the spec unchanged; an entry orphaned by a later failure in the verb
+    // is released by the next Retain.
     DelegateRef Register(winrt::TableViewPredicate const& predicate);
     DelegateRef Register(winrt::TableViewKeySelector const& keySelector);
     DelegateRef Register(winrt::TableViewComparer2 const& comparer);
 
-    // Keeps only the delegates referenced by `specsInUse`; releases the rest.
+    // Keeps only the delegates referenced by `specsInUse`; releases the rest. Allocates nothing,
+    // so it cannot fail after an apply has committed.
     void Retain(std::span<ShapeSpec const* const> specsInUse);
 
     // Invocation, used by the engine and live shaping. Exceptions from app code propagate (spec,
-    // "Misbehaving records"). The engine calls these only in its compute phase, before anything is
-    // written, so a throw leaves nothing written for the record.
+    // "Misbehaving records"). An id with no entry, or an entry of another kind, is an internal bug:
+    // asserts, then throws E_UNEXPECTED. The engine calls these only in its compute phase, before
+    // anything is written, so a throw leaves nothing written for the record.
     bool Passes(DelegateId predicate, winrt::IInspectable const& item) const;
     winrt::IInspectable Key(DelegateId keySelector, winrt::IInspectable const& item) const;
     int32_t Compare(DelegateId comparer, winrt::IInspectable const& x, winrt::IInspectable const& y) const;
@@ -84,7 +89,7 @@ private:
     };
 
     DelegateId NextId() noexcept;
-    uint32_t NextVersion() noexcept;
+    uint64_t NextVersion() noexcept;
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
 
@@ -93,6 +98,7 @@ private:
     // Dedupe: canonical IUnknown address -> id. Address only, never dereferenced.
     std::unordered_map<void const*, DelegateId> m_idByAddress;
 
-    uint32_t m_nextId{ 1 };
-    uint32_t m_nextVersion{ 1 };
+    // 64-bit: never wraps, so an id is never reused.
+    uint64_t m_nextId{ 1 };
+    uint64_t m_nextVersion{ 1 };
 };

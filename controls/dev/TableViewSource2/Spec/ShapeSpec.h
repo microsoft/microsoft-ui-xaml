@@ -33,8 +33,9 @@
 
 // Refers to a delegate registered in ShapeDelegates. A plain value: holding or copying one does not
 // keep the delegate alive; the registry decides that at commit. The same delegate object always
-// maps to the same id, which is how repeated Sort calls are matched.
-enum class DelegateId : uint32_t
+// maps to the same id, which is how repeated Sort calls are matched. 64-bit so ids never wrap and
+// a new delegate can never reuse an id still in use.
+enum class DelegateId : uint64_t
 {
     None = 0,
 };
@@ -43,11 +44,11 @@ enum class DelegateId : uint32_t
 // for a delegate it already knows. A delegate can read app state that has moved (for example, a
 // filter comparing against a field), so re-declaring the same delegate must still count as a
 // change (as v1 does); the Version makes that visible to ==, keeping Diff a pure comparison of two
-// specs. Matching (SortSpec::Matches) uses Id only.
+// specs. Matching (SortSpec::Matches) uses Id only. Version is 64-bit so it never wraps.
 struct DelegateRef
 {
     DelegateId Id{ DelegateId::None };
-    uint32_t Version{ 0 };
+    uint64_t Version{ 0 };
 
     explicit operator bool() const noexcept { return Id != DelegateId::None; }
     bool operator==(DelegateRef const&) const = default;
@@ -137,7 +138,7 @@ struct ShapeSpec
 enum class ShapeDelta : uint8_t
 {
     None = 0x0,
-    Sort = 0x1,         // re-read changed sort levels (every level for a live re-read), re-sort rows
+    Sort = 0x1,         // re-read every sort level's keys, re-sort rows
     GroupOrder = 0x2,   // re-sort groups only
     GroupKey = 0x4,     // re-read group keys, re-bucket; row order within groups reuses SortKeys
     Filter = 0x8,       // re-test every record (no source re-read); reuse cached keys where valid;

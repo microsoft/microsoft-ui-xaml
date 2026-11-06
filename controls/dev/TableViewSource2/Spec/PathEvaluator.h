@@ -29,6 +29,18 @@ struct SortMemberPathResolver;   // TableView/SortMemberPathResolver.h, shared w
 //
 // Threading: UI-thread affine (resolvers drive the binding engine). A path sort therefore reads
 // its keys on the UI thread.
+//
+// Re-entrancy: Resolve runs the binding, so app code (a property getter, ICustomPropertyProvider)
+// runs while a resolver is on the stack and can call back in. While a Value call is evaluating:
+// - a nested Value gives nullptr (treated as a misbehaving record). Each resolver owns one probe,
+//   so a nested read on the same path would overwrite the outer DataContext, then clear it, and
+//   the outer read would return the wrong key. A nested read on another path would be safe but
+//   is refused too, to keep the rule simple.
+// - Retain does nothing; resolvers it would drop are dropped by the next Retain.
+// - Clear is deferred to the end of the outermost Value, so the resolver on the stack is never
+//   destroyed under itself.
+// The guard covers this object's own state only. The owner must keep the PathEvaluator alive
+// for the duration of a Value call.
 class PathEvaluator
 {
 public:
@@ -38,16 +50,26 @@ public:
     PathEvaluator(PathEvaluator const&) = delete;
     PathEvaluator& operator=(PathEvaluator const&) = delete;
 
-    // Reads `path` from `item`. A path that cannot be evaluated gives nullptr, no throw (spec,
-    // "Misbehaving records").
+    // Reads `path` from `item`. A path that cannot be evaluated gives nullptr (spec, "Misbehaving
+    // records"), as does a re-entrant call. Allocation failures (a resolver for a new path)
+    // propagate; the engine reads keys in its compute phase, so nothing has been written.
     winrt::IInspectable Value(winrt::hstring const& path, winrt::IInspectable const& item);
 
-    // Keeps only the resolvers for paths referenced by `specsInUse`; drops the rest.
+    // Keeps only the resolvers for paths referenced by `specsInUse`; drops the rest. Allocates
+    // nothing, so it cannot fail after an apply has committed. Does nothing while a Value call is
+    // evaluating.
     void Retain(std::span<ShapeSpec const* const> specsInUse);
 
-    // Teardown: destroys every resolver. Must run on the UI thread.
+    // Teardown: destroys every resolver. Must run on the UI thread. While a Value call is
+    // evaluating, the destruction is deferred to the end of the outermost Value.
     void Clear() noexcept;
 
 private:
     std::unordered_map<winrt::hstring, std::unique_ptr<SortMemberPathResolver>> m_resolvers;
+
+    // True while a resolver is evaluating, so app code may be running on this stack.
+    bool m_isResolving{ false };
+
+    // Clear was called while m_isResolving; runs when the outermost Value returns.
+    bool m_clearPending{ false };
 };

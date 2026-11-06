@@ -51,6 +51,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceTable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Engine\FenwickTree.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Engine\ShapeState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Spec\PathEvaluator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Spec\ShapeDelegates.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Spec\ShapeSpec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TableViewSource2.idl" />
