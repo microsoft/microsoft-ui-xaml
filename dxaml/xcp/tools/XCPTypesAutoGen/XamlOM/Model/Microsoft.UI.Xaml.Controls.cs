@@ -5618,7 +5618,7 @@ namespace Microsoft.UI.Xaml.Controls
     [NativeName("CViewbox")]
     [ContentProperty("Child")]
     [Guids(ClassGuid = "d3e3f989-57ae-43d0-a6e6-6e789d188657")]
-    public sealed class Viewbox
+    public class Viewbox
      : Microsoft.UI.Xaml.FrameworkElement
     {
         [RequiresMultipleAssociationCheck]
