@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "SelectionModelSampleApp (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "SelectionModelSampleApp (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
