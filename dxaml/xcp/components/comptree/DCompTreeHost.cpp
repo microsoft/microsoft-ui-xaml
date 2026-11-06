@@ -5,9 +5,6 @@
 #include <RenderingResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
 #include "DCompTreeHost.h"
-#ifdef XAMLPROFILER_ENABLED
-#include "WucVisualTreeProfiler.h"
-#endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>
@@ -1028,12 +1025,10 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
 
         // Notify the XAML Profiler that this visual became the root of the in-proc island target,
         // so a consumer can attach the island's WUC visual subtree to the right target.
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), 0 /* ownerCompNodeId unknown */);
+            XamlProfilerTracing::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent));
         }
-#endif // XAMLPROFILER_ENABLED
     }
 
     return S_OK;//RRETURN_REMOVAL
@@ -1118,17 +1113,13 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 renderData.contentConnected = true;
 
                 // Notify the XAML Profiler that this island root visual was connected to its
-                // ContentIsland target, including the owning comp node so the consumer can stitch
-                // the XamlIslandRoot's WUC subtree onto the island.
-#ifdef XAMLPROFILER_ENABLED
-                if (WucVisualTreeProfiler::IsEnabled())
+                // ContentIsland target.
+                if (XamlProfilerTracing::IsEnabled())
                 {
-                    WucVisualTreeProfiler::NotifyRootSet(
+                    XamlProfilerTracing::NotifyRootSet(
                         wucVisual,
-                        reinterpret_cast<uint64_t>(xamlIslandRoot),
-                        reinterpret_cast<uint64_t>(compositionPeer));
+                        reinterpret_cast<uint64_t>(xamlIslandRoot));
                 }
-#endif // XAMLPROFILER_ENABLED
 
                 // If this is our first island and we need a Frame visual then add it here.  Note that at this point the
                 // commit has already been done so we need to recommit.

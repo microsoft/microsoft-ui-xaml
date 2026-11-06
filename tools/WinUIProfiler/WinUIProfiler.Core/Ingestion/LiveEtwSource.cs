@@ -153,7 +153,7 @@ public sealed class LiveEtwSource : IDisposable
     // Microsoft-Windows-XAML's few events at its own levels above Verbose, written for every API call or parsed
     // object.
     // While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML source position of the objects
-    // it parses (which ElementCreatedWithSource and, in builds with XamlProfilerEnabled, ElementEnteredTree carry),
+    // it parses (which ElementCreatedWithSource and ElementEnteredTree carry),
     // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
     // parsed while it is enabled has positions, so a launch has them from the start.
     // The marker providers get the level and keywords their configuration names, and the same process filter, or for a

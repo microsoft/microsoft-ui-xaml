@@ -21,6 +21,7 @@ namespace XamlTimeline
         PayloadFilter? Payload = null)
     {
         public int? Opcode { get; init; }
+        public bool ExactTaskName { get; init; }
 
         private const string ProcessNamePlaceholder = "${ProcessName}";
 
@@ -46,10 +47,26 @@ namespace XamlTimeline
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(EventName) &&
-                ev.EventName.IndexOf(EventName, StringComparison.OrdinalIgnoreCase) < 0)
+            if (!string.IsNullOrEmpty(EventName))
             {
-                return false;
+                if (ExactTaskName)
+                {
+                    var taskName = ev.EventName;
+                    if (taskName.EndsWith("/Start", StringComparison.OrdinalIgnoreCase) ||
+                        taskName.EndsWith("/Stop", StringComparison.OrdinalIgnoreCase))
+                    {
+                        taskName = taskName.Substring(0, taskName.LastIndexOf('/'));
+                    }
+
+                    if (!string.Equals(taskName, EventName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                else if (ev.EventName.IndexOf(EventName, StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    return false;
+                }
             }
 
             return true;
