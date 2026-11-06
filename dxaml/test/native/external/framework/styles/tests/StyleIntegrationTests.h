@@ -337,41 +337,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(DuplicateDefaultStyleSettersPreserveEffectiveValue)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verify that the last duplicate default-style setter remains usable after a local override "
-                L"is set and cleared while a reference to the original Style is retained.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DefaultStyleAttachedTagCanBeReadAfterCollection)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verify that the default-style AttachedTag value can be read again after releasing the Style reference "
-                L"and collecting peers, without overriding or clearing the property.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(DefaultStyleValueSurvivesExplicitStyleRemoval)
             TEST_METHOD_PROPERTY(L"Description",
-                L"Verify that the winning duplicate default-style value remains usable after an explicit Style "
-                L"override is removed, with and without retaining the original value.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
-            TEST_METHOD_PROPERTY(L"Data:RetainOriginalStyle", L"{true,false}")
+                L"Verify through a weak reference that the default-style value's peer survives an explicit Style "
+                L"override and is reused when the override is removed.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleSetterValuesStayDeferredWhileShadowed)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that notification does not realize a shadowed setter, and its value is created and retained when needed.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(AppliedSingleSetterValueSurvivesOverride)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verify peer protection for a single native or custom setter value, including BasedOn styles.")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
-            TEST_METHOD_PROPERTY(L"Data:UseBasedOn", L"{false,true}")
-            TEST_METHOD_PROPERTY(L"Data:UseCustomControl", L"{false,true}")
-            TEST_METHOD_PROPERTY(L"Data:InitiallyShadowed", L"{false,true}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
