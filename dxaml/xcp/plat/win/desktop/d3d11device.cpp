@@ -515,6 +515,21 @@ bool CD3D11Device::IsDeviceLost() const
     return m_deviceInstance->IsDeviceLost();
 }
 
+_Check_return_ HRESULT CD3D11Device::RegisterAdaptersChangedEvent(_In_ HANDLE event)
+{
+    return m_deviceInstance->RegisterAdaptersChangedEvent(event);
+}
+
+void CD3D11Device::UnregisterAdaptersChangedEvent(_In_ HANDLE event)
+{
+    m_deviceInstance->UnregisterAdaptersChangedEvent(event);
+}
+
+_Check_return_ HRESULT CD3D11Device::CheckForAdapterChange()
+{
+    return m_deviceInstance->CheckForAdapterChange();
+}
+
 _Check_return_ HRESULT CD3D11Device::IsHdrOutput(_In_ HMONITOR monitor, _Out_ bool* isHDR) const
 {
     IFC_RETURN(m_deviceInstance->IsHdrOutput(monitor, isHDR));
