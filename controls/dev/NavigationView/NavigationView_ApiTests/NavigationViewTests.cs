@@ -3925,6 +3925,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationView keeps its own #10983 clip in sync with RootSplitView when the NavigationView grows and shrinks.")]
+        public void VerifyNavigationViewClipFollowsRootSplitViewResize()
+        {
+            var splitView = SetupClosedExpandedNavigationView(FlowDirection.LeftToRight, out Grid contentMarker, out Grid host);
+            NavigationView navView = null;
+            Geometry ownedClip = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = (NavigationView)host.Children[0];
+                ownedClip = splitView.Clip;
+                Verify.IsNotNull(ownedClip, "Precondition: NavigationView clips RootSplitView");
+            });
+
+            foreach (double newWidth in new[] { 520.0, 380.0 })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.Width = newWidth;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"NavigationView width {newWidth}");
+                    Verify.AreEqual(newWidth, splitView.ActualWidth, "Precondition: RootSplitView was resized");
+                    Verify.AreSame(ownedClip, splitView.Clip, "NavigationView keeps (and updates) its own clip instead of replacing it");
+
+                    var (insideHit, outsideHit) = HitTestAcrossSplitViewEdgeWithContentOffset(splitView, splitView.TemplateSettings.OpenPaneLengthMinusCompactLength, 0.0, contentMarker, host);
+                    Verify.IsTrue(insideHit, "Content just inside the new right edge must be visible (clip grew with the SplitView)");
+                    Verify.IsFalse(outsideHit, "Content past the new right edge must be clipped (clip shrank with the SplitView)");
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies that NavigationView's #10983 clip does not replace a binding on RootSplitView.Clip whose value is null.")]
         public void VerifyNavigationViewDoesNotReplaceBoundRootSplitViewClip()
         {
