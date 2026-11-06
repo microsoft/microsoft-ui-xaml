@@ -758,6 +758,7 @@ namespace Controls {
     interface IPersonPictureStatics;
     interface IPickerConfirmedEventArgs;
     interface IPickerFlyout;
+    interface IPickerFlyoutFactory;
     interface IPickerFlyoutPresenter;
     interface IPickerFlyoutStatics;
     interface IPivot;
