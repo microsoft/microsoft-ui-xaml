@@ -6,6 +6,8 @@
 // be tied to in their own layer.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "ConnectedAnimationRoot.h"
 
 // These constants need to be kept in sync with test code, see WinRTMockDComp.cpp
@@ -55,6 +57,10 @@ _Check_return_ HRESULT CConnectedAnimationRoot::CreateConnectedAnimationVisual(_
     {
         wrl::ComPtr<ixp::ISpriteVisual> tempVisual;
         IFC_RETURN(GetContext()->m_pNWWindowRenderTarget->GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&tempVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
         IFC_RETURN(tempVisual.As(&visual));
         SetDebugTag(visual.Get(), s_connectedAnimationSnapshotVisualTag);
     }
@@ -99,4 +105,3 @@ const std::vector<xref_ptr<CUIElement>>& CConnectedAnimationRoot::GetUnloadingEl
 {
     return GetContext()->GetConnectedAnimationServiceNoRef()->GetUnloadingElements();
 }
-

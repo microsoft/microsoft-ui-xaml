@@ -261,6 +261,26 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MinWidth
 Cleanup:
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_PlacementId(_Out_ HSTRING* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_PlacementIdImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_PlacementId(_In_opt_ HSTRING value)
+{
+    HRESULT hr = S_OK;
+
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_PlacementIdImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue)
 {
     HRESULT hr = S_OK;
@@ -584,6 +604,7 @@ IFACEMETHODIMP DirectUI::WindowFactory::CreateInstance(_In_opt_ IInspectable* pO
 }
 
 // Dependency properties.
+
 
 
 

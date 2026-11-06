@@ -576,6 +576,54 @@ void TableView::ApplyGroupExpansionByIdentity(
     // focus stranded is the very bug this guards. Matches on identity, so an unrelated queued
     // toggle does not consume this restore.
     RestoreContainerFocusIfPending(identity);
+
+    if (changed && axis == BulkExpansionAxis::Rows && !subtree &&
+        generation == m_rowMetadataGeneration && provider == m_tableViewSourceRowMetadata &&
+        bulkGeneration == BulkExpansionGeneration(axis))
+    {
+        AnnounceRowExpansionChange(identity);
+    }
+}
+
+void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
+{
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification) ||
+        !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    {
+        return;
+    }
+
+    try
+    {
+        int32_t index = -1;
+        TableViewRowInfo info{};
+        if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) ||
+            !TryGetTableViewSourceRowInfo(index, info) ||
+            info.Kind != TableViewRowKind::Data || !info.IsExpandable)
+        {
+            return;
+        }
+
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            auto const announcement = ResourceAccessor::GetLocalizedStringResource(
+                info.IsExpanded ? SR_TableViewRowExpanded : SR_TableViewRowCollapsed);
+            if (!announcement.empty())
+            {
+                // Narrator does not voice the DataItem's ExpandCollapse change. Announce the
+                // completed request here, not during row preparation or bulk expansion.
+                peer.RaiseNotificationEvent(
+                    winrt::AutomationNotificationKind::ActionCompleted,
+                    winrt::AutomationNotificationProcessing::MostRecent,
+                    announcement,
+                    L"TableViewRowExpansionChanged");
+            }
+        }
+    }
+    catch (...)
+    {
+        // Narrator feedback is best-effort; announcement failures must not affect row expansion.
+    }
 }
 
 void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
@@ -812,6 +860,14 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // Older deferred work runs first, so a provider it replaces does not make this request look stale.
+    FlushDeferredEditReshapes();
+    // That work may have removed the axis; a documented no-op must not end an open edit.
+    if (!m_tableViewSourceRowMetadata ||
+        !((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewSourceGrouped()))
+    {
+        return;
+    }
     const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {

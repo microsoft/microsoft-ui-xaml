@@ -19,6 +19,7 @@ areas:
     tier: Tier 1 - Platform / Framework core
     reviewers: [godlytalias, Hemantxk, akanpatel2206, JesseCol, codendone, SatwikKrSharma]
     paths:
+      - dxaml/xcp/AGENTS.md
       - dxaml/xcp/components/**
       - dxaml/xcp/core/core/**
       - dxaml/xcp/core/Parser/**

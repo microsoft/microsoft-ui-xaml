@@ -122,7 +122,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Accessibility: string tooltip text is published as the cell's `AutomationProperties.HelpText`, and `TableViewCellAutomationPeer` suppresses it at UIA query time when it merely repeats the cell's own text, so the value is not announced twice. Suppression is gated on the ownership record, so text the app set is never dropped.
 - Recycling: a recycled row never shows a previous item's cell tooltip. No invalidation API is needed — the binding tracks the row's `DataContext`, so a recycled row re-resolves through the same inheritance that refreshes its cell text, and a source `PropertyChanged` updates a live tooltip in place.
 - Because the control never calls into app code while realizing a cell, there is no re-entrancy surface, no drain budget, and no coalescing machinery.
-- Column header: opt-in via `TableViewColumn.HeaderToolTip`, whose value is the tooltip content. Covers the whole header cell, including its padding and sort affordance. Header cells are rebuilt rather than recycled, so the value is read when the header is built and re-applied in place when it changes — no binding, no invalidation. String content is reported as the header's UIA help text by `TableViewColumnHeaderAutomationPeer`, joined with the sort state when the column has one; the header peer is virtual, so `AutomationProperties.HelpText` on the element would never reach a client. — **PR4**
+- Column header: opt-in via `TableViewColumn.HeaderToolTip`, whose value is the tooltip content. Covers the whole header cell, including its padding and sort affordance, except the resize gripper: while the mouse is on the gripper the tooltip is suppressed for all input (pointer and keyboard focus alike), so the resize cursor is not reset under a resting pointer. It returns when the pointer leaves the gripper and shows on the next entry into the header. Header cells are rebuilt rather than recycled, so the value is read when the header is built and re-applied in place when it changes — no binding, no invalidation. String content is reported as the header's UIA help text by `TableViewColumnHeaderAutomationPeer`, joined with the sort state when the column has one; the header peer is virtual, so `AutomationProperties.HelpText` on the element would never reach a client. — **PR4**
 - Group-header tooltips are **deferred**. Grouping ships, but the group header has no tooltip opt-in: `TableViewColumn.CellToolTipBinding` and `HeaderToolTip` are column-scoped, and the group header is a `TableViewGroupHeader` whose content is app-templated, so an app that wants a tooltip there puts one in its `GroupHeaderTemplate` today. A control-owned group-header tooltip API needs its own opt-in property and is not in this release.
 
 > Tooltips are **not** gated on text truncation. No WinUI control keys tooltips off `IsTextTrimmed`; the shipped pattern is to gate on a cheap content predicate (non-empty string) or an explicit opt-in.
@@ -131,6 +131,40 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
 - Narrator, keyboard navigation parity, sort announcements. — **PR2** nav · **PR3** sort
 
+### Keyboard focus and accessibility model
+
+The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
+header in the current column, else the first actionable one; the next `Tab` leaves the table.
+`Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
+in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
+header row. When no header is actionable or headers are hidden, the rows are the stop, entered in
+the same order; an empty table's `EmptyTemplate` content is the stop instead (its last control for
+`Shift+Tab`).
+
+Takes keyboard focus:
+
+- Actionable headers: sort (with a sort key), resize (while the column can actually be resized),
+  context menu, tooltip, or interactive content.
+- Rows.
+- Actionable cells: editable (a `CellEditingTemplate`, or a text column with a `Binding`, in an
+  editable table and column), interactive content (a control, an inline `Hyperlink`, or a nested
+  `TableView`), context menu, or tooltip.
+
+Nothing else: `Focus()` on an inactive header or cell does not move focus there, and UIA `SetFocus`
+fails with `UIA_E_INVALIDOPERATION`.
+
+Controls in a cell: `Enter` moves into them, `Esc` returns to the cell; `F2` edits.
+
+Screen readers still reach inactive headers and cells: they stay in the UIA grid (`GridItem`,
+`TableItem`, header association), so the row name, scan mode, and Narrator table navigation
+(`Ctrl+Alt+Arrow`) read them.
+
+Why: Windows guidance asks for one tab stop per collection and tab stops only for actionable items
+([Keyboard interactions](https://learn.microsoft.com/windows/apps/design/input/keyboard-interactions)),
+and APG lets header cells that don't sort or filter stay unfocusable
+([APG grid pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/)). Making inactive data cells
+unfocusable deliberately departs from APG's focusable-cell advice; screen readers reach them
+through table navigation instead.
 ### Reliability & servicing
 - Deterministic behavior, unit-test coverage (**PR4**), SFI/security compliance, post-adoption API stability.
 

@@ -926,6 +926,101 @@ namespace MUXControlsTestApp
             });
         }
 
+        private TableViewColumnHeader FindBasicHeaderCell(TableViewColumn column)
+        {
+            return FindDescendants<TableViewColumnHeader>(BasicTableView).FirstOrDefault(header => header.Tag == column);
+        }
+
+        private static void PinColumn(TableViewColumn column)
+        {
+            column.MinWidth = column.ActualWidth;
+            column.MaxWidth = column.ActualWidth;
+        }
+
+        // The ToolTip's DataContext is cleared while ToolTipService unregisters it.
+        private void OnPinNameOnHeaderToolTipDetachClick(object sender, RoutedEventArgs e)
+        {
+            var nameColumn = BasicTableView.Columns[0];
+            var headerCell = FindBasicHeaderCell(nameColumn);
+            var toolTip = headerCell == null ? null : ToolTipService.GetToolTip(headerCell) as ToolTip;
+            if (toolTip == null)
+            {
+                StatusTextBlock.Text = "No Name header tooltip";
+                return;
+            }
+
+            toolTip.DataContext = "HeaderToolTipProbe";
+            void OnDataContextChanged(FrameworkElement s, DataContextChangedEventArgs args)
+            {
+                if (args.NewValue == null)
+                {
+                    toolTip.DataContextChanged -= OnDataContextChanged;
+                    try
+                    {
+                        PinColumn(nameColumn);
+                        StatusTextBlock.Text = "Pinned while detaching";
+                    }
+                    catch (global::System.Exception ex)
+                    {
+                        StatusTextBlock.Text = "Pin failed while detaching: " + ex.Message;
+                    }
+                }
+            }
+            toolTip.DataContextChanged += OnDataContextChanged;
+            StatusTextBlock.Text = "Detach pin armed";
+        }
+
+        private ToolTip _rebuildProbeToolTip;
+
+        // First invoke caches the Name header's ToolTip (before the gripper detaches it); the second pins the
+        // column, and the ToolTip takes its header's DataContext when TableView attaches it again.
+        private void OnPinNameRebuildOnHeaderToolTipAttachClick(object sender, RoutedEventArgs e)
+        {
+            var nameColumn = BasicTableView.Columns[0];
+            var headerCell = FindBasicHeaderCell(nameColumn);
+            if (headerCell == null)
+            {
+                StatusTextBlock.Text = "No Name header";
+                return;
+            }
+
+            if (_rebuildProbeToolTip == null)
+            {
+                _rebuildProbeToolTip = ToolTipService.GetToolTip(headerCell) as ToolTip;
+                headerCell.DataContext = "HeaderToolTipProbe";
+                StatusTextBlock.Text = _rebuildProbeToolTip == null ? "No Name header tooltip" : "Rebuild probe ready";
+                return;
+            }
+
+            if (ToolTipService.GetToolTip(headerCell) != null)
+            {
+                StatusTextBlock.Text = "Name header tooltip not suppressed";
+                return;
+            }
+
+            var toolTip = _rebuildProbeToolTip;
+            void OnDataContextChanged(FrameworkElement s, DataContextChangedEventArgs args)
+            {
+                if (args.NewValue != null)
+                {
+                    toolTip.DataContextChanged -= OnDataContextChanged;
+                    BasicTableView.Columns.Clear();
+                    BasicTableView.Density = BasicTableView.Density == TableViewDensity.Compact
+                        ? TableViewDensity.Standard : TableViewDensity.Compact;
+                }
+            }
+            toolTip.DataContextChanged += OnDataContextChanged;
+            try
+            {
+                PinColumn(nameColumn);
+                StatusTextBlock.Text = "Pinned; columns=" + BasicTableView.Columns.Count;
+            }
+            catch (global::System.Exception ex)
+            {
+                StatusTextBlock.Text = "Pin failed: " + ex.Message;
+            }
+        }
+
         private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
         {
             int count = VisualTreeHelper.GetChildrenCount(root);
@@ -947,6 +1042,9 @@ namespace MUXControlsTestApp
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
         {
             BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;
+            RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
+            ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
+            ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the
@@ -960,6 +1058,72 @@ namespace MUXControlsTestApp
             }
 
             BasicTableView.CanUserSortColumns = ((CheckBox)sender).IsChecked == true;
+        }
+
+        private void OnCanUserResizeColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserResizeColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserResizeColumns = BasicTableView.CanUserResizeColumns;
+            }
+        }
+
+        private void OnHideColumnHeadersToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? TableViewHeadersVisibility.None : TableViewHeadersVisibility.Column;
+            BasicTableView.HeadersVisibility = visibility;
+            ScrollingTableView.HeadersVisibility = visibility;
+            RtlTableView.HeadersVisibility = visibility;
+        }
+
+        private void OnEmptyBasicToggled(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.ItemsSource = ((CheckBox)sender).IsChecked == true ? new ObservableCollection<TableViewTestPerson>() : _basicItems;
+        }
+
+        // A menu makes RtlAge, beyond the viewport, the only actionable column of the read-only RTL
+        // table, and the hierarchy table becomes a wide read-only tree.
+        private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
+        {
+            bool on = ((CheckBox)sender).IsChecked == true;
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "Age" });
+            RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
+            RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
+            HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
+            HierarchyTable.IsReadOnly = on;
+            if (on && ScrollingTableView.Columns.Count == 4)
+            {
+                ScrollingTableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Link",
+                    Width = new GridLength(160),
+                    CellTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock VerticalAlignment='Center'><Hyperlink AutomationProperties.Name='" + Facts.CellHyperlink + "'>Open</Hyperlink></TextBlock>" +
+                        "</DataTemplate>"),
+                });
+            }
+            else if (!on && ScrollingTableView.Columns.Count > 4)
+            {
+                ScrollingTableView.Columns.RemoveAt(4);
+            }
+        }
+
+        // Read-only, ScrollCity is then the last actionable column, right after the frozen one, with
+        // wide trailing content.
+        private void OnScrollCityMenuToggled(object sender, RoutedEventArgs e)
+        {
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "City" });
+            ScrollingTableView.Columns[1].CellContextFlyout = ((CheckBox)sender).IsChecked == true ? menu : null;
+        }
+
+        // App code scrolling the body: no pointer or wheel input reaches the table.
+        private void OnScrollScrollingBodyClick(object sender, RoutedEventArgs e)
+        {
+            _scrollingBodyScroller?.ChangeView(_scrollingBodyScroller.HorizontalOffset + 120, null, null, true);
         }
 
         // Page switching without a Pivot: hosting the TableViews in a Pivot asserts in
@@ -1054,6 +1218,34 @@ namespace MUXControlsTestApp
         }
 
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
+        {
+            NameColumn.CanResize = !NameColumn.CanResize;
+        }
+
+        // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.
+        private void OnSetAgeAutoScoreStarClick(object sender, RoutedEventArgs e)
+        {
+            AgeColumn.Width = GridLength.Auto;
+            ScoreColumn.Width = new GridLength(1, GridUnitType.Star);
+            TemplateColumn.Width = new GridLength(1, GridUnitType.Star);
+            StatusTextBlock.Text = "Auto and Star set";
+        }
+
+        // "<Header>=<GridUnitType>:<Width.Value>:<ActualWidth>" per column, joined by ';'.
+        private void OnReportBasicColumnWidthsClick(object sender, RoutedEventArgs e)
+        {
+            StatusTextBlock.Text = string.Join(";", BasicTableView.Columns.Select(column =>
+                string.Format(global::System.Globalization.CultureInfo.InvariantCulture, "{0}={1}:{2:0.##}:{3:0.##}",
+                    column.Header, column.Width.GridUnitType, column.Width.Value, column.ActualWidth)));
+        }
+
+        private void OnScaleBasicTableVerticallyClick(object sender, RoutedEventArgs e)
+        {
+            BasicTableHost.RenderTransform = new ScaleTransform { ScaleY = 0.25 };
+            StatusTextBlock.Text = "Scaled vertically";
+        }
+
         private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
         {
             if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))
@@ -1086,6 +1278,16 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
+        {
+            _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
+        }
+
+        private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.Select(3);
         }
 
         private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)

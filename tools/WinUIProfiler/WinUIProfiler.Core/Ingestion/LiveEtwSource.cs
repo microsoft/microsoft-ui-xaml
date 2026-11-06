@@ -8,24 +8,29 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// A real-time ETW session that reads one process's events from the XAML providers, and the kernel's GPU memory
-// events for it, while the profiler is connected.
+// A real-time ETW session that reads one process's events from the XAML providers and the marker providers, and the
+// kernel's GPU memory and window focus events for it, while the profiler is connected. For a launch, the launcher
+// providers' (MarkerProviderSettings.Launcher) events of the profiler, which launches the target, are read too.
 public sealed class LiveEtwSource : IDisposable
 {
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
     private const ulong GpuMemoryKeyword = 0x4;
+    // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
+    private const ulong FocusKeyword = 0x2000;
     private const string SessionPrefix = "WinUIProfiler-";
 
     private readonly object gate = new();
     private readonly TraceEventSession session;
+    private readonly IReadOnlyList<MarkerProviderSettings> markers;
     private readonly Thread reader;
     private int eventsLost;
     private bool reading;
     private bool disposed;
 
-    private LiveEtwSource(TraceEventSession session)
+    private LiveEtwSource(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers)
     {
         this.session = session;
+        this.markers = markers;
         reader = new(Read) { IsBackground = true, Name = "WinUIProfiler ETW reader" };
     }
 
@@ -48,16 +53,17 @@ public sealed class LiveEtwSource : IDisposable
         }
     }
 
-    // For a process that is already running: its events from now on.
-    public static LiveEtwSource Start(int processId, Action<ProfilerEvent> sink)
+    // For a process that is already running: its events from now on. Markers are the marker providers to read too.
+    public static LiveEtwSource Start(int processId, IReadOnlyCollection<MarkerProviderSettings> markers,
+        Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
-        var source = Create(ForProcess(processId));
+        var source = Create(ForProcess(processId), ForProcess(processId), markers);
         try
         {
             lock (source.gate)
             {
-                source.BeginReading(processId, sink);
+                source.BeginReading(processId, null, sink);
             }
 
             return source;
@@ -71,17 +77,29 @@ public sealed class LiveEtwSource : IDisposable
 
     // For a launch: call before the process is created, then call StartReading with its ID. The process has
     // no ID yet, so until then ETW filters on the executable name and keeps the events in the session's
-    // buffers. The launched process is not delayed or suspended.
-    public static LiveEtwSource StartBeforeLaunch(IReadOnlyCollection<string> executableNames)
+    // buffers. The launched process is not delayed or suspended. The launcher providers are enabled for the
+    // profiler's executable too, so the session has the events the profiler writes as it launches the target.
+    public static LiveEtwSource StartBeforeLaunch(IReadOnlyCollection<string> executableNames,
+        IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         ArgumentNullException.ThrowIfNull(executableNames);
         ArgumentOutOfRangeException.ThrowIfZero(executableNames.Count);
-        return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] });
+        List<string> launcherNames = [.. executableNames];
+        if (Path.GetFileName(Environment.ProcessPath) is { Length: > 0 } profiler &&
+            !launcherNames.Contains(profiler, StringComparer.OrdinalIgnoreCase))
+        {
+            launcherNames.Add(profiler);
+        }
+
+        return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] },
+            new TraceEventProviderOptions { ProcessNameFilter = launcherNames }, markers);
     }
 
     // Narrows the session to the launched process and delivers its events, including those buffered since
-    // the session started. The same session keeps running, so nothing is lost while the filter changes.
-    public void StartReading(int processId, Action<ProfilerEvent> sink)
+    // the session started, and the events of launcherProcessId, the process that launched it, from the launcher
+    // providers: those written before the session was narrowed. The same session keeps running, so nothing is lost
+    // while the filter changes.
+    public void StartReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
         lock (gate)
@@ -92,9 +110,9 @@ public sealed class LiveEtwSource : IDisposable
                 throw new InvalidOperationException("The session is already reading.");
             }
 
-            // Other processes with the same executable name stop writing to the session.
-            EnableProviders(session, ForProcess(processId));
-            BeginReading(processId, sink);
+            // Other processes with the same executable name, and the profiler, stop writing to the session.
+            EnableProviders(session, ForProcess(processId), ForProcess(processId), markers);
+            BeginReading(processId, launcherProcessId, sink);
         }
     }
 
@@ -102,17 +120,25 @@ public sealed class LiveEtwSource : IDisposable
 
     // Needs an elevated process or membership in the local Performance Log Users group;
     // otherwise starting the session throws UnauthorizedAccessException.
-    private static LiveEtwSource Create(TraceEventProviderOptions options)
+    private static LiveEtwSource Create(TraceEventProviderOptions options, TraceEventProviderOptions launcherOptions,
+        IReadOnlyCollection<MarkerProviderSettings> markers)
     {
+        ArgumentNullException.ThrowIfNull(markers);
+        IReadOnlyList<MarkerProviderSettings> enabled =
+        [
+            .. markers.Where(marker => !XamlProviders.IsBuiltIn(marker.Provider.Id))
+                .DistinctBy(marker => marker.Provider.Id)
+        ];
         StopAbandonedSessions();
         var session = new TraceEventSession($"{SessionPrefix}{Environment.ProcessId}-{Guid.NewGuid():N}") { StopOnDispose = true };
         try
         {
             // Open the consumer side before enabling, so events written before reading starts are kept.
             _ = session.Source;
-            EnableProviders(session, options);
+            EnableProviders(session, options, launcherOptions, enabled);
             EnableGpuMemory(session);
-            return new(session);
+            EnableFocus(session);
+            return new(session, enabled);
         }
         catch
         {
@@ -127,14 +153,24 @@ public sealed class LiveEtwSource : IDisposable
     // Microsoft-Windows-XAML's few events at its own levels above Verbose, written for every API call or parsed
     // object.
     // While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML source position of the objects
-    // it parses (which ElementCreatedWithSource and, in builds with XamlProfilerEnabled, ElementEnteredTree carry),
+    // it parses (which ElementCreatedWithSource and ElementEnteredTree carry),
     // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
     // parsed while it is enabled has positions, so a launch has them from the start.
-    private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options)
+    // The marker providers get the level and keywords their configuration names, and the same process filter, or for a
+    // launcher provider launcherOptions. ETW enables a provider that has not registered yet when it does, so an app's
+    // provider needs no special order.
+    private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
+        TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers)
     {
         foreach (var provider in XamlProviders.XamlIds)
         {
             session.EnableProvider(provider, TraceEventLevel.Verbose, ulong.MaxValue, options);
+        }
+
+        foreach (var marker in markers)
+        {
+            session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
+                marker.Launcher ? launcherOptions : options);
         }
     }
 
@@ -151,6 +187,20 @@ public sealed class LiveEtwSource : IDisposable
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             Trace.TraceWarning($"Could not enable the kernel's GPU memory events: {error.Message}");
+        }
+    }
+
+    // Window focus changes start regions of interest (InterestingRows). Like DxgKrnl, Win32k writes from the
+    // kernel for every process, once per focus change; XamlEventSubscription keeps the target's. Best effort, as above.
+    private static void EnableFocus(TraceEventSession session)
+    {
+        try
+        {
+            session.EnableProvider(XamlProviders.Win32k, TraceEventLevel.Informational, FocusKeyword);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not enable the kernel's window focus events: {error.Message}");
         }
     }
 
@@ -210,9 +260,9 @@ public sealed class LiveEtwSource : IDisposable
 
     // The process ID check also skips events other processes with the same executable name wrote before the
     // session was narrowed to one process.
-    private void BeginReading(int processId, Action<ProfilerEvent> sink)
+    private void BeginReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink)
     {
-        XamlEventSubscription.Subscribe(session.Source, processId, sink);
+        XamlEventSubscription.Subscribe(session.Source, processId, markers, sink, launcherProcessId);
         CaptureGpuMemoryState();
         reader.Start();
         reading = true;
