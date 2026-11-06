@@ -2586,6 +2586,13 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollGroupHeaderIntoView(
 
     wf::Rect computedWindow = RectUtil::CreateEmptyRect();
 
+    // A collection change may have hidden or removed every group since this command was queued.
+    if (m_cacheManager.GetTotalLayoutGroupCount() == 0)
+    {
+        ASSERT(!animate);
+        goto Cleanup;
+    }
+
     // deal with scrolling to an empty group
     groupIndex = m_cacheManager.DataIndexToLayoutIndex(xaml_controls::ElementType_GroupHeader, groupIndex);
     groupIndex = m_cacheManager.LayoutIndexToDataIndex(xaml_controls::ElementType_GroupHeader, groupIndex);

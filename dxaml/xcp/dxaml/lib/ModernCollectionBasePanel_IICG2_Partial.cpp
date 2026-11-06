@@ -1167,7 +1167,16 @@ ModernCollectionBasePanel::NotifyOfItemsChangingImpl(
             }
             IFC(hr);
 
-            IFC(OnGroupReset(nIndex));
+            // A custom ICollectionView can raise a Reset whose index is not a group index.
+            // Resetting a group that does not exist would leave stale containers, so reset everything.
+            if (nIndex < static_cast<UINT>(m_cacheManager.GetTotalGroupCount()))
+            {
+                IFC(OnGroupReset(nIndex));
+            }
+            else
+            {
+                IFC(OnCollectionReset());
+            }
         }
         else
         {
@@ -2069,6 +2078,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::OnCollectionReset()
         TraceGuardFailure(L"ResetDuringLayout");
     }
 
+    // A full reset supersedes the pending item additions from group insertions or replacements.
+    m_containerManager.m_unlinkedFillers.clear();
+
     // logic during refresh:
     // 1. store items from pinnedcontainers and first visible container
     // 2. iterate over them and ask for new indices
@@ -2135,7 +2147,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::OnCollectionReset()
                     IFC(m_containerManager.Interface_DataItemFromElement(elementType, spElement.AsOrNull<IDependencyObject>().Get(), &spDataItem));
 
                     IFC(m_cacheManager.GetIndex(spDataItem.Get(), &newItemIndex, &isGroupHeader, &found));
-                    if (found)
+                    if (found && (!isGroupHeader || m_cacheManager.GetTotalLayoutGroupCount() > 0))
                     {
                         // we can only do the scroll if we find a new index. If this did not happen, we're out of luck
                         if (isGroupHeader)
