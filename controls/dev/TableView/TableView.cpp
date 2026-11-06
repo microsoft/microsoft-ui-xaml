@@ -477,7 +477,7 @@ namespace
     {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return 30.0;
+        case winrt::TableViewDensity::Compact: return 32.0;
         case winrt::TableViewDensity::Comfortable: return 48.0;
         default: return 40.0; // Standard
         }
