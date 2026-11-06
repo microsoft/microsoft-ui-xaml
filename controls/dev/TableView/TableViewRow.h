@@ -13,6 +13,8 @@
 #include <optional>
 #include <vector>
 
+class TableViewRowAutomationPeer;
+
 class TableViewRow :
     public ReferenceTracker<TableViewRow, winrt::implementation::TableViewRowT>,
     public TableViewRowProperties
@@ -156,7 +158,23 @@ public:
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
+    // Item identity pinned at prepare; empty while pooled or once DataContext moved off that item.
+    winrt::hstring RowItemIdentityInternal();
+    bool IsRowItemKeyedByIndexInternal() const noexcept { return !m_rowItemIdentity.empty() && m_rowItemIdentity[0] == L'#'; }
+    // Cache key for the peer of the item at `index`: the item's object identity, or for an item the
+    // source boxes afresh on every read, its index in this version of the source.
+    static winrt::hstring RowItemPeerKeyInternal(winrt::IInspectable const& item, int32_t index, bool byIndex, uint64_t sourceVersion);
+
+    // The peer UIA sees for the item this container shows: its own peer's EventsSource.
+    winrt::AutomationPeer GetRowAutomationPeerInternal(bool create);
+
+    // Points this container's own peer at its item's peer. Pass the container's peer while it is
+    // being constructed; otherwise the existing one is used.
+    void SyncAutomationPeerToItemInternal(TableViewRowAutomationPeer* containerPeer = nullptr);
+
 private:
+    void ClearRowItemIdentity();
+    void DropAutomationCellPeerCaches();
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
     bool HasCellAutomationPeers() const;
@@ -331,4 +349,8 @@ private:
     winrt::Microsoft::UI::Input::PointerDeviceType m_lastPressDeviceType{ winrt::Microsoft::UI::Input::PointerDeviceType::Mouse };
     tracker_ref<winrt::TableViewColumn> m_lastPressColumn{ this };
     tracker_ref<winrt::IInspectable> m_lastPressItem{ this };
+
+    // Key the item peer is cached under, and the item it was pinned for (compared, never used).
+    winrt::hstring m_rowItemIdentity{};
+    void* m_rowItemIdentityItem{ nullptr };
 };
