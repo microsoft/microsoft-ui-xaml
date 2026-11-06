@@ -87,6 +87,8 @@
     <Setter Property="MinWidth" Value="{StaticResource PagerControlNumberPanelButtonWidth}" />
     <Setter Property="MinHeight" Value="20" />
     <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
@@ -96,12 +98,12 @@
                 <VisualState x:Name="Normal" />
                 <VisualState x:Name="PointerOver">
                   <Storyboard>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPointerOver}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonForegroundPointerOver}" />
-                    </ObjectAnimationUsingKeyFrames>
+                      <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonBackgroundPointerOver}" />
+                      </ObjectAnimationUsingKeyFrames>
+                      <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PagerControlPageNavigationButtonForegroundPointerOver}" />
+                      </ObjectAnimationUsingKeyFrames>
                   </Storyboard>
                 </VisualState>
                 <VisualState x:Name="Pressed">
