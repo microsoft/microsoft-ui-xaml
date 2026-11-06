@@ -308,6 +308,149 @@ winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
     return winrt::make<TableViewRowAutomationPeer>(*this);
 }
 
+namespace
+{
+    void* ItemIdentityPointer(winrt::IInspectable const& item)
+    {
+        return item ? winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>()) : nullptr;
+    }
+}
+
+winrt::hstring TableViewRow::RowItemPeerKeyInternal(winrt::IInspectable const& item, int32_t index, bool byIndex, uint64_t sourceVersion)
+{
+    wchar_t key[64]{};
+    if (byIndex)
+    {
+        swprintf_s(key, L"#%d@%llu", index, sourceVersion);
+    }
+    else
+    {
+        swprintf_s(key, L"%p", ItemIdentityPointer(item));
+    }
+    return winrt::hstring{ key };
+}
+
+winrt::hstring TableViewRow::RowItemIdentityInternal()
+{
+    auto const owner = GetOwningTableView();
+    auto const item = owner ? winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(DataContext()) : nullptr;
+    if (m_rowItemIdentity.empty() || ItemIdentityPointer(item) != m_rowItemIdentityItem)
+    {
+        return {};
+    }
+    return m_rowItemIdentity;
+}
+
+void TableViewRow::ClearRowItemIdentity()
+{
+    m_rowItemIdentity = {};
+    m_rowItemIdentityItem = nullptr;
+}
+
+winrt::AutomationPeer TableViewRow::GetRowAutomationPeerInternal(bool create)
+{
+    return TableViewItemPeers::ItemPeerOfContainer(*this, create);
+}
+
+void TableViewRow::DropAutomationCellPeerCaches()
+{
+    auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+    auto const self = get_strong().as<winrt::TableViewRow>();
+    for (auto* const peer : { TableViewRowAutomationPeer::FromPeerInternal(rowPeer),
+                              TableViewRowAutomationPeer::FromPeerInternal(rowPeer ? rowPeer.EventsSource() : nullptr) })
+    {
+        if (peer)
+        {
+            peer->DropCellPeerCacheForRowInternal(self);
+        }
+    }
+}
+
+void TableViewRow::SyncAutomationPeerToItemInternal(TableViewRowAutomationPeer* containerPeer)
+{
+    winrt::AutomationPeer existing{ nullptr };
+    if (!containerPeer)
+    {
+        existing = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+        containerPeer = TableViewRowAutomationPeer::FromPeerInternal(existing);
+        if (!containerPeer)
+        {
+            return;
+        }
+    }
+
+    auto const owner = GetOwningTableView();
+    auto* const tableImpl = owner ? winrt::get_self<TableView>(owner) : nullptr;
+    auto const item = tableImpl && !m_inRecyclePool ? tableImpl->UnwrapEditingDataItem(DataContext()) : nullptr;
+    if (!item || !tableImpl)
+    {
+        ClearRowItemIdentity();
+        return;
+    }
+    containerPeer->TrackItemInternal(item);
+
+    // A source that boxes items afresh on every read (a managed List<int>) gives them no identity to
+    // follow, so their peers follow the index until the source next changes.
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+    const int32_t index = repeater ? repeater.GetElementIndex(*this) : -1;
+    const bool byIndex = view && index >= 0 && index < view.Count() &&
+        !TableView::SameInspectableIdentity(item, tableImpl->UnwrapEditingDataItem(view.GetAt(index)));
+    const uint64_t sourceVersion = tableImpl->RowsSourceVersionInternal();
+
+    m_rowItemIdentity = RowItemPeerKeyInternal(item, index, byIndex, sourceVersion);
+    m_rowItemIdentityItem = ItemIdentityPointer(item);
+
+    auto const tablePeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner).try_as<winrt::TableViewAutomationPeer>();
+    auto* const cache = tablePeer ? &winrt::get_self<TableViewAutomationPeer>(tablePeer)->RowPeerCacheInternal() : nullptr;
+    auto const current = containerPeer->EventsSource();
+    auto const self = get_strong().as<winrt::TableViewRow>();
+    auto const bindingOf = [&item, &self, byIndex](winrt::AutomationPeer const& peer) -> TableViewItemPeerBinding*
+    {
+        auto* const impl = TableViewRowAutomationPeer::FromPeerInternal(peer);
+        return impl && impl->CanBindToItemInternal(item, self, byIndex) ? &impl->ItemPeerBindingInternal() : nullptr;
+    };
+    auto const create = [&]() { return TableViewRowAutomationPeer::CreateItemPeerInternal(self, item, byIndex, sourceVersion); };
+
+    auto itemPeer = TableViewItemPeers::Resolve(cache, current, m_rowItemIdentity, *this, bindingOf, create);
+    if (!itemPeer && cache)
+    {
+        // The cached peer shows this item in another row (a duplicate), so this row gets an uncached
+        // peer; or it is a dead item's whose address this one reused, and this item's peer replaces it.
+        auto* const cached = TableViewRowAutomationPeer::FromPeerInternal(
+            cache->GetOrCreate(m_rowItemIdentity, []() { return winrt::AutomationPeer{ nullptr }; }));
+        const bool duplicate = cached && cached->TracksItemInternal(item);
+        itemPeer = TableViewItemPeers::Resolve(nullptr, current, m_rowItemIdentity, *this, bindingOf, create);
+        if (!duplicate && itemPeer)
+        {
+            cache->Assign(m_rowItemIdentity, itemPeer);
+        }
+    }
+
+    auto* const itemImpl = TableViewRowAutomationPeer::FromPeerInternal(itemPeer);
+    if (!itemImpl)
+    {
+        ClearRowItemIdentity();
+        return;
+    }
+    itemImpl->OnBoundToRowInternal(self, index);
+    if (itemImpl == TableViewRowAutomationPeer::FromPeerInternal(current))
+    {
+        return;
+    }
+
+    if (auto* const previous = TableViewRowAutomationPeer::FromPeerInternal(current))
+    {
+        previous->DropCellPeerCacheForRowInternal(self);
+    }
+    containerPeer->EventsSource(itemPeer);
+    if (existing && FocusState() != winrt::FocusState::Unfocused &&
+        winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::AutomationFocusChanged))
+    {
+        itemPeer.RaiseAutomationEvent(winrt::AutomationEvents::AutomationFocusChanged);
+    }
+}
+
 // Typed accessor for the owning TableView.
 winrt::TableView TableViewRow::GetOwningTableView()
 {
@@ -944,11 +1087,13 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
     else
     {
         ResetCellAutomationNames();
-        // Drop the row peer's cell-peer cache so the next item's cell peers are not served from it.
-        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
-            .try_as<winrt::TableViewRowAutomationPeer>())
+        // Drop the row peers' cell-peer caches so the next item's cell peers are not served from them.
+        DropAutomationCellPeerCaches();
+        // The item's peer stops answering for this row, which no longer forwards to it either.
+        ClearRowItemIdentity();
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
         {
-            winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->DropCellPeerCache();
+            rowPeer.EventsSource(nullptr);
         }
         m_owningTableView = nullptr;
         // Reset transient interaction state so a row recycled while hovered/pressed
@@ -997,20 +1142,21 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
 
     if (m_owningTableView.get() != owner)
     {
-        return SetOwningTableViewInternal(owner);
+        const bool refreshed = SetOwningTableViewInternal(owner);
+        SyncAutomationPeerToItemInternal();
+        return refreshed;
     }
 
     const bool skipRebuild = std::exchange(m_cellsRebuiltForDataContext, false) && skipIfCellsCurrent;
     m_inRecyclePool = false;
 
-    auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
-        .try_as<winrt::TableViewRowAutomationPeer>();
-    auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
-    if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
+    // The peer UIA was handed for this row so far keeps its item, so a new item needs new cell peers.
+    auto* const shownImpl = TableViewRowAutomationPeer::FromPeerInternal(GetRowAutomationPeerInternal(false));
+    bool chromeRefreshed = false;
+    if (shownImpl && !shownImpl->CanReuseForRowItem(*this, owner))
     {
         // Cell providers are bound to their element, so replace the cells only if a cell peer exists;
         // otherwise keep them and let them restamp from the inherited DataContext.
-        bool chromeRefreshed = false;
         if (HasCellAutomationPeers())
         {
             if (auto host = m_cellsHost.get())
@@ -1018,25 +1164,20 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
                 ResetCellAutomationNames();
                 host.Children().Clear();
             }
-            peerImpl->DropCellPeerCache();
             chromeRefreshed = RebuildCells(false /* updateExistingCellPeerItems */);
         }
         else
         {
-            peerImpl->DropCellPeerCache();
             chromeRefreshed = skipRebuild ? false : RebuildCells();
         }
-        peerImpl->TrackCurrentRowItem(*this, owner);
-        return chromeRefreshed;
+        DropAutomationCellPeerCaches();
     }
-
-    const bool chromeRefreshed = skipRebuild ? false : RebuildCells();
-
-    if (peerImpl)
+    else
     {
-        peerImpl->TrackCurrentRowItem(*this, owner);
+        chromeRefreshed = skipRebuild ? false : RebuildCells();
     }
 
+    SyncAutomationPeerToItemInternal();
     return chromeRefreshed;
 }
 
@@ -1355,7 +1496,7 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     // Only an existing peer can have handed a client cached set metadata.
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewRowAutomationPeer>())
+        if (auto const rowPeer = GetRowAutomationPeerInternal(false).try_as<winrt::TableViewRowAutomationPeer>())
         {
             winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->RaiseHierarchyPositionChanged();
         }
@@ -1390,12 +1531,8 @@ void TableViewRow::RaiseExpandCollapseStateChanged(
         return;
     }
 
-    // XAML caches the peer per element, so the fallback yields the same instance a client holds.
-    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-    if (!peer)
-    {
-        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this);
-    }
+    // XAML caches the peer per element, and the item peer behind it is what a client holds.
+    auto const peer = GetRowAutomationPeerInternal(true);
 
     if (auto const rowPeer = peer ? peer.try_as<winrt::TableViewRowAutomationPeer>() : nullptr)
     {

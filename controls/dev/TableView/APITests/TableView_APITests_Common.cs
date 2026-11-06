@@ -564,9 +564,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static TableViewRowAutomationPeer GetRowPeer(TableViewRow row)
         {
-            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(row) as TableViewRowAutomationPeer;
+            var peer = RowPeerOf(row) as TableViewRowAutomationPeer;
             Verify.IsNotNull(peer, "A TableViewRow must produce a TableViewRowAutomationPeer.");
             return peer;
+        }
+
+        // The peer UIA reaches for the item a row shows: the row's own peer exposes it as EventsSource.
+        internal static AutomationPeer RowPeerOf(UIElement row)
+        {
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+            return peer?.EventsSource ?? peer;
         }
 
         internal static TableViewCellAutomationPeer GetCellPeer(TableViewRowAutomationPeer rowPeer, int visibleColumnIndex)

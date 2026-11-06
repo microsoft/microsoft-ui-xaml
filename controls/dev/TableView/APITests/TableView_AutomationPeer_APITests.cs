@@ -268,7 +268,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Once realized, the data-item peer must stop offering VirtualizedItem.");
 
                 // A client may keep the provider it was handed; it must now describe the realized row.
-                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+                var rowPeer = RowPeerOf(row);
                 var bounds = itemPeer.GetBoundingRectangle();
                 Verify.IsTrue(bounds.Width > 0 && bounds.Height > 0, $"The held peer must report the row's bounds (got {bounds}).");
                 Verify.IsFalse(itemPeer.IsOffscreen(), "The held peer must not report an on-screen row as off screen.");
@@ -703,6 +703,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public global::System.Collections.IEnumerator GetEnumerator() => _values.GetEnumerator();
         }
 
+        // An observable IList that boxes its ints afresh on every read, as ObservableCollection<int> does through WinRT.
+        private sealed class ObservableBoxingIntList : global::System.Collections.IList, global::System.Collections.Specialized.INotifyCollectionChanged
+        {
+            private readonly List<int> _values;
+
+            public ObservableBoxingIntList(int count) { _values = Enumerable.Range(0, count).ToList(); }
+
+            public event global::System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged;
+
+            public object this[int index]
+            {
+                get => (object)_values[index];
+                set
+                {
+                    var old = (object)_values[index];
+                    _values[index] = (int)value;
+                    Raise(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                        global::System.Collections.Specialized.NotifyCollectionChangedAction.Replace, value, old, index));
+                }
+            }
+            public bool IsFixedSize => false;
+            public bool IsReadOnly => false;
+            public int Count => _values.Count;
+            public bool IsSynchronized => false;
+            public object SyncRoot => this;
+            public int Add(object value)
+            {
+                Insert(_values.Count, value);
+                return _values.Count - 1;
+            }
+            public void Insert(int index, object value)
+            {
+                _values.Insert(index, (int)value);
+                Raise(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                    global::System.Collections.Specialized.NotifyCollectionChangedAction.Add, value, index));
+            }
+            public void Clear() => throw new global::System.NotSupportedException();
+            public bool Contains(object value) => IndexOf(value) >= 0;
+            public int IndexOf(object value) => value is int i ? _values.IndexOf(i) : -1;
+            public void Remove(object value) => throw new global::System.NotSupportedException();
+            public void RemoveAt(int index)
+            {
+                var old = (object)_values[index];
+                _values.RemoveAt(index);
+                Raise(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                    global::System.Collections.Specialized.NotifyCollectionChangedAction.Remove, old, index));
+            }
+            public void CopyTo(global::System.Array array, int index) => ((global::System.Collections.ICollection)_values).CopyTo(array, index);
+            public global::System.Collections.IEnumerator GetEnumerator() => _values.GetEnumerator();
+
+            private void Raise(global::System.Collections.Specialized.NotifyCollectionChangedEventArgs args) => CollectionChanged?.Invoke(this, args);
+        }
         private static void VerifyElementNotAvailable(Action action, string what)
         {
             int hr = 0;
@@ -744,9 +796,551 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var selected = RequireSelectionProvider(tableView).GetSelection();
                 Verify.AreEqual(1, selected == null ? 0 : selected.Length, "GetSelection must report the selected row.");
-                Verify.AreSame(FrameworkElementAutomationPeer.CreatePeerForElement(row), new ProviderPeerProbe().ToPeer(selected[0]),
+                Verify.AreSame(RowPeerOf(row), new ProviderPeerProbe().ToPeer(selected[0]),
                     "A realized selected row must be reported through its own row peer, as Grid.GetItem and tree navigation do.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held row peer stays bound to its item when filtering rebinds its row to another item, and Select never selects another item (#12444).")]
+        public void VerifyHeldRowPeerStaysBoundToItsItemAcrossFiltering()
+        {
+            const int elementNotAvailable = unchecked((int)0x80040201);
+            var people = MakeNamedPeople(60);
+            TableViewSource source = null;
+            TableView tableView = null;
+            NamedPerson heldItem = null;
+            TableViewRow heldContainer = null;
+            AutomationPeer held = null;
+            ISelectionItemProvider heldSelection = null;
+            var containerRebound = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(people);
+                tableView = CreateNamedPeopleTable(source);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                heldContainer = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(3);
+                heldItem = (NamedPerson)heldContainer.DataContext;
+                held = RowPeerOf(heldContainer);
+                Verify.IsTrue(held is TableViewRowAutomationPeer, "Precondition: UIA is handed a row peer.");
+                Verify.AreNotSame(FrameworkElementAutomationPeer.CreatePeerForElement(heldContainer), held,
+                    "UIA must be handed the item's peer, not the row's own peer.");
+                heldSelection = held.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsNotNull(heldSelection, "Precondition: the held peer offers SelectionItem.");
+                Verify.IsTrue(held.GetName().StartsWith(heldItem.Name + ","), $"Precondition: the held peer names {heldItem.Name}, saw '{held.GetName()}'.");
+            });
+
+            var filters = new Func<object, bool>[]
+            {
+                o => o != heldItem && ((NamedPerson)o).Name.EndsWith("1"),
+                null,
+                o => people.IndexOf((NamedPerson)o) % 2 == 1,
+                o => people.IndexOf((NamedPerson)o) >= 20,
+                null,
+            };
+
+            for (var step = 0; step < filters.Length; step++)
+            {
+                var filter = filters[step];
+                RunOnUIThread.Execute(() =>
+                {
+                    if (filter == null)
+                    {
+                        source.ClearFilter();
+                    }
+                    else
+                    {
+                        source.Filter(new TableViewPredicate(filter));
+                    }
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = GetRowsRepeater(tableView);
+                    containerRebound |= repeater.GetElementIndex(heldContainer) >= 0 && !ReferenceEquals(heldContainer.DataContext, heldItem);
+                    var heldRealized = GetRealizedRows(tableView).Any(r => repeater.GetElementIndex(r) >= 0 && ReferenceEquals(r.DataContext, heldItem));
+
+                    string name = null;
+                    try
+                    {
+                        name = held.GetName();
+                    }
+                    catch (Exception e) when (e.HResult == elementNotAvailable)
+                    {
+                        Log.Comment($"Step {step}: the held peer's Name reported ElementNotAvailable.");
+                    }
+                    Verify.IsTrue(name == null || name.StartsWith(heldItem.Name + ","),
+                        $"Step {step}: the held peer must name {heldItem.Name} or report ElementNotAvailable, not another item; saw '{name}'.");
+                    Verify.IsTrue(!heldRealized || name != null, $"Step {step}: while {heldItem.Name} is realized its held peer must still answer.");
+
+                    tableView.DeselectAll();
+                    var acted = false;
+                    try
+                    {
+                        heldSelection.Select();
+                        acted = true;
+                    }
+                    catch (Exception e) when (e.HResult == elementNotAvailable)
+                    {
+                        Log.Comment($"Step {step}: Select on the held peer reported ElementNotAvailable.");
+                    }
+                    var selected = tableView.SelectedItem;
+                    Verify.IsTrue(selected == null || ReferenceEquals(selected, heldItem),
+                        $"Step {step}: Select on the held peer must never select another item; selected '{selected}'.");
+                    Verify.AreEqual(acted, ReferenceEquals(selected, heldItem), $"Step {step}: Select must either select {heldItem.Name} or fail.");
+
+                    foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))
+                    {
+                        var item = (NamedPerson)row.DataContext;
+                        var peer = RowPeerOf(row);
+                        Verify.IsTrue(peer.GetName().StartsWith(item.Name + ","), $"Step {step}: the row showing {item.Name} must expose a peer naming it; saw '{peer.GetName()}'.");
+                        Verify.AreEqual(ReferenceEquals(item, heldItem), ReferenceEquals(peer, held),
+                            $"Step {step}: {item.Name} must be exposed through {(ReferenceEquals(item, heldItem) ? "the held peer" : "its own peer")}.");
+                    }
+                });
+            }
+
+            Verify.IsTrue(containerRebound, "Precondition: the held peer's original row must have been rebound to another item.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row item keeps its peer after scrolling away and back, and rebound row peers navigate as their rows: listed by the parent, with sibling round trips (#12444).")]
+        public void VerifyReboundRowPeerIdentityAndNavigation()
+        {
+            TableView tableView = null;
+            var initialPeers = new Dictionary<object, AutomationPeer>();
+            var initialContainers = new Dictionary<object, TableViewRow>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var row in GetRealizedRows(tableView))
+                {
+                    initialPeers[row.DataContext] = RowPeerOf(row);
+                    initialContainers[row.DataContext] = row;
+                }
+                Verify.IsTrue(initialPeers.Count >= 2, $"Precondition: several rows are realized, saw {initialPeers.Count}.");
+                GetBodyScroller(tableView).ChangeView(null, 100000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 0.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                WalkAutomationChildren(RequireTablePeer(tableView), 6);
+                var repeater = GetRowsRepeater(tableView);
+                var rows = GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0).OrderBy(r => repeater.GetElementIndex(r)).ToList();
+                Verify.IsTrue(rows.Count >= 2, $"Precondition: several rows are realized after scrolling back, saw {rows.Count}.");
+
+                var moved = 0;
+                foreach (var row in rows)
+                {
+                    var name = ((NamedPerson)row.DataContext).Name;
+                    var peer = RowPeerOf(row);
+                    Verify.IsTrue(peer.GetName().StartsWith(name + ","), $"{name}'s row must expose a peer naming it; saw '{peer.GetName()}'.");
+                    if (initialPeers.TryGetValue(row.DataContext, out var initial))
+                    {
+                        Verify.AreSame(initial, peer, $"{name} must get its original peer back after scrolling away and back.");
+                        moved += initialContainers[row.DataContext] == row ? 0 : 1;
+                    }
+
+                    var parent = peer.Navigate(AutomationNavigationDirection.Parent) as AutomationPeer;
+                    Verify.IsNotNull(parent, $"{name}'s peer must have a parent.");
+                    Verify.IsTrue((parent.GetChildren() ?? new List<AutomationPeer>()).Any(child => UiaFacingPeer(child) == peer),
+                        $"{name}'s peer must be listed among its parent's children.");
+
+                    if (UiaFacingPeer(peer.Navigate(AutomationNavigationDirection.NextSibling) as AutomationPeer) is AutomationPeer next)
+                    {
+                        Verify.AreSame(peer, UiaFacingPeer(next.Navigate(AutomationNavigationDirection.PreviousSibling) as AutomationPeer),
+                            $"Next then Previous from {name} must come back to {name}.");
+                    }
+                    if (UiaFacingPeer(peer.Navigate(AutomationNavigationDirection.PreviousSibling) as AutomationPeer) is AutomationPeer previous)
+                    {
+                        Verify.AreSame(peer, UiaFacingPeer(previous.Navigate(AutomationNavigationDirection.NextSibling) as AutomationPeer),
+                            $"Previous then Next from {name} must come back to {name}.");
+                    }
+
+                    var cells = peer.GetChildren();
+                    Verify.IsTrue(cells != null && cells.Count > 0, $"{name}'s peer must expose its cells.");
+                    Verify.AreSame(peer, cells[0].Navigate(AutomationNavigationDirection.Parent), $"{name}'s first cell must be parented to {name}'s peer.");
+                }
+
+                Verify.IsTrue(moved > 0, "Precondition: at least one item must have come back in a different row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an item peer reports the row-level properties of the row showing its item, not of the row that created it (#12444).")]
+        public void VerifyRowItemPeerForwardsRowProperties()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Set per row as a RowStyle binding would: the value follows the row's item.
+                void Stamp(TableViewRow row)
+                {
+                    var name = (row.DataContext as NamedPerson)?.Name;
+                    AutomationProperties.SetHelpText(row, "help " + name);
+                    AutomationProperties.SetItemStatus(row, "status " + name);
+                }
+                var repeater = GetRowsRepeater(tableView);
+                repeater.ElementPrepared += (s, e) => Stamp((TableViewRow)e.Element);
+                foreach (var row in GetRealizedRows(tableView))
+                {
+                    Stamp(row);
+                    RowPeerOf(row);
+                }
+                GetBodyScroller(tableView).ChangeView(null, 100000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 0.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                var moved = 0;
+                foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))
+                {
+                    var name = ((NamedPerson)row.DataContext).Name;
+                    var peer = RowPeerOf(row);
+                    moved += ((FrameworkElementAutomationPeer)peer).Owner == row ? 0 : 1;
+                    Verify.AreEqual("help " + name, peer.GetHelpText(), $"{name}'s peer must report its own row's HelpText.");
+                    Verify.AreEqual("status " + name, peer.GetItemStatus(), $"{name}'s peer must report its own row's ItemStatus.");
+                }
+                Verify.IsTrue(moved > 0, "Precondition: at least one item peer must answer for a row other than the one that created it.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held row peer whose row scrolled out answers as a virtualized item named from its data, and Realize brings it back on the same peer (#12444).")]
+        public void VerifyHeldRowPeerAnswersAsVirtualizedItem()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+            NamedPerson heldItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(0);
+                heldItem = (NamedPerson)row.DataContext;
+                held = RowPeerOf(row);
+                Verify.IsNull(held.GetPattern(PatternInterface.VirtualizedItem), "Precondition: a realized row is not virtualized.");
+                GetBodyScroller(tableView).ChangeView(null, 100000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(GetRealizedRows(tableView).Any(r => GetRowsRepeater(tableView).GetElementIndex(r) >= 0 && ReferenceEquals(r.DataContext, heldItem)),
+                    $"Precondition: {heldItem.Name}'s row must be recycled.");
+                Verify.IsTrue(held.GetName().StartsWith(heldItem.Name + ","), $"The virtualized peer must still name {heldItem.Name}, saw '{held.GetName()}'.");
+                Verify.IsTrue(held.IsOffscreen(), "A virtualized row is offscreen.");
+                var bounds = held.GetBoundingRectangle();
+                Verify.IsTrue(bounds.Width == 0 && bounds.Height == 0, $"A virtualized row has an empty bounding rectangle, saw {bounds}.");
+                Verify.AreEqual(AutomationControlType.DataItem, held.GetAutomationControlType());
+                var virtualized = held.GetPattern(PatternInterface.VirtualizedItem) as IVirtualizedItemProvider;
+                Verify.IsNotNull(virtualized, "A virtualized row offers VirtualizedItem.");
+                virtualized.Realize();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView).First(r => GetRowsRepeater(tableView).GetElementIndex(r) >= 0 && ReferenceEquals(r.DataContext, heldItem));
+                Verify.AreSame(held, RowPeerOf(row), $"Realize must bring {heldItem.Name} back on the held peer.");
+                Verify.IsNull(held.GetPattern(PatternInterface.VirtualizedItem), "A realized row is not virtualized.");
+                Verify.IsTrue(held.GetName().StartsWith(heldItem.Name + ","), $"The realized peer must name {heldItem.Name}, saw '{held.GetName()}'.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one object shown in two rows gets a peer per row, each acting on its own row (#12444).")]
+        public void VerifyDuplicateItemRowsGetDistinctPeers()
+        {
+            TableView tableView = null;
+            var people = MakeNamedPeople(20);
+            people[1] = people[0];
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(people);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                var first = RowPeerOf(repeater.TryGetElement(0));
+                var second = RowPeerOf(repeater.TryGetElement(1));
+                Verify.AreNotSame(first, second, "Two rows showing one object must expose a peer each.");
+                Verify.IsTrue(first.GetName().StartsWith("Person 0,") && second.GetName().StartsWith("Person 0,"),
+                    $"Both peers must name Person 0, saw '{first.GetName()}' and '{second.GetName()}'.");
+
+                ((ISelectionItemProvider)second.GetPattern(PatternInterface.SelectionItem)).Select();
+                Verify.AreEqual(1, tableView.SelectedIndex, "Select on the second row's peer must select the second row.");
+                ((ISelectionItemProvider)first.GetPattern(PatternInterface.SelectionItem)).Select();
+                Verify.AreEqual(0, tableView.SelectedIndex, "Select on the first row's peer must select the first row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held row peer over a source that boxes values afresh on every read survives a scroll round trip, and is never retargeted once the source is replaced (#12444).")]
+        public void VerifyBoxedValueRowPeerSurvivesScrollAndIsNotRetargeted()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(new BoxingIntList(200), 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Value", "."));
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                held = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(3));
+                Verify.AreEqual("3", held.GetName(), "Precondition: the held peer names value 3.");
+                GetBodyScroller(tableView).ChangeView(null, 100000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("3", held.GetName(), "The scrolled-out peer must still name value 3.");
+                GetBodyScroller(tableView).ChangeView(null, 0.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(held, RowPeerOf(GetRowsRepeater(tableView).TryGetElement(3)), "Value 3 must get its held peer back after a scroll round trip.");
+                tableView.ItemsSource = new BoxingIntList(200);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyHeldRowPeerIsGone(tableView, held, "after ItemsSource was replaced with equal values"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held row peer reports ElementNotAvailable, and no row takes it over, once its items are reset away or ItemsSource is replaced (#12444).")]
+        public void VerifyHeldRowPeerIsNotRetargetedAfterResetOrReplace()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(50));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                held = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(2));
+                items.Clear();
+                foreach (var person in MakeNamedPeople(50))
+                {
+                    items.Add(person);
+                }
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeldRowPeerIsGone(tableView, held, "after a Reset to other items");
+                held = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(2));
+                tableView.ItemsSource = MakeNamedPeople(50);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyHeldRowPeerIsGone(tableView, held, "after ItemsSource was replaced"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies every realized row of an observable list of boxed ints keeps an available, correctly named peer after Add, Insert, Remove and Replace (#12444).")]
+        public void VerifyBoxedValueRowPeersSurviveCollectionChanges()
+        {
+            TableView tableView = null;
+            // ObservableCollection<int> as the trimmed test app projects it lacks the generic WinRT vtables, so the
+            // same source shape (an observable list boxing ints afresh on every read) is spelled out here.
+            var items = new ObservableBoxingIntList(100);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Value", "."));
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetRealizedRows(tableView).ForEach(row => RowPeerOf(row)));
+
+            var steps = new (string Name, Action Change)[]
+            {
+                ("Add", () => items.Add(1000)),
+                ("Insert(0)", () => items.Insert(0, -1)),
+                ("RemoveAt(3)", () => items.RemoveAt(3)),
+                ("Replace [5]", () => items[5] = 555),
+            };
+            foreach (var step in steps)
+            {
+                RunOnUIThread.Execute(step.Change);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = GetRowsRepeater(tableView);
+                    foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))
+                    {
+                        var expected = row.DataContext.ToString();
+                        string name = null;
+                        try
+                        {
+                            name = RowPeerOf(row).GetName();
+                        }
+                        catch (global::System.Exception e)
+                        {
+                            Log.Error($"After {step.Name}: the row showing {expected} threw 0x{e.HResult:X8} from GetName.");
+                        }
+                        Verify.AreEqual(expected, name, $"After {step.Name}: the row showing {expected} must name it.");
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held row item peer stays usable after the row that created it is discarded by a template reapply and a collection (#12444).")]
+        public void VerifyHeldRowPeerOutlivesItsCreatingRow()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+            NamedPerson heldItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(2);
+                heldItem = (NamedPerson)row.DataContext;
+                held = RowPeerOf(row);
+                GetBodyScroller(tableView).ChangeView(null, 100000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 0.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = tableView.Template;
+                tableView.Template = null;
+                tableView.UpdateLayout();
+                tableView.Template = template;
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                global::System.GC.Collect();
+                global::System.GC.WaitForPendingFinalizers();
+                global::System.GC.Collect();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(2);
+                tableView.UpdateLayout();
+                var probe = new ProviderPeerProbe();
+                var selection = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(1, selection?.Length ?? 0, "GetSelection must report the selected row.");
+                Verify.AreSame(held, probe.ToPeer(selection[0]), $"{heldItem.Name} must still be exposed through the held peer.");
+                Verify.IsTrue(held.GetName().StartsWith(heldItem.Name + ","), $"The held peer must name {heldItem.Name}, saw '{held.GetName()}'.");
+
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                var next = probe.ToPeer(container.FindItemByProperty(probe.ToProvider(held), null, null));
+                Verify.IsTrue(next != null && next.GetName().StartsWith("Person 3,"), $"FindItemByProperty after the held peer must return Person 3, saw '{next?.GetName()}'.");
+            });
+        }
+        private static void VerifyHeldRowPeerIsGone(TableView tableView, AutomationPeer held, string when)
+        {
+            VerifyElementNotAvailable(() => held.GetName(), $"Name {when}");
+            VerifyElementNotAvailable(() => held.GetPattern(PatternInterface.SelectionItem), $"GetPattern {when}");
+            var repeater = GetRowsRepeater(tableView);
+            foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))
+            {
+                Verify.AreNotSame(held, RowPeerOf(row), $"No row may expose the held peer {when}.");
+            }
+        }
+        private static void WalkAutomationChildren(AutomationPeer peer, int depth)
+        {
+            if (depth == 0 || peer == null)
+            {
+                return;
+            }
+            foreach (var child in peer.GetChildren() ?? new List<AutomationPeer>())
+            {
+                WalkAutomationChildren(child, depth - 1);
+            }
         }
 
         // AutomationPeer.PeerFromProvider is protected; a peer subclass is the only way to open a provider here.
@@ -755,6 +1349,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public ProviderPeerProbe() : base(new Border()) { }
 
             public AutomationPeer ToPeer(IRawElementProviderSimple provider) => PeerFromProvider(provider);
+
+            public IRawElementProviderSimple ToProvider(AutomationPeer peer) => ProviderFromPeer(peer);
         }
 
         private sealed class NamedPerson
@@ -4378,6 +4974,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Every row peer reachable from root, without descending into a row (its children are cells).
+        internal static AutomationPeer UiaFacingPeer(AutomationPeer peer) => peer?.EventsSource ?? peer;
+
         internal static List<TableViewRowAutomationPeer> CollectRowPeers(AutomationPeer root)
         {
             var found = new List<TableViewRowAutomationPeer>();
@@ -4389,7 +4987,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             foreach (var child in children)
             {
-                if (child is TableViewRowAutomationPeer rowPeer)
+                // UIA sees a row through its item peer, the row's own peer's EventsSource.
+                if (UiaFacingPeer(child) is TableViewRowAutomationPeer rowPeer)
                 {
                     found.Add(rowPeer);
                 }
