@@ -14,24 +14,6 @@ static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBord
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
-
-    // Tab into the body must not land on an off-viewport cache group header, nor skip the remembered target.
-    m_gettingFocusRevoker = GettingFocus(
-        winrt::auto_revoke,
-        [weakThis = get_weak()](winrt::UIElement const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
-        {
-            if (auto const strongThis = weakThis.get())
-            {
-                if (auto const owner = strongThis->GetOwningTableView())
-                {
-                    auto const ownerImpl = winrt::get_self<TableView>(owner);
-                    if (!ownerImpl->TryRedirectBandEntryToViewport(*strongThis, args))
-                    {
-                        ownerImpl->TryRedirectOutsideEntryAtGroupHeader(*strongThis, args);
-                    }
-                }
-            }
-        });
 }
 
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
