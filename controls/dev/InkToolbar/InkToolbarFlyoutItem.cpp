@@ -611,6 +611,18 @@ winrt::InkToolbarFlyoutItem InkToolbarFlyoutItem::GetFirstVisibleItemInGroup()
     return item;
 }
 
+bool InkToolbarFlyoutItem::RequiresSelectionInGroup()
+{
+    if (Kind() == winrt::InkToolbarFlyoutItemKind::Radio)
+    {
+        return true;
+    }
+
+    // The eraser modes are RadioCheck items, but the eraser always has a mode.
+    auto parent = m_parentButton.get();
+    return Kind() == winrt::InkToolbarFlyoutItemKind::RadioCheck && parent && parent.try_as<winrt::InkToolbarEraserButton>();
+}
+
 bool InkToolbarFlyoutItem::IsAnySelectedInRadioGroup()
 {
     bool isAnySelected = false;
