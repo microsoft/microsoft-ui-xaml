@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.Data.Sqlite;
 using ModelContextProtocol;
+using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Mcp.Sessions;
@@ -159,7 +161,8 @@ internal static class RecordTraceSelfTests
         Expect.Equal(SessionCatalog.EndOfTrace, session.Text("endReason"), "Its end reason");
         var read = first.Long("xamlEvents") + first.Long("profilerEvents") + first.Long("gpuMemoryEvents");
         Expect.True(read > 0, "Events were read.");
-        Expect.Equal(read, first.Long("storedEvents"), "Stored events, which are all the events read");
+        Expect.Equal(read + FocusEvents(path!), first.Long("storedEvents"),
+            "Stored events: those read, and the process's window focus events, which aren't counted as read");
         Expect.True(File.Exists(path + TraceVersion.RecordSuffix), "The trace's version is recorded beside the session file.");
 
         int? processId = (int)session.Long("processId");
@@ -170,7 +173,23 @@ internal static class RecordTraceSelfTests
         var reread = Run(() => Record(trace, processId, sessions, reread: true));
         Expect.True(!reread.Bool("reused"), "reread=true reads the trace again.");
         Expect.True(reread.Property("session").Text("sessionPath") != path, "Reading again makes a new session file.");
-        Expect.Equal(read, reread.Long("storedEvents"), "The events read again");
+        Expect.Equal(first.Long("storedEvents"), reread.Long("storedEvents"), "The events stored again");
+    }
+
+    /// <summary>The window focus events (Win32k) a session file holds.</summary>
+    private static long FocusEvents(string path)
+    {
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false,
+        }.ToString());
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM Events JOIN EventTypes USING (TypeId) WHERE Provider = $provider";
+        command.Parameters.AddWithValue("$provider", nameof(XamlProvider.Win32k));
+        return (long)command.ExecuteScalar()!;
     }
 
     /// <summary>A call cancelled while it reads a real trace deletes the session file it was writing.</summary>
