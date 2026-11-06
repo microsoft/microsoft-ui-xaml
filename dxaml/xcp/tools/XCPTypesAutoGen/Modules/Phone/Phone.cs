@@ -185,9 +185,9 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "7827b49a-66f6-46f3-8698-f7bf5ae92a99")]
-    public sealed class PickerFlyoutPresenter : Microsoft.UI.Xaml.Controls.ContentControl
+    public class PickerFlyoutPresenter : Microsoft.UI.Xaml.Controls.ContentControl
     {
-        internal PickerFlyoutPresenter() { }
+        public PickerFlyoutPresenter() { }
     }
 
     [DXamlIdlGroup("Phone")]
