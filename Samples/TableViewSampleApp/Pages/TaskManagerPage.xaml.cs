@@ -13,6 +13,7 @@ using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using TableViewSampleApp.Services;
 using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
@@ -50,6 +51,11 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
         _timer.Tick += OnTimerTick;
 
+        // <snippet>
+        RestoreColumnOrder(AppSettings.LoadColumnOrder(ColumnOrderSetting));
+        ProcessTable.ColumnReordered += OnProcessTableColumnReordered;
+        // </snippet>
+
         UpdateTotals();
         InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key), ProcessData.ParentProcess));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
@@ -62,6 +68,46 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
+
+    // ---- Column order -------------------------------------------------------------------
+
+    private const string ColumnOrderSetting = "TaskManagerColumns";
+
+    // <snippet>
+    // Keyed by header text, which this sample does not localize; a real app keys on something stable.
+    private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+    {
+        AppSettings.SaveColumnOrder(ColumnOrderSetting, sender.Columns.Select(c => c.Header as string));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1}; order saved", args.Column.Header, args.NewIndex + 1));
+    }
+
+    private void RestoreColumnOrder(IReadOnlyList<string> order)
+    {
+        // Known columns only, once each: a stale or repeated saved name must not shift the rest.
+        var known = order.Distinct()
+            .Select(header => ProcessTable.Columns.FirstOrDefault(c => c.Header as string == header))
+            .Where(column => column is not null)
+            .ToList();
+        for (int target = 0; target < known.Count; target++)
+        {
+            int current = ProcessTable.Columns.IndexOf(known[target]);
+            if (current != target)
+            {
+                ProcessTable.Columns.RemoveAt(current);
+                ProcessTable.Columns.Insert(target, known[target]);
+            }
+        }
+    }
+    // </snippet>
+
+    private void OnResetColumnOrderClick(object sender, RoutedEventArgs e)
+    {
+        RestoreColumnOrder(DefaultColumnOrder);
+        AppSettings.SaveColumnOrder(ColumnOrderSetting, DefaultColumnOrder);
+        SetLastAction("Column order -> reset");
+    }
+
+    private static readonly string[] DefaultColumnOrder = { "Name", "Status", "CPU", "Memory", "Disk", "Network" };
 
     // ---- Live data ----------------------------------------------------------------------
 
