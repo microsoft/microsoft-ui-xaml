@@ -7,12 +7,16 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
+            <!-- AccentFillColorDefaultBrush, inlined: see the alias note in TabularSurfaces_themeresources.xaml. -->
+            <SolidColorBrush x:Key="TableViewColumnReorderIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
+            <SolidColorBrush x:Key="TableViewColumnReorderIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">1</Thickness>
+            <SolidColorBrush x:Key="TableViewColumnReorderIndicatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -28,6 +32,7 @@
     <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
     <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
+    <x:Double x:Key="TableViewColumnReorderIndicatorWidth">2</x:Double>
     <!-- The header's bottom edge and internal column edges meet gridlines. -->
     <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
     <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>

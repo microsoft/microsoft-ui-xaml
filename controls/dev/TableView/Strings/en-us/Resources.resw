@@ -116,6 +116,10 @@
     <value>Column %1!s! width: %2!s! pixels.</value>
     <comment>Assistive-technology announcement raised when a TableView column is resized, by pointer or by keyboard, while its header has focus. %1!s! is the column header text; %2!s! is the whole-pixel width.</comment>
   </data>
+  <data name="TableViewColumnMoved" xml:space="preserve">
+    <value>Moved %1!s! to column %2!s! of %3!s!.</value>
+    <comment>Assistive-technology announcement raised when the user moves a TableView column by dragging its header or with Ctrl+Shift+Left/Right. %1!s! is the column header text; %2!s! is the column's new 1-based position among the visible columns; %3!s! is the number of visible columns.</comment>
+  </data>
   <data name="TableViewCellLocalizedControlType" xml:space="preserve">
     <value>cell</value>
     <comment>Localized control type announced by assistive technology for a single cell in a TableView. Lower case: screen readers read it inline after the cell's name.</comment>

@@ -166,6 +166,12 @@
                       IsTabStop="False"
                       Checked="OnCanUserResizeColumnsToggled"
                       Unchecked="OnCanUserResizeColumnsToggled" />
+            <CheckBox Content="CanUserReorderColumns"
+                      AutomationProperties.Name="CanUserReorderColumnsCheckBox"
+                      AutomationProperties.AutomationId="CanUserReorderColumnsCheckBox"
+                      IsTabStop="False"
+                      Checked="OnCanUserReorderColumnsToggled"
+                      Unchecked="OnCanUserReorderColumnsToggled" />
             <CheckBox Content="Hide column headers"
                       AutomationProperties.Name="HideColumnHeadersCheckBox"
                       AutomationProperties.AutomationId="HideColumnHeadersCheckBox"

@@ -3,6 +3,7 @@
     AutomationProperties.Name="People, right-to-left"
     ItemsSource="{x:Bind Source}"
     FlowDirection="RightToLeft"
+    CanUserReorderColumns="True"
     SelectionMode="Single"
     IsReadOnly="False">
     <!-- The name columns are editable text so caret order and bidi text can be checked. -->

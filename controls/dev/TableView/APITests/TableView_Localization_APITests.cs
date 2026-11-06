@@ -409,6 +409,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "TableViewCellNameFormat",
             "TableViewCellTextSeparator",
             "TableViewColumnHeaderHelpTextFormat",
+            "TableViewColumnMoved",
             "TableViewColumnWidthChanged",
             "TableViewGroupHeaderCountFormat",
             "TableViewGroupHeaderFallback",
@@ -444,6 +445,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "TableViewCellLocalizedControlType",
             "TableViewCellNameFormat",
             "TableViewCellTextSeparator",
+            "TableViewColumnMoved",
             "TableViewGroupHeaderNameFormat",
         };
 
@@ -490,6 +492,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             new FormatResource { Key = "TableViewGroupHeaderNameFormat", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
             new FormatResource { Key = "TableViewColumnHeaderHelpTextFormat", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
             new FormatResource { Key = "TableViewColumnWidthChanged", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewColumnMoved", ExpectedIndices = new[] { 1, 2, 3 }, Style = PlaceholderStyle.FormatMessage },
             new FormatResource { Key = "TableViewSortedAscending", ExpectedIndices = new[] { 1 }, Style = PlaceholderStyle.FormatMessage },
             new FormatResource { Key = "TableViewSortedDescending", ExpectedIndices = new[] { 1 }, Style = PlaceholderStyle.FormatMessage },
             new FormatResource { Key = "TableViewSortCleared", ExpectedIndices = new[] { 1 }, Style = PlaceholderStyle.FormatMessage },

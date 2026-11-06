@@ -10,9 +10,36 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
     column.SortCycle = TableViewSortCycle.DescendingAscending;
 }
 
+RestoreColumnOrder(AppSettings.LoadColumnOrder(ColumnOrderSetting));
+ProcessTable.ColumnReordered += OnProcessTableColumnReordered;
+
 public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
 public TableViewSource Source { get; }
+
+// Keyed by header text, which this sample does not localize; a real app keys on something stable.
+private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+{
+    AppSettings.SaveColumnOrder(ColumnOrderSetting, sender.Columns.Select(c => c.Header as string));
+}
+
+private void RestoreColumnOrder(IReadOnlyList<string> order)
+{
+    // Known columns only, once each: a stale or repeated saved name must not shift the rest.
+    var known = order.Distinct()
+        .Select(header => ProcessTable.Columns.FirstOrDefault(c => c.Header as string == header))
+        .Where(column => column is not null)
+        .ToList();
+    for (int target = 0; target < known.Count; target++)
+    {
+        int current = ProcessTable.Columns.IndexOf(known[target]);
+        if (current != target)
+        {
+            ProcessTable.Columns.RemoveAt(current);
+            ProcessTable.Columns.Insert(target, known[target]);
+        }
+    }
+}
 
 private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {
