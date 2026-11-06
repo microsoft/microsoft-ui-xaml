@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "VisualStateGroup.g.h"
 #include "VisualStateChangedEventArgs.g.h"
+#include "VisualStateChangedEventArgs.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -137,6 +138,10 @@ VisualStateGroup::RaiseCurrentStateChanged(
     IFC(spArgs->put_Control(pControl));
 
     IFC(GetCurrentStateChangedEventSourceNoRef(&pChangedEventSource));
+
+    static_cast<CVisualStateChangedEventArgs*>(spArgs->GetCorePeer())->SetStateChangedEventId(
+        static_cast<CVisualStateGroup*>(GetHandle())->AdvanceCurrentStateChangedEventId());
+
     IFC(pChangedEventSource->Raise(pElement, spArgs.Get()));
 
 Cleanup:

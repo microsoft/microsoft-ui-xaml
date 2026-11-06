@@ -4,6 +4,7 @@
 #pragma once
 
 #include "SplitView.g.h"
+#include <deque>
 
 namespace DirectUI
 {
@@ -73,6 +74,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT RegisterForDisplayModeStatesChangedEvent();
         _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
+        void DiscardObsoletePaneStateChanges();
 
         static _Check_return_ HRESULT CreatePolygonalPath(
             _In_ xaml_controls::IGrid* hostElement,
@@ -115,6 +117,13 @@ namespace DirectUI
         TrackerPtr<xaml::IFrameworkElement> m_tpContentRoot;
         TrackerPtr<xaml::IVisualStateGroup> m_tpDisplayModeStates;
 
-        bool m_isPaneOpeningOrClosing{ false };
+        struct PendingPaneStateChange
+        {
+            uint64_t completionEventId;
+            bool isOpen;
+            bool completionReceived{ false };
+        };
+        std::deque<PendingPaneStateChange> m_pendingPaneStateChanges;
+        uint64_t m_paneStateChangeGeneration{ 0 };
     };
 }
