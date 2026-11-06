@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using System.Threading;
 using Common;
 
@@ -481,6 +482,131 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(3, realized);
             });
         }
+
+        // Scenario: remove an item, replace the first one, lay out, then insert between two still-realized elements.
+        // Expected: the realized element after the insert moves to its new index and keeps the right data.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an insert after a remove and a replace moves the following realized elements to their new indexes.")]
+        public void InsertAfterRemoveAndReplaceShiftsRealizedElements()
+        {
+            VerifyInsertAfterRemoveAndReplace(() => new StackLayout());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Same as InsertAfterRemoveAndReplaceShiftsRealizedElements with a UniformGridLayout.")]
+        public void InsertAfterRemoveAndReplaceShiftsRealizedElementsInUniformGridLayout()
+        {
+            VerifyInsertAfterRemoveAndReplace(() => new UniformGridLayout());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Same as InsertAfterRemoveAndReplaceShiftsRealizedElements with a FlowLayout.")]
+        public void InsertAfterRemoveAndReplaceShiftsRealizedElementsInFlowLayout()
+        {
+            VerifyInsertAfterRemoveAndReplace(() => new FlowLayout());
+        }
+
+        private void VerifyInsertAfterRemoveAndReplace(Func<VirtualizingLayout> createLayout)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new CustomItemsSource(Enumerable.Range(0, 3).ToList());
+                var repeater = SetupRepeater(dataSource, createLayout());
+                Verify.AreEqual("0,1,2", RealizedTexts(repeater, dataSource));
+
+                dataSource.Remove(index: 2, count: 1, reset: false);
+                dataSource.Replace(index: 0, oldCount: 1, newCount: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual("10000,1", RealizedTexts(repeater, dataSource));
+
+                dataSource.Insert(index: 1, count: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual("10000,1000,1", RealizedTexts(repeater, dataSource));
+            });
+        }
+
+        // Scenario: replace the first two items with one, lay out, then insert ahead of the last realized element.
+        // Expected: the realized element after the insert moves to its new index and keeps the right data.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an insert after an unequal-count replace moves the following realized elements to their new indexes.")]
+        public void InsertAfterShrinkingReplaceShiftsRealizedElements()
+        {
+            VerifyInsertAfterShrinkingReplace(() => new StackLayout());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Same as InsertAfterShrinkingReplaceShiftsRealizedElements with a UniformGridLayout.")]
+        public void InsertAfterShrinkingReplaceShiftsRealizedElementsInUniformGridLayout()
+        {
+            VerifyInsertAfterShrinkingReplace(() => new UniformGridLayout());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Same as InsertAfterShrinkingReplaceShiftsRealizedElements with a FlowLayout.")]
+        public void InsertAfterShrinkingReplaceShiftsRealizedElementsInFlowLayout()
+        {
+            VerifyInsertAfterShrinkingReplace(() => new FlowLayout());
+        }
+
+        private void VerifyInsertAfterShrinkingReplace(Func<VirtualizingLayout> createLayout)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new CustomItemsSource(Enumerable.Range(0, 5).ToList());
+                var elementFactory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                elementFactory.Templates["Item"] = SharedHelpers.GetDataTemplate(@"<TextBlock Text='{Binding}' Height='30' />");
+                ScrollViewer scrollViewer = null;
+                var repeater = SetupRepeater(dataSource, elementFactory, ref scrollViewer, createLayout());
+                Verify.AreEqual("0,1,2,3,4", RealizedTexts(repeater, dataSource));
+
+                dataSource.Replace(index: 0, oldCount: 2, newCount: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual("10000,2,3,4", RealizedTexts(repeater, dataSource));
+
+                dataSource.Insert(index: 3, count: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual("10000,2,3,1000,4", RealizedTexts(repeater, dataSource));
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(repeater); i++)
+                {
+                    var child = (TextBlock)VisualTreeHelper.GetChild(repeater, i);
+                    var index = repeater.GetElementIndex(child);
+                    if (index >= 0)
+                    {
+                        Verify.AreEqual(dataSource.Inner[index].ToString(), child.Text, $"Element at index {index} shows its item.");
+                    }
+                }
+            });
+        }
+
+        // Scenario: with unique ids, remove an item, then a stable reset reuses the realized elements; insert ahead of them.
+        // Expected: every realized element shows the item at its index.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an insert after a remove and a stable (IKeyIndexMapping) reset moves the following realized elements to their new indexes.")]
+        public void InsertAfterRemoveAndStableResetShiftsRealizedElements()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new CustomItemsSourceWithUniqueId(Enumerable.Range(0, 3).ToList());
+                var repeater = SetupRepeater(dataSource);
+                Verify.AreEqual("0,1,2", RealizedTexts(repeater, dataSource));
+
+                dataSource.Remove(index: 2, count: 1, reset: false);
+                dataSource.Inner.Reverse();
+                dataSource.GetAtCallCount = 0;
+                dataSource.Reset();
+                repeater.UpdateLayout();
+                Verify.AreEqual(0, dataSource.GetAtCallCount, "A stable reset reuses the realized elements.");
+                Verify.AreEqual(string.Join(",", dataSource.Inner), RealizedTexts(repeater, dataSource));
+
+                dataSource.Insert(index: 1, count: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual(string.Join(",", dataSource.Inner), RealizedTexts(repeater, dataSource));
+            });
+        }
+
+        // The text of the element realized at each index, "-" where none is.
+        private static string RealizedTexts(ItemsRepeater repeater, CustomItemsSource dataSource)
+            => string.Join(",", Enumerable.Range(0, dataSource.Inner.Count).Select(i => (repeater.TryGetElement(i) as TextBlock)?.Text ?? "-"));
 
         private static void LogIndexChanges(List<Tuple<int, int>> indexChanges)
         {
