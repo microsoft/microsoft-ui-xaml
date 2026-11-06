@@ -11,10 +11,14 @@ using static WinUIProfiler.Mcp.SelfTest.ToolResults;
 
 namespace WinUIProfiler.Mcp.SelfTest;
 
-/// <summary>record_trace's argument checks, and its reuse of a session file already read from the same trace.</summary>
+/// <summary>
+/// record_trace's argument checks, and its reuse of a session file it already read from the same, unchanged trace.
+/// </summary>
 internal static class RecordTraceSelfTests
 {
     private const string SessionName = "20261104-120000-FixtureApp-4242.sqlite";
+
+    private const string FakeTraceText = "This is not a trace.";
 
     // The full path of a real trace to read end to end; without it, record_trace.real is skipped.
     private const string TraceVariable = "WINUIPROFILER_SELFTEST_ETL";
@@ -73,11 +77,40 @@ internal static class RecordTraceSelfTests
             "No session recorded live, even with the trace's path");
         Expect.True(FindAlone(folder, "other", trace, etlPath: Path.Combine(folder, "other.etl")) is null,
             "No session read from another trace");
+        Expect.True(FindAlone(folder, "unrecorded", trace, keep: false) is null,
+            "No session without a record of the trace's version, as the app writes them");
 
         File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddHours(1));
         Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null,
             "No session written before the trace last changed");
         File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddMinutes(-1));
+
+        // A trace copied over the one that was read keeps its own time, which can be older than the session file.
+        ReplaceTrace(trace, "This is not a trace!");
+        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null,
+            "No session once another trace of the same size, and an older time, replaced the one read");
+        ReplaceTrace(trace, "This isn't a trace either, and it's longer.");
+        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null,
+            "No session once a trace of another size, and an older time, replaced the one read");
+        ReplaceTrace(trace, FakeTraceText);
+        Expect.Equal(session, SessionTools.FindFinishedSession(sessions, trace, ProcessId),
+            "The session, once the trace it was read from is back");
+
+        var record = session + TraceVersion.RecordSuffix;
+        var kept = File.ReadAllText(record);
+        File.WriteAllText(record, "{");
+        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null, "No session whose record can't be read");
+        File.WriteAllText(record, kept);
+
+        // Deleting a session file alone leaves its record, which a later session file of the same name doesn't take.
+        var renamed = Directory.CreateDirectory(Path.Combine(folder, "renamed")).FullName;
+        File.Delete(WriteTraceSession(renamed, SessionName, trace));
+        var later = WriteTraceSession(renamed, SessionName, trace, keep: false);
+        Expect.True(SessionTools.FindFinishedSession(renamed, trace, ProcessId) is null,
+            "No session whose record is of an earlier session file of its name");
+        TraceVersion.Read(trace)!.Keep(later, SessionFile.ReadInfo(later), trace);
+        Expect.Equal(later, SessionTools.FindFinishedSession(renamed, trace, ProcessId),
+            "The later session file, once its own record is kept");
 
         File.WriteAllBytes(session + "-wal", []);
         Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null, "No session with a write-ahead log");
@@ -99,8 +132,9 @@ internal static class RecordTraceSelfTests
         Expect.Equal(session, result.Property("session").Text("sessionPath"), "The reused session");
         Expect.Equal("Finished", result.Text("state"), "Its state");
         Expect.Equal((long)MainEvents.Count, result.Long("storedEvents"), "Its events");
-        Expect.Equal($"{session} already holds this process's events from {trace}, read to the trace's end, so it was reused. " +
-            "Pass reread=true to read the trace again into a new session file.", result.Text("message"), "The message");
+        Expect.Equal($"{session} already holds this process's events from {trace}, read to the trace's end, and the trace " +
+            "hasn't changed since, so it was reused. Pass reread=true to read the trace again into a new session file.",
+            result.Text("message"), "The message");
     }
 
     /// <summary>Reads a real trace into a session file, then reuses that file, then reads the trace again.</summary>
@@ -126,6 +160,7 @@ internal static class RecordTraceSelfTests
         var read = first.Long("xamlEvents") + first.Long("profilerEvents") + first.Long("gpuMemoryEvents");
         Expect.True(read > 0, "Events were read.");
         Expect.Equal(read, first.Long("storedEvents"), "Stored events, which are all the events read");
+        Expect.True(File.Exists(path + TraceVersion.RecordSuffix), "The trace's version is recorded beside the session file.");
 
         int? processId = (int)session.Long("processId");
         var again = Run(() => Record(trace, processId, sessions));
@@ -202,23 +237,41 @@ internal static class RecordTraceSelfTests
     private static string FakeTrace(string folder)
     {
         var trace = Path.Combine(folder, "app.etl");
-        File.WriteAllText(trace, "This is not a trace.");
-        File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddMinutes(-1));
+        ReplaceTrace(trace, FakeTraceText);
         return trace;
     }
 
-    /// <summary>A session file of the fixture process read from a trace to its end, as record_trace and the app write one.</summary>
+    /// <summary>Writes the fake trace again, last written a minute ago, as a trace copied over it keeps its older time.</summary>
+    private static void ReplaceTrace(string trace, string text)
+    {
+        File.WriteAllText(trace, text);
+        File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddMinutes(-1));
+    }
+
+    /// <summary>
+    /// A session file of the fixture process read from a trace to its end, as record_trace and the app write one. Unless
+    /// keep is false, it has record_trace's record of the trace's version beside it; the app writes none.
+    /// </summary>
     private static string WriteTraceSession(string folder, string fileName, string trace, string endReason = SessionCatalog.EndOfTrace,
-        SessionCoverage coverage = SessionCoverage.Trace, string? etlPath = null) =>
-        Write(Path.Combine(folder, fileName), MainEvents, endReason, coverage, etlPath: etlPath ?? trace);
+        SessionCoverage coverage = SessionCoverage.Trace, string? etlPath = null, bool keep = true)
+    {
+        var path = Write(Path.Combine(folder, fileName), MainEvents, endReason, coverage, etlPath: etlPath ?? trace);
+        if (keep)
+        {
+            var version = TraceVersion.Read(trace) ?? throw new SelfTestFailedException($"{trace} couldn't be read.");
+            version.Keep(path, SessionFile.ReadInfo(path), etlPath ?? trace);
+        }
+
+        return path;
+    }
 
     /// <summary>Writes one session file into a folder of its own, then looks there for a finished session of the trace.</summary>
     private static string? FindAlone(string folder, string name, string trace, string endReason = SessionCatalog.EndOfTrace,
         SessionCoverage coverage = SessionCoverage.Trace, string? etlPath = null, string fileName = SessionName,
-        int processId = ProcessId)
+        int processId = ProcessId, bool keep = true)
     {
         var directory = Directory.CreateDirectory(Path.Combine(folder, name)).FullName;
-        WriteTraceSession(directory, fileName, trace, endReason, coverage, etlPath);
+        WriteTraceSession(directory, fileName, trace, endReason, coverage, etlPath, keep);
         return SessionTools.FindFinishedSession(directory, trace, processId);
     }
 }

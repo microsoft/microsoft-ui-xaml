@@ -184,7 +184,8 @@ internal static class SessionTools
         "Reads one process's events from a recorded trace (.etl) into a new session file, as the WinUI Profiler app's " +
         "\"Recorded trace (.etl)\" mode does, so the other tools can read it. A session file holds one process: when the " +
         "trace has XAML events from several, pass processId, or the tool asks (when the client supports it) or lists them. " +
-        "A finished session file of the same trace and process is reused unless reread is true. Returns the session file's path.")]
+        "A finished session file this tool read from the same process of the same trace is reused while the trace is " +
+        "unchanged, unless reread is true. Returns the session file's path.")]
     public static Task<object> RecordTrace(
         McpServer server,
         IProgress<ProgressNotificationValue> progress,
@@ -193,7 +194,8 @@ internal static class SessionTools
         int? processId = null,
         [Description("The folder to write the session file to. Omit it for the WinUI Profiler app's sessions folder.")]
         string? folder = null,
-        [Description("Read the trace again even when a finished session file of the same trace and process exists.")]
+        [Description("Read the trace again even when a finished session file this tool read from the same process of the " +
+            "same, unchanged trace exists.")]
         bool reread = false,
         CancellationToken cancellationToken = default)
     {
@@ -275,6 +277,8 @@ internal static class SessionTools
             return Reused(existing, trace);
         }
 
+        // Taken again after the read, so a trace that changed while it was read isn't recorded as read.
+        var version = await Task.Run(() => TraceVersion.Read(trace), cancellationToken).ConfigureAwait(false);
         var replay = await Task.Run(() => StartReplay(trace, chosen, directory), cancellationToken).ConfigureAwait(false);
         TraceReplayStatus status;
         string sessionPath;
@@ -348,6 +352,11 @@ internal static class SessionTools
         }
 
         var info = SessionCatalog.Read(sessionPath, () => SessionFile.ReadInfo(sessionPath));
+        if (status.State == TraceReplayState.Finished && version is not null && version == TraceVersion.Read(trace))
+        {
+            version.Keep(sessionPath, info, trace);
+        }
+
         var notes = new List<string>(SessionCatalog.Notes(info));
         if (status.OutOfOrderEvents > 0)
         {
@@ -389,8 +398,9 @@ internal static class SessionTools
     }
 
     /// <summary>
-    /// A session file this server or the app read from the same trace and process, read to the trace's end and closed
-    /// since the trace was last written; null when there's none.
+    /// A session file record_trace read from the same process of this version of the trace (see
+    /// <see cref="TraceVersion"/>), read to the trace's end and closed since the trace was last written; null when there's
+    /// none. The app keeps no record of the version it read, so its session files aren't reused.
     /// </summary>
     internal static string? FindFinishedSession(string directory, string trace, int processId)
     {
@@ -403,6 +413,9 @@ internal static class SessionTools
         {
             return null;
         }
+
+        // Read once, and only if a session file was read from the trace.
+        var version = new Lazy<TraceVersion?>(() => TraceVersion.Read(trace));
 
         // Session files are named <date>-<time>-<name>-<pid>[-n].sqlite.
         var marker = string.Create(CultureInfo.InvariantCulture, $"-{processId}");
@@ -418,7 +431,8 @@ internal static class SessionTools
             {
                 var info = SessionFile.ReadInfo(file.Path);
                 if (SessionCatalog.IsTrace(info) && info.ProcessId == processId && info.EndReason == SessionCatalog.EndOfTrace &&
-                    string.Equals(info.EtlPath, trace, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(info.EtlPath, trace, StringComparison.OrdinalIgnoreCase) &&
+                    TraceVersion.Recorded(file.Path, info, trace) is { } recorded && recorded == version.Value)
                 {
                     return file.Path;
                 }
@@ -508,8 +522,8 @@ internal static class SessionTools
             reused = true,
             state = TraceReplayState.Finished.ToString(),
             storedEvents = info.StoredEvents,
-            message = $"{sessionPath} already holds this process's events from {trace}, read to the trace's end, so it was " +
-                "reused. Pass reread=true to read the trace again into a new session file.",
+            message = $"{sessionPath} already holds this process's events from {trace}, read to the trace's end, and the " +
+                "trace hasn't changed since, so it was reused. Pass reread=true to read the trace again into a new session file.",
             notes = SessionCatalog.Notes(info),
         };
     }

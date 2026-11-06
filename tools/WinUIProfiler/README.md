@@ -712,10 +712,17 @@ that no session has started for 30 days.
 | Tool | Views | What they answer |
 | --- | --- | --- |
 | `sessions` | `list`, `summary` | Which session files there are; what one holds, and which tools have data in it |
-| `record_trace` | | Reads one process's events from a recorded trace into a session file, or returns the session file that already holds them |
+| `record_trace` | | Reads one process's events from a recorded trace into a session file, or returns the session file it read them into before, if the trace hasn't changed since |
 | `launch` | `milestones`, `frames` | How the launch went, from `LaunchSummary`, `InterestingRows` and `Ticks`, and how soon the first frames drew |
 | `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
 | `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
+
+Beside each session file that `record_trace` reads to the trace's end, it
+keeps `<session file>.trace.json`: the trace's size and a SHA-256 of its first
+and last MiB. It returns that session file again only while the trace still
+matches, so a trace copied over the one it read is read again, even when the
+copy keeps an older time. It doesn't reuse the app's session files, which have
+no such record.
 
 Two skills tell Copilot how to use the tools. Copilot reads
 `winui-profiler-analysis` for questions about a WinUI app's performance.
