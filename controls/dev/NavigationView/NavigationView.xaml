@@ -185,8 +185,9 @@
               <Grid x:Name="TogglePaneTopPadding" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}" />
               <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="{ThemeResource NavigationViewButtonHolderGridMargin}">
                 <!-- The back button's hit target reaches the corner (Fitts's law, #5306): Margin cancels ButtonHolderGrid's top margin,
-                     and Padding keeps the visible backplate (Width x NavigationBackButtonHeight) where the 4,2 style margin put it. -->
-                <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonWidth}" Height="Auto" MinHeight="{ThemeResource NavigationBackButtonHeight}" Margin="0,-4,0,2" Padding="4,6,4,0" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
+                     and Padding keeps the visible backplate (Width x NavigationBackButtonHeight) where the 4,2 style margin put it.
+                     MinWidth keeps the old 4 + Width + 4 layout slot; the clickable area ends at the backplate's right edge. -->
+                <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonWidth}" Height="Auto" MinHeight="{ThemeResource NavigationBackButtonHeight}" Margin="0,-4,0,2" Padding="4,6,0,0" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
                   <ToolTipService.ToolTip>
                     <ToolTip x:Name="NavigationViewBackButtonToolTip" />
                   </ToolTipService.ToolTip>

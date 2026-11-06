@@ -17,8 +17,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <!-- The transparent root makes the Padding around the backplate (RootGrid) clickable. -->
-          <Grid x:Name="HitTargetGrid" Background="Transparent">
+          <!-- The transparent root makes the left/top Padding around the backplate (RootGrid) clickable; it ends at the backplate. -->
+          <Grid x:Name="HitTargetGrid" Background="Transparent" HorizontalAlignment="Left">
             <VisualStateManager.VisualStateGroups>
               <VisualStateGroup x:Name="CommonStates">
                 <VisualState x:Name="Normal" />
@@ -57,7 +57,7 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <Grid x:Name="RootGrid" Margin="{TemplateBinding Padding}" MinHeight="{TemplateBinding MinHeight}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True">
+            <Grid x:Name="RootGrid" Width="{TemplateBinding Width}" Margin="{TemplateBinding Padding}" MinHeight="{TemplateBinding MinHeight}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True">
               <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" local:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:local="using:Microsoft.UI.Xaml.Controls">
                 <animatedvisuals:AnimatedBackVisualSource />
                 <controls:AnimatedIcon.FallbackIconSource>

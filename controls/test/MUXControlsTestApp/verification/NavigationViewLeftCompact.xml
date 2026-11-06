@@ -85,7 +85,7 @@
             MinHeight=36
             MinWidth=48
             Name=NavigationViewBackButton
-            Padding=4,6,4,0
+            Padding=4,6,0,0
             RenderSize=48,42
             Visibility=Visible
             Width=40
@@ -101,7 +101,7 @@
               Margin=0,0,0,0
               Name=HitTargetGrid
               Padding=0,0,0,0
-              RenderSize=48,42
+              RenderSize=44,42
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.Grid]
                 Background=#00FFFFFF
@@ -112,12 +112,13 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualSecondaryThickness=1,1,1,1
-                Margin=4,6,4,0
+                Margin=4,6,0,0
                 MinHeight=36
                 Name=RootGrid
                 Padding=0,0,0,0
                 RenderSize=40,36
                 Visibility=Visible
+                Width=40
               [Microsoft.UI.Xaml.Controls.AnimatedIcon]
                   FocusVisualPrimaryBrush=#E4000000
                   FocusVisualPrimaryThickness=2,2,2,2
