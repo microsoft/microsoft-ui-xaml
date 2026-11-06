@@ -1000,8 +1000,7 @@ namespace ChartsSample
         }
 
         private void ApplyEdit(Action edit, Action sync, TextBlock status, string success,
-            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null,
-            string announcement = null)
+            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null)
         {
             if (!_ready || _syncing || _closing) return;
             _lastEditSucceeded = false;
@@ -1010,7 +1009,7 @@ namespace ChartsSample
                 edit();
                 // Brush changes alone can leave the rendered plot at its previous appearance.
                 chart?.InvalidateArrange();
-                AnnounceStatus(status, success, announcement);
+                AnnounceStatus(status, success);
                 _lastEditSucceeded = true;
             }
             catch (ArgumentException)
@@ -1025,18 +1024,13 @@ namespace ChartsSample
 
         // A live-region update is dropped when focus moves at the same time (leaving an edited field,
         // or a button disabled by the edit), so raise a notification after focus has settled.
-        private void AnnounceStatus(TextBlock target, string message, string announcement = null)
+        private void AnnounceStatus(TextBlock target, string message)
         {
             target.Text = message;
-            announcement ??= message;
-            if (string.IsNullOrEmpty(announcement)) return;
+            if (string.IsNullOrEmpty(message)) return;
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                FrameworkElementAutomationPeer.CreatePeerForElement(target)?.RaiseNotificationEvent(
-                    AutomationNotificationKind.Other,
-                    AutomationNotificationProcessing.MostRecent,
-                    announcement,
-                    "ChartsSampleStatus");
+                FrameworkElementAutomationPeer.FromElement(target)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
             });
         }
 
@@ -1122,12 +1116,13 @@ namespace ChartsSample
         {
             if (!_ready || _syncing || _closing) return;
             string note = DateIntervalNote((DateTimeIntervalType)box.SelectedIndex, daily);
+            string success = note.Length > 0 ? $"Date interval updated. {note}" : "Date interval updated.";
             ApplyEdit(() => axis.IntervalType = (DateTimeIntervalType)box.SelectedIndex, () =>
             {
                 box.SelectedIndex = (int)axis.IntervalType;
                 warning.Text = DateIntervalNote(axis.IntervalType, daily);
                 warning.Visibility = warning.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }, status, "Date interval updated.", announcement: note.Length > 0 ? $"Date interval updated. {note}" : null);
+            }, status, success);
         }
 
         private static string DateIntervalNote(DateTimeIntervalType interval, bool daily) => interval switch
