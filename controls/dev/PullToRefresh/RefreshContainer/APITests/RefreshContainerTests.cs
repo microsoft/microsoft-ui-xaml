@@ -1,0 +1,958 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+using MUXControlsTestApp.Utilities;
+
+using Microsoft.UI.Composition;
+using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
+using Common;
+
+using WEX.TestExecution;
+using WEX.TestExecution.Markup;
+using WEX.Logging.Interop;
+
+namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
+{
+    [TestClass]
+    public class RefreshContainerTests : ApiTestBase
+    {
+        // Values mirrored from RefreshContainer.cpp / ScrollViewerIRefreshInfoProviderAdapter.cpp.
+        private const double c_defaultPullDimension = 100.0;
+        private const double c_containerSize = 300.0;
+        private const double c_defaultExecutionRatio = 0.8;
+        private const float c_tolerance = 0.001f;
+
+        // Scenario: create a RefreshContainer that is never loaded, subscribe RefreshRequested and call RequestRefresh.
+        // Expected: PullDirection is TopToBottom, Visualizer is null, the default adapter is a
+        //           ScrollViewerIRefreshInfoProviderAdapter, RefreshRequested is raised 0 times and Visualizer stays
+        //           null.
+        // A failure means: the container's defaults changed, or a refresh can be requested (and an app handler run)
+        //                  before there is a visualizer to show it.
+        [TestMethod]
+        [TestProperty("Description", "Before its template is applied a RefreshContainer pulls TopToBottom, has no Visualizer, uses a ScrollViewer adapter and ignores RequestRefresh.")]
+        public void DefaultsBeforeTemplateAndRequestRefreshIsANoOp()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshContainer refreshContainer = new RefreshContainer();
+                int refreshRequestedCount = 0;
+                refreshContainer.RefreshRequested += (RefreshContainer sender, RefreshRequestedEventArgs args) => { refreshRequestedCount++; };
+
+                Verify.AreEqual(RefreshPullDirection.TopToBottom, refreshContainer.PullDirection);
+                Verify.IsNull(refreshContainer.Visualizer);
+                Verify.IsTrue(((IRefreshContainerPrivate)refreshContainer).RefreshInfoProviderAdapter is ScrollViewerIRefreshInfoProviderAdapter,
+                    "The default adapter adapts a ScrollViewer");
+
+                refreshContainer.RequestRefresh();
+                Verify.AreEqual(0, refreshRequestedCount, "Without a visualizer there is nothing to refresh");
+                Verify.IsNull(refreshContainer.Visualizer);
+            });
+        }
+
+        // Scenario: for each of the four pull directions, load a 300x300 container whose content is a ScrollViewer.
+        // Expected: the template Root has an InsetClip; a default visualizer is created and hosted alone in the
+        //           presenter, which is aligned to the pulled edge (Top, Bottom, Left or Right, stretched on the other
+        //           axis); the visualizer is 100 along the pull axis and Auto (300 actual) across it; the indicator is
+        //           rotated 0, 0, -pi/2 or +pi/2; the ScrollViewer is adapted into an InfoProvider with ExecutionRatio
+        //           0.8, composition property "InteractionRatio", not interacting; the state is Idle.
+        // A failure means: the default pull-to-refresh layout is wrong for a direction (indicator at the wrong edge,
+        //                  size or angle), or the ScrollViewer is not hooked up so pulling it does nothing.
+        [TestMethod]
+        [TestProperty("Description", "For each pull direction the default template places a default RefreshVisualizer at the pulled edge, sizes it 100 along the pull axis, rotates its indicator and adapts the content ScrollViewer into the visualizer's InfoProvider.")]
+        public void DefaultTemplatePlacesSizesAndAdaptsForEachPullDirection()
+        {
+            VerifyDefaultTemplate(RefreshPullDirection.TopToBottom, VerticalAlignment.Top, HorizontalAlignment.Stretch, 0.0f);
+            VerifyDefaultTemplate(RefreshPullDirection.BottomToTop, VerticalAlignment.Bottom, HorizontalAlignment.Stretch, 0.0f);
+            VerifyDefaultTemplate(RefreshPullDirection.LeftToRight, VerticalAlignment.Stretch, HorizontalAlignment.Left, (float)(-Math.PI / 2));
+            VerifyDefaultTemplate(RefreshPullDirection.RightToLeft, VerticalAlignment.Stretch, HorizontalAlignment.Right, (float)(Math.PI / 2));
+        }
+
+        // Scenario: load a TopToBottom container, then change PullDirection to LeftToRight.
+        // Expected: the presenter moves to the left edge (stretched vertically); the visualizer becomes 100 wide with
+        //           Auto height (100x300 actual); the ScrollViewer is adapted again into a new InfoProvider with
+        //           ExecutionRatio 0.8.
+        // A failure means: changing the pull direction at runtime leaves the indicator at the old edge or size, or
+        //                  keeps the provider for the old direction so the new pull does not work.
+        [TestMethod]
+        [TestProperty("Description", "Changing PullDirection after load moves and resizes the default visualizer and re-adapts the ScrollViewer into a new InfoProvider.")]
+        public void PullDirectionChangeAfterLoadRepositionsVisualizerAndReadapts()
+        {
+            RefreshContainer refreshContainer = null;
+            IRefreshInfoProvider firstProvider = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.TopToBottom, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                firstProvider = ((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider;
+                Verify.IsNotNull(firstProvider);
+                refreshContainer.PullDirection = RefreshPullDirection.LeftToRight;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(VerticalAlignment.Stretch, presenter.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Left, presenter.HorizontalAlignment);
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.Width);
+                Verify.IsTrue(double.IsNaN(refreshContainer.Visualizer.Height), "Height is reset to Auto");
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth);
+                Verify.AreEqual(c_containerSize, refreshContainer.Visualizer.ActualHeight);
+
+                IRefreshInfoProvider secondProvider = ((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider;
+                Verify.IsNotNull(secondProvider);
+                Verify.IsFalse(object.ReferenceEquals(firstProvider, secondProvider), "The ScrollViewer is adapted again for the new direction");
+                Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - secondProvider.ExecutionRatio), 0.0001, "ExecutionRatio");
+            });
+        }
+
+        // Scenario: load a 100x100 container (so the default visualizer is square) with a ScrollViewer, then change
+        //           PullDirection to LeftToRight and then to BottomToTop.
+        // Expected: (correct behaviour) each change synchronously creates a new default ScrollViewer adapter and a new
+        //           InfoProvider (ExecutionRatio 0.8) for the visualizer; after layout it stays 100x100 and is not
+        //           adapted again; SizeChanged is never raised.
+        // A failure means: the bug is still present (the PullDirection setter throws), or a square visualizer is not
+        //                  re-adapted for the new direction.
+        // Ignored: reproduces BUG-PTR-4 (changing PullDirection while the default visualizer is exactly 100x100 throws
+        //          ArgumentException / E_INVALIDARG from the setter); remove the Ignore once fixed.
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // BUG-PTR-4: changing PullDirection while the default visualizer is exactly 100x100 runs the container's own re-adapt path, which throws ArgumentException (E_INVALIDARG) out of the PullDirection setter.
+        [TestProperty("Description", "When the default visualizer is exactly 100x100 a PullDirection change does not resize it (no SizeChanged), so the container itself must replace the default adapter and re-adapt the ScrollViewer for the new direction.")]
+        public void PullDirectionChangeReadaptsSquareDefaultVisualizer()
+        {
+            RefreshContainer refreshContainer = null;
+            int sizeChangedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = new RefreshContainer() {
+                    PullDirection = RefreshPullDirection.TopToBottom,
+                    Width = c_defaultPullDimension,
+                    Height = c_defaultPullDimension,
+                    Content = CreateScrollViewer()
+                };
+                Content = refreshContainer;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                IRefreshContainerPrivate containerPrivate = (IRefreshContainerPrivate)refreshContainer;
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)refreshContainer.Visualizer;
+                refreshContainer.Visualizer.SizeChanged += (object sender, SizeChangedEventArgs args) => { sizeChangedCount++; };
+
+                foreach (RefreshPullDirection direction in new RefreshPullDirection[] { RefreshPullDirection.LeftToRight, RefreshPullDirection.BottomToTop })
+                {
+                    Log.Comment("PullDirection -> " + direction);
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth, "Precondition: square default visualizer");
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualHeight, "Precondition: square default visualizer");
+                    IRefreshInfoProviderAdapter oldAdapter = containerPrivate.RefreshInfoProviderAdapter;
+                    IRefreshInfoProvider oldProvider = visualizerPrivate.InfoProvider;
+                    Verify.IsNotNull(oldAdapter);
+                    Verify.IsNotNull(oldProvider, "Precondition: the ScrollViewer is adapted");
+                    // Identity is observable: without a change the same adapter and provider are returned.
+                    Verify.IsTrue(object.ReferenceEquals(oldAdapter, containerPrivate.RefreshInfoProviderAdapter), "Adapter identity is stable");
+                    Verify.IsTrue(object.ReferenceEquals(oldProvider, visualizerPrivate.InfoProvider), "Provider identity is stable");
+
+                    refreshContainer.PullDirection = direction;
+
+                    // The PullDirection change itself re-adapts (synchronously, before any layout pass).
+                    IRefreshInfoProviderAdapter newAdapter = containerPrivate.RefreshInfoProviderAdapter;
+                    Verify.IsTrue(newAdapter is ScrollViewerIRefreshInfoProviderAdapter, "A default ScrollViewer adapter is used");
+                    Verify.IsFalse(object.ReferenceEquals(oldAdapter, newAdapter), "A new default adapter is created for " + direction);
+                    IRefreshInfoProvider newProvider = visualizerPrivate.InfoProvider;
+                    Verify.IsNotNull(newProvider, "The ScrollViewer is adapted again");
+                    Verify.IsFalse(object.ReferenceEquals(oldProvider, newProvider), "The visualizer uses the new provider for " + direction);
+                    Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - newProvider.ExecutionRatio), 0.0001, "ExecutionRatio");
+
+                    Content.UpdateLayout();
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth);
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualHeight);
+                    Verify.IsTrue(object.ReferenceEquals(newProvider, visualizerPrivate.InfoProvider), "Layout does not adapt again");
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, sizeChangedCount, "The square visualizer is never resized, so SizeChanged cannot have re-adapted it");
+            });
+        }
+
+        // Scenario: load a LeftToRight container (100x300 default visualizer) and flip PullDirection to RightToLeft.
+        // Expected: the presenter moves to the right edge (stretched vertically), the visualizer keeps Width 100 and
+        //           Auto height (100x300 actual), the indicator rotation is +pi/2, the ScrollViewer is still adapted
+        //           and the state is Idle.
+        // A failure means: flipping the pull direction on the same axis leaves the indicator at the old edge, resizes
+        //                  it, or loses the adapted ScrollViewer.
+        [TestMethod]
+        [TestProperty("Description", "Flipping PullDirection along the same axis (LeftToRight -> RightToLeft) keeps the 100x300 default visualizer size, moves it to the opposite edge and rotates its indicator; the square-visualizer re-adapt path is not taken for a non-square visualizer.")]
+        public void SameAxisPullDirectionFlipMovesNonSquareVisualizer()
+        {
+            RefreshContainer refreshContainer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.LeftToRight, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth, "Precondition: 100 wide");
+                Verify.AreEqual(c_containerSize, refreshContainer.Visualizer.ActualHeight, "Precondition: not square");
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider, "Precondition: the ScrollViewer is adapted");
+
+                refreshContainer.PullDirection = RefreshPullDirection.RightToLeft;
+                Content.UpdateLayout();
+
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(VerticalAlignment.Stretch, presenter.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Right, presenter.HorizontalAlignment);
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.Width);
+                Verify.IsTrue(double.IsNaN(refreshContainer.Visualizer.Height), "Height stays Auto");
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth);
+                Verify.AreEqual(c_containerSize, refreshContainer.Visualizer.ActualHeight);
+                float rotation = ElementCompositionPreview.GetElementVisual(refreshContainer.Visualizer.Content).RotationAngle;
+                Verify.IsLessThan(Math.Abs((float)(Math.PI / 2) - rotation), c_tolerance, "RightToLeft indicator rotation " + rotation);
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider);
+                Verify.AreEqual(RefreshVisualizerState.Idle, refreshContainer.Visualizer.State);
+            });
+        }
+
+        // Scenario: for each pull direction, load a container, add two RefreshRequested handlers that each take a
+        //           deferral, call RequestRefresh on the container, complete the deferrals one by one, then request a
+        //           refresh on the visualizer and complete its deferrals in the other order.
+        // Expected: each handler is raised exactly once per refresh with the container as sender and the visualizer
+        //           Refreshing; one outstanding deferral keeps it Refreshing and the last one returns it to Idle; a
+        //           refresh requested on the visualizer is forwarded to the container's handlers; transitions are
+        //           exactly "Idle->Refreshing, Refreshing->Idle, Idle->Refreshing, Refreshing->Idle" and the
+        //           ScrollViewer stays adapted.
+        // A failure means: a refresh ends before every app handler has finished its work, handlers run the wrong number
+        //                  of times, or a refresh started from the visualizer does not reach the container's handlers.
+        [TestMethod]
+        [TestProperty("Description", "RequestRefresh on the container (and on its visualizer) raises RefreshContainer.RefreshRequested once per handler, keeps the visualizer Refreshing until every deferral completes and then returns to Idle, for every pull direction.")]
+        public void RequestRefreshCompletesOnlyAfterAllDeferralsComplete()
+        {
+            foreach (RefreshPullDirection direction in new RefreshPullDirection[] {
+                RefreshPullDirection.TopToBottom, RefreshPullDirection.BottomToTop, RefreshPullDirection.LeftToRight, RefreshPullDirection.RightToLeft })
+            {
+                Log.Comment("PullDirection = " + direction);
+                RefreshContainer refreshContainer = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    refreshContainer = CreateLoadedContainer(direction, CreateScrollViewer());
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    RefreshVisualizer visualizer = refreshContainer.Visualizer;
+                    List<string> transitions = new List<string>();
+                    visualizer.RefreshStateChanged += (RefreshVisualizer sender, RefreshStateChangedEventArgs args) => { transitions.Add(args.OldState + "->" + args.NewState); };
+
+                    List<Deferral> first = new List<Deferral>();
+                    List<Deferral> second = new List<Deferral>();
+                    object observedSender = null;
+                    RefreshVisualizerState stateDuringEvent = RefreshVisualizerState.Idle;
+                    refreshContainer.RefreshRequested += (RefreshContainer sender, RefreshRequestedEventArgs args) =>
+                    {
+                        observedSender = sender;
+                        stateDuringEvent = visualizer.State;
+                        first.Add(args.GetDeferral());
+                    };
+                    refreshContainer.RefreshRequested += (RefreshContainer sender, RefreshRequestedEventArgs args) => { second.Add(args.GetDeferral()); };
+
+                    Verify.AreEqual(RefreshVisualizerState.Idle, visualizer.State);
+                    refreshContainer.RequestRefresh();
+                    Verify.AreEqual(1, first.Count, "First handler raised once");
+                    Verify.AreEqual(1, second.Count, "Second handler raised once");
+                    Verify.IsTrue(object.ReferenceEquals(refreshContainer, observedSender), "Sender is the container");
+                    Verify.AreEqual(RefreshVisualizerState.Refreshing, stateDuringEvent);
+                    Verify.AreEqual(RefreshVisualizerState.Refreshing, visualizer.State);
+
+                    first[0].Complete();
+                    Verify.AreEqual(RefreshVisualizerState.Refreshing, visualizer.State, "One outstanding deferral keeps the refresh running");
+                    second[0].Complete();
+                    Verify.AreEqual(RefreshVisualizerState.Idle, visualizer.State);
+
+                    // A refresh requested directly on the visualizer is forwarded to the container.
+                    visualizer.RequestRefresh();
+                    Verify.AreEqual(2, first.Count);
+                    Verify.AreEqual(2, second.Count);
+                    Verify.AreEqual(RefreshVisualizerState.Refreshing, visualizer.State);
+                    second[1].Complete();
+                    Verify.AreEqual(RefreshVisualizerState.Refreshing, visualizer.State);
+                    first[1].Complete();
+                    Verify.AreEqual(RefreshVisualizerState.Idle, visualizer.State);
+
+                    Verify.AreEqual("Idle->Refreshing, Refreshing->Idle, Idle->Refreshing, Refreshing->Idle", string.Join(", ", transitions));
+                });
+
+                // Let the refresh-completed composition batch finish before the next iteration.
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(RefreshVisualizerState.Idle, refreshContainer.Visualizer.State);
+                    Verify.IsNotNull(((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider);
+                });
+            }
+        }
+
+        // Scenario: load a container, replace its Visualizer with a new RefreshVisualizer, request a refresh, then
+        //           change PullDirection to LeftToRight.
+        // Expected: the presenter hosts only the new visualizer and the old one has no parent; the ScrollViewer is
+        //           adapted for the new one; the refresh (one deferral) makes the new visualizer Refreshing while the
+        //           old one stays Idle, then Idle again; after the direction change the presenter is at the left edge
+        //           but the app's visualizer keeps Auto width and its style height 100.
+        // A failure means: an app-provided visualizer is not shown or used, the old one keeps refreshing, or the
+        //                  container overwrites the app's visualizer size.
+        [TestMethod]
+        [TestProperty("Description", "Replacing the Visualizer after load hosts the new visualizer in the presenter, adapts the ScrollViewer for it, routes refreshes to it and does not force the default pull size onto it.")]
+        public void ReplacingVisualizerAfterLoadHostsAndUsesTheNewVisualizer()
+        {
+            RefreshContainer refreshContainer = null;
+            RefreshVisualizer original = null;
+            RefreshVisualizer custom = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.TopToBottom, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                original = refreshContainer.Visualizer;
+                custom = new RefreshVisualizer();
+                refreshContainer.Visualizer = custom;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(object.ReferenceEquals(custom, refreshContainer.Visualizer));
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(1, presenter.Children.Count);
+                Verify.IsTrue(object.ReferenceEquals(custom, presenter.Children[0]), "The new visualizer is hosted");
+                Verify.IsNull(VisualTreeHelper.GetParent(original), "The previous visualizer is removed from the presenter");
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)custom).InfoProvider, "The ScrollViewer is adapted for the new visualizer");
+
+                List<Deferral> deferrals = new List<Deferral>();
+                refreshContainer.RefreshRequested += (RefreshContainer sender, RefreshRequestedEventArgs args) => { deferrals.Add(args.GetDeferral()); };
+                refreshContainer.RequestRefresh();
+                Verify.AreEqual(1, deferrals.Count);
+                Verify.AreEqual(RefreshVisualizerState.Refreshing, custom.State);
+                Verify.AreEqual(RefreshVisualizerState.Idle, original.State, "The previous visualizer is not refreshed");
+                deferrals[0].Complete();
+                Verify.AreEqual(RefreshVisualizerState.Idle, custom.State);
+
+                // The container still positions the presenter but keeps the app-provided visualizer size.
+                refreshContainer.PullDirection = RefreshPullDirection.LeftToRight;
+                Content.UpdateLayout();
+                Verify.AreEqual(HorizontalAlignment.Left, presenter.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, presenter.VerticalAlignment);
+                Verify.IsTrue(double.IsNaN(custom.Width), "A custom visualizer is not resized to the default pull width");
+                Verify.AreEqual(c_defaultPullDimension, custom.Height, "A custom visualizer keeps its own (style) height");
+            });
+        }
+
+        // Scenario: assign a Visualizer before the container's template is applied, load it and request one refresh.
+        // Expected: (correct behaviour) RefreshContainer.RefreshRequested is raised exactly once.
+        // A failure means: the bug is still present: the app's refresh handler runs twice per refresh.
+        // Ignored: reproduces BUG-PTR-1 (RefreshContainer never stores or removes its Visualizer event tokens, so a
+        //          Visualizer set before the template is subscribed twice); remove the Ignore once fixed.
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // BUG-PTR-1: RefreshContainer never stores/removes its Visualizer event tokens, so a Visualizer set before the template is applied is subscribed twice and RefreshRequested is raised twice.
+        [TestProperty("Description", "A Visualizer assigned before the template is applied raises RefreshContainer.RefreshRequested once per refresh.")]
+        public void VisualizerSetBeforeLoadRaisesRefreshRequestedOnce()
+        {
+            RefreshContainer refreshContainer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = new RefreshContainer() { Width = c_containerSize, Height = c_containerSize, Content = CreateScrollViewer() };
+                refreshContainer.Visualizer = new RefreshVisualizer();
+                Content = refreshContainer;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                int refreshRequestedCount = 0;
+                refreshContainer.RefreshRequested += (RefreshContainer sender, RefreshRequestedEventArgs args) => { refreshRequestedCount++; };
+                refreshContainer.RequestRefresh();
+                Verify.AreEqual(1, refreshRequestedCount);
+            });
+        }
+
+        // Scenario: on a loaded container, install a recording IRefreshInfoProviderAdapter that returns a provider test
+        //           double, drive the provider, then change PullDirection so the visualizer is resized.
+        // Expected: the adapter is asked once to adapt the template Root (the container's child) with the visualizer
+        //           size 300x100, receives SetAnimations once with the visualizer, and its provider becomes the
+        //           InfoProvider (ratio 0.3 -> Peeking, 0 -> Idle); after the resize to 100 wide the same adapter and
+        //           provider are kept and the adapter is not asked to adapt again.
+        // A failure means: a custom adapter is not used, gets the wrong root or size, or is silently replaced when the
+        //                  visualizer is resized.
+        [TestMethod]
+        [TestProperty("Description", "A custom IRefreshInfoProviderAdapter is asked to adapt the template root with the visualizer size, its provider becomes the visualizer's InfoProvider, it receives SetAnimations, and it is not replaced when the visualizer is resized.")]
+        public void CustomAdapterAdaptsTemplateRootAndIsKeptAcrossResize()
+        {
+            RefreshContainer refreshContainer = null;
+            RecordingRefreshInfoProviderAdapter adapter = null;
+            RefreshInfoProviderImpl provider = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.TopToBottom, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                provider = new RefreshInfoProviderImpl(ElementCompositionPreview.GetElementVisual(refreshContainer).Compositor);
+                adapter = new RecordingRefreshInfoProviderAdapter(provider);
+                ((IRefreshContainerPrivate)refreshContainer).RefreshInfoProviderAdapter = adapter;
+
+                Verify.IsTrue(object.ReferenceEquals(adapter, ((IRefreshContainerPrivate)refreshContainer).RefreshInfoProviderAdapter));
+                Verify.AreEqual(1, adapter.AdaptedRoots.Count);
+                Grid root = adapter.AdaptedRoots[0] as Grid;
+                Verify.IsNotNull(root);
+                Verify.AreEqual("Root", root.Name);
+                Verify.IsTrue(object.ReferenceEquals(refreshContainer, VisualTreeHelper.GetParent(root)), "The template root is adapted");
+                Verify.AreEqual(refreshContainer.Visualizer.RenderSize, adapter.AdaptedSizes[0]);
+                Verify.AreEqual(new Size(c_containerSize, c_defaultPullDimension), adapter.AdaptedSizes[0]);
+                Verify.AreEqual(1, adapter.AnimatedContainers.Count);
+                Verify.IsTrue(object.ReferenceEquals(refreshContainer.Visualizer, adapter.AnimatedContainers[0]), "SetAnimations receives the visualizer");
+                Verify.IsTrue(object.ReferenceEquals(provider, ((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider));
+
+                // The provider now drives the visualizer.
+                provider.RaiseInteractionRatioChangedEvent(0.3f);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, refreshContainer.Visualizer.State);
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                Verify.AreEqual(RefreshVisualizerState.Idle, refreshContainer.Visualizer.State);
+
+                refreshContainer.PullDirection = RefreshPullDirection.LeftToRight;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth, "The visualizer was resized");
+                Verify.IsTrue(object.ReferenceEquals(adapter, ((IRefreshContainerPrivate)refreshContainer).RefreshInfoProviderAdapter), "A custom adapter is not replaced on resize");
+                Verify.AreEqual(1, adapter.AdaptedRoots.Count, "A custom adapter is not asked to adapt again on resize");
+                Verify.IsTrue(object.ReferenceEquals(provider, ((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider));
+            });
+        }
+
+        // Scenario: use container content without a ScrollViewer: an IRefreshInfoProvider Grid 10 levels below the
+        //           template Root (wrapped in 8 Borders); then clear InfoProvider and remove the adapter; finally load
+        //           another container with the provider 11 levels deep.
+        // Expected: the provider 10 levels deep becomes the InfoProvider and drives the visualizer (0.25 -> Peeking, 0
+        //           -> Idle); removing the adapter (null) repeats the tree search and re-assigns it; the provider 11
+        //           levels deep is not found (InfoProvider null).
+        // A failure means: content that implements IRefreshInfoProvider itself is not found within the documented
+        //                  10-level depth, is found beyond it, or a null adapter breaks the fallback.
+        [TestMethod]
+        [TestProperty("Description", "Without a ScrollViewer to adapt, the container searches its tree (10 levels below the template root) for an element implementing IRefreshInfoProvider; deeper providers or a null adapter are handled.")]
+        public void TreeSearchFindsContentProviderWithinTenLevels()
+        {
+            RefreshContainer reachable = null;
+            RefreshInfoProviderGrid reachableProvider = null;
+            RefreshContainer tooDeep = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Root -> ContentPresenter -> 8 Borders -> provider: the provider is 10 levels below the template root.
+                reachableProvider = new RefreshInfoProviderGrid();
+                reachable = CreateLoadedContainer(RefreshPullDirection.TopToBottom, WrapInBorders(reachableProvider, 8));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)reachable.Visualizer;
+                Verify.IsTrue(object.ReferenceEquals(reachableProvider, visualizerPrivate.InfoProvider), "The provider 10 levels deep is found");
+
+                // The found provider drives the visualizer.
+                reachableProvider.RaiseInteractionRatioChangedEvent(0.25f);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, reachable.Visualizer.State);
+                reachableProvider.RaiseInteractionRatioChangedEvent(0.0f);
+                Verify.AreEqual(RefreshVisualizerState.Idle, reachable.Visualizer.State);
+
+                // Removing the adapter falls back to the same tree search, which re-assigns the provider.
+                visualizerPrivate.InfoProvider = null;
+                Verify.IsNull(visualizerPrivate.InfoProvider, "Precondition: the provider was cleared");
+                ((IRefreshContainerPrivate)reachable).RefreshInfoProviderAdapter = null;
+                Verify.IsNull(((IRefreshContainerPrivate)reachable).RefreshInfoProviderAdapter);
+                Verify.IsTrue(object.ReferenceEquals(reachableProvider, visualizerPrivate.InfoProvider), "The tree search re-assigns the reachable provider");
+
+                // One level deeper (11 levels) is beyond the search depth.
+                RefreshInfoProviderGrid deepProvider = new RefreshInfoProviderGrid();
+                tooDeep = CreateLoadedContainer(RefreshPullDirection.TopToBottom, WrapInBorders(deepProvider, 9));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(((IRefreshVisualizerPrivate)tooDeep.Visualizer).InfoProvider, "A provider 11 levels deep is not found");
+            });
+        }
+
+        // Scenario: assign an app RefreshVisualizer before the template is applied, load the container, then change
+        //           PullDirection to LeftToRight.
+        // Expected: no default visualizer is created; the presenter hosts the app's visualizer exactly once at the top
+        //           edge; it gets the adapted ScrollViewer provider (ExecutionRatio 0.8); after the direction change
+        //           the presenter is at the left edge but the visualizer keeps Auto width and its style height 100.
+        // A failure means: a visualizer set early is replaced, hosted twice, not connected to the ScrollViewer, or
+        //                  resized by the container.
+        [TestMethod]
+        [TestProperty("Description", "A Visualizer assigned before the template is applied is hosted alone in the presenter, gets the adapted ScrollViewer as its InfoProvider, and is positioned but not resized by a PullDirection change.")]
+        public void VisualizerSetBeforeTemplateIsHostedAdaptedAndKeepsItsSize()
+        {
+            RefreshContainer refreshContainer = null;
+            RefreshVisualizer custom = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                custom = new RefreshVisualizer();
+                refreshContainer = new RefreshContainer() { Width = c_containerSize, Height = c_containerSize, Content = CreateScrollViewer() };
+                refreshContainer.Visualizer = custom;
+                Verify.IsNull(VisualTreeHelper.GetParent(custom), "Precondition: not hosted before the template is applied");
+                Content = refreshContainer;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(object.ReferenceEquals(custom, refreshContainer.Visualizer), "The app's visualizer is kept, no default is created");
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(1, presenter.Children.Count, "The visualizer is hosted exactly once");
+                Verify.IsTrue(object.ReferenceEquals(custom, presenter.Children[0]));
+                Verify.AreEqual(VerticalAlignment.Top, presenter.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Stretch, presenter.HorizontalAlignment);
+                IRefreshInfoProvider provider = ((IRefreshVisualizerPrivate)custom).InfoProvider;
+                Verify.IsNotNull(provider, "The content ScrollViewer is adapted for the early visualizer");
+                Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - provider.ExecutionRatio), 0.0001, "ExecutionRatio");
+                Verify.IsTrue(double.IsNaN(custom.Width), "Precondition: Auto width");
+
+                refreshContainer.PullDirection = RefreshPullDirection.LeftToRight;
+                Content.UpdateLayout();
+                Verify.AreEqual(HorizontalAlignment.Left, presenter.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, presenter.VerticalAlignment);
+                Verify.IsTrue(double.IsNaN(custom.Width), "An app-provided visualizer is not resized to the default pull width (100)");
+                Verify.AreEqual(c_defaultPullDimension, custom.Height, "An app-provided visualizer keeps its (style) height");
+            });
+        }
+
+        // Scenario: insert an IRefreshInfoProvider Grid as the first child of a loaded container's template Root and
+        //           install a recording adapter; then load a container whose custom template's Root panel is itself an
+        //           IRefreshInfoProvider (RefreshInfoProviderPanel, a TestUI type) and whose content has no
+        //           ScrollViewer.
+        // Expected: the first-child provider becomes the InfoProvider without the adapter being asked to adapt or
+        //           animate, and drives the visualizer (0.3 -> Peeking, 0 -> Idle); with the custom template the tree
+        //           search returns the Root panel, which also drives the visualizer.
+        // A failure means: providers placed in the template are ignored or overridden by the adapter, so custom
+        //                  templates cannot supply their own pull source.
+        [TestMethod]
+        [TestProperty("Description", "An IRefreshInfoProvider in the template is used before any adapter: a provider that is the first child of the template Root is taken without calling the adapter, and a Root that is itself a provider is found by the tree search when there is no ScrollViewer to adapt.")]
+        public void TemplateProvidersAreUsedBeforeAdapterAndTreeSearch()
+        {
+            RefreshContainer refreshContainer = null;
+            RefreshInfoProviderGrid firstChild = null;
+            RefreshContainer customTemplated = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.TopToBottom, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = (Grid)VisualTreeHelper.GetChild(refreshContainer, 0);
+                Verify.AreEqual("Root", root.Name);
+                firstChild = new RefreshInfoProviderGrid();
+                root.Children.Insert(0, firstChild);
+
+                RecordingRefreshInfoProviderAdapter adapter = new RecordingRefreshInfoProviderAdapter(null);
+                ((IRefreshContainerPrivate)refreshContainer).RefreshInfoProviderAdapter = adapter;
+
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)refreshContainer.Visualizer;
+                Verify.IsTrue(object.ReferenceEquals(firstChild, visualizerPrivate.InfoProvider), "The first template child is the InfoProvider");
+                Verify.AreEqual(0, adapter.AdaptedRoots.Count, "The adapter is not asked to adapt");
+                Verify.AreEqual(0, adapter.AnimatedContainers.Count, "The adapter is not asked to animate");
+                firstChild.RaiseInteractionRatioChangedEvent(0.3f);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, refreshContainer.Visualizer.State);
+                firstChild.RaiseInteractionRatioChangedEvent(0.0f);
+                Verify.AreEqual(RefreshVisualizerState.Idle, refreshContainer.Visualizer.State);
+
+                // A template whose Root panel is itself the provider (RefreshInfoProviderPanel is a TestUI type).
+                ControlTemplate template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:local='using:MUXControlsTestApp'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                        TargetType='controls:RefreshContainer'>
+                        <local:RefreshInfoProviderPanel x:Name='Root'>
+                            <ContentPresenter Content='{TemplateBinding Content}'/>
+                            <Grid x:Name='RefreshVisualizerPresenter'/>
+                        </local:RefreshInfoProviderPanel>
+                    </ControlTemplate>");
+                customTemplated = new RefreshContainer() {
+                    Template = template,
+                    Width = c_containerSize,
+                    Height = c_containerSize,
+                    Content = new Border() { Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray) }
+                };
+                Content = customTemplated;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                MUXControlsTestApp.RefreshInfoProviderPanel rootPanel = VisualTreeHelper.GetChild(customTemplated, 0) as MUXControlsTestApp.RefreshInfoProviderPanel;
+                Verify.IsNotNull(rootPanel, "The custom template is applied");
+                Verify.AreEqual("Root", rootPanel.Name);
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)customTemplated.Visualizer;
+                Verify.IsTrue(object.ReferenceEquals(rootPanel, visualizerPrivate.InfoProvider), "Without a ScrollViewer the tree search returns the template Root");
+                rootPanel.RaiseInteractionRatioChangedEvent(0.3f);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, customTemplated.Visualizer.State);
+                rootPanel.RaiseInteractionRatioChangedEvent(0.0f);
+                Verify.AreEqual(RefreshVisualizerState.Idle, customTemplated.Visualizer.State);
+            });
+        }
+
+        // Scenario: load a container with an app visualizer and an adapted ScrollViewer; tag the container, visualizer
+        //           and scroll content with managed sentinel objects (held by the native objects); force a GC while
+        //           loaded; remove the container and force up to 5 more GC passes.
+        // Expected: all three sentinels are alive after the GC while loaded and all three are collected after removal.
+        // A failure means: removing a RefreshContainer leaks the container, its visualizer or the ScrollViewer content
+        //                  (for example through a cycle with the adapter or the InteractionTracker).
+        [TestMethod]
+        [TestProperty("Description", "Once a loaded RefreshContainer with an adapted ScrollViewer is removed and released, the container, its visualizer and the ScrollViewer content are collected (nothing keeps them alive). Each is tracked through a managed Tag object that the native object holds, so a native leak would keep the sentinel alive.")]
+        public void RemovedContainerVisualizerAndAdaptedScrollViewerAreCollected()
+        {
+            var objects = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The native objects hold these managed Tag values, so a sentinel lives as long as its native owner.
+                // (The projected wrappers themselves would be collectable even if the native objects leaked.)
+                object containerSentinel = new object();
+                object visualizerSentinel = new object();
+                object scrollContentSentinel = new object();
+                StackPanel scrollContent = new StackPanel() { Height = 1000, Tag = scrollContentSentinel };
+                RefreshVisualizer visualizer = new RefreshVisualizer() { Tag = visualizerSentinel };
+                RefreshContainer refreshContainer = new RefreshContainer() {
+                    Width = c_containerSize,
+                    Height = c_containerSize,
+                    Content = new ScrollViewer() { Content = scrollContent },
+                    Tag = containerSentinel
+                };
+                refreshContainer.Visualizer = visualizer;
+                Content = refreshContainer;
+                Content.UpdateLayout();
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)visualizer).InfoProvider, "Precondition: the ScrollViewer was adapted");
+                objects["container"] = new WeakReference(containerSentinel);
+                objects["visualizer"] = new WeakReference(visualizerSentinel);
+                objects["scrollContent"] = new WeakReference(scrollContentSentinel);
+            });
+            IdleSynchronizer.Wait();
+
+            // Collect once while the container is still loaded, so the "alive while loaded" precondition can fail if
+            // something only weakly held the native objects. (No UI-thread call inside the GC sequence.)
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var pair in objects)
+                {
+                    Verify.IsTrue(pair.Value.IsAlive, "Precondition: " + pair.Key + " is alive while loaded");
+                }
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            for (int i = 0; i < 5 && objects.Values.Any(w => w.IsAlive); i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+            }
+
+            foreach (var pair in objects)
+            {
+                Verify.IsFalse(pair.Value.IsAlive, pair.Key + " is collected");
+            }
+        }
+
+        // Scenario: get the activation factories of RefreshContainer, RefreshVisualizer,
+        //           ScrollViewerIRefreshInfoProviderAdapter and PullToRefreshHelperTestApi and call
+        //           IActivationFactory::ActivateInstance directly; request a refresh to get real event args, and create
+        //           RefreshInteractionRatioChangedEventArgs through the helper test API.
+        // Expected: each factory reports its exact runtime class name and ActivateInstance returns E_NOTIMPL
+        //           (0x80004001) with no instance; the refresh raises 1 RefreshRequested and 2 RefreshStateChanged
+        //           events; the event args report exactly Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs,
+        //           RefreshStateChangedEventArgs and RefreshInteractionRatioChangedEventArgs.
+        // A failure means: the generated WinRT activation or type-name plumbing for these classes is broken (wrong
+        //                  class names, or parameterless activation unexpectedly succeeds or fails differently).
+        [TestMethod]
+        [TestProperty("Description", "The PullToRefresh activation factories report their runtime class names and reject parameterless IActivationFactory::ActivateInstance with E_NOTIMPL; the event args report their own runtime class names.")]
+        public void ActivationFactoriesAndEventArgsReportRuntimeClassNames()
+        {
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.RefreshContainer");
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.RefreshVisualizer");
+            VerifyActivationFactory("Microsoft.UI.Private.Controls.ScrollViewerIRefreshInfoProviderAdapter");
+            VerifyActivationFactory("Microsoft.UI.Private.Controls.PullToRefreshHelperTestApi");
+
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
+                var requested = new List<RefreshRequestedEventArgs>();
+                var stateChanged = new List<RefreshStateChangedEventArgs>();
+                refreshVisualizer.RefreshRequested += (RefreshVisualizer sender, RefreshRequestedEventArgs args) => { requested.Add(args); };
+                refreshVisualizer.RefreshStateChanged += (RefreshVisualizer sender, RefreshStateChangedEventArgs args) => { stateChanged.Add(args); };
+                refreshVisualizer.RequestRefresh();
+                Verify.AreEqual(1, requested.Count);
+                Verify.AreEqual(2, stateChanged.Count);
+
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs", GetNativeRuntimeClassName(requested[0]));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.RefreshStateChangedEventArgs", GetNativeRuntimeClassName(stateChanged[0]));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.RefreshInteractionRatioChangedEventArgs",
+                    GetNativeRuntimeClassName(PullToRefreshHelperTestApi.CreateRefreshInteractionRatioChangedEventArgsInstance(0.25)));
+            });
+        }
+
+        // IInspectable::GetRuntimeClassName of the native object behind a projected object. CsWinRT never asks a sealed
+        // class's instance for it (it wraps by static type), so the test asks explicitly.
+        private static string GetNativeRuntimeClassName(object projected)
+        {
+            return new global::WinRT.IInspectable(((global::WinRT.IWinRTObject)projected).NativeObject).GetRuntimeClassName();
+        }
+
+        private static void VerifyActivationFactory(string runtimeClassName)
+        {
+            Guid IID_IActivationFactory = new Guid("00000035-0000-0000-C000-000000000046");
+            using (global::WinRT.IObjectReference factory = global::WinRT.ActivationFactory.Get(runtimeClassName, IID_IActivationFactory))
+            {
+                Verify.AreEqual(runtimeClassName, new global::WinRT.IInspectable(factory).GetRuntimeClassName(), "Factory runtime class name");
+                IntPtr instance;
+                int hr = ActivateInstance(factory.ThisPtr, out instance);
+                Verify.AreEqual(unchecked((int)0x80004001) /* E_NOTIMPL */, hr, runtimeClassName + ": parameterless activation is not supported");
+                Verify.AreEqual(IntPtr.Zero, instance, runtimeClassName + ": no instance is returned");
+            }
+        }
+
+        // Calls IActivationFactory::ActivateInstance directly. CsWinRT never calls it for these classes (they are composable,
+        // need constructor arguments, or are static-only), so this is the only way to observe the factory's answer.
+        // Vtable layout: IUnknown (slots 0-2), IInspectable (3-5), IActivationFactory::ActivateInstance (6).
+        private static unsafe int ActivateInstance(IntPtr activationFactory, out IntPtr instance)
+        {
+            IntPtr result = IntPtr.Zero;
+            void** vtable = *(void***)activationFactory;
+            int hr = ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)vtable[6])(activationFactory, &result);
+            instance = result;
+            if (result != IntPtr.Zero)
+            {
+                global::System.Runtime.InteropServices.Marshal.Release(result);
+            }
+            return hr;
+        }
+
+        private void VerifyDefaultTemplate(RefreshPullDirection direction, VerticalAlignment expectedVertical, HorizontalAlignment expectedHorizontal, float expectedRotation)
+        {
+            Log.Comment("PullDirection = " + direction);
+            RefreshContainer refreshContainer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(direction, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = (Grid)VisualTreeHelper.GetChild(refreshContainer, 0);
+                Verify.AreEqual("Root", root.Name);
+                Verify.IsTrue(ElementCompositionPreview.GetElementVisual(root).Clip is InsetClip, "The template root clips the pulled visualizer");
+
+                RefreshVisualizer visualizer = refreshContainer.Visualizer;
+                Verify.IsNotNull(visualizer, "A default visualizer is created");
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(1, presenter.Children.Count);
+                Verify.AreEqual(expectedVertical, presenter.VerticalAlignment);
+                Verify.AreEqual(expectedHorizontal, presenter.HorizontalAlignment);
+
+                bool vertical = direction == RefreshPullDirection.TopToBottom || direction == RefreshPullDirection.BottomToTop;
+                Verify.AreEqual(c_defaultPullDimension, vertical ? visualizer.Height : visualizer.Width);
+                Verify.IsTrue(double.IsNaN(vertical ? visualizer.Width : visualizer.Height), "Cross-axis size is Auto");
+                Verify.AreEqual(vertical ? c_containerSize : c_defaultPullDimension, visualizer.ActualWidth);
+                Verify.AreEqual(vertical ? c_defaultPullDimension : c_containerSize, visualizer.ActualHeight);
+
+                float rotation = ElementCompositionPreview.GetElementVisual(visualizer.Content).RotationAngle;
+                Verify.IsLessThan(Math.Abs(expectedRotation - rotation), c_tolerance, "Indicator rotation " + rotation);
+
+                IRefreshInfoProvider provider = ((IRefreshVisualizerPrivate)visualizer).InfoProvider;
+                Verify.IsNotNull(provider, "The content ScrollViewer is adapted");
+                Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - provider.ExecutionRatio), 0.0001, "ExecutionRatio");
+                Verify.AreEqual("InteractionRatio", provider.InteractionRatioCompositionProperty);
+                Verify.IsFalse(provider.IsInteractingForRefresh);
+                Verify.IsNotNull(provider.CompositionProperties);
+                Verify.AreEqual(RefreshVisualizerState.Idle, visualizer.State);
+            });
+        }
+
+        private RefreshContainer CreateLoadedContainer(RefreshPullDirection direction, UIElement content)
+        {
+            RefreshContainer refreshContainer = new RefreshContainer() {
+                PullDirection = direction,
+                Width = c_containerSize,
+                Height = c_containerSize,
+                Content = content
+            };
+            Content = refreshContainer;
+            Content.UpdateLayout();
+            return refreshContainer;
+        }
+
+        private static ScrollViewer CreateScrollViewer()
+        {
+            return new ScrollViewer() {
+                Content = new StackPanel() { Height = 1000, Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray) }
+            };
+        }
+
+        private static UIElement WrapInBorders(UIElement element, int count)
+        {
+            UIElement current = element;
+            for (int i = 0; i < count; i++)
+            {
+                current = new Border() { Child = current };
+            }
+            return current;
+        }
+
+        private static Grid GetPresenter(RefreshContainer refreshContainer)
+        {
+            Grid presenter = VisualTreeHelper.GetParent(refreshContainer.Visualizer) as Grid;
+            Verify.IsNotNull(presenter);
+            Verify.AreEqual("RefreshVisualizerPresenter", presenter.Name);
+            return presenter;
+        }
+    }
+
+    partial class RecordingRefreshInfoProviderAdapter : IRefreshInfoProviderAdapter
+    {
+        private IRefreshInfoProvider provider;
+
+        public List<UIElement> AdaptedRoots = new List<UIElement>();
+        public List<Size> AdaptedSizes = new List<Size>();
+        public List<UIElement> AnimatedContainers = new List<UIElement>();
+
+        public RecordingRefreshInfoProviderAdapter(IRefreshInfoProvider provider)
+        {
+            this.provider = provider;
+        }
+
+        public IRefreshInfoProvider AdaptFromTree(UIElement root, Size visualizerSize)
+        {
+            AdaptedRoots.Add(root);
+            AdaptedSizes.Add(visualizerSize);
+            return provider;
+        }
+
+        public void SetAnimations(UIElement refreshVisualizerAnimatableContainer)
+        {
+            AnimatedContainers.Add(refreshVisualizerAnimatableContainer);
+        }
+    }
+
+    // A content element that is itself an IRefreshInfoProvider, found by RefreshContainer's tree search.
+    partial class RefreshInfoProviderGrid : Grid, IRefreshInfoProvider
+    {
+        private CompositionPropertySet compositionProperties;
+
+        public RefreshInfoProviderGrid()
+        {
+            compositionProperties = ElementCompositionPreview.GetElementVisual(this).Compositor.CreatePropertySet();
+            compositionProperties.InsertScalar(InteractionRatioCompositionProperty, 0.0f);
+        }
+
+        public void RaiseInteractionRatioChangedEvent(float interactionRatio)
+        {
+            if (this.InteractionRatioChanged != null)
+            {
+                this.InteractionRatioChanged.Invoke(this, PullToRefreshHelperTestApi.CreateRefreshInteractionRatioChangedEventArgsInstance(interactionRatio));
+            }
+        }
+
+        public double ExecutionRatio
+        {
+            get { return 0.8; }
+        }
+
+        public CompositionPropertySet CompositionProperties
+        {
+            get { return compositionProperties; }
+        }
+
+        public string InteractionRatioCompositionProperty
+        {
+            get { return "InteractionRatio"; }
+        }
+
+        public bool IsInteractingForRefresh
+        {
+            get { return false; }
+        }
+
+        public event TypedEventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged;
+#pragma warning disable CS0067 // Required by IRefreshInfoProvider; this provider never interacts.
+        public event TypedEventHandler<IRefreshInfoProvider, object> IsInteractingForRefreshChanged;
+#pragma warning restore CS0067
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshCompleted;
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshStarted;
+
+        public void OnRefreshCompleted()
+        {
+            if (this.RefreshCompleted != null)
+            {
+                this.RefreshCompleted.Invoke(this, new EventArgs());
+            }
+        }
+
+        public void OnRefreshStarted()
+        {
+            if (this.RefreshStarted != null)
+            {
+                this.RefreshStarted.Invoke(this, new EventArgs());
+            }
+        }
+    }
+}

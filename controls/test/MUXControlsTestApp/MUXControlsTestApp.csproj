@@ -289,6 +289,7 @@
   <Import Project="$(MUXCProjectRoot)dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ParallaxView\APITests\ParallaxView_APITests.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\PersonPicture\APITests\PersonPicture_APITests.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\RefreshContainer\APITests\RefreshContainer_APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\RadioButtons\APITests\RadioButtons_APITests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />

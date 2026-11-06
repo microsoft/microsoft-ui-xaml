@@ -64,6 +64,17 @@ namespace MUXControlsTestApp
 
         void CheckLeaks(Dictionary<string, WeakReference> objects)
         {
+            // Publish the verdict so the interaction test (a separate process) can assert it.
+            List<string> alive = new List<string>();
+            foreach (var pair in objects)
+            {
+                if (pair.Value.Target != null)
+                {
+                    alive.Add(pair.Key);
+                }
+            }
+            LeakCheckResult.Text = objects.Count == 0 ? "Nothing tracked" : (alive.Count == 0 ? "No leaks" : "Leaked: " + string.Join(",", alive));
+
             foreach (var pair in objects)
             {
                 Log.Comment("Checking if object {0} has been collected", pair.Key);
