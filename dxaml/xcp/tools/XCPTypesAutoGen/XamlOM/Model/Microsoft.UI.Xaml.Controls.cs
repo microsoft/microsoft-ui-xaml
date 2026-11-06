@@ -1009,7 +1009,7 @@ namespace Microsoft.UI.Xaml.Controls
     [ContentProperty("Header")]
     [Platform("Feature_HeaderPlacement", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
     [Guids(ClassGuid = "4a16430c-8a1b-435a-9100-17795a709d05")]
-    public sealed class ToggleSwitch
+    public class ToggleSwitch
      : Microsoft.UI.Xaml.Controls.Control
     {
         #region Properties

@@ -2231,10 +2231,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Header")]
-    runtimeclass ToggleSwitch
+    unsealed runtimeclass ToggleSwitch
         : Microsoft.UI.Xaml.Controls.Control
     {
-        ToggleSwitch();
+        [method_name("CreateInstance")] ToggleSwitch();
         Boolean IsOn;
         Object Header;
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
