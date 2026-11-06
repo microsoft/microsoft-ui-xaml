@@ -141,6 +141,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneTitleOnTopPane.set(nullptr);
 
     m_itemsContainerSizeChangedRevoker.revoke();
+    m_rootSplitViewSizeChangedRevoker.revoke();
+    m_rootSplitViewClip.set(nullptr);
     m_paneTitleHolderFrameworkElementSizeChangedRevoker.revoke();
     m_paneTitleHolderFrameworkElement.set(nullptr);
 
@@ -445,6 +447,7 @@ void NavigationView::OnApplyTemplate()
         m_splitViewPaneClosingRevoker = splitView.PaneClosing(winrt::auto_revoke, { this, &NavigationView::OnSplitViewPaneClosing });
         m_splitViewPaneOpenedRevoker = splitView.PaneOpened(winrt::auto_revoke, { this, &NavigationView::OnSplitViewPaneOpened });
         m_splitViewPaneOpeningRevoker = splitView.PaneOpening(winrt::auto_revoke, { this, &NavigationView::OnSplitViewPaneOpening });
+        m_rootSplitViewSizeChangedRevoker = splitView.SizeChanged(winrt::auto_revoke, { this, &NavigationView::OnRootSplitViewSizeChanged });
 
         UpdateIsClosedCompact();
     }
@@ -1459,6 +1462,45 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
 void NavigationView::OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdatePaneLayout();
+}
+
+void NavigationView::OnRootSplitViewSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& args)
+{
+    UpdateRootSplitViewClip(args.NewSize());
+}
+
+// SplitView's pane transitions give its content its final size and then slide it in with a render transform,
+// so for the first frames of a close the content extends past the SplitView (#10983). Clip RootSplitView
+// horizontally to its own bounds. The rect extends one height above and below so that vertical overflow
+// (e.g. focus visuals at the top/bottom edges) is not cut off.
+void NavigationView::UpdateRootSplitViewClip(winrt::Size const& size)
+{
+    if (auto splitView = m_rootSplitView.get())
+    {
+        auto clip = m_rootSplitViewClip.get();
+        const auto localClip = splitView.ReadLocalValue(winrt::UIElement::ClipProperty());
+        const bool ownsClip = clip && localClip && localClip.try_as<winrt::RectangleGeometry>() == clip;
+
+        if (!ownsClip)
+        {
+            // Only install our clip if nothing else provides one: no local value, Binding or TemplateBinding
+            // (ReadLocalValue returns the expression, or null for a TemplateBinding) and no style/VSM value.
+            if (localClip != winrt::DependencyProperty::UnsetValue() || splitView.Clip())
+            {
+                return;
+            }
+
+            clip = winrt::RectangleGeometry{};
+            m_rootSplitViewClip.set(clip);
+        }
+
+        clip.Rect({ 0.0f, -size.Height, size.Width, size.Height * 3.0f });
+
+        if (!ownsClip)
+        {
+            splitView.Clip(clip);
+        }
+    }
 }
 
 void NavigationView::UpdateOpenPaneLength(double width)

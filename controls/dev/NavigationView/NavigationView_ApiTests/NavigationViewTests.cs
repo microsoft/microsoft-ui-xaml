@@ -3995,6 +3995,272 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return hasSelectionIndicator;
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the content of an expanded NavigationView does not render outside the NavigationView while the pane-closing transition slides it (GitHub #10983).")]
+        public void VerifyContentDoesNotRenderOutsideNavigationViewDuringPaneCloseTransition()
+        {
+            VerifyContentIsClippedHorizontallyDuringPaneCloseTransition(FlowDirection.LeftToRight);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the content of an expanded right-to-left NavigationView does not render outside the NavigationView while the pane-closing transition slides it (GitHub #10983).")]
+        public void VerifyContentDoesNotRenderOutsideRightToLeftNavigationViewDuringPaneCloseTransition()
+        {
+            VerifyContentIsClippedHorizontallyDuringPaneCloseTransition(FlowDirection.RightToLeft);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationView's clip for the pane transition (GitHub #10983) is horizontal only: content (e.g. focus visuals) past the top/bottom edge is not clipped.")]
+        public void VerifyNavigationViewDoesNotClipContentVerticallyAtSplitViewEdges()
+        {
+            var splitView = SetupClosedExpandedNavigationView(FlowDirection.LeftToRight, out Grid contentMarker, out Grid host);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var (insideHit, outsideHit) = HitTestAcrossSplitViewEdgeWithContentOffset(splitView, 0.0, 50.0, contentMarker, host);
+                Verify.IsTrue(insideHit, "Control: the content is hit just inside the bottom edge");
+                Verify.IsTrue(outsideHit, "Content past the bottom edge must not be clipped (the clip is horizontal only)");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationView keeps its own #10983 clip in sync with RootSplitView when the NavigationView grows and shrinks.")]
+        public void VerifyNavigationViewClipFollowsRootSplitViewResize()
+        {
+            var splitView = SetupClosedExpandedNavigationView(FlowDirection.LeftToRight, out Grid contentMarker, out Grid host);
+            NavigationView navView = null;
+            Geometry ownedClip = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = (NavigationView)host.Children[0];
+                ownedClip = splitView.Clip;
+                Verify.IsNotNull(ownedClip, "Precondition: NavigationView clips RootSplitView");
+            });
+
+            foreach (double newWidth in new[] { 520.0, 380.0 })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.Width = newWidth;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"NavigationView width {newWidth}");
+                    Verify.AreEqual(newWidth, splitView.ActualWidth, "Precondition: RootSplitView was resized");
+                    Verify.AreSame(ownedClip, splitView.Clip, "NavigationView keeps (and updates) its own clip instead of replacing it");
+
+                    var (insideHit, outsideHit) = HitTestAcrossSplitViewEdgeWithContentOffset(splitView, splitView.TemplateSettings.OpenPaneLengthMinusCompactLength, 0.0, contentMarker, host);
+                    Verify.IsTrue(insideHit, "Content just inside the new right edge must be visible (clip grew with the SplitView)");
+                    Verify.IsFalse(outsideHit, "Content past the new right edge must be clipped (clip shrank with the SplitView)");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationView's #10983 clip does not replace a binding on RootSplitView.Clip whose value is null.")]
+        public void VerifyNavigationViewDoesNotReplaceBoundRootSplitViewClip()
+        {
+            NavigationView navView = null;
+            SplitView splitView = null;
+            Border clipSource = null;
+            RectangleGeometry providedClip = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView()
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    Width = 500.0,
+                    Height = 300.0,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Content = new Grid(),
+                };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                Verify.IsNotNull(splitView.Clip, "Precondition: by default NavigationView clips RootSplitView");
+
+                // Like a custom template with Clip="{Binding ..., Mode=OneWay}" whose source starts out null.
+                clipSource = new Border();
+                splitView.SetBinding(UIElement.ClipProperty, new global::Microsoft.UI.Xaml.Data.Binding()
+                {
+                    Source = clipSource,
+                    Path = new PropertyPath("Tag"),
+                    Mode = global::Microsoft.UI.Xaml.Data.BindingMode.OneWay,
+                });
+                Verify.IsNull(splitView.Clip, "Precondition: the bound value is null");
+
+                navView.Width = 600.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(600.0, splitView.ActualWidth, "Precondition: RootSplitView was resized (SizeChanged raised)");
+                Verify.IsNull(splitView.Clip, "NavigationView must not install its clip over a bound RootSplitView.Clip");
+                Verify.IsNotNull(splitView.GetBindingExpression(UIElement.ClipProperty), "The binding on RootSplitView.Clip must survive");
+
+                providedClip = new RectangleGeometry() { Rect = new global::Windows.Foundation.Rect(0, 0, 10, 10) };
+                clipSource.Tag = providedClip;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(providedClip, splitView.Clip, "The bound clip takes effect");
+            });
+        }
+
+        private void VerifyContentIsClippedHorizontallyDuringPaneCloseTransition(FlowDirection flowDirection)
+        {
+            var splitView = SetupClosedExpandedNavigationView(flowDirection, out Grid contentMarker, out Grid host);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The OpenInlineLeft -> ClosedCompactLeft transition starts with ContentTransform.TranslateX = OpenPaneLengthMinusCompactLength.
+                var (insideHit, outsideHit) = HitTestAcrossSplitViewEdgeWithContentOffset(splitView, splitView.TemplateSettings.OpenPaneLengthMinusCompactLength, 0.0, contentMarker, host);
+                Verify.IsTrue(insideHit, "Control: the content is hit just inside the SplitView edge");
+                Verify.IsFalse(outsideHit, "The sliding content must be clipped to the SplitView bounds (#10983)");
+            });
+        }
+
+        // Expanded NavigationView (CompactInline RootSplitView), 420 wide, with free space on both sides, pane open -> closed.
+        private SplitView SetupClosedExpandedNavigationView(FlowDirection flowDirection, out Grid contentMarker, out Grid host)
+        {
+            NavigationView navView = null;
+            Grid marker = null;
+            Grid hostGrid = null;
+            SplitView splitView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                marker = new Grid() { Background = new SolidColorBrush(Colors.Red) };
+                navView = new NavigationView()
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    FlowDirection = flowDirection,
+                    Width = 420.0,
+                    Height = 300.0,
+                    Margin = new Thickness(300.0, 80.0, 0.0, 0.0),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Content = marker,
+                };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Home", Icon = new SymbolIcon(Symbol.Home) });
+
+                hostGrid = new Grid() { Background = new SolidColorBrush(Colors.Transparent), Width = 1000.0, Height = 460.0, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+                hostGrid.Children.Add(navView);
+                Content = hostGrid;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode, "Expanded mode uses the CompactInline SplitView");
+                Verify.IsTrue(navView.IsPaneOpen, "Pane starts open");
+
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                Verify.AreEqual(SplitViewDisplayMode.CompactInline, splitView.DisplayMode, "RootSplitView.DisplayMode");
+                Verify.IsFalse(splitView.IsPaneOpen, "RootSplitView.IsPaneOpen");
+            });
+
+            contentMarker = marker;
+            host = hostGrid;
+            return splitView;
+        }
+
+        // Offsets ContentRoot the way a SplitView pane transition does (ContentTransform) and hit-tests 10px inside and
+        // 10px outside the SplitView edge that the content now crosses. Hit testing honors clips. Must run on the UI thread.
+        private static (bool insideHit, bool outsideHit) HitTestAcrossSplitViewEdgeWithContentOffset(SplitView splitView, double translateX, double translateY, FrameworkElement contentMarker, UIElement hitTestRoot)
+        {
+            var contentRoot = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(splitView, "ContentRoot");
+            var contentTransform = (CompositeTransform)contentRoot.RenderTransform;
+            Verify.AreEqual(0.0, contentTransform.TranslateX, "ContentTransform.TranslateX is at rest after the transition");
+            Verify.AreEqual(0.0, contentTransform.TranslateY, "ContentTransform.TranslateY is at rest after the transition");
+
+            var splitViewBounds = GetBoundsInRoot(splitView);
+            var markerBoundsAtRest = GetBoundsInRoot(contentMarker);
+
+            contentTransform.TranslateX = translateX;
+            contentTransform.TranslateY = translateY;
+            try
+            {
+                var markerBounds = GetBoundsInRoot(contentMarker);
+                Log.Comment($"translate=({translateX}, {translateY}) splitView={splitViewBounds} content={markerBounds}");
+                Verify.IsLessThan(Math.Abs(Math.Abs(markerBounds.X - markerBoundsAtRest.X) - Math.Abs(translateX)), 0.5, "Precondition: ContentTransform moves the content horizontally");
+                Verify.IsLessThan(Math.Abs(Math.Abs(markerBounds.Y - markerBoundsAtRest.Y) - Math.Abs(translateY)), 0.5, "Precondition: ContentTransform moves the content vertically");
+
+                double midX = splitViewBounds.X + splitViewBounds.Width / 2;
+                double midY = splitViewBounds.Y + splitViewBounds.Height / 2;
+                global::Windows.Foundation.Point inside;
+                global::Windows.Foundation.Point outside;
+                if (markerBounds.Right > splitViewBounds.Right + 20.0)
+                {
+                    inside = new global::Windows.Foundation.Point(splitViewBounds.Right - 10.0, midY);
+                    outside = new global::Windows.Foundation.Point(splitViewBounds.Right + 10.0, midY);
+                }
+                else if (markerBounds.Left < splitViewBounds.Left - 20.0)
+                {
+                    inside = new global::Windows.Foundation.Point(splitViewBounds.Left + 10.0, midY);
+                    outside = new global::Windows.Foundation.Point(splitViewBounds.Left - 10.0, midY);
+                }
+                else if (markerBounds.Bottom > splitViewBounds.Bottom + 20.0)
+                {
+                    double x = (Math.Max(markerBounds.Left, splitViewBounds.Left) + Math.Min(markerBounds.Right, splitViewBounds.Right)) / 2;
+                    inside = new global::Windows.Foundation.Point(x, splitViewBounds.Bottom - 10.0);
+                    outside = new global::Windows.Foundation.Point(x, splitViewBounds.Bottom + 10.0);
+                }
+                else
+                {
+                    Verify.Fail("Precondition: the offset content must extend at least 20px past a SplitView edge");
+                    return (false, false);
+                }
+
+                Verify.IsTrue(IsHitByPoint(hitTestRoot, outside, hitTestRoot), "Precondition: the outside probe is within the hit-testable host (not cut off by the window)");
+                return (IsHitByPoint(contentMarker, inside, hitTestRoot), IsHitByPoint(contentMarker, outside, hitTestRoot));
+            }
+            finally
+            {
+                contentTransform.TranslateX = 0.0;
+                contentTransform.TranslateY = 0.0;
+            }
+        }
+
+        private static global::Windows.Foundation.Rect GetBoundsInRoot(FrameworkElement element)
+        {
+            return element.TransformToVisual(null).TransformBounds(new global::Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        }
+
+        private static bool IsHitByPoint(UIElement element, global::Windows.Foundation.Point point, UIElement hitTestRoot)
+        {
+            foreach (var hit in VisualTreeHelper.FindElementsInHostCoordinates(point, hitTestRoot))
+            {
+                if (hit == element)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         static void SelectItem(NavigationView navView, object item, ManualResetEvent selectionChangedEvent = null)
         {
             IdleSynchronizer.Wait();
