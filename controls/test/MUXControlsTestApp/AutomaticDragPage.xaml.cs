@@ -36,9 +36,7 @@ namespace MUXControlsTestApp
         private int holdingStartedCount;
         private int touchPressCount;
         private int dragStartingDisableCount;
-        private int ownerTouchCaptureLostCount;
         private int itemClickCount;
-        private Pointer ownerCapturedTouch;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int index);
@@ -72,11 +70,6 @@ namespace MUXControlsTestApp
                 else if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
                     TouchPressCount.Text = (++touchPressCount).ToString();
-                    if (OwnerReleasesTouchCapture.IsChecked == true && DragSource.CapturePointer(args.Pointer))
-                    {
-                        // Released on the first move, before holding can start.
-                        ownerCapturedTouch = args.Pointer;
-                    }
                 }
                 if (ReleaseOnPress.IsChecked == true)
                 {
@@ -118,10 +111,6 @@ namespace MUXControlsTestApp
                 {
                     PenCaptureLostCount.Text = (++penCaptureLostCount).ToString();
                 }
-                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && args.OriginalSource == DragSource)
-                {
-                    OwnerTouchCaptureLostCount.Text = (++ownerTouchCaptureLostCount).ToString();
-                }
             }), true);
             DragList.ItemClick += (sender, args) =>
             {
@@ -134,21 +123,6 @@ namespace MUXControlsTestApp
             };
             TouchChild.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
             {
-                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && ChildReleasesTouchCapture.IsChecked == true)
-                {
-                    // Leave the press unhandled so the drag source still sees it, then give the
-                    // capture back while the finger stays down (before holding starts).
-                    ChildTouchPointerId.Text = args.Pointer.PointerId.ToString();
-                    ChildTouchPressCount.Text = (++childTouchPressCount).ToString();
-                    if (TouchChild.CapturePointer(args.Pointer))
-                    {
-                        ChildCaptureCount.Text = (++childCaptureCount).ToString();
-                        var pointer = args.Pointer;
-                        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-                            () => TouchChild.ReleasePointerCapture(pointer));
-                    }
-                    return;
-                }
                 if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
                     HandleChildTouch(sender, args);
@@ -219,15 +193,6 @@ namespace MUXControlsTestApp
                         PenHoverCount.Text = (++penHoverCount).ToString();
                         PenHoverPointerId.Text = args.Pointer.PointerId.ToString();
                     }
-                }
-            }), true);
-            DragSource.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((sender, args) =>
-            {
-                if (ownerCapturedTouch != null && args.Pointer.PointerId == ownerCapturedTouch.PointerId)
-                {
-                    var pointer = ownerCapturedTouch;
-                    ownerCapturedTouch = null;
-                    DragSource.ReleasePointerCapture(pointer);
                 }
             }), true);
             DragSource.DragStarting += (sender, args) =>

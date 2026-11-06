@@ -20,9 +20,7 @@
             <CheckBox x:Name="HandleChildCaptureLoss" Content="Handle child capture loss" IsChecked="True"/>
             <Button x:Name="ToggleDragDuringPress" Content="Disable and reenable drag" Click="ToggleDragDuringPress_Click"/>
             <CheckBox x:Name="UseListView" Content="ListView source" Checked="UseListView_Changed" Unchecked="UseListView_Changed"/>
-            <CheckBox x:Name="ChildReleasesTouchCapture" Content="Child captures touch, then gives it up"/>
             <CheckBox x:Name="DisableInDragStarting" Content="Disable drag in DragStarting"/>
-            <CheckBox x:Name="OwnerReleasesTouchCapture" Content="Source captures touch, releases on first move"/>
             <CheckBox x:Name="ClearItemCanDragOnTap" Content="ItemClick clears item CanDrag" Checked="ClearItemCanDragOnTap_Checked"/>
         </StackPanel>
         <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
@@ -95,7 +93,6 @@
                 <TextBlock x:Name="HoldingStartedCount" Text="0"/>
                 <TextBlock x:Name="TouchPressCount" Text="0"/>
                 <TextBlock x:Name="DragStartingDisableCount" Text="0"/>
-                <TextBlock x:Name="OwnerTouchCaptureLostCount" Text="0"/>
                 <TextBlock x:Name="ItemClickCount" Text="0"/>
             </StackPanel>
         </StackPanel>
