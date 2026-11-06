@@ -12,11 +12,13 @@
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="Content" Value="&#xE72B;" />
     <Setter Property="Margin" Value="4,2" />
+    <Setter Property="Padding" Value="0" />
     <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+          <!-- The transparent root makes the Padding around the backplate (RootGrid) clickable. -->
+          <Grid x:Name="HitTargetGrid" Background="Transparent">
             <VisualStateManager.VisualStateGroups>
               <VisualStateGroup x:Name="CommonStates">
                 <VisualState x:Name="Normal" />
@@ -55,12 +57,14 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" local:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:local="using:Microsoft.UI.Xaml.Controls">
-              <animatedvisuals:AnimatedBackVisualSource />
-              <controls:AnimatedIcon.FallbackIconSource>
-                <controls:FontIconSource FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}" FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}" Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" MirroredWhenRightToLeft="True" />
-              </controls:AnimatedIcon.FallbackIconSource>
-            </controls:AnimatedIcon>
+            <Grid x:Name="RootGrid" Margin="{TemplateBinding Padding}" MinHeight="{TemplateBinding MinHeight}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True">
+              <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" local:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:local="using:Microsoft.UI.Xaml.Controls">
+                <animatedvisuals:AnimatedBackVisualSource />
+                <controls:AnimatedIcon.FallbackIconSource>
+                  <controls:FontIconSource FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}" FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}" Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" MirroredWhenRightToLeft="True" />
+                </controls:AnimatedIcon.FallbackIconSource>
+              </controls:AnimatedIcon>
+            </Grid>
           </Grid>
         </ControlTemplate>
       </Setter.Value>
