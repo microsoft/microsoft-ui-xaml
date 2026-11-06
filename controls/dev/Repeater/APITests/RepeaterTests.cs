@@ -29,6 +29,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public partial class RepeaterTests : ApiTestBase
     {
+        private sealed class DerivedItemsRepeaterScrollHost : ItemsRepeaterScrollHost
+        {
+        }
+
+        [TestMethod]
+        public void CanDeriveFromItemsRepeaterScrollHost()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var scrollHost = new DerivedItemsRepeaterScrollHost();
+                Verify.IsNotNull(scrollHost);
+            });
+        }
+
+
         [TestMethod]
         public void ValidateElementToIndexMapping()
         {
