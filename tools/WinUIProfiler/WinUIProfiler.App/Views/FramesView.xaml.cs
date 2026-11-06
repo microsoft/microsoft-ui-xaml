@@ -13,31 +13,52 @@ using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.App.Views;
 
-// The Frames tab: a session file's frames and the events of the selected one. It reads the file, not the live
-// pipeline, so it shows a session being recorded and a saved one the same way.
+// The Frames tab: a session file's UI-thread ticks, the regions of interest in them, and the events of the selected row.
+// It reads the file, not the live pipeline, so it shows a session being recorded and a saved one the same way. The list,
+// the Show filter, a region's rows and the launch summary come from the file's views (FrameList, InterestingRows,
+// LaunchSummary), the same rows the CLI and other readers get; this tab only shows them.
 public sealed partial class FramesView : UserControl
 {
     private const int PageSize = 100;
+    // The LaunchSummary view lists at most this many ticks; once it has them, it does not change.
     private const int LaunchFrames = 10;
+
+    // The Show filter's choices, in order.
+    private enum Filter
+    {
+        All,
+        Interesting,
+        Slow
+    }
 
     private readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader strings = new();
     private readonly DispatcherQueueTimer refreshTimer;
     private readonly DispatcherQueueTimer filterTimer;
-    private readonly Dictionary<long, FrameRow> rows = [];
+    // The rows read, by tick and by interesting row, so each read reuses them and the selection and scroll position stay.
+    private Dictionary<long, FrameRow> ticks = [];
+    private Dictionary<(InterestingRowType Type, long StartSeq), InterestingRowItem> interestingItems = [];
+    // Every row the list can show, in the FrameList view's order, and each row's item in it, for the Show filter.
+    private List<object> all = [];
+    private Dictionary<object, FrameListItem> listed = [];
+    private IReadOnlyList<LaunchFrame> launch = [];
+    private ObservableCollection<object> shownRows = [];
+    private Filter filter;
     private SessionSource? source;
     private string? path;
     // Counts the files shown, so a read of an earlier one, or of this one before it was reopened, is dropped.
     private int shown;
-    // The latest event the last read saw, and where the file was complete from then: trimming the oldest events changes it.
-    private long? readSeq;
+    // How many events the last read saw, and where the file was complete from then: trimming the oldest events changes it.
+    private long? storedEvents;
     private long? trimmedBefore;
     private long? reselect;
     private bool reading;
     private bool readAgain;
-    private FrameRow? selected;
+    private bool fileRead;
+    // A FrameRow or an InterestingRowItem.
+    private object? selected;
     private int offset;
-    // The frame, bucket, filter and offset of the event page shown.
-    private (long FrameId, string? Bucket, string? Filter, int Offset)? shownPage;
+    // The scope (a tick, or an interesting row's span), bucket, filter and offset of the event page shown.
+    private (string Scope, string? Bucket, string? Filter, int Offset)? shownPage;
     private CancellationTokenSource? eventsRead;
 
     public FramesView()
@@ -50,10 +71,13 @@ public sealed partial class FramesView : UserControl
         filterTimer.Interval = TimeSpan.FromMilliseconds(300);
         filterTimer.IsRepeating = false;
         filterTimer.Tick += (_, _) => ShowEvents(0);
+        FrameList.ItemsSource = shownRows;
+        // Hooked up after the first selection, which shows all ticks.
+        ShowFilter.SelectedIndex = 0;
+        ShowFilter.SelectionChanged += ShowFilter_SelectionChanged;
         Show(null);
     }
 
-    public ObservableCollection<FrameRow> Frames { get; } = [];
     public ObservableCollection<FrameEventRow> Events { get; } = [];
 
     // The window that owns the file picker.
@@ -79,8 +103,8 @@ public sealed partial class FramesView : UserControl
         }
     }
 
-    // Asks to show a UI element in the Elements tab.
-    public event EventHandler<long>? ElementRequested;
+    // Asks to show a UI element or visual in the Objects tab.
+    public event EventHandler<ObjectMention>? ObjectRequested;
 
     private void Source_Changed(object? sender, EventArgs args)
     {
@@ -112,14 +136,21 @@ public sealed partial class FramesView : UserControl
         path = sessionPath;
         shown++;
         reselect = null;
-        rows.Clear();
-        Frames.Clear();
-        readSeq = null;
+        ticks = [];
+        interestingItems = [];
+        all = [];
+        listed = [];
+        launch = [];
+        fileRead = false;
+        FrameList.ItemsSource = shownRows = [];
+        UpdateEmpty();
+        storedEvents = null;
+        trimmedBefore = null;
         ReadError.IsOpen = false;
         FileSummary.Text = path is null ? Text("FramesNoFile") : Path.GetFileName(path);
         ToolTipService.SetToolTip(FileSummary, path);
         SetLine(LaunchSummary, "");
-        SelectFrame(null);
+        SelectRow(null);
         _ = RefreshAsync();
     }
 
@@ -139,50 +170,52 @@ public sealed partial class FramesView : UserControl
         reading = true;
         try
         {
-            var after = readSeq;
             var current = shown;
-            var (info, (frames, seq)) = await Task.Run(() => (SessionFile.ReadInfo(file), SessionFile.ReadChangedFrames(file, after)));
+            var known = storedEvents;
+            var readLaunch = launch.Count < LaunchFrames;
+            var (info, list, launchFrames) = await Task.Run(() =>
+            {
+                var info = SessionFile.ReadInfo(file);
+                // Without new events, the list and the summary are the same as last time.
+                return info.StoredEvents == known
+                    ? (info, null, null)
+                    : (info, SessionFile.ReadFrameList(file), readLaunch ? SessionFile.ReadLaunchSummary(file) : null);
+            });
             if (current != shown)
             {
                 return;
             }
 
-            if (after is not null && info.CompleteFromSeq != trimmedBefore)
+            if (fileRead && info.CompleteFromSeq != trimmedBefore)
             {
-                // The writer deleted the oldest events, and the frames left without any, so read the file again.
-                var keep = selected?.Frame.FrameId;
+                // The writer deleted the oldest events, and the ticks left without any, so read the file again.
+                var keep = (selected as FrameRow)?.Frame.FrameId;
                 Show(file);
                 reselect = keep;
                 return;
             }
 
             trimmedBefore = info.CompleteFromSeq;
-            readSeq = seq;
-            foreach (var frame in frames)
+            if (list is not null)
             {
-                if (!rows.TryGetValue(frame.FrameId, out var row))
+                storedEvents = info.StoredEvents;
+                launch = launchFrames ?? launch;
+                Update(list);
+                if (selected is InterestingRowItem { IsRegion: true } region)
                 {
-                    rows.Add(frame.FrameId, row = new(frame));
-                    Frames.Add(row);
-                    continue;
-                }
-
-                var grew = row.Frame.Events != frame.Events;
-                row.Update(frame);
-                if (row == selected)
-                {
-                    UpdateFrameTitle();
-                    if (grew)
-                    {
-                        ShowEvents(offset, grew: true);
-                    }
+                    ShowRegionRows(region);
                 }
             }
 
+            fileRead = true;
+            UpdateEmpty();
             if (reselect is { } id)
             {
                 reselect = null;
-                FrameList.SelectedItem = rows.GetValueOrDefault(id);
+                if (ticks.GetValueOrDefault(id) is { } row && shownRows.Contains(row))
+                {
+                    FrameList.SelectedItem = row;
+                }
             }
 
             ShowSummary(info);
@@ -203,25 +236,150 @@ public sealed partial class FramesView : UserControl
         }
     }
 
-    // Shows when the first drawn frames of the first UI thread ended: from process start if the recording saw it,
-    // otherwise from the start of the recording. Not shown for a trimmed file, which no longer has them.
+    // Takes the list the FrameList view gives. A tick or interesting row read before keeps its object, updated in place,
+    // so the selection and the scroll position stay. A region's tick gets the region, for its tint.
+    private void Update(IReadOnlyList<FrameListItem> list)
+    {
+        var nextTicks = new Dictionary<long, FrameRow>();
+        var nextItems = new Dictionary<(InterestingRowType Type, long StartSeq), InterestingRowItem>();
+        var regionItems = new Dictionary<long, InterestingRowItem>();
+        all = new(list.Count);
+        listed = new(list.Count);
+        foreach (var item in list)
+        {
+            object row;
+            if (item.Tick is { } frame)
+            {
+                if (!ticks.TryGetValue(frame.FrameId, out var tick))
+                {
+                    tick = new(frame);
+                }
+                else if (tick.Frame != frame)
+                {
+                    var grew = tick.Frame.Events != frame.Events;
+                    tick.Update(frame);
+                    if (tick == selected)
+                    {
+                        UpdateTitle();
+                        if (grew)
+                        {
+                            ShowEvents(offset, grew: true);
+                        }
+                    }
+                }
+
+                nextTicks[frame.FrameId] = tick;
+                row = tick;
+            }
+            else
+            {
+                var interesting = item.Row!;
+                var key = (interesting.Type, interesting.StartSeq);
+                if (!interestingItems.TryGetValue(key, out var rowItem) || rowItem.Row != interesting)
+                {
+                    rowItem = new(interesting, interesting.Type == InterestingRowType.Region
+                        ? Format("RegionTextFormat", interesting.Trigger ?? interesting.Name, interesting.StartMilliseconds,
+                            interesting.StopMilliseconds, interesting.DurationMilliseconds)
+                        : Format("InterestingTextFormat", interesting.Name, interesting.ThreadId, interesting.StartMilliseconds,
+                            interesting.StopMilliseconds, interesting.DurationMilliseconds));
+                }
+
+                nextItems[key] = rowItem;
+                if (rowItem.IsRegion && item.RegionId is { } regionId)
+                {
+                    regionItems[regionId] = rowItem;
+                }
+
+                row = rowItem;
+            }
+
+            all.Add(row);
+            listed[row] = item;
+        }
+
+        ticks = nextTicks;
+        interestingItems = nextItems;
+        foreach (var tick in ticks.Values)
+        {
+            var region = listed[tick].RegionId is { } regionId ? regionItems.GetValueOrDefault(regionId) : null;
+            if (tick.Region != region)
+            {
+                tick.Region = region;
+                // The tick may be listed already, without the region's tint.
+                if (FrameList.ContainerFromItem(tick) is ListViewItem container)
+                {
+                    container.Style = Styles.SelectStyle(tick, container);
+                }
+            }
+        }
+
+        Sync();
+    }
+
+    private bool Shows(object item) => filter switch
+    {
+        Filter.Interesting => listed[item].InInteresting,
+        Filter.Slow => listed[item].InSlow,
+        _ => true
+    };
+
+    // Makes the list show the rows the Show filter keeps. It adds and removes rows in place, so the scroll position and
+    // the selection stay.
+    private void Sync()
+    {
+        var keep = all.Where(Shows).ToList();
+        if (shownRows.Count == 0)
+        {
+            FrameList.ItemsSource = shownRows = [.. keep];
+            return;
+        }
+
+        var kept = keep.ToHashSet();
+        for (var index = shownRows.Count - 1; index >= 0; index--)
+        {
+            if (!kept.Contains(shownRows[index]))
+            {
+                shownRows.RemoveAt(index);
+            }
+        }
+
+        for (var index = 0; index < keep.Count; index++)
+        {
+            if (index == shownRows.Count || !ReferenceEquals(shownRows[index], keep[index]))
+            {
+                shownRows.Insert(index, keep[index]);
+            }
+        }
+    }
+
+    private void ShowFilter_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+        filter = (Filter)ShowFilter.SelectedIndex;
+        var keep = selected;
+        FrameList.ItemsSource = shownRows = [.. all.Where(Shows)];
+        UpdateEmpty();
+        if (keep is not null && shownRows.Contains(keep))
+        {
+            FrameList.SelectedItem = keep;
+            FrameList.ScrollIntoView(keep);
+        }
+    }
+
+    private void UpdateEmpty()
+    {
+        EmptyText.Text = Text(filter == Filter.Slow ? "SlowEmpty" : "InterestingEmpty");
+        EmptyText.Visibility = fileRead && filter != Filter.All && shownRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // Shows when the first drawing ticks of the first UI thread ended (the LaunchSummary view): from process start if the
+    // recording saw it, otherwise from the start of the recording. The view has none for a trimmed file.
     private void ShowSummary(SessionFileInfo info)
     {
         FileSummary.Text = Format(info.CompleteFromSeq is null ? "FramesFileFormat" : "FramesFileTrimmedFormat",
             Path.GetFileName(path), info.Frames);
-        if (Frames.Count == 0 || info.CompleteFromSeq is not null)
-        {
-            SetLine(LaunchSummary, "");
-            return;
-        }
-
-        var origin = info.Coverage == SessionCoverage.ProcessStart ? info.ProcessStartMilliseconds : null;
-        var thread = Frames[0].Frame.ThreadId;
-        var drawn = Frames.Select(row => row.Frame).Where(frame => frame.ThreadId == thread && frame.Drawn && frame.EndMilliseconds is not null)
-            .Take(LaunchFrames)
-            .Select(frame => Format("LaunchItemFormat", frame.FrameNumber, frame.EndMilliseconds - (origin ?? 0)));
-        var items = string.Join(" · ", drawn);
-        SetLine(LaunchSummary, items.Length == 0 ? "" : Format(origin is null ? "LaunchFromRecordingFormat" : "LaunchFromProcessFormat", items));
+        var items = string.Join(" · ", launch.Select(frame => Format("LaunchItemFormat", frame.FrameNumber, frame.Milliseconds)));
+        SetLine(LaunchSummary, items.Length == 0 ? ""
+            : Format(launch[0].FromProcessStart ? "LaunchFromProcessFormat" : "LaunchFromRecordingFormat", items));
     }
 
     // A one-line text that may be cut off; its tooltip shows all of it.
@@ -231,31 +389,81 @@ public sealed partial class FramesView : UserControl
         ToolTipService.SetToolTip(line, text.Length == 0 ? null : text);
     }
 
-    private void FrameList_SelectionChanged(object sender, SelectionChangedEventArgs args) => SelectFrame(FrameList.SelectedItem as FrameRow);
+    private void FrameList_SelectionChanged(object sender, SelectionChangedEventArgs args) => SelectRow(FrameList.SelectedItem);
+
+    // The list skips its style selector for a container whose Style the app set, such as a tick whose region arrived after
+    // the tick was listed. So the style is applied again each time a container gets a row.
+    private void FrameList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (!args.InRecycleQueue)
+        {
+            args.ItemContainer.Style = Styles.SelectStyle(args.Item, args.ItemContainer);
+        }
+    }
+
+    private StyleSelector Styles => (StyleSelector)Resources["FrameItemStyles"];
 
     private void Buckets_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args) => ShowEvents(0);
 
-    private void SelectFrame(FrameRow? row)
+    private void SelectRow(object? row)
     {
         selected = row;
-        UpdateFrameTitle();
+        UpdateTitle();
+        ShowRegionRows(row as InterestingRowItem);
         ShowEvents(0);
     }
 
-    private void UpdateFrameTitle()
+    private void UpdateTitle()
     {
-        var frame = selected?.Frame;
-        SetLine(FrameTitle, frame is null ? Text("SelectFramePrompt") : Format("FrameTitleFormat", frame.FrameNumber, frame.ThreadId,
-            frame.Ticks, frame.StartMilliseconds, frame.EndMilliseconds, frame.TickMilliseconds));
+        SetLine(FrameTitle, selected switch
+        {
+            FrameRow tick => Format("FrameTitleFormat", tick.Frame.FrameNumber, tick.Frame.ThreadId, tick.Start, tick.End, tick.Tick,
+                Text(tick.Frame.Drawn switch { true => "TickDrew", false => "TickDidNotDraw", null => "TickLatest" })),
+            InterestingRowItem { Row: var row } => Format("InterestingTitleFormat", row.Name, row.ThreadId, row.StartMilliseconds,
+                row.StopMilliseconds, row.DurationMilliseconds),
+            _ => Text("SelectFramePrompt")
+        });
     }
 
-    // Shows a page of the selected frame's events in the selected bucket that match the filter. When the frame grew, a
-    // full page stays as it is, since events are only added after it, and a last page is read again keeping the selection.
+    // Lists the interesting rows in the selected region: those of the InterestingRows view with its RegionId.
+    private async void ShowRegionRows(InterestingRowItem? item)
+    {
+        if (item is not { IsRegion: true, Row: var region } || path is not { } file)
+        {
+            RegionPanel.Visibility = Visibility.Collapsed;
+            RegionRows.ItemsSource = null;
+            return;
+        }
+
+        var current = shown;
+        try
+        {
+            var rows = await Task.Run(() => SessionFile.ReadInterestingRows(file, region.RegionId));
+            if (current != shown || selected != item)
+            {
+                return;
+            }
+
+            RegionRows.ItemsSource = rows.Where(row => row.Type != InterestingRowType.Region)
+                .Select(row => new InterestingRowItem(row, row.Name)).ToList();
+            RegionPanel.Visibility = Visibility.Visible;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            ShowError(error);
+        }
+    }
+
+    // Shows a page of the selected tick's events, or of the selected interesting row's thread in its span, in the
+    // selected bucket that match the filter. When the tick grew, a full page stays as it is, since events are only added
+    // after it, and a last page is read again keeping the selection.
     private async void ShowEvents(int start, bool grew = false)
     {
         eventsRead?.Cancel();
         offset = start;
-        if (selected is not { } row || path is not { } file)
+        var span = (selected as InterestingRowItem)?.Row;
+        var frame = (selected as FrameRow)?.Frame;
+        if ((span is null && frame is null) || path is not { } file)
         {
             Events.Clear();
             shownPage = null;
@@ -267,17 +475,19 @@ public sealed partial class FramesView : UserControl
 
         using var cancellation = new CancellationTokenSource();
         eventsRead = cancellation;
-        var frameId = row.Frame.FrameId;
+        var scope = span is not null ? $"span {span.ThreadId} {span.StartSeq} {span.StopSeq}" : $"frame {frame!.FrameId}";
         var bucket = Buckets.SelectedItem?.Tag as string;
         var filter = string.IsNullOrWhiteSpace(FilterBox.Text) ? null : FilterBox.Text;
         // Only the page that is shown, not one still being read, can be kept.
-        var pageIsFull = grew && shownPage == (frameId, bucket, filter, start) && Events.Count == PageSize;
+        var pageIsFull = grew && shownPage == (scope, bucket, filter, start) && Events.Count == PageSize;
         var keep = grew ? EventList.SelectedIndex : -1;
         try
         {
             var (total, first, page) = await Task.Run(() =>
             {
-                var count = SessionFile.CountFrameEvents(file, frameId, bucket, filter);
+                var count = span is { } row
+                    ? SessionFile.CountSpanEvents(file, row.ThreadId, row.StartSeq, row.StopSeq, bucket, filter)
+                    : SessionFile.CountFrameEvents(file, frame!.FrameId, bucket, filter);
                 if (pageIsFull)
                 {
                     return (count, start, (List<FrameEventRow>?)null);
@@ -286,8 +496,17 @@ public sealed partial class FramesView : UserControl
                 // Past the end, for example in a bucket with fewer events, the last page is shown.
                 var first = start >= count && count > 0 ? (int)((count - 1) / PageSize * PageSize) : start;
                 var events = new List<FrameEventRow>(PageSize);
-                SessionFile.ReadFrameEvents(file, frameId, bucket, filter, first, PageSize,
-                    (profilerEvent, eventBucket, mentions) => events.Add(new(profilerEvent, eventBucket, mentions)), cancellation.Token);
+                if (span is { } spanRow)
+                {
+                    SessionFile.ReadSpanEvents(file, spanRow.ThreadId, spanRow.StartSeq, spanRow.StopSeq, bucket, filter, first, PageSize,
+                        (profilerEvent, eventBucket, mentions) => events.Add(new(profilerEvent, eventBucket, mentions)), cancellation.Token);
+                }
+                else
+                {
+                    SessionFile.ReadFrameEvents(file, frame!.FrameId, bucket, filter, first, PageSize,
+                        (profilerEvent, eventBucket, mentions) => events.Add(new(profilerEvent, eventBucket, mentions)), cancellation.Token);
+                }
+
                 return (count, first, events);
             }, cancellation.Token);
             if (cancellation.IsCancellationRequested)
@@ -304,7 +523,7 @@ public sealed partial class FramesView : UserControl
                     Events.Add(item);
                 }
 
-                shownPage = (frameId, bucket, filter, first);
+                shownPage = (scope, bucket, filter, first);
                 if (keep >= 0 && keep < Events.Count)
                 {
                     EventList.SelectedIndex = keep;
@@ -346,12 +565,12 @@ public sealed partial class FramesView : UserControl
     {
         var row = EventList.SelectedItem as FrameEventRow;
         EventDetails.Text = row?.Details ?? Text("SelectEventPrompt");
-        ElementLinks.ItemsSource = row?.Elements;
-        ElementLinksPanel.Visibility = row?.Elements.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        ObjectLinks.ItemsSource = row?.Objects;
+        ObjectLinksPanel.Visibility = row?.Objects.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void ElementLink_Click(object sender, RoutedEventArgs args) =>
-        ElementRequested?.Invoke(this, (long)((FrameworkElement)sender).Tag);
+    private void ObjectLink_Click(object sender, RoutedEventArgs args) =>
+        ObjectRequested?.Invoke(this, (ObjectMention)((FrameworkElement)sender).Tag);
 
     private async void Open_Click(object sender, RoutedEventArgs args)
     {

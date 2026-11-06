@@ -316,7 +316,7 @@
                                   </ExpressionAnimation>
                                 </TransformMatrix>
                                 <Visual Tag="ContentVisual">
-                                  <Visual Tag="PrependVisual" SizeX="109" SizeY="60">
+                                  <Visual Tag="PrependVisual">
                                     <Visual Tag="PrimaryVisual" SizeX="109" SizeY="60">
                                       <Visual Tag="ContentVisual">
                                         <Visual Tag="PrependVisual">

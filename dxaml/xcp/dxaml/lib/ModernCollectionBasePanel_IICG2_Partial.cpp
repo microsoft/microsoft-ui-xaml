@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ModernCollectionBasePanel.g.h"
 #include "IContainerRecyclingContext.g.h"
 #include "ScrollViewer.g.h"
@@ -144,11 +145,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GetRootOfItemTemplateAsContain
 _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_In_ INT indexInItemCollection, _Outptr_ xaml::IUIElement** ppReturnValue ) noexcept
 {
     HRESULT hr = S_OK;
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::GenerateMCContainerBegin(indexInItemCollection);
-#else
-    TraceGenerateMCContainerBegin(indexInItemCollection);
-#endif
+    XamlTelemetry::GenerateMCContainerBegin(indexInItemCollection);
 
     ctl::ComPtr<IGeneratorHost> spIHost;
     ctl::ComPtr<IInspectable> spItem;
@@ -397,13 +394,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_
     IFC(spContainer.MoveTo(ppReturnValue));
 
 Cleanup:
-#ifdef XAMLPROFILER_ENABLED
     // MoveTo clears spContainer on success; the caller then owns the returned container.
     auto container = spContainer ? spContainer.Get() : *ppReturnValue;
-    XamlElementTracing::GenerateMCContainerEnd(container ? static_cast<UIElement*>(container)->GetHandle() : nullptr);
-#else
-    TraceGenerateMCContainerEnd();
-#endif
+    XamlTelemetry::GenerateMCContainerEnd(container ? static_cast<UIElement*>(container)->GetHandle() : nullptr);
     RRETURN(hr);
 }
 

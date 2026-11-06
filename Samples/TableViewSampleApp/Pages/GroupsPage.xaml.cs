@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -34,6 +35,7 @@ public sealed partial class GroupsPage : SamplePageBase
     private readonly TappedEventHandler _tappedHandler;
     private readonly DoubleTappedEventHandler _doubleTappedHandler;
     private readonly KeyEventHandler _keyDownHandler;
+    private readonly EventHandler<object> _layoutUpdatedHandler;
 
     private bool _wasAllCollapsed;
 
@@ -45,6 +47,7 @@ public sealed partial class GroupsPage : SamplePageBase
         _tappedHandler = OnTableTapped;
         _doubleTappedHandler = OnTableDoubleTapped;
         _keyDownHandler = OnTableKeyDown;
+        _layoutUpdatedHandler = OnTableLayoutUpdated;
 
         // <snippet>
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
@@ -56,19 +59,22 @@ public sealed partial class GroupsPage : SamplePageBase
         TrackItems(People, OnPersonChanged);
 
         // There is no table-level event for one group being toggled from its header, so listen
-        // for the input that toggles it (handledEventsToo: the header marks the input handled).
+        // for the input that toggles it (handledEventsToo: the header marks the input handled), and
+        // re-read the realized headers after layout for toggles that raise no input (UI Automation).
         TrackLifetime(
             () =>
             {
                 PeopleTable.AddHandler(UIElement.TappedEvent, _tappedHandler, true);
                 PeopleTable.AddHandler(UIElement.DoubleTappedEvent, _doubleTappedHandler, true);
                 PeopleTable.AddHandler(UIElement.KeyDownEvent, _keyDownHandler, true);
+                PeopleTable.LayoutUpdated += _layoutUpdatedHandler;
             },
             () =>
             {
                 PeopleTable.RemoveHandler(UIElement.TappedEvent, _tappedHandler);
                 PeopleTable.RemoveHandler(UIElement.DoubleTappedEvent, _doubleTappedHandler);
                 PeopleTable.RemoveHandler(UIElement.KeyDownEvent, _keyDownHandler);
+                PeopleTable.LayoutUpdated -= _layoutUpdatedHandler;
             });
     }
 
@@ -342,22 +348,25 @@ public sealed partial class GroupsPage : SamplePageBase
         }
 
         var photo = SampleShaping.SelectedTag(FirstColumnSelector, "Photo") == "Photo";
-        SetFirstColumn(photo ? PhotoColumn : NameColumn);
+        SetFirstColumn(photo);
         SetLastAction(photo ? "First column is now Photo" : "First column is now Name (text)");
     }
 
     // <snippet>
     // TableView.Columns is the live column collection: moving an entry moves the column. The first
     // visible column hosts the group indent and the expander chevron.
-    private void SetFirstColumn(TableViewColumn first)
+    private void SetFirstColumn(bool photoFirst)
     {
         var columns = PeopleTable.Columns;
-        var from = columns.IndexOf(first);
-        if (from > 0)
+        var from = columns.IndexOf(PhotoColumn);
+        if (from < 0 || (from == 0) == photoFirst)
         {
-            columns.RemoveAt(from);
-            columns.Insert(0, first);
+            return;
         }
+
+        // Move only Photo; the other columns keep their order.
+        columns.RemoveAt(from);
+        columns.Insert(photoFirst ? 0 : columns.IndexOf(NameColumn) + 1, PhotoColumn);
     }
     // </snippet>
 }

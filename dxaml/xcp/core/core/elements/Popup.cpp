@@ -2,10 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <DependencyLocator.h>
-#ifdef XAMLPROFILER_ENABLED
-#include <WucVisualTreeProfiler.h>
-#endif // XAMLPROFILER_ENABLED
 #include <D2DUtils.h>
 #include <FrameworkTheming.h>
 #include <AutoReentrantReferenceLock.h>
@@ -396,6 +395,19 @@ void CPopup::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp)
     if (cleanupDComp)
     {
         ReleaseDCompResourcesForWindowedPopup();
+
+        // The old compositor closes the ContentIsland. Keep the bridge/HWND, but reconnect a new island when rendering resumes.
+        if (m_contentIsland)
+        {
+            if (m_automationProviderRequestedToken.value != 0)
+            {
+                IFCFAILFAST(m_contentIsland->remove_AutomationProviderRequested(m_automationProviderRequestedToken));
+                m_automationProviderRequestedToken = {};
+            }
+
+            m_inputSiteAdapter.reset();
+            m_contentIsland.Reset();
+        }
     }
 }
 
@@ -535,17 +547,13 @@ _Check_return_ HRESULT CPopup::Open()
         }
         IFC_RETURN(hr);
 
-#ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::PopupOpened(
                 reinterpret_cast<uint64_t>(this),
                 reinterpret_cast<uint64_t>(m_pChild),
-                GetDebugLabel().GetBuffer(),
-                m_pChild ? m_pChild->GetDebugLabel().GetBuffer() : L"",
                 XamlProfilerGetPeerHandle(m_pChild));
         }
-#endif // XAMLPROFILER_ENABLED
 
         if (m_isOverlayVisible)
         {
@@ -770,14 +778,12 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         // If the child has KeepVisible requirements, then this will keep it visible via CUIElementCollection.
         IFC_RETURN(pPopupRoot->RemoveChild(m_pChild));
 
-#ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             XamlProfilerTracing::PopupClosed(
                 reinterpret_cast<uint64_t>(this),
                 reinterpret_cast<uint64_t>(m_pChild));
         }
-#endif // XAMLPROFILER_ENABLED
 
         // set the association flag, visual link is no longer present
         m_pChild->SetAssociated(true, nullptr /* Association owner needed only for shareable, non-parent aware DOs */);
@@ -1314,6 +1320,10 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 
         wrl::ComPtr<ixp::IContainerVisual> containerVisual;
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
 
@@ -1460,12 +1470,10 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
         IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
         contentIslandExperimental->put_Root(nullptr);
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootCleared(reinterpret_cast<uint64_t>(m_contentIsland.Get()));
+            XamlProfilerTracing::NotifyRootCleared(reinterpret_cast<uint64_t>(m_contentIsland.Get()));
         }
-#endif // XAMLPROFILER_ENABLED
     }
 
     m_contentIslandRootVisual.Reset();
@@ -2263,12 +2271,10 @@ _Check_return_ HRESULT CPopup::SetRootVisualForWindowedPopupWindow(_In_ ixp::IVi
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(containerVisual->get_Children(&visualChildren))
         IFCFAILFAST(visualChildren->InsertAtTop(m_publicRootVisual.Get()));
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            XamlProfilerTracing::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get());
         }
-#endif // XAMLPROFILER_ENABLED
 
         // Position & size window
         IFC_RETURN(PositionAndSizeWindowForWindowedPopup());
@@ -2300,12 +2306,10 @@ void CPopup::AddAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* popupV
     wrl::ComPtr<ixp::IVisualCollection> visualChildren;
     IFCFAILFAST(containerVisual->get_Children(&visualChildren));
     IFCFAILFAST(visualChildren->InsertAtTop(popupVisual));
-#ifdef XAMLPROFILER_ENABLED
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual, 0 /* ownerCompNodeId */, -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual);
     }
-#endif // XAMLPROFILER_ENABLED
 }
 
 // Used for inline popups nested inside windowed popups
@@ -2319,12 +2323,10 @@ void CPopup::RemoveAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* pop
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(containerVisual->get_Children(&visualChildren));
         IFCFAILFAST(visualChildren->Remove(popupVisual));
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildRemoved(m_animationRootVisual.Get(), popupVisual);
+            XamlProfilerTracing::NotifyChildRemoved(m_animationRootVisual.Get(), popupVisual);
         }
-#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -2373,6 +2375,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContainerVisual> windowCV;
         wrl::ComPtr<ixp::IVisual> windowV;
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(windowCV.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(windowCV.As(&windowV));
         m_contentIslandRootVisual = windowV;
         DCompTreeHost::SetTagIfEnabled(m_contentIslandRootVisual.Get(), VisualDebugTags::WindowedPopup_ContentIslandRootVisual);
@@ -2380,6 +2386,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContainerVisual> animationCV;
         wrl::ComPtr<ixp::IVisual> animationV;
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(animationCV.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(animationCV.As(&animationV));
         m_animationRootVisual = animationV;
         DCompTreeHost::SetTagIfEnabled(m_animationRootVisual.Get(), VisualDebugTags::WindowedPopup_AnimationRootVisual);
@@ -2392,23 +2402,19 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             wrl::ComPtr<ixp::IVisualCollection> animationVisualChildren;
             IFCFAILFAST(animationCV->get_Children(&animationVisualChildren))
             IFCFAILFAST(animationVisualChildren->InsertAtBottom(m_systemBackdropPlacementVisual.Get()));
-#ifdef XAMLPROFILER_ENABLED
-            if (WucVisualTreeProfiler::IsEnabled())
+            if (XamlProfilerTracing::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+                XamlProfilerTracing::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get());
             }
-#endif // XAMLPROFILER_ENABLED
         }
 
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(windowCV->get_Children(visualChildren.ReleaseAndGetAddressOf()));
         IFCFAILFAST(visualChildren->InsertAtTop(animationV.Get()));
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            XamlProfilerTracing::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get());
         }
-#endif // XAMLPROFILER_ENABLED
 
         if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableWindowedPopupDebugVisual))
         {
@@ -2418,6 +2424,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             // either the island bounds or the "undo transform" was not computed correctly.
             wrl::ComPtr<ixp::ICompositionColorBrush> debugColor_cb;
             IFCFAILFAST(compositorNoRef->CreateColorBrush(&debugColor_cb));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFCFAILFAST(debugColor_cb->put_Color(ColorUtils::GetWUColor(0x8800ff00)));
 
             wrl::ComPtr<ixp::ICompositionBrush> debugColor_b;
@@ -2425,6 +2435,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 
             wrl::ComPtr<ixp::ISpriteVisual> debugVisual;
             IFCFAILFAST(compositorNoRef->CreateSpriteVisual(&debugVisual));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
             IFCFAILFAST(debugVisual->put_Brush(debugColor_b.Get()));
             m_windowedPopupDebugVisual.Reset();
             IFCFAILFAST(debugVisual.As(&m_windowedPopupDebugVisual));
@@ -2437,12 +2451,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
         IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
         contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()), 0 /* ownerCompNodeId */);
+            XamlProfilerTracing::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()));
         }
-#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -2457,11 +2469,23 @@ void CPopup::EnsureUIAWindow()
         ASSERT(island);
         uiaInfo = UIAHostEnvironmentInfo(island);
 
+        xref_ptr<CUIAHostWindow> uiaWindow;
         IFCFAILFAST(CUIAHostWindow::Create(
             uiaInfo,
             core->GetHostSite(),
             this,
-            m_spUIAWindow.ReleaseAndGetAddressOf()));
+            uiaWindow.ReleaseAndGetAddressOf()));
+
+        // Initializing the UIA window can pump messages. Don't adopt it if the windowed popup's resources were
+        // released meanwhile, or if a reentrant request already created a UIA window.
+        if (m_spUIAWindow || (!m_desktopPopupSiteBridge && !m_popupWindowBridge))
+        {
+            uiaWindow->Deinit();
+        }
+        else
+        {
+            m_spUIAWindow = std::move(uiaWindow);
+        }
     }
 }
 

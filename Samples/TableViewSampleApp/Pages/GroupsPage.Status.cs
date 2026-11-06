@@ -25,6 +25,10 @@ public sealed partial class GroupsPage
     // public per-group state query, so the page records every expansion change it makes or sees.
     private readonly HashSet<string> _collapsedGroups = new();
 
+    // The rows ItemsRepeater, which hosts the group headers; found on first use.
+    private FrameworkElement? _rowsHost;
+    private bool _reconcileQueued;
+
     protected override void RefreshReadouts()
     {
         Status.Rows = SampleShaping.RowCountText(People.Count);
@@ -151,5 +155,124 @@ public sealed partial class GroupsPage
             "{0} the {1} group from its header",
             expanded ? "Expanded" : "Collapsed",
             group.KeyText));
+    }
+
+    // UI Automation ExpandCollapse raises no input event, so group headers report IsExpanded changes.
+    public static readonly DependencyProperty ReportsExpansionProperty = DependencyProperty.RegisterAttached(
+        "ReportsExpansion", typeof(bool), typeof(GroupsPage), new PropertyMetadata(false, OnReportsExpansionChanged));
+
+    public static bool GetReportsExpansion(DependencyObject element) => (bool)element.GetValue(ReportsExpansionProperty);
+
+    public static void SetReportsExpansion(DependencyObject element, bool value) => element.SetValue(ReportsExpansionProperty, value);
+
+    private static void OnReportsExpansionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is TableViewGroupHeader header && e.NewValue is true)
+        {
+            header.RegisterPropertyChangedCallback(TableViewGroupHeader.IsExpandedProperty, OnHeaderIsExpandedChanged);
+        }
+    }
+
+    private static void OnHeaderIsExpandedChanged(DependencyObject sender, DependencyProperty property)
+    {
+        DependencyObject? node = sender;
+        while (node is not null and not GroupsPage)
+        {
+            node = VisualTreeHelper.GetParent(node);
+        }
+
+        (node as GroupsPage)?.RecordHeaderExpansion((TableViewGroupHeader)sender);
+    }
+
+    // A recycled header reports its new group's real state, so recording it is still correct.
+    private void RecordHeaderExpansion(TableViewGroupHeader header)
+    {
+        if (TryRecordHeaderExpansion(header))
+        {
+            RefreshReadouts();
+        }
+    }
+
+    // A UIA toggle can land on a recycled header whose IsExpanded already holds the new value, which
+    // raises no change, so re-read the realized headers after each layout pass (LayoutUpdated fires for
+    // every pass on the thread, so keep this cheap). An applied expansion change always re-lays out
+    // the rows, so the readout catches up even if this runs before the control's deferred work.
+    private void OnTableLayoutUpdated(object? sender, object e)
+    {
+        if (!IsGrouped || _reconcileQueued)
+        {
+            return;
+        }
+
+        _reconcileQueued = DispatcherQueue.TryEnqueue(ReconcileRealizedHeaders);
+    }
+
+    private void ReconcileRealizedHeaders()
+    {
+        _reconcileQueued = false;
+        if (!IsLoaded || !IsGrouped)
+        {
+            return;
+        }
+
+        if (_rowsHost is not { IsLoaded: true })
+        {
+            _rowsHost = FindRowsHost(PeopleTable);
+        }
+
+        if (_rowsHost is not { } host)
+        {
+            return;
+        }
+
+        var changed = false;
+        for (int i = VisualTreeHelper.GetChildrenCount(host) - 1; i >= 0; i--)
+        {
+            if (VisualTreeHelper.GetChild(host, i) is TableViewGroupHeader header && !IsParkedByRepeater(header))
+            {
+                changed |= TryRecordHeaderExpansion(header);
+            }
+        }
+
+        if (changed)
+        {
+            RefreshReadouts();
+        }
+    }
+
+    private static FrameworkElement? FindRowsHost(DependencyObject root)
+    {
+        var pending = new Stack<DependencyObject>();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            var node = pending.Pop();
+            // The template's only ItemsRepeater is the rows host; it exists even with no rows realized.
+            if (node is Microsoft.UI.Xaml.Controls.ItemsRepeater repeater)
+            {
+                return repeater;
+            }
+
+            for (int i = VisualTreeHelper.GetChildrenCount(node) - 1; i >= 0; i--)
+            {
+                pending.Push(VisualTreeHelper.GetChild(node, i));
+            }
+        }
+
+        return null;
+    }
+
+    // ItemsRepeater parks recycled elements at (-10000, -10000) without updating their Content or IsExpanded.
+    private static bool IsParkedByRepeater(UIElement element) => element.ActualOffset.X <= -9999 && element.ActualOffset.Y <= -9999;
+
+    private bool TryRecordHeaderExpansion(TableViewGroupHeader header)
+    {
+        if (!IsGrouped || !header.IsExpandable || header.Content is not TableViewGroupInfo group)
+        {
+            return false;
+        }
+
+        var identity = SampleShaping.GroupIdentity(group.Key);
+        return header.IsExpanded ? _collapsedGroups.Remove(identity) : _collapsedGroups.Add(identity);
     }
 }

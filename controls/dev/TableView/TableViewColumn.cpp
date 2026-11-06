@@ -343,6 +343,10 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
+            if (property != s_WidthProperty || !m_inUserResize)
+            {
+                winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
+            }
             winrt::get_self<TableView>(owner)->OnColumnWidthChanged(*this);
         }
     }
@@ -399,6 +403,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         // Adds or removes this column's gripper, so the header band has to be rebuilt.
         if (auto owner = GetOwningTableView())
         {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             winrt::get_self<TableView>(owner)->QueueRebuildHeaders();
         }
     }
@@ -406,6 +411,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     {
         if (auto owner = GetOwningTableView())
         {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
@@ -442,6 +448,10 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     }
 
     m_customSortComparer = value;
+    if (auto owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+    }
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
     // the active direction rather than leaving the rows in the old comparer's order.
@@ -519,6 +529,31 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             return false;
         }
         m_owningTableView = winrt::make_weak(owner);
+        // These have no generated change callback: a menu makes cells actionable, a sort key the header.
+        if (!m_cellContextFlyoutToken)
+        {
+            m_cellContextFlyoutToken = RegisterPropertyChangedCallback(s_CellContextFlyoutProperty,
+                [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                {
+                    auto const strongThis = weakThis.get();
+                    if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
+                    {
+                        winrt::get_self<TableView>(owner)->RefreshCellFocusLevelsInternal();
+                    }
+                });
+            for (winrt::DependencyProperty const& property : std::initializer_list<winrt::DependencyProperty>{ s_SortMemberPathProperty, s_HeaderContextFlyoutProperty })
+            {
+                RegisterPropertyChangedCallback(property,
+                    [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                    {
+                        auto const strongThis = weakThis.get();
+                        if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
+                        {
+                            winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+                        }
+                    });
+            }
+        }
         return true;
     }
     else

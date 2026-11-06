@@ -282,6 +282,184 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies TableViewGroupInfo describes its own properties to {Binding} through ICustomPropertyProvider, for an expanded group, a collapsed group and a non-string key.")]
+        public void VerifyGroupInfoProvidesCustomProperties()
+        {
+            // A trimmed app's metadata can't describe TableViewGroupInfo, so {Binding} relies on this.
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyCustomProperties(GetGroupInfo(tableView, 0), "expanded group");
+                GetExpandCollapseProvider(tableView, 1).Collapse();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfo(tableView, 1);
+                Verify.IsTrue(info?.IsExpandable == true && info?.IsExpanded == false, "Precondition: the group must be expandable but collapsed, so the two getters differ.");
+                VerifyCustomProperties(info, "collapsed group");
+
+                var source = TableViewSource.From(MakeShapedPeople());
+                source.GroupBy(o => Person(o).Name.Length);
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfo(tableView, 1);
+                // An int key differs from its string KeyText by type; it must also differ from ItemCount.
+                Verify.IsTrue(info?.Key is int && !Equals(info.Key, (object)info.ItemCount), "Precondition: the group must have an int key that differs from its item count.");
+                VerifyCustomProperties(info, "int key");
+            });
+        }
+
+        private static void VerifyCustomProperties(TableViewGroupInfo info, string context)
+        {
+            var provider = (object)info as ICustomPropertyProvider;
+            Verify.IsNotNull(provider, $"TableViewGroupInfo must implement ICustomPropertyProvider ({context}).");
+            if (provider == null)
+            {
+                return;
+            }
+
+            Verify.AreEqual(info.KeyText, provider.GetStringRepresentation(), $"The string representation is the key text ({context}).");
+            // C#/WinRT routes ToString() only to an IStringable declared in metadata, so ask for it explicitly.
+            Verify.AreEqual(info.KeyText, ((global::Windows.Foundation.IStringable)(object)info).ToString(), $"IStringable reports the key text too ({context}).");
+            Verify.AreEqual("Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo", provider.Type?.FullName, $"The provider's type is the runtime class ({context}).");
+            Verify.IsNull(provider.GetCustomProperty("NoSuchProperty"), $"An unknown name has no property ({context}).");
+            Verify.IsNull(provider.GetIndexedProperty("KeyText", typeof(string)), $"There are no indexed properties ({context}).");
+
+            var expected = new (string Name, Type Type, object Value)[]
+            {
+                ("Key", typeof(object), info.Key),
+                ("KeyText", typeof(string), info.KeyText),
+                ("ItemCount", typeof(int), info.ItemCount),
+                ("ItemCountText", typeof(string), info.ItemCountText),
+                ("IsExpandable", typeof(bool), info.IsExpandable),
+                ("IsExpanded", typeof(bool), info.IsExpanded),
+            };
+            foreach (var (name, type, value) in expected)
+            {
+                var property = provider.GetCustomProperty(name);
+                Verify.IsNotNull(property, $"{name} must be resolvable by name ({context}).");
+                if (property == null)
+                {
+                    continue;
+                }
+
+                Verify.AreEqual(name, property.Name, $"{name}: Name ({context}).");
+                Verify.IsTrue(property.CanRead, $"{name}: CanRead ({context}).");
+                Verify.IsFalse(property.CanWrite, $"{name}: read-only ({context}).");
+                Verify.AreEqual(type, property.Type, $"{name}: Type ({context}).");
+                Verify.AreEqual(value, property.GetValue(info), $"{name}: GetValue must read the projected value ({context}).");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the default group header shows each group's key and count text and follows an in-place count change.")]
+        public void VerifyDefaultGroupHeaderShowsGroupKeyAndCountText()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var source = TableViewSource.From(items);
+                source.GroupBy(o => Person(o).Role);
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var keys = new[] { "Designer", "Engineer", "Architect" };
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, i), keys[i], $"group {i}");
+                }
+
+                items.Add(new ShapedPerson("Nadia", "Designer", "Studio"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, GetGroupInfo(tableView, 0).ItemCount, "Precondition: the Designer group grew in place.");
+                VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "Designer", "after an in-place count change");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a copy of the default group header template keeps its own binding converter.")]
+        public void VerifyCopiedDefaultGroupHeaderTemplateKeepsItsConverter()
+        {
+            const string converterKey = "TableViewTestGroupKeyBracketConverter";
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Application.Current.Resources[converterKey] = new GroupKeyBracketConverter();
+
+                // Same root and element names as the built-in template, as a copy-and-edit restyle would have.
+                var template = (DataTemplate)XamlReader.Load(
+                    $@"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                           <StackPanel x:Name=""TableViewDefaultGroupHeaderContentRoot"" Orientation=""Horizontal"">
+                               <TextBlock x:Name=""{DefaultGroupHeaderKeyTextName}""
+                                          Text=""{{Binding KeyText, Mode=OneWay, Converter={{StaticResource {converterKey}}}}}"" />
+                               <TextBlock x:Name=""{DefaultGroupHeaderCountTextName}"" Text=""{{Binding ItemCountText, Mode=OneWay}}"" />
+                           </StackPanel>
+                       </DataTemplate>");
+
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var source = TableViewSource.From(items);
+                source.GroupBy(o => Person(o).Role);
+                tableView = CreateGroupedTable(source);
+                tableView.GroupHeaderTemplate = template;
+                LoadContent(tableView);
+            });
+
+            try
+            {
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "[Designer]", "copied template");
+                    items.Add(new ShapedPerson("Nadia", "Designer", "Studio"));
+                });
+
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                    VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "[Designer]", "copied template after an in-place count change"));
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.Resources.Remove(converterKey));
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies GroupHeaderTemplate replaces the default group header content.")]
         public void VerifyGroupHeaderTemplateApplies()
         {
@@ -380,6 +558,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(text.StartsWith("A:"), "The app template must be gone.");
                 Verify.IsTrue(text.Contains("Designer"),
                     $"Clearing the override must revert to the Style's default content (TableView.idl:381-383), was '{text}'.");
+
+                VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 0), "Designer", "after clearing the template");
+                VerifyDefaultGroupHeaderText(GetGroupHeader(tableView, 1), "Engineer", "after clearing the template");
             });
         }
 
@@ -1879,6 +2060,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return string.Concat(FindVisualChildrenByType<TextBlock>(presenter).Select(textBlock => textBlock.Text));
         }
 
+        internal const string DefaultGroupHeaderKeyTextName = "TableViewGroupHeaderKeyText";
+        internal const string DefaultGroupHeaderCountTextName = "TableViewGroupHeaderItemCountText";
+
+        internal static void VerifyDefaultGroupHeaderText(TableViewGroupHeader header, string expectedKeyText, string context)
+        {
+            Verify.IsNotNull(header, $"The header must be realized ({context}).");
+            var info = header?.Content as TableViewGroupInfo;
+            Verify.IsNotNull(info, $"The header's Content must be its TableViewGroupInfo ({context}).");
+            if (info == null)
+            {
+                return;
+            }
+
+            var presenter = FindVisualChildrenByType<ContentPresenter>(header).FirstOrDefault();
+            var textBlocks = presenter == null ? new List<TextBlock>() : FindVisualChildrenByType<TextBlock>(presenter).ToList();
+            var key = textBlocks.FirstOrDefault(textBlock => textBlock.Name == DefaultGroupHeaderKeyTextName);
+            var count = textBlocks.FirstOrDefault(textBlock => textBlock.Name == DefaultGroupHeaderCountTextName);
+            Verify.IsNotNull(key, $"The key TextBlock must be found by name ({context}).");
+            Verify.IsNotNull(count, $"The count TextBlock must be found by name ({context}).");
+
+            Verify.AreEqual(expectedKeyText, key?.Text, $"The header must show its group's key ({context}).");
+            Verify.IsFalse(string.IsNullOrEmpty(info.ItemCountText), $"Precondition: the group has count text ({context}).");
+            Verify.AreEqual(info.ItemCountText, count?.Text, $"The header must show its group's count text ({context}).");
+        }
+
         // A marker the test can recognize, plus a binding that proves Content is the group info.
         internal static DataTemplate CreateMarkerTemplate(string marker) => (DataTemplate)XamlReader.Load(
             $@"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
@@ -1887,5 +2093,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                        <TextBlock Text=""{{Binding KeyText}}"" />
                    </StackPanel>
                </DataTemplate>");
+    }
+
+    internal sealed class GroupKeyBracketConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language) => $"[{value}]";
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
     }
 }

@@ -1559,6 +1559,172 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies moving or re-setting the sorted column in Columns keeps its sort.")]
+        public void VerifyMovingSortedColumnKeepsSort()
+        {
+            TableView tableView = null;
+            TableViewColumn name = null;
+            var sortedEvents = new List<SortDirection>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = tableView.Columns[0];
+                Verify.IsTrue(tableView.SortByColumn(name, SortDirection.Ascending), "Precondition: the Name column sorts.");
+                tableView.Sorted += (s, e) => sortedEvents.Add(e.Direction);
+            });
+
+            SettleLayout(tableView);
+
+            // IObservableVector has no Move: RemoveAt + Insert of the same instance is the move.
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns.RemoveAt(0);
+                tableView.Columns.Insert(1, name);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, tableView.Columns.IndexOf(name), "Precondition: the Name column moved.");
+                Verify.AreEqual(SortDirection.Ascending, name.SortDirection, "A moved column keeps its sort.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "the rows must stay sorted by the moved column");
+                Verify.AreEqual(0, sortedEvents.Count, "A move changes no sort, so Sorted must not be raised.");
+
+                tableView.Columns[1] = name;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, name.SortDirection, "Re-setting the same column keeps its sort.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "the rows must stay sorted after the column is re-set in place");
+                Verify.AreEqual(0, sortedEvents.Count, "Re-setting the same column changes no sort.");
+
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending),
+                    "Another column must still sort after the move.");
+                Verify.AreEqual(SortDirection.None, name.SortDirection, "The new sort replaces the moved column's.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort change while the sorted column is out of Columns stops its re-insert from restoring the sort.")]
+        public void VerifyMovedColumnSortNotRestoredAfterInterveningChange()
+        {
+            // CanUserSortColumns and CanUserSort gate user input only, so turning them off while the
+            // column is detached is not an intervening change.
+            var cases = new (string Name, Action<TableView, TableViewColumn> Intervene, Action<TableView, TableViewColumn> Reinsert)[]
+            {
+                ("ClearSort", (t, c) => t.ClearSort(), (t, c) => t.Columns.Insert(1, c)),
+                ("another column sorted then cleared", (t, c) =>
+                {
+                    Verify.IsTrue(t.SortByColumn(t.Columns[0], SortDirection.Ascending), "Precondition: Role sorts.");
+                    Verify.IsTrue(t.SortByColumn(t.Columns[0], SortDirection.None), "Precondition: Role's sort clears.");
+                }, (t, c) => t.Columns.Insert(1, c)),
+                ("Columns cleared", (t, c) =>
+                {
+                    t.Columns.Clear();
+                    t.Columns.Add(new TableViewTextColumn { Header = "Role" });
+                }, (t, c) => t.Columns.Insert(0, c)),
+                ("different column inserted", (t, c) => { }, (t, c) => t.Columns.Insert(0, new TableViewTextColumn { Header = "Other" })),
+            };
+
+            foreach (var testCase in cases)
+            {
+                Log.Comment($"Case: {testCase.Name}");
+                TableView tableView = null;
+                TableViewColumn name = null;
+                var sorted = new List<(TableViewColumn Column, SortDirection Direction)>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateSortTable();
+                    LoadContent(tableView);
+                });
+
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    name = tableView.Columns[0];
+                    Verify.IsTrue(tableView.SortByColumn(name, SortDirection.Ascending), "Precondition: the Name column sorts.");
+                    tableView.Sorted += (s, e) => sorted.Add((e.Column, e.Direction));
+                });
+
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.Columns.RemoveAt(0);
+                    testCase.Intervene(tableView, name);
+                    testCase.Reinsert(tableView, name);
+                });
+
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(SortDirection.None, name.SortDirection, $"{testCase.Name}: the sort must not come back.");
+                    foreach (var column in tableView.Columns)
+                    {
+                        Verify.AreEqual(SortDirection.None, column.SortDirection, $"{testCase.Name}: no column may be lit.");
+                    }
+                    VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                        $"{testCase.Name}: the rows must return to source order");
+                    Verify.IsTrue(sorted.Count > 0 && sorted[sorted.Count - 1].Column == null && sorted[sorted.Count - 1].Direction == SortDirection.None,
+                        $"{testCase.Name}: the last Sorted must report the clear.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies replacing the sorted column in place with another instance clears the sort.")]
+        public void VerifyReplacingSortedColumnWithAnotherInstanceClearsSort()
+        {
+            TableView tableView = null;
+            TableViewColumn name = null;
+            var sorted = new List<TableViewColumn>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = tableView.Columns[0];
+                Verify.IsTrue(tableView.SortByColumn(name, SortDirection.Ascending), "Precondition: the Name column sorts.");
+                tableView.Sorted += (s, e) => sorted.Add(e.Column);
+                tableView.Columns[0] = new TableViewTextColumn { Header = "Other" };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, name.SortDirection, "The replaced column leaves its sort behind.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "the rows must return to source order");
+                Verify.AreEqual(1, sorted.Count, "The clear must raise Sorted once.");
+                Verify.IsNull(sorted[0], "The clear reports no column.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a column sort and a TableViewSource sort reconcile, last writer winning.")]
         public void VerifySortReconcilesWithTableViewSourceSort()
         {
@@ -1830,11 +1996,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies turning sorting off for the table or the column leaves a column the app's source sort lit untouched and raises no sort events.")]
-        [TestProperty("data:Change", "{CanUserSortColumnsFalse, CanSortFalse}")]
+        [TestProperty("Description", "Verifies turning sorting off for the table or the column leaves a column the app's source sort lit untouched and raises no sort events, also while the table is unloaded.")]
+        [TestProperty("data:Change", "{CanUserSortColumnsFalse, CanSortFalse, CanUserSortColumnsFalseUnloaded, CanSortFalseUnloaded}")]
         public void VerifyUngatingKeepsAppLitColumnWithoutEvents()
         {
             var change = ((string)TestContext.DataRow["Change"]).Trim();
+            var unloaded = change.EndsWith("Unloaded");
             TableView tableView = null;
             TableViewSource source = null;
             int sortingCount = 0;
@@ -1857,10 +2024,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "Precondition: the source sort lights the Name column.");
+            });
+
+            if (unloaded)
+            {
+                RunOnUIThread.Execute(() => Content = null);
+                IdleSynchronizer.Wait();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
                 tableView.Sorting += (s, e) => sortingCount++;
                 tableView.Sorted += (s, e) => sortedCount++;
                 tableView.Columns[0].RegisterPropertyChangedCallback(TableViewColumn.SortDirectionProperty, (s, dp) => directionChanges++);
-                if (change == "CanSortFalse")
+                if (change.StartsWith("CanSortFalse"))
                 {
                     tableView.Columns[0].CanUserSort = false;
                 }
@@ -1869,6 +2046,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.CanUserSortColumns = false;
                 }
             });
+
+            if (unloaded)
+            {
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => LoadContent(tableView));
+            }
 
             SettleLayout(tableView);
 

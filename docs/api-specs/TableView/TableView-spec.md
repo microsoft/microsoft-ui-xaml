@@ -263,9 +263,11 @@ Orders.Clear();
 
 ### Keyboard navigation & accessibility
 
-TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row; Left and Right move the cell cursor within the focused row. Home and End move to the first or last cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last cell in the table. Enter and Space on a column header sort that column.
+TableView supports cell focus on actionable cells. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row (the nearest actionable cell, else the row); Left and Right move the cell cursor among the actionable cells of the focused row. Home and End move to the first or last actionable cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last row of the table. Enter and Space on a column header sort that column.
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
+
+The keyboard focus model is described in the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model).
 
 ```xaml
 <tabular:TableView
@@ -673,7 +675,7 @@ The realized column header: a templated `ContentControl`, one per column in `PAR
 </tabular:TableView.ColumnHeaderStyle>
 ```
 
-The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
+The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A keyboard-focused header takes the `TableView`'s `CornerRadius` so its focus visual is rounded, unless the applied style sets `CornerRadius`. A style's `ContentTemplate`, or a `ContentTemplateSelector` that returns a template, also renders a string `Header`; the column's `HeaderTemplate`/`HeaderTemplateSelector` wins over it. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
 
 Template parts. All are optional; a missing part disables only its feature:
 
@@ -732,6 +734,17 @@ Methods:
 | `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
 | `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
+### Resizing columns
+
+A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanUserResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. A gesture that changes the width writes a `Pixel` `Width` and announces the new width, so an `Auto` or `*` column becomes `Pixel`, as in File Explorer; a double-click fit always does, even when the size is unchanged. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
+
+| Gesture | Behaviour |
+|---|---|
+| Drag the gripper on a header's trailing edge | Resizes the column; <kbd>Esc</kbd>, a lost capture or unloading the table cancels the drag and restores the previous `Width`. |
+| Double-click the gripper (mouse only) | Fits the column to its header and the widest **realized** row cell, measured unconstrained, within the same bounds as a drag, so a column that can only shrink is not widened to fit. Rows that are not realized are not measured. |
+| <kbd>Alt</kbd> + <kbd>Left</kbd> / <kbd>Right</kbd> on a focused header | Narrows or widens the column by 8 DIPs (32 with <kbd>Shift</kbd>). |
+| UI Automation `Transform.Resize` | Same path as a drag; see [Automation peers](#automation-peers-tableviewrowcellcolumnheader). |
+
 ### Cell tooltips
 
 Text cells render with `CharacterEllipsis` and no wrapping, so a value wider than its column is
@@ -755,7 +768,9 @@ cell template is never touched; the control's tooltip covers the rest of the cel
 ### Column header tooltips
 
 `HeaderToolTip` is the header-side counterpart, and covers the whole header cell — content, padding
-and sort affordance:
+and sort affordance — except the resize gripper: while the pointer is on the gripper the tooltip is
+suppressed, so the resize cursor is not reset under a resting pointer. It returns when the pointer
+leaves the gripper or the gripper is withdrawn.
 
 ```xml
 <tabular:TableViewTextColumn Header="Notes"
@@ -1018,9 +1033,11 @@ Header `IsEnabled` reflects the owning table's effective state and disabled cont
 `TableViewCellAutomationPeer(FrameworkElement owner)` takes the realized cell element (typed `FrameworkElement` because the cell element type is internal, and therefore validated at run time) and derives the row, column and column index from it; an owner that is not a prepared TableView cell (with a row, column and column index) throws `E_INVALIDARG` (`ArgumentException` in .NET). Like every WinUI peer it is unsealed. The control creates the peers for its own cells; `FrameworkElementAutomationPeer.CreatePeerForElement` on a realized cell, or `IGridProvider.GetItem`, returns that peer.
 A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanUserResize` are both true. The pattern's `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
 
+While `CanUserResizeColumns` is true, a Star column with `CanUserResize="False"` holds the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops holding that width when the width no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the room it held, crossing between the two states can move it by the difference. Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it is held at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. That hold lasts until something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or the viewport width), or until an `Auto` column grows so that it no longer fits beside the other columns. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
+
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
-`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's provider when that row is realized; a selected row scrolled out of the realization window is reached through `IItemContainerProvider.FindItemByProperty`, which realizes it.
+`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from its text columns' values, else from the item (a name the app gives the row, or template-column text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
 
 # API Details
 

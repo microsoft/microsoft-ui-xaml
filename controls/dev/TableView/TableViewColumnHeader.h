@@ -46,6 +46,10 @@ public:
     void SetOwnsContentInternal(bool ownsContent) { m_ownsContent = ownsContent; }
     bool OwnsContentInternal() const { return m_ownsContent; }
 
+    // True while the local IsTabStop=false is the TableView's inactive-header stamp, not the app's.
+    void SetOwnsTabStopStampInternal(bool ownsStamp) { m_ownsTabStopStamp = ownsStamp; }
+    bool OwnsTabStopStampInternal() const { return m_ownsTabStopStamp; }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     // A direction set on a column the user cannot sort is still displayed.
@@ -77,4 +81,5 @@ private:
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
     bool m_ownsContent{ false };
+    bool m_ownsTabStopStamp{ false };
 };

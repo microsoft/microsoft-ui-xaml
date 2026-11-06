@@ -132,6 +132,7 @@ void TableView::DetachAllColumnOwners()
         }
     }
     m_trackedColumns.clear();
+    CancelPendingSortRestore();
 
     if (purgedSortState)
     {
@@ -177,6 +178,8 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
     {
         return;
     }
+
+    ExpireLockedColumnHolds();
 
     // Detach the old vector so replaced Columns do not leak subscriptions or owners.
     if (m_columnsVectorChangedToken.value)
@@ -237,6 +240,8 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
+    ExpireLockedColumnHolds();
+
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
     const auto index = args.Index();
@@ -258,6 +263,7 @@ void TableView::OnColumnsVectorChanged(
                     // A re-inserted / recycled column instance may carry a stale grow-only accumulator
                     // from a prior position or table; clear it so it re-grows from its content here.
                     colImpl->ResetDesiredWidthInternal();
+                    RestoreSortOfMovedColumn(col);
                 }
                 else
                 {
@@ -284,10 +290,7 @@ void TableView::OnColumnsVectorChanged(
                 // A column that has left Columns must not stay the active sort. Reshaping here
                 // would run inside the VectorChanged callback, so the clear is deferred until the
                 // collection has settled.
-                if (PurgeColumnFromSortState(col))
-                {
-                    QueueClearSortAfterColumnRemoval();
-                }
+                PurgeLeavingColumnFromSortState(col);
             }
             m_trackedColumns.erase(m_trackedColumns.begin() + index);
         }
@@ -301,10 +304,7 @@ void TableView::OnColumnsVectorChanged(
             if (oldCol)
             {
                 winrt::get_self<TableViewColumn>(oldCol)->SetOwningTableViewInternal(nullptr);
-                if (PurgeColumnFromSortState(oldCol))
-                {
-                    QueueClearSortAfterColumnRemoval();
-                }
+                PurgeLeavingColumnFromSortState(oldCol);
             }
             if (index < sender.Size())
             {
@@ -323,6 +323,7 @@ void TableView::OnColumnsVectorChanged(
                         {
                             newColImpl->ResetDesiredWidthInternal();
                         }
+                        RestoreSortOfMovedColumn(newCol);
                     }
                     else
                     {
@@ -396,9 +397,9 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
 
             headerCell.Visibility(visibility);
 
-            if (focusIndex >= 0 && FocusVisibleHeaderFrom(focusIndex, +1) < 0)
+            if (focusIndex >= 0 && FocusVisibleHeaderFrom(focusIndex, +1) < 0 && FocusVisibleHeaderFrom(focusIndex - 1, -1) < 0)
             {
-                FocusVisibleHeaderFrom(focusIndex - 1, -1);
+                FocusBodyEntryTarget(false /* select */);
             }
         }
     }
@@ -550,6 +551,7 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
     }
     InvalidateMeasure();
+    RefreshCellFocusLevelsInternal();
 }
 
 void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
@@ -596,6 +598,7 @@ void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& colum
     {
         TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
     }
+    RefreshHeaderTabStopsInternal();
 }
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)

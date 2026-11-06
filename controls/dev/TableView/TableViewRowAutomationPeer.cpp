@@ -242,7 +242,15 @@ void TableViewRowAutomationPeer::Realize()
 void TableViewRowAutomationPeer::RealizeCore()
 {
     auto const tableView = m_lastOwningTable.get();
-    const auto rowIndex = tableView ? GetTrackedItemIndex(tableView) : -1;
+    RealizeRowAt(tableView, tableView ? GetTrackedItemIndex(tableView) : -1,
+        [this, &tableView](winrt::TableViewRow const& row) { return IsTrackedRow(row, tableView); });
+}
+
+void TableViewRowAutomationPeer::RealizeRowAt(
+    winrt::TableView const& tableView,
+    int32_t rowIndex,
+    std::function<bool(winrt::TableViewRow const&)> const& isExpectedRow)
+{
     if (!tableView || rowIndex < 0)
     {
         ThrowElementNotAvailable();
@@ -261,12 +269,14 @@ void TableViewRowAutomationPeer::RealizeCore()
     }
 
     winrt::UIElement element{ nullptr };
+    bool madeAnchor = false;
     try
     {
         element = repeater.TryGetElement(rowIndex);
         if (!element)
         {
             element = repeater.GetOrCreateElement(rowIndex);
+            madeAnchor = true;
         }
     }
     catch (...)
@@ -274,22 +284,29 @@ void TableViewRowAutomationPeer::RealizeCore()
         ThrowElementNotAvailable();
     }
 
-    if (auto const row = element.try_as<winrt::TableViewRow>())
+    auto const row = element.try_as<winrt::TableViewRow>();
+    bool isExpected = row && isExpectedRow(row);
+    if (isExpected)
     {
-        if (!IsTrackedRow(row, tableView))
+        // Arranged first, as ItemsRepeater requires; layout runs app code that can change the source or recycle the row.
+        try
         {
-            ThrowElementNotAvailable();
+            row.UpdateLayout();
+        }
+        catch (winrt::hresult_error const&)
+        {
+            isExpected = false;
         }
     }
-    else
+    if (!isExpected || repeater.TryGetElement(rowIndex) != row || !isExpectedRow(row))
     {
+        if (madeAnchor)
+        {
+            tableImpl->ReleaseRowsRepeaterAnchor(element);
+        }
         ThrowElementNotAvailable();
     }
-
-    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
-    {
-        frameworkElement.StartBringIntoView();
-    }
+    row.StartBringIntoView();
 }
 
 winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const
@@ -708,14 +725,31 @@ winrt::IRawElementProviderSimple TableViewRowAutomationPeer::SelectionContainer(
 
 void TableViewRowAutomationPeer::AddToSelection()
 {
-    // The container is single-select, so "add" can only mean "make this the selection". XAML's own
-    // single-select peers (ListViewItemAutomationPeer) behave the same way rather than failing.
-    // Multiple must add to the selection instead of replacing it.
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
+    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
+    // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
+    if (auto const tableView = GetOwningTableView())
+    {
+        auto const impl = winrt::get_self<TableView>(tableView);
+        if (!impl->CanSelectMultipleRows() && impl->SelectedIndexInternal() >= 0 && !impl->IsSelected(GetRowIndex()))
+        {
+            throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+        }
+    }
     Select();
 }
 
 void TableViewRowAutomationPeer::RemoveFromSelection()
 {
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
     if (auto const tableView = GetOwningTableView())
     {
         if (const int32_t index = GetRowIndex(); index >= 0)
@@ -729,6 +763,11 @@ void TableViewRowAutomationPeer::RemoveFromSelection()
 
 void TableViewRowAutomationPeer::Select()
 {
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+
     if (auto const tableView = GetOwningTableView())
     {
         if (const int32_t index = GetRowIndex(); index >= 0)

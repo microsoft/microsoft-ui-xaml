@@ -153,6 +153,7 @@ private:
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
+    int64_t m_cellContextFlyoutToken{ 0 };
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
     uint32_t m_automationIdentity{ 0 };
 };

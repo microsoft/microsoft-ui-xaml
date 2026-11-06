@@ -498,6 +498,7 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
     }
 
     m_lastRaisedSelectedItem.set(addedItem);
+    ++m_selectionSequence;
 
     std::vector<winrt::IInspectable> added;
     if (addedItem)
