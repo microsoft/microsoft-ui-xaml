@@ -40,7 +40,7 @@
   <Target Name="CreateManifestResourceNames" />
   <Target Name="GetMrtPackagingOutputs" />
   
-  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml">
+  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml;$(OutDir)package.appxfragment">
     <PropertyGroup>
       <Namespaces>
         <Namespace Prefix="ns" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" />
@@ -70,9 +70,8 @@
         Query="/ns:Package/ns:Extensions"
         Namespaces="$(Namespaces)"
         Value="$(LiftedExtensions)"/>
-  </Target>
-  
-  <Target Name="GenerateAppxFragmentFromAppxManifest" BeforeTargets="_CreateWinUIPackageLayout" DependsOnTargets="FillExtensions" Inputs="$(OutDir)AppxManifest.xml" Outputs="$(OutDir)package.appxfragment">
+
+    <!-- Generate the appxfragment from the extensions. -->
     <PropertyGroup>
       <AppxFragment>
         %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E
@@ -83,8 +82,10 @@
         %3C/Fragment%3E
       </AppxFragment>
     </PropertyGroup>
-
-    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <!-- Keep the appxfragment up to date with respect to the input
+         files (WriteOnlyWhenDifferent=false) so incremental build knows it
+         doesn't need to rebuild this target. -->
+    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" WriteOnlyWhenDifferent="false" />
   </Target>
   
   <ItemGroup>
