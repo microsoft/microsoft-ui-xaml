@@ -2603,7 +2603,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
                 {
-                    foreach (var compactPaneLength in new[] { 48.0, 64.0 })
+                    foreach (var compactPaneLength in new[] { 48.0, 52.0, 64.0 })
                     {
                         foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal, NavigationViewPaneDisplayMode.Top })
                         {
@@ -2633,18 +2633,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             {
                                 VerifyElementOffset(navView, paneToggleButton, isMinimal ? 40.0 : 0.0, isMinimal ? 4.0 : 44.0, "Pane toggle button");
                             }
-                            else
-                            {
-                                var firstItem = navView.ContainerFromMenuItem(navView.MenuItems[0]) as NavigationViewItem;
-                                var firstItemVisual = VisualTreeUtils.FindVisualChildByName(firstItem, "LayoutRoot") as FrameworkElement;
-                                var firstItemOrigin = firstItemVisual.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0));
-                                Log.Comment($"First top pane item visual X: {firstItemOrigin.X}");
-                                // With a larger CompactPaneLength the back button already overlapped the first item before #5306.
-                                if (firstItemOrigin.X >= compactPaneLength)
-                                {
-                                    Verify.IsFalse(IsBackButtonHit(navView, backButton, firstItemOrigin.X + 1, 20.0), "The first top pane item's left edge doesn't reach the back button");
-                                }
-                            }
+
+                            // Right of the backplate nothing changes: the pane toggle (LeftMinimal) or the first top pane item
+                            // (Top, whose visual starts at x = 48) still gets the click.
+                            Verify.IsFalse(IsBackButtonHit(navView, backButton, 4.0 + backplateWidth + 1.0, 20.0), "Right of the backplate doesn't reach the back button");
 
                             // The fix: the window corner and the edges next to the backplate reach the back button.
                             foreach (var point in new[] { new global::Windows.Foundation.Point(0.5, 0.5), new global::Windows.Foundation.Point(4.0 + backplateWidth / 2, 0.5), new global::Windows.Foundation.Point(0.5, 24.0) })
