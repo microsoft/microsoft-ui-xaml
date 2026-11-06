@@ -114,11 +114,47 @@ Cleanup:
 
 // Methods.
 
+HRESULT DirectUI::SemanticZoomLocationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocationFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocationFactory*>(this);
+    }
+    else
+    {
+        RRETURN(ctl::AggregableActivationFactory<DirectUI::SemanticZoomLocation>::QueryInterfaceImpl(iid, ppObject));
+    }
+
+    AddRefOuter();
+    RRETURN(S_OK);
+}
+
+
+// Factory methods.
+IFACEMETHODIMP DirectUI::SemanticZoomLocationFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation** ppInstance)
+{
+
+
+    // Can't just IFC(_RETURN) this because for some validate calls (those with multiple template parameters), the
+    // preprocessor gets confused at the "," in the template type-list before the function's opening parenthesis.
+    // So we'll use IFC_RETURN syntax with a local hr variable, kind of weirdly.
+    const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithAggregableActivationFactory<DirectUI::SemanticZoomLocation,ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation>(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
+    IFC_RETURN(hr);
+    return S_OK;
+}
+
+// Dependency properties.
+
+// Attached properties.
+
+// Static properties.
+
+// Static methods.
 
 namespace DirectUI
 {
     _Check_return_ IActivationFactory* CreateActivationFactory_SemanticZoomLocation()
     {
-        RRETURN(ctl::ActivationFactoryCreator<ctl::ActivationFactory<DirectUI::SemanticZoomLocation>>::CreateActivationFactory());
+        RRETURN(ctl::ActivationFactoryCreator<SemanticZoomLocationFactory>::CreateActivationFactory());
     }
 }
