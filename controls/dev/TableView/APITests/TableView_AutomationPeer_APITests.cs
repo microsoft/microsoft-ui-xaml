@@ -2433,6 +2433,566 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header is keyboard-focusable only while actionable, and Invoke is offered only when the column has a sort key.")]
+        public void VerifyHeaderKeyboardFocusabilityAndInvokeTrackActionability()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "NoSortKey" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
+                    "A column with CanSort but no sort key must not offer Invoke.");
+                tableView.CanUserResizeColumns = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0));
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "Sorting alone makes a header keyboard-focusable.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 3)).IsKeyboardFocusable(),
+                    "A header that can neither sort nor resize is not keyboard-focusable.");
+
+                tableView.CanUserSortColumns = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (Control)GetHeaderCell(tableView, 0);
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                Verify.IsFalse(peer.IsKeyboardFocusable(), "A header with nothing to do is not keyboard-focusable.");
+                header.Focus(FocusState.Programmatic);
+                Verify.AreNotEqual<object>(header, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(header.XamlRoot), "Programmatic focus on a non-actionable header never lands on it.");
+
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "A header tooltip makes the header actionable.");
+                header.Focus(FocusState.Programmatic);
+                Verify.AreEqual<object>(header, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(header.XamlRoot), "An actionable header takes focus.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies TableView.Focus aimed at a non-actionable header lands on the table's entry header instead of failing.")]
+        public void VerifyTableFocusSkipsNonActionableHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Focus(FocusState.Programmatic);
+                Verify.AreEqual<object>(GetHeaderCell(tableView, 1), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    "Focus must land on the first actionable header, not the non-actionable first header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing the only HeaderContextFlyout of a focused header takes it out of the tab order and hands focus to the next actionable header.")]
+        public void VerifyClearingFocusedHeaderContextFlyoutMovesFocus()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].HeaderContextFlyout = new MenuFlyout();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (Control)GetHeaderCell(tableView, 0);
+                Verify.IsTrue(header.Focus(FocusState.Keyboard), "Precondition: a header with a context flyout takes focus.");
+                tableView.Columns[0].HeaderContextFlyout = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "The header with nothing left to do leaves the tab order.");
+                Verify.AreEqual<object>(GetHeaderCell(tableView, 1), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    "Focus must move to the next actionable header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a directional focus move aimed at a row of a collapsed group, still parented in the repeater's pool, is refused and focus stays on the group header.")]
+        public void VerifyDirectionalFocusNeverLandsOnCollapsedGroupRow()
+        {
+            TableView tableView = null;
+            TableViewGroupHeader groupHeader = null;
+            TableViewRow hiddenRow = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.CollapseAllGroups());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(repeater); i++)
+                {
+                    var child = VisualTreeHelper.GetChild(repeater, i) as UIElement;
+                    int index = repeater.GetElementIndex(child);
+                    if (child is TableViewGroupHeader header && index == 0)
+                    {
+                        groupHeader = header;
+                    }
+                    else if (child is TableViewRow row && index < 0 && row.Visibility == Visibility.Visible)
+                    {
+                        hiddenRow = row;
+                    }
+                }
+                Verify.IsNotNull(groupHeader, "Precondition: the first group header is realized.");
+                Verify.IsNotNull(hiddenRow, "Precondition: a collapsed row container is still parented in the repeater.");
+                Verify.IsTrue(groupHeader.Focus(FocusState.Keyboard), "Precondition: the first group header takes focus.");
+
+                bool redirected = false;
+                EventHandler<Microsoft.UI.Xaml.Input.GettingFocusEventArgs> redirect = (s, e) =>
+                {
+                    if (!redirected && e.Direction == Microsoft.UI.Xaml.Input.FocusNavigationDirection.Up)
+                    {
+                        redirected = true;
+                        e.TrySetNewFocusedElement(hiddenRow);
+                    }
+                };
+                Microsoft.UI.Xaml.Input.FocusManager.GettingFocus += redirect;
+                try
+                {
+                    Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(Microsoft.UI.Xaml.Input.FocusNavigationDirection.Up,
+                        new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+                }
+                finally
+                {
+                    Microsoft.UI.Xaml.Input.FocusManager.GettingFocus -= redirect;
+                }
+                Verify.IsTrue(redirected, "Precondition: an Up move was raised.");
+
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.AreNotEqual<object>(hiddenRow, focused, "A directional move must never land on a row of a collapsed group.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies replacing ItemsSource while a row has focus does not pull focus onto the header row.")]
+        public void VerifyItemsSourceReplacementKeepsFocusOffHeaders()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetRealizedRows(tableView)[0].Focus(FocusState.Keyboard), "Precondition: the first row takes focus.");
+                tableView.ItemsSource = MakeItems();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                bool inRow = false;
+                for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+                {
+                    Verify.AreNotEqual<object>(GetHeaderHost(tableView), node, "The focus rescue must not land on the header row.");
+                    inRow |= node is TableViewRow;
+                }
+                Verify.IsTrue(inRow, "The focus rescue must land in the body.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell whose only interactive content is an inline Hyperlink is keyboard-focusable.")]
+        public void VerifyCellWithInlineHyperlinkIsActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Link",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock><Run Text=""See ""/><Hyperlink><Run Text=""details""/></Hyperlink></TextBlock>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A cell with an inline Hyperlink is actionable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell is actionable when its only interactive content is a Hyperlink inside nested Spans, a focusable non-Control element, or content past the per-level scan cap, and not when the focusable element is under a disabled Control.")]
+        public void VerifyCellActionabilityCoversNestedLinksFocusablePanelsAndUnscannedChildren()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "NestedLink",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock><Bold><Italic><Hyperlink><Run Text=""details""/></Hyperlink></Italic></Bold></TextBlock>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Tile",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <Grid IsTabStop=""True"" Background=""Transparent""><TextBlock Text=""tile""/></Grid>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Many",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <StackPanel Orientation=""Horizontal"">" +
+                                  string.Concat(Enumerable.Repeat(@"<TextBlock Text=""x""/>", 40)) +
+                                  @"<Button Content=""Go""/>
+                              </StackPanel>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "DisabledTile",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <ContentControl IsEnabled=""False""><Grid IsTabStop=""True"" Background=""Transparent""><TextBlock Text=""tile""/></Grid></ContentControl>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A Hyperlink inside nested Bold/Italic spans makes the cell actionable.");
+                Verify.IsTrue(GetCellPeer(row, 4).IsKeyboardFocusable(), "A focusable Grid (IsTabStop) makes the cell actionable.");
+                Verify.IsTrue(GetCellPeer(row, 5).IsKeyboardFocusable(), "Children past the per-level scan cap are assumed actionable.");
+                Verify.IsFalse(GetCellPeer(row, 6).IsKeyboardFocusable(), "A focusable Grid under a disabled Control does not make the cell actionable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a read-only cell whose TextBlock has a ContextFlyout binding that resolves to null, or fails and falls back to the built-in menu, is not actionable.")]
+        public void VerifyNullContextFlyoutBindingDoesNotMakeCellActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "NullMenu",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Name}"" ContextFlyout=""{Binding Tag, RelativeSource={RelativeSource Self}}""/>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "MissingMenu",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Name}"" ContextFlyout=""{Binding MissingMenu}""/>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                var nullMenu = FindVisualChildrenByType<TextBlock>(GetRowCell(row, 3)).First();
+                Verify.IsNotNull(nullMenu.GetBindingExpression(UIElement.ContextFlyoutProperty), "Precondition: the TextBlock's ContextFlyout is a local binding.");
+                Verify.IsFalse(nullMenu.ContextFlyout is MenuFlyout, "Precondition: the binding supplies no app menu.");
+                Verify.IsFalse(GetCellPeer(row, 3).IsKeyboardFocusable(), "A ContextFlyout binding that resolves to null is not a menu.");
+                Verify.IsFalse(GetCellPeer(row, 4).IsKeyboardFocusable(), "A failed ContextFlyout binding's built-in menu is not an app menu.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies refreshing the header tab stops keeps an app's local IsTabStop binding and honors an app's local IsTabStop=false.")]
+        public void VerifyHeaderTabStopRefreshKeepsAppLocalIsTabStop()
+        {
+            TableView tableView = null;
+            Control boundHeader = null;
+            Control optedOutHeader = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                boundHeader = (Control)GetHeaderCell(tableView, 0);
+                optedOutHeader = (Control)GetHeaderCell(tableView, 1);
+                boundHeader.SetBinding(UIElement.IsTabStopProperty, new Binding { Source = true });
+                optedOutHeader.IsTabStop = false;
+                // Restamps the header tab stops.
+                tableView.Columns[2].HeaderToolTip = "Tip";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(boundHeader.GetBindingExpression(UIElement.IsTabStopProperty), "The app's IsTabStop binding must survive the refresh.");
+                Verify.IsFalse(optedOutHeader.IsTabStop, "The app's local IsTabStop=false must survive the refresh.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(optedOutHeader).IsKeyboardFocusable(),
+                    "A header the app took out of the tab order is not keyboard-focusable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header whose only action would be resizing is not actionable while the column is resize-pinned (MinWidth equals MaxWidth, or a lone Star column), and becomes a tab stop once it can resize.")]
+        public void VerifyResizePinnedHeaderIsNotActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                var fixedColumn = MakeTextColumn("Name", width: new GridLength(120));
+                fixedColumn.CanSort = false;
+                fixedColumn.MinWidth = 120;
+                fixedColumn.MaxWidth = 120;
+                var starColumn = MakeTextColumn("Role", width: new GridLength(1, GridUnitType.Star));
+                starColumn.CanSort = false;
+                tableView.Columns.Add(fixedColumn);
+                tableView.Columns.Add(starColumn);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.CanUserResizeColumns, "Precondition: columns are user-resizable.");
+                for (int i = 0; i < 2; i++)
+                {
+                    var header = (Control)GetHeaderCell(tableView, i);
+                    Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(header).IsKeyboardFocusable(), $"Resize-pinned header {i} is not keyboard-focusable.");
+                    Verify.IsFalse(header.IsTabStop, $"Resize-pinned header {i} is not a tab stop.");
+                }
+                tableView.Columns[0].MaxWidth = 300;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A header that can resize again is a tab stop.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app ToolTip that renders through its own Template with null Content makes a header actionable, and an empty app ToolTip does not.")]
+        public void VerifyTemplatedAppToolTipWithoutContentMakesHeaderActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                tableView.Columns[1].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var templated = GetHeaderCell(tableView, 0);
+                var empty = GetHeaderCell(tableView, 1);
+                ToolTipService.SetToolTip(templated, new ToolTip
+                {
+                    Template = (ControlTemplate)XamlReader.Load(
+                        @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" TargetType=""ToolTip"">
+                              <TextBlock Text=""Templated help""/>
+                          </ControlTemplate>"),
+                });
+                ToolTipService.SetToolTip(empty, new ToolTip());
+                Verify.IsTrue(FrameworkElementAutomationPeer.CreatePeerForElement(templated).IsKeyboardFocusable(),
+                    "A templated app ToolTip with null Content makes the header actionable.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(empty).IsKeyboardFocusable(),
+                    "An app ToolTip with neither Content nor a Template is not an action.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a retained header peer reports IsKeyboardFocusable=false while HeadersVisibility hides the column headers, and the header is a tab stop again once they are shown.")]
+        public void VerifyHiddenHeaderIsNotKeyboardFocusable()
+        {
+            TableView tableView = null;
+            AutomationPeer peer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0));
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "Precondition: a sortable header is keyboard-focusable.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(peer.IsKeyboardFocusable(), "A hidden header is not keyboard-focusable.");
+                // Restamps the header tab stops while the headers are hidden.
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "A shown header is keyboard-focusable again.");
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A shown actionable header is a tab stop again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a text column with no Binding has no editor, so its cells are not actionable in an editable table, and UIA SetFocus on an editable cell focuses that exact cell.")]
+        public void VerifyUnboundTextColumnCellIsNotActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.IsReadOnly = false;
+                tableView.Columns.Add(new TableViewTextColumn { Header = "Unbound" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsFalse(GetCellPeer(row, 3).IsKeyboardFocusable(), "An unbound text column has no editor, so its cell is inactive.");
+                Verify.IsTrue(GetCellPeer(row, 0).IsKeyboardFocusable(), "A bound text cell in an editable table is actionable.");
+                GetCellPeer(row, 0).SetFocus();
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Verify.IsFalse(focused is TableViewRow, "UIA SetFocus on a cell must not leave focus on the row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell hosting a nested TableView is keyboard-focusable, while a plain text cell is not and refuses UIA SetFocus.")]
+        public void VerifyCellHostingNestedTableIsActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Nested",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                        xmlns:t=""using:Microsoft.UI.Xaml.Controls.Tabular"">
+                              <t:TableView Height=""40"" />
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsFalse(GetCellPeer(row, 0).IsKeyboardFocusable(), "A read-only text cell with no tooltip is inactive.");
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A cell hosting a nested TableView is actionable.");
+
+                bool threw = false;
+                try { GetCellPeer(row, 0).SetFocus(); } catch (Exception) { threw = true; }
+                Verify.IsTrue(threw, "UIA SetFocus on an inactive cell must fail.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a header disabled by its HeaderStyle reports IsEnabled=false on its realized and table-owned peers and refuses Invoke.")]
         public void VerifyHeaderDisabledByStyleIsNotEnabledOrInvokable()
         {

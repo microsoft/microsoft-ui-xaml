@@ -419,6 +419,10 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     }
 
     m_customSortComparer = value;
+    if (auto owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+    }
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
     // the active direction rather than leaving the rows in the old comparer's order.
@@ -494,6 +498,31 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             return false;
         }
         m_owningTableView = winrt::make_weak(owner);
+        // These have no generated change callback: a menu makes cells actionable, a sort key the header.
+        if (!m_cellContextFlyoutToken)
+        {
+            m_cellContextFlyoutToken = RegisterPropertyChangedCallback(s_CellContextFlyoutProperty,
+                [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                {
+                    auto const strongThis = weakThis.get();
+                    if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
+                    {
+                        winrt::get_self<TableView>(owner)->RefreshCellFocusLevelsInternal();
+                    }
+                });
+            for (winrt::DependencyProperty const& property : std::initializer_list<winrt::DependencyProperty>{ s_SortMemberPathProperty, s_HeaderContextFlyoutProperty })
+            {
+                RegisterPropertyChangedCallback(property,
+                    [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                    {
+                        auto const strongThis = weakThis.get();
+                        if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
+                        {
+                            winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+                        }
+                    });
+            }
+        }
         return true;
     }
     else

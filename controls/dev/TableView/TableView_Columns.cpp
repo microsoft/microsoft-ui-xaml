@@ -375,9 +375,9 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
 
             headerCell.Visibility(visibility);
 
-            if (focusIndex >= 0 && FocusVisibleHeaderFrom(focusIndex, +1) < 0)
+            if (focusIndex >= 0 && FocusVisibleHeaderFrom(focusIndex, +1) < 0 && FocusVisibleHeaderFrom(focusIndex - 1, -1) < 0)
             {
-                FocusVisibleHeaderFrom(focusIndex - 1, -1);
+                FocusBodyEntryTarget(false /* select */);
             }
         }
     }
@@ -496,6 +496,7 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
     }
     InvalidateMeasure();
+    RefreshCellFocusLevelsInternal();
 }
 
 void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
@@ -542,6 +543,7 @@ void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& colum
     {
         TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
     }
+    RefreshHeaderTabStopsInternal();
 }
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
