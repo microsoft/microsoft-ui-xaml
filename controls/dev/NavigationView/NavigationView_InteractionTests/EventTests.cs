@@ -248,6 +248,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void BackButtonCornerClickRaisesBackRequestedTest()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5306:
+            // a real click in the NavigationView's top-left corner must reach the back button.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                TextBlock textBlock = new TextBlock(FindElement.ByName("BackRequestedStateTextBlock"));
+                CheckBox checkBox = new CheckBox(FindElement.ByName("BackButtonEnabledCheckbox"));
+                Button resetButton = new Button(FindElement.ByName("BackRequestedStateResetButton"));
+
+                checkBox.Check();
+                Wait.ForIdle();
+
+                foreach (var paneDisplayMode in new[] { "Left", "LeftCompact", "LeftMinimal", "Top" })
+                {
+                    Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                    var paneDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                    paneDisplayModeComboBox.SelectItemByName(paneDisplayMode);
+                    Wait.ForIdle();
+
+                    UIObject navView = FindElement.ById("NavView");
+                    Button backButton = new Button(FindElement.ByName("NavigationViewBackButton"));
+                    var navViewBounds = navView.BoundingRectangle;
+                    var backBounds = backButton.BoundingRectangle;
+                    Log.Comment($"NavView: {navViewBounds}, BackButton: {backBounds}");
+
+                    resetButton.Invoke();
+                    Wait.ForIdle();
+                    Verify.AreEqual("Test reset", textBlock.DocumentText);
+
+                    Log.Comment("Click the NavigationView's top-left corner");
+                    InputHelper.LeftClick(navView, 1, 1);
+                    Wait.ForIdle();
+                    Verify.AreEqual("Back was requested", textBlock.DocumentText);
+
+                    resetButton.Invoke();
+                    Wait.ForIdle();
+                    Log.Comment("Click the NavigationView's top edge above the back button");
+                    InputHelper.LeftClick(navView, backBounds.X - navViewBounds.X + backBounds.Width / 3, 1);
+                    Wait.ForIdle();
+                    Verify.AreEqual("Back was requested", textBlock.DocumentText);
+                }
+            }
+        }
+
+        [TestMethod]
         public void MenuItemInvokedTest()
         {
             var testScenarios = RegressionTestScenario.BuildTopNavRegressionTestScenarios();
