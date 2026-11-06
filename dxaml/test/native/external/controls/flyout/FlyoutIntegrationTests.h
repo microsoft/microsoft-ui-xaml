@@ -250,6 +250,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the flyout will respond to a theme change when open.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateThemeChangeWhileStaged)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a theme change does not crash a staged flyout without a presenter and is applied when the flyout opens.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateHideInOpeningCancelsOpening)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that calling Hide() when opening a flyout cancels the opening.")
         END_TEST_METHOD()

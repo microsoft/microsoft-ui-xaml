@@ -740,22 +740,21 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
     {
         if (auto wrapper = currentAP->GetUIAWrapper())
         {
-            if (VisualTree* visualTree = GetVisualTree())
+            if (GetVisualTree())
             {
                 CUIAWindow* oldUIAWindow = static_cast<CUIAWrapper*>(wrapper)->GetUIAWindow();
-                CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementRootNoRef(visualTree->GetRootElementNoRef());
+                CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementNoRef(this);
 
-                // This indicates that the UIAWindows are different. Invalidate the current UIAWrapper and create a new one with the correct UIAWindow
-                if (oldUIAWindow != uiaWindow)
+                if (!static_cast<CUIAWrapper*>(wrapper)->GetUIAWindowIfValid() || oldUIAWindow != uiaWindow)
                 {
-                     currentAP->InvalidateUIAWrapper();
-                     wrapper->Invalidate();
+                    currentAP->InvalidateUIAWrapper();
+                    wrapper->Invalidate();
 
-                     if (uiaWindow)
-                     {
-                         xref_ptr<CUIAWrapper> spWrapper;
-                         IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
-                     }
+                    if (uiaWindow)
+                    {
+                        xref_ptr<CUIAWrapper> spWrapper;
+                        IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
+                    }
                 }
             }
         }

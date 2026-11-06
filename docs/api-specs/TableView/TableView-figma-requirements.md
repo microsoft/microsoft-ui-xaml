@@ -538,6 +538,8 @@ superseding the other.
 
 ## Implementation status
 
+<!-- TODO reconcile with main: after merging main (Nov 2026), several rows below no longer describe the code. Main has since (1) made the column-header lines always drawn with TabularSurfaceHeaderSeparatorBrush and GridLinesVisibility body-only (#12307), so the header rule/separator toggle is not applied; (2) removed TabularSurfaceRowBackgroundAlternatingBrush, so the band-brush change has no target; (3) adopted the same accent tokens for TabularSurfaceSelectionIndicatorBrush; (4) added TabularSurfaceOuterBorderBrush for the frame, so TabularSurfaceBorderBrush was not added; (5) retuned TabularSurfaceGridLineBrush to DividerStrokeColorDefault, and its tests pin the cell separator to that key, so TabularSurfaceVerticalGridLineBrush was not added; (6) its tests pin the header MinHeight to the row MinHeight, so TableViewHeaderMinHeight / GetDensityHeaderMinHeight was not added. Still applied: the transparent header fill and the DensityMetrics fallback table. Re-decide (5) and (6) against main's tests before un-drafting. -->
+
 Addressed in this PR:
 
 | Requirement | Change |
@@ -617,6 +619,8 @@ as radius 999px.
 Cell minimum heights already match: `TableViewRowMinHeight` is 40 Standard / 30 Compact.
 
 ### Header height
+
+<!-- TODO reconcile with main: not applied after the main merge; main's tests require header MinHeight to equal the row MinHeight. -->
 
 The header cell is **32px** at Regular and 26px at Compact, independent of the body cell's
 40px / 30px, and the header *row* hugs to 32px to match. Headers now resolve their own

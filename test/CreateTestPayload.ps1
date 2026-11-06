@@ -249,6 +249,7 @@ if ($Mode -eq "ScenarioTestSuite")
     {
         Publish-Item "$binpath\Samples\WinUICsDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\WinUICppIslandsSampleApp_Test\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
@@ -282,6 +283,7 @@ if ($Mode -eq "ScenarioTestSuite")
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
     {
         Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\Dependencies\$redistPlatform\*.appx" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\WinUICppIslandsSampleApp_Test\Dependencies\$redistPlatform\*.appx" "$outpath\Test\"
     }
 
     # TODO: Remove below check

@@ -138,17 +138,70 @@ public:
 
 class MemoryServices : public IPALMemoryServices
 {
+    class BufferMemory final : public IPALMemory
+    {
+    public:
+        BufferMemory(XUINT32 size, XUINT8* buffer, bool ownsBuffer)
+            : m_size(size)
+            , m_buffer(buffer)
+            , m_ownsBuffer(ownsBuffer)
+        {
+        }
+
+        XUINT32 AddRef() const override
+        {
+            return static_cast<XUINT32>(InterlockedIncrement(&m_refCount));
+        }
+
+        XUINT32 Release() const override
+        {
+            const auto refCount = static_cast<XUINT32>(InterlockedDecrement(&m_refCount));
+            if (refCount == 0)
+            {
+                delete this;
+            }
+            return refCount;
+        }
+
+        void* GetAddress() const override
+        {
+            return m_buffer;
+        }
+
+        XUINT32 GetSize() const override
+        {
+            return m_size;
+        }
+
+    private:
+        ~BufferMemory()
+        {
+            if (m_ownsBuffer)
+            {
+                delete[] m_buffer;
+            }
+        }
+
+        mutable LONG m_refCount = 1;
+        XUINT32 m_size = 0;
+        XUINT8* m_buffer = nullptr;
+        bool m_ownsBuffer = false;
+    };
 
 public:
     MemoryServices()
     {
     }
 
-    //
-    // Rest not implemented.
-    //
+    virtual _Check_return_ HRESULT CreatePALMemoryFromBuffer(_In_ XUINT32 cbBuffer, _In_reads_(cbBuffer) XUINT8* pBuffer, _In_ bool fOwnsBuffer, _Outptr_ IPALMemory** ppPALMemory)
+    {
+        IFCPTR_RETURN(pBuffer);
+        IFCPTR_RETURN(ppPALMemory);
 
-    virtual _Check_return_ HRESULT CreatePALMemoryFromBuffer(_In_ XUINT32 cbBuffer, _In_reads_(cbBuffer) XUINT8* pBuffer, _In_ bool fOwnsBuffer, _Outptr_ IPALMemory** ppPALMemory) { VERIFY_FAIL(L"not implemented"); return E_NOTIMPL; }
+        *ppPALMemory = new(std::nothrow) BufferMemory(cbBuffer, pBuffer, fOwnsBuffer);
+        return *ppPALMemory != nullptr ? S_OK : E_OUTOFMEMORY;
+    }
+
     virtual _Check_return_ HRESULT CreateIPALStreamFromIPALMemory(_In_ IPALMemory *pPALMemory, _Outptr_ IPALStream **ppPALStream) { VERIFY_FAIL(L"not implemented"); return E_NOTIMPL; }
 };
 

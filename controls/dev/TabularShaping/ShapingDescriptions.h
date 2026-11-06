@@ -150,9 +150,9 @@ namespace ShapingHelpers
     // over every group axis, which is value-based for property values and IStringable references and
     // instance-based otherwise. It is total and never degrades to flat. Consumers needing their own
     // identity or collision policy bucketize with BucketizeToGroups directly instead.
-    void Reshape(ShapingState& state, ShapingSpec const& spec, ShapingDelta const& delta);
-
-    // Convenience for the full-rebuild path: discards any prior projection and reshapes from
-    // Source.
-    void Reshape(ShapingState& state, ShapingSpec const& spec);
+    //
+    // A filter predicate, group key or sort key that throws is contained (excluded, or keyed as null) and, when
+    // `contained` is given, counted there.
+    void Reshape(ShapingState& state, ShapingSpec const& spec, ShapingDelta const& delta,
+        SwallowedFaults* contained = nullptr);
 }

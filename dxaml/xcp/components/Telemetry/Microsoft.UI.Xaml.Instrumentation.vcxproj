@@ -16,6 +16,7 @@
         <ClCompile Include="GCInstrumentationAggregator.cpp"/>
         <ClCompile Include="MediaTransportControlAggregationTelemetry.cpp"/>
         <ClCompile Include="XamlTraceSession.cpp"/>
+        <ClCompile Include="XamlProfilerTracing.cpp"/>
         <ClCompile Include="HighContrastTracingHelper.cpp"/>
         <ClCompile Include="RuntimeProfiler.cpp"/>
     </ItemGroup>

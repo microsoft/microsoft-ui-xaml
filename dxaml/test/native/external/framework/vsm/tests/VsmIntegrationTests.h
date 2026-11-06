@@ -109,21 +109,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenEmptyAndSetter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
                     L"back and forth between an empty VisualState and a VisualState that uses Setters to set those properties.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenSetterAndSetter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
                     L"back and forth between VisualStates that use Setters to set those properties.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
                   
             BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenSetterAndStoryboard)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
                     L"back and forth between a VisualState that uses Storyboards to set those properties and a VisualState that uses Setters instead.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

@@ -57,8 +57,15 @@
     <Compile Include="CodeCoverage.cs" />
     <Compile Include="CodeGeneratorProjectContext.cs" />
     <Compile Include="CodeGeneratorTests.cs" />
+    <Compile Include="FunctionBindingCodegenTests.cs" />
+    <Compile Include="FixMastersTests.cs" />
+    <Compile Include="..\..\Tools\FixMasters\FixMasters.cs">
+      <Link>FixMasters.cs</Link>
+    </Compile>
     <Compile Include="HarvesterTests.cs" />
     <Compile Include="KnownBugs.cs" />
+    <Compile Include="MetadataCacheTests.cs" />
+    <Compile Include="MemberCacheTests.cs" />
     <Compile Include="MultipleViewTests.cs" />
     <Compile Include="StaticResourceTests.cs" />
     <Compile Include="TestHelper.cs" />
@@ -137,7 +144,9 @@
       <FileWrites Include="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
   </Target>
-  <Target Name="AfterBuild" AfterTargets="Build" Inputs="@(TestMasters)" Outputs="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')">
+  <!-- Always restage: deleted or moved masters must disappear from the test payload. -->
+  <Target Name="AfterBuild" AfterTargets="Build">
+    <RemoveDir Directories="$(OutDir)TestMasters\RegressionProjects" />
     <Copy SourceFiles="@(TestMasters)" DestinationFolder="$(OutDir)TestMasters\%(RecursiveDir)" ContinueOnError="false" />
   </Target>
   <PropertyGroup>

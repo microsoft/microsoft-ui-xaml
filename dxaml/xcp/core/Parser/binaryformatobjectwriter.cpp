@@ -1539,6 +1539,18 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::TypeConvertValue(
 
     if (createValueTypeAsObject)
     {
+        // Type conversion can create the root object outside of CreateInstanceFromType(), 
+        // so we need to ensure it's recorded if that happens.
+        if (!m_rootObjectCreated)
+        {
+            m_rootObjectCreated = spConvertedInstance;
+
+            if(m_rootObjectCreated && m_spContext->get_RootNamescope())
+            {
+                // If the name scope helper doesn't have a namescope owner yet, use this one.  (This establishes the root.)
+                m_spContext->get_RootNamescope()->EnsureNamescopeOwner(spConvertedInstance->GetDependencyObject());
+            }    
+        }
         m_spContext->Current().set_Instance(spConvertedInstance);
         m_spContext->Current().set_Type(spType);
     }
@@ -1744,9 +1756,15 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // A deferred template can retain its source only in the saved XAML resource URI.
+            auto sourceUri = m_spContext->get_BaseUri();
+            if (!sourceUri)
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                sourceUri = m_spContext->get_XamlResourceUri();
+            }
+            if (sourceUri)
+            {
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(staticResourceKey, currentUri));
@@ -1833,9 +1851,15 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // A deferred template can retain its source only in the saved XAML resource URI.
+            auto sourceUri = m_spContext->get_BaseUri();
+            if (!sourceUri)
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                sourceUri = m_spContext->get_XamlResourceUri();
+            }
+            if (sourceUri)
+            {
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(themeResourceKey, currentUri));

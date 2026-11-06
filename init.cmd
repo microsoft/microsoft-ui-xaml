@@ -152,6 +152,10 @@ goto:parseArgs
 
 :doneParsingArgs
 
+rem NUGET_PACKAGES overrides the repository's globalPackagesFolder setting and can cause
+rem fixed-version development packages to be reused from a shared cache.
+call :SetEnviromentVariable NUGET_PACKAGES ""
+
 rem Determine whether this is an internal (ADO) or OSS (public GitHub) build and expose it
 rem to the build scripts (e.g. PostInit.ps1). The .azuredevops folder exists only in the
 rem internal repo (it is excluded from the public mirror), matching the IsInternalWinUIBuild

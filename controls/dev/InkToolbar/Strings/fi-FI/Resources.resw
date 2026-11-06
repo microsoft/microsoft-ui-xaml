@@ -270,6 +270,10 @@
     <value>Kynän koko</value>
     <comment>Accessible name for the stroke-width slider in the InkToolbar pen flyout; Narrator reads this before the value. UWP IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME = 6422.</comment>
   </data>
+  <data name="InkToolbarStrokeWidthSliderRangeFormat" xml:space="preserve">
+    <value>Pienin %1!s!, suurin %2!s!</value>
+    <comment>Narrator help text for the InkToolbar pen-size slider, announcing the smallest and largest stroke width. %1!s! is the minimum value and %2!s! is the maximum value.</comment>
+  </data>
   <data name="InkToolbarBallpointPenFlyoutName" xml:space="preserve">
     <value>Kuulakärkikynän pikaikkuna</value>
     <comment>Accessible name for the flyout opened by the InkToolbar ballpoint-pen button; without it the flyout is announced as "popup". UWP IDS_INKTOOLBAR_BALLPOINTPENFLYOUT = 6440.</comment>

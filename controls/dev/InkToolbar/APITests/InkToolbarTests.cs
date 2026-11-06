@@ -659,6 +659,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // UWP apps restyle InkToolbar buttons with the toolbar's keyed resources from the system generic.xaml;
+        // the same keys must resolve from app markup here.
+        [TestMethod]
+        public void InkToolbarKeyedResourcesAreAppVisibleTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (Grid)XamlReader.Load(
+                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock Style='{StaticResource InkToolbarGlyphFontStyle}' />" +
+                        "<ToggleButton Style='{StaticResource InkToolbarCommonButtonStyle}' />" +
+                        "<TextBlock Foreground='{ThemeResource InkToolbarAccentColorForegroundThemeBrush}' Width='{StaticResource InkToolbarButtonWidth}' />" +
+                    "</Grid>");
+                Content = root;
+                Content.UpdateLayout();
+
+                Verify.IsNotNull(((TextBlock)root.Children[0]).Style, "InkToolbarGlyphFontStyle should resolve from app markup.");
+                Verify.IsNotNull(((ToggleButton)root.Children[1]).Style, "InkToolbarCommonButtonStyle should resolve from app markup.");
+                Verify.AreEqual(36.0, ((TextBlock)root.Children[2]).Width, "InkToolbarButtonWidth should resolve from app markup.");
+            });
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================

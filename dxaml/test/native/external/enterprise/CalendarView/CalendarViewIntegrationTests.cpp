@@ -4343,7 +4343,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         xaml_controls::Grid^ rootPanel = nullptr;
 
         CalendarHelper::CalendarViewHelper helper;
-        xaml_controls::Button^ headerButton = nullptr;
+        xaml_controls::Control^ firstItem = nullptr;
 
         xaml_controls::CalendarView^ cv = helper.GetCalendarView();
 
@@ -4366,11 +4366,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             auto decadePanel = safe_cast<xaml_controls::Primitives::CalendarPanel^>(helper.GetTemplateChild(L"DecadeViewPanel"));
-            auto firstItem = safe_cast<xaml_controls::Control^>(decadePanel->Children->GetAt(0));
-            firstItem->Focus(Microsoft::UI::Xaml::FocusState::Keyboard);
+            firstItem = safe_cast<xaml_controls::Control^>(decadePanel->Children->GetAt(0));
+            VERIFY_IS_TRUE(firstItem->Focus(Microsoft::UI::Xaml::FocusState::Keyboard));
         });
 
         TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(Microsoft::UI::Xaml::FocusState::Keyboard, firstItem->FocusState);
+        });
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
     }
 

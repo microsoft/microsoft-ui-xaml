@@ -76,10 +76,25 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         }
         #endregion
 
+        private Dictionary<BindingFlags, PropertyInfo[]> _propertiesCache;
+
         // Implementation of System.Type.GetProperties(BindingFlags)
         public override PropertyInfo[] GetProperties(System.Reflection.BindingFlags flags)
         {
-            return MetadataOnlyModule.GetPropertiesOnType(this, flags);
+            if (_propertiesCache == null)
+            {
+                _propertiesCache = new Dictionary<BindingFlags, PropertyInfo[]>();
+            }
+
+            PropertyInfo[] result;
+            if (!_propertiesCache.TryGetValue(flags, out result))
+            {
+                result = MetadataOnlyModule.GetPropertiesOnType(this, flags);
+                _propertiesCache.Add(flags, result);
+            }
+
+            // Callers may modify the returned array, but not the cached member list.
+            return (PropertyInfo[])result.Clone();
         }
 
         protected override PropertyInfo GetPropertyImpl(
@@ -89,10 +104,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return MetadataOnlyTypeDef.GetPropertyImplHelper(this, name, bindingAttr, binder, returnType, types, modifiers);
         }
 
+        private Dictionary<BindingFlags, MethodInfo[]> _methodsCache;
+
         public override MethodInfo[] GetMethods(System.Reflection.BindingFlags flags)
         {
-            // This will call back on GetDeclaredMethods()
-            return MetadataOnlyModule.GetMethodsOnType(this, flags);
+            if (_methodsCache == null)
+            {
+                _methodsCache = new Dictionary<BindingFlags, MethodInfo[]>();
+            }
+
+            MethodInfo[] result;
+            if (!_methodsCache.TryGetValue(flags, out result))
+            {
+                result = MetadataOnlyModule.GetMethodsOnType(this, flags);
+                _methodsCache.Add(flags, result);
+            }
+
+            // Callers may modify the returned array, but not the cached member list.
+            return (MethodInfo[])result.Clone();
         }
 
         protected override MethodInfo GetMethodImpl(string name, System.Reflection.BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, System.Reflection.ParameterModifier[] modifiers)
@@ -287,7 +316,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
                 Assembly a = this.Assembly;
                 Debug.Assert(a != null);
-                string aqn = a.GetName().ToString();
+                string aqn = a.FullName;
 
                 return System.Reflection.Assembly.CreateQualifiedName(aqn, t);
             }

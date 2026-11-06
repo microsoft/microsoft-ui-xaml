@@ -3571,6 +3571,18 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
+        // Packaged apps restore on the first Activate and save on native destruction or session end.
+        // A private DP supports markup; CWindow::SetValue forwards it to the custom setter.
+        // See docs\design-notes\window-placement.md.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public string PlacementId
+        {
+            get;
+            set;
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
 
         public void SetTitleBar([Optional] Microsoft.UI.Xaml.UIElement titleBar)
@@ -3921,6 +3933,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [NativeName("CSetter")]
+    [ContentProperty("Value")]
     [Guids(ClassGuid = "7c425f15-7da5-4f20-b7cc-39527248803b")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_2_2)]
     public sealed class Setter

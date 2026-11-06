@@ -173,6 +173,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
 
             var reader = manifestModule.RawReader;
+            if (!ignoreCase)
+            {
+                var handle = manifestModule.FindTypeForwarder(fullname);
+                if (handle.IsNil)
+                {
+                    return null;
+                }
+                var exportedType = reader.GetExportedType(handle);
+                var assemblyRefHandle = (AssemblyReferenceHandle)exportedType.Implementation;
+                AssemblyName assemblyName = AssemblyNameHelper.GetAssemblyNameFromRef(assemblyRefHandle, manifestModule);
+                return new UnresolvedTypeName(fullname, assemblyName);
+            }
+
             foreach (var exportedTypeHandle in reader.ExportedTypes)
             {
                 var exportedType = reader.GetExportedType(exportedTypeHandle);

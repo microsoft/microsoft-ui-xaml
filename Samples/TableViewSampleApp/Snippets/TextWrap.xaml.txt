@@ -1,0 +1,25 @@
+<!-- Wrapping, trimming and the line limit bind the page's static WrapState, so every realized cell,
+     recycled ones included, follows the rail. -->
+<DataTemplate x:Key="BioTemplate" x:DataType="models:Person">
+    <TextBlock
+        Text="{x:Bind Bio, Mode=OneWay}"
+        TextWrapping="{x:Bind pages:TextWrapPage.WrapState.TextWrapping, Mode=OneWay}"
+        TextTrimming="{x:Bind pages:TextWrapPage.WrapState.TextTrimming, Mode=OneWay}"
+        MaxLines="{x:Bind pages:TextWrapPage.WrapState.MaxLines, Mode=OneWay}"
+        Margin="8,6"
+        VerticalAlignment="Center"
+        SizeChanged="OnBioSizeChanged"
+        AutomationProperties.Name="{x:Bind Bio, Mode=OneWay}"/>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="People with wrapped bios"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="True">
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+</tv:TableView>

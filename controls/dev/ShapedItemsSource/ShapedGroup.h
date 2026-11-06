@@ -30,7 +30,8 @@ class ShapedGroup : public winrt::implements<
     winrt::Windows::Foundation::Collections::IIterable<winrt::IInspectable>,
     winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider,
     winrt::Windows::Foundation::IStringable,
-    ShapingHelpers::IGroupIdentity>
+    ShapingHelpers::IGroupIdentity,
+    ShapingHelpers::IGroupChildCount>
 {
 public:
     ShapedGroup(winrt::IInspectable const& key, winrt::hstring const& groupKey);
@@ -59,6 +60,11 @@ public:
     // without depending on this type.
     winrt::hstring StableGroupIdentity() const override;
 
+    // IGroupChildCount — immediate children. -1 until a hierarchical projection sets it, which is
+    // how a flat grouped projection says "I have nothing to add, use the row count".
+    int32_t GroupChildCount() const override;
+    void GroupChildCount(int32_t value);
+
     void GroupKey(winrt::hstring const& value);
     void Key(winrt::IInspectable const& value);
     void SetItems(std::vector<winrt::IInspectable> const& items);
@@ -67,4 +73,5 @@ private:
     winrt::IInspectable m_key{ nullptr };
     winrt::hstring m_groupKey;
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_items{ nullptr };
+    int32_t m_groupChildCount{ -1 };
 };

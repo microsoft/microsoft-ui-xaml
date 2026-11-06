@@ -26,3 +26,5 @@
 #include "winrt/Microsoft.UI.Xaml.Media.h"
 #include "winrt/Microsoft.UI.Xaml.Navigation.h"
 #include "winrt/Microsoft.UI.Xaml.Shapes.h"
+
+#include "ArrayProperties.h"

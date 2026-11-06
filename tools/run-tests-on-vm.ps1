@@ -8,6 +8,7 @@
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "Button*" -HostingMode WPF
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -SkipPayload
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -FullCopy
+#   .\run-tests-on-vm.ps1 -VMName "MyVM" "MySampleAppTest" -Mode ScenarioTestSuite
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" -Stop
 #
 # First run will prompt for VM credentials and cache them (encrypted, per-user).
@@ -17,12 +18,6 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$VMName,
-
-    [Parameter(Position=0, Mandatory=$false)]
-    [string]$TestName,
-
-    [Parameter(ValueFromRemainingArguments=$true)]
-    [string[]]$AdditionalArgs,
 
     [ValidateSet("x86", "x64", "arm64")]
     [string]$Platform = "",
@@ -36,8 +31,8 @@ param(
     # Skip CreateTestPayload step (use existing payload)
     [switch]$SkipPayload,
 
-    # CreateTestPayload mode. Most tests use DevTestSuite.
-    [ValidateSet("Auto", "DevTestSuite")]
+    # CreateTestPayload mode. Most tests use DevTestSuite; sample app tests use ScenarioTestSuite.
+    [ValidateSet("Auto", "DevTestSuite", "ScenarioTestSuite")]
     [string]$Mode = "Auto",
 
     # Force a full copy instead of incremental
@@ -54,10 +49,21 @@ param(
     [switch]$ResetCredential,
 
     # Stop any running test on the VM and clean up
-    [switch]$Stop
+    [switch]$Stop,
+
+    # The first positional argument is the test name; remaining arguments are passed to runtests.cmd.
+    [Parameter(Position=0, ValueFromRemainingArguments=$true)]
+    [string[]]$TestArguments
 )
 
 $ErrorActionPreference = "Stop"
+
+$TestName = if ($TestArguments.Count -gt 0) { $TestArguments[0] } else { $null }
+$AdditionalArgs = if ($TestArguments.Count -gt 1) {
+    @($TestArguments[1..($TestArguments.Count - 1)])
+} else {
+    @()
+}
 
 # Force UTF-8 so streamed VM log output uses a single, predictable encoding.
 try {
@@ -80,7 +86,7 @@ function Get-VMCredential {
         [switch]$ResetCredential
     )
 
-    $credDir = Join-Path $env:USERPROFILE ".winui-test"
+    $credDir = "~\.winui-test"
     if (-not (Test-Path $credDir)) { New-Item -ItemType Directory $credDir -Force | Out-Null }
     $credFile = Join-Path $credDir "vmcred-$($VMName -replace '[^a-zA-Z0-9]','_').xml"
 
@@ -123,6 +129,8 @@ Write-Host 'Credential saved! This window will close.' -ForegroundColor Green
 Start-Sleep -Seconds 2
 '@ | Set-Content $helperPath -Encoding UTF8
 
+    # Resolve helperPath to its expanded path; expansion doesn't happen as a process parameter
+    $helperPath = (Resolve-Path $helperPath).Path
     Start-Process powershell -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $helperPath, "-VMName", $VMName, "-CredFile", $credFile -Wait
     Remove-Item $helperPath -ErrorAction SilentlyContinue
 
@@ -627,12 +635,20 @@ echo %ERRORLEVEL% > "$exitFile"
             }
         }
 
-        # te.exe returns 0 even when tests fail. Parse the TAEF summary line.
-        if ($exitCode -eq 0 -and (Test-Path $logFile)) {
-            $logLines = Read-NormalizedLog $logFile
-            $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1
-            if ($summaryLine -match 'Failed=(\d+)') {
-                if ([int]$Matches[1] -gt 0) { $exitCode = 1 }
+        # te.exe can return 0 when tests fail or no tests run. Require a non-empty passing TAEF summary.
+        if ($exitCode -eq 0) {
+            if (-not (Test-Path $logFile)) {
+                $exitCode = 1
+            } else {
+                $logLines = Read-NormalizedLog $logFile
+                $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1
+                if (-not $summaryLine) {
+                    $exitCode = 1
+                } elseif ($summaryLine -match 'Total=(\d+).+Failed=(\d+)') {
+                    if ([int]$Matches[1] -eq 0 -or [int]$Matches[2] -gt 0) {
+                        $exitCode = 1
+                    }
+                }
             }
         }
 

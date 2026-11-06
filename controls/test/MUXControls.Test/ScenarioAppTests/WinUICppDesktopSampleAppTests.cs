@@ -302,6 +302,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [Description("A native app with an InkCanvas exits cleanly. A native app destroys its XAML tree at shutdown, where a throw from ~InkCanvas would terminate the process.")]
+        public void InkingTest()
+        {
+            Log.Comment("Selecting Inking tab");
+            var tviInking = FindElement.ByName("tviInking");
+            Verify.IsNotNull(tviInking);
+            SelectItem(tviInking);
+            Wait.ForIdle();
+
+            var textBlock = new TextBlock(FindElement.ByName("textBlockInking"));
+            Verify.IsNotNull(textBlock);
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "InkCanvas.Loaded",
+                () => textBlock.DocumentText);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
+        }
+
+        [TestMethod]
         [Description("Basic tests of UserControl defined in a separate runtime component.")]
         public void ExternalControlsTest()
         {
@@ -828,15 +847,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Log.Comment($"Validate that shutdown log $logFilePath contains expected order of events.");
             
-            // NOTE: the dtors listed below are not officially part of the contract, but they can be important because
-            // Cpp apps may rely on the timing of when they're called (intentionally or not).
+            // XAML shutdown releases Page1. App then releases MainWindow from the first
+            // XamlShutdownCompletedOnThread handler. Retained dynamic metadata keeps App alive.
             string expectedShutdownLog =             
             @"  Window.Closed raised.
                 ShutdownStarting raised.
                 DispatcherQueue work is running.
                 Page1 Unloaded event raised.
                 Page1::~Page1 called.
-                App::~App called.
                 MainWindow::~MainWindow called.
                 XamlShutdownCompletedOnThread raised.
                 ShutdownCompleted raised.";

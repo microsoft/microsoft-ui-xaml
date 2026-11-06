@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Win8Xaml.CompilerProxies;
@@ -568,10 +569,11 @@ namespace UnitTests
             return xamlEditor;
         }
 
-        public List<FileNameAndContentPair> GenerateCodeBehind(CodeGeneratorProjectContext cpx, List<string> xamlStrings, DirectUISchemaContext schema, CodeGenLanguage lang)
+        public List<FileNameAndContentPair> GenerateCodeBehind(CodeGeneratorProjectContext cpx, List<string> xamlStrings, DirectUISchemaContext schema, CodeGenLanguage lang, IList<string> rewrittenXaml = null)
         {
             XamlProjectInfo projectInfo = cpx.ProjectInfo;
             XamlClassCodeInfo sharedCodeInfo = null;
+            var fileInfos = new List<XamlFileCodeInfo>();
 
             string dummyFileName = "DummyFile.xaml";
             string dummyFilePath = Path.Combine(cpx.ProjectPath, dummyFileName);
@@ -599,9 +601,23 @@ namespace UnitTests
                 fileInfo.RelativePathFromGeneratedCodeToXamlFile = dummyFileName;
                 fileInfo.SourceXamlGivenPath = dummyFilePath;
                 sharedCodeInfo.AddXamlFileInfo(fileInfo);
+                fileInfos.Add(fileInfo);
             }
 
-            if (!cpx.IsPass1 && lang == CodeGenLanguage.Cpp)
+            if (!cpx.IsPass1)
+            {
+                // Mirror CompileXamlInternal, which parses the bind universes once every file has
+                // been harvested and before any code is generated. Without this the x:Binds have
+                // no path steps and no binding code is emitted at all.
+                foreach (BindUniverse bindUniverse in sharedCodeInfo.BindUniverses)
+                {
+                    IEnumerable<XamlCompileError> errors = bindUniverse.Parse(sharedCodeInfo);
+                    Assert.AreEqual(0, errors.Count(),
+                        String.Join(", ", errors.Select(error => error.ErrorCode + ": " + error.Message)));
+                }
+            }
+
+            if (!cpx.IsPass1 && (lang == CodeGenLanguage.Cpp || lang == CodeGenLanguage.CppWinRT))
             {
                 cpx.ProjectInfo.ClassToHeaderFileMap = new Dictionary<string, string>();
                 cpx.ProjectInfo.ClassToHeaderFileMap.Add(sharedCodeInfo.ClassName.FullName, sharedCodeInfo.ClassName.ShortName + ".h");
@@ -613,7 +629,16 @@ namespace UnitTests
 
             var codeLang = GetCodeLanguage(cpx.IsPass1, lang);
             XamlCodeGenerator codeGenerator = new XamlCodeGenerator(codeLang, cpx.IsPass1, projectInfo, null);
-            return codeGenerator.GenerateCodeBehind(sharedCodeInfo);
+            List<FileNameAndContentPair> codeBehind = codeGenerator.GenerateCodeBehind(sharedCodeInfo);
+            if (rewrittenXaml != null)
+            {
+                var rewriter = new XamlConnectionIdRewriter();
+                for (int index = 0; index < xamlStrings.Count; index++)
+                {
+                    rewrittenXaml.Add(rewriter.Parse(xamlStrings[index], sharedCodeInfo, fileInfos[index]));
+                }
+            }
+            return codeBehind;
         }
 
         public List<FileNameAndContentPair> GenerateTypeInfo(bool isPass1, XamlSchemaCodeInfo schemaInfo, XamlProjectInfo projectInfo,
@@ -638,6 +663,9 @@ namespace UnitTests
 
                 case CodeGenLanguage.Cpp:
                     return Language.Parse("C++");
+
+                case CodeGenLanguage.CppWinRT:
+                    return Language.Parse("CppWinRT");
 
                 default:
                     throw new ArgumentOutOfRangeException("Bad Code Language");

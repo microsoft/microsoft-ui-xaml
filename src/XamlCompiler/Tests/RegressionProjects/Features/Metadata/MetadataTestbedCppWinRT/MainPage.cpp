@@ -27,6 +27,16 @@ namespace winrt::MetadataTestbedCppWinRT::implementation
         return nullptr;
     }
 
+    com_array<int32_t> MainPage::MyProperty()
+    {
+        return { m_myProperty.begin(), m_myProperty.end() };
+    }
+
+    void MainPage::MyProperty(array_view<int32_t const> const& value)
+    {
+        m_myProperty.assign(value.begin(), value.end());
+    }
+
     void MainPage::GetTypeMemberManyTimesClicked(IInspectable const& /* sender */, RoutedEventArgs const& /* e */)
     {
         GetTypeMemberButton().IsEnabled(false);

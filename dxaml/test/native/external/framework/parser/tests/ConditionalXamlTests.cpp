@@ -232,11 +232,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             L"  xmlns:bogus_contract='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(83589481-75C4-465C-AB94-3182F13778BF,1)'>"
             L"  <TextBlock winui17:Text='So then it&apos;s up with the Blue and Gold' bogus_contract:Text='Down with the Red' />"
             L"  <winui17:TextBlock Name='bears' winui17:Text='California&apos;s out for a victory' />"
-            L"  <TextBlock bogus_contract:Name='cardinal' x:Name='chop'>"
+            L"  <TextBlock bogus_contract:Name='cardinal' x:Name='chop' xml:lang='en-US'>"
             L"    <winui17:TextBlock.Text>We&apos;ll drop our battle axe on Stanford&apos;s head</winui17:TextBlock.Text>"
             L"  </TextBlock>"
             L"  <TextBlock>"
             L"    <bogus_contract:TextBlock.Text>When we meet her, our team will surely beat her.</bogus_contract:TextBlock.Text>"
+            L"  </TextBlock>"
+            L"  <TextBlock>"
+            L"    <TextBlock.Text><x:String x:Name='emptyString' bogus_contract:FutureProperty='ignored'/></TextBlock.Text>"
             L"  </TextBlock>"
             L"</StackPanel>";
 
@@ -244,6 +247,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         expectedStrings.push_back(Platform::StringReference(L"So then it\'s up with the Blue and Gold"));
         expectedStrings.push_back(Platform::StringReference(L"California\'s out for a victory"));
         expectedStrings.push_back(Platform::StringReference(L"We\'ll drop our battle axe on Stanford\'s head"));
+        expectedStrings.push_back(Platform::StringReference(L""));
         expectedStrings.push_back(Platform::StringReference(L""));
 
         auto results = LoadXamlHelper<xaml_controls::Panel>(markup);
@@ -257,6 +261,48 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
                 VERIFY_ARE_EQUAL(Platform::StringReference(L"bears"), safe_cast<xaml_controls::TextBlock^>(panel->Children->GetAt(1))->Name);
                 VERIFY_ARE_EQUAL(Platform::StringReference(L"chop"), safe_cast<xaml_controls::TextBlock^>(panel->Children->GetAt(2))->Name);
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"en-US"), safe_cast<xaml_controls::TextBlock^>(panel->Children->GetAt(2))->Language);
+                auto emptyString = panel->FindName(L"emptyString");
+                VERIFY_IS_NOT_NULL(emptyString);
+                VERIFY_ARE_EQUAL(0u, safe_cast<Platform::String^>(emptyString)->Length());
+            }
+        });
+    }
+
+    void ConditionalXamlTests::VerifyDeferredTextBlockLanguage()
+    {
+        TestCleanupWrapper cleanup;
+
+        const wchar_t markup[] =
+            L"<TextBlock xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xml:lang='en-US'/>";
+        const wchar_t nestedMarkup[] =
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+            L"<TextBlock xml:lang='en-US'/>"
+            L"</Grid>";
+
+        auto textBlocks = LoadXamlHelper<xaml_controls::TextBlock>(markup);
+        auto grids = LoadXamlHelper<xaml_controls::Grid>(nestedMarkup);
+        VERIFY_ARE_EQUAL(2u, textBlocks.size());
+        VERIFY_ARE_EQUAL(2u, grids.size());
+
+        RunOnUIThread([&]()
+        {
+            auto verifyLanguage = [](xaml_controls::TextBlock^ textBlock)
+            {
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"en-US"), textBlock->Language);
+                auto localLanguage = safe_cast<Platform::String^>(
+                    textBlock->ReadLocalValue(xaml_controls::TextBlock::LanguageProperty));
+                VERIFY_ARE_EQUAL(Platform::StringReference(L"en-US"), localLanguage);
+            };
+
+            for (const auto& textBlock : textBlocks)
+            {
+                verifyLanguage(textBlock);
+            }
+            for (const auto& grid : grids)
+            {
+                VERIFY_ARE_EQUAL(1u, grid->Children->Size);
+                verifyLanguage(safe_cast<xaml_controls::TextBlock^>(grid->Children->GetAt(0)));
             }
         });
     }

@@ -458,7 +458,35 @@ void InkCanvas::AttachToVisualLink()
 
     if (isSystemCompositor)
     {
-        AttachToSystemCompositor();
+        try
+        {
+            AttachToSystemCompositor();
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            // The system splice depends on runtime/OS pieces that may be missing (e.g. an unregistered
+            // proxy class, 0x80040154). The lifted path also works on a system-backed compositor, so fall
+            // back to it instead of rendering no ink.
+            wchar_t message[160];
+            swprintf_s(
+                message,
+                L"InkCanvas: system compositor attach failed (hr=0x%08X); falling back to the lifted path.\n",
+                static_cast<unsigned int>(e.code()));
+            OutputDebugStringW(message);
+
+            InkTelemetry::ReportError(
+                InkTelemetry::ErrorCategory::Initialization,
+                InkTelemetry::Operation::AttachToCompositor,
+                true /* isRecoverable */,
+                e.code(),
+                &m_telemetryState);
+
+            // Drop the partial system attach; DetachFromVisualLink clears m_hostHwnd, so restore it.
+            DetachFromVisualLink();
+            m_hostHwnd = hostHwnd;
+            m_telemetryEngine = InkTelemetry::CompositorEngine::Lifted;
+            AttachToLiftedCompositor();
+        }
     }
     else
     {
@@ -576,12 +604,13 @@ void InkCanvas::AttachToLiftedCompositor()
     m_lastPlacementHeight = -1;
 
     // Keep the lifted PlacementVisual sized to the control as layout changes so it has a hit-test area.
+    // make_weak on the projected type, as in OnLoaded: get_weak() can over-release a derived (composed) canvas.
     m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke,
-        [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
+        [weakThis = winrt::make_weak(static_cast<winrt::InkCanvas>(*this))](auto const& /*sender*/, auto const& /*args*/)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->PositionInkVisual();
+                winrt::get_self<InkCanvas>(strongThis)->PositionInkVisual();
             }
         });
 
@@ -605,7 +634,12 @@ void InkCanvas::DetachFromVisualLink()
     // the OS presenter / system-visual resources mid-teardown. Cheap acquire/release pair.
     m_isDetached.store(true, std::memory_order_release);
 
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+    // Only a canvas that attached has a child visual to clear. A canvas that was never loaded (e.g. on an unselected
+    // tab) is destroyed during app shutdown, where SetElementChildVisual can throw.
+    if (m_systemDCompTarget || m_systemVisualLink || m_inkRootVisual)
+    {
+        winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+    }
 
     m_systemDCompTarget = nullptr;
     m_systemVisualLink = nullptr;

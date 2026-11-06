@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 parameters:
   buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
-  publishToMaestro: false
 
 stages:
 - stage: Localization
@@ -26,16 +25,3 @@ stages:
     - template: WinUI-LocalizeResources-Steps.yml
       parameters:
         nupkgdir: $(ob_outputDirectory)
-      
-  - ${{ if eq( parameters.publishToMaestro, true) }}:
-    - job: PublishToMaestro
-      pool:
-        type: windows
-      variables:
-        ob_outputDirectory: '$(Build.SourcesDirectory)\out'
-      dependsOn: LocalizeResources
-      steps:
-      - template: AzurePipelinesTemplates/WindowsAppSDK-PublishToMaestro-Steps.yml@WindowsAppSDKConfig
-        parameters:
-          NuGetArtifactNames: 
-          - "LocalizationDrop"

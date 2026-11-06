@@ -13,6 +13,7 @@ namespace RuntimeProfiler
         PG_IslandDesktopWindowXamlSource = 2 //  Controls created through an instance of DesktopWindowXamlSource
     };
 
+    void FireStartupEvent();
     void FireEvent(_In_ bool bSuspend);
     void RegisterMethod(_In_ ProfileGroup group, _In_ PCSTR pszIdentifier, _In_ UINT16 uTypeIndex, _In_ UINT16 uMethodIndex, _Inout_ volatile LONG *pCount);
 }

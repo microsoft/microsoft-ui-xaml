@@ -63,13 +63,10 @@ jobs:
           normalizedConfiguration: 'fre'
 
   variables:
-    - group: WinUI-InternalFeed
     - name: artifactsDir
       value: $(Build.ArtifactStagingDirectory)
     - name: testBinaryPath
       value: '$(Build.SourcesDirectory)\TestPayload\$(buildPlatform)$(normalizedConfiguration)'
-    - name: testpayloadNuGetFeedUrl
-      value: '$(WinUITestPayloadFeedUri)'
     - name: helixType
       value: ${{ parameters.testSuite }}.$(buildPlatform).$(normalizedConfiguration)
     - name: pipelineKind

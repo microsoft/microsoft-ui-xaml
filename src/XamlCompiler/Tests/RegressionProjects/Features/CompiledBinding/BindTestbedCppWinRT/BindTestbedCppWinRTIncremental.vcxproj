@@ -6,6 +6,12 @@
     <ProjectGuid>{2821AD7B-C730-4384-B24C-52ACB3387913}</ProjectGuid>
     <ProjectName>BindTestbedCppWinRTIncremental</ProjectName>
     <RootNamespace>BindTestbed</RootNamespace>
+    <!-- Exercise the shared fixtures with incremental metadata codegen.
+         Normal mode centralizes templated callbacks in XamlTypeInfo.g.cpp.
+         Incremental mode emits concrete callbacks per type/member, placing local
+         XAML-class callbacks in their page's generated .xaml.g.hpp.
+         Together with the non-incremental sibling project, this covers both modes
+         to catch projection, declaration, and linkage regressions. -->
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <SuppressXamlWarnings>1004</SuppressXamlWarnings>
     <!-- Isolate generated files from BindTestbedCppWinRT.vcxproj, which shares this source
@@ -262,5 +268,5 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.cpp.props" />
+  <Import Project="$(CommonFilesPath)AppPostamble.cpp.props" />
 </Project>
