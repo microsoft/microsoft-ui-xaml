@@ -171,21 +171,24 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) AutoSuggestBoxFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStatics
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
         , public ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStaticsFeature_HeaderPlacement
 #endif
     {
-        BEGIN_INTERFACE_MAP(AutoSuggestBoxFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(AutoSuggestBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(AutoSuggestBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxFactory)
             INTERFACE_ENTRY(AutoSuggestBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStatics)
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
             INTERFACE_ENTRY(AutoSuggestBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStaticsFeature_HeaderPlacement)
 #endif
-        END_INTERFACE_MAP(AutoSuggestBoxFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(AutoSuggestBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBox** ppInstance);
 
         // Static properties.
 
