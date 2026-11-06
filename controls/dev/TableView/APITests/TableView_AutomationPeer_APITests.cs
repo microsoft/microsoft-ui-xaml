@@ -734,6 +734,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row peer's SelectionItem calls act on its own row when an app-derived IsEnabledCore inserts a row before it.")]
+        public void VerifyRowPeerSelectionItemResolvesRowAfterEnabledCheck()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(20));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = items[3];
+                var row = GetRowsRepeater(tableView).TryGetElement(3) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: the target row must be realized.");
+                var peer = new InsertingOnEnabledQueryRowPeer(row);
+                var selectionItem = (ISelectionItemProvider)peer;
+                int inserted = 0;
+                Action insertBefore = () => items.Insert(0, new NamedPerson { Name = $"Inserted {++inserted}", Role = "Inserted" });
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.Select();
+                Verify.AreEqual(1, inserted, "Precondition: the enabled check must have inserted a row.");
+                Verify.AreSame(target, tableView.SelectedItem, "Select() must select the peer's own row.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.AddToSelection();
+                Verify.AreSame(target, tableView.SelectedItem, "AddToSelection() on the selected row must succeed and keep it selected.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.RemoveFromSelection();
+                Verify.AreEqual(3, inserted, "Precondition: each call must have inserted a row.");
+                Verify.AreEqual(-1, tableView.SelectedIndex, "RemoveFromSelection() must deselect the peer's own row.");
+            });
+        }
+
+        private sealed class InsertingOnEnabledQueryRowPeer : TableViewRowAutomationPeer
+        {
+            public InsertingOnEnabledQueryRowPeer(TableViewRow owner) : base(owner) { }
+
+            public Action OnEnabledQuery { get; set; }
+
+            protected override bool IsEnabledCore()
+            {
+                var action = OnEnabledQuery;
+                OnEnabledQuery = null;
+                action?.Invoke();
+                return base.IsEnabledCore();
+            }
+        }
+
         private static ISelectionItemProvider RequireUnrealizedDataItemSelectionItem(TableView tableView, int index)
         {
             tableView.Select(index);

@@ -264,8 +264,10 @@ namespace
     private:
         void ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction action)
         {
+            // Enabled first: a realized row's app-derived peer can change the rows the index is resolved against.
+            TableViewRowAutomationPeer::ThrowIfSelectionItemNotEnabled(IsEnabledCore());
             const int32_t index = RequireIndex();
-            TableViewRowAutomationPeer::ApplySelectionItemAction(action, IsEnabledCore(), m_table.get(), index);
+            TableViewRowAutomationPeer::ApplySelectionItemActionAt(action, m_table.get(), index);
         }
 
         // -1 once the item left the source (or a boxed value's row was deselected); the table is alive when >= 0.

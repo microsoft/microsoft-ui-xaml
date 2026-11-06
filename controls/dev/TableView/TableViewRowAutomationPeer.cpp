@@ -725,29 +725,41 @@ winrt::IRawElementProviderSimple TableViewRowAutomationPeer::SelectionContainer(
 
 void TableViewRowAutomationPeer::AddToSelection()
 {
-    ApplySelectionItemAction(SelectionItemAction::Add, IsEnabled(), GetOwningTableView(), GetRowIndex());
+    ApplySelectionItemAction(SelectionItemAction::Add);
 }
 
 void TableViewRowAutomationPeer::RemoveFromSelection()
 {
-    ApplySelectionItemAction(SelectionItemAction::Remove, IsEnabled(), GetOwningTableView(), GetRowIndex());
+    ApplySelectionItemAction(SelectionItemAction::Remove);
 }
 
 void TableViewRowAutomationPeer::Select()
 {
-    ApplySelectionItemAction(SelectionItemAction::Select, IsEnabled(), GetOwningTableView(), GetRowIndex());
+    ApplySelectionItemAction(SelectionItemAction::Select);
 }
 
-void TableViewRowAutomationPeer::ApplySelectionItemAction(
-    SelectionItemAction action,
-    bool isEnabled,
-    winrt::TableView const& tableView,
-    int32_t rowIndex)
+void TableViewRowAutomationPeer::ApplySelectionItemAction(SelectionItemAction action)
+{
+    // Enabled first: an app-derived IsEnabledCore can change the rows the index is resolved against.
+    ThrowIfSelectionItemNotEnabled(IsEnabled());
+    auto const tableView = GetOwningTableView();
+    const int32_t rowIndex = GetRowIndex();
+    ApplySelectionItemActionAt(action, tableView, rowIndex);
+}
+
+void TableViewRowAutomationPeer::ThrowIfSelectionItemNotEnabled(bool isEnabled)
 {
     if (!isEnabled)
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
+}
+
+void TableViewRowAutomationPeer::ApplySelectionItemActionAt(
+    SelectionItemAction action,
+    winrt::TableView const& tableView,
+    int32_t rowIndex)
+{
     if (!tableView)
     {
         return;
