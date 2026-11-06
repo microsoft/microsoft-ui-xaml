@@ -831,6 +831,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies collapsing another group keeps keyboard focus on the focused row, and collapsing the row's own group moves focus to that group's header (#12456).")]
+        public void VerifyGroupCollapseKeepsFocusedRowOrMovesFocusToItsHeader()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rafa = GetProjectedRow(tableView, GetProjectedLabels(tableView, includeCount: false).IndexOf("Rafa"));
+                Verify.IsTrue(rafa.Focus(FocusState.Keyboard), "Precondition: Rafa takes keyboard focus.");
+            });
+            SettleLayout(tableView);
+
+            // Designer, above Rafa's Engineer group.
+            RunOnUIThread.Execute(() => GetExpandCollapseProvider(tableView, 0).Collapse());
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                TableViewRow row = null;
+                for (var node = focused; node != null && row == null; node = VisualTreeHelper.GetParent(node))
+                {
+                    row = node as TableViewRow;
+                }
+
+                Verify.AreEqual("Rafa", row == null ? "none" : Person(row.DataContext).Name, "Focus stays on Rafa after another group collapses.");
+                Verify.AreEqual(FocusState.Keyboard, (focused as Control)?.FocusState ?? FocusState.Unfocused, "Keyboard focus state is kept.");
+                GetExpandCollapseProvider(tableView, 1).Collapse();
+            });
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewGroupHeader;
+                Verify.AreEqual("Engineer", (header?.Content as TableViewGroupInfo)?.Key as string,
+                    "Collapsing Rafa's own group moves focus to its header.");
+                Verify.AreEqual(FocusState.Keyboard, header?.FocusState ?? FocusState.Unfocused, "The header shows keyboard focus.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies collapsing the group of the selected row clears selection, and neither re-expanding nor a later reshape restores it.")]
         public void VerifyGroupCollapseDropsSelectionOfHiddenRow()
         {

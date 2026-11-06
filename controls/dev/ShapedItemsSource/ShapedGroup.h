@@ -68,6 +68,8 @@ public:
     void GroupKey(winrt::hstring const& value);
     void Key(winrt::IInspectable const& value);
     void SetItems(std::vector<winrt::IInspectable> const& items);
+    // Raises one Remove/Insert per changed item rather than a Reset, so a consumer can splice.
+    void SpliceItems(std::vector<winrt::IInspectable> const& items);
 
 private:
     winrt::IInspectable m_key{ nullptr };
