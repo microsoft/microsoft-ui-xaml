@@ -1527,12 +1527,12 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ItemsPresenter
+    unsealed runtimeclass ItemsPresenter
         : Microsoft.UI.Xaml.FrameworkElement
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         Microsoft.UI.Xaml.Controls.Primitives.IScrollSnapPointsInfo
     {
-        ItemsPresenter();
+        [method_name("CreateInstance")] ItemsPresenter();
         Object Header;
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
         Microsoft.UI.Xaml.Media.Animation.TransitionCollection HeaderTransitions;
