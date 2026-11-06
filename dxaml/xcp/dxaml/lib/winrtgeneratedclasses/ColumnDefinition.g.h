@@ -82,15 +82,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) ColumnDefinitionFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionStatics
     {
-        BEGIN_INTERFACE_MAP(ColumnDefinitionFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(ColumnDefinitionFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(ColumnDefinitionFactory, ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionFactory)
             INTERFACE_ENTRY(ColumnDefinitionFactory, ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionStatics)
-        END_INTERFACE_MAP(ColumnDefinitionFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(ColumnDefinitionFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IColumnDefinition** ppInstance);
 
         // Static properties.
 
