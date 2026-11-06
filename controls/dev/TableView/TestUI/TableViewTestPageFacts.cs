@@ -42,6 +42,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string AddColumnButton = "AddColumnButton";
         internal const string RemoveColumnButton = "RemoveColumnButton";
         internal const string ToggleScorePinButton = "ToggleScorePinButton";
+        internal const string ToggleBasicFlowDirectionButton = "ToggleBasicFlowDirectionButton";
         internal const string ToggleNameCanResizeButton = "ToggleNameCanResizeButton";
         internal const string SetAgeAutoScoreStarButton = "SetAgeAutoScoreStarButton";
         internal const string ReportBasicColumnWidthsButton = "ReportBasicColumnWidthsButton";
