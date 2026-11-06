@@ -463,6 +463,7 @@ private:
     winrt::ItemsSourceView::CollectionChanged_revoker m_topNavOverflowItemsCollectionChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
+    NavigationViewFlyoutBackgroundHelper m_overflowFlyoutBackgroundHelper{ this };
 
     winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
 
