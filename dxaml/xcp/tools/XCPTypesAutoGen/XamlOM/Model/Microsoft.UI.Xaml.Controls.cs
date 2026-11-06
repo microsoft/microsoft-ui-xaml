@@ -4108,7 +4108,7 @@ namespace Microsoft.UI.Xaml.Controls
     [DXamlIdlGroup("Main")]
     [NativeName("CControlTemplate")]
     [Guids(ClassGuid = "aee587eb-de1e-4fa4-87fb-a130e8076673")]
-    public sealed class ControlTemplate
+    public class ControlTemplate
      : Microsoft.UI.Xaml.FrameworkTemplate
     {
         [DependencyPropertyModifier(Modifier.Private)]

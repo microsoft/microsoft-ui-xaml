@@ -3982,10 +3982,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ControlTemplate
+    unsealed runtimeclass ControlTemplate
         : Microsoft.UI.Xaml.FrameworkTemplate
     {
-        ControlTemplate();
+        [method_name("CreateInstance")] ControlTemplate();
         Windows.UI.Xaml.Interop.TypeName TargetType;
     };
 
