@@ -166,14 +166,23 @@ struct TableViewResourceCache
         double rowMinHeight{ 0.0 };
         bool hasCellPadding{ false };
         winrt::Thickness cellPadding{};
+        bool hasCellTextPadding{ false };
+        winrt::Thickness cellTextPadding{};
+        bool hasHeaderTextPadding{ false };
+        winrt::Thickness headerTextPadding{};
+        bool hasGroupHeaderTextPadding{ false };
+        winrt::Thickness groupHeaderTextPadding{};
         bool hasHeaderCellPadding{ false };
         winrt::Thickness headerCellPadding{};
+        bool hasGroupHeaderMinHeight{ false };
+        double groupHeaderMinHeight{};
+        bool hasGroupHeaderPadding{ false };
+        winrt::Thickness groupHeaderPadding{};
     };
     DensityInfo density{};
 
-    // Font sizes resolved from fixed (non-density-suffixed) ThemeResource keys, so they do NOT
-    // vary with Density; kept out of DensityInfo to avoid implying otherwise. Still cached and
-    // cleared by InvalidateTableViewResourceCache alongside the other resolved resources.
+    // Built-in text defaults to 14px at every density. Density/theme changes clear
+    // this cache alongside the other resolved resources.
     struct FontInfo
     {
         bool hasCellFontSize{ false };
@@ -252,13 +261,22 @@ public:
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnShowGroupHeaderCountPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
+    double GetDensityGroupHeaderMinHeight();
+    winrt::Thickness GetDensityGroupHeaderPadding();
+    winrt::Style GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header);
+    static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property);
     double GetCellFontSize();
+    winrt::Thickness GetDensityCellTextPadding();
+    winrt::Thickness GetDensityHeaderTextPadding();
+    winrt::Thickness GetDensityGroupHeaderTextPadding();
+    winrt::Thickness GetDisplayCellPadding(double contentVerticalOffset = 0.0);
     void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
@@ -453,6 +471,7 @@ public:
 
     // The one context menu policy check: no TableView menu opens while a cell is editing.
     bool AreContextMenusSuppressed() const noexcept { return IsEditing(); }
+    void RefreshHeaderFlyouts();
 
     // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
     // element that raised it or on any ancestor opens. Hooked below every element that can carry a

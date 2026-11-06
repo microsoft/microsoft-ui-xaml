@@ -31,27 +31,29 @@
                                 <VisualState x:Name="Ascending">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Visibility" Value="Visible" />
-                                        <Setter Target="GlyphIcon.Glyph" Value="&#xE96D;" />
+                                        <Setter Target="GlyphIcon.Data" Value="M13 14.5C13 14.7761 12.7761 15 12.5 15C12.2239 15 12 14.7761 12 14.5V2.70711L10.8536 3.85355C10.6583 4.04882 10.3417 4.04882 10.1464 3.85355C9.95118 3.65829 9.95118 3.34171 10.1464 3.14645L12.1464 1.14645C12.3417 0.951185 12.6583 0.951185 12.8536 1.14645L14.8536 3.14645C15.0488 3.34171 15.0488 3.65829 14.8536 3.85355C14.6583 4.04882 14.3417 4.04882 14.1464 3.85355L13 2.70711V14.5ZM2.5 13C2.22386 13 2 12.7761 2 12.5C2 12.2239 2.22386 12 2.5 12H9.5C9.77614 12 10 12.2239 10 12.5C10 12.7761 9.77614 13 9.5 13H2.5ZM4.5 10C4.22386 10 4 9.77614 4 9.5C4 9.22386 4.22386 9 4.5 9H9.5C9.77614 9 10 9.22386 10 9.5C10 9.77614 9.77614 10 9.5 10H4.5ZM6 6.5C6 6.77614 6.22386 7 6.5 7H9.5C9.77614 7 10 6.77614 10 6.5C10 6.22386 9.77614 6 9.5 6H6.5C6.22386 6 6 6.22386 6 6.5Z" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Descending">
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Visibility" Value="Visible" />
-                                        <Setter Target="GlyphIcon.Glyph" Value="&#xE96E;" />
+                                        <Setter Target="GlyphIcon.Data" Value="M13 1.5C13 1.22386 12.7761 1 12.5 1C12.2239 1 12 1.22386 12 1.5V13.2929L10.8536 12.1464C10.6583 11.9512 10.3417 11.9512 10.1464 12.1464C9.95118 12.3417 9.95118 12.6583 10.1464 12.8536L12.1464 14.8536C12.3417 15.0488 12.6583 15.0488 12.8536 14.8536L14.8536 12.8536C15.0488 12.6583 15.0488 12.3417 14.8536 12.1464C14.6583 11.9512 14.3417 11.9512 14.1464 12.1464L13 13.2929V1.5ZM2.5 3C2.22386 3 2 3.22386 2 3.5C2 3.77614 2.22386 4 2.5 4H9.5C9.77614 4 10 3.77614 10 3.5C10 3.22386 9.77614 3 9.5 3H2.5ZM4.5 6C4.22386 6 4 6.22386 4 6.5C4 6.77614 4.22386 7 4.5 7H9.5C9.77614 7 10 6.77614 10 6.5C10 6.22386 9.77614 6 9.5 6H4.5ZM6 9.5C6 9.22386 6.22386 9 6.5 9H9.5C9.77614 9 10 9.22386 10 9.5C10 9.77614 9.77614 10 9.5 10H6.5C6.22386 10 6 9.77614 6 9.5Z" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <FontIcon x:Name="GlyphIcon"
-                                  Glyph="&#xE96D;"
-                                  FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                  FontSize="{ThemeResource SortIndicatorGlyphSize}"
-                                  IsTextScaleFactorEnabled="False"
-                                  Foreground="{TemplateBinding Foreground}"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  AutomationProperties.AccessibilityView="Raw" />
+                        <!-- Preserve the 16px SVG viewport of Fluent System Icons' Arrow Sort Up/Down Lines. -->
+                        <Viewbox Width="{ThemeResource SortIndicatorGlyphSize}"
+                                 Height="{ThemeResource SortIndicatorGlyphSize}"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                            <Canvas Width="16" Height="16" FlowDirection="LeftToRight">
+                                <Path x:Name="GlyphIcon"
+                                      Fill="{TemplateBinding Foreground}"
+                                      AutomationProperties.AccessibilityView="Raw" />
+                            </Canvas>
+                        </Viewbox>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

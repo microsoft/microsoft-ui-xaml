@@ -1,4 +1,4 @@
-<!-- Template cells follow Density with no change of their own. -->
+<!-- Custom template content can make rows taller than the density minimum. -->
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People density"

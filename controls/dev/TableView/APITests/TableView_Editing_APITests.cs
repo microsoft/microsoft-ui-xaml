@@ -503,6 +503,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDensityEditorPreservesRowHeightAndTextInsets()
+        {
+            var densityCases = TableViewThemingTestHelpers.DensityCases;
+            for (var index = 0; index < densityCases.Length; ++index)
+            {
+                var testCase = densityCases[index];
+                var nextCase = densityCases[(index + 1) % densityCases.Length];
+                TableView tableView = null;
+                List<EditablePerson> items = null;
+                bool vetoClose = true;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    items = MakeEditableItems();
+                    tableView = CreateEditableTable(items);
+                    tableView.IsTextScaleFactorEnabled = false;
+                    tableView.IsReadOnly = false;
+                    tableView.Density = testCase.Density;
+                    tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Editing");
+                    Verify.IsNotNull(error, "A vetoed commit must leave the editor open for inspection.");
+                    Verify.IsTrue(tableView.IsEditing);
+                    tableView.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var editor = FindVisualChildrenByType<TextBox>(tableView).First();
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(testCase.FontSize, editor.FontSize);
+                    Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, $"Editing must not grow a {testCase.Density} row.");
+                    Verify.AreEqual(testCase.CellPadding.Left, editor.Padding.Left + editor.BorderThickness.Left,
+                        "Editor text must retain the display cell's horizontal inset.");
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, testCase.CellPadding).Top,
+                        editor.Padding.Top + editor.BorderThickness.Top,
+                        "Editor text must retain the density inset and row-divider compensation.");
+                    tableView.Density = nextCase.Density;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var editor = FindVisualChildrenByType<TextBox>(tableView).First();
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.IsTrue(tableView.IsEditing, "Changing density must preserve the open editor.");
+                    Verify.AreEqual(nextCase.FontSize, editor.FontSize, "The open editor must follow density typography.");
+                    Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "The open editor must follow a runtime density change.");
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.CellPadding).Top,
+                        editor.Padding.Top + editor.BorderThickness.Top);
+                    vetoClose = false;
+                    Verify.IsTrue(tableView.CancelEdit());
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "Closing the editor must preserve row height.");
+                    Verify.AreEqual(nextCase.FontSize, TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).FontSize,
+                        "The cached display text must pick up the new font size before it is restored.");
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.TextPadding),
+                        TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).Padding,
+                        "Restoring display text must restore its optical padding without changing editor padding.");
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies cancelling CellEditEnding blocks the value and leaves the edit open, per the IDL's stay-open rule.")]
         public void VerifyCellEditEndingCancelBlocksCommitAndLeavesEditOpen()
         {

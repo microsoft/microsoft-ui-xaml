@@ -1007,6 +1007,7 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
     }
 
     m_editState = closed ? EditState::None : EditState::Editing;
+    RefreshHeaderFlyouts();
 
     if (closed)
     {
@@ -1313,6 +1314,7 @@ void TableView::ResetPendingBeginEdit()
     m_editUneditedValue.set(nullptr);
     m_editState = EditState::None;
     m_abandonPendingBeginEdit = false;
+    RefreshHeaderFlyouts();
 }
 
 bool TableView::BeginEdit()
@@ -1409,6 +1411,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
         // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
         // the checks below unwind rather than promoting to Editing over a recycled row.
+        RefreshHeaderFlyouts();
         const bool allowed = RaiseBeginningEdit(item, column, tip);
         if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
         {

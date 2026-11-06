@@ -57,6 +57,9 @@ public:
     void SelectionMode(winrt::TableViewSelectionMode const& value);
     winrt::TableViewSelectionMode SelectionMode();
 
+    void ShowGroupHeaderCount(bool value);
+    bool ShowGroupHeaderCount();
+
     static winrt::DependencyProperty AlternatingRowBackgroundProperty() { return s_AlternatingRowBackgroundProperty; }
     static winrt::DependencyProperty CanUserResizeColumnsProperty() { return s_CanUserResizeColumnsProperty; }
     static winrt::DependencyProperty CanUserSortColumnsProperty() { return s_CanUserSortColumnsProperty; }
@@ -73,6 +76,7 @@ public:
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
+    static winrt::DependencyProperty ShowGroupHeaderCountProperty() { return s_ShowGroupHeaderCountProperty; }
 
     static GlobalDependencyProperty s_AlternatingRowBackgroundProperty;
     static GlobalDependencyProperty s_CanUserResizeColumnsProperty;
@@ -90,6 +94,7 @@ public:
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_SelectionModeProperty;
+    static GlobalDependencyProperty s_ShowGroupHeaderCountProperty;
 
     winrt::event_token BeginningEdit(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs> const& value);
     void BeginningEdit(winrt::event_token const& token);
@@ -164,6 +169,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSelectionModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnShowGroupHeaderCountPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

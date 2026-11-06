@@ -1316,7 +1316,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 double rowX = row.TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
                 double chevronX = GetChevron(tableView, "Ada").TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
                 Log.Comment($"Root indent={chevronX - rowX}, gutter + TableViewGroupExpanderSpacing={expected}, header Padding.Left={header.Padding.Left}");
-                Verify.AreEqual(24.0 + 8.0, expected, "Default gutter (TableViewGroupExpanderSize) plus TableViewGroupExpanderSpacing.");
+                Verify.AreEqual(12.0 + 4.0, expected, "Default gutter (TableViewGroupExpanderSize) plus TableViewGroupExpanderSpacing.");
                 Verify.IsLessThan(Math.Abs(chevronX - rowX - expected), 0.5,
                     "A grouped root row's indent must equal the group header's gutter plus TableViewGroupExpanderSpacing.");
             });

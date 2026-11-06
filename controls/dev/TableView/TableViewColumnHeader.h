@@ -19,6 +19,7 @@ public:
     void OnApplyTemplate();
     winrt::AutomationPeer OnCreateAutomationPeer();
     winrt::AutomationPeer GetExistingAutomationPeerInternal() const { return m_automationPeer.get(); }
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // None of these mark the event handled, so Tapped-to-sort and focus are unaffected.
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
@@ -41,10 +42,18 @@ public:
 
     winrt::ContentPresenter GetContentPresenterInternal() const { return m_contentPresenter.get(); }
     winrt::Border GetGridLineInternal() const { return m_gridLine.get(); }
+    winrt::DropDownButton GetFlyoutButtonInternal() const { return m_flyoutButton.get(); }
+    void RefreshFlyoutInternal();
+    void ReleaseFlyoutInternal();
+    bool IsInsideFlyoutButton(winrt::IInspectable const& source) const;
 
     // True while Content is the TextBlock the TableView made for a string Header.
-    void SetOwnsContentInternal(bool ownsContent) { m_ownsContent = ownsContent; }
-    bool OwnsContentInternal() const { return m_ownsContent; }
+    void SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding);
+    bool OwnsContentInternal() const
+    {
+        auto const text = m_ownedText.get();
+        return text && text == Content();
+    }
 
     // True while the local IsTabStop=false is the TableView's inactive-header stamp, not the app's.
     void SetOwnsTabStopStampInternal(bool ownsStamp) { m_ownsTabStopStamp = ownsStamp; }
@@ -53,8 +62,9 @@ public:
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
+    void UpdateContentPadding();
     void HostSortIndicator();
-    void SyncSortIndicatorForeground(bool followText, bool highlighted);
+    void SyncSortIndicatorForeground(bool highlighted);
     void ResetPointerState(winrt::PointerRoutedEventArgs const& args);
     bool IsInsideResizeGripper(winrt::IInspectable const& source);
 
@@ -68,9 +78,16 @@ private:
     tracker_ref<winrt::Border> m_resizeGripperHost{ this };
     tracker_ref<winrt::SortIndicator> m_sortIndicator{ this };
     tracker_ref<winrt::ResizeGripper> m_resizeGripper{ this };
+    tracker_ref<winrt::DropDownButton> m_flyoutButton{ this };
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
+    winrt::UIElement::PointerEntered_revoker m_flyoutPointerEnteredRevoker{};
+    winrt::UIElement::PointerExited_revoker m_flyoutPointerExitedRevoker{};
+    winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
+    winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
+    winrt::FrameworkElement::Unloaded_revoker m_flyoutUnloadedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     winrt::Thickness m_templateContentMargin{};
     double m_indicatorReserve{ 0.0 };
@@ -78,6 +95,11 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
-    bool m_ownsContent{ false };
+    winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
+    winrt::Thickness m_textPadding{};
+    winrt::Thickness m_initialControlPadding{};
+    bool m_hasTextPadding{ false };
+    bool m_isFlyoutPointerOver{ false };
+    bool m_isFlyoutOpen{ false };
     bool m_ownsTabStopStamp{ false };
 };

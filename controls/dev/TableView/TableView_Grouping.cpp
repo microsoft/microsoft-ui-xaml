@@ -1069,7 +1069,7 @@ winrt::hstring TableView::GetGroupHeaderNameCandidate(GroupedEntry const& entry)
 {
     auto const key = GetGroupHeaderKey(entry);
     return GroupInfoToName(winrt::make<::TableViewGroupInfo>(
-        key, entry.GroupItemCount(), 0, false, false, StringifyGroupKey(key)));
+        key, entry.GroupItemCount(), 0, false, false, StringifyGroupKey(key)), ShowGroupHeaderCount());
 }
 
 void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& header, int32_t index)
@@ -1091,6 +1091,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
 
     auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
     headerImpl->SetOwningTableViewInternal(*this);
+    headerImpl->RefreshDensity();
 
     // Subscribe ONCE per container: it is pooled and re-prepared many times, and subscribing per
     // prepare would fan one band gesture into N toggles. The guard lives here because containers
@@ -1285,6 +1286,39 @@ void TableView::OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyProp
     ForEachRealizedGroupHeader([this](winrt::TableViewGroupHeader const& header, int32_t index)
     {
         PrepareGroupHeaderElement(header, index);
+    });
+}
+
+void TableView::OnShowGroupHeaderCountPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.OldValue() == args.NewValue())
+    {
+        return;
+    }
+    const bool previous = winrt::unbox_value<bool>(args.OldValue());
+    const bool current = ShowGroupHeaderCount();
+    ForEachRealizedGroupHeader([previous, current](winrt::TableViewGroupHeader const& header, int32_t)
+    {
+        winrt::get_self<TableViewGroupHeader>(header)->RefreshDefaultCount();
+        header.InvalidateMeasure();
+        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged) &&
+            winrt::AutomationProperties::GetName(header).empty() &&
+            !winrt::AutomationProperties::GetLabeledBy(header))
+        {
+            if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
+            {
+                if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(header))
+                {
+                    const auto oldName = GroupInfoToName(info, previous);
+                    const auto newName = GroupInfoToName(info, current);
+                    if (oldName != newName)
+                    {
+                        peer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
+                            winrt::box_value(oldName), winrt::box_value(newName));
+                    }
+                }
+            }
+        }
     });
 }
 

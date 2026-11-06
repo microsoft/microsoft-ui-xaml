@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +20,7 @@ using System.Linq;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
+using WEX.Logging.Interop;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.ContextMenuTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewAutomationTestHelpers;
@@ -684,6 +686,396 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var f = LoadEditableFixture();
             RequestWhileEditing(f, () => ((AutomationPeer)FrameworkElementAutomationPeer.CreatePeerForElement(f.Table)).ShowContextMenu());
             VerifyNoMenuOpened(f, "UIA on the TableView while row 3 / Name is editing");
+        }
+
+        [TestMethod]
+        public void HeaderDropdownIsOptInAndUpdatesWithoutRebuilding()
+        {
+            var f = LoadFixture();
+            RunOnUIThread.Execute(() =>
+            {
+                var header = HeaderOf(f, NameCol);
+                var button = FindVisualChildrenByType<DropDownButton>(header).Single();
+                Verify.IsNull(f.NameColumn.HeaderFlyout);
+                Verify.AreEqual(Visibility.Collapsed, button.Visibility);
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                Verify.AreEqual(0, peer.GetChildren().Count(p => p.GetPattern(PatternInterface.ExpandCollapse) != null));
+
+                f.NameColumn.HeaderFlyout = f.Recorder.Create("HeaderOptions");
+                f.Table.UpdateLayout();
+                Verify.AreEqual(header, HeaderOf(f, NameCol), "A live flyout update must not rebuild the header.");
+                Verify.AreEqual(Visibility.Visible, button.Visibility);
+                Verify.AreEqual(26.0, button.ActualWidth);
+                Verify.AreEqual(header.ActualHeight, button.ActualHeight);
+                Verify.IsTrue(button.IsTabStop, "The header host owns the band's Tab policy; the dropdown must remain focusable.");
+                Verify.AreEqual("Options for Name", AutomationProperties.GetName(button));
+                Verify.AreEqual(1, peer.GetChildren().Count(p => p.GetPattern(PatternInterface.ExpandCollapse) != null),
+                    "The realized header exposes its dropdown without hiding app-supplied header content.");
+
+                f.NameColumn.HeaderFlyout = null;
+                f.Table.UpdateLayout();
+                Verify.AreEqual(header, HeaderOf(f, NameCol));
+                Verify.AreEqual(Visibility.Collapsed, button.Visibility);
+                Verify.IsNull(button.Flyout);
+                Verify.AreEqual(0, peer.GetChildren().Count(p => p.GetPattern(PatternInterface.ExpandCollapse) != null));
+                f.NameColumn.Header = "";
+                f.NameColumn.HeaderFlyout = f.Recorder.Create("UnnamedHeaderOptions");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.AreEqual("Column options", AutomationProperties.GetName(button),
+                    "A header without text still needs an actionable accessible name.");
+            });
+        }
+
+        [TestMethod]
+        public void HeaderDropdownCanTakeKeyboardFocusWithoutAddingABandTabStop()
+        {
+            var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                var button = FindVisualChildrenByType<DropDownButton>(header).Single();
+                Verify.IsTrue(button.Focus(FocusState.Keyboard),
+                    "The dropdown must be focusable for keyboard opening and native flyout focus restoration.");
+                Verify.AreEqual(button, FocusManager.GetFocusedElement(f.Table.XamlRoot));
+                Verify.IsTrue(header.Focus(FocusState.Keyboard));
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = f.Table.XamlRoot.Content }));
+            });
+            SettleLayout(f.Table);
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(f.Table.XamlRoot);
+                Verify.IsTrue(focused is TableViewRow,
+                    "Tab must still leave the header band for the body, not visit its dropdown buttons.");
+                Log.Comment($"Focus after leaving the header band: {focused?.GetType().Name}.");
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.IsTrue(button.Focus(FocusState.Keyboard));
+                ((IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(button)
+                    .GetPattern(PatternInterface.ExpandCollapse)).Expand();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(f.NameColumn.HeaderFlyout.IsOpen);
+                f.NameColumn.HeaderFlyout.Hide();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.AreEqual(button, FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                    "Closing the menu restores focus to its keyboard-focusable dropdown button.");
+            });
+        }
+
+        [TestMethod]
+        public void HeaderDropdownKeepsItsOuterEdgeAfterFiltering()
+        {
+            TableViewSource source = null;
+            var f = LoadFixture(itemCount: 30, configure: x =>
+            {
+                source = TableViewSource.From(x.Items);
+                x.Table.ItemsSource = source;
+                x.Table.Height = 240;
+                x.OfficeColumn.Width = new GridLength(1, GridUnitType.Star);
+                x.OfficeColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions");
+            });
+
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                RunOnUIThread.Execute(() => f.Table.FlowDirection = flow);
+                SettleLayout(f.Table);
+                foreach (var filteredCount in new[] { 30, 1, 0, 30 })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, OfficeCol)).Single();
+                        button.Flyout.ShowAt(button);
+                        if (filteredCount == 30)
+                        {
+                            source.ClearFilter();
+                        }
+                        else
+                        {
+                            source.Filter(item => filteredCount == 1 && ((Person)item).Name == "Person 0");
+                        }
+                        button.Flyout.Hide();
+                    });
+                    SettleLayout(f.Table);
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var header = HeaderOf(f, OfficeCol);
+                        var button = FindVisualChildrenByType<DropDownButton>(header).Single();
+                        var chrome = (Border)button.FindVisualChildByName("Chrome");
+                        var separator = (Border)header.FindVisualChildByName("PART_GridLine");
+                        var context = $"{flow}, {filteredCount} filtered rows";
+                        var headerBounds = header.TransformToVisual(f.Table).TransformBounds(
+                            new global::Windows.Foundation.Rect(0, 0, header.ActualWidth, header.ActualHeight));
+                        Log.Comment($"{context}: table width {f.Table.ActualWidth}, border {f.Table.BorderThickness}, header bounds {headerBounds}.");
+                        Verify.AreEqual(Visibility.Collapsed, separator.Visibility,
+                            $"The last header must not paint an extra stroke against the table border ({context}).");
+                        Verify.IsTrue(chrome.CornerRadius.TopRight > 0,
+                            $"The dropdown must retain its local trailing corner, mirrored by XAML in RTL ({context}).");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void HeaderDropdownDoesNotSortAndKeepsContextMenuIndependent()
+        {
+            var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                var provider = (IExpandCollapseProvider)peer.GetPattern(PatternInterface.ExpandCollapse);
+                Verify.AreEqual(ExpandCollapseState.Collapsed, provider.ExpandCollapseState);
+                provider.Expand();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(f.NameColumn.HeaderFlyout.IsOpen);
+                Verify.IsFalse(f.HeaderMenu.IsOpen);
+                Verify.AreEqual(SortDirection.None, f.NameColumn.SortDirection);
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                var provider = (IExpandCollapseProvider)peer.GetPattern(PatternInterface.ExpandCollapse);
+                Verify.AreEqual(ExpandCollapseState.Expanded, provider.ExpandCollapseState);
+                provider.Collapse();
+            });
+            IdleSynchronizer.Wait();
+            CloseMenus(f);
+            RequestOnHeader(f, NameCol);
+            VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), NoItem, "HeaderContextFlyout is independent of HeaderFlyout");
+            CloseMenus(f);
+
+            RunOnUIThread.Execute(() =>
+            {
+                f.NameColumn.CanSort = false;
+                f.Table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.AreEqual(Visibility.Visible, button.Visibility);
+                ((IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(button)
+                    .GetPattern(PatternInterface.ExpandCollapse)).Expand();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsTrue(f.NameColumn.HeaderFlyout.IsOpen,
+                "The dropdown does not require sorting to be enabled."));
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void HeaderDropdownClosesWhenReplacedDisabledOrRemoved()
+        {
+            var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
+            MenuFlyout oldFlyout = null;
+            RunOnUIThread.Execute(() =>
+            {
+                oldFlyout = (MenuFlyout)f.NameColumn.HeaderFlyout;
+                oldFlyout.ShowAt(FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single());
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => f.NameColumn.HeaderFlyout = f.Recorder.Create("ReplacementOptions"));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(oldFlyout.IsOpen);
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
+                button.Flyout.ShowAt(button);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => f.Table.IsEnabled = false);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen);
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.IsNull(button.Flyout, "A retained UIA provider cannot open a disabled header's flyout.");
+                f.Table.IsEnabled = true;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
+                button.Flyout.ShowAt(button);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                header.Template = (ControlTemplate)XamlReader.Load(
+                    "<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='ContentControl'>" +
+                    "<ContentPresenter Content='{TemplateBinding Content}'/></ControlTemplate>");
+                header.ApplyTemplate();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen, "Retemplating closes the old button's flyout.");
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                Verify.AreEqual(0, FindVisualChildrenByType<DropDownButton>(header).Count,
+                    "Custom templates can omit the dropdown part.");
+                header.ClearValue(Control.TemplateProperty);
+                header.ApplyTemplate();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
+                button.Flyout.ShowAt(button);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => f.Table.Columns.Remove(f.NameColumn));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen,
+                "Removing a column must not leave its dropdown open."));
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void HeaderDropdownDoesNotCloseSharedFlyoutOwnedByAnotherHeader()
+        {
+            var f = LoadFixture(configure: x =>
+            {
+                x.NameColumn.HeaderFlyout = x.Recorder.Create("SharedOptions");
+                x.OfficeColumn.HeaderFlyout = x.NameColumn.HeaderFlyout;
+            });
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, OfficeCol)).Single();
+                button.Flyout.ShowAt(button);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => f.NameColumn.HeaderFlyout = null);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsTrue(f.OfficeColumn.HeaderFlyout.IsOpen,
+                "Detaching the same flyout from an inactive header must not dismiss its active owner."));
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void HeaderDropdownIsSuppressedThroughoutEditing()
+        {
+            var f = LoadEditableFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
+            DropDownButton button = null;
+            IExpandCollapseProvider dropdown = null;
+            RunOnUIThread.Execute(() =>
+            {
+                button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                dropdown = (IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(button)
+                    .GetPattern(PatternInterface.ExpandCollapse);
+                f.Table.CellEditEnding += (s, e) =>
+                {
+                    Verify.IsTrue(f.Table.IsEditing);
+                    Verify.IsFalse(button.IsEnabled);
+                    Verify.IsNull(button.Flyout);
+                };
+            });
+            RequestWhileEditing(f, () =>
+            {
+                Verify.IsFalse(button.IsEnabled);
+                Verify.AreEqual(Visibility.Visible, button.Visibility, "Editing must not change header geometry.");
+                Verify.IsNull(button.Flyout);
+                dropdown.Expand();
+                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen);
+            });
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(f.Table.IsEditing);
+                Verify.IsTrue(button.IsEnabled);
+                Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
+            });
+            VerifyNoMenuOpened(f, "BeginningEdit and CellEditEnding");
+        }
+
+        [TestMethod]
+        public void HeaderDropdownLayoutReservesSpaceAcrossDensityThemeAndRtl()
+        {
+            var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            foreach (var density in new[] { TableViewDensity.ExtraCompact, TableViewDensity.Compact, TableViewDensity.Standard })
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    f.Table.RequestedTheme = theme;
+                    f.Table.Density = density;
+                    f.Table.FlowDirection = flow;
+                    f.Table.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = HeaderOf(f, NameCol);
+                    var button = FindVisualChildrenByType<DropDownButton>(header).Single();
+                    var presenter = FindVisualChildrenByType<ContentPresenter>(header)
+                        .Single(p => p.Name == "PART_ContentPresenter");
+                    Verify.AreEqual(26.0, button.ActualWidth);
+                    Verify.AreEqual(header.ActualHeight, button.ActualHeight);
+                    var headerBounds = header.TransformToVisual(f.Root).TransformBounds(
+                        new global::Windows.Foundation.Rect(0, 0, header.ActualWidth, header.ActualHeight));
+                    var buttonBounds = button.TransformToVisual(f.Root).TransformBounds(
+                        new global::Windows.Foundation.Rect(0, 0, button.ActualWidth, button.ActualHeight));
+                    var contentBounds = presenter.TransformToVisual(f.Root).TransformBounds(
+                        new global::Windows.Foundation.Rect(0, 0, presenter.ActualWidth, presenter.ActualHeight));
+                    if (flow == FlowDirection.LeftToRight)
+                    {
+                        Verify.IsTrue(contentBounds.Right <= buttonBounds.Left + 0.1, "Content and sort reserve precede the dropdown.");
+                        Verify.IsTrue(Math.Abs(buttonBounds.Right - headerBounds.Right) < 0.1);
+                    }
+                    else
+                    {
+                        Verify.IsTrue(buttonBounds.Right <= contentBounds.Left + 0.1, "The dropdown mirrors to the leading visual edge in RTL.");
+                        Verify.IsTrue(Math.Abs(buttonBounds.Left - headerBounds.Left) < 0.1);
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        public void HeaderDropdownMakesAnOtherwiseInactiveHeaderFocusable()
+        {
+            var f = LoadFixture(configure: x =>
+            {
+                x.Table.CanUserSortColumns = false;
+                x.Table.CanUserResizeColumns = false;
+                x.Table.ContextFlyout = null;
+                x.NameColumn.HeaderContextFlyout = null;
+                x.NameColumn.HeaderToolTip = null;
+            });
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                Verify.IsFalse(header.IsTabStop, "A header with no actions starts outside the tab order.");
+                f.NameColumn.HeaderFlyout = f.Recorder.Create("HeaderOptions");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                Verify.IsTrue(header.IsTabStop, "A live header dropdown makes its header actionable.");
+                Verify.IsTrue(header.Focus(FocusState.Keyboard));
+                f.NameColumn.HeaderFlyout = null;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(((TableViewColumnHeader)HeaderOf(f, NameCol)).IsTabStop,
+                    "Removing the only header action restores its inactive-header stamp.");
+            });
         }
 
         [TestMethod]

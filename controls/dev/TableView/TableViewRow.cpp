@@ -8,6 +8,7 @@
 #include "TableViewFocusHelpers.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
+#include "TableViewTextColumn.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
@@ -127,6 +128,30 @@ TableViewRow::TableViewRow()
 
     auto weakRow = get_weak();
 
+    RegisterPropertyChangedCallback(winrt::FrameworkElement::FocusVisualMarginProperty(),
+        [weakRow](auto const&, auto const&)
+        {
+            if (auto row = weakRow.get())
+            {
+                row->RefreshCellVisualGeometry();
+            }
+        });
+    RegisterPropertyChangedCallback(winrt::Control::BorderThicknessProperty(),
+        [weakRow](auto const&, auto const&)
+        {
+            if (auto row = weakRow.get())
+            {
+                row->RefreshGridLines();
+            }
+        });
+    m_rowSizeChangedRevoker = SizeChanged(winrt::auto_revoke,
+        [weakRow](auto const&, auto const&)
+        {
+            if (auto row = weakRow.get())
+            {
+                row->RefreshCellVisualGeometry();
+            }
+        });
     RegisterPropertyChangedCallback(winrt::UIElement::ContextFlyoutProperty(),
         [weakRow](auto&&, auto&&)
         {
@@ -193,6 +218,16 @@ TableViewRow::TableViewRow()
             }
         });
 
+    m_loadedRevoker = Loaded(
+        winrt::auto_revoke,
+        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                strongRow->RefreshVisualState();
+            }
+        });
+
     // Don't strand cell content out of the tab order if unloaded before the restore turn runs.
     m_unloadedRevoker = Unloaded(
         winrt::auto_revoke,
@@ -222,6 +257,20 @@ void TableViewRow::OnApplyTemplate()
     auto const host = GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>();
     m_cellsHost.set(host);
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
+    m_chromeSizeChangedRevoker.revoke();
+    auto const chrome = GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>();
+    m_rowChrome.set(chrome);
+    if (chrome)
+    {
+        m_chromeSizeChangedRevoker = chrome.SizeChanged(winrt::auto_revoke,
+            [weakRow = get_weak()](auto const&, auto const&)
+            {
+                if (auto row = weakRow.get())
+                {
+                    row->RefreshCellVisualGeometry();
+                }
+            });
+    }
     m_rowExpanderGutter.set(GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>());
 
     // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription.
@@ -1311,7 +1360,24 @@ void TableViewRow::UpdateVisualState(bool useTransitions)
                                   : L"Normal"sv;
     }
 
+    if (IsLoaded() && IsEnabled() && state != L"Normal"sv)
+    {
+        if (auto const owner = GetOwningTableView(); owner && winrt::get_self<TableView>(owner)->IsHighContrast())
+        {
+            // Older app templates may only implement the original CommonStates names.
+            if (winrt::VisualStateManager::GoToState(*this, L"HighContrast" + hstring{ state }, useTransitions))
+            {
+                return;
+            }
+        }
+    }
+
     winrt::VisualStateManager::GoToState(*this, hstring{ state }, useTransitions);
+}
+
+void TableViewRow::RefreshVisualState()
+{
+    UpdateVisualState(false /* useTransitions */);
 }
 
 void TableViewRow::SetIsSelectedInternal(bool isSelected)
@@ -1618,6 +1684,7 @@ bool TableViewRow::IsWithinExpanderGutter(const winrt::IInspectable& source) con
 
 void TableViewRow::OnCellsArrangedInternal(double leadLeft, double leadWidth, double height)
 {
+    RefreshCellVisualGeometry();
     if (m_cellsArranged && leadLeft == m_leadCellLeft && leadWidth == m_leadCellWidth && height == m_cellsArrangedHeight)
     {
         return;
@@ -1707,7 +1774,7 @@ void TableViewRow::UpdateExpanderGutterClip()
 
 void TableViewRow::RefreshDensity()
 {
-    // Re-read density metrics and restamp built-in cell padding.
+    // Re-read density metrics and restamp built-in cell typography and padding.
     RebuildCells();
 }
 
@@ -1893,7 +1960,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     }
 
     // Density: apply the owning TableView's row min-height (Fluent Standard = 40,
-    // Compact = 30, Comfortable = 48; resolved from the TableViewRowMinHeight* resources).
+    // Compact = 32, ExtraCompact = 24; resolved from the TableViewRowMinHeight* resources).
     const auto ownerImpl = winrt::get_self<TableView>(owner);
     const auto rowMinHeight = ownerImpl->GetDensityRowMinHeight();
     if (MinHeight() != rowMinHeight)
@@ -2001,9 +2068,26 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         }
     }
 
+    const double cellFontSize = ownerImpl->GetCellFontSize();
+    const bool fontSizeChanged = m_cellFontSize != cellFontSize;
+    m_cellFontSize = cellFontSize;
     if (canRestampCells)
     {
         const auto cellPadding = ownerImpl->GetDensityCellPadding();
+        if (auto displayText = m_editingDisplayElement.get().try_as<winrt::TextBlock>())
+        {
+            const auto displayPadding = m_editingColumn.get().try_as<winrt::TableViewTextColumn>()
+                ? ownerImpl->GetDisplayCellPadding(m_contentVerticalOffset)
+                : TableViewDetails::OffsetContentPadding(cellPadding, m_contentVerticalOffset);
+            if (displayText.Padding() != displayPadding)
+            {
+                displayText.Padding(displayPadding);
+            }
+            if (fontSizeChanged && m_editingColumn.get().try_as<winrt::TableViewTextColumn>())
+            {
+                displayText.FontSize(cellFontSize);
+            }
+        }
         childIndex = 0;
         for (auto const& column : columns)
         {
@@ -2028,10 +2112,23 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
             {
                 if (auto textBlock = cellElement.try_as<winrt::TextBlock>())
                 {
-                    if (textBlock.Padding() != cellPadding)
+                    auto const alignedPadding = column.try_as<winrt::TableViewTextColumn>()
+                        ? ownerImpl->GetDisplayCellPadding(m_contentVerticalOffset)
+                        : TableViewDetails::OffsetContentPadding(cellPadding, m_contentVerticalOffset);
+                    if (textBlock.Padding() != alignedPadding)
                     {
-                        textBlock.Padding(cellPadding);
+                        textBlock.Padding(alignedPadding);
                     }
+                    // Do not overwrite an app's local typography during ordinary layout restamps.
+                    if (fontSizeChanged && column.try_as<winrt::TableViewTextColumn>())
+                    {
+                        textBlock.FontSize(cellFontSize);
+                    }
+                }
+                else if (auto editor = cellElement.try_as<winrt::TextBox>();
+                    editor && column.try_as<winrt::TableViewTextColumn>() && !column.CellEditingTemplate())
+                {
+                    TableViewTextColumn::RefreshEditorMetrics(editor, owner);
                 }
             }
 
@@ -2263,7 +2360,85 @@ void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt
     }
 }
 
-// Grid lines only: the row's horizontal bottom line and the vertical per-cell separators (driven by
+void TableViewRow::RefreshCellVisualGeometry()
+{
+    auto const host = m_cellsHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    auto const chrome = m_rowChrome.get();
+    const bool hasChromeBounds = chrome && chrome == GetTemplateChild(L"PART_RowChrome")
+        && chrome.ActualHeight() > 0.0 && ActualHeight() > 0.0;
+    const double chromeTop = hasChromeBounds
+        ? chrome.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y : 0.0;
+    const double chromeBottom = hasChromeBounds ? chromeTop + chrome.ActualHeight() : 0.0;
+    m_contentVerticalOffset = hasChromeBounds
+        ? (chromeTop + chromeBottom - ActualHeight()) / 2.0 : 0.0;
+    auto const owner = GetOwningTableView();
+    auto const padding = owner
+        ? TableViewDetails::OffsetContentPadding(
+            winrt::get_self<TableView>(owner)->GetDensityCellPadding(), m_contentVerticalOffset)
+        : winrt::Thickness{};
+    auto const displayPadding = owner
+        ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding(m_contentVerticalOffset)
+        : winrt::Thickness{};
+
+    for (auto const& child : host.Children())
+    {
+        if (auto const cell = child.try_as<winrt::FrameworkElement>())
+        {
+            auto margin = FocusVisualMargin();
+            if (hasChromeBounds && cell.ActualHeight() > 0.0)
+            {
+                const double cellTop = cell.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y;
+                // Use arranged bounds so row and cell focus agree after fractional-DPI rounding.
+                margin.Top += chromeTop - cellTop;
+                margin.Bottom += cellTop + cell.ActualHeight() - chromeBottom;
+            }
+            if (cell.FocusVisualMargin() != margin)
+            {
+                cell.FocusVisualMargin(margin);
+            }
+            if (owner)
+            {
+                if (auto const wrapper = cell.try_as<winrt::Grid>())
+                {
+                    if (auto const text = TableViewCell::Child(wrapper).try_as<winrt::TextBlock>())
+                    {
+                        auto const textPadding = wrapper.Tag().try_as<winrt::TableViewTextColumn>()
+                            ? displayPadding : padding;
+                        if (text.Padding() != textPadding)
+                        {
+                            text.Padding(textPadding);
+                        }
+                    }
+                    else if (auto const editor = TableViewCell::Child(wrapper).try_as<winrt::TextBox>();
+                        editor && wrapper.Tag().try_as<winrt::TableViewTextColumn>() &&
+                        !wrapper.Tag().as<winrt::TableViewTextColumn>().CellEditingTemplate())
+                    {
+                        TableViewTextColumn::RefreshEditorMetrics(editor, owner);
+                    }
+                }
+            }
+        }
+    }
+    if (auto const gutter = m_rowExpanderGutter.get().try_as<winrt::Border>())
+    {
+        if (auto const icon = gutter.Child().try_as<winrt::FrameworkElement>())
+        {
+            auto translation = icon.Translation();
+            if (translation.y != static_cast<float>(m_contentVerticalOffset))
+            {
+                translation.y = static_cast<float>(m_contentVerticalOffset);
+                icon.Translation(translation);
+            }
+        }
+    }
+}
+
+// Grid lines: the row's horizontal bottom line and the vertical per-cell separators (driven by
 // GridLinesVisibility). Row background / alternating banding lives in RefreshRowBackground.
 void TableViewRow::RefreshGridLines()
 {
@@ -2294,8 +2469,8 @@ void TableViewRow::RefreshGridLines()
         {
             gridLineBorder.BorderThickness(thickness);
         }
+        TableViewDetails::SetRowChromeSeparatorInsets(m_rowChrome.get(), thickness);
     }
-
     auto host = m_cellsHost.get();
     if (!host)
     {

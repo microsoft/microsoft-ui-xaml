@@ -183,6 +183,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"SelectedIndex", L"Int32", statics.SelectedIndexProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedItem", L"Object", statics.SelectedItemProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectionMode", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode", statics.SelectionModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ShowGroupHeaderCount", L"Boolean", statics.ShowGroupHeaderCountProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(
@@ -243,6 +244,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderContextFlyoutProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HeaderFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"HeaderStyle", L"Microsoft.UI.Xaml.Style", statics.HeaderStyleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.HeaderTemplateProperty(), false /* isContent */);
@@ -322,7 +324,7 @@ Entry c_typeEntries[] =
                 {
                     if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Standard") return box_value(winrt::TableViewDensity::Standard);
-                    if (fromString == L"Comfortable") return box_value(winrt::TableViewDensity::Comfortable);
+                    if (fromString == L"ExtraCompact") return box_value(winrt::TableViewDensity::ExtraCompact);
                     throw winrt::hresult_invalid_argument();
                 });
 
