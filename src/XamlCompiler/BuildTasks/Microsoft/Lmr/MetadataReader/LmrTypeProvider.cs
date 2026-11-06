@@ -61,17 +61,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         #region ISZArrayTypeProvider<Type>
 
-        public Type GetSZArrayType(Type elementType) => elementType.MakeArrayType();
+        public Type GetSZArrayType(Type elementType) => elementType.MakeArrayTypeLmr();
 
         #endregion
 
         #region IConstructedTypeProvider<Type>
 
         public Type GetGenericInstantiation(Type genericType, ImmutableArray<Type> typeArguments)
-            => genericType.MakeGenericType(typeArguments.ToArray());
+            => genericType.MakeGenericTypeLmr(typeArguments.ToArray());
 
         public Type GetArrayType(Type elementType, ArrayShape shape)
-            => elementType.MakeArrayType(shape.Rank);
+            => elementType.MakeArrayTypeLmr(shape.Rank);
 
         public Type GetByReferenceType(Type elementType) => elementType.MakeByRefType();
 

@@ -15,6 +15,7 @@ using System.Threading;
 using System.Xaml;
 using XAML3 = System.Windows.Markup;
 using System.Xaml.MS.Impl;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace System.Xaml.Schema
 {
@@ -456,7 +457,7 @@ namespace System.Xaml.Schema
         {
             Debug.Assert(UnderlyingType != null, "Caller should check for UnderlyingType == null");
             // In case of shadowing, Type.GetEvent returns the most derived Event
-            EventInfo ei = UnderlyingType.GetEvent(name, AllProperties_BF);
+            EventInfo ei = UnderlyingType.GetEventLmr(name, AllProperties_BF);
             if (ei != null && IsPrivate(ei))
             {
                 ei = null;
@@ -470,8 +471,8 @@ namespace System.Xaml.Schema
             Debug.Assert(UnderlyingType != null, "Caller should check for UnderlyingType == null");
             Debug.Assert(_nonAttachableMemberCache != null, "Members property should have been invoked before this");
 
-            PropertyInfo[] propList = UnderlyingType.GetProperties(AllProperties_BF);
-            EventInfo[] eventList = UnderlyingType.GetEvents(AllProperties_BF);
+            PropertyInfo[] propList = UnderlyingType.GetPropertiesLmr(AllProperties_BF);
+            EventInfo[] eventList = UnderlyingType.GetEventsLmr(AllProperties_BF);
             knownMembers = new List<XamlMember>(propList.Length + eventList.Length);
             newProperties = FilterProperties(propList, knownMembers, true);
             newEvents = FilterEvents(eventList, knownMembers);
@@ -482,7 +483,7 @@ namespace System.Xaml.Schema
         {
             Debug.Assert(UnderlyingType != null, "Caller should check for UnderlyingType == null");
             Debug.Assert(_nonAttachableMemberCache != null, "Members property should have been invoked before this");
-            PropertyInfo[] propList = UnderlyingType.GetProperties(AllProperties_BF);
+            PropertyInfo[] propList = UnderlyingType.GetPropertiesLmr(AllProperties_BF);
             return FilterProperties(propList, null, false);
         }
 
@@ -601,7 +602,7 @@ namespace System.Xaml.Schema
         {
             // Choose the most derived non-index property, in case of shadowing
             PropertyInfo mostDerived = null;
-            MemberInfo[] infos = UnderlyingType.GetMember(name, MemberTypes.Property, AllProperties_BF);
+            MemberInfo[] infos = UnderlyingType.GetMemberLmr(name, MemberTypes.Property, AllProperties_BF);
             foreach (PropertyInfo pi in infos)
             {
                 if (pi.GetIndexParameters().Length == 0)
@@ -733,7 +734,7 @@ namespace System.Xaml.Schema
             setters = new Dictionary<string,List<MethodInfo>>();
             adders = new Dictionary<string,List<MethodInfo>>();
 
-            MethodInfo[] allMethods = UnderlyingType.GetMethods(AttachableProperties_BF);
+            MethodInfo[] allMethods = UnderlyingType.GetMethodsLmr(AttachableProperties_BF);
 
             if (UnderlyingType.IsVisible)
             {
@@ -772,7 +773,7 @@ namespace System.Xaml.Schema
         private List<MethodInfo> LookupStaticAdders(string name)
         {
             string adderName = KnownStrings.Add + name + KnownStrings.Handler;
-            MemberInfo[] adders = UnderlyingType.GetMember(adderName, MemberTypes.Method, AttachableProperties_BF);
+            MemberInfo[] adders = UnderlyingType.GetMemberLmr(adderName, MemberTypes.Method, AttachableProperties_BF);
             List<MethodInfo> preferredAdders, otherAdders;
             PrioritizeAccessors(adders, true /*isEvent*/, false /*isGetter*/, out preferredAdders, out otherAdders);
             return preferredAdders ?? otherAdders;
@@ -780,7 +781,7 @@ namespace System.Xaml.Schema
 
         private List<MethodInfo> LookupStaticGetters(string name)
         {
-            MemberInfo[] getters = UnderlyingType.GetMember(KnownStrings.Get + name, MemberTypes.Method, AttachableProperties_BF);
+            MemberInfo[] getters = UnderlyingType.GetMemberLmr(KnownStrings.Get + name, MemberTypes.Method, AttachableProperties_BF);
             List<MethodInfo> preferredGetters, otherGetters;
             PrioritizeAccessors(getters, false /*isEvent*/, true /*isGetter*/, out preferredGetters, out otherGetters);
             return preferredGetters ?? otherGetters;
@@ -788,7 +789,7 @@ namespace System.Xaml.Schema
 
         private List<MethodInfo> LookupStaticSetters(string name)
         {
-            MemberInfo[] setters = UnderlyingType.GetMember(KnownStrings.Set + name, MemberTypes.Method, AttachableProperties_BF);
+            MemberInfo[] setters = UnderlyingType.GetMemberLmr(KnownStrings.Set + name, MemberTypes.Method, AttachableProperties_BF);
             List<MethodInfo> preferredSetters, otherSetters;
             PrioritizeAccessors(setters, false /*isEvent*/, false /*isGetter*/, out preferredSetters, out otherSetters);
             return preferredSetters ?? otherSetters;

@@ -207,7 +207,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             foreach (XamlTypeUniverse typeUniverse in schema.DirectUISystem.XamlTypeUniverses)
             {
                 Assembly asm = typeUniverse.GetXamlProxyAssembly();
-                type = asm.GetType(typeName);
+                type = asm.GetTypeLmr(typeName);
                 if (type != null)
                 {
                     break;

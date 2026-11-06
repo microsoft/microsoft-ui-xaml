@@ -18,10 +18,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             MetadataOnlyCommonType type;
             Dictionary<int, MetadataOnlyCommonType> typeCache;
 
-            if (!_scopeCache.TryGetValue(scope.FullyQualifiedName, out typeCache))
+            if (!_scopeCache.TryGetValue(scope.FullyQualifiedNameCore, out typeCache))
             {
                 typeCache = new Dictionary<int, MetadataOnlyCommonType>();
-                _scopeCache.Add(scope.FullyQualifiedName, typeCache);
+                _scopeCache.Add(scope.FullyQualifiedNameCore, typeCache);
             }
 
             int tokenValue = MetadataTokens.GetToken(typeDefHandle);
