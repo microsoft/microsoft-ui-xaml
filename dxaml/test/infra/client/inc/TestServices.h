@@ -90,6 +90,8 @@ namespace Private { namespace Infrastructure {
         EventRegistrationToken m_activatedToken = {};
 
         wrl::ComPtr<test_infra::Hosting::IWin32Host> m_spWin32Host;
+        bool m_useSystemCompositionEngine = false;
+        wrl::Wrappers::HString m_compositionEngineLaunchRequestPath;
 
         static bool s_isInitialized;
     };
