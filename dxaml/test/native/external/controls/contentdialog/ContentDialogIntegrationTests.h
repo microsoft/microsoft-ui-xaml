@@ -410,6 +410,11 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CanNotShowSamePopupDialogTwiceInSameTick)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that rejecting a second same-tick ShowAsync call on the same dialog does not corrupt the first show.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(CanNotShowTwoSiblingInPlaceDialogsAtSameTime)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that two InPlace dialogs that aren't under the same parent can't be shown at the same time.")
     END_TEST_METHOD()

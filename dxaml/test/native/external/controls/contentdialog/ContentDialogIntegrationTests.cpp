@@ -3676,6 +3676,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         CloseContentDialog(dialog1);
     }
 
+    void ContentDialogIntegrationTests::CanNotShowSamePopupDialogTwiceInSameTick()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto dialog = SetupContentDialogTest(ContentDialogContent::Default);
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, Opened);
+        auto openedEvent = std::make_shared<Event>();
+        wf::IAsyncOperation<xaml_controls::ContentDialogResult>^ firstShowOperation = nullptr;
+
+        openedRegistration.Attach(dialog, [&]() { openedEvent->Set(); });
+
+        RunOnUIThread([&]()
+        {
+            dialog->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+
+            LOG_OUTPUT(L"Start showing a popup dialog, then reject a second ShowAsync call before dispatching.");
+            firstShowOperation = dialog->ShowAsync();
+            VERIFY_THROWS_SPECIFIC_WINRT(
+                dialog->ShowAsync(),
+                Platform::Exception^,
+                [](Platform::Exception^ exception) { return exception->HResult == E_ASYNC_OPERATION_NOT_STARTED; });
+        });
+
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_NOT_NULL(firstShowOperation);
+
+        CloseContentDialog(dialog);
+        create_task(firstShowOperation).wait();
+    }
+
     void ContentDialogIntegrationTests::CanNotShowTwoSiblingInPlaceDialogsAtSameTime()
     {
         TestCleanupWrapper cleanup;
