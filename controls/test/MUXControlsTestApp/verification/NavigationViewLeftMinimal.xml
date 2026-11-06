@@ -81,61 +81,76 @@
             FocusVisualSecondaryBrush=#B3FFFFFF
             FocusVisualSecondaryThickness=1,1,1,1
             Foreground=#E4000000
-            Height=36
-            Margin=4,2,0,2
+            Height=42
+            Margin=-0,-4,0,2
+            MinWidth=44
             Name=NavigationViewBackButton
             Padding=11,5,11,6
-            RenderSize=40,36
+            RenderSize=44,42
             Visibility=Visible
             Width=40
           [Microsoft.UI.Xaml.Controls.Grid]
               Background=#00FFFFFF
               BorderBrush=[NULL]
               BorderThickness=0,0,0,0
-              CornerRadius=4,4,4,4
+              CornerRadius=0,0,0,0
               FocusVisualPrimaryBrush=#E4000000
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualSecondaryBrush=#B3FFFFFF
               FocusVisualSecondaryThickness=1,1,1,1
               Margin=0,0,0,0
-              Name=RootGrid
+              Name=HitTargetGrid
               Padding=0,0,0,0
-              RenderSize=40,36
+              RenderSize=44,42
               Visibility=Visible
-            [Microsoft.UI.Xaml.Controls.AnimatedIcon]
+            [Microsoft.UI.Xaml.Controls.Grid]
+                Background=#00FFFFFF
+                BorderBrush=[NULL]
+                BorderThickness=0,0,0,0
+                CornerRadius=4,4,4,4
                 FocusVisualPrimaryBrush=#E4000000
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualSecondaryThickness=1,1,1,1
-                Foreground=#5C000000
-                Height=16
-                Margin=0,0,0,0
-                Name=Content
-                RenderSize=16,16
+                Margin=4,6,0,0
+                Name=RootGrid
+                Padding=0,0,0,0
+                RenderSize=40,36
                 Visibility=Visible
-                Width=16
-              [Microsoft.UI.Xaml.Controls.Grid]
-                  Background=#00000000
-                  BorderBrush=[NULL]
-                  BorderThickness=0,0,0,0
-                  CornerRadius=0,0,0,0
+              [Microsoft.UI.Xaml.Controls.AnimatedIcon]
                   FocusVisualPrimaryBrush=#E4000000
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualSecondaryBrush=#B3FFFFFF
                   FocusVisualSecondaryThickness=1,1,1,1
+                  Foreground=#5C000000
+                  Height=16
                   Margin=0,0,0,0
-                  Padding=0,0,0,0
-                  RenderSize=0,0
+                  Name=Content
+                  RenderSize=16,16
                   Visibility=Visible
-                [Microsoft.UI.Xaml.Shapes.Path]
+                  Width=16
+                [Microsoft.UI.Xaml.Controls.Grid]
+                    Background=#00000000
+                    BorderBrush=[NULL]
+                    BorderThickness=0,0,0,0
+                    CornerRadius=0,0,0,0
                     FocusVisualPrimaryBrush=#E4000000
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualSecondaryThickness=1,1,1,1
                     Margin=0,0,0,0
+                    Padding=0,0,0,0
                     RenderSize=0,0
-                    StrokeThickness=1
-                    Visibility=Collapsed
+                    Visibility=Visible
+                  [Microsoft.UI.Xaml.Shapes.Path]
+                      FocusVisualPrimaryBrush=#E4000000
+                      FocusVisualPrimaryThickness=2,2,2,2
+                      FocusVisualSecondaryBrush=#B3FFFFFF
+                      FocusVisualSecondaryThickness=1,1,1,1
+                      Margin=0,0,0,0
+                      RenderSize=0,0
+                      StrokeThickness=1
+                      Visibility=Collapsed
         [Microsoft.UI.Xaml.Controls.Button]
             Background=#00FFFFFF
             BorderBrush=Microsoft.UI.Xaml.Media.LinearGradientBrush
