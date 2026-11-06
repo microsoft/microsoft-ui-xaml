@@ -556,10 +556,10 @@ namespace Microsoft.UI.Xaml.Documents
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass Glyphs
+    unsealed runtimeclass Glyphs
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        Glyphs();
+        [method_name("CreateInstance")] Glyphs();
         String UnicodeString;
         String Indices;
         Windows.Foundation.Uri FontUri;
