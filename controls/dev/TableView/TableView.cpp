@@ -530,8 +530,8 @@ namespace
         }
 
         return winrt::SolidColorBrush(winrt::unbox_value_or<winrt::Color>(
-            LookupElementResource(start, L"SystemColorWindowTextColor", true),
-            winrt::Colors::White()));
+            LookupElementResource(start, L"SystemColorGrayTextColor", true),
+            winrt::Colors::Gray()));
     }
 
 }

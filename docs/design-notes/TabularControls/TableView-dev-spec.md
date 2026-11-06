@@ -306,11 +306,11 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
-Column-header hover has no additional backplate. Enabled, sortable, unsorted headers show the
+Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the
 ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
 sort help. Sorted headers retain their actual direction indicator. Pressed retains the existing
-theme-aware backplate; High Contrast keeps ButtonFace/ButtonText on hover/focus and
-Highlight/HighlightText while pressed. The independent header dropdown retains its own states.
+theme-aware backplate; High Contrast keeps ButtonFace/ButtonText at rest and with keyboard focus,
+and uses Highlight/HighlightText on hover and while pressed. The independent header dropdown retains its own states.
 The reserved sort space is unchanged, so revealing the icon does not move text or resize columns.
 Unsorted pointer-hover entry/exit uses an 83ms linear opacity fade. Keep the inner glyph rendered
 until fade-out finishes; VSM owns interruption/reversal. Keyboard focus, pressed/sorted states,
@@ -319,15 +319,19 @@ High Contrast, disabled/non-sortable headers and disabled Windows animations byp
 Section-header backplates are transparent at rest in Light/Dark and use the unselected row
 hover/pressed brushes. Their background border binds the same `CornerRadius` as row backplates.
 High Contrast keeps its system window background and highlight/highlight-text interaction pairing.
-Section-header bottom dividers use the body's gridline colors and are visible for every body
+Section-header bottom dividers use `TabularSurfaceGroupHeaderBorderBrush`, matching the body's
+gridline colors by default, and are visible for every body
 `GridLinesVisibility` value except `None`, including `Vertical`. `RefreshGridLines` updates the
 overlay on preparation and live body-gridline changes; terminal-edge suppression still avoids
 doubling the outer border. The content border does not consume divider thickness in layout.
+High Contrast uses the system disabled color and a bottom-only `0,0,0,1` divider,
+without an extra top rule.
 
 | Key | Used for | Fluent | High Contrast |
 |---|---|---|---|
-| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
-| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
+| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorGrayTextColor` |
+| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorGrayTextColor` |
+| `TabularSurfaceGroupHeaderBorderBrush` | Section dividers | `DividerStrokeColorDefault` | `SystemColorGrayTextColor` |
 | `TabularSurfaceOuterBorderBrush` | Control border | Transparent | `SystemColorWindowTextColor` |
 
 A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container.

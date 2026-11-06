@@ -298,8 +298,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var lightBorder = RequireBrush(resources, "Light", "TabularSurfaceOuterBorderBrush");
                 var darkHeader = RequireBrush(resources, "Default", "TabularSurfaceHeaderSeparatorBrush");
                 var lightHeader = RequireBrush(resources, "Light", "TabularSurfaceHeaderSeparatorBrush");
+                var highContrast = RequireBrush(resources, "HighContrast", "TabularSurfaceGridLineBrush");
+                var highContrastHeader = RequireBrush(resources, "HighContrast", "TabularSurfaceHeaderSeparatorBrush");
+                var highContrastSection = RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderBorderBrush");
                 var highContrastBorder = RequireBrush(resources, "HighContrast", "TabularSurfaceOuterBorderBrush");
-                if (dark == null || light == null || darkBorder == null || lightBorder == null || darkHeader == null || lightHeader == null || highContrastBorder == null)
+                if (dark == null || light == null || darkBorder == null || lightBorder == null || darkHeader == null || lightHeader == null || highContrast == null || highContrastHeader == null || highContrastSection == null || highContrastBorder == null)
                 {
                     return;
                 }
@@ -312,6 +315,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual((byte)0, lightBorder.Color.A, "The default Light outer border must be transparent.");
                 Verify.AreEqual(RequireApplicationColor("SystemColorWindowTextColor"), highContrastBorder.Color,
                     "High Contrast must retain a visible system-color outer border.");
+                Verify.AreEqual(RequireApplicationColor("SystemColorGrayTextColor"), highContrast.Color,
+                    "High Contrast body gridlines must use the system disabled color.");
+                Verify.AreEqual(highContrast.Color, highContrastHeader.Color,
+                    "High Contrast header lines must match the body's system disabled color.");
+                Verify.AreEqual(highContrast.Color, highContrastSection.Color,
+                    "High Contrast section dividers must match the body's system disabled color.");
+                var highContrastResources = (ResourceDictionary)resources.ThemeDictionaries["HighContrast"];
+                Verify.AreEqual(new Thickness(0, 0, 0, 1),
+                    (Thickness)highContrastResources["TabularSurfaceGroupHeaderBorderThickness"],
+                    "High Contrast section headers must have only a bottom divider, not an extra top rule.");
                 Verify.AreEqual(dark.Color, darkHeader.Color, "Dark header lines must match the body grid lines (DividerStrokeColorDefault).");
                 Verify.AreEqual(light.Color, lightHeader.Color, "Light header lines must match the body grid lines (DividerStrokeColorDefault).");
             });
@@ -1704,7 +1717,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
                     row = GetRealizedRows(table).First();
-                    // Exercise HC separator geometry even when Windows itself is not in HC.
+                    // Exercise custom top/bottom separator geometry even when Windows itself is not in HC.
                     section.BorderThickness = hcSeparators ? new Thickness(0, 1, 0, 1) : new Thickness(0);
                     sectionChrome = (Grid)section.FindVisualChildByName("PART_RowChrome");
                     sectionPlate = (Border)section.FindVisualChildByName("PART_Root");
@@ -4882,8 +4895,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 {
                                     Verify.IsTrue(VisualStateManager.GoToState(header, state, false));
                                     Verify.IsTrue(VisualStateManager.GoToState(header, "HighContrast" + state, false));
-                                    var backgroundKey = state == "Pressed" ? "SystemColorHighlightColorBrush" : "SystemColorButtonFaceColorBrush";
-                                    var foregroundKey = state == "Pressed" ? "SystemColorHighlightTextColorBrush" : "SystemColorButtonTextColorBrush";
+                                    var backgroundKey = "SystemColorHighlightColorBrush";
+                                    var foregroundKey = "SystemColorHighlightTextColorBrush";
                                     Verify.AreEqual(((SolidColorBrush)Application.Current.Resources[backgroundKey]).Color,
                                         ((SolidColorBrush)background.Background).Color, $"Header background: {state}, {context}");
                                     Verify.AreEqual(((SolidColorBrush)Application.Current.Resources[foregroundKey]).Color,
@@ -4959,8 +4972,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 Rect contentBounds = default;
                                 Thickness thickness = default;
                                 string suffix = state == "Normal" || state == "Disabled" ? "" : state;
-                                string resourceSuffix = !section && state == "PointerOver"
-                                    ? (theme == "HighContrast" ? "Sortable" : "") : suffix;
+                                string resourceSuffix = !section && state == "PointerOver" && theme != "HighContrast"
+                                    ? "" : suffix;
                                 string prefix = section ? "TabularSurfaceGroupHeader" : "TabularSurfaceHeader";
                                 string backgroundKey = prefix + "Background" + resourceSuffix + "Brush";
                                 string borderKey = prefix + (section ? "InteractionBorder" : "Border") + resourceSuffix + "Brush";
@@ -5313,10 +5326,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             RunOnUIThread.Execute(() =>
                             {
                                 var context = $"{theme}, {appearance}, {state}";
-                                var headerForeground = state == "Pressed" ? pressed
-                                    : ((SolidColorBrush)Application.Current.Resources["SystemColorButtonTextColorBrush"]).Color;
-                                Verify.AreEqual(headerForeground, ((SolidColorBrush)GetHeaderPresenter(tableView, 0).Foreground).Color,
-                                    $"The header keeps resting hover text and its pressed foreground ({context}).");
+                                Verify.AreEqual(interaction, ((SolidColorBrush)GetHeaderPresenter(tableView, 0).Foreground).Color,
+                                    $"The header uses its High Contrast interaction foreground ({context}).");
                                 Verify.AreEqual(foreground, ((SolidColorBrush)chevron.Foreground).Color,
                                     $"Header interaction must not recolor the unhovered dropdown ({context}).");
                                 Verify.AreEqual(background,

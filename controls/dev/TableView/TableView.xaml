@@ -279,9 +279,9 @@
                                 </VisualState>
                                 <VisualState x:Name="HighContrastPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundSortableBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderSortableBrush}" />
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPointerOverBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
