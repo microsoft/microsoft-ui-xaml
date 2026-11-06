@@ -395,7 +395,7 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "8a819c6d-77f5-45b4-9e93-608e879dc5ef")]
-    public sealed class TimePickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
+    public class TimePickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
         [PropertyInitialization(PropertyInitializationType.CallbackRetrievedValue)]
         public Windows.Foundation.String ClockIdentifier
