@@ -1,0 +1,25 @@
+<Window
+    x:Class="RecyclePoolSampleApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RecyclePoolSampleApp"
+    Title="ElementFactory / RecyclePool API Sample">
+
+    <Grid x:Name="RootGrid">
+        <NavigationView x:Name="NavView"
+                        PaneDisplayMode="Left"
+                        IsSettingsVisible="False"
+                        IsBackButtonVisible="Collapsed"
+                        SelectionChanged="OnNavigationSelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Recycle pool basics" Tag="Pool" />
+                <NavigationViewItem Content="RecyclingElementFactory" Tag="Factory" />
+                <NavigationViewItem Content="Custom ElementFactory" Tag="Custom" />
+                <NavigationViewItem Content="SelectTemplateEventArgs" Tag="Args" />
+                <NavigationViewItem Content="Shared pool" Tag="Shared" />
+                <NavigationViewItem Content="XAML markup" Tag="Markup" />
+            </NavigationView.MenuItems>
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
+    </Grid>
+</Window>
