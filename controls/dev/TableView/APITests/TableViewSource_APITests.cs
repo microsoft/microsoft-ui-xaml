@@ -378,7 +378,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // aborts the shape, and freezing today's answer would be exactly the mistake Step 3
                 // of the test protocol forbids. What is asserted is only that the app's bug costs it
                 // nothing beyond the rows it was asked about.
-                source.Filter(o =>
+                // Whether the declaring call itself rethrows is not asserted either.
+                TableViewTreeTestHelpers.ThrownTypeName(() => source.Filter(o =>
                 {
                     if (Person(o).Name == "Mei")
                     {
@@ -386,7 +387,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     return Person(o).Role == "Engineer";
-                });
+                }));
             });
 
             SettleLayout(tableView);
@@ -783,19 +784,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies Sort(keySelector, None) removes the axis keyed by that delegate instance, a None for an unknown delegate leaves the sort unchanged, and ClearSort removes every key-selector axis.")]
-        public void VerifyKeySelectorSortNoneFollowsDelegateIdentity()
+        [TestProperty("Description", "Verifies Sort(keySelector, None) clears every item sort level whatever delegate it names, and ClearSort removes every key-selector level.")]
+        public void VerifyKeySelectorSortNoneClearsEveryItemSortLevel()
         {
             TableView tableView = null;
             TableViewSource source = null;
             List<ShapedPerson> items = null;
             TableViewKeySelector byLength = o => Person(o).Name.Length;
-            var byLengthAscending = new List<string> { "Mei", "Asha", "Rafa", "Ines", "Owen", "Diego" };
 
             RunOnUIThread.Execute(() =>
             {
                 items = MakeShapedPeople();
-                source = TableViewSource.From(items).Sort(byLength, SortDirection.Ascending);
+                source = TableViewSource.From(items).Sort(byLength, SortDirection.Ascending).ThenSort(o => Person(o).Role, SortDirection.Descending);
                 tableView = CreateShapedTable(source);
                 LoadContent(tableView);
             });
@@ -804,33 +804,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                VerifyProjection(tableView, byLengthAscending, "baseline: sorted by name length");
-                TableViewKeySelector sameKeyOtherInstance = o => Person(o).Name.Length;
-                source.Sort(sameKeyOtherInstance, SortDirection.None);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView, byLengthAscending, "None with a delegate that keys no axis must leave the sort unchanged");
-                source.Sort(byLength, SortDirection.None);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "None with the same delegate instance must remove its axis");
-                source.Sort(byLength, SortDirection.Ascending).Sort(o => Person(o).Role, SortDirection.Descending);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
                 var labels = GetProjectedLabels(tableView, includeCount: true);
-                Verify.IsTrue(labels.First() == "Mei" && labels.Last() == "Diego", "Precondition: two key-selector axes, name length primary.");
+                Verify.IsTrue(labels.First() == "Mei" && labels.Last() == "Diego", "Precondition: two key-selector levels, name length primary.");
+                TableViewKeySelector unrelated = o => Person(o).Name;
+                source.Sort(unrelated, SortDirection.None);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "Sort(..., None) must clear every item sort level");
+                source.Sort(byLength, SortDirection.Ascending).ThenSort(o => Person(o).Role, SortDirection.Descending);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Mei", GetProjectedLabels(tableView, includeCount: true).First(), "Precondition: the levels are back.");
                 source.ClearSort();
             });
 
@@ -838,7 +830,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "ClearSort must remove every key-selector axis");
+                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "ClearSort must remove every key-selector level");
             });
         }
 
@@ -890,7 +882,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 source = TableViewSource
                     .From(items)
                     .Sort("Role", SortDirection.Ascending)
-                    .Sort("Name", SortDirection.Ascending);
+                    .ThenSort("Name", SortDirection.Ascending);
 
                 tableView = CreateShapedTable(source);
                 LoadContent(tableView);
@@ -922,13 +914,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // "When several axes are active the FIRST one declared is the primary sort and each
-                // later axis breaks ties within the previous, matching WPF DataGrid's
-                // SortDescriptions order."
+                // Sort sets the primary level and each ThenSort appends a lower-precedence one,
+                // matching WPF DataGrid's SortDescriptions order.
                 var source = TableViewSource
                     .From(MakeShapedPeople())
                     .Sort("Role", SortDirection.Ascending)
-                    .Sort("Name", SortDirection.Ascending);
+                    .ThenSort("Name", SortDirection.Ascending);
 
                 tableView = CreateShapedTable(source);
                 LoadContent(tableView);
@@ -947,7 +938,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies re-sorting an existing path keeps its axis position instead of stacking a new axis.")]
+        [TestProperty("Description", "Verifies ThenSort on a path that already has a level replaces that level's direction in place and keeps its precedence.")]
         public void VerifyResortingAPathKeepsItsAxisPosition()
         {
             TableView tableView = null;
@@ -958,7 +949,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 source = TableViewSource
                     .From(MakeShapedPeople())
                     .Sort("Role", SortDirection.Ascending)
-                    .Sort("Name", SortDirection.Ascending);
+                    .ThenSort("Name", SortDirection.Ascending);
 
                 tableView = CreateShapedTable(source);
                 LoadContent(tableView);
@@ -968,9 +959,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // "re-sorting an existing axis keeps its position" + "Re-sorting the same path
-                // replaces that axis in place rather than adding a second one."
-                source.Sort("Role", SortDirection.Descending);
+                source.ThenSort("Role", SortDirection.Descending);
             });
 
             SettleLayout(tableView);
@@ -985,6 +974,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     new List<string> { "Diego", "Owen", "Rafa", "Asha", "Ines", "Mei" },
                     "Role stays primary after being re-sorted descending");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Sort replaces every item sort level with its single level, and Sort(path, None) clears them all.")]
+        public void VerifySortReplacesEveryItemSortLevel()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeShapedPeople();
+                source = TableViewSource.From(items).Sort("Role", SortDirection.Ascending).ThenSort("Name", SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" },
+                    "Sort must drop the Role level, leaving Name descending alone");
+                source.ThenSort("Role", SortDirection.Ascending);
+                source.Sort("Role", SortDirection.None);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "Sort(path, None) must clear every item sort level"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ThenSort with no prior item sort level behaves like Sort.")]
+        public void VerifyThenSortWithoutPriorSortBehavesLikeSort()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateShapedTable(TableViewSource.From(MakeShapedPeople()).ThenSort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "ThenSort as the only level"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ThenSort with SortDirection.None throws for both overloads and leaves the sort unchanged.")]
+        public void VerifyThenSortDirectionNoneThrows()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople()).Sort("Name", SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.Throws<ArgumentException>(() => source.ThenSort("Role", SortDirection.None),
+                    "ThenSort(path, None) must throw: None has no level to append.");
+                Verify.Throws<ArgumentException>(() => source.ThenSort(o => Person(o).Role, SortDirection.None),
+                    "ThenSort(keySelector, None) must throw.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "a rejected ThenSort must leave the sort"));
         }
 
         [TestMethod]
@@ -1378,17 +1451,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort declared before GroupBy establishes the order of the groups.")]
-        public void VerifySortBeforeGroupByOrdersTheGroups()
+        [TestProperty("Description", "Verifies that with SortGroups(None) an item sort declared before or after GroupBy orders the groups by their first item in the sorted sequence.")]
+        [TestProperty("data:Order", "{Before, After}")]
+        public void VerifyItemSortOrdersGroupsByFirstItemForEitherCallOrder()
         {
+            var order = ((string)TestContext.DataRow["Order"]).Trim();
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
             {
-                var source = TableViewSource
-                    .From(MakeShapedPeople())
-                    .Sort("Role", SortDirection.Descending)
-                    .GroupBy(o => Person(o).Role);
+                var source = TableViewSource.From(MakeShapedPeople());
+                if (order == "Before")
+                {
+                    source.Sort("Name", SortDirection.Descending).GroupBy(o => Person(o).Role);
+                }
+                else
+                {
+                    source.GroupBy(o => Person(o).Role).Sort("Name", SortDirection.Descending);
+                }
 
                 tableView = CreateShapedTable(source);
                 LoadContent(tableView);
@@ -1397,17 +1477,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
-            {
-                var keys = GroupKeys(tableView);
-                Verify.AreEqual(3, keys.Count, "Three roles, three groups.");
-                Verify.AreEqual("Engineer", keys[0], "Role descending puts Engineer first.");
-                Verify.AreEqual("Designer", keys[1], "Role descending puts Designer second.");
-                Verify.AreEqual("Architect", keys[2], "Role descending puts Architect last.");
-            });
+                // Names descending: Rafa (Engineer), Owen, Mei (Architect), Ines (Designer), ... so the groups
+                // move from source order (Designer, Engineer, Architect) to first-item order.
+                VerifyProjection(
+                    tableView,
+                    new List<string>
+                    {
+                        "#Engineer(3)", "Rafa", "Owen", "Diego",
+                        "#Architect(1)", "Mei",
+                        "#Designer(2)", "Ines", "Asha",
+                    },
+                    $"Sort declared {order} GroupBy"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort declared after GroupBy orders members inside each group only.")]
+        [TestProperty("Description", "Verifies a sort declared after GroupBy orders members within each group without leaking across buckets.")]
         public void VerifySortAfterGroupByOrdersWithinEachGroup()
         {
             TableView tableView = null;
@@ -1427,8 +1511,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Group order stays first-appearance; only the members reorder. A post-group sort that
-                // leaked across buckets would put Asha, Diego, Ines... in one run.
+                // Groups follow their first item in name order (Asha, Diego, Mei), which here matches
+                // source order. A sort that leaked across buckets would put Asha, Diego, Ines... in one run.
                 VerifyProjection(
                     tableView,
                     new List<string>
@@ -1439,6 +1523,208 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     },
                     "GroupBy then Sort");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SortGroups orders the groups by key whether it is declared before or after GroupBy.")]
+        [TestProperty("data:Order", "{Before, After}")]
+        public void VerifySortGroupsOrdersGroupsIndependentOfCallOrder()
+        {
+            var order = ((string)TestContext.DataRow["Order"]).Trim();
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var source = TableViewSource.From(MakeShapedPeople());
+                if (order == "Before")
+                {
+                    source.SortGroups(SortDirection.Descending).GroupBy(o => Person(o).Role);
+                }
+                else
+                {
+                    source.GroupBy(o => Person(o).Role).SortGroups(SortDirection.Descending);
+                }
+
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(
+                    tableView,
+                    new List<string>
+                    {
+                        "#Engineer(3)", "Diego", "Rafa", "Owen",
+                        "#Designer(2)", "Asha", "Ines",
+                        "#Architect(1)", "Mei",
+                    },
+                    $"SortGroups declared {order} GroupBy"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SortGroups survives a header sort, ClearSort and a replacing GroupBy, while item sorts order only within groups.")]
+        public void VerifySortGroupsSurvivesItemSortsAndGroupByReplacement()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople())
+                    .GroupBy(o => Person(o).Role)
+                    .SortGroups(SortDirection.Ascending)
+                    .Sort("Name", SortDirection.Descending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Architect(1)", "Mei", "#Designer(2)", "Ines", "Asha", "#Engineer(3)", "Rafa", "Owen", "Diego" },
+                    "groups by key, names descending within");
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name header sorts.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Architect(1)", "Mei", "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Owen", "Rafa" },
+                    "a header sort must replace the item sort and keep the group order");
+                source.ClearSort();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Architect(1)", "Mei", "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Rafa", "Owen" },
+                    "ClearSort must keep SortGroups");
+                source.GroupBy(o => Person(o).DepartmentName);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei", "#Studio(2)", "Asha", "Ines" },
+                    "SortGroups must survive a replacing GroupBy"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header sort reorders the groups by first item under SortGroups(None), and SortGroups(Ascending) then pins key order across the next header sort.")]
+        public void VerifyHeaderSortReordersGroupsUnlessSortGroupsPinsThem()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Architect(1)", "Mei" },
+                    "baseline: groups in source order");
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name header sorts.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Engineer(3)", "Rafa", "Owen", "Diego", "#Architect(1)", "Mei", "#Designer(2)", "Ines", "Asha" },
+                    "under SortGroups(None) a header sort must reorder the groups by their first item");
+                source.SortGroups(SortDirection.Ascending);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Architect(1)", "Mei", "#Designer(2)", "Ines", "Asha", "#Engineer(3)", "Rafa", "Owen", "Diego" },
+                    "SortGroups(Ascending) must order the groups by key");
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name header re-sorts.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Architect(1)", "Mei", "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Owen", "Rafa" },
+                    "a header sort must not move key-ordered groups"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies GroupBy and Sort over WinRT enum keys group equal values together and order by underlying value.")]
+        public void VerifyGroupByAndSortByEnumKeys()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            TableViewKeySelector byDensity = o => Person(o).Role switch
+            {
+                "Designer" => TableViewDensity.Comfortable,
+                "Engineer" => TableViewDensity.Standard,
+                _ => TableViewDensity.Compact,
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople()).GroupBy(byDensity);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Comfortable(2)", "Asha", "Ines", "#Standard(3)", "Diego", "Rafa", "Owen", "#Compact(1)", "Mei" },
+                    "equal enum keys must share one group");
+                source.SortGroups(SortDirection.Ascending);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string> { "#Standard(3)", "Diego", "Rafa", "Owen", "#Compact(1)", "Mei", "#Comfortable(2)", "Asha", "Ines" },
+                    "enum group keys must order by underlying value, not by name");
+                source.ClearGroupBy().Sort(byDensity, SortDirection.Descending);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new List<string> { "Asha", "Ines", "Mei", "Diego", "Rafa", "Owen" },
+                    "an enum sort key must order by underlying value"));
         }
 
         [TestMethod]
@@ -1464,14 +1750,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // Mei (Architect, Research) is filtered out, which also removes the Research group
-                // entirely. Remaining: Studio (Asha, Ines) and Platform (Diego, Rafa, Owen), groups in
-                // first-appearance order, members descending by name.
+                // entirely. Members are descending by name, and the groups follow their first item in
+                // that filtered, sorted sequence: Rafa (Platform) comes before Ines (Studio).
                 VerifyProjection(
                     tableView,
                     new List<string>
                     {
-                        "#Studio(2)", "Ines", "Asha",
                         "#Platform(3)", "Rafa", "Owen", "Diego",
+                        "#Studio(2)", "Ines", "Asha",
                     },
                     "filter + group + sort");
             });
@@ -1953,12 +2239,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a shaping verb issued re-entrantly from a sort key during a sorted Replace rebuilds instead of splicing stale indices.")]
+        [TestProperty("Description", "Verifies a shaping verb issued re-entrantly from a sort key during a sorted Replace is refused with E_ILLEGAL_METHOD_CALL and the Replace still lands in sorted position.")]
         public void VerifyReentrantShapingDuringSortedReplaceRebuilds()
         {
             TableView tableView = null;
             TableViewSource source = null;
             ObservableCollection<ShapedPerson> items = null;
+            Exception reentrantError = null;
             var reenter = false;
 
             RunOnUIThread.Execute(() =>
@@ -1968,12 +2255,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     o =>
                     {
                         var name = Person(o).Name;
-                        // The incremental path plans the Replace by calling this key; filtering here
-                        // rebuilds and shrinks the projection under the indices it is planning.
+                        // The incremental path plans the Replace by calling this key; a Filter here would
+                        // reshape under the indices it is planning, so it must be refused.
                         if (reenter && name == "Zed")
                         {
                             reenter = false;
-                            source.Filter(p => Person(p).Role == "Engineer");
+                            try
+                            {
+                                source.Filter(p => Person(p).Role == "Engineer");
+                            }
+                            catch (Exception e)
+                            {
+                                reentrantError = e;
+                            }
                         }
                         return name;
                     },
@@ -1997,8 +2291,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                VerifyProjection(tableView, new List<string> { "Diego", "Owen", "Rafa", "Zed" },
-                    "the re-entrant filter and the replace must both be reflected exactly once");
+                Verify.AreEqual(E_ILLEGAL_METHOD_CALL, reentrantError?.HResult ?? 0, "The re-entrant Filter must throw E_ILLEGAL_METHOD_CALL.");
+                VerifyProjection(tableView, new List<string> { "Diego", "Ines", "Mei", "Owen", "Rafa", "Zed" },
+                    "the refused filter must not apply, and the replace must land in sorted position");
             });
         }
 
@@ -2335,6 +2630,566 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(ReferenceEquals(replacement, tableView.SelectedItem),
                     "Row identity is object identity, so a re-created item must not inherit the selection.");
             });
+        }
+
+        #endregion
+
+        #region Refresh, deferral and re-entrancy
+
+        private const int E_ILLEGAL_METHOD_CALL = unchecked((int)0x8000000E);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Source returns the exact object passed to From.")]
+        public void VerifySourceReturnsTheItemsPassedToFrom()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var source = TableViewSource.From(items);
+                Verify.IsTrue(ReferenceEquals(items, source.Source), "Source must be the same reference that was passed to From.");
+                Verify.IsTrue(ReferenceEquals(items, source.Filter(o => true).Source), "Shaping must not change Source.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Refresh re-applies a non-live sort a property change left stale, as one Reset.")]
+        public void VerifyRefreshRepairsANonLiveSortAsOneReset()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Sort("Name", SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => items.First(p => p.Name == "Owen").Name = "Abe");
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Abe", "Rafa" }, "precondition: the non-live sort is stale");
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                source.Refresh();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Abe", "Asha", "Diego", "Ines", "Mei", "Rafa" }, "Refresh must re-sort");
+                Verify.AreEqual("Reset", string.Join(",", actions), "Refresh must reach the row view as one Reset.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies nested DeferRefresh scopes hold every shaping call until the outermost closes, then publish one Reset, and that Close is idempotent.")]
+        public void VerifyNestedDeferRefreshPublishesOneResetOnOutermostClose()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            IDisposable outer = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                outer = source.DeferRefresh();
+                using (source.DeferRefresh())
+                {
+                    source.Filter(o => Person(o).Role != "Architect");
+                    source.Sort("Name", SortDirection.Descending);
+                    source.Refresh();
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" },
+                    "closing an inner deferral must not reshape");
+                Verify.AreEqual(0, actions.Count, "No change may reach the row view while a deferral is open.");
+                outer.Dispose();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Ines", "Diego", "Asha" },
+                    "closing the outermost deferral must apply every deferred declaration");
+                Verify.AreEqual("Reset", string.Join(",", actions), "The outermost close must publish exactly one Reset.");
+                outer.Dispose();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("Reset", string.Join(",", actions), "A second Close must be a no-op."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a shaping call made from inside a running filter predicate throws E_ILLEGAL_METHOD_CALL and leaves the source usable.")]
+        public void VerifyReentrantFilterFromPredicateThrows()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> items = null;
+            Exception reentrantError = null;
+            var reenter = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeShapedPeople();
+                source = TableViewSource.From(items);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                reenter = true;
+                source.Filter(o =>
+                {
+                    if (reenter)
+                    {
+                        reenter = false;
+                        try
+                        {
+                            source.ClearFilter();
+                        }
+                        catch (Exception e)
+                        {
+                            reentrantError = e;
+                        }
+                    }
+
+                    return Person(o).Role == "Engineer";
+                });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(reenter, "Precondition: the predicate must have run.");
+                Verify.IsNotNull(reentrantError, "A shaping call from inside the predicate must throw.");
+                Verify.AreEqual(E_ILLEGAL_METHOD_CALL, reentrantError?.HResult ?? 0, "The re-entrant call must fail with E_ILLEGAL_METHOD_CALL.");
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "the running filter must complete");
+                source.ClearFilter();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "the source must stay usable after the rejected call"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies setting IsLiveShaping from inside a shaping delegate throws E_ILLEGAL_METHOD_CALL and leaves the flag unchanged.")]
+        public void VerifyIsLiveShapingToggleFromDelegateThrows()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            Exception reentrantError = null;
+            var reenter = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                reenter = true;
+                source.Filter(o =>
+                {
+                    if (reenter)
+                    {
+                        reenter = false;
+                        try
+                        {
+                            source.IsLiveShaping = true;
+                        }
+                        catch (Exception e)
+                        {
+                            reentrantError = e;
+                        }
+                    }
+
+                    return true;
+                });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(reenter, "Precondition: the predicate must have run.");
+                Verify.AreEqual(E_ILLEGAL_METHOD_CALL, reentrantError?.HResult ?? 0, "Toggling IsLiveShaping from a delegate must throw E_ILLEGAL_METHOD_CALL.");
+                Verify.IsFalse(source.IsLiveShaping, "The refused toggle must leave IsLiveShaping unchanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GroupBy whose rebuild throws is rolled back, so later shaping calls succeed and the projection is unchanged.")]
+        public void VerifyFailedGroupByIsRolledBack()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            string groupByThrown = null;
+            string sortThrown = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // An empty group identity fails the rebuild.
+                groupByThrown = TableViewTreeTestHelpers.ThrownTypeName(() => source.GroupBy(o => Person(o).Role, key => string.Empty));
+                sortThrown = TableViewTreeTestHelpers.ThrownTypeName(() => source.Sort("Name", SortDirection.Ascending));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual("no exception", groupByThrown, "Precondition: the GroupBy rebuild must fail.");
+                Verify.AreEqual("no exception", sortThrown, "A later Sort must not re-run the failed GroupBy.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" },
+                    "the source must be ungrouped and sorted");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort key that mixes several WinRT enum types orders by underlying value, not by type name.")]
+        public void VerifyMixedEnumSortKeysOrderByValue()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var keys = new Dictionary<string, object>
+                {
+                    { "Asha", global::Windows.System.VirtualKey.A },                // 65
+                    { "Diego", Visibility.Collapsed },                       // 1
+                    { "Mei", HorizontalAlignment.Stretch },                  // 3
+                    { "Rafa", TableViewDensity.Comfortable },                // 2
+                    { "Ines", global::Windows.System.VirtualKey.Space },             // 32
+                    { "Owen", Visibility.Visible },                          // 0
+                };
+                tableView = CreateShapedTable(TableViewSource.From(MakeShapedPeople()).Sort(o => keys[Person(o).Name], SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                VerifyProjection(tableView, new List<string> { "Owen", "Diego", "Rafa", "Mei", "Ines", "Asha" }, "mixed enum keys by value"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies source collection changes made during a deferral are held and applied at close as one Reset.")]
+        public void VerifySourceMutationDuringDeferralAppliesAsOneReset()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+            IDisposable deferral = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Sort("Name", SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                deferral = source.DeferRefresh();
+                items.Add(new ShapedPerson("Bea", "Engineer", "Platform"));
+                items.RemoveAt(0);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, actions.Count, "No change may reach the row view while the deferral is open.");
+                deferral.Dispose();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Bea", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "both changes applied at close");
+                Verify.AreEqual("Reset", string.Join(",", actions), "The held changes must reach the row view as one Reset.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a declaration that fails when nested deferrals close is rolled back, and the source then shapes normally.")]
+        public void VerifyNestedDeferralFailureRecovers()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            string outerThrown = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var outer = source.DeferRefresh();
+                using (source.DeferRefresh())
+                {
+                    source.GroupBy(o => Person(o).Role, key => string.Empty);
+                }
+
+                outerThrown = TableViewTreeTestHelpers.ThrownTypeName(() => outer.Dispose());
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                using (source.DeferRefresh())
+                {
+                    source.Sort("Name", SortDirection.Ascending);
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual("no exception", outerThrown, "Closing the outermost deferral must surface the failed GroupBy.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" },
+                    "the failed GroupBy must be gone and a later deferral must apply");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Filter, Sort or ThenSort whose rebuild fails is rolled back, so it does not apply once the cause is removed.")]
+        [TestProperty("data:Verb", "{Filter, Sort, ThenSort}")]
+        public void VerifyFailedShapingDeclarationIsRolledBack()
+        {
+            var verb = ((string)TestContext.DataRow["Verb"]).Trim();
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+            string thrown = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                items.Add(items[0]);
+                source = TableViewSource.From(items);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The same object in two rows fails the rebuild.
+                thrown = TableViewTreeTestHelpers.ThrownTypeName(() =>
+                {
+                    switch (verb)
+                    {
+                        // Keeps the duplicated Asha, so the filtered rows still contain the same object twice.
+                        case "Filter": source.Filter(o => Person(o).Role != "Engineer"); break;
+                        case "Sort": source.Sort("Name", SortDirection.Descending); break;
+                        default: source.ThenSort("Name", SortDirection.Descending); break;
+                    }
+                });
+                items.RemoveAt(items.Count - 1);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(nameof(ArgumentException), thrown, $"Precondition: {verb} must fail on the duplicate row.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" },
+                    $"the failed {verb} must not apply once the duplicate is gone");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the app's DeferRefresh stays open across a group expansion's own nested deferral, and a key selector refused with E_ILLEGAL_METHOD_CALL during the closing reshape does not end it early or lose the held changes.")]
+        public void VerifyAppDeferralStaysOpenUntilItsClose()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            IDisposable appDeferral = null;
+            Exception reentrantError = null;
+            var armed = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople()).GroupBy(o =>
+                {
+                    if (armed)
+                    {
+                        armed = false;
+                        try
+                        {
+                            source.Refresh();
+                        }
+                        catch (Exception e)
+                        {
+                            reentrantError = e;
+                        }
+                    }
+
+                    return Person(o).Role;
+                });
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup("Designer"));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                appDeferral = source.DeferRefresh();
+                source.Sort("Name", SortDirection.Descending);
+                tableView.ExpandGroup("Designer");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var engineers = GetProjectedLabels(tableView, includeCount: false).Where(l => l == "Diego" || l == "Rafa" || l == "Owen").ToList();
+                VerifySequence(new[] { "Diego", "Rafa", "Owen" }, engineers,
+                    "the held Sort must not apply: the expansion's own deferral must not end the app's deferral");
+                armed = true;
+                appDeferral.Dispose();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(E_ILLEGAL_METHOD_CALL, reentrantError?.HResult ?? 0, "The key selector's re-entrant Refresh must be refused.");
+                VerifyProjection(tableView,
+                    new List<string> { "#Engineer(3)", "Rafa", "Owen", "Diego", "#Architect(1)", "Mei", "#Designer(2)", "Ines", "Asha" },
+                    "closing the app's deferral must apply the held Sort and expansion");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a deferral released without Close ends on its own later dispatcher turn on the UI thread, rather than reshaping inside Release.")]
+        public void VerifyUnclosedDeferralEndsOnALaterTurn()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            var resets = new List<string>();
+            var resetsBeforeQueueAdvanced = -1;
+            var resetsAtNextTurn = -1;
+            using var probeRan = new global::System.Threading.AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            // Flush unrelated garbage first, so the collection below only has to release the deferral.
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) =>
+                    resets.Add($"{e.Action}:access={tableView.DispatcherQueue.HasThreadAccess}");
+                DeclareSortUnderAbandonedDeferral(source);
+
+                // Collected while this turn holds the UI thread: Release runs on the finalizer thread and
+                // may only post the end, so nothing can reshape until the queue advances.
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                resetsBeforeQueueAdvanced = resets.Count;
+                tableView.DispatcherQueue.TryEnqueue(global::Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    resetsAtNextTurn = resets.Count;
+                    probeRan.Set();
+                });
+            });
+
+            // The probe is Low priority, so Normal-priority test turns can run ahead of it; wait for it.
+            Verify.IsTrue(probeRan.WaitOne(global::System.TimeSpan.FromSeconds(10)), "The low-priority probe must run.");
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, resetsBeforeQueueAdvanced, "Releasing the deferral must not reshape inside Release.");
+                Verify.AreEqual(1, resetsAtNextTurn, "The posted end must run exactly once when the UI queue advances.");
+                Verify.AreEqual("Reset:access=True", string.Join(",", resets),
+                    "The released deferral must end with one Reset raised on the UI thread, not inside Release on the finalizer thread.");
+                VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" },
+                    "the released deferral must end and apply the held Sort");
+            });
+        }
+
+        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static void DeclareSortUnderAbandonedDeferral(TableViewSource source)
+        {
+            var deferral = source.DeferRefresh();
+            source.Sort("Name", SortDirection.Descending);
+            GC.KeepAlive(deferral);
         }
 
         #endregion

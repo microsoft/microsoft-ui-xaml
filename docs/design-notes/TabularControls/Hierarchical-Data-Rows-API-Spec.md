@@ -63,7 +63,9 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
   - Convert a C# enum key to its integer value first.
 - **Roots.** An item is a root if its parent key is null or empty, or if no item has that key (an orphan).
 - **Invalid data.** A null or empty key, a duplicate key, a node that is its own parent, and a cycle all throw `E_INVALIDARG`, naming the key where there is one. The previous rows stay on screen.
-  - After a throw the relation stays declared. Every later reshape or collection change validates again and throws again, until the data is fixed or `ClearParentBy()` is called.
+  - A `ParentBy` call that throws is rolled back (strong exception guarantee): the previous relation, or none, stays declared, and later reshapes do not keep throwing. `ClearParentBy()` is the exception: it is not rolled back, so the relation is removed even if the rebuild throws.
+  - Invalid data that arrives later through a collection or item change leaves the relation declared. Every later reshape or collection change validates again and throws again, until the data is fixed or `ClearParentBy()` is called.
+  - Calling `ParentBy`, `ClearParentBy` or any other shaping member (including the `IsLiveShaping` setter, `Refresh`, `DeferRefresh` and closing a deferral) from inside a key selector or another app callback while the source is reshaping throws `E_ILLEGAL_METHOD_CALL`.
   - A throw raised while handling a collection change may be swallowed by the collection (C++/WinRT observable vectors do this). The previous rows still stay on screen.
 - **Initial state.** Rows start collapsed.
 - **Expansion memory.** Expansion is remembered per key. It survives sort, filter and collection changes.

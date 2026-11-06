@@ -81,7 +81,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 // Basic pivot is selected by default; its TableView authors CanUserResizeColumns="True"
-                // and every column defaults CanResize="true" (TableView.idl:140, :469).
+                // and every column defaults CanUserResize="true" (TableView.idl:140, :469).
                 UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
@@ -747,7 +747,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies double-clicking where a CanResize=False column's gripper would be does not resize it.")]
+        [TestProperty("Description", "Verifies double-clicking where a CanUserResize=False column's gripper would be does not resize it.")]
         public void PointerDoubleClickOnNonResizableColumnEdgeIsNoOp()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -767,8 +767,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
 
                 double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
-                Log.Comment("Name (CanResize=False) width before={0}, after double-click={1}.", before, after);
-                Verify.IsTrue(Math.Abs(after - before) <= 1.0, "Double-clicking the edge of a column with CanResize=False must not resize it.");
+                Log.Comment("Name (CanUserResize=False) width before={0}, after double-click={1}.", before, after);
+                Verify.IsTrue(Math.Abs(after - before) <= 1.0, "Double-clicking the edge of a column with CanUserResize=False must not resize it.");
             }
         }
 

@@ -170,6 +170,229 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region StartBringItemIntoView
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies StartBringItemIntoView realizes a far row and scrolls it fully into the body viewport.")]
+        public void VerifyStartBringItemIntoViewRealizesAndShowsAFarRow()
+        {
+            const int target = 400;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateVirtualizationTable(MakeManyItems(500));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(target), "Precondition: the target row starts unrealized.");
+                tableView.StartBringItemIntoView(target, new BringIntoViewOptions { AnimationDesired = false });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(target) as TableViewRow;
+                Verify.IsNotNull(row, "The target row must be realized.");
+                Verify.AreEqual($"Person {target}", (row?.DataContext as Person)?.Name, "The realized row must be the target item.");
+
+                var scroller = GetBodyScroller(tableView);
+                var top = row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+                Log.Comment($"Target row top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}.");
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    "The target row must lie fully inside the body viewport.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies StartBringItemIntoView rejects an index outside the displayed projection.")]
+        public void VerifyStartBringItemIntoViewRejectsAnInvalidIndex()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateVirtualizationTable(MakeManyItems(20));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.Throws<ArgumentException>(() => tableView.StartBringItemIntoView(-1, null), "A negative index must throw.");
+                Verify.Throws<ArgumentException>(() => tableView.StartBringItemIntoView(20, null), "An index past the last row must throw.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies StartBringItemIntoView honours VerticalAlignmentRatio 0.5 by centring the row in the body viewport.")]
+        public void VerifyStartBringItemIntoViewCentresWithAlignmentRatio()
+        {
+            const int target = 250;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateVirtualizationTable(MakeManyItems(500));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.StartBringItemIntoView(target,
+                new BringIntoViewOptions { AnimationDesired = false, VerticalAlignmentRatio = 0.5 }));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireVisibleRow(tableView, target);
+                var scroller = GetBodyScroller(tableView);
+                var centre = RowTop(row, scroller) + row.ActualHeight / 2;
+                Log.Comment($"Row centre {centre}, viewport centre {scroller.ViewportHeight / 2}.");
+                Verify.IsTrue(Math.Abs(centre - scroller.ViewportHeight / 2) <= row.ActualHeight,
+                    "A 0.5 vertical alignment ratio must centre the row in the viewport.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies StartBringItemIntoView with a frozen leading column scrolls only vertically, leaving HorizontalOffset unchanged.")]
+        public void VerifyStartBringItemIntoViewKeepsHorizontalOffsetWithFrozenColumns()
+        {
+            const int target = 300;
+            TableView tableView = null;
+            double horizontalBefore = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateVirtualizationTable(MakeManyItems(500), columnCount: 10);
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, 200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                horizontalBefore = GetBodyScroller(tableView).HorizontalOffset;
+                tableView.StartBringItemIntoView(target, new BringIntoViewOptions { AnimationDesired = false });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                RequireVisibleRow(tableView, target);
+                Verify.IsTrue(Math.Abs(GetBodyScroller(tableView).HorizontalOffset - horizontalBefore) < 0.5,
+                    "Bringing a row into view must not scroll horizontally.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies StartBringItemIntoView takes a grouped projection index from IndexOf and shows that item's row.")]
+        public void VerifyStartBringItemIntoViewWithGroupedIndex()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(300);
+                var source = TableViewSource.From(items).GroupBy(o => (object)(int.Parse(((Person)o).Name.Substring("Person ".Length)) % 3));
+                tableView = CreateVirtualizationTable(new List<Person>());
+                tableView.ItemsSource = source;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            int index = -1;
+            RunOnUIThread.Execute(() =>
+            {
+                index = tableView.IndexOf(items[250]);
+                Verify.IsGreaterThan(index, 100, "Precondition: the item sits in the second group, below the first group's rows.");
+                tableView.StartBringItemIntoView(index, new BringIntoViewOptions { AnimationDesired = false });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreSame(items[250], RequireVisibleRow(tableView, index).DataContext, "The row at the grouped index must be the target item."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies StartBringItemIntoView called before Loaded shows the row after a single idle, with no forced layout pass.")]
+        public void VerifyStartBringItemIntoViewBeforeLoaded()
+        {
+            const int target = 300;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateVirtualizationTable(MakeManyItems(500));
+                tableView.StartBringItemIntoView(target, new BringIntoViewOptions { AnimationDesired = false });
+                // Hosted without LoadContent's synchronous UpdateLayout, so only the normal layout passes run.
+                EnsureTabularControlsResources();
+                Content = tableView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => RequireVisibleRow(tableView, target));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an ItemsSource swap before layout cancels a pending StartBringItemIntoView.")]
+        public void VerifyItemsSourceSwapCancelsPendingBringIntoView()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateVirtualizationTable(MakeManyItems(500));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.StartBringItemIntoView(400, new BringIntoViewOptions { AnimationDesired = false });
+                tableView.ItemsSource = MakeManyItems(500);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The request for the old source must not scroll the new one.");
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(400), "The old request must not realize the far row.");
+            });
+        }
+
+        private static double RowTop(FrameworkElement row, ScrollViewer scroller)
+            => row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+
+        private static TableViewRow RequireVisibleRow(TableView tableView, int index)
+        {
+            var row = GetRowsRepeater(tableView).TryGetElement(index) as TableViewRow;
+            Verify.IsNotNull(row, $"Row {index} must be realized.");
+            var scroller = GetBodyScroller(tableView);
+            var top = row == null ? double.NaN : RowTop(row, scroller);
+            Verify.IsTrue(row != null && top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                $"Row {index} must lie fully inside the body viewport (top {top}).");
+            return row;
+        }
+
+        #endregion
     }
 
     internal static class TableViewVirtualizationTestHelpers

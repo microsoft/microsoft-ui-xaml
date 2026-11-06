@@ -12,6 +12,8 @@
 #include <limits>
 #include <new>
 #include <numeric>
+#include <optional>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include "winnls.h"
@@ -40,6 +42,34 @@ namespace ShapingHelpers
 
         int CompareFloating(double a, double b);
         int CompareObjectLookupKeys(winrt::IInspectable const& a, winrt::IInspectable const& b);
+
+        // Enum sort keys normalized once when the keys are extracted, so comparisons never re-read a
+        // box. Comparing two normalized keys is exactly what ValueComparer::Compare does for them.
+        struct NormalizedEnumKeys
+        {
+            // Sized on the first enum key, so sorts without one pay nothing.
+            std::vector<EnumValue> Values;
+            std::vector<char> IsEnum;
+
+            void Capture(size_t index, size_t count, winrt::IInspectable const& key)
+            {
+                EnumValue value;
+                auto const propertyValue = key ? key.try_as<winrt::Windows::Foundation::IPropertyValue>() : nullptr;
+                if (!propertyValue || !EnumValue::TryGet(propertyValue, value, false))
+                {
+                    return;
+                }
+                if (Values.empty())
+                {
+                    Values.resize(count);
+                    IsEnum.assign(count, 0);
+                }
+                Values[index] = std::move(value);
+                IsEnum[index] = 1;
+            }
+
+            bool Has(size_t index) const noexcept { return !IsEnum.empty() && IsEnum[index]; }
+        };
 
         NumericKind ClassifyNumeric(
             winrt::Windows::Foundation::IPropertyValue const& propertyValue,
@@ -282,6 +312,16 @@ namespace ShapingHelpers
                 const int width = CompareFloating(va.Width, vb.Width);
                 return width != 0 ? width : CompareFloating(va.Height, vb.Height);
             }
+            case winrt::Windows::Foundation::PropertyType::OtherType:
+            {
+                EnumValue enumA;
+                EnumValue enumB;
+                if (EnumValue::TryGet(a, enumA, false) && EnumValue::TryGet(b, enumB, false))
+                {
+                    return EnumValue::Compare(enumA, enumB);
+                }
+                return CompareObjectLookupKeys(a, b);
+            }
             default:
                 return CompareObjectLookupKeys(a, b);
             }
@@ -509,9 +549,240 @@ namespace ShapingHelpers
             key = winrt::hstring{ buffer };
             return true;
         }
+        case winrt::Windows::Foundation::PropertyType::OtherType:
+        {
+            EnumValue value;
+            if (!EnumValue::TryGet(propertyValue, value))
+            {
+                return false;
+            }
+            key = L"e:" + value.TypeName + L":" +
+                (value.IsUnsigned ? L"u" + winrt::to_hstring(value.Unsigned) : winrt::to_hstring(value.Signed));
+            return true;
+        }
         default:
             return false;
         }
+    }
+
+    namespace
+    {
+        enum class EnumGetter : uint8_t { NotEnum, Int32, UInt32, Int64, UInt64 };
+
+        // Which getter a boxed OtherType answers, per runtime class name, so a box type throws on the probe at most
+        // once per getter per process. Plain data only; an empty class name is never cached.
+        struct EnumGetterCache
+        {
+            SRWLOCK Lock = SRWLOCK_INIT;
+            std::unordered_map<std::wstring, EnumGetter> ByClassName;
+        };
+
+        EnumGetterCache& GetEnumGetterCache()
+        {
+            static EnumGetterCache cache;
+            return cache;
+        }
+
+        // Per-thread hint from a box's IPropertyValue vtable to the getter it answered, so a run of keys of one enum
+        // type reads without a class name or a lock. A stale or shared vtable only costs a read that fails (then the
+        // class-name path runs) or one that converts to the same value, so the hint never changes a result. Enum
+        // getters only: "not an enum" always takes the class-name path.
+        struct EnumGetterHint
+        {
+            void const* VTable{ nullptr };
+            EnumGetter Getter{ EnumGetter::NotEnum };
+        };
+        constexpr size_t c_enumGetterHintCount = 8;
+        thread_local EnumGetterHint t_enumGetterHints[c_enumGetterHintCount]{};
+        thread_local size_t t_nextEnumGetterHint{ 0 };
+
+        void const* VTableOf(winrt::Windows::Foundation::IPropertyValue const& propertyValue) noexcept
+        {
+            return *static_cast<void const* const*>(winrt::get_abi(propertyValue));
+        }
+
+        EnumGetter FindEnumGetterHint(void const* vtable) noexcept
+        {
+            for (auto const& hint : t_enumGetterHints)
+            {
+                if (hint.VTable == vtable)
+                {
+                    return hint.Getter;
+                }
+            }
+            return EnumGetter::NotEnum;
+        }
+
+        void RememberEnumGetterHint(void const* vtable, EnumGetter getter) noexcept
+        {
+            for (auto& hint : t_enumGetterHints)
+            {
+                if (hint.VTable == vtable)
+                {
+                    hint.Getter = getter;
+                    return;
+                }
+            }
+            t_enumGetterHints[t_nextEnumGetterHint] = { vtable, getter };
+            t_nextEnumGetterHint = (t_nextEnumGetterHint + 1) % c_enumGetterHintCount;
+        }
+
+        std::optional<EnumGetter> FindCachedEnumGetter(std::wstring const& className) noexcept
+        {
+            auto& cache = GetEnumGetterCache();
+            std::optional<EnumGetter> getter;
+            AcquireSRWLockShared(&cache.Lock);
+            if (auto const it = cache.ByClassName.find(className); it != cache.ByClassName.end())
+            {
+                getter = it->second;
+            }
+            ReleaseSRWLockShared(&cache.Lock);
+            return getter;
+        }
+
+        void CacheEnumGetter(std::wstring const& className, EnumGetter getter) noexcept
+        {
+            auto& cache = GetEnumGetterCache();
+            AcquireSRWLockExclusive(&cache.Lock);
+            try { cache.ByClassName.insert_or_assign(className, getter); } catch (...) {}
+            ReleaseSRWLockExclusive(&cache.Lock);
+        }
+
+        void StoreEnumUnsigned(EnumValue& value, uint64_t raw) noexcept
+        {
+            if (raw > static_cast<uint64_t>((std::numeric_limits<int64_t>::max)()))
+            {
+                value.IsUnsigned = true;
+                value.Unsigned = raw;
+            }
+            else
+            {
+                value.Signed = static_cast<int64_t>(raw);
+            }
+        }
+
+        // Throws when the box does not answer getter.
+        void ReadEnumValue(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumGetter getter, EnumValue& value)
+        {
+            switch (getter)
+            {
+            case EnumGetter::Int32: value.Signed = propertyValue.GetInt32(); break;
+            case EnumGetter::UInt32: StoreEnumUnsigned(value, propertyValue.GetUInt32()); break;
+            case EnumGetter::Int64: value.Signed = propertyValue.GetInt64(); break;
+            case EnumGetter::UInt64: StoreEnumUnsigned(value, propertyValue.GetUInt64()); break;
+            default: throw winrt::hresult_not_implemented();
+            }
+        }
+
+        bool TryReadEnumValue(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumGetter getter, EnumValue& value) noexcept
+        {
+            try
+            {
+                ReadEnumValue(propertyValue, getter, value);
+                return true;
+            }
+            catch (...)
+            {
+                value = {};
+                return false;
+            }
+        }
+
+        std::wstring ClassNameOf(winrt::Windows::Foundation::IPropertyValue const& propertyValue) noexcept
+        {
+            try { return std::wstring{ winrt::get_class_name(propertyValue) }; } catch (...) { return {}; }
+        }
+    }
+
+    bool EnumValue::TryGet(winrt::Windows::Foundation::IPropertyValue const& propertyValue, EnumValue& value, bool includeTypeName) noexcept
+    {
+        value = {};
+        try
+        {
+            if (propertyValue.Type() != winrt::Windows::Foundation::PropertyType::OtherType)
+            {
+                return false;
+            }
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        auto const vtable = VTableOf(propertyValue);
+        bool read = false;
+        if (auto const hinted = FindEnumGetterHint(vtable); hinted != EnumGetter::NotEnum)
+        {
+            read = TryReadEnumValue(propertyValue, hinted, value);
+        }
+
+        std::wstring className;
+        if (!read)
+        {
+            className = ClassNameOf(propertyValue);
+            auto known = className.empty() ? std::nullopt : FindCachedEnumGetter(className);
+            if (known == EnumGetter::NotEnum)
+            {
+                return false;
+            }
+            if (known && TryReadEnumValue(propertyValue, *known, value))
+            {
+                RememberEnumGetterHint(vtable, *known);
+                read = true;
+            }
+            else
+            {
+                // A box only answers the getter of its underlying type (C++/WinRT) or converts (CsWinRT). WinRT enums
+                // are Int32, flags UInt32; the 64-bit getters cover converting boxes of wider app enums.
+                EnumGetter found = EnumGetter::NotEnum;
+                for (auto const getter : { EnumGetter::Int32, EnumGetter::UInt32, EnumGetter::Int64, EnumGetter::UInt64 })
+                {
+                    if (TryReadEnumValue(propertyValue, getter, value))
+                    {
+                        found = getter;
+                        break;
+                    }
+                }
+                if (!className.empty())
+                {
+                    CacheEnumGetter(className, found);
+                }
+                if (found == EnumGetter::NotEnum)
+                {
+                    return false;
+                }
+                RememberEnumGetterHint(vtable, found);
+                read = true;
+            }
+        }
+
+        // Always the box's own class name, never inferred from the vtable hint: a boxing vtable can be shared by
+        // several enum types (CsWinRT, XAML), so only the getter, whose result is a value either way, is hinted.
+        // Caching the name per vtable (even confirmed once per pass) would merge equal values of two such types into
+        // one group identity, so identity keys pay one GetRuntimeClassName per enum key by design.
+        if (includeTypeName)
+        {
+            try
+            {
+                value.TypeName = className.empty() ? winrt::get_class_name(propertyValue) : winrt::hstring{ className };
+            }
+            catch (...) {}
+        }
+        return true;
+    }
+
+    int EnumValue::Compare(EnumValue const& a, EnumValue const& b) noexcept
+    {
+        if (a.IsUnsigned != b.IsUnsigned)
+        {
+            // Only values above INT64_MAX are held unsigned.
+            return a.IsUnsigned ? 1 : -1;
+        }
+        if (a.IsUnsigned)
+        {
+            return a.Unsigned < b.Unsigned ? -1 : (a.Unsigned > b.Unsigned ? 1 : 0);
+        }
+        return a.Signed < b.Signed ? -1 : (a.Signed > b.Signed ? 1 : 0);
     }
 
     bool ValueKey::TryGetStablePropertyKey(
@@ -933,6 +1204,7 @@ namespace ShapingHelpers
         std::vector<winrt::IInspectable> keys(n * axisCount);
         std::vector<winrt::hstring> fallbackKeys(n * axisCount);
         std::vector<char> hasFallbackKey(n * axisCount, 0);
+        NormalizedEnumKeys enumKeys;
 
         for (size_t i = 0; i < n; ++i)
         {
@@ -944,6 +1216,10 @@ namespace ShapingHelpers
                 if (needsFallback)
                 {
                     fallbackKeys[rowBase + s] = ValueKey::ToString(key);
+                }
+                else
+                {
+                    enumKeys.Capture(rowBase + s, n * axisCount, key);
                 }
                 hasFallbackKey[rowBase + s] = needsFallback ? 1 : 0;
                 keys[rowBase + s] = std::move(key);
@@ -963,11 +1239,15 @@ namespace ShapingHelpers
                 const size_t bBase = b * axisCount;
                 for (size_t s = 0; s < axisCount; ++s)
                 {
-                    const int cmp = ValueComparer::Compare(
-                        keys[aBase + s],
-                        keys[bBase + s],
-                        hasFallbackKey[aBase + s] ? &fallbackKeys[aBase + s] : nullptr,
-                        hasFallbackKey[bBase + s] ? &fallbackKeys[bBase + s] : nullptr);
+                    const size_t ia = aBase + s;
+                    const size_t ib = bBase + s;
+                    const int cmp = enumKeys.Has(ia) && enumKeys.Has(ib) ?
+                        EnumValue::Compare(enumKeys.Values[ia], enumKeys.Values[ib]) :
+                        ValueComparer::Compare(
+                            keys[ia],
+                            keys[ib],
+                            hasFallbackKey[ia] ? &fallbackKeys[ia] : nullptr,
+                            hasFallbackKey[ib] ? &fallbackKeys[ib] : nullptr);
                     if (cmp != 0)
                     {
                         return axisDirection(s) == winrt::SortDirection::Ascending ? (cmp < 0) : (cmp > 0);
@@ -1033,6 +1313,55 @@ namespace ShapingHelpers
         }
 
         return true;
+    }
+
+    void StableSortBucketsByKey(std::vector<KeyedBucket>& buckets, winrt::SortDirection direction)
+    {
+        if (direction == winrt::SortDirection::None || buckets.size() < 2)
+        {
+            return;
+        }
+
+        // Fallback keys are frozen up front, as in StableSortByKeys, so the comparator stays a strict weak ordering.
+        const size_t n = buckets.size();
+        std::vector<winrt::hstring> fallbackKeys(n);
+        std::vector<char> hasFallbackKey(n, 0);
+        NormalizedEnumKeys enumKeys;
+        for (size_t i = 0; i < n; ++i)
+        {
+            if (ValueComparer::UsesFallbackKey(buckets[i].Key))
+            {
+                fallbackKeys[i] = ValueKey::ToString(buckets[i].Key);
+                hasFallbackKey[i] = 1;
+            }
+            else
+            {
+                enumKeys.Capture(i, n, buckets[i].Key);
+            }
+        }
+
+        std::vector<size_t> order(n);
+        std::iota(order.begin(), order.end(), size_t{ 0 });
+        std::stable_sort(order.begin(), order.end(),
+            [&](size_t a, size_t b)
+            {
+                const int cmp = enumKeys.Has(a) && enumKeys.Has(b) ?
+                    EnumValue::Compare(enumKeys.Values[a], enumKeys.Values[b]) :
+                    ValueComparer::Compare(
+                        buckets[a].Key,
+                        buckets[b].Key,
+                        hasFallbackKey[a] ? &fallbackKeys[a] : nullptr,
+                        hasFallbackKey[b] ? &fallbackKeys[b] : nullptr);
+                return direction == winrt::SortDirection::Ascending ? (cmp < 0) : (cmp > 0);
+            });
+
+        std::vector<KeyedBucket> sorted;
+        sorted.reserve(n);
+        for (auto const index : order)
+        {
+            sorted.push_back(std::move(buckets[index]));
+        }
+        buckets = std::move(sorted);
     }
 
     uint32_t UpperBoundInsertIndex(

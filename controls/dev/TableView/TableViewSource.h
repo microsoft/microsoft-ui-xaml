@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 
+#include <winrt/Microsoft.UI.Dispatching.h>
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTipTypes.h"
@@ -47,24 +48,71 @@ public:
 
     static winrt::TableViewSource From(winrt::IInspectable const& items);
 
+    // The items passed to From, the same reference.
+    winrt::IInspectable Source() const;
+
     // Single, always-first predicate: each Filter() replaces the previous predicate and runs
     // before sort/group shaping.
     winrt::TableViewSource Filter(winrt::TableViewPredicate const& predicate);
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key);
-    winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
+    winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewGroupIdentitySelector const& groupIdentitySelector);
+    // Orders groups by group key (None: by each group's first item in the sorted rows). Kept across
+    // GroupBy replacement and ClearGroupBy.
+    winrt::TableViewSource SortGroups(winrt::SortDirection direction);
     winrt::TableViewSource ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
+    // Sort replaces every item sort level with one (None clears them, as ClearSort does); ThenSort
+    // appends a lower-precedence level. Neither affects SortGroups.
     winrt::TableViewSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::TableViewSource ThenSort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
+    winrt::TableViewSource ThenSort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    // Internal, for the owning control: makes sortAxisToken the only item sort level in one reshape
+    // (None clears every level). SortGroups is kept.
+    winrt::TableViewSource SortExclusive(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
     winrt::TableViewSource ClearParentBy();
+    // Clears every item sort level; SortGroups is kept.
     winrt::TableViewSource ClearSort();
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
     // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
     // app declared through the fluent Sort verb (which is untokenized and so unaddressable by
     // token). Keeps the control's single-axis contract true when both front-ends are used.
+    // SortGroups is kept.
     winrt::TableViewSource ClearSortsExcept(winrt::hstring const& sortAxisToken);
+    void Refresh();
+    winrt::Windows::Foundation::IClosable DeferRefresh();
+    // Internal: a refresh deferral without an IClosable, for the owning control (UI thread). Each
+    // BeginDeferRefresh must be paired with one EndDeferRefresh; the outermost End reshapes once if
+    // anything changed, and may throw what that reshape throws (or E_ILLEGAL_METHOD_CALL when
+    // called from inside an app delegate, without ending the deferral). The IClosable's Close also
+    // calls EndDeferRefresh.
+    void BeginDeferRefresh();
+    void EndDeferRefresh();
+    // Internal: ends one deferral on a later (low-priority) dispatcher turn, posting again while the
+    // end is refused as re-entrant, up to a retry cap. With no queue to post to, ends it inline.
+    void EndDeferRefreshLater();
+    // Internal: the group identity key maps to under the current GroupBy, computed as bucketing
+    // computes it (the groupIdentitySelector when given, else the value identity). nullopt without
+    // GroupBy, or when the key has no identity (null; an empty string without a selector).
+    std::optional<winrt::hstring> TryGetGroupIdentityForKey(winrt::IInspectable const& key) const;
+    // Internal: the groups currently projected, in display order; empty when not grouped. Group is
+    // the object the grouped adapter tracks (GroupedSourceAdapter::ResolveLiveGroupByIdentity
+    // returns the same object for Identity).
+    struct GroupInfo
+    {
+        winrt::hstring Identity;
+        winrt::IInspectable Key{ nullptr };
+        winrt::IInspectable Group{ nullptr };
+    };
+    std::vector<GroupInfo> CurrentGroups() const;
+    // Internal: throws E_ILLEGAL_METHOD_CALL when ending the outermost deferral now would reshape
+    // from inside an app delegate.
+    void ThrowIfEndDeferRefreshReentrant() const;
+    // Internal: the SortGroups direction, and whether any item sort level is declared.
+    winrt::SortDirection SortGroupsDirection() const;
+    bool HasItemSort() const;
     // Internal: the active sort axes in precedence order, so the owner can detect an axis it does
     // not own and, when that axis names a property, attribute it to a column. Restated here
     // rather than surfacing the engine's own struct: this class is the translation layer, and
@@ -169,6 +217,13 @@ private:
         ShapingTipCompleted complete;
     };
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::TableViewSource ReplaceSortsCore(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::TableViewSource ThenSortCore(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    // A key selector that reads sortMemberPath through a binding; throws E_INVALIDARG for an empty path.
+    static winrt::TableViewKeySelector MakePathKeySelector(winrt::hstring const& sortMemberPath);
+    void ThrowIfWrongThread() const;
+    // The owner's queue, or this thread's when the source was created without one; throws when neither exists.
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue DeferralQueue();
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
     TableViewRowItemKeySelector MakeIdentitySelector() const;
@@ -202,4 +257,6 @@ private:
     // rows and collect any cycle; also swaps to null safely during finalization.
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
     TableViewRowMetadataProvider m_rowMetadata{};
+    // Used to post the end of an unclosed deferral when this source was created on a thread without a queue.
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_deferralQueue{ nullptr };
 };

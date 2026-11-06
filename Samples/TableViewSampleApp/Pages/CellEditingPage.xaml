@@ -72,7 +72,7 @@
                     CellEditEnding="OnCellEditEnding"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
-                    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="A CellTemplate with no CellEditingTemplate, so this column is never editable."/>
+                    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False" HeaderToolTip="A CellTemplate with no CellEditingTemplate, so this column is never editable."/>
                     <tv:TableViewTextColumn Header="First name" Width="160" Binding="{Binding FirstName}" HeaderToolTip="Required: clearing it is rejected by INotifyDataErrorInfo validation."/>
                     <tv:TableViewTextColumn Header="Last name" Width="160" Binding="{Binding LastName}" HeaderToolTip="Required: clearing it is rejected by INotifyDataErrorInfo validation."/>
                     <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}"/>
