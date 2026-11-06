@@ -1142,6 +1142,15 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void OnCanUserReorderColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserReorderColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserReorderColumns = BasicTableView.CanUserReorderColumns;
+            }
+        }
+
         private void OnHideColumnHeadersToggled(object sender, RoutedEventArgs e)
         {
             var visibility = ((CheckBox)sender).IsChecked == true ? TableViewHeadersVisibility.None : TableViewHeadersVisibility.Column;

@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableViewColumn.g.cpp"
 
 GlobalDependencyProperty TableViewColumnProperties::s_ActualWidthProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_CanReorderProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CanResizeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CanSortProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CellContextFlyoutProperty{ nullptr };
@@ -51,6 +52,17 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(120.0),
                 nullptr);
+    }
+    if (!s_CanReorderProperty)
+    {
+        s_CanReorderProperty =
+            InitializeDependencyProperty(
+                L"CanReorder",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnCanReorderPropertyChanged));
     }
     if (!s_CanResizeProperty)
     {
@@ -266,6 +278,7 @@ void TableViewColumnProperties::EnsureProperties()
 void TableViewColumnProperties::ClearProperties()
 {
     s_ActualWidthProperty = nullptr;
+    s_CanReorderProperty = nullptr;
     s_CanResizeProperty = nullptr;
     s_CanSortProperty = nullptr;
     s_CellContextFlyoutProperty = nullptr;
@@ -285,6 +298,14 @@ void TableViewColumnProperties::ClearProperties()
     s_SortMemberPathProperty = nullptr;
     s_VisibilityProperty = nullptr;
     s_WidthProperty = nullptr;
+}
+
+void TableViewColumnProperties::OnCanReorderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableViewColumn>();
+    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
 }
 
 void TableViewColumnProperties::OnCanResizePropertyChanged(
@@ -410,6 +431,19 @@ void TableViewColumnProperties::ActualWidth(double value)
 double TableViewColumnProperties::ActualWidth()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_ActualWidthProperty));
+}
+
+void TableViewColumnProperties::CanReorder(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_CanReorderProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewColumnProperties::CanReorder()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanReorderProperty));
 }
 
 void TableViewColumnProperties::CanResize(bool value)

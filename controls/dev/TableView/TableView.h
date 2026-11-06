@@ -149,6 +149,34 @@ struct ColumnResizeDragState
     winrt::Point lastPressPosition{};
 };
 
+struct ColumnReorderBounds
+{
+    double left{ 0.0 };
+    double right{ 0.0 };
+    bool frozen{ false };
+};
+
+// A pressed header that may become a column reorder drag once the pointer passes the drag threshold.
+struct ColumnReorderDragState
+{
+    winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+    winrt::weak_ref<winrt::UIElement> header{ nullptr };
+    uint32_t pointerId{ 0 };
+    bool touch{ false };
+    bool dragging{ false };
+    bool frozen{ false };
+    // Header-row coordinates, which stay put while the body scrolls under the pointer.
+    winrt::Point pressPoint{};
+    winrt::Point lastPoint{};
+    double grabOffset{ 0.0 };
+    std::vector<winrt::TableViewColumn> others;
+    std::vector<ColumnReorderBounds> bounds;
+    int32_t ownSlot{ -1 };
+    int32_t minSlot{ 0 };
+    int32_t maxSlot{ 0 };
+    winrt::IInspectable headerOpacity{ nullptr };
+};
+
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
 // TableView member (not a process-global map keyed by `this`) so instances on
 // different UI threads never share or concurrently mutate one container. Grouped into
@@ -1662,4 +1690,59 @@ private:
 
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
+
+    // --- Column reorder (TableView_ColumnReorder.cpp) ---
+public:
+    void OnCanUserReorderColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnColumnCanReorderChanged();
+    bool IsColumnUserReorderableInternal(const winrt::TableViewColumn& column);
+    // Reorderable, and at least one neighbouring position is allowed.
+    bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
+    // True for the column a user reorder is moving between its RemoveAt and InsertAt.
+    bool IsColumnMovingInternal(const winrt::TableViewColumn& column) const;
+    void CancelColumnReorderDrag();
+
+private:
+    void HookColumnReorderInput();
+    void RefreshColumnReorderManipulationMode();
+    void OnHeaderHostPointerPressedForReorder(const winrt::PointerRoutedEventArgs& args);
+    void OnHeaderHostPointerMovedForReorder(const winrt::PointerRoutedEventArgs& args);
+    void OnHeaderHostPointerReleasedForReorder(const winrt::PointerRoutedEventArgs& args);
+    void OnHeaderHostPointerEndedForReorder(const winrt::PointerRoutedEventArgs& args);
+    winrt::TableViewColumn HeaderColumnFromSource(const winrt::IInspectable& source, winrt::FrameworkElement& headerCell);
+    bool TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args);
+    bool BeginColumnReorderDrag();
+    void PrepareColumnReorderSlots(ColumnReorderDragState& state);
+    void RefreshColumnReorderBounds(ColumnReorderDragState& state);
+    bool ColumnReorderViewport(const ColumnReorderDragState& state, double& pointerX, double& width, double& offset);
+    static int32_t ColumnReorderSlotAt(const ColumnReorderDragState& state, double contentX, double offset);
+    void UpdateColumnReorderDrag();
+    void StopColumnReorderScroll();
+    void EndColumnReorderDrag(bool commit);
+    void OnColumnReorderScrollTick();
+    bool ConsumeColumnReorderTap();
+    int32_t ColumnReorderSlots(const winrt::TableViewColumn& column, std::vector<winrt::TableViewColumn>& others);
+    int32_t ColumnReorderTargetForSlot(const winrt::TableViewColumn& column, const std::vector<winrt::TableViewColumn>& others, int32_t slot);
+    bool IsColumnReorderSlotAllowed(const winrt::TableViewColumn& column, const std::vector<winrt::TableViewColumn>& others, int32_t slot);
+    bool IsColumnMoveAllowed(uint32_t from, uint32_t to);
+    bool TryReorderColumn(const winrt::TableViewColumn& column, const std::function<int32_t()>& targetIndex);
+    void AnnounceColumnMove(const winrt::TableViewColumn& column);
+
+    std::optional<ColumnReorderDragState> m_columnReorder;
+    tracker_ref<winrt::Canvas> m_columnReorderOverlay{ this };
+    tracker_ref<winrt::Border> m_columnReorderGhost{ this };
+    tracker_ref<winrt::Rectangle> m_columnReorderIndicator{ this };
+    winrt::DispatcherQueueTimer m_columnReorderScrollTimer{ nullptr };
+    int32_t m_columnReorderScrollStep{ 0 };
+    winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
+    bool m_suppressHeaderTap{ false };
+    uint32_t m_rebuildHeadersQueueGeneration{ 0 };
+    uint32_t m_columnsChangeStamp{ 0 };
+    winrt::weak_ref<winrt::UIElement> m_columnReorderHookedHost{ nullptr };
+    std::vector<std::pair<winrt::RoutedEvent, winrt::IInspectable>> m_columnReorderHandlers;
+    winrt::weak_ref<winrt::UIElement> m_columnReorderKeyTarget{ nullptr };
+    winrt::IInspectable m_columnReorderKeyHandler{ nullptr };
+    winrt::FrameworkElement::SizeChanged_revoker m_columnReorderHostSizeChangedRevoker{};
+    // The host's own ManipulationMode local value, while reorder overrides it.
+    std::optional<winrt::IInspectable> m_columnReorderSavedManipulationMode;
 };

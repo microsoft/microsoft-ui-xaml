@@ -26,6 +26,8 @@
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingComfortable">8,8,8,8</Thickness>
+            <!-- AccentFillColorDefaultBrush, inlined: see the alias note in TabularSurfaces_themeresources.xaml. -->
+            <SolidColorBrush x:Key="TableViewColumnReorderIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. -->
@@ -42,6 +44,7 @@
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingComfortable">8,8,8,8</Thickness>
+            <SolidColorBrush x:Key="TableViewColumnReorderIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. The
@@ -59,6 +62,9 @@
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingComfortable">8,8,8,8</Thickness>
+            <SolidColorBrush x:Key="TableViewColumnReorderIndicatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <x:Double x:Key="TableViewColumnReorderIndicatorWidth">2</x:Double>
 </ResourceDictionary>

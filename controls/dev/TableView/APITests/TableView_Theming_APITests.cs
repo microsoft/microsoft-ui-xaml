@@ -278,6 +278,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies the column reorder indicator is the system highlight colour under high contrast and 2px wide in every theme.")]
+        public void VerifyColumnReorderIndicatorResources()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+                var highContrast = (ResourceDictionary)resources.ThemeDictionaries["HighContrast"];
+                var brush = highContrast["TableViewColumnReorderIndicatorBrush"] as SolidColorBrush;
+                Verify.IsNotNull(brush, "The HighContrast dictionary must define the indicator as a SolidColorBrush.");
+                Verify.AreEqual((Color)Application.Current.Resources["SystemColorHighlightColor"], brush.Color,
+                    "Under high contrast the indicator must use SystemColorHighlightColor.");
+                Verify.AreEqual(2.0, (double)resources["TableViewColumnReorderIndicatorWidth"], "The indicator is 2px in every theme.");
+            });
+        }
+
         // Values mirror Common_themeresources_any.xaml.
         [TestMethod]
         public void VerifyGridLineAndOuterBorderBrushesMatchFluentStrokeTokens()

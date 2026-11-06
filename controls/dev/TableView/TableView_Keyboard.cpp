@@ -318,6 +318,44 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
     return true;
 }
 
+winrt::TableViewColumn TableView::HeaderColumnFromSource(const winrt::IInspectable& source, winrt::FrameworkElement& headerCell)
+{
+    return ResolveFocusedHeaderColumn(source, m_headerHost.get(), headerCell);
+}
+
+// Ctrl+Shift+Left/Right moves the focused header's column one position in reading order.
+bool TableView::TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args)
+{
+    const auto key = args.Key();
+    if (args.Handled() || (key != winrt::VirtualKey::Left && key != winrt::VirtualKey::Right) || !CanUserReorderColumns() ||
+        !IsKeyDown(winrt::VirtualKey::Control) || !IsKeyDown(winrt::VirtualKey::Shift) || IsKeyDown(winrt::VirtualKey::Menu))
+    {
+        return false;
+    }
+
+    winrt::FrameworkElement headerCell{ nullptr };
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
+    if (!column)
+    {
+        return false;
+    }
+
+    // Consumed on every header, moved or not, so the chord never falls through to navigation.
+    args.Handled(true);
+    if (!m_columnReorder)
+    {
+        const bool forward = (key == winrt::VirtualKey::Right) != (FlowDirection() == winrt::FlowDirection::RightToLeft);
+        TryReorderColumn(column, [this, &column, forward]()
+            {
+                std::vector<winrt::TableViewColumn> others;
+                const int32_t own = ColumnReorderSlots(column, others);
+                const int32_t slot = own + (forward ? 1 : -1);
+                return own >= 0 && slot >= 0 && slot <= static_cast<int32_t>(others.size()) ? ColumnReorderTargetForSlot(column, others, slot) : -1;
+            });
+    }
+    return true;
+}
+
 // ----- Header-band keyboard navigation -----
 //
 // The table is one tab stop on the header band (the body when no header is actionable); arrows
@@ -435,6 +473,7 @@ bool TableView::IsHeaderCellActionableInternal(const winrt::FrameworkElement& he
 
     // Resizable only while the gripper is available: a pinned column cannot be resized.
     if (IsColumnUserSortableInternal(column) || (IsColumnResizeAllowed(column) && !IsColumnResizePinned(column)) ||
+        CanUserMoveColumnInternal(column) ||
         column.HeaderContextFlyout() || ContextFlyout() || header.ContextFlyout() ||
         TableViewDetails::HasEffectiveToolTip(header))
     {
@@ -695,6 +734,7 @@ void TableView::ClearHeaderTabStopStampInternal(const winrt::FrameworkElement& h
 // so a style-set or app-local IsTabStop is kept.
 void TableView::RefreshHeaderTabStopsInternal()
 {
+    RefreshColumnReorderManipulationMode();
     winrt::DependencyObject focusedInactive{ nullptr };
     for (auto const& cell : GetVisibleHeaderCells(m_headerHost.get()))
     {
@@ -1383,6 +1423,11 @@ void TableView::OnKeyDownForNavigation(
     // After the editing guard so an open editor keeps its arrow keys; Alt+Arrow cannot shadow the
     // bare navigation arrows below.
     if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
+    }
+
+    if (TryHandleHeaderColumnReorderKey(args))
     {
         return;
     }
