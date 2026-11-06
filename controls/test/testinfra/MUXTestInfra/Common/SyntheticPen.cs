@@ -16,12 +16,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         private const uint InRange = 0x2;
         private const uint InContact = 0x4;
         private const uint FirstButton = 0x10;
+        private const uint SecondButton = 0x20;
+        private const uint BarrelFlag = 0x1;
         private const uint Down = 0x10000;
         private const uint Update = 0x20000;
         private const uint Up = 0x40000;
         private IntPtr device;
         private Point position;
         private bool pressed;
+        private uint penFlags;
 
         public SyntheticPen()
         {
@@ -45,6 +48,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             pressed = true;
         }
 
+        // Contact with the barrel button held: a secondary (non-primary) pen press.
+        public void PressBarrel(Point point)
+        {
+            if (pressed) { throw new InvalidOperationException("The pen is already pressed."); }
+            penFlags = BarrelFlag;
+            Inject(point, InRange | InContact | SecondButton | Down);
+            pressed = true;
+        }
+
         public void Move(Point point)
         {
             if (!pressed) { throw new InvalidOperationException("Press the pen before moving in contact."); }
@@ -57,6 +69,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             {
                 Inject(position, InRange | Up);
                 pressed = false;
+                penFlags = 0;
             }
         }
 
@@ -83,6 +96,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                             Flags = flags,
                             PixelLocation = point
                         },
+                        Flags = penFlags,
                         Mask = 1 /* PEN_MASK_PRESSURE */,
                         Pressure = (flags & InContact) != 0 ? 512u : 0u
                     }
