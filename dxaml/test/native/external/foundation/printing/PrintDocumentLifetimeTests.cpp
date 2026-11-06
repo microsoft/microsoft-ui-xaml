@@ -31,6 +31,7 @@ void PrintDocumentLifetimeTests::MakeDocumentAfterOwnerReleaseDoesNotCrash()
 {
     TestCleanupWrapper cleanup;
     Microsoft::WRL::ComPtr<IPrintDocumentPageSource> documentSource;
+    Microsoft::WRL::ComPtr<IPrintPreviewPageCollection> previewPageCollection;
     Platform::WeakReference printDocumentWeakReference;
 
     struct CallResults
@@ -40,6 +41,7 @@ void PrintDocumentLifetimeTests::MakeDocumentAfterOwnerReleaseDoesNotCrash()
         HRESULT getPreviewCollectionResult = E_FAIL;
         HRESULT paginateResult = E_FAIL;
         HRESULT makePageResult = E_FAIL;
+        bool previewCollectionReturned = false;
     };
 
     auto callPrintMethods = [&]()
@@ -52,12 +54,17 @@ void PrintDocumentLifetimeTests::MakeDocumentAfterOwnerReleaseDoesNotCrash()
             {
                 results.makeDocumentResult = documentSource->MakeDocument(nullptr, nullptr);
 
-                Microsoft::WRL::ComPtr<IPrintPreviewPageCollection> previewCollection;
-                results.getPreviewCollectionResult = documentSource->GetPreviewPageCollection(nullptr, &previewCollection);
-                if (SUCCEEDED(results.getPreviewCollectionResult) && previewCollection)
+                Microsoft::WRL::ComPtr<IPrintPreviewPageCollection> returnedPreviewCollection;
+                results.getPreviewCollectionResult = documentSource->GetPreviewPageCollection(nullptr, &returnedPreviewCollection);
+                results.previewCollectionReturned = returnedPreviewCollection != nullptr;
+                if (returnedPreviewCollection)
                 {
-                    results.paginateResult = previewCollection->Paginate(0, nullptr);
-                    results.makePageResult = previewCollection->MakePage(1, 100.0f, 100.0f);
+                    previewPageCollection = returnedPreviewCollection;
+                }
+                if (previewPageCollection)
+                {
+                    results.paginateResult = previewPageCollection->Paginate(0, nullptr);
+                    results.makePageResult = previewPageCollection->MakePage(1, 100.0f, 100.0f);
                 }
 
                 ::RoUninitialize();
@@ -87,14 +94,17 @@ void PrintDocumentLifetimeTests::MakeDocumentAfterOwnerReleaseDoesNotCrash()
     VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.getPreviewCollectionResult);
     VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.paginateResult);
     VERIFY_ARE_EQUAL(S_OK, liveOwnerResults.makePageResult);
+    VERIFY_IS_TRUE(liveOwnerResults.previewCollectionReturned);
+    VERIFY_IS_NOT_NULL(previewPageCollection.Get());
     TestServices::WindowHelper->WaitForIdle();
 
     const auto expiredOwnerResults = callPrintMethods();
     VERIFY_SUCCEEDED(expiredOwnerResults.initializeResult);
-    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.makeDocumentResult);
-    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.getPreviewCollectionResult);
-    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.paginateResult);
-    VERIFY_ARE_EQUAL(S_OK, expiredOwnerResults.makePageResult);
+    VERIFY_ARE_EQUAL(E_UNEXPECTED, expiredOwnerResults.makeDocumentResult);
+    VERIFY_ARE_EQUAL(E_UNEXPECTED, expiredOwnerResults.getPreviewCollectionResult);
+    VERIFY_ARE_EQUAL(E_UNEXPECTED, expiredOwnerResults.paginateResult);
+    VERIFY_ARE_EQUAL(E_UNEXPECTED, expiredOwnerResults.makePageResult);
+    VERIFY_IS_FALSE(expiredOwnerResults.previewCollectionReturned);
 }
 
 } } } } } }

@@ -231,20 +231,24 @@ IFACEMETHODIMP PrintDocumentSource::GetPreviewPageCollection(
 
     // This call make come in on a worker thread, post it on the UI-thread since we need to access our objects.
 
+    IFCPTR(docPageCollection);
+    *docPageCollection = nullptr;
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
-    if (pPrintDocument)
+    if (!pPrintDocument)
     {
-        spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
-
-        IFC(ctl::make(&spContext));
-        SetInterface(spContext->m_pPrintPackageTarget, docPackageTarget);
-
-        IFC(spPrintDocumentDO->GetXamlDispatcherNoRef()->RunAsync(
-            MakeCallback(
-                ctl::WeakRefPtr(m_pPrintDocument),
-                &PrintDocument::GetPreviewPageCollectionImpl,
-                spContext)));
+        return E_UNEXPECTED;
     }
+
+    spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
+
+    IFC(ctl::make(&spContext));
+    SetInterface(spContext->m_pPrintPackageTarget, docPackageTarget);
+
+    IFC(spPrintDocumentDO->GetXamlDispatcherNoRef()->RunAsync(
+        MakeCallback(
+            ctl::WeakRefPtr(m_pPrintDocument),
+            &PrintDocument::GetPreviewPageCollectionImpl,
+            spContext)));
 
     ctl::addref_interface(this);
     *docPageCollection = static_cast<IPrintPreviewPageCollection*>(this);
@@ -275,7 +279,7 @@ IFACEMETHODIMP PrintDocumentSource::Paginate(
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
     if (!pPrintDocument)
     {
-        return S_OK;
+        return E_UNEXPECTED;
     }
 
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
@@ -324,7 +328,7 @@ IFACEMETHODIMP PrintDocumentSource::MakePage(
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
     if (!pPrintDocument)
     {
-        return S_OK;
+        return E_UNEXPECTED;
     }
 
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
@@ -364,7 +368,7 @@ HRESULT PrintDocumentSource::MakeDocument(
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
     if (!pPrintDocument)
     {
-        return S_OK;
+        return E_UNEXPECTED;
     }
 
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
@@ -394,4 +398,3 @@ Cleanup:
     RRETURN(hr);
 
 }
-
