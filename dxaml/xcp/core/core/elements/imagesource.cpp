@@ -432,7 +432,10 @@ CImageSource::UsePreviousHardwareSurface(
     _In_ CImageSource* previous
     )
 {
-    if (!m_pImageSurfaceWrapper->HasAnySurface() && previous->CheckForHardwareResources())
+    // A hardware decode can leave this wrapper locked with no surface; SetHardwareSurface requires it unlocked.
+    if (!m_pImageSurfaceWrapper->HasAnySurface() &&
+        !m_pImageSurfaceWrapper->IsHardwareLocked() &&
+        previous->CheckForHardwareResources())
     {
         // Null while a background thread decode holds the hardware surface.
         if (HWTexture* surface = previous->GetHardwareSurface())
