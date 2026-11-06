@@ -460,6 +460,7 @@ Template parts:
 | `PART_HeaderHost` | `TableViewCellsPanel` (typed `Panel`) | Host for column header elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
+| `PART_ColumnReorderIndicator` | `Rectangle` | Optional, `x:Load="False"`: the drop line of a column reorder drag, realized by the first drag; see [Reordering columns](#reordering-columns). |
 
 Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
@@ -885,6 +886,199 @@ does not also cancel the edit.
 An unavailable pooled group-header automation peer rejects `ShowContextMenu` with
 `ElementNotAvailable`, just as it rejects a row-coordinate query. It cannot open either
 its retained menu or the table fallback.
+
+## Reordering columns
+
+> **Proposed — gated on API review.** Tracked by ADO 64665234 ("TableView: unable to reorder
+> columns"), filed by Task Manager, which needs a user-controlled column order that it can persist
+> across sessions.
+
+`Columns` is an `IVector`, so an app can already reorder columns in code by removing a column and
+inserting it elsewhere. What was missing is the user gesture, and an event that tells the app the
+user changed the order so it can save it. Reordering is opt-in, like `DataGrid.CanUserReorderColumns`
+in the Windows Community Toolkit, because a table whose column order is part of its meaning
+(a ledger, a comparison) should not become draggable on upgrade.
+
+```xml
+<tabular:TableView x:Name="Processes"
+                   CanUserReorderColumns="True"
+                   ColumnReordered="OnColumnReordered">
+    <tabular:TableViewTextColumn x:Name="NameColumn" Header="Name" Binding="{Binding Name}"
+                                 FrozenEdge="Leading" />
+    <tabular:TableViewTextColumn x:Name="PidColumn" Header="PID" Binding="{Binding Pid}" />
+    <tabular:TableViewTextColumn x:Name="CpuColumn" Header="CPU" Binding="{Binding Cpu}" />
+    <tabular:TableViewTextColumn x:Name="MemoryColumn" Header="Memory" Binding="{Binding Memory}" />
+</tabular:TableView>
+```
+
+A frozen column moves only among the frozen columns, so the single frozen Name column above stays
+first; that is how an app pins a column in place.
+
+```csharp
+// Save the order whenever the user changes it, keyed by something stable (not the header text,
+// which is localized).
+void OnColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+{
+    Settings.ColumnOrder = string.Join(",", sender.Columns.Select(c => (string)c.Tag));
+}
+
+// Restore it at startup, before the table loads, with the ordinary collection operations. Keep only
+// saved keys that still name a column, once each, so a column removed or renamed in a later version
+// does not shift the rest.
+void RestoreColumnOrder(TableView table, IReadOnlyList<string> savedOrder)
+{
+    var known = savedOrder.Distinct()
+        .Select(key => table.Columns.FirstOrDefault(c => (string)c.Tag == key))
+        .Where(column => column is not null)
+        .ToList();
+    for (int target = 0; target < known.Count; target++)
+    {
+        int current = table.Columns.IndexOf(known[target]);
+        if (current != target)
+        {
+            table.Columns.RemoveAt(current);
+            table.Columns.Insert(target, known[target]);
+        }
+    }
+}
+```
+
+There is no column-resized event. To persist widths as well, an app registers a change callback for
+each column's `Width` (`RegisterPropertyChangedCallback(TableViewColumn.WidthProperty, ...)`), which
+fires for a user resize as for a change in code.
+
+### API
+
+| Member | Kind | Default | Description |
+|---|---|---|---|
+| `TableView.CanUserReorderColumns` | `Boolean` DP | `false` | Lets the user reorder columns by dragging a header or with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd>. Does not affect changes the app makes to `Columns`. |
+| `TableView.ColumnReordered` | event | | Raised after a user reorder has been applied to `Columns`. |
+| `TableViewColumnReorderedEventArgs` | class | | `Column`, `OldIndex`, `NewIndex` (read-only). |
+
+`OldIndex` and `NewIndex` are indexes in `Columns`, including collapsed columns: `NewIndex` is where
+the column is after the move, so `Columns[NewIndex] == Column` inside `ColumnReordered`. They are not
+UI Automation column indexes, which count visible columns only.
+
+The property name follows `CanUserSortColumns` and `CanUserResizeColumns`. The event name matches the
+Toolkit `DataGrid`'s `ColumnReordered`, with indexes added because the Toolkit's `DisplayIndex` is not
+a TableView concept: in TableView the position in `Columns` is the display order.
+
+```idl
+[MUX_PREVIEW, webhosthidden]
+runtimeclass TableViewColumnReorderedEventArgs
+{
+    TableViewColumn Column { get; };
+    Int32 OldIndex { get; };
+    Int32 NewIndex { get; };
+};
+
+unsealed runtimeclass TableView
+{
+    // ...
+    Boolean CanUserReorderColumns;                         // default false
+    event Windows.Foundation.TypedEventHandler<TableView, TableViewColumnReorderedEventArgs> ColumnReordered;
+    static Microsoft.UI.Xaml.DependencyProperty CanUserReorderColumnsProperty { get; };
+};
+```
+
+**No `MoveColumn` method.** A user reorder is applied to `Columns` as a remove followed by an insert
+of the same column, which is also how an app moves a column in code, so the two paths cannot drift
+apart.
+
+### Behavior
+
+- **Gesture.** Press on a header and drag it horizontally. The drag starts once the system's gesture
+  threshold is passed, the same manipulation path the resize gripper uses, so mouse (left button),
+  touch and pen behave alike. A 2 px accent line between two headers marks where the column will
+  land; it is hidden while the drop would leave the column where it is. Releasing drops the column
+  there. A press that never passes the threshold is still a click, so it sorts as before.
+- **Canceling.** <kbd>Esc</kbd> (wherever focus is; a drag does not move focus), a lost pointer
+  capture, unloading the table, or a change to `Columns` or to a column's `Visibility` or
+  `FrozenEdge` cancels without changing anything.
+- **Coexistence.** A press on the resize gripper or on interactive header content (a `Button`, a
+  `CheckBox`) is theirs and never starts a reorder, and a drag never sorts the column it moved. The
+  right button and press-and-hold open the context menu as before. While reorder is on, the header
+  row takes horizontal touch manipulations and leaves vertical pans to an ancestor `ScrollViewer`.
+- **Frozen columns.** A column never crosses the frozen boundary: a frozen column can be reordered
+  only among the frozen columns, and a scrolling column only among the scrolling ones. A move that
+  would change any column's frozen state (including bringing a non-prefix `FrozenEdge="Leading"`
+  column into the frozen prefix) is not offered, and the drop line stops at the boundary. Only
+  `Leading` columns freeze, so a `Trailing` column moves as a scrolling column.
+- **Collapsed columns** keep their place in `Columns` and are never a drop target. A moved column is
+  inserted directly before the visible column it is dropped in front of, or directly after the last
+  visible column.
+- **Right-to-left.** The gesture and the keys follow the reading order: under
+  `FlowDirection="RightToLeft"` dragging a header to the left moves it towards the end, and
+  <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd> moves it one position later.
+- **Widths.** The moved column keeps its `Width`, `ActualWidth` and, for an `Auto` column, the
+  width it has grown to. `*` columns keep their share, and the locked-column holds that a user resize
+  put in place (see [Resizing columns](#resizing-columns)) are kept.
+- **Sorting.** The sort follows the column: a sorted column keeps its `SortDirection` and the row
+  order is unchanged. `Sorting`/`Sorted` are not raised.
+- **Editing.** While a cell edit is open, a drag does not start and the keys move nothing; the edit
+  is never committed implicitly. Commit or cancel the edit first.
+- **High Contrast.** The line uses `SystemColorHighlightColor`.
+- **Events.** `ColumnReordered` is raised once, after the move and its announcement; if a handler
+  throws, the move stays applied. A gesture that drops a column back where it was raises nothing.
+  Changes the app makes to `Columns` do not raise it.
+
+### Keyboard
+
+| Key | On | Behavior |
+|---|---|---|
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd> / <kbd>Right</kbd> | A focused column header | Moves the column one visible position earlier / later in reading order. Focus stays on the moved header. While `CanUserReorderColumns` is `true` the key is consumed on any header, so at an end or at the frozen boundary nothing moves. |
+| <kbd>Esc</kbd> | During a pointer drag | Cancels the drag. |
+
+A header that can move is actionable, so while `CanUserReorderColumns` is `true` it takes keyboard
+focus even when it cannot be sorted or resized (a header with no position it may move to does not) (see the
+[keyboard focus model](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model)).
+The chord does not collide with existing header keys: bare arrows move between headers and
+<kbd>Alt</kbd>+arrows resize.
+
+### UI Automation
+
+- The moved header's `HeaderItem` takes its new place in `ITableProvider.GetColumnHeaders` and the
+  header row's children, and every cell's `GridItem.Column` follows, because both are computed from
+  `Columns`. The grid raises one `StructureChanged` for the move, through the existing batching for
+  `Columns` changes.
+- After a user reorder the table raises one UIA notification (`ActionCompleted`, `MostRecent`,
+  activity ID `TableViewColumnMoved`): "Moved {header} to column {n} of {count}", where {header} is
+  the header item's UIA name (so an icon-only header's `AutomationProperties.Name`) and both numbers
+  count visible columns.
+- There is no UIA pattern for moving a header: `Transform.CanMove` stays `false` on the header peer
+  (`Transform` there means resize). Assistive technology uses the keyboard chord.
+
+### Deferred
+
+Not in this proposal; each can be added later without changing the API above.
+
+- **`ColumnReordering`** (cancelable, before the move) and its re-entrancy rules. `ColumnReordered`
+  covers persistence; an app that must veto a position can move the column back in code.
+- **Per-column `TableViewColumn.CanReorder`.** Pinning a column is covered by freezing it.
+- **Drag visuals beyond the line:** a header snapshot following the pointer and dimming the source
+  header.
+- **Auto-scroll** while dragging near the ends of a wide table. Until then a column moves within the
+  visible headers per drag, and the keys reach any position.
+- **Committing an open edit** on a move. A move is refused while editing instead.
+- **Keeping the body's column cursor and focused cell** on their column across a move.
+- **Pen- and touch-specific handling** (barrel button, press-and-hold arbitration beyond the
+  framework's gesture recognizer).
+- **`MoveColumn(column, newIndex)`** and **"Move left/right" menu commands** on
+  <kbd>Shift</kbd>+<kbd>F10</kbd>.
+
+### Open questions
+
+1. **Is this v1?** The functional spec lists reorder for v1; the API-review spec draft (#12387) moves
+   it to "Not in this release" and asks (Q5) whether a drag gesture or `MoveColumn` is required for
+   v1. Task Manager's request argues for the gesture plus the event; `MoveColumn` is not needed for it.
+2. **Should a programmatic move raise `ColumnReordered`?** Proposed: no, matching `DataGrid`, which
+   raises it only for user gestures; the app already knows about its own changes.
+3. **Locked-column holds.** A user reorder keeps the holds that a user resize put on locked `*`
+   columns, though the held column may now sit after the column that was resized. Is that the right
+   model, or should the holds be re-derived for the new order?
+4. **Template part.** The drop line is an optional part, `PART_ColumnReorderIndicator`. Should it be a
+   documented template part, or should the control draw it without exposing a name? A retemplated
+   table without it still reorders, with no line.
 
 ## TableViewTextColumn class
 
@@ -1509,7 +1703,7 @@ The display-only base delivered previously:
 These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Column resize and reorder.
+- Column reorder by the user: proposed in [Reordering columns](#reordering-columns), pending API review. Column resize has shipped.
 
 ## Non-goals (out of scope for v1)
 

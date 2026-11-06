@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ResizeGripper.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DragEscapeHook.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripperAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripperDragCompletedEventArgs.h" />

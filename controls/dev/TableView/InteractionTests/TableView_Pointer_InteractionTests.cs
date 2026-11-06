@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -889,6 +891,129 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsFalse(new SelectionItemImplementation<UIObject>(row1, UIObject.Factory).IsSelected,
                     "Row 1 must still be unselected.");
             }
+        }
+
+        #endregion
+
+        #region Column reorder
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies dragging a column header past its neighbour moves the column and does not sort it.")]
+        public void HeaderDragReordersColumns()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(CanUserReorderColumnsCheckBox, true))
+                {
+                    return;
+                }
+
+                UIObject tableView = GetTable(BasicTable);
+                if (tableView == null)
+                {
+                    return;
+                }
+
+                var before = HeaderOrder(tableView);
+                Log.Comment("Before: " + string.Join(", ", before));
+                Verify.AreEqual("Age", before[1], "Precondition: Age is the second column.");
+                Verify.AreEqual("ReadOnlyCity", before[2], "Precondition: ReadOnlyCity is the third column.");
+                string firstRowBefore = FirstRowCells(tableView);
+
+                // Drop on the trailing half of ReadOnlyCity: Age lands after it.
+                DragHeader(tableView, "Age", "ReadOnlyCity", 0.75);
+                var after = HeaderOrder(tableView);
+                Log.Comment("After the drag: " + string.Join(", ", after));
+                Verify.AreEqual("ReadOnlyCity", after[1], "The dragged column must leave its position.");
+                Verify.AreEqual("Age", after[2], "Age must land directly after ReadOnlyCity.");
+                Verify.AreEqual(firstRowBefore, FirstRowCells(tableView), "A drag must not also sort the (sortable) column it moved.");
+
+                SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a touch drag on a header moves the column through the same pointer path as the mouse.")]
+        public void HeaderTouchDragReordersColumns()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(CanUserReorderColumnsCheckBox, true))
+                {
+                    return;
+                }
+
+                UIObject tableView = GetTable(BasicTable);
+                UIObject age = tableView == null ? null : FindColumnHeader(tableView, "Age");
+                UIObject city = tableView == null ? null : FindColumnHeader(tableView, "ReadOnlyCity");
+                if (age == null || city == null)
+                {
+                    Verify.Fail("The Age or ReadOnlyCity header was not found.");
+                    return;
+                }
+
+                var target = city.BoundingRectangle;
+                InputHelper.Pan(age, CentreOf(age), new Point(target.Left + (target.Width * 3 / 4), target.Top + (target.Height / 2)),
+                    panAcceleration: 0.0f, dragDuration: 600);
+                var after = HeaderOrder(tableView);
+                Log.Comment("After the touch drag: " + string.Join(", ", after));
+                Verify.AreEqual("ReadOnlyCity", after[1], "The touch-dragged column must leave its position.");
+                Verify.AreEqual("Age", after[2], "Age must land directly after ReadOnlyCity.");
+
+                SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+            }
+        }
+
+        private static List<string> HeaderOrder(UIObject tableView)
+        {
+            ElementCache.Clear();
+            var names = new List<string>();
+            foreach (UIObject header in GetHeaderHost(tableView).Children)
+            {
+                names.Add(header.Name);
+            }
+            return names;
+        }
+
+        // The first row's cell values, order-independent, so a moved column does not change it but a sort does.
+        private static string FirstRowCells(UIObject tableView)
+        {
+            ElementCache.Clear();
+            var cells = new List<string>();
+            foreach (UIObject cell in GetRow(tableView, 0).Children)
+            {
+                cells.Add(cell.Name);
+            }
+            cells.Sort(StringComparer.Ordinal);
+            return string.Join("|", cells);
+        }
+
+        private static void DragHeader(UIObject tableView, string sourceHeader, string targetHeader, double targetFraction)
+        {
+            ElementCache.Clear();
+            UIObject source = FindColumnHeader(tableView, sourceHeader);
+            UIObject target = FindColumnHeader(tableView, targetHeader);
+            if (source == null || target == null)
+            {
+                Verify.Fail($"Header {sourceHeader} or {targetHeader} was not found.");
+                return;
+            }
+
+            var start = CentreOf(source);
+            var bounds = target.BoundingRectangle;
+            var end = new Point(bounds.Left + (int)(bounds.Width * targetFraction), bounds.Top + (bounds.Height / 2));
+
+            PointerInput.Move(start);
+            PointerInput.Press(PointerButtons.Primary);
+            Wait.ForIdle();
+            // In steps, so the drag passes its threshold before it travels.
+            for (int step = 1; step <= 4; step++)
+            {
+                PointerInput.Move(new Point(start.X + ((end.X - start.X) * step / 4), start.Y));
+                Wait.ForIdle();
+            }
+            PointerInput.Release(PointerButtons.Primary);
+            Wait.ForIdle();
         }
 
         #endregion

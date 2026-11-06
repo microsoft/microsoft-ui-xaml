@@ -716,30 +716,35 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
 
 size_t TableView::LockedColumnHoldsSignature()
 {
+    auto const mix = [](size_t& seed, size_t value) { seed ^= value + static_cast<size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2); };
     size_t seed = 0;
-    auto const mix = [&seed](size_t value) { seed ^= value + static_cast<size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2); };
     auto const bodyScroller = m_bodyScroller.get();
-    mix(std::hash<double>{}(bodyScroller ? bodyScroller.ViewportWidth() : 0.0));
-    mix(CanUserResizeColumns());
+    mix(seed, std::hash<double>{}(bodyScroller ? bodyScroller.ViewportWidth() : 0.0));
+    mix(seed, CanUserResizeColumns());
     if (auto const columns = Columns())
     {
+        // Summed per column, so a user reorder keeps the holds.
+        size_t columnsSeed = 0;
         for (auto const& c : columns)
         {
-            mix(std::hash<void*>{}(winrt::get_abi(c)));
+            size_t columnSeed = 0;
+            mix(columnSeed, std::hash<void*>{}(winrt::get_abi(c)));
             if (c)
             {
                 // The authored Width, not Width: a user resize writes Width and must not drop the holds.
                 auto const authored = winrt::get_self<TableViewColumn>(c)->AuthoredWidthInternal();
-                mix(std::hash<double>{}(authored.Value));
-                mix(static_cast<size_t>(authored.GridUnitType));
-                mix(std::hash<double>{}(c.MinWidth()));
+                mix(columnSeed, std::hash<double>{}(authored.Value));
+                mix(columnSeed, static_cast<size_t>(authored.GridUnitType));
+                mix(columnSeed, std::hash<double>{}(c.MinWidth()));
                 // A local MinWidth equal to the default still changes a 0* column's minimum.
-                mix(c.ReadLocalValue(winrt::TableViewColumn::MinWidthProperty()) != winrt::DependencyProperty::UnsetValue());
-                mix(std::hash<double>{}(c.MaxWidth()));
-                mix(static_cast<size_t>(c.Visibility()));
-                mix(c.CanResize());
+                mix(columnSeed, c.ReadLocalValue(winrt::TableViewColumn::MinWidthProperty()) != winrt::DependencyProperty::UnsetValue());
+                mix(columnSeed, std::hash<double>{}(c.MaxWidth()));
+                mix(columnSeed, static_cast<size_t>(c.Visibility()));
+                mix(columnSeed, c.CanResize());
             }
+            columnsSeed += columnSeed;
         }
+        mix(seed, columnsSeed);
     }
     return seed;
 }

@@ -62,6 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
         internal const string IsReadOnlyCheckBox = "IsReadOnlyCheckBox";
         internal const string CanUserResizeColumnsCheckBox = "CanUserResizeColumnsCheckBox";
+        internal const string CanUserReorderColumnsCheckBox = "CanUserReorderColumnsCheckBox";
         internal const string HideColumnHeadersCheckBox = "HideColumnHeadersCheckBox";
         internal const string EmptyBasicCheckBox = "EmptyBasicCheckBox";
         internal const string EmptyStateButton = "EmptyStateButton";
