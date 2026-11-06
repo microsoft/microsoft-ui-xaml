@@ -980,6 +980,7 @@ namespace Controls {
     interface ITimePickerFeature_HeaderPlacement;
     interface ITimePickerFlyout;
     interface ITimePickerFlyoutPresenter;
+    interface ITimePickerFlyoutPresenterFactory;
     interface ITimePickerFlyoutPresenter2;
     interface ITimePickerFlyoutPresenterStatics2;
     interface ITimePickerFlyoutStatics;
