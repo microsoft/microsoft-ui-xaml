@@ -150,7 +150,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_TitleText.Visibility" Value="Collapsed" />
                                         <Setter Target="PART_SubtitleText.Visibility" Value="Collapsed" />
-                                        <Setter Target="PART_ContentPresenter.HorizontalAlignment" Value="Left" />
+                                        <Setter Target="PART_ContentPresenter.HorizontalAlignment" Value="{ThemeResource TitleBarCompactContentHorizontalAlignment}" />
                                         <Setter Target="PART_ContentPresenter.Margin" Value="{ThemeResource TitleBarCompactContentMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
