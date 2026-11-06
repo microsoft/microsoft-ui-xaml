@@ -599,7 +599,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             touch.Press(0, start);
             touch.Hold(1500);
             Log.Comment("Holding started events before the second finger: " + ReadText("HoldingStartedCount"));
-            touch.Press(1, new System.Drawing.Point(start.X + 30, start.Y));
+            if (!touch.TryPress(1, new System.Drawing.Point(start.X + 30, start.Y)))
+            {
+                Log.Warning("Multi-contact synthetic touch injection isn't supported on this OS; skipping.");
+                return;
+            }
             touch.Hold(100);
             touch.Release(1);
             touch.Hold(300);

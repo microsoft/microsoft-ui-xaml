@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using WEX.Logging.Interop;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 {
@@ -21,6 +22,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         private const uint Down = 0x10000;
         private const uint Update = 0x20000;
         private const uint Up = 0x40000;
+        private const int ErrorInvalidParameter = 87;
         private readonly Point?[] contacts;
         private IntPtr device;
 
@@ -38,8 +40,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         {
             if (contacts[contact].HasValue) { throw new InvalidOperationException("The contact is already down."); }
             contacts[contact] = point;
-            InjectFrame(contact, InRange | InContact | Down);
+            try
+            {
+                InjectFrame(contact, InRange | InContact | Down);
+            }
+            catch
+            {
+                contacts[contact] = null;
+                throw;
+            }
             Wait.ForIdle();
+        }
+
+        // Like Press, but returns false when the OS rejects the frame as invalid. Older Windows
+        // builds reject a second simultaneous synthetic touch contact with ERROR_INVALID_PARAMETER.
+        public bool TryPress(int contact, Point point)
+        {
+            try
+            {
+                Press(contact, point);
+                return true;
+            }
+            catch (Win32Exception e) when (e.NativeErrorCode == ErrorInvalidParameter)
+            {
+                Log.Comment($"Synthetic touch contact {contact} was rejected: {e.Message}");
+                return false;
+            }
         }
 
         public void Move(int contact, Point point)
@@ -63,8 +89,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         {
             if (contacts[contact].HasValue)
             {
-                InjectFrame(contact, Up);
-                contacts[contact] = null;
+                try
+                {
+                    InjectFrame(contact, Up);
+                }
+                finally
+                {
+                    contacts[contact] = null;
+                }
                 Wait.ForIdle();
             }
         }
@@ -99,22 +131,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
         }
 
+        // Best effort: never throws, so a failure inside the test isn't masked by cleanup.
+        // Destroying the device lifts any contact that couldn't be released.
         public void Dispose()
         {
             if (device != IntPtr.Zero)
             {
-                try
+                for (int i = 0; i < contacts.Length; ++i)
                 {
-                    for (int i = 0; i < contacts.Length; ++i)
+                    try
                     {
                         Release(i);
                     }
+                    catch (Exception e)
+                    {
+                        Log.Comment($"Releasing synthetic touch contact {i} during cleanup failed: {e.Message}");
+                    }
                 }
-                finally
-                {
-                    DestroySyntheticPointerDevice(device);
-                    device = IntPtr.Zero;
-                }
+                DestroySyntheticPointerDevice(device);
+                device = IntPtr.Zero;
             }
         }
 
