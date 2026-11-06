@@ -214,6 +214,10 @@
   <!-- Dependencies for ItemContainer -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureItemContainerEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for TableView -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTableViewEnabled) == 'true'">
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
   <!-- Dependencies for AnnotatedScrollBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnnotatedScrollBarEnabled) == 'true'">
   </PropertyGroup>

@@ -473,23 +473,26 @@ namespace
         return false;
     }
 
-    double DensityRowMinHeightFallback(winrt::TableViewDensity density)
+    // Fallback metrics per density, used only when the matching ThemeResource is missing.
+    // One table so a density's values stay consistent instead of drifting across parallel
+    // switches.
+    struct DensityMetrics
     {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Compact: return 30.0;
-        case winrt::TableViewDensity::Comfortable: return 48.0;
-        default: return 40.0; // Standard
-        }
-    }
+        double rowMinHeight;
+        winrt::Thickness cellPadding;
+    };
 
-    winrt::Thickness DensityCellPaddingFallback(winrt::TableViewDensity density)
+    DensityMetrics const& DensityMetricsFallback(winrt::TableViewDensity density)
     {
+        static const DensityMetrics s_compact{ 30.0, winrt::ThicknessHelper::FromLengths(8, 2, 8, 2) };
+        static const DensityMetrics s_standard{ 40.0, winrt::ThicknessHelper::FromLengths(8, 4, 8, 4) };
+        static const DensityMetrics s_comfortable{ 48.0, winrt::ThicknessHelper::FromLengths(8, 8, 8, 8) };
+
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(8, 2, 8, 2);
-        case winrt::TableViewDensity::Comfortable: return winrt::ThicknessHelper::FromLengths(8, 8, 8, 8);
-        default: return winrt::ThicknessHelper::FromLengths(8, 4, 8, 4); // Standard
+        case winrt::TableViewDensity::Compact: return s_compact;
+        case winrt::TableViewDensity::Comfortable: return s_comfortable;
+        default: return s_standard;
         }
     }
 
@@ -2340,7 +2343,7 @@ double TableView::GetDensityRowMinHeight()
 
     std::wstring key{ L"TableViewRowMinHeight" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityRowMinHeightFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).rowMinHeight;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.rowMinHeight = winrt::unbox_value_or<double>(raw, fallback);
@@ -2363,7 +2366,7 @@ winrt::Thickness TableView::GetDensityCellPadding()
 
     std::wstring key{ L"TableViewCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.cellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -2386,7 +2389,7 @@ winrt::Thickness TableView::GetDensityHeaderCellPadding()
 
     std::wstring key{ L"TableViewHeaderCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.headerCellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
