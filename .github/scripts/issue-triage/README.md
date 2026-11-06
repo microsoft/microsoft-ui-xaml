@@ -46,6 +46,7 @@ still rebuilds live evidence independently.
 | Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
 | Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
 | Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
+| No area fits, but evidence clearly meets a configured team-only rule | Add its configured team at HIGH routing confidence without an area; retain `needs-triage`. |
 | Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
@@ -162,6 +163,20 @@ Each area entry contains:
 - Optional `overrides`: entries with a stable `id`, an evidence-based `when`
   condition, and an existing `team` label.
 
+The reserved `None` entry is not an area label. It has no default owner and
+requires explicit conditional rules for team-only routing. The initial
+`repo-contribution-guidance` rule routes maintenance defects in this repository's
+OSS contribution, feedback, or roadmap guidance to Controls. It does not cover
+generic API documentation, runtime navigation, external service failures, Gallery
+runtime bugs, or requests for future roadmap features. It follows later human
+team-only routing; it is not a blanket documentation policy.
+The model returns `area: None`, the exact configured rule ID, and a supporting
+reason; `area_confidence` describes confidence in this team-only route. Only HIGH
+can add its team. Uncertain assessments, truncated context, existing areas, or
+conflicting human teams defer this route. No area is fabricated, no label is
+created, and `needs-triage` remains required. Without a supported rule, the
+existing `None`/NONE/default abstention is unchanged.
+
 The model picks an area and either `default` or a rule ID configured for that
 area. Conditional choices require a short evidence-based explanation. The
 default rule requires a supporting explanation for HIGH area confidence.
@@ -194,6 +209,17 @@ confidence can express this clear initial route, not a verified root cause;
 the rationale explains the report and policy. Direct AppWindow failures and
 clearly identified control/content-layout failures retain their own areas.
 Existing human areas and teams are never replaced by this default.
+
+Chart-specific failures can start in `area-Charting`, including a secondary
+live-data chart not following Dark theme while the main chart does. Window/theme
+keywords do not alone establish a competing framework defect. An evidenced
+broader Window or theme-propagation failure still keeps its own route.
+
+Do not select an area merely because it has a configured owner, or reject an
+otherwise fitting area because its owner is unresolved. GPU memory growth and
+adapter changes do not alone establish Windowing ownership; unmatched compositor
+or XAML graphics-device reports remain for human review. These symptoms do not
+authorize a new automatic compositor owner.
 
 The AppWindow `xaml-window-facade` rule handles an evidenced XAML/WinUI Window
 size-propagation or activation-ordering failure when the corresponding direct

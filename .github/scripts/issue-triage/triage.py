@@ -268,7 +268,9 @@ def validate_mapping(mapping: dict, catalog: dict) -> None:
             raise TriageError(f"Routing configuration references an invalid or missing team for {area}")
 
     for area, entry in mapping.items():
-        if not isinstance(area, str) or not area.startswith("area-") or area not in catalog:
+        if not isinstance(area, str) or (
+            area != "None" and (not area.startswith("area-") or area not in catalog)
+        ):
             raise TriageError("Routing configuration references an invalid or missing area")
         required = {"team", "confidence", "match"}
         if not isinstance(entry, dict) or not required <= set(entry) <= required | {"note", "overrides"}:
@@ -287,6 +289,8 @@ def validate_mapping(mapping: dict, catalog: dict) -> None:
         overrides = entry.get("overrides", [])
         if not isinstance(overrides, list) or len(overrides) > 10:
             raise TriageError(f"Invalid conditional routes for {area}")
+        if area == "None" and (entry["team"] is not None or not overrides):
+            raise TriageError("Team-only routing requires explicit conditional rules and no default owner")
         seen = {"default"}
         for rule in overrides:
             if not isinstance(rule, dict) or set(rule) != {"id", "when", "team"}:
@@ -540,7 +544,7 @@ def validate(output: dict, evidence: dict) -> dict:
     if result["area_confidence"] not in ("HIGH", "MEDIUM", "LOW", "NONE"):
         raise TriageError("Invalid area confidence")
     if result["area"] == "None":
-        if result["area_confidence"] != "NONE":
+        if result["area_confidence"] != "NONE" and result["routing_rule"] == "default":
             raise TriageError("An unknown area must have NONE confidence")
     elif result["area"] not in evidence["allowed_areas"] or result["area_confidence"] == "NONE":
         raise TriageError("Area is not an existing allowlisted label")
@@ -706,7 +710,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     teams = {label for label in existing if label.startswith("team-")}
     area_to_add = None
     team_to_add = None
-    if not areas and result["area_confidence"] == "HIGH":
+    if not areas and result["area"] != "None" and result["area_confidence"] == "HIGH":
         area = result["area"]
         mapped_team = route_team(mapping, area, result["routing_rule"])
         compatible = not teams or not mapped_team or mapped_team in teams
@@ -723,6 +727,15 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         elif not entry.get("overrides"):
             candidate_team = entry.get("team")
         # A conditional owner cannot be inferred from a different/uncertain area.
+        if not teams or teams <= team_ancestors(candidate_team, parents):
+            team_to_add = candidate_team
+    elif (
+        not areas and result["area"] == "None"
+        and result["area_confidence"] == "HIGH"
+        and result["routing_rule"] != "default"
+        and not evidence["context_truncated"]
+    ):
+        candidate_team = route_team(mapping, "None", result["routing_rule"])
         if not teams or teams <= team_ancestors(candidate_team, parents):
             team_to_add = candidate_team
     team_labels = teams | ({team_to_add} if team_to_add else set())
@@ -845,7 +858,13 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
         elif result["routing_reason"] != "None":
             lines.append("- **Routing rationale:** " + plain_text(result["routing_reason"]))
     else:
-        lines.append("- **Suggested area:** Unclear; existing routing is unchanged.")
+        lines.append("- **Suggested area:** Unclear; existing area labels are unchanged.")
+        if result["routing_rule"] != "default":
+            lines.append(
+                f"- **Team-only routing suggestion (`{result['routing_rule']}`, "
+                f"{result['area_confidence'].lower()} confidence):** "
+                + plain_text(result["routing_reason"])
+            )
     if not route_teams:
         lines.append("- **Team:** No automatic team assignment; maintainer routing is needed.")
     if decision["needs_triage"] or result["review_notes"] or "needs-triage" in evidence["existing_labels"]:

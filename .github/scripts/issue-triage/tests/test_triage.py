@@ -427,7 +427,7 @@ class RoutingTests(TriageFixture):
         t.validate_mapping(mapping, dict.fromkeys(set(mapping) | teams, ""))
         self.assertEqual(
             {area for area, entry in mapping.items() if entry["team"] is None},
-            {"area-External", "area-Performance"},
+            {"None", "area-External", "area-Performance"},
         )
 
 
@@ -895,6 +895,17 @@ class TeamParentConfigurationTests(unittest.TestCase):
 
 
 class MappingConfigurationTests(unittest.TestCase):
+    def test_team_only_configuration_has_no_unconditional_owner(self):
+        entry = {
+            "team": None, "confidence": "medium", "match": ["contribution guidance"],
+            "overrides": [{"id": "repo-guidance", "when": "Repository contribution guidance defect.",
+                           "team": "team-Controls"}],
+        }
+        t.validate_mapping({"None": entry}, CATALOG)
+        for changes in ({"team": "team-Controls"}, {"overrides": []}):
+            with self.subTest(changes=changes), self.assertRaises(t.TriageError):
+                t.validate_mapping({"None": {**entry, **changes}}, CATALOG)
+
     def test_invalid_shapes_and_confidence_fail_closed(self):
         for entry in (
             None, "team-Controls", {},
@@ -953,6 +964,7 @@ class MappingConfigurationTests(unittest.TestCase):
     def test_all_configured_conditional_routes_resolve_the_declared_team(self):
         mapping = t.read_json(str(t.MAP_PATH))
         expected = {
+            "None": ("repo-contribution-guidance", "team-Controls"),
             "area-AnimatedVisualPlayer": ("compositor-failure", "team-CompInput"),
             "area-Flyouts": ("rendering-artifact", "team-Rendering"),
             "area-Icon": ("glyph-rendering", "team-Rendering"),

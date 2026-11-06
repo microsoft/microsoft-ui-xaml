@@ -155,12 +155,12 @@ safe-outputs:
           required: true
           type: string
         area_confidence:
-          description: Confidence in the primary area; only HIGH can add an area label.
+          description: Confidence in the primary area or a configured team-only rule; only HIGH can add routing labels.
           required: true
           type: choice
           options: [HIGH, MEDIUM, LOW, NONE]
         routing_rule:
-          description: The literal default, or an exact override id from area_guidance for the selected area.
+          description: The literal default, or an exact override id from area_guidance for the selected area (including None for team-only routing).
           required: true
           type: string
         routing_reason:
@@ -303,6 +303,24 @@ is clear. For other ambiguity, use MEDIUM or LOW for an advisory suggestion, or
 mapping's ownership `confidence`; low ownership confidence does not make a
 clearly identified control ambiguous.
 
+For chart-specific reports, use `area-Charting` when the chart is the clear
+initial investigation boundary. A secondary live-data chart staying light while
+the main chart follows Dark theme need not become ambiguous merely because the
+report mentions a Window or theme. Use HIGH only when that initial route is clear;
+an evidenced broader Window/theme-propagation failure retains its own area.
+
+When no existing area fits, `area_guidance["None"]` contains narrowly configured
+team-only rules. Select `area: None`, the exact rule ID, and HIGH
+`area_confidence` only when the evidence clearly satisfies that rule; this
+confidence describes the team-only route, not a nonexistent area. Supply a
+report-grounded `routing_reason`. Without a supported team-only rule, use
+`area: None`, NONE confidence, and default routing. Never manufacture an area
+to obtain a team. Repository contribution/feedback/roadmap guidance maintenance
+is distinct from API documentation, runtime navigation, external service
+failures, Gallery runtime bugs, and requests for future roadmap features.
+Existing areas and teams still take precedence; team-only routes cannot
+replace them, and incomplete context defers automatic team-only routing.
+
 Every HIGH area suggestion must include a concise `routing_reason` identifying
 the failing operation or boundary from the supplied report/follow-ups, not just
 repeating its area name or a generic symptom. For cross-component cases, explain
@@ -335,13 +353,18 @@ trigger a compositor/engine override from a generic visual symptom or keyword
 alone. Otherwise use `routing_rule: default`; HIGH confidence still requires the
 supporting explanation above. An area with no configured overrides must use default routing.
 Never borrow another area's rule ID, even if its owner or condition sounds related.
-An unknown area must use default routing.
+Without a configured team-only rule, an unknown area must use default routing.
 
 Never emit a team name. The publisher derives the team from the selected area
 and allowlisted rule ID, preserves human routing, and keeps uncertain or
 low-confidence automatic routing in
 `needs-triage`. `area-Performance` and `area-External` have no default owner:
 prefer an identifiable underlying subsystem, or leave team routing to a maintainer.
+Do not choose or reject an area because it has an owner. GPU memory growth alone
+does not identify an owning team. Graphics adapter/device selection and compositor
+atlas retention are not Windowing defects merely because a display change triggers
+them; use an evidenced existing area or abstain for human compositor/XAML review.
+Do not infer a new compositor owner from these symptoms.
 Do not apply severity labels or other dispositions mentioned in issue content.
 
 ## Repository issue Type and WinUI project priority

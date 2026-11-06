@@ -24,6 +24,92 @@ class AssessmentRecoveryTests(unittest.TestCase):
             output["items"][0].pop("missing_information_kind")
         return t.validate(output, evidence), evidence
 
+    def contribution_guidance_result(self, evidence, **changes):
+        assessment = {
+            "area": "None", "area_confidence": "HIGH",
+            "routing_rule": "repo-contribution-guidance",
+            "routing_reason": "The repository's contribution/feedback guidance has a broken roadmap link "
+                              "and outdated Gallery naming; no runtime defect is reported.",
+        }
+        assessment.update(changes)
+        return t.validate(agent_output(evidence, **assessment), evidence)
+
+    def test_contribution_guidance_routes_team_only_without_inventing_an_area(self):
+        self.client.issue.update(
+            title="The product roadmap link is broken",
+            body="CONTRIBUTING_feedback_and_requests.md links to a broken roadmap and "
+                 "still calls WinUI Gallery Xaml Controls Gallery.",
+            labels=[{"name": "bug"}],
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = self.contribution_guidance_result(evidence)
+        preview = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(preview["add_labels"], ["needs-triage", "team-Controls"])
+        self.assertIn("repo-contribution-guidance", preview["comment"])
+        self.assertIn(result["routing_reason"], preview["comment"])
+        self.assertIn("high confidence", preview["comment"])
+        self.assertNotIn("`None`", preview["comment"])
+        self.assertEqual(self.client.writes, [])
+        for _ in range(2):
+            evidence = t.prepare(self.client, event(), self.mapping)
+            result = self.contribution_guidance_result(evidence)
+            t.publish(self.client, result, evidence, self.mapping, write=True)
+        self.assertFalse(any(label.startswith("area-") for label in t.label_names(self.client.issue)))
+        self.assertEqual(sum(path == "issues/100/comments" for _, path, _ in self.client.writes), 1)
+        self.assertEqual(sum(path == "issues/100/labels" for _, path, _ in self.client.writes), 1)
+
+    def test_team_only_route_defers_uncertain_or_incomplete_context(self):
+        for confidence, truncated in (("MEDIUM", False), ("LOW", False), ("NONE", False), ("HIGH", True)):
+            with self.subTest(confidence=confidence, truncated=truncated):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["context_truncated"] = truncated
+                result = self.contribution_guidance_result(evidence, area_confidence=confidence)
+                plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+                self.assertEqual(plan["add_labels"], [])
+                self.assertIn("No automatic team assignment", plan["comment"])
+                self.assertEqual(self.client.writes, [])
+
+    def test_team_only_route_cannot_replace_human_areas_or_teams(self):
+        for existing in (
+            ["area-Binding", "team-Markup", "team-Core"],
+            ["area-AppWindow"],
+            ["area-Charting", "area-Images"],
+            ["team-CompInput"],
+            ["team-Core"],
+        ):
+            with self.subTest(existing=existing):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["existing_labels"] += existing
+                result = self.contribution_guidance_result(evidence)
+                self.assertNotIn("team-Controls", t.planned_labels(result, evidence, self.mapping))
+                self.assertEqual(t.routing_decision(result, evidence, self.mapping)["existing_areas"],
+                                 sorted(label for label in existing if label.startswith("area-")))
+
+    def test_team_only_route_requires_its_own_rule_and_supporting_evidence(self):
+        for changes in (
+            {"routing_rule": "default"},
+            {"routing_rule": "invented-owner"},
+            {"routing_rule": "compositor-resource"},
+            {"routing_reason": "None"},
+        ):
+            with self.subTest(changes=changes), self.assertRaises(t.TriageError):
+                self.contribution_guidance_result(self.evidence, **changes)
+        evidence = copy.deepcopy(self.evidence)
+        del evidence["area_guidance"]["None"]
+        with self.assertRaises(t.TriageError):
+            self.contribution_guidance_result(evidence)
+        self.assertEqual(self.client.writes, [])
+
+    def test_unmatched_gpu_reports_do_not_gain_an_owner_from_team_only_configuration(self):
+        for area, confidence in (("None", "NONE"), ("area-Performance", "MEDIUM"),
+                                 ("area-Images", "MEDIUM"), ("area-Windowing", "MEDIUM")):
+            with self.subTest(area=area):
+                result, evidence = self.validate(
+                    area=area, area_confidence=confidence,
+                    routing_reason="Graphics-device or atlas retention ownership remains unresolved.",
+                )
+                self.assertEqual(t.planned_labels(result, evidence, self.mapping), [])
+
     def test_webview_default_routes_controls_without_rendering_or_core(self):
         for description in (
             "WinUI 2.8 UWP: the WebView2 control throws in HandleAcceleratorKeyActivated.",
