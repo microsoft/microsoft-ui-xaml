@@ -290,8 +290,18 @@ _Check_return_ HRESULT XamlManagedRuntime::InitializationGuard(
         auto pDependencyObject = qoInstance->GetDependencyObject();
         if (pDependencyObject)
         {
+            bool bIsISupportInitialize = false;
+
             pDependencyObject->SetIsParsing(TRUE);
             pDependencyObject->SetParserParentLock();
+
+            // Pair BeginInit with the EndInit below for every parsed instance, including
+            // an x:Class root object that was constructed by application code.
+            IFC_RETURN(spXamlType->IsISupportInitialize(bIsISupportInitialize));
+            if (bIsISupportInitialize)
+            {
+                IFC_RETURN(FxCallbacks::FrameworkCallbacks_SupportInitializeBeginInit(pDependencyObject));
+            }
         }
     }
     else

@@ -227,6 +227,43 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_TRUE(!!MetadataAPI::GetClassInfoByIndex(KnownTypeIndex::GridView)->IsISupportInitialize());
     }
 
+    void MetadataUnitTests::ValidateISupportInitializeFlagOnCustomTypes()
+    {
+        auto mock = TlsProvider<DynamicMetadataStorageMock>::CreateWrappedObject();
+
+        auto customListView = MockXamlType::CreateMetadata(
+            wrl_wrappers::HStringReference(L"CustomNamespace.CustomListView").Get())
+            ->WithBaseType(KnownTypeIndex::ListView);
+
+        const CClassInfo* listViewType = nullptr;
+        VERIFY_SUCCEEDED(MetadataAPI::ImportClassInfo(customListView.Get(), &listViewType));
+        VERIFY_IS_TRUE(listViewType->IsISupportInitialize());
+
+        auto derivedListView = MockXamlType::CreateMetadata(
+            wrl_wrappers::HStringReference(L"CustomNamespace.DerivedListView").Get())
+            ->WithBaseType(listViewType->GetIndex());
+
+        const CClassInfo* derivedType = nullptr;
+        VERIFY_SUCCEEDED(MetadataAPI::ImportClassInfo(derivedListView.Get(), &derivedType));
+        VERIFY_IS_TRUE(derivedType->IsISupportInitialize());
+
+        auto customListViewBase = MockXamlType::CreateMetadata(
+            wrl_wrappers::HStringReference(L"CustomNamespace.CustomListViewBase").Get())
+            ->WithBaseType(KnownTypeIndex::ListViewBase);
+
+        const CClassInfo* listViewBaseType = nullptr;
+        VERIFY_SUCCEEDED(MetadataAPI::ImportClassInfo(customListViewBase.Get(), &listViewBaseType));
+        VERIFY_IS_TRUE(listViewBaseType->IsISupportInitialize());
+
+        auto customControl = MockXamlType::CreateMetadata(
+            wrl_wrappers::HStringReference(L"CustomNamespace.CustomControl").Get())
+            ->WithBaseType(KnownTypeIndex::Control);
+
+        const CClassInfo* controlType = nullptr;
+        VERIFY_SUCCEEDED(MetadataAPI::ImportClassInfo(customControl.Get(), &controlType));
+        VERIFY_IS_FALSE(controlType->IsISupportInitialize());
+    }
+
     void MetadataUnitTests::DependencyObjectIsInGoodState()
     {
         const CClassInfo* pType = MetadataAPI::GetClassInfoByIndex(KnownTypeIndex::DependencyObject);
