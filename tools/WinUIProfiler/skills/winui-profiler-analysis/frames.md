@@ -65,7 +65,10 @@ duration and events by bucket; the region it ends; its events counted by
 provider and name, for the 30 names with the most events; the elements and
 visuals they mention, counted by kind and type, for the 20 types with the
 most objects; and a page of its events in order, each with its bucket and
-the objects it mentions. `limit` defaults to 20. `eventNames` and
+the objects it mentions. `limit` defaults to 20. An event lists at most 10 of
+the objects it mentions, those in its own fields first, and `omittedMentions`
+counts the rest: clearing a visual's children mentions every child, which can
+be thousands. The counts by type still include every object. `eventNames` and
 `objectTypes` say how many names and types there are, and a note counts any
 left out. Objects that no event gave a type are counted in one row per kind,
 marked `typeUnknown`, with a note. `bucket` keeps one bucket's events, names

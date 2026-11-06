@@ -37,6 +37,13 @@ internal static class FrameTools
     private const int TickNames = 30;
     private const int TickTypes = 20;
 
+    // The tick view lists at most this many of one event's mentions. Paging by event can't bound one event's answer:
+    // clearing a visual's children mentions every child, and a visual can have thousands.
+    internal const int EventMentions = 10;
+
+    // SessionFile names the field of a child whose parent's children were cleared "child of" the parent's field.
+    private const string ClearedChildField = "child of ";
+
     private static readonly string[] SlowestOrders = ["duration", "events"];
 
     private static readonly string[] RegionOrders = ["duration", "time"];
@@ -57,7 +64,8 @@ internal static class FrameTools
         "operations, navigations, focus changes and graphics device creations always), in order or longest first, " +
         "optionally of one region or one type. \"tick\": one tick: its events counted by provider and name (the 30 names " +
         "with the most events), the UI elements and visuals they mention counted by type (the 20 types with the most " +
-        "objects), and a page of its events with their bucket and mentions. Times are in ms (see the session's timeBase). " +
+        "objects), and a page of its events with their bucket and mentions (10 at most per event, the event's own fields " +
+        "first, with omittedMentions counting the rest). Times are in ms (see the session's timeBase). " +
         "Events' field values aren't shown.")]
     public static Task<object> Frames(
         [Description("\"summary\", \"slowest\", \"regions\", \"rows\" or \"tick\". Omit it for the summary, or for the tick " +
@@ -405,6 +413,7 @@ internal static class FrameTools
         var objects = new Dictionary<long, ObjectMention>();
         var page = new List<object>();
         long matching = 0;
+        var capped = 0;
         var total = SessionFile.ReadFrameEvents(path, tickId, null, null, 0, -1, (profilerEvent, eventBucket, mentions) =>
         {
             if (bucket is not null && eventBucket != bucket)
@@ -422,6 +431,8 @@ internal static class FrameTools
 
             if (matching >= offset && matching < (long)offset + limit)
             {
+                var omitted = Math.Max(mentions.Count - EventMentions, 0);
+                capped += omitted > 0 ? 1 : 0;
                 page.Add(new
                 {
                     ms = EventJson.Ms(profilerEvent.RelativeMilliseconds),
@@ -429,14 +440,18 @@ internal static class FrameTools
                     provider,
                     name = profilerEvent.Name,
                     bucket = eventBucket,
-                    mentions = mentions.Select(mention => new
-                    {
-                        objectId = mention.ObjectId,
-                        kind = mention.Kind.ToString(),
-                        field = mention.Field,
-                        type = mention.Type,
-                        name = mention.Name,
-                    }).ToList(),
+                    // The objects in the event's own fields first: an event's mentions come by object, so a cleared
+                    // parent can come after its first child. OrderBy is stable, so each group stays in that order.
+                    mentions = mentions.OrderBy(mention => mention.Field.StartsWith(ClearedChildField, StringComparison.Ordinal))
+                        .Take(EventMentions).Select(mention => new
+                        {
+                            objectId = mention.ObjectId,
+                            kind = mention.Kind.ToString(),
+                            field = mention.Field,
+                            type = mention.Type,
+                            name = mention.Name,
+                        }).ToList(),
+                    omittedMentions = omitted > 0 ? omitted : (int?)null,
                 });
             }
 
@@ -472,6 +487,15 @@ internal static class FrameTools
         if (untyped > 0)
         {
             notes.Add(ObjectTools.UntypedNote(untyped));
+        }
+
+        if (capped > 0)
+        {
+            notes.Add(string.Create(CultureInfo.InvariantCulture,
+                $"{EventJson.Count(capped, "event on this page mentions", "events on this page mention")} more than " +
+                $"{EventMentions} objects (clearing a visual's children mentions every child). Each such event lists " +
+                $"{EventMentions} of them, those in its own fields first, and its omittedMentions says how many more it " +
+                $"mentions. The objects counted by type include them all."));
         }
 
         return new

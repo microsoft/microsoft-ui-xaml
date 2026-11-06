@@ -40,6 +40,14 @@ internal static class FrameToolSelfTests
     /// </summary>
     private static IReadOnlyList<FixtureEvent> CapEdgeEvents { get; } = [.. CapEdgeTick(1, 1.0, 21, 28), .. CapEdgeTick(2, 3.0, 20, 27)];
 
+    /// <summary>
+    /// Two ticks, each inserting children into a visual and then clearing them, so that the clearing mentions the parent
+    /// and every child: frame 1 clears 25 children (26 mentions, over the tick view's cap of 10 per event), frame 2
+    /// clears 9 (10 mentions, at the cap).
+    /// </summary>
+    private static IReadOnlyList<FixtureEvent> ClearedEvents { get; } =
+        [.. ClearedTick(1, 1.0, 0xE000, 25), .. ClearedTick(2, 3.0, 0xE100, 9)];
+
     public static IEnumerable<SelfTestCase> Tests =>
     [
         new("frames.summary", Summary),
@@ -47,6 +55,7 @@ internal static class FrameToolSelfTests
         new("frames.regions", Regions),
         new("frames.tick", Tick),
         new("frames.tick.caps", TickCaps),
+        new("frames.tick.mentions", TickMentions),
         new("frames.arguments", Arguments),
     ];
 
@@ -97,6 +106,23 @@ internal static class FrameToolSelfTests
                 string.Create(CultureInfo.InvariantCulture, $"Probe{i:00}")));
         }
 
+        events.Add(FrameEnd(start + 1.0, frame));
+        return events;
+    }
+
+    /// <summary>
+    /// A tick that inserts <paramref name="children"/> visuals into <paramref name="parent"/>, then clears its children.
+    /// Each child gets its object ID before the parent, which the first insertion only names.
+    /// </summary>
+    private static List<FixtureEvent> ClearedTick(uint frame, double start, long parent, int children)
+    {
+        var events = new List<FixtureEvent> { FrameStart(start, frame) };
+        for (var i = 0; i < children; i++)
+        {
+            events.Add(VisualInserted(start + 0.01 + (i * 0.001), parent, parent * 0x100 + i + 1));
+        }
+
+        events.Add(Tl(start + 0.5, UiThread, XamlProvider.XamlProfiler, "WucVisualChildrenCleared", F("ParentVisualId", parent)));
         events.Add(FrameEnd(start + 1.0, frame));
         return events;
     }
@@ -296,6 +322,38 @@ internal static class FrameToolSelfTests
         Expect.Equal(20L, at.Long("objectTypes"), "Types in a tick at the cap");
         Expect.Equal(20, at.Items("objects").Count, "Types listed for a tick at the cap");
         LacksNote(at, "types with the most objects");
+    }
+
+    private static void TickMentions(SelfTestContext context)
+    {
+        var path = Write(Path.Combine(context.TempDirectory, "cleared.sqlite"), ClearedEvents);
+        var ticks = Run(() => FrameTools.Frames(sessionPath: path, view: "slowest")).Items("ticks")
+            .ToDictionary(tick => tick.Long("frameNumber"), tick => tick.Long("tickId"));
+
+        // Event paging can't bound one event: the page holds only the clearing, after the tick's start and 25 insertions.
+        var over = Run(() => FrameTools.Frames(sessionPath: path, tickId: ticks[1], offset: 26, limit: 1));
+        var clearing = over.Items("page").Single();
+        Expect.Equal("WucVisualChildrenCleared", clearing.Text("name"), "The event on the page");
+        var mentions = clearing.Items("mentions");
+        Expect.Equal(FrameTools.EventMentions, mentions.Count, "Mentions listed for an event with 26");
+        Expect.Equal("ParentVisualId", mentions[0].Text("field"), "The parent, in the event's own field, comes first");
+        Expect.True(mentions.Skip(1).All(mention => mention.Text("field") == "child of ParentVisualId"),
+            "The other mentions listed are cleared children.");
+        Expect.Equal(16L, clearing.Long("omittedMentions"), "Mentions left out");
+        HasNote(over, "1 event on this page mentions more than 10 objects (clearing a visual's children mentions every " +
+            "child). Each such event lists 10 of them, those in its own fields first, and its omittedMentions says how " +
+            "many more it mentions.");
+        Expect.Equal(26L, over.Items("objects").Sum(item => item.Long("objects")), "Objects counted by type, left out or not");
+
+        var insertion = Run(() => FrameTools.Frames(sessionPath: path, tickId: ticks[1], offset: 1, limit: 1)).Items("page").Single();
+        Expect.Equal(2, insertion.Items("mentions").Count, "Mentions listed for an insertion");
+        Expect.True(insertion.IsNull("omittedMentions"), "An event under the cap has no omittedMentions.");
+
+        var at = Run(() => FrameTools.Frames(sessionPath: path, tickId: ticks[2]));
+        var atCap = at.Items("page").Single(item => item.Text("name") == "WucVisualChildrenCleared");
+        Expect.Equal(10, atCap.Items("mentions").Count, "Mentions listed for an event with 10");
+        Expect.True(atCap.IsNull("omittedMentions"), "An event at the cap has no omittedMentions.");
+        LacksNote(at, "more than 10 objects");
     }
 
     private static void Arguments(SelfTestContext context)
