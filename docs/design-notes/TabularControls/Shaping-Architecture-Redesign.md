@@ -27,8 +27,11 @@ controls/dev/TableViewSource2/
   Source/                                        source layer: input collection + record table
     CollectionAccessor2.h
     SourceRecord.h                               SourceRecord, SourceChange
-    SourceHierarchy.h                            ISourceHierarchyHost, SourceHierarchy, ParentKeyHierarchy,
-                                                 ChildCollectionsHierarchy
+    Hierarchy/                                   source-tree strategies (one header each)
+      ISourceHierarchyHost.h                     ISourceHierarchyHost (what a strategy may ask of SourceTable)
+      SourceHierarchy.h                          SourceHierarchy (strategy base)
+      ParentKeyHierarchy.h                       ParentKeyHierarchy (ParentBy)
+      ChildCollectionsHierarchy.h                ChildCollectionsHierarchy (ChildrenBy)
     SourceTable.h                                SourceTable (records + shared source tree; owns the strategy)
   Spec/                                          shape spec: verbs in force (data) + delegate registry + path evaluator
     ShapeSpec.h                                  ShapeSpec, FilterSpec, SortSpec, GroupSpec, DelegateRef, ShapeDelta
@@ -73,7 +76,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 1 | Public verb API | `TableViewSource2.idl` | Declared |
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h/.cpp` | Implemented |
-| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/SourceHierarchy.h` | `SourceRecord` and flat `SourceTable` implemented (hierarchy verbs throw `hresult_not_implemented`); the strategies declared, not implemented |
+| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/Hierarchy/*.h` | `SourceRecord` and flat `SourceTable` implemented (hierarchy verbs throw `hresult_not_implemented`); the strategies declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h` | `ShapedNode` and `FenwickTree` implemented; the rest declared, not implemented |
 | 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
@@ -1373,7 +1376,8 @@ and the visible-descendant count live in the engine-owned `ShapeState` slot on t
 | `SiblingsOf(parent)`, `Reparent`, `UpdateDepths`, `ResetTreeToFlat` (private) | The shared tree operations; `SiblingsOf` and `Reparent` are also `ISourceHierarchyHost` members for the strategies. |
 
 **Source tree strategies (decided: split hierarchy out of `SourceTable`, option A)**
-(`Source/SourceHierarchy.h`). `SourceTable` keeps what is always on (records, lookups, live
+(`Source/Hierarchy/`: `ISourceHierarchyHost.h`, `SourceHierarchy.h`, `ParentKeyHierarchy.h`,
+`ChildCollectionsHierarchy.h`). `SourceTable` keeps what is always on (records, lookups, live
 shaping, the re-entrancy gate) and the shared tree; each hierarchy verb's state and maintenance is
 a `SourceHierarchy` strategy owned as `std::unique_ptr` (null = flat).
 
@@ -3350,7 +3354,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [ ] **1.5 Source tree** (`Source/SourceRecord.h`, `Source/SourceTable.h`): declared on `SourceRecord` (`Parent`,
       `Children`, `Depth`, `HasChildren()`) and `SourceTable` (`TopLevel()`,
       `SetParentKeyHierarchy`, `SetChildCollectionHierarchy`, `ClearHierarchy`, `SiblingsOf`) and the
-      strategies in `Source/SourceHierarchy.h` (`ParentKeyHierarchy` with the key index,
+      strategies in `Source/Hierarchy/` (`ParentKeyHierarchy` with the key index,
       `ChildCollectionsHierarchy` with the child feeds). Implement, then wire `TableViewSource2` (`ParentBy`, `ChildrenBy`,
       `ClearHierarchy`) through `ShapingManager`.
 

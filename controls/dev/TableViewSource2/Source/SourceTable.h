@@ -17,7 +17,7 @@
 
 #include "CollectionAccessor2.h"
 #include "SourceRecord.h"
-#include "SourceHierarchy.h"
+#include "Hierarchy/SourceHierarchy.h"
 
 // The record table for one input source and its source tree, plus their lookups.
 //
@@ -36,7 +36,7 @@
 //     shaping. Shaping reads only TopLevel() and SourceRecord::Parent / Children / Depth, and never
 //     cares which verb built the tree.
 //   - Flat (m_hierarchy null): every record is top-level.
-//   - Each hierarchy verb is a SourceHierarchy strategy (Source/SourceHierarchy.h, decided: split
+//   - Each hierarchy verb is a SourceHierarchy strategy (Source/Hierarchy/, decided: split
 //     out of SourceTable): ParentKeyHierarchy (ParentBy: an index over Records()) and
 //     ChildCollectionsHierarchy (ChildrenBy: Records() are the top level, every other record is
 //     owned by its parent's child feed). Key rules, feeds and validation are documented there.
@@ -452,7 +452,7 @@ private:
     // ItemChanged is forwarded. Returns true if the tree changed.
     bool ReevaluateHierarchy(SourceRecord* record, winrt::hstring const& propertyName);
 
-    // ---- ISourceHierarchyHost (private; see Source/SourceHierarchy.h) ------------------------
+    // ---- ISourceHierarchyHost (private; see Source/Hierarchy/ISourceHierarchyHost.h) ------------------------
 
     ITrackerHandleManager const* TrackerOwner() const noexcept override;
     std::weak_ptr<ISourceHierarchyHost> WeakHost() noexcept override;
