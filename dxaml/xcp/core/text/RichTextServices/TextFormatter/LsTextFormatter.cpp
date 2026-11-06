@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "LsTextFormatter.h"
 #include "LsTextLine.h"
+#include "LsTextLineBreak.h"
 #include "TextStore.h"
 #include "LineServicesCallbacks.h"
 #include "InlineObjectHandlers.h"

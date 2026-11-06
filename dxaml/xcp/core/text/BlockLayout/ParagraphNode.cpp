@@ -454,7 +454,6 @@ _Check_return_ HRESULT ParagraphNode::MeasureCore(
     }
 
     IFC(EnsureTextCaches(pPreviousParagraphBreak));
-    IFC(BlockLayoutHelpers::GetTextFormatter(m_pBlockLayoutEngine->GetOwner(), &pTextFormatter));
     IFC(BlockLayoutHelpers::GetParagraphProperties(m_pElement, m_pBlockLayoutEngine->GetOwner(), &pParagraphProperties));
 
     if (IsContentDirty())
@@ -490,6 +489,11 @@ _Check_return_ HRESULT ParagraphNode::MeasureCore(
         pPreviousLineBreak = pPreviousParagraphBreak ->GetLineBreak();
         firstCharIndex = pPreviousParagraphBreak->GetBreakIndex();
     }
+
+    // Acquire the formatter after the previous line break is known so the cache can pick the
+    // formatter that produced it (continuation formatting must run on that formatter's LS context,
+    // to which the break record is bound).
+    IFC(BlockLayoutHelpers::GetTextFormatter(m_pBlockLayoutEngine->GetOwner(), &pTextFormatter, pPreviousLineBreak));
 
     // We always want to measure at least one line, whether we add it or not.
     ASSERT(availableSize.height >= 0.0f);
@@ -986,7 +990,9 @@ HRESULT ParagraphNode::FormatLineAtIndex(
     {
         if (*ppTextFormatter == NULL)
         {
-            IFC(BlockLayoutHelpers::GetTextFormatter(m_pBlockLayoutEngine->GetOwner(), ppTextFormatter));
+            // Prefer the formatter that produced this line's previous break so re-formatting runs
+            // on the LS context the break record is bound to.
+            IFC(BlockLayoutHelpers::GetTextFormatter(m_pBlockLayoutEngine->GetOwner(), ppTextFormatter, lineMetrics.LineBreak));
             IFC(BlockLayoutHelpers::GetParagraphProperties(m_pElement, m_pBlockLayoutEngine->GetOwner(), ppParagraphProperties));
         }
 
