@@ -8,6 +8,7 @@
 #include "TableViewContextMenu.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "SharedHelpers.h"
 
 static constexpr std::wstring_view s_ContentPresenterPartName{ L"PART_ContentPresenter"sv };
 static constexpr std::wstring_view s_GridLinePartName{ L"PART_GridLine"sv };
@@ -19,6 +20,14 @@ static constexpr std::wstring_view s_FlyoutButtonPartName{ L"PART_HeaderFlyoutBu
 TableViewColumnHeader::TableViewColumnHeader()
 {
     SetDefaultStyleKey(this);
+    RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
+        [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->UpdateVisualStates(false);
+            }
+        });
     // Rebuilt headers must finish loading their template bindings before HC resting setters run.
     m_loadedRevoker = Loaded(winrt::auto_revoke,
         [weakThis = get_weak()](auto&&, auto&&)
@@ -318,10 +327,6 @@ void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorR
 void TableViewColumnHeader::SetSortDirectionInternal(winrt::SortDirection direction)
 {
     m_sortDirection = direction;
-    if (auto const indicator = m_sortIndicator.get())
-    {
-        indicator.Direction(TableView::ToSortIndicatorDirection(direction));
-    }
     UpdateVisualStates(true /* useTransitions */);
 }
 
@@ -438,7 +443,7 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
 
 void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
 {
-    // Hover and press advertise click-to-sort, so a header that cannot sort stays Normal.
+    // The dropdown has its own interaction states; only the header's sort target drives these.
     const wchar_t* commonState = L"Normal";
     if (!IsEnabled())
     {
@@ -487,7 +492,26 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     {
         sortState = L"SortDescending";
     }
-    winrt::VisualStateManager::GoToState(*this, sortState, useTransitions);
+    else if (IsEnabled() && m_isSortable && !m_isFlyoutOpen &&
+        (commonState == std::wstring_view{ L"PointerOver" } ||
+            commonState == std::wstring_view{ L"Pressed" } ||
+            FocusState() == winrt::FocusState::Keyboard))
+    {
+        sortState = L"UnsortedSortAvailable";
+    }
+    if (auto const indicator = m_sortIndicator.get())
+    {
+        // Keep the glyph rendered while its host fades out; actual sorting and UIA stay unchanged.
+        const auto direction = m_sortDirection == winrt::SortDirection::None
+            ? winrt::SortDirection::Ascending : m_sortDirection;
+        indicator.Direction(TableView::ToSortIndicatorDirection(direction));
+    }
+    const bool animateSortAffordance = useTransitions && IsLoaded() && IsEnabled() &&
+        m_isSortable && !m_isFlyoutOpen && !highlighted &&
+        FocusState() != winrt::FocusState::Keyboard &&
+        commonState != std::wstring_view{ L"Pressed" } &&
+        SharedHelpers::IsAnimationsEnabled();
+    winrt::VisualStateManager::GoToState(*this, sortState, animateSortAffordance);
 }
 
 void TableViewColumnHeader::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)

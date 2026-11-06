@@ -740,7 +740,7 @@ Override them in the appropriate theme dictionary without replacing the control 
 |---|---|---|---|
 | Column, normal/disabled | `TabularSurfaceHeaderBackgroundBrush` | `TabularSurfaceHeaderBorderBrush` | Window |
 | Column, sortable rest | `TabularSurfaceHeaderBackgroundSortableBrush` | `TabularSurfaceHeaderBorderSortableBrush` | ButtonFace |
-| Column, hover | `TabularSurfaceHeaderBackgroundPointerOverBrush` | `TabularSurfaceHeaderBorderPointerOverBrush` | Highlight |
+| Column, hover/keyboard focus | Same as sortable rest | Same as sortable rest | ButtonFace |
 | Column, pressed | `TabularSurfaceHeaderBackgroundPressedBrush` | `TabularSurfaceHeaderBorderPressedBrush` | Highlight |
 | Section, normal/disabled | `TabularSurfaceGroupHeaderBackgroundBrush` | `TabularSurfaceGroupHeaderInteractionBorderBrush` | Window |
 | Section, hover | `TabularSurfaceGroupHeaderBackgroundPointerOverBrush` | `TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush` | Highlight |
@@ -754,11 +754,14 @@ background extends under the stroke. XAML measures rounded corners at the stroke
 so the HC stroke slightly changes the outer curve and edge antialiasing compared with the
 former fill-only plate. Light/Dark retain their original fills with no interaction stroke.
 
+Column hover and keyboard focus reveal the sort affordance without adding a backplate.
+The shared column-header PointerOver resources still style the independent dropdown button;
+the default column-header plate no longer uses them.
+
 For example, setting only these HC backgrounds to Transparent leaves their Highlight outlines:
 
 ```xml
 <ResourceDictionary x:Key="HighContrast">
-    <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="Transparent" />
     <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="Transparent" />
     <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="Transparent" />
     <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="Transparent" />
@@ -823,9 +826,9 @@ Visual states:
 
 | Group | States | Notes |
 |---|---|---|
-| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort, and change only the fill (`TabularSurfaceHeaderBackgroundPointerOverBrush` / `...PressedBrush`). `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
-| `HighContrastStates` | `HighContrastNormal`, `HighContrastSortable`, `HighContrastPointerOver`, `HighContrastPressed` | Enabled, user-sortable headers use `SystemColorButtonTextColorBrush` on `SystemColorButtonFaceColorBrush` at rest in High Contrast, with no text backplate. Hover/pressed retain the HighlightText/Highlight pairing. Non-sortable headers retain their resting appearance; disabled headers retain their disabled appearance. |
-| `SortStates` | `Unsorted`, `SortAscending`, `SortDescending` | Show or hide the sort glyph; the glyph is hidden until the column is sorted. |
+| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort. Hover leaves the resting plate unchanged; pressed retains `TabularSurfaceHeaderBackgroundPressedBrush` and `TabularSurfaceHeaderBorderPressedBrush`. `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
+| `HighContrastStates` | `HighContrastNormal`, `HighContrastSortable`, `HighContrastPointerOver`, `HighContrastPressed` | Enabled, user-sortable headers retain the ButtonText/ButtonFace pairing at rest, on hover, and with keyboard focus. Pressed retains HighlightText/Highlight. Non-sortable headers retain their resting appearance; disabled headers retain their disabled appearance. |
+| `SortStates` | `Unsorted`, `UnsortedSortAvailable`, `SortAscending`, `SortDescending` | An unsorted, enabled, user-sortable header shows the ascending sort affordance on hover, keyboard focus, or press. Leaving those states hides it. Actual ascending/descending indicators remain visible independently of hover/focus. The preview does not change sorting or automation help. |
 | `HeaderEdgeStates` | `InteriorHeader`, `LeftEdgeHeader`, `RightEdgeHeader`, `SingleHeader` | Follow visible columns, trailing separator suppression, and flow direction. Set the fill's corner radius using the `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens. |
 
 The default sort indicator uses the Fluent System Library's 16px Regular **Arrow Sort Up Lines** and
@@ -835,6 +838,13 @@ foregrounds, theme, disabled, and High Contrast states. Customize the hosted ico
 together through the header style's `Foreground`; the standalone indicator retains its own
 `SortIndicatorForeground` resource.
 The icon sits at the trailing edge (mirrored placement in RTL) and is centered within header padding.
+The unsorted pointer-hover affordance fades in/out over 83ms with linear opacity only.
+Its glyph stays rendered through fade-out, and interrupted transitions reverse from the current
+opacity. Keyboard-focus and pressed feedback, sorted indicators, disabled/non-sortable states,
+and High Contrast updates are immediate. The fade respects Windows animation preferences.
+Reserved icon space and header text layout do not change during animation.
+Hover over the separate dropdown, or an open header flyout, does not activate the header's
+pointer sort affordance. Keyboard focus on the header itself remains independent of dropdown hover.
 
 The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
 

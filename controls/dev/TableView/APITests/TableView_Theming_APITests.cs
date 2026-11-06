@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -4553,10 +4554,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 {
                                     Verify.IsTrue(VisualStateManager.GoToState(header, state, false));
                                     Verify.IsTrue(VisualStateManager.GoToState(header, "HighContrast" + state, false));
-                                    Verify.AreEqual(((SolidColorBrush)Application.Current.Resources["SystemColorHighlightColorBrush"]).Color,
-                                        ((SolidColorBrush)background.Background).Color, $"Highlight background: {state}, {context}");
-                                    Verify.AreEqual(((SolidColorBrush)Application.Current.Resources["SystemColorHighlightTextColorBrush"]).Color,
-                                        ((SolidColorBrush)presenter.Foreground).Color, $"HighlightText foreground: {state}, {context}");
+                                    var backgroundKey = state == "Pressed" ? "SystemColorHighlightColorBrush" : "SystemColorButtonFaceColorBrush";
+                                    var foregroundKey = state == "Pressed" ? "SystemColorHighlightTextColorBrush" : "SystemColorButtonTextColorBrush";
+                                    Verify.AreEqual(((SolidColorBrush)Application.Current.Resources[backgroundKey]).Color,
+                                        ((SolidColorBrush)background.Background).Color, $"Header background: {state}, {context}");
+                                    Verify.AreEqual(((SolidColorBrush)Application.Current.Resources[foregroundKey]).Color,
+                                        ((SolidColorBrush)presenter.Foreground).Color, $"Header foreground: {state}, {context}");
                                     Verify.IsTrue(VisualStateManager.GoToState(header, "Normal", false));
                                     Verify.IsTrue(VisualStateManager.GoToState(header, "HighContrastSortable", false));
                                     Verify.AreEqual(((SolidColorBrush)Application.Current.Resources["SystemColorButtonFaceColorBrush"]).Color,
@@ -4628,9 +4631,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 Rect contentBounds = default;
                                 Thickness thickness = default;
                                 string suffix = state == "Normal" || state == "Disabled" ? "" : state;
+                                string resourceSuffix = !section && state == "PointerOver"
+                                    ? (theme == "HighContrast" ? "Sortable" : "") : suffix;
                                 string prefix = section ? "TabularSurfaceGroupHeader" : "TabularSurfaceHeader";
-                                string backgroundKey = prefix + "Background" + suffix + "Brush";
-                                string borderKey = prefix + (section ? "InteractionBorder" : "Border") + suffix + "Brush";
+                                string backgroundKey = prefix + "Background" + resourceSuffix + "Brush";
+                                string borderKey = prefix + (section ? "InteractionBorder" : "Border") + resourceSuffix + "Brush";
                                 var background = brushes[backgroundKey];
                                 var border = brushes[borderKey];
                                 Color originalBackground = default;
@@ -4980,8 +4985,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             RunOnUIThread.Execute(() =>
                             {
                                 var context = $"{theme}, {appearance}, {state}";
-                                Verify.AreEqual(interaction, ((SolidColorBrush)GetHeaderPresenter(tableView, 0).Foreground).Color,
-                                    $"Precondition: the header uses its own interaction foreground ({context}).");
+                                var headerForeground = state == "Pressed" ? pressed
+                                    : ((SolidColorBrush)Application.Current.Resources["SystemColorButtonTextColorBrush"]).Color;
+                                Verify.AreEqual(headerForeground, ((SolidColorBrush)GetHeaderPresenter(tableView, 0).Foreground).Color,
+                                    $"The header keeps resting hover text and its pressed foreground ({context}).");
                                 Verify.AreEqual(foreground, ((SolidColorBrush)chevron.Foreground).Color,
                                     $"Header interaction must not recolor the unhovered dropdown ({context}).");
                                 Verify.AreEqual(background,
@@ -5111,7 +5118,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.AreEqual("Disabled", CurrentState(header, "CommonStates"), "Precondition: the disabled header is Disabled.");
-                    Verify.AreEqual("HighContrastNormal", CurrentState(header, "HighContrastStates"), "Precondition: the hover highlight is gone.");
+                    Verify.AreEqual("HighContrastNormal", CurrentState(header, "HighContrastStates"), "Precondition: the High Contrast hover state is cleared.");
                     Verify.AreEqual(disabled, (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default,
                         "Leaving the High Contrast hover state must not drop the disabled text brush.");
                     var glyph = header.FindVisualChildByName("TableViewSortIndicator") as Control;
@@ -5508,7 +5515,248 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies SortStates follow the column's sort direction and show the glyph only while sorted.")]
+        [TestProperty("Description", "Verifies the unsorted affordance uses an 83ms opacity-only fade, survives reversals, and never hides an actual sort.")]
+        public void VerifyUnsortedHeaderAffordanceFadeTransitions()
+        {
+            TableView tableView = null;
+            TableViewColumnHeader header = null;
+            Border host = null;
+            Storyboard fadeOut = null;
+            int phase = 0;
+            double interruptedOpacity = 0;
+            double reversedOpacity = 0;
+            bool reversalAccepted = false;
+            bool exitAccepted = false;
+            bool animationsEnabled = false;
+            var samples = new List<double>();
+            using var completed = new AutoResetEvent(false);
+            EventHandler<object> onCompleted = (sender, args) => completed.Set();
+            EventHandler<object> onRendering = null;
+            onRendering = (sender, args) =>
+            {
+                var opacity = host.Opacity;
+                samples.Add(opacity);
+                if (phase == 0 && opacity > 0 && opacity < 1)
+                {
+                    interruptedOpacity = opacity;
+                    reversalAccepted = VisualStateManager.GoToState(header, "UnsortedSortAvailable", true);
+                    reversedOpacity = host.Opacity;
+                    phase = 1;
+                }
+                else if (phase == 1 && opacity > interruptedOpacity && opacity < 1)
+                {
+                    phase = 2;
+                    CompositionTarget.Rendering -= onRendering;
+                    exitAccepted = VisualStateManager.GoToState(header, "Unsorted", true);
+                }
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    header = RequireColumnHeader(tableView, 0);
+                    host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
+                    var root = (FrameworkElement)VisualTreeHelper.GetChild(header, 0);
+                    var group = VisualStateManager.GetVisualStateGroups(root).Single(g => g.Name == "SortStates");
+                    Verify.AreEqual(2, group.Transitions.Count, "Only unsorted affordance entry/exit should animate.");
+                    foreach (var transition in group.Transitions)
+                    {
+                        bool entering = transition.To == "UnsortedSortAvailable";
+                        Verify.AreEqual(entering ? "Unsorted" : "UnsortedSortAvailable", transition.From);
+                        Verify.AreEqual(entering ? "UnsortedSortAvailable" : "Unsorted", transition.To);
+                        Verify.AreEqual(83.0, transition.GeneratedDuration.TimeSpan.TotalMilliseconds);
+                        Verify.IsNull(transition.GeneratedEasingFunction, "The generated opacity fade must be linear.");
+                        var timelines = transition.Storyboard.Children;
+                        Verify.AreEqual(1, timelines.Count, "Only hold visibility explicitly; VSM generates the opacity fade.");
+                        var visibility = (ObjectAnimationUsingKeyFrames)timelines[0];
+                        Verify.AreEqual("PART_SortIndicatorHost", Storyboard.GetTargetName(visibility));
+                        Verify.AreEqual("Visibility", Storyboard.GetTargetProperty(visibility));
+                        Verify.AreEqual(83.0, visibility.Duration.TimeSpan.TotalMilliseconds);
+                        Verify.AreEqual(1, visibility.KeyFrames.Count);
+                        Verify.AreEqual(TimeSpan.Zero, visibility.KeyFrames[0].KeyTime.TimeSpan);
+                        Verify.AreEqual("Visible", visibility.KeyFrames[0].Value.ToString(),
+                            "Keep the glyph visible until fade-out has completed.");
+                        if (!entering)
+                        {
+                            fadeOut = transition.Storyboard;
+                        }
+                    }
+                    Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction,
+                        "The hidden glyph must remain rendered for the host's fade-out.");
+                    animationsEnabled = new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled;
+                    Log.Comment($"Windows animations enabled: {animationsEnabled}.");
+                    fadeOut.Completed += onCompleted;
+                    if (animationsEnabled)
+                    {
+                        CompositionTarget.Rendering += onRendering;
+                    }
+                    else
+                    {
+                        Log.Comment("Windows animations are disabled; intermediate-frame sampling is not applicable.");
+                    }
+                    Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", false));
+                    Verify.IsTrue(VisualStateManager.GoToState(header, "Unsorted", true));
+                });
+                Verify.IsTrue(completed.WaitOne(TimeSpan.FromSeconds(5)), "The final fade-out must complete after rapid reversals.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"Observed opacity frames: {string.Join(", ", samples)}.");
+                    if (animationsEnabled)
+                    {
+                        Verify.AreEqual(2, phase, "Observe a real intermediate fade-out and a progressing reversed fade-in.");
+                        Verify.IsTrue(reversalAccepted && exitAccepted, "Both reversal transitions must be accepted.");
+                        Verify.IsTrue(Math.Abs(reversedOpacity - interruptedOpacity) < 0.02,
+                            "Reversing fade-out must not snap to an endpoint.");
+                    }
+                    Verify.AreEqual(Visibility.Collapsed, host.Visibility);
+                    Verify.AreEqual(0.0, host.Opacity);
+                    Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction);
+                    Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+                    Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", true));
+                    Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending));
+                    Verify.AreEqual(Visibility.Visible, host.Visibility, "Sorting must immediately replace a pending fade.");
+                    Verify.AreEqual(1.0, host.Opacity, "An actual sorted indicator must be fully visible immediately.");
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("SortDescending", CurrentState(header, "SortStates"));
+                    Verify.AreEqual(Visibility.Visible, host.Visibility);
+                    Verify.AreEqual(1.0, host.Opacity, "A cancelled transition must not later hide an actual sort.");
+                    Verify.AreEqual(SortIndicatorDirection.Descending, ((SortIndicator)host.Child).Direction);
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    CompositionTarget.Rendering -= onRendering;
+                    if (fadeOut != null)
+                    {
+                        fadeOut.Completed -= onCompleted;
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies keyboard focus previews sorting without changing sort state, geometry, or automation help.")]
+        public void VerifyUnsortedHeaderFocusShowsSortAffordance()
+        {
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            {
+                foreach (var density in DensityCases)
+                {
+                    foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+                    {
+                        TableView tableView = null;
+                        TableViewColumnHeader header = null;
+                        string help = null;
+                        double width = 0;
+                        Thickness margin = default;
+                        RunOnUIThread.Execute(() =>
+                        {
+                            tableView = CreateThemingTable();
+                            tableView.RequestedTheme = theme;
+                            tableView.Density = density.Density;
+                            tableView.FlowDirection = flow;
+                            tableView.Columns[1].CanSort = false;
+                            LoadContent(tableView);
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            header = RequireColumnHeader(tableView, 0);
+                            help = FrameworkElementAutomationPeer.CreatePeerForElement(header).GetHelpText();
+                            width = tableView.Columns[0].ActualWidth;
+                            margin = GetHeaderPresenter(tableView, 0).Margin;
+                            Verify.IsTrue(header.Focus(FocusState.Keyboard), "The sortable header takes keyboard focus.");
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var context = $"{theme}, {density.Density}, {flow}";
+                            Verify.AreEqual(FocusState.Keyboard, header.FocusState, context);
+                            Verify.AreEqual("UnsortedSortAvailable", CurrentState(header, "SortStates"), context);
+                            var host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
+                            Verify.AreEqual(Visibility.Visible, host.Visibility, context);
+                            Verify.AreEqual(1.0, host.Opacity, $"Keyboard-focus feedback must be immediate: {context}");
+                            Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction,
+                                $"The unsorted affordance uses the ascending glyph: {context}");
+                            Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"Focus must not sort: {context}");
+                            Verify.AreEqual(help, FrameworkElementAutomationPeer.CreatePeerForElement(header).GetHelpText(),
+                                $"Focus must not announce an actual sort: {context}");
+                            Verify.AreEqual(width, tableView.Columns[0].ActualWidth, $"Focus must not resize columns: {context}");
+                            Verify.AreEqual(margin, GetHeaderPresenter(tableView, 0).Margin, $"Focus must not move text: {context}");
+                            tableView.CanUserSortColumns = false;
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            header = RequireColumnHeader(tableView, 0);
+                            Verify.AreEqual("Unsorted", CurrentState(header, "SortStates"),
+                                "Disabling sorting hides the unsorted affordance even with focus.");
+                            Verify.AreEqual(Visibility.Collapsed,
+                                ((Border)header.FindVisualChildByName("PART_SortIndicatorHost")).Visibility);
+                            tableView.CanUserSortColumns = true;
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            header = RequireColumnHeader(tableView, 0);
+                            Verify.IsTrue(header.Focus(FocusState.Keyboard));
+                            tableView.IsEnabled = false;
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual("Unsorted", CurrentState(header, "SortStates"),
+                                "A disabled header must not advertise sorting.");
+                            tableView.IsEnabled = true;
+                            Verify.IsTrue(header.Focus(FocusState.Keyboard));
+                            Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending));
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual("SortDescending", CurrentState(header, "SortStates"),
+                                "An actual descending sort must not be replaced by the ascending preview.");
+                            var host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
+                            Verify.AreEqual(SortIndicatorDirection.Descending, ((SortIndicator)host.Child).Direction);
+                            Verify.IsTrue(tableView.ClearSort());
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual("UnsortedSortAvailable", CurrentState(header, "SortStates"),
+                                "Clearing sorting while focused restores the affordance.");
+                            Verify.IsTrue(RequireColumnHeader(tableView, 1).Focus(FocusState.Keyboard));
+                        });
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual("Unsorted", CurrentState(header, "SortStates"),
+                                "Leaving the header hides its unsorted affordance.");
+                            Verify.AreEqual(Visibility.Collapsed,
+                                ((Border)header.FindVisualChildByName("PART_SortIndicatorHost")).Visibility);
+                            Verify.AreEqual("Unsorted", CurrentState(RequireColumnHeader(tableView, 1), "SortStates"),
+                                "A focused non-sortable header does not advertise sorting.");
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies resting SortStates follow the column's actual sort direction.")]
         public void VerifyColumnHeaderSortStates()
         {
             TableView tableView = null;

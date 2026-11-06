@@ -304,6 +304,16 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
+Column-header hover has no additional backplate. Enabled, sortable, unsorted headers show the
+ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
+sort help. Sorted headers retain their actual direction indicator. Pressed retains the existing
+theme-aware backplate; High Contrast keeps ButtonFace/ButtonText on hover/focus and
+Highlight/HighlightText while pressed. The independent header dropdown retains its own states.
+The reserved sort space is unchanged, so revealing the icon does not move text or resize columns.
+Unsorted pointer-hover entry/exit uses an 83ms linear opacity fade. Keep the inner glyph rendered
+until fade-out finishes; VSM owns interruption/reversal. Keyboard focus, pressed/sorted states,
+High Contrast, disabled/non-sortable headers and disabled Windows animations bypass the fade.
+
 Section-header backplates are transparent at rest in Light/Dark and use the unselected row
 hover/pressed brushes. Their background border binds the same `CornerRadius` as row backplates.
 High Contrast keeps its system window background and highlight/highlight-text interaction pairing.

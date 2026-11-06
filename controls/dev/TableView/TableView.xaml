@@ -238,12 +238,7 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPointerOverBrush}" />
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="PointerOver" />
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
@@ -289,9 +284,9 @@
                                 </VisualState>
                                 <VisualState x:Name="HighContrastPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
-                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderPointerOverBrush}" />
-                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_Background.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundSortableBrush}" />
+                                        <Setter Target="PART_Background.BorderBrush" Value="{ThemeResource TabularSurfaceHeaderBorderSortableBrush}" />
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -306,15 +301,43 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="SortStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="Unsorted" To="UnsortedSortAvailable" GeneratedDuration="0:0:0.083">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SortIndicatorHost"
+                                                                           Storyboard.TargetProperty="Visibility"
+                                                                           Duration="0:0:0.083">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                    <VisualTransition From="UnsortedSortAvailable" To="Unsorted" GeneratedDuration="0:0:0.083">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SortIndicatorHost"
+                                                                           Storyboard.TargetProperty="Visibility"
+                                                                           Duration="0:0:0.083">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
                                 <VisualState x:Name="Unsorted" />
+                                <VisualState x:Name="UnsortedSortAvailable">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible" />
+                                        <Setter Target="PART_SortIndicatorHost.Opacity" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="SortAscending">
                                     <VisualState.Setters>
                                         <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible" />
+                                        <Setter Target="PART_SortIndicatorHost.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="SortDescending">
                                     <VisualState.Setters>
                                         <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible" />
+                                        <Setter Target="PART_SortIndicatorHost.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -351,6 +374,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 IsHitTestVisible="False"
+                                Opacity="0"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
 
