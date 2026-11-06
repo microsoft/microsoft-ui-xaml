@@ -4475,6 +4475,71 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/783 - clicking the
+    // more button while every secondary command is collapsed would open an empty overflow menu,
+    // so with OverflowButtonVisibility set to Auto the button should hide instead.
+    void CommandBarIntegrationTests::ValidateMoreButtonHidesWhenAllSecondaryCommandsAreCollapsed()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::CommandBar^ cmdBar = nullptr;
+        xaml_primitives::ButtonBase^ moreButton = nullptr;
+        xaml_controls::AppBarButton^ secondaryButton = nullptr;
+        xaml_controls::AppBarToggleButton^ secondaryToggleButton = nullptr;
+
+        auto hasLoadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::CommandBar, Loaded);
+
+        RunOnUIThread([&]()
+        {
+            cmdBar = ref new xaml_controls::CommandBar();
+            loadedRegistration.Attach(cmdBar, [&]() { hasLoadedEvent->Set(); });
+
+            secondaryButton = ref new xaml_controls::AppBarButton();
+            secondaryButton->Label = L"secondary button";
+            secondaryButton->Visibility = xaml::Visibility::Collapsed;
+            cmdBar->SecondaryCommands->Append(secondaryButton);
+
+            secondaryToggleButton = ref new xaml_controls::AppBarToggleButton();
+            secondaryToggleButton->Label = L"secondary toggle button";
+            secondaryToggleButton->Visibility = xaml::Visibility::Collapsed;
+            cmdBar->SecondaryCommands->Append(secondaryToggleButton);
+
+            auto page = TestServices::WindowHelper->SetupSimulatedAppPage();
+            page->BottomAppBar = cmdBar;
+        });
+
+        hasLoadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Every secondary command is collapsed, so the more button should be collapsed as well.");
+            moreButton = safe_cast<xaml_primitives::ButtonBase^>(GetMoreButton(cmdBar));
+            VERIFY_ARE_EQUAL(xaml::Visibility::Collapsed, moreButton->Visibility);
+
+            LOG_OUTPUT(L"Making one secondary command visible.  The more button should become visible.");
+            secondaryToggleButton->Visibility = xaml::Visibility::Visible;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml::Visibility::Visible, moreButton->Visibility);
+
+            LOG_OUTPUT(L"Collapsing it again.  The more button should go back to being collapsed.");
+            secondaryToggleButton->Visibility = xaml::Visibility::Collapsed;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml::Visibility::Collapsed, moreButton->Visibility);
+        });
+    }
+
     void CommandBarIntegrationTests::ValidateButtonsMoveToAndFromOverflowWithoutSizeChange()
     {
         TestCleanupWrapper cleanup;
