@@ -405,6 +405,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a live CellToolTipBinding change that clears the only action of the focused read-only cell takes it out of the tab order and hands focus to its row.")]
+        public void VerifyClearingFocusedCellsOnlyToolTipHandsFocusToRow()
+        {
+            TableView tableView = null;
+            var items = MakeEditableItems("Asha", "Diego", "Mei");
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateToolTipTable(items, cellToolTipPath: "Role");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                Verify.IsTrue(tableView.IsReadOnly, "Precondition: the tooltip is the cell's only action.");
+                GetCellPeer(row, 0).SetFocus();
+                Verify.AreEqual<object>(GetRowCell(row, 0), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    "Precondition: the tooltip cell takes focus.");
+                items[0].Role = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                Verify.IsFalse(GetRowCell(row, 0).IsTabStop, "A cell with no action left leaves the tab order.");
+                Verify.AreEqual<object>(row, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    "Focus must move from the inactive cell to its row.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell tooltip is present again once an edit on that cell closes.")]
         public void VerifyCellToolTipIsRestoredAfterAnEditCloses()
         {

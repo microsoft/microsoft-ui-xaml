@@ -201,6 +201,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "In a read-only table a cell whose only action is a context menu still takes keyboard focus, and Shift+F10 opens its menu.")]
+        public void ShiftF10OnReadOnlyCellWithOnlyAMenuOpensCellMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+
+                VerifyMenuOpened(CellMenu, ContextMenuName(4), CellFocus(4, ContextMenuNameColumn));
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Shift+F10 on a focused row (not a cell) opens the row's menu, not a column's cell menu.")]
         public void ShiftF10OnRowOpensRowMenu()
         {
@@ -303,6 +320,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ElementCache.Clear();
                 VerifyFocusedCell(ContextMenuTable, 4, ContextMenuNameColumn, "Escape must return focus to row 4's Name cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape returns focus to the cell a row menu was opened on when another cell of that row had focus (GH #12442).")]
+        public void EscapeReturnsFocusToOtherCellOfFocusedRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                RightClickRow(table, 4, ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                VerifyMenuOpened(RowMenu, ContextMenuName(4), CellFocus(4, ContextMenuAgeColumn));
+
+                CloseMenu();
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Escape must return focus to row 4's Age cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after a click outside dismisses a row menu opened on another cell of the focused row, Tab out and back in returns to that cell (GH #12442).")]
+        public void ClickOutsideMenuThenTabBackInReturnsToMenuCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                RightClickRow(table, 4, ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                VerifyMenuOpened(RowMenu, ContextMenuName(4), CellFocus(4, ContextMenuAgeColumn));
+
+                // The read-only readout takes no focus, so the click only dismisses the menu.
+                ClickPoint(CentreOf(FindElement.ById(ContextMenuReadout)));
+                Verify.AreEqual("False", WaitForContextMenuField(OpenField, "False"), "A click outside must close the menu.");
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Precondition: dismissing the menu returns focus to row 4's Age cell.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Tab back into the body must return to row 4's Age cell.");
             }
         }
 

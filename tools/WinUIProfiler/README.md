@@ -310,6 +310,12 @@ recorded `.etl` file. Each event becomes a `ProfilerEvent`
 | Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
 | Microsoft-Windows-Win32k | `8c416c79-d49b-4f01-a467-e56d3aa8234c` | Window focus changes, keyword `0x2000` at level 4: event 2, the only event with that keyword, once per focus change. Its fields are the thread that lost focus and the thread that got it |
 
+Layout, focus, virtualization, navigation, hit-testing and PasswordBox TraceLogging
+events carry element identities in all builds. Tree-specific events and
+Microsoft-Windows-XAML-Profiler instrumentation are also compiled in all builds;
+event emission is controlled by runtime ETW enablement.
+The GPU memory events come
+from Windows, whatever the build. They carry the values
 The providers of the marker configuration, such as an app's own, are read too,
 for the same process only: see [Launch timeline](#launch-timeline).
 
@@ -351,9 +357,13 @@ decoded with the kernel's manifest. `ProfilerEvent.TraceLogging` tells
 TraceLogging events from manifest events: the same field name can hold
 different objects in the two.
 
+Profiler tree and composition events carry identities, relationships and state,
+not debug labels, core allocation sizes or XAML source positions. Older traces'
+label metadata remains readable.
+
 While Microsoft-Windows-XAML-Diagnostics is enabled, the runtime keeps the XAML
 source position of the objects it parses, which `ElementCreatedWithSource`
-carries (and, in builds with `XamlProfilerEnabled`, `ElementEnteredTree`), and
+carries, and
 keeps setters and resource references for XAML diagnostics. That costs the
 target some memory and CPU time, as in any trace that enables the provider.
 Only XAML parsed while the provider is enabled has positions: a launch has them
@@ -506,14 +516,18 @@ Microsoft-Windows-XAML-Diagnostics' `PeerCreated` is a framework peer.
 - `DependencyObject_Enter`, `PeerAssociated` and `ContentChanged`'s content
   also carry other objects, so their mentions of an address are kept back until
   the address is known to be a UI element, then saved with it. The type and
-  `x:Name` come from `DependencyObject_Enter`.
+  `x:Name` come from `DependencyObject_Enter`. When its type was not observed,
+  existing template and render events can supply a fallback class name without
+  adding metadata to the runtime's profiler events.
 - The runtime reuses freed addresses. When `DependencyObject_Enter` reports a
   different type at a known address, a new element starts there. The new
   object's peer, parent and layout events can come first, so the old element's
   mentions since it (or its last child) left the tree move to the new one.
   Reuse by an object of the same type can't be told apart.
-- The type is the nearest built-in type: a `TabViewItem` shows as
-  `ListViewItem`, and an app's own control as its built-in base class.
+- `DependencyObject_Enter` reports the nearest built-in type: a `TabViewItem`
+  shows as `ListViewItem`, and an app's own control as its built-in base class.
+  Its type takes precedence over fallback class names; differences between a
+  fallback class name and an enter type do not imply pointer reuse.
 - Other objects (brushes, transforms, composition nodes, surfaces) are not
   indexed; they can still be found in `Events`.
 
@@ -524,18 +538,23 @@ visual surface events mention.
 
 - `ParentVisualId`, `ChildVisualId` and `VisualId` only ever hold an `IVisual`
   pointer, so a visual is known from its first mention.
-- Its insertion (`WucVisualChildInserted`, `WucVisualRootSet`) gives its type
-  and owner comp node. The owner's `CompPeerLinked` label (the element's
-  `x:Name`, or its class name) becomes the visual's name. A comp node usually
+- Tree events carry visual/parent/child IDs and, for root changes, the target
+  ID. `WucVisualChildInserted` and `WucVisualRootSet` also capture the concrete
+  `VisualType`. They do not capture properties, insertion indices or owner
+  comp-node IDs. ID-only traces remain readable but show `type not seen` for
+  visuals unless a later event supplies their type.
+- Older traces can also supply a visual's type and owner comp node. The
+  owner's `CompPeerLinked` label (the element's `x:Name`, or its class name)
+  becomes the visual's name. A comp node usually
   creates its visuals before it is linked, so the label is added when the link
   comes. Visuals inserted with owner 0, mostly leaf visuals, have no name.
-- An insertion with a different type or owner than the visual's last means a
-  new visual reused the pointer, so a new visual starts there. Visuals get their
+- In older traces, an insertion with a different type or owner means a new
+  visual reused the pointer, so a new visual starts there. Visuals get their
   children before they are inserted, so the old visual's mentions since it left
-  the tree move to the new one. Reuse by a visual of the same type and owner
-  can't be told apart. A hand-in or hand-off visual that its element's
-  re-created comp node inserts again also gets a new owner, so its history
-  splits there.
+  the tree move to the new one. Reuse by a visual without type/owner metadata,
+  or with the same type and owner, can't be told apart. A hand-in or hand-off
+  visual that its element's re-created comp node inserts again also gets a new
+  owner, so its history splits there.
 - `WucVisualChildrenCleared` names only the parent, so each child it removes
   gets a mention through the parent's field (`child of ParentVisualId`).
 

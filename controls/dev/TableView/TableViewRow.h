@@ -101,6 +101,11 @@ public:
     // Focuses a visible cell after drilling to cell level; falls back to the row if needed.
     bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
 
+    // Editable, hosting focusable content, or carrying a tooltip. Only these take keyboard focus.
+    bool IsCellActionableInternal(const winrt::UIElement& cell) const;
+    // First actionable cell from startVisibleIndex (inclusive) in step's direction; -1 when none.
+    int32_t FindActionableCellInternal(int32_t startVisibleIndex, int32_t step) const;
+
     // Switches the ARIA treegrid body between row level and cell level; see the definition for why
     // this has to move IsTabStop.
     void SetCellLevelInternal(bool isCellLevel);
@@ -118,6 +123,8 @@ public:
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
     void RefreshCellToolTips();
+    // A live tooltip value change restamps the cell level when the cell's actionability flipped.
+    void OnCellToolTipChangedInternal(const winrt::UIElement& cell);
     // Raises NameProperty changed on cell peers that already exist; creates none.
     void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
@@ -156,7 +163,7 @@ private:
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
-    void SetCellsTabStopInternal(bool isTabStop);
+    bool SetCellsTabStopInternal(bool isTabStop);
 
     bool IsGridLevelFocusInternal();
 
@@ -164,12 +171,7 @@ private:
     void SuppressCellContentTabStopsForTabWalkInternal();
     void RestoreCellContentTabStopsInternal();
 
-    // Resolves body Tab entry to the remembered row, or its remembered-column cell at cell level.
-    void OnRowGettingFocus(
-        const winrt::UIElement& sender,
-        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
-
-    void OnRowGotFocus();
+    void OnRowGotFocus(winrt::DependencyObject const& focusedElement);
     // Routes an expansion-state transition to this row's automation peer, if a client is listening.
     void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
@@ -263,7 +265,6 @@ private:
     winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };

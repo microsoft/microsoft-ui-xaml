@@ -163,23 +163,13 @@ TableViewRow::TableViewRow()
             }
         });
 
-    m_gettingFocusRevoker = GettingFocus(
-        winrt::auto_revoke,
-        [weakRow](winrt::UIElement const& sender, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
-        {
-            if (auto strongRow = weakRow.get())
-            {
-                strongRow->OnRowGettingFocus(sender, args);
-            }
-        });
-
     m_gotFocusRevoker = GotFocus(
         winrt::auto_revoke,
-        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const& args)
         {
             if (auto strongRow = weakRow.get())
             {
-                strongRow->OnRowGotFocus();
+                strongRow->OnRowGotFocus(args.OriginalSource().try_as<winrt::DependencyObject>());
             }
         });
 
@@ -516,7 +506,14 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
 
         // Drill in BEFORE focusing: at row level the cells are not tab stops, and
         // CUIElement::IsFocusable requires IsTabStop even for a programmatic Focus().
-        SetCellLevelInternal(true);
+        if (m_isCellLevel)
+        {
+            cell.IsTabStop(IsCellActionableInternal(cell));
+        }
+        else
+        {
+            SetCellLevelInternal(true);
+        }
 
         if (cell.Focus(state))
         {
@@ -530,6 +527,55 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
     }
 
     return Focus(state);
+}
+
+bool TableViewRow::IsCellActionableInternal(const winrt::UIElement& cell) const
+{
+    auto const cellElement = cell.try_as<winrt::FrameworkElement>();
+    if (!cellElement || cellElement.Visibility() != winrt::Visibility::Visible)
+    {
+        return false;
+    }
+
+    auto const column = GetCellOwningColumn(cell);
+    if (!IsVisibleColumn(column))
+    {
+        return false;
+    }
+
+    if (auto const owner = m_owningTableView.get();
+        owner && winrt::get_self<TableView>(owner)->IsColumnCellEditableInternal(column))
+    {
+        return true;
+    }
+
+    if (column.CellContextFlyout() || TableViewDetails::HasEffectiveToolTip(cellElement))
+    {
+        return true;
+    }
+
+    // Content taken out of the tab order for one Tab walk is still interactive.
+    auto const isSuppressed = [this](winrt::UIElement const& element)
+    {
+        return std::any_of(m_suppressedContentTabStops.begin(), m_suppressedContentTabStops.end(),
+            [&element](auto const& entry) { return entry.element.get() == element; });
+    };
+    int32_t budget = 64;
+    return HasActionableContent(cellElement, 9, budget,
+        m_suppressedContentTabStops.empty() ? nullptr : std::function<bool(winrt::UIElement const&)>(isSuppressed));
+}
+
+int32_t TableViewRow::FindActionableCellInternal(int32_t startVisibleIndex, int32_t step) const
+{
+    const int32_t count = GetVisibleCellCountInternal();
+    for (int32_t i = startVisibleIndex; i >= 0 && i < count && step != 0; i += step)
+    {
+        if (IsCellActionableInternal(GetVisibleCellInternal(i)))
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 // ----- Two-level focus: ROW level vs CELL level -----
@@ -554,10 +600,11 @@ void TableViewRow::ApplyFocusLevelInternal()
     // target during the handoff.
     if (m_isCellLevel)
     {
-        SetCellsTabStopInternal(true);
-        if (IsTabStop())
+        // With no actionable cell left, the row stays the tab stop, or Tab could skip the table.
+        const bool rowIsTabStop = !SetCellsTabStopInternal(true);
+        if (IsTabStop() != rowIsTabStop)
         {
-            IsTabStop(false);
+            IsTabStop(rowIsTabStop);
         }
     }
     else
@@ -570,8 +617,9 @@ void TableViewRow::ApplyFocusLevelInternal()
     }
 }
 
-void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
+bool TableViewRow::SetCellsTabStopInternal(bool isTabStop)
 {
+    bool anyTabStop = false;
     if (auto const host = m_cellsHost.get())
     {
         auto const children = host.Children();
@@ -580,13 +628,17 @@ void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
         {
             if (auto const child = children.GetAt(i))
             {
-                if (child.IsTabStop() != isTabStop)
+                // Inactive cells never take focus, by keyboard, pointer or UIA.
+                const bool cellIsTabStop = isTabStop && IsCellActionableInternal(child);
+                if (child.IsTabStop() != cellIsTabStop)
                 {
-                    child.IsTabStop(isTabStop);
+                    child.IsTabStop(cellIsTabStop);
                 }
+                anyTabStop = anyTabStop || cellIsTabStop;
             }
         }
     }
+    return anyTabStop;
 }
 
 // Focus inside a cell's content (drilled in via Enter, or an editor) is not grid level: that
@@ -801,196 +853,11 @@ void TableViewRow::EnableRowFocusInternal()
     IsTabStop(true);
 }
 
-void TableViewRow::OnRowGettingFocus(
-    const winrt::UIElement& /*sender*/,
-    const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
-{
-    winrt::DependencyObject const selfObject = *this;
-    auto const newFocus = args.NewFocusedElement();
-    if (!newFocus)
-    {
-        return;
-    }
-
-    // Tab / Shift+Tab only. Arrow navigation, an edit-close restore and a pointer press all name
-    // the row they mean; redirecting those would move the user somewhere they did not ask for.
-    auto const direction = args.Direction();
-    const bool isTabEntry =
-        direction == winrt::FocusNavigationDirection::Next ||
-        direction == winrt::FocusNavigationDirection::Previous;
-    if (!isTabEntry)
-    {
-        return;
-    }
-
-    auto const owner = GetOwningTableView();
-    if (!owner)
-    {
-        return;
-    }
-
-    auto const ownerImpl = winrt::get_self<TableView>(owner);
-
-    // An open editor owns focus; redirecting the row focus the editor teardown performs would
-    // fight the row's own "move focus off the editor before it leaves the tree" step.
-    if (ownerImpl->IsEditing() && m_editingElement.get())
-    {
-        return;
-    }
-
-    // Focus LEAVING this row must never be pulled back, or Tab can never exit the table. Only
-    // focus arriving from outside the row is an entry that wants resolving.
-    auto const oldFocus = args.OldFocusedElement();
-    if (oldFocus == selfObject ||
-        SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */))
-    {
-        return;
-    }
-
-    // When returning from another band inside the table, stale cell-level state can make XAML aim
-    // the body's single tab stop at a cell. Body band entry is still row-level.
-    winrt::DependencyObject const ownerObject = owner;
-    const bool focusCameFromWithinTable =
-        oldFocus == ownerObject ||
-        SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
-
-    if (focusCameFromWithinTable && ownerImpl->TryRedirectBandEntryToViewport(*this, args))
-    {
-        return;
-    }
-
-    // The bands share one column cursor: a cell-level cursor re-enters on the cell in that column.
-    if (focusCameFromWithinTable && ownerImpl->IsCellCursorActiveInternal())
-    {
-        auto targetRow = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
-        if (!targetRow)
-        {
-            targetRow = *this;
-        }
-        auto const targetImpl = winrt::get_self<TableViewRow>(targetRow);
-
-        if (const int32_t cellCount = targetImpl->GetVisibleCellCountInternal(); cellCount > 0)
-        {
-            const int32_t column =
-                std::clamp(ownerImpl->CurrentColumnCursorInternal(), 0, cellCount - 1);
-
-            // Row-level cells are not focusable.
-            targetImpl->SetCellLevelInternal(true);
-
-            if (auto const cell = targetImpl->GetVisibleCellInternal(column))
-            {
-                if (cell.try_as<winrt::DependencyObject>() != newFocus &&
-                    !args.TrySetNewFocusedElement(cell))
-                {
-                    // Unless XAML already targets a cell of this row, undo the drill-in so the row
-                    // isn't left with no tab stop.
-                    if (!targetImpl->FindOwnCellInternal(newFocus, false /* requireExact */))
-                    {
-                        targetImpl->SetCellLevelInternal(false);
-                    }
-                }
-                return;
-            }
-
-            targetImpl->SetCellLevelInternal(false);
-        }
-    }
-
-    if (focusCameFromWithinTable)
-    {
-        if (newFocus == selfObject || !FindOwnCellInternal(newFocus, false /* requireExact */))
-        {
-            return;
-        }
-
-        // Commit the cursor change only once the focus manager accepts the redirect.
-        const bool wasCellLevel = IsCellLevelInternal();
-        SetCellLevelInternal(false);
-        if (args.TrySetNewFocusedElement(selfObject))
-        {
-            ownerImpl->SetCellCursorActiveInternal(false);
-        }
-        else
-        {
-            SetCellLevelInternal(wasCellLevel);
-        }
-        return;
-    }
-
-    const auto correlationId = args.CorrelationId();
-    if (ownerImpl->HasRedirectedFocusEntry(correlationId))
-    {
-        return;
-    }
-
-    auto entry = ownerImpl->ResolveFocusEntryTarget(*this, oldFocus, direction);
-    if (!entry.Element || !entry.Row)
-    {
-        return;
-    }
-
-    // Redirecting to an ancestor cell of the proposed element starts a loop. A row target still
-    // takes focus from content hosted inside it.
-    winrt::DependencyObject targetObject = entry.Element;
-    if (newFocus == targetObject ||
-        (entry.CellLevel && SharedHelpers::IsAncestor(newFocus, targetObject, false /* checkVisibility */)))
-    {
-        return;
-    }
-
-    // Arm the target's level first (only one level is a tab stop); undo on failure.
-    auto targetRowImpl = winrt::get_self<TableViewRow>(entry.Row);
-    bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
-    targetRowImpl->SetCellLevelInternal(entry.CellLevel);
-
-    if (!TableView::IsEntryRedirectTargetFocusable(entry.Element, ownerObject))
-    {
-        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
-
-        // The remembered target can't take focus; the viewport edge row still avoids a cache row.
-        auto const edgeRow = ownerImpl->FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous);
-        winrt::DependencyObject const edgeObject = edgeRow;
-        if (!edgeRow || edgeObject == newFocus || edgeObject == targetObject)
-        {
-            return;
-        }
-
-        entry.Row = edgeRow;
-        entry.Element = edgeRow;
-        entry.CellLevel = false;
-        targetObject = edgeObject;
-        targetRowImpl = winrt::get_self<TableViewRow>(edgeRow);
-        targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
-        targetRowImpl->SetCellLevelInternal(false);
-        if (!TableView::IsEntryRedirectTargetFocusable(edgeRow, ownerObject))
-        {
-            targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
-            return;
-        }
-    }
-
-    if (!args.TrySetNewFocusedElement(targetObject))
-    {
-        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
-        return;
-    }
-
-    ownerImpl->NoteFocusEntryRedirect(correlationId);
-    if (entry.CellLevel)
-    {
-        ownerImpl->ArmCellLevelRowInternal(entry.Row);
-    }
-    else
-    {
-        ownerImpl->SetCellCursorActiveInternal(false);
-    }
-}
-
-void TableViewRow::OnRowGotFocus()
+void TableViewRow::OnRowGotFocus(winrt::DependencyObject const& focusedElement)
 {
     if (auto const owner = GetOwningTableView())
     {
-        winrt::get_self<TableView>(owner)->OnRowCellFocusChanged(*this);
+        winrt::get_self<TableView>(owner)->OnRowCellFocusChanged(*this, focusedElement);
     }
 }
 
@@ -2285,6 +2152,34 @@ void TableViewRow::RefreshCellToolTips()
             {
                 TVDiag::LogRetailF(L"[TableView] Re-applying a cell tooltip failed (HRESULT 0x%08X).",
                     static_cast<unsigned int>(winrt::to_hresult()));
+            }
+        }
+    }
+
+    // A tooltip makes a cell actionable, so the tab stops may have changed.
+    ApplyFocusLevelInternal();
+}
+
+void TableViewRow::OnCellToolTipChangedInternal(const winrt::UIElement& cell)
+{
+    // Restamps every row and hands a focused cell that lost its only action to its row.
+    auto const owner = m_owningTableView.get();
+    if (m_isCellLevel && owner && cell.IsTabStop() != IsCellActionableInternal(cell))
+    {
+        winrt::get_self<TableView>(owner)->RefreshCellFocusLevelsInternal();
+    }
+}
+
+namespace TableViewDetails
+{
+    void OnCellToolTipValueAppliedInternal(const winrt::FrameworkElement& cell)
+    {
+        for (auto node = winrt::VisualTreeHelper::GetParent(cell); node; node = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (auto const row = node.try_as<winrt::TableViewRow>())
+            {
+                winrt::get_self<TableViewRow>(row)->OnCellToolTipChangedInternal(cell);
+                return;
             }
         }
     }
