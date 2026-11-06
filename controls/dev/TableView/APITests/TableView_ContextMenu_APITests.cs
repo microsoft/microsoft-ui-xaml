@@ -818,9 +818,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Log.Comment($"{context}: table width {f.Table.ActualWidth}, border {f.Table.BorderThickness}, header bounds {headerBounds}.");
                         Verify.AreEqual(Visibility.Collapsed, separator.Visibility,
                             $"The last header must not paint an extra stroke against the table border ({context}).");
-                        Verify.IsTrue((flow == FlowDirection.LeftToRight
-                            ? chrome.CornerRadius.TopRight : chrome.CornerRadius.TopLeft) > 0,
-                            $"The dropdown must retain its exposed outer corner ({context}).");
+                        Verify.IsTrue(chrome.CornerRadius.TopRight > 0,
+                            $"The dropdown must retain its local trailing corner, mirrored by XAML in RTL ({context}).");
                     });
                 }
             }

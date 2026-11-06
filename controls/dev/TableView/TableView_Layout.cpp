@@ -185,7 +185,7 @@ void TableView::ResetColumnDesiredWidths()
             // Reset EVERY column's grow-only accumulator regardless of its current Width mode. A
             // column that was Auto, temporarily switched to Pixel/Star, then switched back must not
             // retain a stale max from a previous data set or font-size preset. Data/template changes
-            // and transitions to/from ExtraCompact clear the max; Standard/Compact transitions,
+            // and density font-size changes clear the max; unchanged-font density transitions,
             // Min / Max / HeadersVisibility changes preserve it.
             if (column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
             {

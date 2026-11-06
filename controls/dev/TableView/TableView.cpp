@@ -1505,7 +1505,7 @@ void TableView::ApplyGridLinesToHeader()
         }
     }
 
-    const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
+    // Edge states use local coordinates; XAML mirrors the header subtree in RTL.
     for (uint32_t i = 0; i < headerCellCount; ++i)
     {
         if (auto header = headerCells.GetAt(i).try_as<winrt::TableViewColumnHeader>())
@@ -1516,13 +1516,13 @@ void TableView::ApplyGridLinesToHeader()
             const bool hasFlyoutButton = button && button.Visibility() == winrt::Visibility::Visible;
             const bool contentTrailingEdge = trailingEdge && !hasFlyoutButton;
             const wchar_t* edgeState = leadingEdge && contentTrailingEdge ? L"SingleHeader" :
-                leadingEdge ? (isRtl ? L"RightEdgeHeader" : L"LeftEdgeHeader") :
-                contentTrailingEdge ? (isRtl ? L"LeftEdgeHeader" : L"RightEdgeHeader") : L"InteriorHeader";
+                leadingEdge ? L"LeftEdgeHeader" :
+                contentTrailingEdge ? L"RightEdgeHeader" : L"InteriorHeader";
             winrt::VisualStateManager::GoToState(header, edgeState, false);
             if (button)
             {
                 winrt::VisualStateManager::GoToState(button, trailingEdge && hasFlyoutButton
-                    ? (isRtl ? L"LeftEdgeHeader" : L"RightEdgeHeader") : L"InteriorHeader", false);
+                    ? L"RightEdgeHeader" : L"InteriorHeader", false);
             }
 
             if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
@@ -2694,6 +2694,18 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
+    auto const resolveFontSizes = [this](winrt::TableViewDensity density)
+    {
+        const bool extraCompact = density == winrt::TableViewDensity::ExtraCompact;
+        return std::pair{
+            winrt::unbox_value_or<double>(LookupElementResource(*this,
+                extraCompact ? L"TableViewCellFontSizeExtraCompact" : L"TableViewCellFontSize"), 14.0),
+            winrt::unbox_value_or<double>(LookupElementResource(*this,
+                extraCompact ? L"TableViewHeaderFontSizeExtraCompact" : L"TableViewHeaderFontSize"), 14.0) };
+    };
+    const bool fontSizesChanged =
+        resolveFontSizes(winrt::unbox_value<winrt::TableViewDensity>(args.OldValue())) != resolveFontSizes(Density());
+
     InvalidateTableViewResourceCache(this);
 
     // Density changes require rebuilding headers and refreshing realized rows.
@@ -2707,10 +2719,8 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
         winrt::get_self<TableViewGroupHeader>(header)->RefreshDensity();
     });
 
-    // Crossing ExtraCompact can change overridden font metrics. Drop the grow-only maxima so Auto
-    // columns can shrink as well as grow; Standard/Compact transitions retain their measured maxima.
-    if ((winrt::unbox_value<winrt::TableViewDensity>(args.OldValue()) == winrt::TableViewDensity::ExtraCompact)
-        != (Density() == winrt::TableViewDensity::ExtraCompact))
+    // Preserve off-screen cells' grow-only maxima unless density-specific font sizes change.
+    if (fontSizesChanged)
     {
         ResetColumnDesiredWidths();
     }

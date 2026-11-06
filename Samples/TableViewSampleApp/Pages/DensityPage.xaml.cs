@@ -18,8 +18,8 @@ using TableViewDensity = Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Density: TableView.Density (Compact / Standard / Comfortable) switched live over text and
-/// read-only template cells, alongside grouping, whose headers keep a fixed height.
+/// Density: TableView.Density (ExtraCompact / Compact / Standard) switched live over text,
+/// read-only template cells and group headers.
 /// </summary>
 public sealed partial class DensityPage : SamplePageBase
 {
@@ -49,7 +49,7 @@ public sealed partial class DensityPage : SamplePageBase
     // <snippet>
     private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the // snippet:skip
+        // Fires during InitializeComponent (SelectedIndex="2"), when the table already uses the // snippet:skip
         // Standard default. // snippet:skip
         if (PeopleTable is null || DensitySelector is null || !IsLoaded) // snippet:skip
         { // snippet:skip

@@ -3877,7 +3877,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var headers = FindVisualChildrenByType<TableViewColumnHeader>(tableView)
                     .Where(header => header.Visibility == Visibility.Visible && header.Column.ActualWidth > 0).ToList();
                 Verify.IsGreaterThan(headers.Count, 0, "At least one header must be visible.");
-                var rtl = tableView.FlowDirection == FlowDirection.RightToLeft;
                 for (int i = 0; i < headers.Count; ++i)
                 {
                     var header = headers[i];
@@ -3887,8 +3886,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var leading = i == 0;
                     var trailing = i == headers.Count - 1 && separator.Visibility == Visibility.Collapsed;
                     var expected = new CornerRadius(
-                        (rtl ? trailing : leading) ? 4 : 0,
-                        (rtl ? leading : trailing) ? 4 : 0, 0, 0);
+                        leading ? 4 : 0, trailing ? 4 : 0, 0, 0);
                     Verify.AreEqual(expected, fill.CornerRadius, $"Header {i}: gridline-adjacent corners must stay square.");
                     Verify.IsFalse(fill.IsHitTestVisible, "The decorative fill must not intercept resizing.");
                 }
@@ -3913,6 +3911,118 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(VerifyCorners);
+        }
+
+        [TestMethod]
+        public void VerifyRenderedHeaderCornersFollowFlowDirection()
+        {
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                foreach (var hasFlyout in new[] { false, true })
+                {
+                    TableView tableView = null;
+                    Grid snapshotRoot = null;
+                    Border firstFill = null;
+                    Border lastFill = null;
+                    DropDownButton button = null;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView = CreateThemingTable();
+                        tableView.FlowDirection = flow;
+                        tableView.HighContrastAdjustment = ElementHighContrastAdjustment.None;
+                        tableView.Resources["TableViewHeaderLeftCornerRadius"] = new CornerRadius(8, 0, 0, 0);
+                        tableView.Resources["TableViewHeaderRightCornerRadius"] = new CornerRadius(0, 8, 0, 0);
+                        tableView.Resources["TabularSurfaceHeaderBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                        foreach (var column in tableView.Columns)
+                        {
+                            column.Width = new GridLength(1, GridUnitType.Star);
+                        }
+                        if (hasFlyout)
+                        {
+                            tableView.Columns[1].HeaderFlyout = new MenuFlyout();
+                        }
+                        // Capture beneath an LTR ancestor so the table's RTL mirror is included.
+                        snapshotRoot = new Grid
+                        {
+                            Width = tableView.Width,
+                            Height = tableView.Height,
+                            FlowDirection = FlowDirection.LeftToRight,
+                            Background = new SolidColorBrush(Microsoft.UI.Colors.Black)
+                        };
+                        snapshotRoot.Children.Add(tableView);
+                        LoadContent(snapshotRoot);
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var first = RequireColumnHeader(tableView, 0);
+                        var last = RequireColumnHeader(tableView, 1);
+                        firstFill = (Border)first.FindVisualChildByName("PART_Background");
+                        lastFill = (Border)last.FindVisualChildByName("PART_Background");
+                        foreach (var fill in new[] { firstFill, lastFill })
+                        {
+                            fill.Background = new SolidColorBrush(Microsoft.UI.Colors.White);
+                            fill.BorderThickness = new Thickness(0);
+                        }
+                        Verify.AreEqual(Visibility.Collapsed,
+                            ((Border)last.FindVisualChildByName("PART_GridLine")).Visibility,
+                            "Star columns must fill the viewport so the terminal header is an exposed edge.");
+                        if (hasFlyout)
+                        {
+                            button = (DropDownButton)last.FindVisualChildByName("PART_HeaderFlyoutButton");
+                            foreach (var name in new[] { "Chrome", "OpenChrome" })
+                            {
+                                var chrome = (Border)button.FindVisualChildByName(name);
+                                chrome.Background = new SolidColorBrush(Microsoft.UI.Colors.White);
+                                chrome.BorderThickness = new Thickness(0);
+                            }
+                        }
+                    });
+
+                    foreach (var state in hasFlyout ? new[] { "FlyoutClosed", "FlyoutOpen" } : new[] { "Normal" })
+                    {
+                        var corners = new List<(Rect Bounds, bool RoundLeft, bool RoundRight)>();
+                        double snapshotWidth = 0;
+                        double snapshotHeight = 0;
+                        RunOnUIThread.Execute(() =>
+                        {
+                            if (button != null)
+                            {
+                                Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
+                            }
+                            Content.UpdateLayout();
+                            var rtl = flow == FlowDirection.RightToLeft;
+                            void AddCorners(Border plate, bool roundLeft, bool roundRight)
+                            {
+                                corners.Add((plate.TransformToVisual(snapshotRoot).TransformBounds(
+                                    new Rect(0, 0, plate.ActualWidth, plate.ActualHeight)), roundLeft, roundRight));
+                            }
+                            AddCorners(firstFill, !rtl, rtl);
+                            AddCorners(lastFill, !hasFlyout && rtl, !hasFlyout && !rtl);
+                            if (button != null)
+                            {
+                                AddCorners((Border)button.FindVisualChildByName(state == "FlyoutOpen" ? "OpenChrome" : "Chrome"),
+                                    rtl, !rtl);
+                            }
+                            snapshotWidth = snapshotRoot.ActualWidth;
+                            snapshotHeight = snapshotRoot.ActualHeight;
+                        });
+                        IdleSynchronizer.Wait();
+                        var image = RenderElementPixels(snapshotRoot);
+                        foreach (var corner in corners)
+                        {
+                            var y = (int)((corner.Bounds.Y + 1.5) * image.Height / snapshotHeight);
+                            var left = (int)((corner.Bounds.X + 1.5) * image.Width / snapshotWidth);
+                            var right = (int)((corner.Bounds.Right - 1.5) * image.Width / snapshotWidth);
+                            var context = $"{flow}, flyout={hasFlyout}, {state}";
+                            Verify.AreEqual(corner.RoundLeft ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White,
+                                ReadRenderedPixel(image, left, y), $"Physical top-left corner: {context}.");
+                            Verify.AreEqual(corner.RoundRight ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White,
+                                ReadRenderedPixel(image, right, y), $"Physical top-right corner: {context}.");
+                        }
+                    }
+                }
+            }
         }
 
         [TestMethod]

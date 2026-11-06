@@ -360,6 +360,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView = CreateAutoColumnTable(headerDominates ? VeryLongText : "Name",
                         new[] { headerDominates ? "Al" : VeryLongText });
                     tableView.IsTextScaleFactorEnabled = false;
+                    tableView.Resources[headerDominates
+                        ? "TableViewHeaderFontSizeExtraCompact"
+                        : "TableViewCellFontSizeExtraCompact"] = 12.0;
                     LoadContent(tableView);
                 });
                 IdleSynchronizer.Wait();
@@ -489,10 +492,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDensityWithoutFontChangeKeepsGrownAutoWidth()
         {
-            VerifyChangeKeepsGrownAutoWidth(
-                t => { },
-                t => t.Density = TableViewDensity.Compact,
-                "Standard/Compact use the same typography, so grown Auto widths must be kept.");
+            var densities = new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact };
+            foreach (var initialDensity in densities)
+            {
+                foreach (var density in densities.Where(value => value != initialDensity))
+                {
+                    VerifyChangeKeepsGrownAutoWidth(
+                        t => t.Density = initialDensity,
+                        t => t.Density = density,
+                        $"{initialDensity}/{density} use the same typography, so grown Auto widths must be kept.");
+                }
+            }
         }
 
         private void VerifyChangeKeepsGrownAutoWidth(Action<TableView> setup, Action<TableView> change, string message)
