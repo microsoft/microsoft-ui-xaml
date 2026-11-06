@@ -136,6 +136,14 @@ private:
     void OnTargetLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void RepositionPopup();
     void ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const& e);
+    void ClosePopupForUnload();
+    void CloseIfUnloaded(uint32_t generation, uint32_t openRequestCount);
+    static bool IsInGeneratedItemContainer(const winrt::DependencyObject& element);
+    uint32_t m_unloadCloseGeneration{ 0 };
+    uint32_t m_openRequestCount{ 0 };
+    uint32_t m_expandAnimationGeneration{ 0 };
+    bool m_pendingUnloadCheckForTip{ false };
+    bool m_pendingUnloadCheckForTarget{ false };
     winrt::FrameworkElement::Unloaded_revoker m_TargetUnloadedRevoker;
 
     void CreateExpandAnimation();
