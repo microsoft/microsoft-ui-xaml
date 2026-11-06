@@ -55,6 +55,10 @@ public:
         return text && text == Content();
     }
 
+    // True while the local IsTabStop=false is the TableView's inactive-header stamp, not the app's.
+    void SetOwnsTabStopStampInternal(bool ownsStamp) { m_ownsTabStopStamp = ownsStamp; }
+    bool OwnsTabStopStampInternal() const { return m_ownsTabStopStamp; }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
@@ -97,4 +101,5 @@ private:
     bool m_hasTextPadding{ false };
     bool m_isFlyoutPointerOver{ false };
     bool m_isFlyoutOpen{ false };
+    bool m_ownsTabStopStamp{ false };
 };

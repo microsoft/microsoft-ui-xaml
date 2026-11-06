@@ -112,6 +112,14 @@
     <value>Column options</value>
     <comment>Accessible name and tooltip for a column header's dropdown button when the column has no accessible header text.</comment>
   </data>
+  <data name="TableViewRowExpanded" xml:space="preserve">
+    <value>Expanded.</value>
+    <comment>Screen-reader announcement after expanding one hierarchical TableView row.</comment>
+  </data>
+  <data name="TableViewRowCollapsed" xml:space="preserve">
+    <value>Collapsed.</value>
+    <comment>Screen-reader announcement after collapsing one hierarchical TableView row.</comment>
+  </data>
   <data name="TableViewColumnWidthChanged" xml:space="preserve">
     <value>Column %1!s! width: %2!s! pixels.</value>
     <comment>Assistive-technology announcement raised when a TableView column is resized, by pointer or by keyboard, while its header has focus. %1!s! is the column header text; %2!s! is the whole-pixel width.</comment>

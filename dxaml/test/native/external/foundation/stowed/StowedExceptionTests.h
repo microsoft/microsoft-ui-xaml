@@ -45,6 +45,12 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Verify ReportUnhandledError works even when the thread error is not a RestrictedError.")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // The failfast leaves the UI thread in a broken state, so must terminate the process after this test.
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ExpectedActivationFactoryMissLeavesNoErrorContext)
+        TEST_METHOD_PROPERTY(L"Description", L"Verify an expected activation factory miss (Expander's TemplateSettings) doesn't leave an error context on the UI thread.")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{true}") // The miss is on the PerfOptIn fast path.
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // The type's class constructor only runs on its first lookup in the process.
+    END_TEST_METHOD()
 };
 
 } } } } } }

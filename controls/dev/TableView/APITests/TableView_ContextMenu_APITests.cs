@@ -61,7 +61,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "With no cell or row menu the native TableView.ContextFlyout opens.")]
+        [TestProperty("Description", "With no cell or row menu the TableView.ContextFlyout opens at the requested cell.")]
         public void TableMenuUsedWhenNoCellOrRowMenu()
         {
             var f = LoadFixture(configure: x => x.Table.Resources.Remove(typeof(TableViewRow)));
@@ -69,6 +69,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RequestOnCell(f, 3, OfficeCol);
 
             VerifyOpened(f, "TableMenu", () => f.Table, expectedItem: null, "UIA on row 3 / Office, no row style menu");
+            VerifyMenuPlacedAtTarget(f, () => CellOf(f, 3, OfficeCol));
             CloseMenus(f);
         }
 
@@ -330,6 +331,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RequestOnHeader(f, OfficeCol);
 
             VerifyOpened(f, "TableMenu", () => f.Table, expectedItem: null, "UIA on the Office header");
+            VerifyMenuPlacedAtTarget(f, () => HeaderOf(f, OfficeCol));
             CloseMenus(f);
         }
 
@@ -543,8 +545,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A row menu opened from a cell request focuses that cell and leaves the selection unchanged.")]
-        public void RowMenuFromCellRequestFocusesCell()
+        [TestProperty("Description", "A row-level menu request records its row as the current row even though the menu has taken focus by the time the row's GotFocus runs (GH #12442).")]
+        public void RowRequestRecordsRowAsCurrentWhileMenuHasFocus()
+        {
+            Button after = null;
+            var f = LoadFixture(configure: x =>
+            {
+                // Headers hidden: the body is the table's tab stop.
+                x.Table.HeadersVisibility = TableViewHeadersVisibility.None;
+                after = new Button { Content = "After" };
+                x.Root.Child = null;
+                var panel = new StackPanel();
+                panel.Children.Add(x.Table);
+                panel.Children.Add(after);
+                x.Root.Child = panel;
+            });
+            FocusRow(f, 1);
+
+            RequestOnRow(f, 4);
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), f.P(4), "UIA on row 4's peer");
+
+            // A menu command that moves focus out of the table, so closing the menu does not refocus row 4.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(after.Focus(FocusState.Keyboard), "Precondition: the button takes focus.");
+                f.Recorder.HideAll();
+                f.Recorder.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(after, FocusManager.GetFocusedElement(f.Table.XamlRoot), "Precondition: focus stays on the button.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Previous,
+                    new FindNextElementOptions { SearchRoot = f.Table.XamlRoot.Content }), "Shift+Tab from the button must move focus.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreSame(RowOf(f, 4), FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                $"Shift+Tab back in must return to row 4, the row the menu was opened on; was {Describe(FocusManager.GetFocusedElement(f.Table.XamlRoot) as DependencyObject)}."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A row menu requested in the same turn as a cell focus on that drilled-in row leaves the row at row level, so closing the menu restores focus to the row (GH #12442).")]
+        public void RowRequestAfterSameTurnCellFocusKeepsRowLevel()
+        {
+            var f = LoadFixture(configure: x => x.OfficeColumn.CellContextFlyout = x.CellMenu);
+            RunOnUIThread.Execute(() => GetCellPeer(f.Table, f.P(4), NameCol).SetFocus());
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsFalse(RowOf(f, 4).IsTabStop, "Precondition: row 4 is at cell level."));
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(CellOf(f, 4, OfficeCol).Focus(FocusState.Keyboard), "Precondition: the Office cell takes focus.");
+                GetRowPeer(RowOf(f, 4)).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), f.P(4), "UIA on row 4's peer");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(RowOf(f, 4).IsTabStop, "Row 4 must be at row level while its row menu is open.");
+                Verify.IsFalse(CellOf(f, 4, OfficeCol).IsTabStop, "Row 4's cells must be out of the tab order.");
+            });
+
+            CloseMenus(f);
+            RunOnUIThread.Execute(() => Verify.AreSame(RowOf(f, 4), FocusManager.GetFocusedElement(f.Table.XamlRoot),
+                $"Closing the menu must restore focus to row 4; was {Describe(FocusManager.GetFocusedElement(f.Table.XamlRoot) as DependencyObject)}."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A row menu opened from a request on an inactive cell focuses that cell's row and leaves the selection unchanged.")]
+        public void RowMenuFromInactiveCellRequestFocusesRow()
         {
             var f = LoadFixture();
             SelectRow(f, 1);
@@ -555,8 +627,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreSame(CellOf(f, 5, OfficeCol), f.Recorder.Opened[0].FocusAtOpening,
-                    $"Focus must be on the row 5 Office cell when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
+                // A read-only cell with no tooltip, control or menu is not a focus target.
+                Verify.AreSame(RowOf(f, 5), f.Recorder.Opened[0].FocusAtOpening,
+                    $"Focus must be on row 5 when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
                 Verify.AreSame(f.P(1), f.Table.SelectedItem, "Selection must be unchanged.");
             });
             CloseMenus(f);
@@ -973,6 +1046,122 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void HeaderDropdownMakesAnOtherwiseInactiveHeaderFocusable()
+        {
+            var f = LoadFixture(configure: x =>
+            {
+                x.Table.CanUserSortColumns = false;
+                x.Table.CanUserResizeColumns = false;
+                x.Table.ContextFlyout = null;
+                x.NameColumn.HeaderContextFlyout = null;
+                x.NameColumn.HeaderToolTip = null;
+            });
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                Verify.IsFalse(header.IsTabStop, "A header with no actions starts outside the tab order.");
+                f.NameColumn.HeaderFlyout = f.Recorder.Create("HeaderOptions");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
+                Verify.IsTrue(header.IsTabStop, "A live header dropdown makes its header actionable.");
+                Verify.IsTrue(header.Focus(FocusState.Keyboard));
+                f.NameColumn.HeaderFlyout = null;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(((TableViewColumnHeader)HeaderOf(f, NameCol)).IsTabStop,
+                    "Removing the only header action restores its inactive-header stamp.");
+            });
+        }
+
+        [TestMethod]
+        public void NativeRowMenuSuppressedAfterVetoedCommit()
+        {
+            VerifyNativeOwnerMenuSuppressedAfterVetoedCommit(grouped: false);
+        }
+
+        [TestMethod]
+        public void NativeGroupHeaderMenuSuppressedAfterVetoedCommit()
+        {
+            VerifyNativeOwnerMenuSuppressedAfterVetoedCommit(grouped: true);
+        }
+
+        [TestMethod]
+        public void SharedRowMenuRemainsAvailableOutsideTableWhileEditing()
+        {
+            Button other = null;
+            var f = LoadEditableFixture(configure: x =>
+            {
+                other = new Button { Content = "Other owner", ContextFlyout = x.RowMenu };
+                x.Root.Child = null;
+                x.Root.Child = new StackPanel { Children = { x.Table, other } };
+            });
+            bool veto = true;
+            RunOnUIThread.Execute(() =>
+            {
+                f.Table.CellEditEnding += (s, e) => e.Cancel = veto;
+                var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(provider);
+                Verify.Throws<Exception>(() => provider.SetValue("Uncommitted"));
+            });
+
+            RequestOnElement(() => other);
+
+            VerifyOpened(f, "RowMenu", () => other, expectedItem: null, "a shared flyout on an unrelated control");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(f.Table.IsEditing, "An unrelated menu must not discard the vetoed edit.");
+                veto = false;
+                f.Table.CancelEdit();
+            });
+            CloseMenus(f);
+        }
+
+        private void VerifyNativeOwnerMenuSuppressedAfterVetoedCommit(bool grouped)
+        {
+            var f = LoadEditableFixture(grouped: grouped);
+            bool veto = true;
+            FlyoutBase menu = null;
+            int opened = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                f.Table.CellEditEnding += (s, e) => e.Cancel = veto;
+                var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(provider);
+                Verify.Throws<Exception>(() => provider.SetValue("Uncommitted"));
+                Verify.IsTrue(f.Table.IsEditing, "Precondition: the vetoed commit leaves an edit open.");
+
+                FrameworkElement owner = grouped ? (FrameworkElement)GetGroupHeader(f.Table, 0) : RowOf(f, 6);
+                menu = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Native menu" } } };
+                menu.Opened += (s, e) => opened++;
+                menu.Closing += (s, e) => e.Cancel = true;
+                owner.ContextFlyout = menu;
+                Verify.IsTrue(owner.Focus(FocusState.Programmatic), "Precondition: focus leaves the editor.");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                FrameworkElement owner = grouped ? (FrameworkElement)GetGroupHeader(f.Table, 0) : RowOf(f, 6);
+                // Bypass the custom peer's guard: keyboard requests originate directly on the owner.
+                new FrameworkElementAutomationPeer(owner).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(menu.IsOpen, "An owner-originated native request must not open a menu while editing.");
+                Verify.AreEqual(0, opened, "Suppression must cancel opening before the popup becomes visible.");
+                Verify.IsTrue(f.Table.IsEditing, "Suppressing the menu must preserve the uncommitted edit.");
+                veto = false;
+                f.Table.CancelEdit();
+            });
+            CloseMenus(f);
+        }
+
         private ContextMenuFixture LoadEditableFixture(bool grouped = false, Action<ContextMenuFixture> configure = null) => LoadFixture(grouped: grouped, configure: x =>
         {
             x.Table.IsReadOnly = false;
@@ -1098,6 +1287,80 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CloseMenus(f);
         }
 
+        [TestMethod]
+        public void RowPeerResolvesTemplateMenusBeforeRowMenu()
+        {
+            var f = LoadFixture(configure: x =>
+                x.Table.Resources[typeof(TableViewRow)] = (Style)XamlReader.Load(RowTemplateStyleXaml));
+            FrameworkElement root = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RowOf(f, 3);
+                row.ContextFlyout = f.RowMenu;
+                root = TrackNamedMenu(f, row, "TemplateRoot", "RowTemplateMenu");
+            });
+
+            RequestOnRow(f, 3);
+
+            VerifyOpened(f, "RowTemplateMenu", () => root, f.P(3), "UIA on the row rather than a cell");
+            CloseMenus(f);
+
+            FrameworkElement host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = FindNamed(RowOf(f, 3), "PART_CellsHost");
+                host.ContextFlyout = f.Recorder.Create("CellsHostMenu");
+            });
+            RequestOnRow(f, 3);
+            VerifyOpened(f, "CellsHostMenu", () => host, f.P(3), "cells-host menu before template-root and row menus");
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void OpenGroupMenuKeepsOriginalGroupAfterHeaderRecycling()
+        {
+            var f = LoadFixture(grouped: true, itemCount: 200);
+            TableViewGroupHeader header = null;
+            TableViewGroupInfo original = null;
+            object originalKey = null;
+            MenuFlyout menu = null;
+            RunOnUIThread.Execute(() =>
+            {
+                header = GetGroupHeader(f.Table, 0);
+                original = (TableViewGroupInfo)header.Content;
+                originalKey = original.Key;
+                menu = f.Recorder.Create("GroupMenu");
+                header.ContextFlyout = menu;
+                GetGroupHeaderPeer(f.Table, 0).ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreSame(original, menu.Items[0].DataContext,
+                "Precondition: the open menu holds the original group projection."));
+
+            bool recycled = false;
+            for (double offset = 2000; offset <= 12000 && !recycled; offset += 2000)
+            {
+                ScrollBodyTo(f.Table, ScrollAxis.Vertical, offset);
+                RunOnUIThread.Execute(() =>
+                {
+                    var current = header.Content as TableViewGroupInfo;
+                    recycled = current != null && !Equals(current.Key, originalKey);
+                });
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(recycled, "Precondition: the original header must be reused for another group.");
+                Verify.AreEqual(originalKey, original.Key, "A retained projection must never change group identity.");
+                if (menu.IsOpen)
+                {
+                    Verify.AreSame(original, menu.Items[0].DataContext,
+                        "Commands in an open menu must still receive the originally requested group.");
+                }
+            });
+            CloseMenus(f);
+        }
+
         // ---- G. Robustness ------------------------------------------------------------------
 
         [TestMethod]
@@ -1178,6 +1441,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
                     $"No menu may open from the pooled {name} peer. Opened: {f.Recorder.Describe()}"));
             }
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        public void PooledGroupHeaderPeerShowContextMenuOpensNoMenu()
+        {
+            var f = LoadFixture(grouped: true);
+            AutomationPeer peer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetGroupHeader(f.Table, 0);
+                header.ContextFlyout = f.Recorder.Create("GroupMenu");
+                peer = GetGroupHeaderPeer(f.Table, 0);
+                f.Items.Clear();
+            });
+            SettleLayout(f.Table);
+            RunOnUIThread.Execute(() => Verify.Throws<Exception>(() => peer.ShowContextMenu()));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
+                "A recycled group-header peer must not open either its menu or the table fallback."));
             CloseMenus(f);
         }
 
@@ -1618,6 +1901,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreSame(expectedItem, entry.ItemsSee, $"Menu items' DataContext ({context}): saw {entry.ItemsSee}.");
                 }
+            });
+        }
+
+        internal static void VerifyMenuPlacedAtTarget(ContextMenuFixture f, Func<FrameworkElement> getTarget)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                var presenter = VisualTreeHelper.GetOpenPopupsForXamlRoot(f.Table.XamlRoot)
+                    .Select(p => p.Child)
+                    .OfType<MenuFlyoutPresenter>()
+                    .Single();
+                var cellBounds = target.TransformToVisual(null).TransformBounds(
+                    new global::Windows.Foundation.Rect(0, 0, target.ActualWidth, target.ActualHeight));
+                var menuBounds = presenter.TransformToVisual(null).TransformBounds(
+                    new global::Windows.Foundation.Rect(0, 0, presenter.ActualWidth, presenter.ActualHeight));
+                const double tolerance = 16;
+                Verify.IsTrue(Math.Abs(menuBounds.Left - cellBounds.Left) <= tolerance ||
+                    Math.Abs(menuBounds.Right - cellBounds.Right) <= tolerance,
+                    "The table fallback must align horizontally with the requested cell.");
+                Verify.IsTrue(Math.Abs(menuBounds.Top - cellBounds.Bottom) <= tolerance ||
+                    Math.Abs(menuBounds.Bottom - cellBounds.Top) <= tolerance,
+                    "The table fallback must open beside the requested cell, not the whole table.");
             });
         }
     }

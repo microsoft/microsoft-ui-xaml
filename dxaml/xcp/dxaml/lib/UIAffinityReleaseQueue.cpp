@@ -5,6 +5,7 @@
 #include <DependencyLocator.h>
 #include <GCInstrumentationAggregator.h>
 #include "UIAffinityReleaseQueue.h"
+#include "UIAffinityReleaseQueueTipTests.h"
 #include "MUX-ETWEvents.h"
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
@@ -111,6 +112,12 @@ _Check_return_ HRESULT UIAffinityReleaseQueue::OnCleanupWake(std::shared_ptr<Cle
 UIAffinityReleaseQueue::~UIAffinityReleaseQueue()
 {
     Cleanup( /* bSync */ TRUE );
+    if (m_cleanupTipId != GUID{})
+    {
+        // An extended-lifetime test left running would later be reported as a failure.
+        tip::open<UIAffinityReleaseQueueCleanupTest>(m_cleanupTipId).complete_and_ignore(
+            TIP_reason(UIAffinityReleaseQueueCleanupTest::reason::cancelled));
+    }
 }
 
 HRESULT UIAffinityReleaseQueue::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
@@ -258,6 +265,10 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
                 // See bugs 20395531, 13108159
                 if (!iter->m_ptr->IsInFinalRelease())
                 {
+                    if (m_queuedObjectsForFinalRelease.empty() || m_unreachableQueuedAt < m_finalQueuedAt)
+                    {
+                        m_finalQueuedAt = m_unreachableQueuedAt;
+                    }
                     m_queuedObjectsForFinalRelease.push_back(*iter);
                 }
             }
@@ -270,6 +281,11 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
         m_hasUnreachableObjects.store(false, std::memory_order_release);
     }
 
+    // Sample from the first asynchronous pass until the queue drains, including a synchronous drain.
+    if (!bSync && m_cleanupCount == 0 && !m_queuedObjectsForFinalRelease.empty() && m_cleanupTipId == GUID{})
+    {
+        m_cleanupTipId = tip::start<UIAffinityReleaseQueueCleanupTest>().test_id();
+    }
 
     // Process objects for final release.
     //
@@ -351,6 +367,10 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
 
     if( *completed )
     {
+        if (m_cleanupTipId != GUID{})
+        {
+            CompleteReleaseQueueCleanupTip(std::exchange(m_cleanupTipId, GUID{}), m_finalQueuedAt, m_cleanupCount, S_OK);
+        }
         m_cDoCleanupAttempts = 0;
         m_cleanupCount = 0;
 
@@ -369,6 +389,11 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     m_bInCleanup = FALSE;
 
 Cleanup:
+    if (FAILED(hr) && m_cleanupTipId != GUID{})
+    {
+        CompleteReleaseQueueCleanupTip(std::exchange(m_cleanupTipId, GUID{}), m_finalQueuedAt, m_cleanupCount, hr);
+    }
+
     // Resume dispatch — must happen on all paths (normal and error) to avoid
     // permanently stalling the dispatcher. Paired with PauseDispatchAtControl above.
     DXamlCore::GetCurrent()->ResumeDispatchAtControl();
@@ -434,4 +459,3 @@ HRESULT DirectUI::UIAffinityReleaseQueue::GetQueueObjects(wfc::IVector<IInspecta
 
     return S_OK;
 }
-

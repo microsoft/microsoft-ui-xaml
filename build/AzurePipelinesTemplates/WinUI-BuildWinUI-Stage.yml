@@ -142,6 +142,7 @@ stages:
             normalizedConfiguration: 'chk'
             shouldPgo: false
     variables:
+      Diagnostics: vcperf
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
       ${{ if eq(length(parameters.codeSignValidationExcludes), 0) }}:

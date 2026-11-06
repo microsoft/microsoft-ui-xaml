@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include "FocusProperties.h"
@@ -1848,11 +1849,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     bool shouldBringIntoView = false;
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::UpdateFocusBegin(movement.GetTarget());
-#else
     TraceUpdateFocusBegin();
-#endif
 
     DirectUI::InputDeviceType lastInputDeviceType = DirectUI::InputDeviceType::None;
 
@@ -2149,14 +2146,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     }
 
 Cleanup:
-#ifdef XAMLPROFILER_ENABLED
-    // Carry the element identity on both edges: Begin records the requested target
-    // (movement.GetTarget()) and End records pNewFocus, matching the attribution the retail
-    // UpdateFocusEnd event records after synchronous GettingFocus/LosingFocus handlers run.
-    XamlElementTracing::UpdateFocusEnd(pNewFocus);
-#else
     TraceUpdateFocusEnd((UINT64)pNewFocus);
-#endif
     ReleaseInterface(pOldFocusedElement);
 
     // Before RS2, UpdateFocus did not propagate errors. As a result, we want to limit the number of failure
@@ -2624,10 +2614,6 @@ CDependencyObject* CFocusManager::FindNextFocus(
           xyFocusDirectionName = L"Invalid";
           break;
     }
-#ifndef XAMLPROFILER_ENABLED
-    TraceXYFocusEnteredBegin(xyFocusDirectionName);
-#endif
-
     xref_ptr<CDependencyObject> nextFocusedElement;
     CControl* const engagedControl = xyFocusOptions.considerEngagement ? m_spEngagedControl : nullptr;
 
@@ -2635,18 +2621,11 @@ CDependencyObject* CFocusManager::FindNextFocus(
     //we interpret the component (WebView) as previously focused element
     auto currentFocusedElementOrComponent = (component == nullptr) ? m_pFocusedElement : component;
 
-#ifdef XAMLPROFILER_ENABLED
-    // Emit the profiler Begin after currentFocusedElementOrComponent is resolved so the payload
-    // identifies the element actually used for navigation: when focus enters from a hosted component
-    // (e.g. WebView) this is the component, not m_pFocusedElement. The scope_exit also balances the
-    // activity across the early ProcessTabStopInternal failure returns below, which the retail End
-    // (emitted only on the normal exit) intentionally does not cover.
-    XamlElementTracing::XYFocusEnteredBegin(currentFocusedElementOrComponent, xyFocusDirectionName);
-    auto xyFocusProfilerGuard = wil::scope_exit([currentFocusedElementOrComponent]()
+    XamlTelemetry::XYFocusEnteredBegin(currentFocusedElementOrComponent, xyFocusDirectionName);
+    auto xyFocusTraceGuard = wil::scope_exit([currentFocusedElementOrComponent]()
     {
-        XamlElementTracing::XYFocusEnteredEnd(currentFocusedElementOrComponent);
+        XamlTelemetry::XYFocusEnteredEnd(currentFocusedElementOrComponent);
     });
-#endif
 
     if (direction == DirectUI::FocusNavigationDirection::Previous ||
         direction == DirectUI::FocusNavigationDirection::Next ||
@@ -2706,10 +2685,6 @@ CDependencyObject* CFocusManager::FindNextFocus(
 
         nextFocusedElement = m_xyFocus.GetNextFocusableElement(direction, currentFocusedElementOrComponent, engagedControl, m_contentRoot.GetVisualTreeNoRef(), updateManifolds, xyFocusOptions);
     }
-
-#ifndef XAMLPROFILER_ENABLED
-    TraceXYFocusEnteredEnd();
-#endif
 
     return nextFocusedElement;
 }

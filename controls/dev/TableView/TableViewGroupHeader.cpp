@@ -40,17 +40,12 @@ TableViewGroupHeader::TableViewGroupHeader()
             }
         });
 
-    // Tab from another band must not land on a cache group header outside the viewport.
-    m_gettingFocusRevoker = GettingFocus(
-        winrt::auto_revoke,
-        [weakThis = get_weak()](winrt::UIElement const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+    RegisterPropertyChangedCallback(winrt::UIElement::ContextFlyoutProperty(),
+        [weakThis = get_weak()](auto&&, auto&&)
         {
             if (auto const strongThis = weakThis.get())
             {
-                if (auto const owner = strongThis->GetOwningTableView())
-                {
-                    winrt::get_self<TableView>(owner)->TryRedirectBandEntryToViewport(*strongThis, args);
-                }
+                strongThis->m_contextFlyoutOpeningRevoker = TableViewDetails::HookContextFlyoutSuppression(*strongThis);
             }
         });
 }

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -451,6 +452,112 @@ inline bool ContainsFocusableElement(
 inline bool HasInteractiveCellContent(winrt::FrameworkElement const& cell)
 {
     return ContainsFocusableElement(GetCellAutomationContent(cell));
+}
+
+// A text control's built-in copy menu is its default value, not an app menu; reading the local value
+// first also avoids creating that default flyout. A Style-set flyout on a text control is not counted.
+inline bool HasAppContextFlyout(winrt::UIElement const& element)
+{
+    if (element.try_as<winrt::TextBlock>() || element.try_as<winrt::RichTextBlock>() ||
+        element.try_as<winrt::RichTextBlockOverflow>() || element.try_as<winrt::TextBox>() ||
+        element.try_as<winrt::RichEditBox>() || element.try_as<winrt::PasswordBox>())
+    {
+        // A local binding that resolves to null, or fails, leaves the built-in menu in effect.
+        auto const local = element.ReadLocalValue(winrt::UIElement::ContextFlyoutProperty());
+        if (!local || local == winrt::DependencyProperty::UnsetValue())
+        {
+            return false;
+        }
+        auto const flyout = element.ContextFlyout();
+        return flyout && !(local.try_as<winrt::Microsoft::UI::Xaml::Data::BindingExpression>() && flyout.try_as<winrt::Microsoft::UI::Xaml::Controls::TextCommandBarFlyout>());
+    }
+    return element.ContextFlyout() != nullptr;
+}
+
+// An inline Hyperlink (directly or in nested Spans such as Bold/Italic) in a TextBlock or a RichTextBlock paragraph.
+inline winrt::Microsoft::UI::Xaml::Documents::Hyperlink FindHyperlink(winrt::UIElement const& element)
+{
+    using namespace winrt::Microsoft::UI::Xaml::Documents;
+    std::function<Hyperlink(InlineCollection const&, int32_t)> findLink = [&findLink](InlineCollection const& inlines, int32_t depth) -> Hyperlink
+    {
+        for (auto const& item : inlines)
+        {
+            if (auto const link = item.try_as<Hyperlink>())
+            {
+                return link;
+            }
+            if (auto const span = item.try_as<Span>(); span && depth > 0)
+            {
+                if (auto const link = findLink(span.Inlines(), depth - 1))
+                {
+                    return link;
+                }
+            }
+        }
+        return nullptr;
+    };
+    constexpr int32_t maxSpanDepth = 4;
+    if (auto const textBlock = element.try_as<winrt::TextBlock>())
+    {
+        return findLink(textBlock.Inlines(), maxSpanDepth);
+    }
+    if (auto const richText = element.try_as<winrt::RichTextBlock>())
+    {
+        for (auto const& block : richText.Blocks())
+        {
+            if (auto const paragraph = block.try_as<Paragraph>())
+            {
+                if (auto const link = findLink(paragraph.Inlines(), maxSpanDepth))
+                {
+                    return link;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+inline bool HasHyperlink(winrt::UIElement const& element)
+{
+    return FindHyperlink(element) != nullptr;
+}
+// Focusable controls, inline hyperlinks, app context menus or a nested TableView below element. A
+// subtree too deep to scan is assumed interactive rather than made unreachable. IsTabStop is not
+// consulted for TableView-suppressed tab stops; callers pass isSuppressed for those.
+inline bool HasActionableContent(
+    winrt::DependencyObject const& element, int32_t depth, int32_t& budget,
+    std::function<bool(winrt::UIElement const&)> const& isSuppressed = nullptr)
+{
+    const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(element);
+    if (count > 0 && (depth <= 0 || budget <= 0))
+    {
+        return true;
+    }
+
+    for (int32_t i = 0; i < count && i < c_maxCellContentChildrenPerLevel; ++i)
+    {
+        auto const child = winrt::VisualTreeHelper::GetChild(element, i).try_as<winrt::UIElement>();
+        if (!child || child.Visibility() != winrt::Visibility::Visible)
+        {
+            continue;
+        }
+        // Nothing under a disabled Control can take focus.
+        if (auto const control = child.try_as<winrt::Control>(); control && !control.IsEnabled())
+        {
+            continue;
+        }
+        --budget;
+        // A non-Control UIElement (Grid, Border) with IsTabStop is focusable too, as Enter's FindFirstFocusableElement sees it.
+        if (IsFocusableCellContent(child) || (!child.try_as<winrt::Control>() && child.IsTabStop()) ||
+            HasAppContextFlyout(child) || child.try_as<winrt::TableView>() ||
+            (isSuppressed && isSuppressed(child)) || HasHyperlink(child) ||
+            HasActionableContent(child, depth - 1, budget, isSuppressed))
+        {
+            return true;
+        }
+    }
+    // Children past the per-level cap were not scanned; like an over-budget subtree, assume interactive.
+    return count > c_maxCellContentChildrenPerLevel;
 }
 
 inline void SetAccessibilityViewIfNeeded(

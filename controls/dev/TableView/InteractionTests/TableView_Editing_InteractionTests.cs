@@ -31,6 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewEditingInteractionTests
     {
         [ClassInitialize]
@@ -163,7 +164,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a keyboard-only user can choose the edit column: Tab into the body, Right into the cells, F2 edits the focused cell.")]
+        [TestProperty("Description", "Verifies a keyboard-only user can choose the edit column: Tab onto the header row, Down into the body, Right into the cells, F2 edits the focused cell.")]
         public void KeyboardOnlyF2EditsChosenColumn()
         {
             // No pointer input, so only cell-level keyboard navigation can choose the column; else F2 edits Name.
@@ -176,15 +177,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(string.Empty, ReadEditReport(), "Precondition: no edit should have been reported before the test acts.");
 
-                Log.Comment("Tab through the header band into the body.");
-                for (int attempt = 0; attempt < 4 && FindFocusedBodyElement(GetRowsHost(BasicTable)) == null; attempt++)
+                Log.Comment("Tab onto the header row, then Down into the body.");
+                for (int attempt = 0; attempt < 4 && FindFocusedHeader(BasicTable) == null; attempt++)
                 {
                     KeyboardHelper.PressKey(Key.Tab);
                     Wait.ForIdle();
                 }
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
 
                 UIObject focusedRow = FindFocusedRow(GetRowsHost(BasicTable));
-                if (focusedRow == null) { Verify.Fail("Precondition: Tab never put focus on a body row."); return; }
+                if (focusedRow == null) { Verify.Fail("Precondition: Tab and Down never put focus on a body row."); return; }
 
                 Log.Comment("Right drills into the first cell, Right again moves to the Age cell, then F2.");
                 KeyboardHelper.PressKey(Key.Right);

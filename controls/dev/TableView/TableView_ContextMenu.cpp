@@ -8,6 +8,7 @@
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
 #include "SharedHelpers.h"
+#include "TableViewAutomationHelpers.h"
 
 bool TableView::IsContextMenuColumn(winrt::TableViewColumn const& column) const
 {
@@ -116,6 +117,19 @@ bool TableViewDetails::IsOwnRequestSource(
     return false;
 }
 
+void TableViewDetails::SuppressContextFlyoutWhileEditing(
+    winrt::FlyoutBase const& flyout,
+    winrt::TableView const& owner)
+{
+    if (owner && winrt::get_self<TableView>(owner)->AreContextMenusSuppressed())
+    {
+        // This is still Opening: a Closing veto must not expose a menu over an uncommitted edit.
+        auto const closingRevoker = flyout.Closing(winrt::auto_revoke,
+            [](auto&&, winrt::FlyoutBaseClosingEventArgs const& args) { args.Cancel(false); });
+        flyout.Hide();
+    }
+}
+
 std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderContextMenuTarget(
     winrt::ContextRequestedEventArgs const& args)
 {
@@ -187,29 +201,8 @@ void TableView::OnHeaderContextRequested(winrt::ContextRequestedEventArgs const&
 
 namespace
 {
-    bool IsTextControl(winrt::DependencyObject const& element)
-    {
-        return element.try_as<winrt::TextBlock>() || element.try_as<winrt::RichTextBlock>() ||
-            element.try_as<winrt::RichTextBlockOverflow>() || element.try_as<winrt::TextBox>() ||
-            element.try_as<winrt::RichEditBox>() || element.try_as<winrt::PasswordBox>();
-    }
-
-    bool HasAppContextFlyout(winrt::UIElement const& element)
-    {
-        if (!element.ContextFlyout())
-        {
-            return false;
-        }
-
-        // Text controls carry a built-in copy/select flyout as their default value; only a flyout the
-        // app set on the element itself counts. A Style-set flyout on a text control is therefore
-        // skipped here (documented on TableViewColumn.CellContextFlyout).
-        return !IsTextControl(element) ||
-            element.ReadLocalValue(winrt::UIElement::ContextFlyoutProperty()) != winrt::DependencyProperty::UnsetValue();
-    }
-
-    // The row's own XAML menu: the first app ContextFlyout from just above the cell (or the row
-    // itself, for a row target) up to and including the row. Covers a row style setter and row
+    // The row's own XAML menu: the first app ContextFlyout from just above the cell (or the cells
+    // host, for a row target) up to and including the row. Covers a row style setter and row
     // template elements, anchored on the element that owns it, as the framework would show it.
     TableViewDetails::ContextMenuCandidate FindRowContextFlyout(TableViewDetails::ContextMenuTarget const& target)
     {
@@ -221,7 +214,7 @@ namespace
         winrt::DependencyObject const row = target.Row;
         auto node = target.Column && target.Anchor
             ? winrt::VisualTreeHelper::GetParent(target.Anchor)
-            : row;
+            : target.ScopeRoot.as<winrt::DependencyObject>();
         while (node)
         {
             if (auto const element = node.try_as<winrt::FrameworkElement>(); element && HasAppContextFlyout(element))
@@ -295,7 +288,8 @@ namespace
 }
 
 TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
-    TableViewDetails::ContextMenuTarget const& target)
+    TableViewDetails::ContextMenuTarget const& target,
+    bool includeTableFlyout)
 {
     // A ContextFlyout the app placed inside the cell or header (template or style) wins over the
     // column/row properties, so keyboard and wrapper-padding requests match what a pointer request
@@ -310,21 +304,35 @@ TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
 
     if (target.Kind == TableViewDetails::ContextMenuTargetKind::Header)
     {
-        return { target.Column.HeaderContextFlyout(), target.Anchor };
-    }
-
-    if (target.Column)
-    {
-        if (auto const flyout = target.Column.CellContextFlyout())
+        if (auto const flyout = target.Column.HeaderContextFlyout())
         {
             return { flyout, target.Anchor };
         }
     }
+    else
+    {
+        if (target.Column)
+        {
+            if (auto const flyout = target.Column.CellContextFlyout())
+            {
+                return { flyout, target.Anchor };
+            }
+        }
 
-    // Handling the request here stops the framework from showing the row's own ContextFlyout, so
-    // resolve it at the same place it would have won natively: after the cell's own menus. With
-    // nothing found the request stays Unhandled and bubbles to the table's ContextFlyout.
-    return FindRowContextFlyout(target);
+        if (auto const rowMenu = FindRowContextFlyout(target))
+        {
+            return rowMenu;
+        }
+    }
+
+    // Pointer requests keep native bubbling/placement. Non-pointer requests need the cell bounds,
+    // while retaining the table as Target and as the source of the menu's DataContext.
+    if (includeTableFlyout)
+    {
+        return { ContextFlyout(), *this };
+    }
+
+    return {};
 }
 
 void TableView::ShowContextFlyout(
@@ -334,6 +342,9 @@ void TableView::ShowContextFlyout(
 {
     winrt::FlyoutShowOptions options;
     options.Placement(winrt::FlyoutPlacementMode::Auto);
+    // Match ShowAt(element): an options ShowMode of Auto opens as Standard and writes that back
+    // to the flyout, dropping a Transient mode for this and every later open.
+    options.ShowMode(candidate.Flyout.ShowMode());
 
     winrt::Point point{};
     if (args && args.TryGetPosition(candidate.Anchor, point))
@@ -343,8 +354,8 @@ void TableView::ShowContextFlyout(
     else if (target.Column && target.Anchor && candidate.Anchor != target.Anchor)
     {
         // A keyboard or automation request has no pointer position. A menu owned by a larger
-        // element (the row) still opens at the focused cell, not across the whole row; the owner
-        // stays the flyout's Target.
+        // element (the row or table) still opens at the focused cell, not across the whole owner;
+        // the owner stays the flyout's Target.
         auto const cell = target.Anchor;
         auto const bounds = cell.TransformToVisual(candidate.Anchor).TransformBounds(
             { 0.0f, 0.0f, static_cast<float>(cell.ActualWidth()), static_cast<float>(cell.ActualHeight()) });
@@ -362,6 +373,24 @@ bool TableView::IsContextMenuRequestCurrent(
     return IsContextMenuTargetCurrent(target) &&
         (target.Kind != TableViewDetails::ContextMenuTargetKind::Body ||
             (ItemsSource() == sourceSnapshot && !AreContextMenusSuppressed()));
+}
+
+bool TableView::FocusContextMenuTargetFromPointer(TableViewDetails::ContextMenuTarget const& target)
+{
+    if (m_isProcessingContextMenu || AreContextMenusSuppressed() || !IsContextMenuTargetCurrent(target))
+    {
+        return false;
+    }
+
+    auto const lifetime = get_strong();
+    m_isProcessingContextMenu = true;
+    auto restore = wil::scope_exit([this]() noexcept
+    {
+        m_isProcessingContextMenu = false;
+    });
+    auto const sourceSnapshot = ItemsSource();
+
+    return FocusContextMenuTarget(target, sourceSnapshot) && IsContextMenuRequestCurrent(target, sourceSnapshot);
 }
 
 bool TableView::FocusContextMenuTarget(
@@ -433,7 +462,8 @@ bool TableView::FocusContextMenuTarget(
         auto const rowImpl = winrt::get_self<TableViewRow>(target.Row);
         if (int32_t const column = rowImpl->GetVisibleCellIndexInternal(target.Anchor); column >= 0)
         {
-            FocusRealizedRowCell(target.Row, column, winrt::FocusState::Programmatic);
+            // The exact cell; an inactive one leaves focus on its row.
+            rowImpl->FocusVisibleCellInternal(column, winrt::FocusState::Programmatic);
         }
     }
 
@@ -473,7 +503,9 @@ bool TableView::ProcessContextMenuRequest(
     // Moving focus runs app code. If that makes the target stale, the request stays handled only
     // when the TableView would have shown a menu, so it cannot fall through to the native chain
     // at a different element.
-    bool const staleResult = static_cast<bool>(ResolveContextFlyout(target));
+    winrt::Point point{};
+    bool const includeTableFlyout = !args || !args.TryGetPosition(target.Anchor, point);
+    bool const staleResult = static_cast<bool>(ResolveContextFlyout(target, includeTableFlyout));
 
     auto const lifetime = get_strong();
     m_isProcessingContextMenu = true;
@@ -490,7 +522,7 @@ bool TableView::ProcessContextMenuRequest(
 
     // Resolved again once focus has settled: app code run by the focus move may have replaced a
     // column's menu or the cell's content, and the menu shown is the one in place now.
-    auto const candidate = ResolveContextFlyout(target);
+    auto const candidate = ResolveContextFlyout(target, includeTableFlyout);
     if (!candidate)
     {
         return false;

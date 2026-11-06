@@ -147,6 +147,9 @@ namespace DirectUI
 
         virtual _Check_return_ HRESULT OnOpening();
 
+        // True once Hide() is called from an Opening handler; the flyout will not open.
+        bool IsOpeningCanceled() const { return m_openingCanceled; }
+
         virtual _Check_return_ HRESULT OnClosing(bool* cancel);
 
         virtual _Check_return_ HRESULT OnClosed();
