@@ -236,11 +236,11 @@ public:
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnShowGroupHeaderCountPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.

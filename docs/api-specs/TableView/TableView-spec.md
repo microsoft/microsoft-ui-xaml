@@ -143,7 +143,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls the body gridlines. Independently, `HeaderGridLinesVisibility` controls the column-header lines using the same `TableViewGridLinesVisibility` enum: `All` shows both strokes, `Vertical` shows only the dividers between headers, `Horizontal` shows only the rule beneath the header, and `None` hides both. Both properties default to `All`. Hiding header strokes preserves header layout and does not disable sorting or resizing.
+`GridLinesVisibility` controls only the body gridlines and defaults to `All`. Column-header dividers and the bottom rule are always present, independently of body gridlines. The trailing divider is suppressed where it would double the table's outer border.
 
 Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
 
@@ -178,7 +178,6 @@ native focus stroke along straight edges without changing content layout.
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
     GridLinesVisibility="Horizontal"
-    HeaderGridLinesVisibility="Horizontal"
     Density="Compact"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
@@ -195,7 +194,6 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 
 PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-PeopleTable.HeaderGridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
@@ -212,6 +210,10 @@ gridline visibility unchanged. Every second row uses `TabularSurfaceRowBackgroun
 matching `SubtleFillColorTertiary` in Light/Dark. In High Contrast it uses `SystemColorWindowColor`,
 preserving the window-text/window-background pairing rather than introducing a decorative stripe.
 Hover, pressed, selected, and disabled backplates retain their existing state brushes.
+Resting row fills use the same inset and corner radius as unselected hover/pressed fills:
+`TableViewSelectionIndicatorMargin` (3px horizontally, 2px vertically by default) inside
+separator-free chrome. Hovering a banded row changes its backplate color, not its geometry.
+This does not change cell placement, row height, hit targets, dividers or focus.
 
 The default table remains unbanded. Set `RowBackground` or `AlternatingRowBackground` directly, override
 the banding brush, or derive a style `BasedOn="{StaticResource BandedTableViewStyle}"` to customize it.
@@ -247,7 +249,7 @@ rounded backplate corners as unselected data rows. High Contrast retains system-
 and interaction brushes.
 
 Section headers show a full-width bottom divider whenever body `GridLinesVisibility` is `All`,
-`Horizontal`, or `Vertical`; `None` hides it. This is independent of `HeaderGridLinesVisibility`.
+`Horizontal`, or `Vertical`; `None` hides it. Column-header gridlines remain visible independently.
 The divider is an overlay and does not change section-header height.
 
 Section text is regular by default. To opt into semibold title/count text without changing colors,
@@ -531,7 +533,8 @@ Template parts:
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
 
-The table template's `HeaderGridLineStates` group contains `HeaderHorizontalGridLinesVisible` and `HeaderHorizontalGridLinesHidden`. The hidden state clears the overlay `PART_HeaderGridLine.BorderBrush`; the visible state restores the template's themed brush. The line does not consume header layout space. Custom templates should implement these states to support the horizontal part of `HeaderGridLinesVisibility`.
+The default table template's `PART_HeaderGridLine` paints an always-present bottom rule with
+`TabularSurfaceHeaderSeparatorBrush`. The overlay does not consume header layout space.
 
 Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
@@ -561,12 +564,12 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
-| `HeaderGridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Independently controls dividers between column headers (`Vertical`) and the rule beneath the header (`Horizontal`). |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
+| `ShowGroupHeaderCount` | `Boolean` | `true` | Shows counts in every default section header. When false, collapses the count without a leftover gap and omits it from the default section automation name. Custom content templates, explicit automation names and labels remain app-owned; count data stays available on `TableViewGroupInfo`. Can be changed at runtime. |
 | `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
@@ -811,7 +814,7 @@ Template parts. All are optional; a missing part disables only its feature:
 |---|---|---|
 | `PART_Background` | `Border` | Decorative fill and independently overridable interaction outline, separate from content and resize hit targets. Rounded only at exposed top corners; all corners adjoining header gridlines remain square. |
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort indicator's width and its host's horizontal padding to the presenter's right `Margin`, reserving space even while unsorted so text trims before the icon without jumping when sorting changes. |
-| `PART_GridLine` | `Border` | Vertical separator. Shown when the table's `HeaderGridLinesVisibility` includes vertical lines, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_GridLine` | `Border` | Always-present vertical separator, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort icon on a sortable column. Its margin follows header padding, with another 4px on each horizontal side: a 4px text gap and a 16px trailing inset with the default 12px header padding. The icon always follows `PART_ContentPresenter`'s `Foreground`: secondary text for regular headers, primary text for strong headers, and matching custom, disabled, or High Contrast foregrounds. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 | `PART_HeaderFlyoutButton` | `DropDownButton` | Optional trailing dropdown, visible only when the column has a `HeaderFlyout`. The default template reserves a separate 26px segment (`TableViewHeaderFlyoutButtonWidth`), outside the text/sort region and mirrored in RTL. The resize gripper retains priority at the shared column edge. |
@@ -848,7 +851,7 @@ In Light/Dark, the resting chevron inherits the header's foreground, including c
 strong-header styles. Leaving High Contrast removes the ButtonText override and restores
 that inheritance.
 The header's column separator paints above the dropdown's opaque chrome, including
-HC ButtonFace and flyout-open chrome, and still follows `HeaderGridLinesVisibility`.
+HC ButtonFace and flyout-open chrome, and remains visible independently of body gridlines.
 It does not intercept pointer input; the resize gripper retains priority at the shared edge.
 Left/Right moves between each header's sort area and dropdown in visual order, mirrored in RTL.
 Enter/Space on the sort area sorts; on the dropdown it opens the flyout.
@@ -1138,7 +1141,7 @@ Flags enum mirroring the `None`/`Column` slots of WPF `DataGridHeadersVisibility
 
 ### TableViewGridLinesVisibility
 
-Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used independently by `GridLinesVisibility` (body) and `HeaderGridLinesVisibility` (header).
+Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisibility` for body lines; column-header lines are always present.
 
 | Value | Numeric value | Description |
 |---|---:|---|
@@ -1457,11 +1460,11 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility HeaderGridLinesVisibility;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
         Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
+        Boolean ShowGroupHeaderCount;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
         Boolean IsReadOnly;
 
@@ -1497,11 +1500,11 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty ShowGroupHeaderCountProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };

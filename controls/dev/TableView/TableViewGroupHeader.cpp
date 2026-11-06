@@ -71,6 +71,7 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
     {
         UpdateDefaultCountOpacity();
     }
+    RefreshDefaultCount();
     return desired;
 }
 
@@ -111,6 +112,7 @@ void TableViewGroupHeader::SetOwningTableViewInternal(winrt::TableView const& ow
     // be a cycle. Mirrors TableViewRow::SetOwningTableViewInternal.
     m_owningTableView = owner ? winrt::make_weak(owner) : nullptr;
     RefreshGridLines();
+    RefreshDefaultCount();
 }
 
 winrt::TableView TableViewGroupHeader::GetOwningTableView() const
@@ -249,6 +251,7 @@ void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
     if (auto const previous = m_defaultCount.get())
     {
         previous.ClearValue(winrt::UIElement::OpacityProperty());
+        previous.ClearValue(winrt::UIElement::VisibilityProperty());
         m_defaultCount.set(nullptr);
     }
     m_inspectedContentRoot = root ? winrt::make_weak(root) : nullptr;
@@ -258,6 +261,21 @@ void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
     if (rootElement && rootElement.Name() == L"TableViewDefaultGroupHeaderContentRoot")
     {
         m_defaultCount.set(rootElement.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>());
+    }
+}
+
+void TableViewGroupHeader::RefreshDefaultCount()
+{
+    TrackDefaultCount(ContentTemplateRoot());
+    if (auto const count = m_defaultCount.get())
+    {
+        auto const owner = GetOwningTableView();
+        auto const visibility = !owner || owner.ShowGroupHeaderCount()
+            ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+        if (count.Visibility() != visibility)
+        {
+            count.Visibility(visibility);
+        }
     }
 }
 

@@ -78,6 +78,7 @@ public:
     winrt::TableView GetOwningTableView() const;
     void RefreshDensity();
     void RefreshGridLines();
+    void RefreshDefaultCount();
     void SetTerminalBottomGridLineSuppression(bool suppress);
 
     // Internal: single-subscription guard for the ToggleRequested handler.

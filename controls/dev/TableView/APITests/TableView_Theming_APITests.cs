@@ -468,7 +468,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyHeaderGridLinesVisibilityIsIndependentOfBodyGridLines()
+        public void VerifyHeaderGridLinesAreAlwaysVisibleIndependentOfBodyGridLines()
         {
             var separatorColor = Color.FromArgb(0xFF, 0x12, 0x9E, 0x5A);
             var cases = new[]
@@ -495,12 +495,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var body in cases)
                 {
-                    foreach (var header in cases)
+                    foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
                     {
                         RunOnUIThread.Execute(() =>
                         {
                             tableView.GridLinesVisibility = body;
-                            tableView.HeaderGridLinesVisibility = header;
+                            tableView.FlowDirection = flow;
                             Content.UpdateLayout();
                         });
 
@@ -508,11 +508,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                         RunOnUIThread.Execute(() =>
                         {
-                            var context = $"body {body}, header {header}";
+                            var context = $"body {body}, flow {flow}";
                             bool bodyVertical = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Vertical;
                             bool bodyHorizontal = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Horizontal;
-                            bool headerVertical = header == TableViewGridLinesVisibility.All || header == TableViewGridLinesVisibility.Vertical;
-                            bool headerHorizontal = header == TableViewGridLinesVisibility.All || header == TableViewGridLinesVisibility.Horizontal;
 
                             var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
                             if (separator == null)
@@ -521,8 +519,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 return;
                             }
 
-                            Verify.AreEqual(headerVertical ? Visibility.Visible : Visibility.Collapsed, separator.Visibility,
-                                $"Header column separators must follow HeaderGridLinesVisibility ({context}).");
+                            Verify.AreEqual(Visibility.Visible, separator.Visibility,
+                                $"Header column separators remain visible regardless of body gridlines ({context}).");
                             Verify.AreEqual(VerticalAlignment.Stretch, separator.VerticalAlignment, "Header separators are full height.");
                             Verify.AreEqual(separatorColor, (separator.Background as SolidColorBrush)?.Color ?? default,
                                 "Header separators paint TabularSurfaceHeaderSeparatorBrush.");
@@ -533,15 +531,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             {
                                 Verify.AreEqual(new Thickness(0, 0, 0, 1), headerRow.BorderThickness,
                                     $"The header bottom rule is a 1px overlay ({context}).");
-                                if (headerHorizontal)
-                                {
-                                    Verify.AreEqual(separatorColor, (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default,
-                                        $"The visible header bottom rule paints TabularSurfaceHeaderSeparatorBrush ({context}).");
-                                }
-                                else
-                                {
-                                    Verify.IsNull(headerRow.BorderBrush, $"The header bottom rule must be hidden ({context}).");
-                                }
+                                Verify.AreEqual(separatorColor, (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default,
+                                    $"The header bottom rule remains visible ({context}).");
                             }
 
                             var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
@@ -566,14 +557,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyHeaderGridLinesVisibilitySurvivesTemplateAndColumnChanges()
+        public void VerifyHeaderGridLinesSurviveTemplateAndColumnChanges()
         {
             TableView tableView = null;
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
                 tableView = CreateThemingTable();
-                tableView.HeaderGridLinesVisibility = TableViewGridLinesVisibility.None;
+                tableView.GridLinesVisibility = TableViewGridLinesVisibility.None;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -597,16 +588,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
                     Verify.IsNotNull(headerRow);
-                    Verify.IsNull(headerRow.BorderBrush, "A pre-template None value must survive retemplating and theme changes.");
+                    Verify.IsNotNull(headerRow.BorderBrush, "Body None must not hide the header rule after retemplating.");
                     foreach (var columnHeader in FindVisualChildrenByType<TableViewColumnHeader>(tableView))
                     {
                         var separator = columnHeader.FindVisualChildByName("PART_GridLine") as Border;
                         Verify.IsNotNull(separator);
-                        Verify.AreEqual(Visibility.Collapsed, separator.Visibility,
-                            "Rebuilt headers must retain the table's None setting, including in RTL.");
+                        if (columnHeader.Visibility == Visibility.Visible &&
+                            columnHeader != FindVisualChildrenByType<TableViewColumnHeader>(tableView)
+                                .Last(candidate => candidate.Visibility == Visibility.Visible))
+                        {
+                            Verify.AreEqual(Visibility.Visible, separator.Visibility,
+                                "Interior separators remain visible after retemplating, including in RTL.");
+                        }
                     }
 
-                    tableView.ClearValue(TableView.HeaderGridLinesVisibilityProperty);
                     tableView.Columns[0].Visibility = Visibility.Visible;
                     Content.UpdateLayout();
                 });
@@ -614,15 +609,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.HeaderGridLinesVisibility,
-                        "Clearing the property must restore the default All value.");
                     var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
                     var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
                     Verify.IsNotNull(headerRow.BorderBrush, "Showing horizontal gridlines must restore the live themed brush.");
                     Verify.AreEqual(Visibility.Visible, separator.Visibility, "Showing vertical gridlines must restore rebuilt separators.");
-                    Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.GridLinesVisibility,
+                    Verify.AreEqual(TableViewGridLinesVisibility.None, tableView.GridLinesVisibility,
                         "Header changes must leave body gridlines unchanged.");
-                    tableView.HeaderGridLinesVisibility = TableViewGridLinesVisibility.None;
                 });
             }
         }
@@ -1567,6 +1559,114 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     });
                 }
             }
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderCountCanBeHiddenAndRestored()
+        {
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            foreach (var density in DensityCases)
+            {
+                TableView table = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateGroupedThemingTable();
+                    table.RequestedTheme = theme;
+                    table.Density = density.Density;
+                    table.ShowGroupHeaderCount = false;
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                foreach (var enabled in new[] { true, false })
+                foreach (var show in new[] { false, true, false, true })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        table.IsEnabled = enabled;
+                        table.ShowGroupHeaderCount = show;
+                        var template = table.Template;
+                        table.Template = null;
+                        table.Template = template;
+                        table.ApplyTemplate();
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(table))
+                        {
+                            var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                            var info = (TableViewGroupInfo)header.Content;
+                            Verify.IsNotNull(count);
+                            Verify.AreEqual(show ? Visibility.Visible : Visibility.Collapsed, count.Visibility,
+                                $"{theme}, {density.Density}, enabled={enabled}, show={show}");
+                            Verify.AreEqual(info.ItemCountText, count.Text, "Hiding the count must not discard its live data.");
+                            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                            if (show)
+                            {
+                                Verify.IsTrue(peer.GetName().Contains(info.ItemCountText));
+                            }
+                            else
+                            {
+                                Verify.AreEqual(info.KeyText, peer.GetName(), "Hidden counts must also be omitted from the default automation name.");
+                                var root = (StackPanel)header.FindVisualChildByName("TableViewDefaultGroupHeaderContentRoot");
+                                var key = (TextBlock)root.Children[0];
+                                Verify.IsLessThanOrEqual(Math.Abs(root.DesiredSize.Width - key.DesiredSize.Width),
+                                    1.0 / table.XamlRoot.RasterizationScale,
+                                    "A collapsed count must not leave the inter-label gap.");
+                            }
+                            AutomationProperties.SetName(header, "Custom section name");
+                            Verify.AreEqual("Custom section name", peer.GetName());
+                            header.ClearValue(AutomationProperties.NameProperty);
+                        }
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderCountOptionPreservesCustomContentTemplates()
+        {
+            TableView table = null;
+            const string CustomTemplateXaml =
+                @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                      <StackPanel Orientation=""Horizontal"">
+                          <TextBlock Text=""{Binding KeyText}"" />
+                          <TextBlock x:Name=""TableViewGroupHeaderItemCountText"" Text=""{Binding ItemCountText}"" Opacity=""0.25"" />
+                      </StackPanel>
+                  </DataTemplate>";
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                table.ShowGroupHeaderCount = false;
+                table.GroupHeaderTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(CustomTemplateXaml);
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            foreach (var show in new[] { false, true, false })
+            {
+                RunOnUIThread.Execute(() => table.ShowGroupHeaderCount = show);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(table))
+                    {
+                        var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                        Verify.AreEqual(Visibility.Visible, count.Visibility, "Custom content remains app-owned.");
+                        Verify.AreEqual(0.25, count.Opacity, "Do not change a custom count's opacity.");
+                    }
+                });
+            }
+            RunOnUIThread.Execute(() => table.GroupHeaderTemplate = null);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(table))
+                {
+                    var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                    Verify.AreEqual(Visibility.Collapsed, count.Visibility, "Restoring the default template reapplies the option.");
+                }
+            });
         }
 
         [TestMethod]
@@ -2568,7 +2668,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         tableView.Density = testCase.Density;
                         tableView.GridLinesVisibility = lines;
-                        tableView.HeaderGridLinesVisibility = lines;
                         tableView.UpdateLayout();
                     });
                     IdleSynchronizer.Wait();
@@ -4694,42 +4793,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                         foreach (var state in new[] { "FlyoutClosed", "FlyoutOpen" })
                         {
-                            foreach (var visible in new[] { true, false })
+                            RunOnUIThread.Execute(() =>
                             {
-                                RunOnUIThread.Execute(() =>
-                                {
-                                    Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
-                                    tableView.HeaderGridLinesVisibility = visible
-                                        ? TableViewGridLinesVisibility.All : TableViewGridLinesVisibility.None;
-                                    Content.UpdateLayout();
-                                });
-                                IdleSynchronizer.Wait();
-                                RunOnUIThread.Execute(() =>
-                                {
-                                    if (visible)
-                                    {
-                                        bounds = separator.TransformToVisual(snapshotRoot).TransformBounds(
-                                            new Rect(0, 0, separator.ActualWidth, separator.ActualHeight));
-                                    }
-                                    snapshotWidth = snapshotRoot.ActualWidth;
-                                    snapshotHeight = snapshotRoot.ActualHeight;
-                                });
+                                Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
+                                Content.UpdateLayout();
+                            });
+                            IdleSynchronizer.Wait();
+                            RunOnUIThread.Execute(() =>
+                            {
+                                bounds = separator.TransformToVisual(snapshotRoot).TransformBounds(
+                                    new Rect(0, 0, separator.ActualWidth, separator.ActualHeight));
+                                snapshotWidth = snapshotRoot.ActualWidth;
+                                snapshotHeight = snapshotRoot.ActualHeight;
+                            });
 
-                                var image = RenderElementPixels(snapshotRoot);
-                                int centerX = (int)((bounds.X + 0.5) * image.Width / snapshotWidth);
-                                int y = (int)((bounds.Y + bounds.Height / 2) * image.Height / snapshotHeight);
-                                bool found = false;
-                                for (int x = Math.Max(0, centerX - 2); x <= Math.Min(image.Width - 1, centerX + 2); x++)
-                                {
-                                    int offset = (y * image.Width + x) * 4;
-                                    found |= image.Pixels[offset] == separatorColor.B
-                                        && image.Pixels[offset + 1] == separatorColor.G
-                                        && image.Pixels[offset + 2] == separatorColor.R
-                                        && image.Pixels[offset + 3] == separatorColor.A;
-                                }
-                                Verify.AreEqual(visible, found,
-                                    $"The rendered column separator must remain above opaque dropdown chrome and follow header gridlines: {theme}, {flow}, {density.Density}, {state}, visible={visible}.");
+                            var image = RenderElementPixels(snapshotRoot);
+                            int centerX = (int)((bounds.X + 0.5) * image.Width / snapshotWidth);
+                            int y = (int)((bounds.Y + bounds.Height / 2) * image.Height / snapshotHeight);
+                            bool found = false;
+                            for (int x = Math.Max(0, centerX - 2); x <= Math.Min(image.Width - 1, centerX + 2); x++)
+                            {
+                                int offset = (y * image.Width + x) * 4;
+                                found |= image.Pixels[offset] == separatorColor.B
+                                    && image.Pixels[offset + 1] == separatorColor.G
+                                    && image.Pixels[offset + 2] == separatorColor.R
+                                    && image.Pixels[offset + 3] == separatorColor.A;
                             }
+                            Verify.IsTrue(found,
+                                $"The always-present column separator must remain above opaque dropdown chrome: {theme}, {flow}, {density.Density}, {state}.");
                         }
                     }
                 }
@@ -5498,6 +5589,77 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #endregion
 
         #region 13.6 Row banding under an element theme
+
+        [TestMethod]
+        public void VerifyBandedRowPlateGeometryMatchesHover()
+        {
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            foreach (var density in DensityCases)
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            foreach (var lines in new[] { TableViewGridLinesVisibility.None, TableViewGridLinesVisibility.All })
+            {
+                TableView table = null;
+                TableViewRow row = null;
+                Border plate = null;
+                Rect resting = default;
+                Rect content = default;
+                double height = 0;
+                CornerRadius corners = default;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateThemingTable();
+                    table.RequestedTheme = theme;
+                    table.Density = density.Density;
+                    table.FlowDirection = flow;
+                    table.GridLinesVisibility = lines;
+                    table.AlternatingRowBackground = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    row = GetProjectedRow(table, 1);
+                    plate = (Border)row.FindVisualChildByName("PART_RootBorder");
+                    Verify.IsTrue(VisualStateManager.GoToState(row, "Normal", false));
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    resting = plate.TransformToVisual(row).TransformBounds(new Rect(0, 0, plate.ActualWidth, plate.ActualHeight));
+                    var cell = GetRowCell(row, 0);
+                    content = cell.TransformToVisual(row).TransformBounds(new Rect(0, 0, cell.ActualWidth, cell.ActualHeight));
+                    height = row.ActualHeight;
+                    corners = plate.CornerRadius;
+                    Verify.AreEqual(new Thickness(3, 2, 3, 2), plate.Margin);
+                    Verify.AreEqual(Microsoft.UI.Colors.Red, ((SolidColorBrush)plate.Background).Color);
+                });
+                foreach (var state in new[] { "PointerOver", "Pressed", "Normal" })
+                {
+                    RunOnUIThread.Execute(() => Verify.IsTrue(VisualStateManager.GoToState(row, state, false)));
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var context = $"{theme}, {density.Density}, {flow}, {lines}, {state}";
+                        Verify.AreEqual(resting, plate.TransformToVisual(row).TransformBounds(
+                            new Rect(0, 0, plate.ActualWidth, plate.ActualHeight)), context);
+                        Verify.AreEqual(corners, plate.CornerRadius, context);
+                        Verify.AreEqual(height, row.ActualHeight, context);
+                        var cell = GetRowCell(row, 0);
+                        Verify.AreEqual(content, cell.TransformToVisual(row).TransformBounds(
+                            new Rect(0, 0, cell.ActualWidth, cell.ActualHeight)), context);
+                        if (state == "Normal")
+                        {
+                            Verify.AreEqual(Microsoft.UI.Colors.Red, ((SolidColorBrush)plate.Background).Color);
+                        }
+                        else
+                        {
+                            Verify.AreNotEqual(Microsoft.UI.Colors.Red, ((SolidColorBrush)plate.Background).Color,
+                                "Interaction must replace the band color, not change plate geometry.");
+                        }
+                    });
+                }
+            }
+        }
 
         [TestMethod]
         public void VerifyBandedTableStyleBrushesMatchSubtleTertiaryAndHighContrast()

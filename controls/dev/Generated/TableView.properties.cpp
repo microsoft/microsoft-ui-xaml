@@ -22,7 +22,6 @@ GlobalDependencyProperty TableViewProperties::s_DensityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GridLinesVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GroupHeaderTemplateProperty{ nullptr };
-GlobalDependencyProperty TableViewProperties::s_HeaderGridLinesVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
@@ -30,6 +29,7 @@ GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr }
 GlobalDependencyProperty TableViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_ShowGroupHeaderCountProperty{ nullptr };
 
 TableViewProperties::TableViewProperties()
     : m_beginningEditEventSource{static_cast<TableView*>(this)}
@@ -142,17 +142,6 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnGroupHeaderTemplatePropertyChanged));
     }
-    if (!s_HeaderGridLinesVisibilityProperty)
-    {
-        s_HeaderGridLinesVisibilityProperty =
-            InitializeDependencyProperty(
-                L"HeaderGridLinesVisibility",
-                winrt::name_of<winrt::TableViewGridLinesVisibility>(),
-                winrt::name_of<winrt::TableView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(winrt::TableViewGridLinesVisibility::All),
-                winrt::PropertyChangedCallback(&OnHeaderGridLinesVisibilityPropertyChanged));
-    }
     if (!s_HeadersVisibilityProperty)
     {
         s_HeadersVisibilityProperty =
@@ -230,6 +219,17 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::TableViewSelectionMode>::BoxValueIfNecessary(winrt::TableViewSelectionMode::Single),
                 winrt::PropertyChangedCallback(&OnSelectionModePropertyChanged));
     }
+    if (!s_ShowGroupHeaderCountProperty)
+    {
+        s_ShowGroupHeaderCountProperty =
+            InitializeDependencyProperty(
+                L"ShowGroupHeaderCount",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnShowGroupHeaderCountPropertyChanged));
+    }
 }
 
 void TableViewProperties::ClearProperties()
@@ -243,7 +243,6 @@ void TableViewProperties::ClearProperties()
     s_EmptyTemplateProperty = nullptr;
     s_GridLinesVisibilityProperty = nullptr;
     s_GroupHeaderTemplateProperty = nullptr;
-    s_HeaderGridLinesVisibilityProperty = nullptr;
     s_HeadersVisibilityProperty = nullptr;
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
@@ -251,6 +250,7 @@ void TableViewProperties::ClearProperties()
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
+    s_ShowGroupHeaderCountProperty = nullptr;
 }
 
 void TableViewProperties::OnAlternatingRowBackgroundPropertyChanged(
@@ -325,14 +325,6 @@ void TableViewProperties::OnGroupHeaderTemplatePropertyChanged(
     winrt::get_self<TableView>(owner)->OnGroupHeaderTemplatePropertyChanged(args);
 }
 
-void TableViewProperties::OnHeaderGridLinesVisibilityPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TableView>();
-    winrt::get_self<TableView>(owner)->OnHeaderGridLinesVisibilityPropertyChanged(args);
-}
-
 void TableViewProperties::OnHeadersVisibilityPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -371,6 +363,14 @@ void TableViewProperties::OnSelectionModePropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnSelectionModePropertyChanged(args);
+}
+
+void TableViewProperties::OnShowGroupHeaderCountPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnShowGroupHeaderCountPropertyChanged(args);
 }
 
 void TableViewProperties::AlternatingRowBackground(winrt::Brush const& value)
@@ -490,19 +490,6 @@ winrt::DataTemplate TableViewProperties::GroupHeaderTemplate()
     return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_GroupHeaderTemplateProperty));
 }
 
-void TableViewProperties::HeaderGridLinesVisibility(winrt::TableViewGridLinesVisibility const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableView*>(this)->SetValue(s_HeaderGridLinesVisibilityProperty, ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::TableViewGridLinesVisibility TableViewProperties::HeaderGridLinesVisibility()
-{
-    return ValueHelper<winrt::TableViewGridLinesVisibility>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_HeaderGridLinesVisibilityProperty));
-}
-
 void TableViewProperties::HeadersVisibility(winrt::TableViewHeadersVisibility const& value)
 {
     [[gsl::suppress(con)]]
@@ -592,6 +579,19 @@ void TableViewProperties::SelectionMode(winrt::TableViewSelectionMode const& val
 winrt::TableViewSelectionMode TableViewProperties::SelectionMode()
 {
     return ValueHelper<winrt::TableViewSelectionMode>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_SelectionModeProperty));
+}
+
+void TableViewProperties::ShowGroupHeaderCount(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_ShowGroupHeaderCountProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewProperties::ShowGroupHeaderCount()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_ShowGroupHeaderCountProperty));
 }
 
 winrt::event_token TableViewProperties::BeginningEdit(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs> const& value)

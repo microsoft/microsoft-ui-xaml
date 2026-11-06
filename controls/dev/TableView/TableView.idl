@@ -341,10 +341,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
-    TableViewGridLinesVisibility HeaderGridLinesVisibility { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserResizeColumns { get; set; };
 
@@ -359,6 +355,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean ShowGroupHeaderCount { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Style ColumnHeaderStyle { get; set; };
@@ -410,12 +410,12 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ShowGroupHeaderCountProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ColumnHeaderStyleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };

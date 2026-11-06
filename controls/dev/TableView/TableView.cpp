@@ -1386,16 +1386,6 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
     QueueTerminalGridLineRefresh();
 }
 
-void TableView::OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    if (args.OldValue() == args.NewValue())
-    {
-        return;
-    }
-
-    ApplyGridLinesToHeader();
-}
-
 void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1419,12 +1409,6 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
 
 void TableView::ApplyGridLinesToHeader()
 {
-    const auto visibility = HeaderGridLinesVisibility();
-    winrt::VisualStateManager::GoToState(*this,
-        WantsHorizontalLines(visibility) ? L"HeaderHorizontalGridLinesVisible" : L"HeaderHorizontalGridLinesHidden",
-        false);
-    const bool showVertical = WantsVerticalLines(visibility);
-
     auto host = m_headerHost.get();
     if (!host)
     {
@@ -1476,7 +1460,7 @@ void TableView::ApplyGridLinesToHeader()
             if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
                 gridLine.Visibility(
-                    showVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
+                    !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
                         ? winrt::Visibility::Visible
                         : winrt::Visibility::Collapsed);
             }
