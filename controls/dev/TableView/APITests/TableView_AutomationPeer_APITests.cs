@@ -798,7 +798,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroll pattern is answered by the body scroller's peer and never by the TableView peer itself.")]
+        [TestProperty("Description", "Verifies the Scroll pattern is answered by a provider that wraps the body scroller's peer, never by the TableView peer itself.")]
         public void VerifyScrollPatternIsForwardedToBodyScrollerNotThePeer()
         {
             TableView tableView = null;
@@ -828,10 +828,132 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // and IScrollProvider is NOT among them, so the peer must not answer as itself. A peer
                 // claiming a pattern it does not implement fails at the cast in every client.
                 Verify.IsFalse(ReferenceEquals(provider, peer),
-                    "Scroll must be forwarded to the body scroller's peer; TableView.idl does not declare IScrollProvider on the TableView peer.");
+                    "Scroll must be answered by a provider wrapping the body scroller's peer; TableView.idl does not declare IScrollProvider on the TableView peer.");
                 Verify.IsNotNull(provider as IScrollProvider,
                     "The forwarded Scroll provider must cast to IScrollProvider.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when rows near the end are taller than the estimate (#12449), 0 returns to the top, and 50 lands mid-extent.")]
+        public void VerifySetScrollPercentReachesLastRowWithVariableHeightRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = Enumerable.Range(0, 200)
+                    .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Border Height=""{Binding RowHeight}"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
+                Verify.IsNotNull(first, "Precondition: row 0 is realized.");
+                Log.Comment($"Row 0 ActualHeight={first.ActualHeight}");
+                Verify.IsLessThan(first.ActualHeight, 60.0, "Precondition: the early rows are short.");
+            });
+
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 140.0, verifyMidpoint: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Non-regression control: one SetScrollPercent(NoScroll, 100) still lands on the last row with fixed-height rows, and 0 returns to the top.")]
+        public void VerifySetScrollPercentReachesLastRowWithFixedHeightRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable(TableViewRowTestHelpers.MakeManyItems(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 0.0, verifyMidpoint: false);
+        }
+
+        private static IScrollProvider BodyScrollProvider(TableView tableView) =>
+            (IScrollProvider)FrameworkElementAutomationPeer.CreatePeerForElement(GetBodyScroller(tableView)).GetPattern(PatternInterface.Scroll);
+
+        private static void VerifySetScrollPercentToEndAndBack(TableView tableView, double minLastRowHeight, bool verifyMidpoint)
+        {
+            double noScroll = ScrollPatternIdentifiers.NoScroll;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll) as IScrollProvider;
+                Verify.IsNotNull(scroll, "The TableView peer must answer the Scroll pattern.");
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "Precondition: the table starts at the top.");
+                scroll.SetScrollPercent(noScroll, 100.0);
+                Log.Comment($"Right after SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent}");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                var scroller = GetBodyScroller(tableView);
+                Log.Comment($"After SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent} offset={scroller.VerticalOffset} scrollable={scroller.ScrollableHeight}");
+                Verify.AreEqual(100.0, scroll.VerticalScrollPercent, "One SetScrollPercent(NoScroll, 100) must report 100.");
+                Verify.IsLessThanOrEqual(Math.Abs(scroller.ScrollableHeight - scroller.VerticalOffset), 0.5, "The body must be at the end of its extent.");
+                var lastIndex = GetRowsRepeater(tableView).ItemsSourceView.Count - 1;
+                var last = GetRowsRepeater(tableView).TryGetElement(lastIndex) as FrameworkElement;
+                Verify.IsTrue(last != null && IsInViewport(last, scroller), "The last row must be realized and fully visible.");
+                Log.Comment($"Last row ActualHeight={last?.ActualHeight}");
+                Verify.IsGreaterThanOrEqual(last.ActualHeight, minLastRowHeight, "The last row must have its own height.");
+                scroll.SetScrollPercent(noScroll, 0.0);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "SetScrollPercent(NoScroll, 0) must return to the top.");
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be back at offset 0.");
+                var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
+                Verify.IsTrue(first != null && IsInViewport(first, GetBodyScroller(tableView)), "The first row must be visible again.");
+                if (verifyMidpoint)
+                {
+                    scroll.SetScrollPercent(noScroll, 50.0);
+                }
+            });
+
+            if (!verifyMidpoint)
+            {
+                return;
+            }
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                var scroller = GetBodyScroller(tableView);
+                Log.Comment($"After SetScrollPercent(50): table={scroll.VerticalScrollPercent} offset={scroller.VerticalOffset} scrollable={scroller.ScrollableHeight}");
+                // The percent is of the estimated extent, which can still move after the one correction.
+                var percent = scroll.VerticalScrollPercent;
+                Verify.IsLessThanOrEqual(Math.Abs(percent - 50.0), 5.0, $"SetScrollPercent(NoScroll, 50) must land mid-extent; got {percent}.");
+            });
+        }
+
+        public sealed class SizedPerson
+        {
+            public string Name { get; set; }
+
+            public double RowHeight { get; set; }
         }
 
         [TestMethod]
