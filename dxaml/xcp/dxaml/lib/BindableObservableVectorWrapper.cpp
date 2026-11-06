@@ -67,35 +67,35 @@ HRESULT BindableObservableVectorWrapper::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 IFACEMETHODIMP BindableObservableVectorWrapper::GetAt(unsigned index, _Out_ IInspectable **item)
 {
-    if (!m_moveView)
+    if (!IsProjecting())
     {
         return BindableVectorWrapper::GetAt(index, item);
     }
 
     IFCPTR_RETURN(item);
     *item = nullptr;
-    IFC_RETURN(CheckMoveSourceUnchanged());
-    if (index >= m_moveView->GetSize())
+    IFC_RETURN(CheckProjectedSourceUnchanged());
+    if (index >= GetProjectedSize())
     {
         IFC_RETURN(E_BOUNDS);
     }
 
     ctl::ComPtr<IInspectable> value;
-    IFC_RETURN(BindableVectorWrapper::GetAt(m_moveView->GetSourceIndex(index), &value));
-    IFC_RETURN(CheckMoveSourceUnchanged());
+    IFC_RETURN(GetProjectedItem(index, &value));
+    IFC_RETURN(CheckProjectedSourceUnchanged());
     return value.CopyTo(item);
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::get_Size(_Out_ unsigned *size)
 {
-    if (!m_moveView)
+    if (!IsProjecting())
     {
         return BindableVectorWrapper::get_Size(size);
     }
 
     IFCPTR_RETURN(size);
-    IFC_RETURN(CheckMoveSourceUnchanged());
-    *size = m_moveView->GetSize();
+    IFC_RETURN(CheckProjectedSourceUnchanged());
+    *size = GetProjectedSize();
     return S_OK;
 }
 
@@ -103,14 +103,14 @@ IFACEMETHODIMP BindableObservableVectorWrapper::GetView(
     _Outptr_result_maybenull_ wfc::IVectorView<IInspectable *> **view)
 {
     // Only INCC can emit Move; preserve the source's own view for IBindableObservableVector-only sources.
-    if (!m_tpINCC || !OptionalChangeState::IsCollectionMoveNotificationsEnabled())
+    if (!m_rangeView && (!m_tpINCC || !OptionalChangeState::IsCollectionMoveNotificationsEnabled()))
     {
         return BindableVectorWrapper::GetView(view);
     }
 
     IFCPTR_RETURN(view);
     *view = nullptr;
-    IFC_RETURN(CheckMoveSourceUnchanged());
+    IFC_RETURN(CheckProjectedSourceUnchanged());
     ctl::ComPtr<wfc::IVectorView<IInspectable *>> result;
     IFC_RETURN(ctl::ComObject<TrackerView<IInspectable *>>::CreateInstance(result.ReleaseAndGetAddressOf()));
     result.Cast<TrackerView<IInspectable *>>()->SetCollection(this);
@@ -123,7 +123,7 @@ IFACEMETHODIMP BindableObservableVectorWrapper::IndexOf(
     _Out_ unsigned *index,
     _Out_ boolean *found)
 {
-    if (!m_moveView)
+    if (!IsProjecting())
     {
         return BindableVectorWrapper::IndexOf(value, index, found);
     }
@@ -132,16 +132,48 @@ IFACEMETHODIMP BindableObservableVectorWrapper::IndexOf(
     IFCPTR_RETURN(found);
     *index = 0;
     *found = false;
-    IFC_RETURN(CheckMoveSourceUnchanged());
+    IFC_RETURN(CheckProjectedSourceUnchanged());
 
-    for (unsigned current = 0; current < m_moveView->GetSize(); ++current)
+    if (m_rangeView)
+    {
+        // Use the source's own equality, as outside a range change; for example, a .NET source
+        // finds an equal object or NaN that the comparison below would miss.
+        unsigned sourceIndex = 0;
+        boolean sourceFound = false;
+        unsigned oldItemIndex = 0;
+        boolean oldItemFound = false;
+        IFC_RETURN(BindableVectorWrapper::IndexOf(value, &sourceIndex, &sourceFound));
+        IFC_RETURN(CheckProjectedSourceUnchanged());
+        if (m_rangeOldItems)
+        {
+            IFC_RETURN(m_rangeOldItems->IndexOf(value, &oldItemIndex, &oldItemFound));
+            IFC_RETURN(CheckProjectedSourceUnchanged());
+        }
+
+        UINT projectedIndex = 0;
+        switch (m_rangeView->ResolveIndexOf(!!sourceFound, sourceIndex, !!oldItemFound, oldItemIndex, &projectedIndex))
+        {
+        case Components::CollectionRangeChangeView::IndexOfResult::Found:
+            *index = projectedIndex;
+            *found = true;
+            return S_OK;
+
+        case Components::CollectionRangeChangeView::IndexOfResult::NotFound:
+            return S_OK;
+
+        case Components::CollectionRangeChangeView::IndexOfResult::Ambiguous:
+            break;
+        }
+    }
+
+    for (unsigned current = 0; current < GetProjectedSize(); ++current)
     {
         ctl::ComPtr<IInspectable> item;
         bool equal = false;
-        IFC_RETURN(BindableVectorWrapper::GetAt(m_moveView->GetSourceIndex(current), &item));
-        IFC_RETURN(CheckMoveSourceUnchanged());
+        IFC_RETURN(GetProjectedItem(current, &item));
+        IFC_RETURN(CheckProjectedSourceUnchanged());
         IFC_RETURN(PropertyValue::AreEqual(value, item.Get(), &equal));
-        IFC_RETURN(CheckMoveSourceUnchanged());
+        IFC_RETURN(CheckProjectedSourceUnchanged());
         if (equal)
         {
             *index = current;
@@ -157,14 +189,14 @@ IFACEMETHODIMP BindableObservableVectorWrapper::First(_Outptr_ wfc::IIterator<II
 {
     // This wrapper also handles IBindableObservableVector without INCC. Such sources cannot
     // emit Move and must retain their original iterator semantics, even with the opt-in enabled.
-    if (!m_tpINCC || !OptionalChangeState::IsCollectionMoveNotificationsEnabled())
+    if (!m_rangeView && (!m_tpINCC || !OptionalChangeState::IsCollectionMoveNotificationsEnabled()))
     {
         return BindableVectorWrapper::First(value);
     }
 
     IFCPTR_RETURN(value);
     *value = nullptr;
-    IFC_RETURN(CheckMoveSourceUnchanged());
+    IFC_RETURN(CheckProjectedSourceUnchanged());
     ctl::ComPtr<wfc::IIterator<IInspectable *>> result;
     IFC_RETURN(ctl::ComObject<TrackerIterator<IInspectable *>>::CreateInstance(result.ReleaseAndGetAddressOf()));
     result.Cast<TrackerIterator<IInspectable *>>()->SetCollection(this);
@@ -174,56 +206,76 @@ IFACEMETHODIMP BindableObservableVectorWrapper::First(_Outptr_ wfc::IIterator<II
 
 IFACEMETHODIMP BindableObservableVectorWrapper::SetAt(unsigned index, _In_opt_ IInspectable *item)
 {
-    IFC_RETURN(CheckMoveReentrancy());
+    IFC_RETURN(CheckProjectionReentrancy());
     return BindableVectorWrapper::SetAt(index, item);
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::InsertAt(unsigned index, _In_ IInspectable *item)
 {
-    IFC_RETURN(CheckMoveReentrancy());
+    IFC_RETURN(CheckProjectionReentrancy());
     return BindableVectorWrapper::InsertAt(index, item);
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::RemoveAt(unsigned index)
 {
-    IFC_RETURN(CheckMoveReentrancy());
+    IFC_RETURN(CheckProjectionReentrancy());
     return BindableVectorWrapper::RemoveAt(index);
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::Append(_In_opt_ IInspectable *item)
 {
-    IFC_RETURN(CheckMoveReentrancy());
+    IFC_RETURN(CheckProjectionReentrancy());
     return BindableVectorWrapper::Append(item);
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::RemoveAtEnd()
 {
-    IFC_RETURN(CheckMoveReentrancy());
+    IFC_RETURN(CheckProjectionReentrancy());
     return BindableVectorWrapper::RemoveAtEnd();
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::Clear()
 {
-    IFC_RETURN(CheckMoveReentrancy());
+    IFC_RETURN(CheckProjectionReentrancy());
     return BindableVectorWrapper::Clear();
 }
 
-_Check_return_ HRESULT BindableObservableVectorWrapper::CheckMoveSourceUnchanged() const
+UINT BindableObservableVectorWrapper::GetProjectedSize() const
 {
-    if (m_moveView && m_sourceChangedDuringMove)
+    return m_moveView ? m_moveView->GetSize() : m_rangeView->GetSize();
+}
+
+_Check_return_ HRESULT BindableObservableVectorWrapper::GetProjectedItem(UINT index, _Outptr_ IInspectable **item)
+{
+    if (m_moveView)
+    {
+        return BindableVectorWrapper::GetAt(m_moveView->GetSourceIndex(index), item);
+    }
+
+    const auto location = m_rangeView->GetLocation(index);
+    if (location.isOldItem)
+    {
+        return m_rangeOldItems->GetAt(location.index, item);
+    }
+    return BindableVectorWrapper::GetAt(location.index, item);
+}
+
+_Check_return_ HRESULT BindableObservableVectorWrapper::CheckProjectedSourceUnchanged() const
+{
+    if (IsProjecting() && m_sourceChangedDuringProjection)
     {
         IFC_RETURN(E_CHANGED_STATE);
     }
     return S_OK;
 }
 
-_Check_return_ HRESULT BindableObservableVectorWrapper::CheckMoveReentrancy() const
+_Check_return_ HRESULT BindableObservableVectorWrapper::CheckProjectionReentrancy() const
 {
-    if (m_moveView)
+    if (IsProjecting())
     {
         IFC_RETURN_ORIGINATE_ERROR(
             E_ILLEGAL_METHOD_CALL,
-            wrl_wrappers::HStringReference(L"The collection cannot be modified during a Move notification.").Get());
+            wrl_wrappers::HStringReference(L"The collection cannot be modified while a collection change notification is being processed.").Get());
     }
     return S_OK;
 }
@@ -363,35 +415,25 @@ _Check_return_
 HRESULT
 BindableObservableVectorWrapper::ProcessCollectionChange(_In_ INotifyCollectionChangedEventArgs *pArgs)
 {
-    if (m_preparingMove || m_moveView)
+    if (m_preparingProjection || IsProjecting())
     {
-        // The source changed while preparing or projecting a Move. Reconcile with a Reset
-        // rather than forwarding a nested notification against a stale source state.
-        m_sourceChangedDuringMove = true;
+        // The source changed while preparing or projecting a Move or a multi-item change.
+        // Reconcile with a Reset rather than forwarding a nested notification against a stale source state.
+        m_sourceChangedDuringProjection = true;
         return S_OK;
     }
 
     HRESULT hr = S_OK;
     xaml_interop::NotifyCollectionChangedAction action;
-    INT index = 0;
 
     IFC(pArgs->get_Action(&action));
 
     switch (action)
     {
     case wxaml_interop::NotifyCollectionChangedAction_Add:
-        IFC(pArgs->get_NewStartingIndex(&index));
-        IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index));
-        break;
-
     case wxaml_interop::NotifyCollectionChangedAction_Remove:
-        IFC(pArgs->get_OldStartingIndex(&index));
-        IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index));
-        break;
-
     case wxaml_interop::NotifyCollectionChangedAction_Replace:
-        IFC(pArgs->get_NewStartingIndex(&index));
-        IFC(RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index));
+        IFC(ProcessCollectionItemsChange(action, pArgs));
         break;
 
     case wxaml_interop::NotifyCollectionChangedAction_Move:
@@ -432,7 +474,7 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     ctl::ComPtr<IBindableVector> oldItems;
     ctl::ComPtr<IBindableVector> newItems;
 
-    m_preparingMove = true;
+    m_preparingProjection = true;
 
     IFC(pArgs->get_OldStartingIndex(&oldIndex));
     IFC(pArgs->get_NewStartingIndex(&newIndex));
@@ -451,7 +493,7 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     // A nested change may alter the source size. Preserve intrinsic argument errors,
     // but reconcile instead of validating indices against the changed source.
     if (!Components::CollectionMoveView::HasValidArguments(oldIndex, newIndex, oldCount, newCount) ||
-        (!m_sourceChangedDuringMove &&
+        (!m_sourceChangedDuringProjection &&
             !Components::CollectionMoveView::IsValid(sourceSize, oldIndex, newIndex, oldCount, newCount)))
     {
         IFC_ORIGINATE_ERROR(
@@ -459,7 +501,7 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
             wrl_wrappers::HStringReference(
                 L"A Move notification must specify valid old and new indices and equally sized, nonempty item ranges.").Get());
     }
-    if (m_sourceChangedDuringMove)
+    if (m_sourceChangedDuringProjection)
     {
         resetRequired = true;
         goto Cleanup;
@@ -469,7 +511,7 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
         goto Cleanup;
     }
 
-    m_preparingMove = false;
+    m_preparingProjection = false;
     {
         m_moveView.emplace(sourceSize, oldIndex, newIndex, oldCount);
         auto clearMoveView = wil::scope_exit([this]()
@@ -478,23 +520,196 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
             m_moveView.reset();
         });
 
-        for (UINT removed = 0; removed < oldCount && !m_sourceChangedDuringMove; ++removed)
+        for (UINT removed = 0; removed < oldCount && !m_sourceChangedDuringProjection; ++removed)
         {
             m_moveView->RemoveNext();
             IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, oldIndex));
         }
-        for (UINT inserted = 0; inserted < oldCount && !m_sourceChangedDuringMove; ++inserted)
+        for (UINT inserted = 0; inserted < oldCount && !m_sourceChangedDuringProjection; ++inserted)
         {
             m_moveView->InsertNext();
             IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, newIndex + inserted));
         }
 
-        resetRequired = m_sourceChangedDuringMove;
+        resetRequired = m_sourceChangedDuringProjection;
     }
 
 Cleanup:
-    m_preparingMove = false;
-    m_sourceChangedDuringMove = false;
+    m_preparingProjection = false;
+    m_sourceChangedDuringProjection = false;
+    if (FAILED(hr))
+    {
+        // Reset is best effort after a failure. Its handlers may replace error info
+        // even when they succeed, so always restore the original error info.
+        ErrorInfo errorInfo;
+        const bool restoreErrorInfo = SUCCEEDED(errorInfo.GetFromThread());
+        IGNOREHR(RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
+        if (restoreErrorInfo)
+        {
+            IGNOREHR(errorInfo.SetOnThread());
+        }
+    }
+    else if (resetRequired)
+    {
+        // No prior error: a failed recovery Reset is the failure to return.
+        hr = RaiseVectorChanged(wfc::CollectionChange_Reset, 0);
+    }
+
+    RRETURN(hr);
+}
+
+_Check_return_
+HRESULT
+BindableObservableVectorWrapper::ProcessCollectionItemsChange(
+    xaml_interop::NotifyCollectionChangedAction action,
+    _In_ INotifyCollectionChangedEventArgs *pArgs)
+{
+    // App code run while reading the payload, or a notification handler, can replace
+    // ItemsSource and release the owner's adapter.
+    const ctl::ComPtr<wfc::IVector<IInspectable *>> keepAlive(this);
+
+    INT index = 0;
+    UINT oldCount = 0;
+    UINT newCount = 0;
+    ctl::ComPtr<IBindableVector> oldItems;
+    ctl::ComPtr<IBindableVector> newItems;
+    bool sourceChanged = false;
+
+    {
+        // That app code can also change the source. The nested change is not forwarded;
+        // this change is reconciled with a Reset instead, as for Move.
+        m_preparingProjection = true;
+        auto endPreparation = wil::scope_exit([this]()
+        {
+            m_preparingProjection = false;
+            m_sourceChangedDuringProjection = false;
+        });
+
+        if (action == wxaml_interop::NotifyCollectionChangedAction_Remove)
+        {
+            IFC_RETURN(pArgs->get_OldStartingIndex(&index));
+        }
+        else
+        {
+            IFC_RETURN(pArgs->get_NewStartingIndex(&index));
+        }
+        if (action != wxaml_interop::NotifyCollectionChangedAction_Add)
+        {
+            IFC_RETURN(pArgs->get_OldItems(&oldItems));
+            if (oldItems)
+            {
+                IFC_RETURN(oldItems->get_Size(&oldCount));
+            }
+        }
+        if (action != wxaml_interop::NotifyCollectionChangedAction_Remove)
+        {
+            IFC_RETURN(pArgs->get_NewItems(&newItems));
+            if (newItems)
+            {
+                IFC_RETURN(newItems->get_Size(&newCount));
+            }
+        }
+
+        sourceChanged = m_sourceChangedDuringProjection;
+    }
+
+    if (sourceChanged)
+    {
+        return RaiseVectorChanged(wfc::CollectionChange_Reset, 0);
+    }
+
+    // Single-item changes keep their original one-notification forwarding.
+    switch (action)
+    {
+    case wxaml_interop::NotifyCollectionChangedAction_Add:
+        if (!newItems || newCount == 1)
+        {
+            return RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index);
+        }
+        break;
+
+    case wxaml_interop::NotifyCollectionChangedAction_Remove:
+        if (!oldItems || oldCount == 1)
+        {
+            return RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index);
+        }
+        break;
+
+    default:
+        if ((!oldItems && !newItems) || (oldCount == 1 && newCount == 1))
+        {
+            return RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index);
+        }
+        break;
+    }
+
+    // A multi-item change is expanded into one notification per item, because each vector
+    // notification describes exactly one item.
+    return ProcessCollectionRangeChange(index, oldItems.Get(), oldCount, newItems.Get(), newCount);
+}
+
+_Check_return_
+HRESULT
+BindableObservableVectorWrapper::ProcessCollectionRangeChange(
+    INT index,
+    _In_opt_ IBindableVector *pOldItems,
+    UINT oldCount,
+    _In_opt_ IBindableVector *pNewItems,
+    UINT newCount)
+{
+    HRESULT hr = S_OK;
+    bool resetRequired = false;
+    UINT sourceSize = 0;
+
+    m_preparingProjection = true;
+
+    IFC(BindableVectorWrapper::get_Size(&sourceSize));
+
+    // Without a valid range, or after a nested change, the intermediate states cannot be
+    // described consistently, so reconcile with a Reset.
+    if (m_sourceChangedDuringProjection ||
+        !Components::CollectionRangeChangeView::IsValid(sourceSize, index, newCount))
+    {
+        resetRequired = true;
+        goto Cleanup;
+    }
+
+    m_preparingProjection = false;
+    {
+        m_rangeOldItems = pOldItems;
+        m_rangeView.emplace(sourceSize, index, oldCount, newCount);
+        auto clearRangeView = wil::scope_exit([this]()
+        {
+            // IFC also leaves this scope before Cleanup raises a Reset.
+            m_rangeView.reset();
+            m_rangeOldItems.Reset();
+        });
+
+        // Old items are replaced in place first; the remaining old items are then removed,
+        // or the remaining new items inserted.
+        const UINT replacedCount = oldCount < newCount ? oldCount : newCount;
+        for (UINT replaced = 0; replaced < replacedCount && !m_sourceChangedDuringProjection; ++replaced)
+        {
+            m_rangeView->ReplaceNext();
+            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index + replaced));
+        }
+        for (UINT removed = replacedCount; removed < oldCount && !m_sourceChangedDuringProjection; ++removed)
+        {
+            m_rangeView->RemoveNext();
+            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index + replacedCount));
+        }
+        for (UINT inserted = replacedCount; inserted < newCount && !m_sourceChangedDuringProjection; ++inserted)
+        {
+            m_rangeView->InsertNext();
+            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index + inserted));
+        }
+
+        resetRequired = m_sourceChangedDuringProjection;
+    }
+
+Cleanup:
+    m_preparingProjection = false;
+    m_sourceChangedDuringProjection = false;
     if (FAILED(hr))
     {
         // Reset is best effort after a failure. Its handlers may replace error info
