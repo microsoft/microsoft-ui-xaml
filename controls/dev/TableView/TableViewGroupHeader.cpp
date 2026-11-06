@@ -72,6 +72,7 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
         UpdateDefaultCountOpacity();
     }
     RefreshDefaultCount();
+    RefreshContentAlignment();
     return desired;
 }
 
@@ -178,6 +179,8 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
     m_rowChrome.set(GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>());
     m_contentHost.set(GetTemplateChild(L"PART_ContentHost").try_as<winrt::Border>());
+    m_contentPresenter.set(GetTemplateChild(L"PART_ContentPresenter").try_as<winrt::ContentPresenter>());
+    m_expanderGutter.set(GetTemplateChild(L"PART_ExpanderGutter").try_as<winrt::Border>());
     m_chromeSizeChangedRevoker.revoke();
     if (auto const chrome = m_rowChrome.get())
     {
@@ -318,10 +321,43 @@ void TableViewGroupHeader::RefreshContentAlignment()
             ? chrome.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y
                 + (chrome.ActualHeight() - ActualHeight()) / 2.0
             : 0.0;
-        auto const padding = TableViewDetails::OffsetContentPadding(Padding(), offset);
-        if (content.Padding() != padding)
+        const auto controlPadding = Padding();
+        const auto padding = TableViewDetails::OffsetContentPadding(controlPadding, offset);
+        if (!m_contentPresenter.get() || !m_expanderGutter.get())
         {
-            content.Padding(padding);
+            if (content.Padding() != padding)
+            {
+                content.Padding(padding);
+            }
+            return;
+        }
+        const winrt::Thickness horizontalPadding{ padding.Left, 0, padding.Right, 0 };
+        if (content.Padding() != horizontalPadding)
+        {
+            content.Padding(horizontalPadding);
+        }
+        if (auto const gutter = m_expanderGutter.get())
+        {
+            const winrt::Thickness gutterPadding{ 0, padding.Top, 0, padding.Bottom };
+            if (gutter.Padding() != gutterPadding)
+            {
+                gutter.Padding(gutterPadding);
+            }
+        }
+        if (auto const presenter = m_contentPresenter.get())
+        {
+            winrt::Thickness textPadding{ 0, controlPadding.Top, 0, controlPadding.Bottom };
+            if (auto const owner = GetOwningTableView();
+                owner && m_defaultCount.get() && !m_styleSetsPadding &&
+                m_densityPadding && controlPadding == *m_densityPadding)
+            {
+                textPadding = winrt::get_self<TableView>(owner)->GetDensityGroupHeaderTextPadding();
+            }
+            textPadding = TableViewDetails::OffsetContentPadding(textPadding, offset);
+            if (presenter.Padding() != textPadding)
+            {
+                presenter.Padding(textPadding);
+            }
         }
     }
 }

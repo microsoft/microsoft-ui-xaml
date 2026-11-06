@@ -119,6 +119,8 @@ private:
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
     tracker_ref<winrt::Border> m_contentHost{ this };
+    tracker_ref<winrt::ContentPresenter> m_contentPresenter{ this };
+    tracker_ref<winrt::Border> m_expanderGutter{ this };
     winrt::FrameworkElement::SizeChanged_revoker m_chromeSizeChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_headerSizeChangedRevoker{};
     // The count in the default content template, cached per inspected ContentTemplateRoot.

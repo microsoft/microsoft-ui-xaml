@@ -20,6 +20,16 @@ static constexpr std::wstring_view s_FlyoutButtonPartName{ L"PART_HeaderFlyoutBu
 TableViewColumnHeader::TableViewColumnHeader()
 {
     SetDefaultStyleKey(this);
+    for (auto const& property : { winrt::Control::PaddingProperty(), winrt::ContentControl::ContentProperty() })
+    {
+        RegisterPropertyChangedCallback(property, [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->UpdateContentPadding();
+            }
+        });
+    }
     RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
         [weakThis = get_weak()](auto&&, auto&&)
         {
@@ -34,6 +44,7 @@ TableViewColumnHeader::TableViewColumnHeader()
         {
             if (auto self = weakThis.get())
             {
+                self->UpdateContentPadding();
                 self->UpdateVisualStates(false);
             }
         });
@@ -83,11 +94,13 @@ void TableViewColumnHeader::OnApplyTemplate()
     m_flyoutButton.set(GetTemplateChild(hstring{ s_FlyoutButtonPartName }).try_as<winrt::DropDownButton>());
 
     m_templateContentMargin = {};
+    m_hasTextPadding = false;
     if (auto const presenter = m_contentPresenter.get())
     {
         m_templateContentMargin = presenter.Margin();
     }
     UpdateContentReserve();
+    UpdateContentPadding();
     HostSortIndicator();
     if (auto const button = m_flyoutButton.get())
     {
@@ -348,6 +361,38 @@ winrt::ResizeGripper TableViewColumnHeader::GetResizeGripperInternal() const
         return gripper;
     }
     return nullptr;
+}
+
+void TableViewColumnHeader::SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding)
+{
+    m_ownedText = ownsContent ? winrt::make_weak(Content().as<winrt::TextBlock>()) : nullptr;
+    m_textPadding = textPadding;
+    m_initialControlPadding = Padding();
+    UpdateContentPadding();
+}
+
+void TableViewColumnHeader::UpdateContentPadding()
+{
+    if (auto const presenter = m_contentPresenter.get())
+    {
+        if (OwnsContentInternal())
+        {
+            const auto padding = Padding() == m_initialControlPadding ? m_textPadding : Padding();
+            if (presenter.Padding() != padding)
+            {
+                presenter.Padding(padding);
+            }
+            m_hasTextPadding = true;
+        }
+        else if (m_hasTextPadding)
+        {
+            winrt::Binding binding;
+            binding.Source(*this);
+            binding.Path(winrt::PropertyPath(L"Padding"));
+            winrt::BindingOperations::SetBinding(presenter, winrt::ContentPresenter::PaddingProperty(), binding);
+            m_hasTextPadding = false;
+        }
+    }
 }
 
 void TableViewColumnHeader::UpdateContentReserve()

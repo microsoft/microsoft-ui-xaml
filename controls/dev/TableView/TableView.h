@@ -151,6 +151,12 @@ struct TableViewResourceCache
         double rowMinHeight{ 0.0 };
         bool hasCellPadding{ false };
         winrt::Thickness cellPadding{};
+        bool hasCellTextPadding{ false };
+        winrt::Thickness cellTextPadding{};
+        bool hasHeaderTextPadding{ false };
+        winrt::Thickness headerTextPadding{};
+        bool hasGroupHeaderTextPadding{ false };
+        winrt::Thickness groupHeaderTextPadding{};
         bool hasHeaderCellPadding{ false };
         winrt::Thickness headerCellPadding{};
         bool hasGroupHeaderMinHeight{ false };
@@ -160,7 +166,7 @@ struct TableViewResourceCache
     };
     DensityInfo density{};
 
-    // Built-in text uses 12px in ExtraCompact and 14px otherwise. Density/theme changes clear
+    // Built-in text defaults to 14px at every density. Density/theme changes clear
     // this cache alongside the other resolved resources.
     struct FontInfo
     {
@@ -252,6 +258,10 @@ public:
     winrt::Style GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header);
     static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property);
     double GetCellFontSize();
+    winrt::Thickness GetDensityCellTextPadding();
+    winrt::Thickness GetDensityHeaderTextPadding();
+    winrt::Thickness GetDensityGroupHeaderTextPadding();
+    winrt::Thickness GetDisplayCellPadding(double contentVerticalOffset = 0.0);
     void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.

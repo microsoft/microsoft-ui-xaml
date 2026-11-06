@@ -2165,9 +2165,12 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         const auto cellPadding = ownerImpl->GetDensityCellPadding();
         if (auto displayText = m_editingDisplayElement.get().try_as<winrt::TextBlock>())
         {
-            if (displayText.Padding() != cellPadding)
+            const auto displayPadding = m_editingColumn.get().try_as<winrt::TableViewTextColumn>()
+                ? ownerImpl->GetDisplayCellPadding(m_contentVerticalOffset)
+                : TableViewDetails::OffsetContentPadding(cellPadding, m_contentVerticalOffset);
+            if (displayText.Padding() != displayPadding)
             {
-                displayText.Padding(cellPadding);
+                displayText.Padding(displayPadding);
             }
             if (fontSizeChanged && m_editingColumn.get().try_as<winrt::TableViewTextColumn>())
             {
@@ -2198,7 +2201,9 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
             {
                 if (auto textBlock = cellElement.try_as<winrt::TextBlock>())
                 {
-                    auto const alignedPadding = TableViewDetails::OffsetContentPadding(cellPadding, m_contentVerticalOffset);
+                    auto const alignedPadding = column.try_as<winrt::TableViewTextColumn>()
+                        ? ownerImpl->GetDisplayCellPadding(m_contentVerticalOffset)
+                        : TableViewDetails::OffsetContentPadding(cellPadding, m_contentVerticalOffset);
                     if (textBlock.Padding() != alignedPadding)
                     {
                         textBlock.Padding(alignedPadding);
@@ -2437,6 +2442,9 @@ void TableViewRow::RefreshCellVisualGeometry()
         ? TableViewDetails::OffsetContentPadding(
             winrt::get_self<TableView>(owner)->GetDensityCellPadding(), m_contentVerticalOffset)
         : winrt::Thickness{};
+    auto const displayPadding = owner
+        ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding(m_contentVerticalOffset)
+        : winrt::Thickness{};
 
     for (auto const& child : host.Children())
     {
@@ -2460,9 +2468,11 @@ void TableViewRow::RefreshCellVisualGeometry()
                 {
                     if (auto const text = TableViewCell::Child(wrapper).try_as<winrt::TextBlock>())
                     {
-                        if (text.Padding() != padding)
+                        auto const textPadding = wrapper.Tag().try_as<winrt::TableViewTextColumn>()
+                            ? displayPadding : padding;
+                        if (text.Padding() != textPadding)
                         {
-                            text.Padding(padding);
+                            text.Padding(textPadding);
                         }
                     }
                     else if (auto const editor = TableViewCell::Child(wrapper).try_as<winrt::TextBox>();

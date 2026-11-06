@@ -14,9 +14,8 @@
                  duplicate-key build failure when the theme-XBF pages merge. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
+            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">14</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
-            <x:Double x:Key="TableViewHeaderTextVerticalOffset">-1</x:Double>
             <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
             <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
             <Thickness x:Key="TableViewHeaderFlyoutButtonFocusVisualMargin">-1</Thickness>
@@ -26,7 +25,7 @@
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
-            <x:Double x:Key="TableViewCellFontSizeExtraCompact">12</x:Double>
+            <x:Double x:Key="TableViewCellFontSizeExtraCompact">14</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
             <!-- Header/cell chrome metrics as theme tokens (tunable without code edits). -->
@@ -38,6 +37,15 @@
             <Thickness x:Key="TableViewCellPaddingExtraCompact">12,2,12,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">12,6,12,6</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingExtraCompact">12,2,12,2</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPadding">12,9,12,11</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPaddingCompact">12,5,12,7</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPaddingExtraCompact">12,1,12,3</Thickness>
+            <Thickness x:Key="TableViewCellTextPadding">12,9,12,11</Thickness>
+            <Thickness x:Key="TableViewCellTextPaddingCompact">12,5,12,7</Thickness>
+            <Thickness x:Key="TableViewCellTextPaddingExtraCompact">12,1,12,3</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPadding">0,9,0,11</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPaddingCompact">0,5,0,7</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPaddingExtraCompact">0,1,0,3</Thickness>
             <x:Double x:Key="TableViewGroupHeaderMinHeight">40</x:Double>
             <x:Double x:Key="TableViewGroupHeaderMinHeightCompact">32</x:Double>
             <x:Double x:Key="TableViewGroupHeaderMinHeightExtraCompact">24</x:Double>
@@ -49,9 +57,8 @@
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
+            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">14</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
-            <x:Double x:Key="TableViewHeaderTextVerticalOffset">-1</x:Double>
             <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
             <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
             <Thickness x:Key="TableViewHeaderFlyoutButtonFocusVisualMargin">-1</Thickness>
@@ -60,7 +67,7 @@
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
-            <x:Double x:Key="TableViewCellFontSizeExtraCompact">12</x:Double>
+            <x:Double x:Key="TableViewCellFontSizeExtraCompact">14</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">32</x:Double>
@@ -70,6 +77,15 @@
             <Thickness x:Key="TableViewCellPaddingExtraCompact">12,2,12,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">12,6,12,6</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingExtraCompact">12,2,12,2</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPadding">12,9,12,11</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPaddingCompact">12,5,12,7</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPaddingExtraCompact">12,1,12,3</Thickness>
+            <Thickness x:Key="TableViewCellTextPadding">12,9,12,11</Thickness>
+            <Thickness x:Key="TableViewCellTextPaddingCompact">12,5,12,7</Thickness>
+            <Thickness x:Key="TableViewCellTextPaddingExtraCompact">12,1,12,3</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPadding">0,9,0,11</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPaddingCompact">0,5,0,7</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPaddingExtraCompact">0,1,0,3</Thickness>
             <x:Double x:Key="TableViewGroupHeaderMinHeight">40</x:Double>
             <x:Double x:Key="TableViewGroupHeaderMinHeightCompact">32</x:Double>
             <x:Double x:Key="TableViewGroupHeaderMinHeightExtraCompact">24</x:Double>
@@ -82,9 +98,8 @@
                  canonical HighContrast System*Color brushes live in TabularSurfaces_themeresources.xaml. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">12</x:Double>
+            <x:Double x:Key="TableViewHeaderFontSizeExtraCompact">14</x:Double>
             <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
-            <x:Double x:Key="TableViewHeaderTextVerticalOffset">-1</x:Double>
             <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
             <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
             <Thickness x:Key="TableViewHeaderFlyoutButtonFocusVisualMargin">0</Thickness>
@@ -93,7 +108,7 @@
             <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
             <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
-            <x:Double x:Key="TableViewCellFontSizeExtraCompact">12</x:Double>
+            <x:Double x:Key="TableViewCellFontSizeExtraCompact">14</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">32</x:Double>
@@ -103,6 +118,15 @@
             <Thickness x:Key="TableViewCellPaddingExtraCompact">12,2,12,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">12,6,12,6</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingExtraCompact">12,2,12,2</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPadding">12,9,12,11</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPaddingCompact">12,5,12,7</Thickness>
+            <Thickness x:Key="TableViewHeaderTextPaddingExtraCompact">12,1,12,3</Thickness>
+            <Thickness x:Key="TableViewCellTextPadding">12,9,12,11</Thickness>
+            <Thickness x:Key="TableViewCellTextPaddingCompact">12,5,12,7</Thickness>
+            <Thickness x:Key="TableViewCellTextPaddingExtraCompact">12,1,12,3</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPadding">0,9,0,11</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPaddingCompact">0,5,0,7</Thickness>
+            <Thickness x:Key="TableViewGroupHeaderTextPaddingExtraCompact">0,1,0,3</Thickness>
             <x:Double x:Key="TableViewGroupHeaderMinHeight">40</x:Double>
             <x:Double x:Key="TableViewGroupHeaderMinHeightCompact">32</x:Double>
             <x:Double x:Key="TableViewGroupHeaderMinHeightExtraCompact">24</x:Double>

@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
+#include "TableViewFocusHelpers.h"
 #include "TableViewColumnHeader.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
@@ -468,6 +469,9 @@ namespace
         cache.density.hasGroupHeaderMinHeight = false;
         cache.density.hasGroupHeaderPadding = false;
         cache.font.hasCellFontSize = false;
+        cache.density.hasCellTextPadding = false;
+        cache.density.hasHeaderTextPadding = false;
+        cache.density.hasGroupHeaderTextPadding = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
         cache.hierarchy.hasGroupHeaderContentOffset = false;
@@ -504,6 +508,16 @@ namespace
         case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(12, 6, 12, 6);
         case winrt::TableViewDensity::ExtraCompact: return winrt::ThicknessHelper::FromLengths(12, 2, 12, 2);
         default: return winrt::ThicknessHelper::FromLengths(12, 10, 12, 10); // Standard
+        }
+    }
+
+    winrt::Thickness DensityTextPaddingFallback(winrt::TableViewDensity density)
+    {
+        switch (density)
+        {
+        case winrt::TableViewDensity::Compact: return { 12, 5, 12, 7 };
+        case winrt::TableViewDensity::ExtraCompact: return { 12, 1, 12, 3 };
+        default: return { 12, 9, 12, 11 };
         }
     }
 
@@ -2402,6 +2416,56 @@ winrt::Thickness TableView::GetDensityHeaderCellPadding()
     return cache.density.headerCellPadding;
 }
 
+winrt::Thickness TableView::GetDensityCellTextPadding()
+{
+    auto& metrics = GetTableViewResourceCache(this).density;
+    if (!metrics.hasCellTextPadding)
+    {
+        std::wstring key{ L"TableViewCellTextPadding" };
+        key += DensitySuffix(Density());
+        metrics.cellTextPadding = winrt::unbox_value_or<winrt::Thickness>(
+            LookupElementResource(*this, key), DensityTextPaddingFallback(Density()));
+        metrics.hasCellTextPadding = true;
+    }
+    return metrics.cellTextPadding;
+}
+
+winrt::Thickness TableView::GetDensityHeaderTextPadding()
+{
+    auto& metrics = GetTableViewResourceCache(this).density;
+    if (!metrics.hasHeaderTextPadding)
+    {
+        std::wstring key{ L"TableViewHeaderTextPadding" };
+        key += DensitySuffix(Density());
+        metrics.headerTextPadding = winrt::unbox_value_or<winrt::Thickness>(
+            LookupElementResource(*this, key), DensityTextPaddingFallback(Density()));
+        metrics.hasHeaderTextPadding = true;
+    }
+    return metrics.headerTextPadding;
+}
+
+winrt::Thickness TableView::GetDensityGroupHeaderTextPadding()
+{
+    auto& metrics = GetTableViewResourceCache(this).density;
+    if (!metrics.hasGroupHeaderTextPadding)
+    {
+        std::wstring key{ L"TableViewGroupHeaderTextPadding" };
+        key += DensitySuffix(Density());
+        auto fallback = DensityTextPaddingFallback(Density());
+        fallback.Left = fallback.Right = 0;
+        metrics.groupHeaderTextPadding = winrt::unbox_value_or<winrt::Thickness>(
+            LookupElementResource(*this, key), fallback);
+        metrics.hasGroupHeaderTextPadding = true;
+    }
+    return metrics.groupHeaderTextPadding;
+}
+
+winrt::Thickness TableView::GetDisplayCellPadding(double contentVerticalOffset)
+{
+    return TableViewDetails::OffsetContentPadding(
+        GetDensityCellTextPadding(), contentVerticalOffset);
+}
+
 double TableView::GetCellFontSize()
 {
     auto& cache = GetTableViewResourceCache(this);
@@ -2411,7 +2475,7 @@ double TableView::GetCellFontSize()
     }
 
     const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
-    const double fallback = extraCompact ? 12.0 : 14.0;
+    const double fallback = 14.0;
     if (auto raw = LookupElementResource(*this,
         extraCompact ? L"TableViewCellFontSizeExtraCompact" : L"TableViewCellFontSize"))
     {
@@ -2589,7 +2653,7 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
         winrt::get_self<TableViewGroupHeader>(header)->RefreshDensity();
     });
 
-    // Crossing ExtraCompact changes intrinsic text widths. Drop the grow-only maxima so Auto
+    // Crossing ExtraCompact can change overridden font metrics. Drop the grow-only maxima so Auto
     // columns can shrink as well as grow; Standard/Compact transitions retain their measured maxima.
     if ((winrt::unbox_value<winrt::TableViewDensity>(args.OldValue()) == winrt::TableViewDensity::ExtraCompact)
         != (Density() == winrt::TableViewDensity::ExtraCompact))
@@ -3249,15 +3313,10 @@ void TableView::RebuildHeadersCore()
 
     const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
-    const double headerTextVerticalOffset = winrt::unbox_value_or<double>(
-        LookupElementResource(*this, L"TableViewHeaderTextVerticalOffset"), -1.0);
-    if (!std::isfinite(headerTextVerticalOffset))
-    {
-        throw winrt::hresult_invalid_argument(L"TableViewHeaderTextVerticalOffset must be finite.");
-    }
+    const winrt::Thickness cachedHeaderTextPadding = GetDensityHeaderTextPadding();
     const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
     const double extraCompactHeaderFontSize = extraCompact
-        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeExtraCompact"), 12.0)
+        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeExtraCompact"), 14.0)
         : 14.0;
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
@@ -3347,14 +3406,11 @@ void TableView::RebuildHeadersCore()
                 headerBlock.Text(headerText);
                 headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // Center the visible label without trimming the full line box needed by accents and descenders.
-                winrt::TranslateTransform opticalOffset;
-                opticalOffset.Y(headerTextVerticalOffset);
-                headerBlock.RenderTransform(opticalOffset);
                 // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 header.Content(headerBlock);
-                headerImpl->SetOwnsContentInternal(true);
+                headerImpl->SetOwnsContentInternal(true,
+                    styleSetsPadding ? header.Padding() : cachedHeaderTextPadding);
             }
             else
             {

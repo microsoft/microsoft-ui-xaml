@@ -149,14 +149,14 @@ Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that 
 
 The density presets are `Standard` (40px), `Compact` (32px), and `ExtraCompact` (24px).
 These are minimum heights, not caps: larger text and custom content can grow the row.
-Section headers match the cells' 40/32/24px minimum heights for the same presets, with regular 14/14/12px text.
+Section headers match the cells' 40/32/24px minimum heights for the same presets, with regular 14px text at every density.
 Their padding is `4,10,12,10`, `4,6,12,6`, and `4,2,12,2`; a 12px expander gutter and 4px gap
 put the content 20px from the leading edge. Section headers grow for larger text and custom content;
 app `MinHeight` and `Padding` values or styles override density defaults. Existing item counts,
 expand/collapse behavior, and native keyboard focus are unchanged.
 Built-in cell and header padding is respectively `12,10,12,10`, `12,6,12,6`, and `12,2,12,2`
 (left, top, right, bottom). Built-in data cells, text editors, and column headers use 14px text
-in Standard/Compact and 12px in ExtraCompact, including section titles and counts.
+at every density, including ExtraCompact section titles and counts.
 The `TableViewCellFontSizeExtraCompact` and `TableViewHeaderFontSizeExtraCompact` resources
 override the ExtraCompact defaults; explicit column-header font styles still win.
 Gridlines are overlays and do not add to
@@ -791,13 +791,30 @@ The realized column header: a templated `ContentControl`, one per column in `PAR
 
 The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `Normal`), `Background` from `TabularSurfaceHeaderBackgroundBrush` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header uses `TabularSurfaceHeaderForegroundBrush` (secondary text in Light/Dark, window text in High Contrast), independently of the body foreground; override it or set a `ColumnHeaderStyle`/`HeaderStyle` foreground to customize header text. The header band is transparent in Light/Dark. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
 
-Generated plain-string header labels have a `TableViewHeaderTextVerticalOffset` of `-1` in
-Light, Default/Dark, and High Contrast: a 1px upward optical adjustment so visible glyphs
-sit centrally within the band. It is a render-only adjustment; the full font line box,
-density padding, measured header height, text scaling, and room for accents/descenders are
-preserved. Sort indicators, dropdowns, section headers, app-owned header elements, and
-header templates are not shifted. Apps using different font metrics can override this
-numeric resource (for example, `0` to disable the optical adjustment).
+Generated plain-string header labels and `TableViewTextColumn` display labels use
+asymmetric padding authored directly in `TableViewHeaderTextPadding` and
+`TableViewCellTextPadding`, with `Compact` / `ExtraCompact` suffixed variants.
+Light, Default/Dark and High Contrast all define the same values:
+
+| Density | Header/display-cell text padding (left, top, right, bottom) | Section text-presenter padding |
+|---|---|---|
+| Standard | `12,9,12,11` | `0,9,0,11` |
+| Compact | `12,5,12,7` | `0,5,0,7` |
+| ExtraCompact | `12,1,12,3` | `0,1,0,3` |
+
+Section titles and counts use `TableViewGroupHeaderTextPadding` and its density variants
+to match cell text vertically. The section host retains its separate 4px leading / 12px
+trailing padding and the chevron retains its symmetric density padding. App-owned section
+templates and explicit section `Padding` keep their authored alignment.
+
+These are complete padding values, not inputs to an optical-offset calculation.
+There are no optical-offset resources or optical render transforms. Only cell/section
+divider compensation is calculated from arranged bounds; it preserves total padding
+and prevents negative edges. Header-control/icon padding, editor padding, full line
+measurement, row heights, and selection/focus geometry are unchanged. Explicit header
+`Padding` overrides apply directly to its label; app-owned header content retains normal
+padding. Apps can customize the text-padding resources for different font metrics.
+Pixel rounding can leave up to a half-pixel optical difference at the default sizes.
 
 `TabularControlsResources` also exposes `StrongTableViewColumnHeaderStyle`, the supported semibold + primary-text alternative.
 It changes only `FontWeight` and `Foreground`, retaining the default template, density, focus, and interaction states.

@@ -505,9 +505,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDensityEditorPreservesRowHeightAndTextInsets()
         {
-            foreach (var testCase in TableViewThemingTestHelpers.DensityCases)
+            var densityCases = TableViewThemingTestHelpers.DensityCases;
+            for (var index = 0; index < densityCases.Length; ++index)
             {
-                var nextCase = TableViewThemingTestHelpers.DensityCases.First(value => value.FontSize != testCase.FontSize);
+                var testCase = densityCases[index];
+                var nextCase = densityCases[(index + 1) % densityCases.Length];
                 TableView tableView = null;
                 List<EditablePerson> items = null;
                 bool vetoClose = true;
@@ -541,8 +543,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, $"Editing must not grow a {testCase.Density} row.");
                     Verify.AreEqual(testCase.CellPadding.Left, editor.Padding.Left + editor.BorderThickness.Left,
                         "Editor text must retain the display cell's horizontal inset.");
-                    Verify.AreEqual(testCase.CellPadding.Top, editor.Padding.Top + editor.BorderThickness.Top,
-                        "Editor text must retain the display cell's vertical inset.");
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, testCase.CellPadding).Top,
+                        editor.Padding.Top + editor.BorderThickness.Top,
+                        "Editor text must retain the density inset and row-divider compensation.");
                     tableView.Density = nextCase.Density;
                 });
                 IdleSynchronizer.Wait();
@@ -553,7 +556,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsTrue(tableView.IsEditing, "Changing density must preserve the open editor.");
                     Verify.AreEqual(nextCase.FontSize, editor.FontSize, "The open editor must follow density typography.");
                     Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "The open editor must follow a runtime density change.");
-                    Verify.AreEqual(nextCase.CellPadding.Top, editor.Padding.Top + editor.BorderThickness.Top);
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.CellPadding).Top,
+                        editor.Padding.Top + editor.BorderThickness.Top);
                     vetoClose = false;
                     Verify.IsTrue(tableView.CancelEdit());
                 });
@@ -564,6 +568,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "Closing the editor must preserve row height.");
                     Verify.AreEqual(nextCase.FontSize, TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).FontSize,
                         "The cached display text must pick up the new font size before it is restored.");
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.TextPadding),
+                        TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).Padding,
+                        "Restoring display text must restore its optical padding without changing editor padding.");
                 });
             }
         }

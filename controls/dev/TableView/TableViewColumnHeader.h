@@ -48,12 +48,17 @@ public:
     bool IsInsideFlyoutButton(winrt::IInspectable const& source) const;
 
     // True while Content is the TextBlock the TableView made for a string Header.
-    void SetOwnsContentInternal(bool ownsContent) { m_ownsContent = ownsContent; }
-    bool OwnsContentInternal() const { return m_ownsContent; }
+    void SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding);
+    bool OwnsContentInternal() const
+    {
+        auto const text = m_ownedText.get();
+        return text && text == Content();
+    }
 
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
+    void UpdateContentPadding();
     void HostSortIndicator();
     void SyncSortIndicatorForeground(bool highlighted);
     void ResetPointerState(winrt::PointerRoutedEventArgs const& args);
@@ -86,7 +91,10 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
-    bool m_ownsContent{ false };
+    winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
+    winrt::Thickness m_textPadding{};
+    winrt::Thickness m_initialControlPadding{};
+    bool m_hasTextPadding{ false };
     bool m_isFlyoutPointerOver{ false };
     bool m_isFlyoutOpen{ false };
 };

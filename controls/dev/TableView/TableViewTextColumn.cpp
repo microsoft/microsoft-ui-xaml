@@ -40,11 +40,11 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
     if (owner)
     {
-        textBlock.Padding(winrt::get_self<TableView>(owner)->GetDensityCellPadding());
+        textBlock.Padding(winrt::get_self<TableView>(owner)->GetDisplayCellPadding());
     }
     else
     {
-        textBlock.Padding(winrt::ThicknessHelper::FromLengths(12, 10, 12, 10));
+        textBlock.Padding(winrt::Thickness{ 12, 9, 12, 11 });
     }
     textBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
 

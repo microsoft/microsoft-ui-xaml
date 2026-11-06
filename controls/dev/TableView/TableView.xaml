@@ -838,7 +838,7 @@
                                     BorderThickness="{ThemeResource TableViewHeaderInteractionBorderThickness}"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
                         </Grid>
-                        <Border x:Name="PART_ContentHost" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="PART_ContentHost">
                         <Grid ColumnSpacing="{ThemeResource TableViewGroupExpanderSpacing}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -861,6 +861,7 @@
 
                             <ContentPresenter x:Name="PART_ContentPresenter"
                                               Grid.Column="1"
+                                              Padding="{ThemeResource TableViewGroupHeaderTextPadding}"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"
                                               Foreground="{TemplateBinding Foreground}"
