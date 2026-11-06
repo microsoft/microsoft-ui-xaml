@@ -161,6 +161,14 @@ CImageBase::EnsureBrush()
         m_pBackgroundBrush->m_pImageSource = m_pImageSource;
 
         m_pBackgroundBrush->UpdateDecodeToRenderSizeStatusOnSourceChange(tempImage);
+
+        // Keep showing the previous image until the new one decodes, as a UriSource change does.
+        if (tempImage && m_pImageSource && m_pImageSource->m_fReloadNeeded && IsActive() &&
+            tempImage->OfTypeByIndex<KnownTypeIndex::BitmapImage>() &&
+            m_pImageSource->OfTypeByIndex<KnownTypeIndex::BitmapImage>())
+        {
+            m_pImageSource->UsePreviousHardwareSurface(tempImage);
+        }
     }
 
     if (fSourceChanged || fReloadNeeded)
