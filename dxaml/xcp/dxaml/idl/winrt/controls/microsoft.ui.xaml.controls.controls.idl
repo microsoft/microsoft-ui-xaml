@@ -1421,10 +1421,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Child")]
-    runtimeclass Border
+    unsealed runtimeclass Border
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        Border();
+        [method_name("CreateInstance")] Border();
         Microsoft.UI.Xaml.Media.Brush BorderBrush;
         Microsoft.UI.Xaml.Thickness BorderThickness;
         Microsoft.UI.Xaml.Media.Brush Background;
