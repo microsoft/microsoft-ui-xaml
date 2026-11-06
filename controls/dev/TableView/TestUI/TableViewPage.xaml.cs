@@ -687,6 +687,9 @@ namespace MUXControlsTestApp
         private string _contextMenuItem = Facts.NoneValue;
         private string _contextMenuTarget = Facts.NoneValue;
         private string _contextMenuFocus = Facts.NoneValue;
+        private bool _cancelEditorMenuCloseOnce;
+        private bool _editorMenuOpen;
+        private int _editorMenuClosings;
 
         private void HookContextMenuTable()
         {
@@ -699,10 +702,18 @@ namespace MUXControlsTestApp
             ContextMenuTable.SelectionChanged += (s, args) => RefreshContextMenuReadout();
 
             // IsEditing flips after these events return, so refresh once they have.
-            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
+            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_cancelEditorMenuCloseOnce)
+                {
+                    ConfigureEditorMenuWithCancelledClose();
+                    _cancelEditorMenuCloseOnce = false;
+                }
+                RefreshContextMenuReadout();
+            });
             ContextMenuTable.CellEditEnding += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
 
-            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.TableMenu })
+            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.RowTemplateMenu, Facts.TableMenu })
             {
                 var menu = (FlyoutBase)ContextMenuTableHost.Resources[key];
                 menu.Opening += (s, args) => OnContextMenuOpening(key, (FlyoutBase)s);
@@ -716,8 +727,13 @@ namespace MUXControlsTestApp
             RefreshContextMenuReadout();
         }
 
-        // Records the menu, its target and the focused element at the moment the menu opens: TableView moves focus
-        // to the target before it shows the menu, and the menu takes focus right after.
+        private void OnContextMenuTemplateLoaded(object sender, RoutedEventArgs e)
+        {
+            // Application content must not masquerade as a cell wrapper by tagging another column.
+            ((FrameworkElement)sender).Tag = ContextMenuTable.Columns[Facts.ContextMenuNameColumn];
+        }
+
+        // TableView moves focus before Opening; the menu takes focus right after.
         private void OnContextMenuOpening(string key, FlyoutBase menu)
         {
             _contextMenuLast = key;
@@ -756,6 +772,7 @@ namespace MUXControlsTestApp
                 ContextMenuTable.ItemsSource = _contextMenuItems;
             }
             ContextMenuTable.FlowDirection = FlowDirection.LeftToRight;
+            SetRowTemplateMenu(null);
 
             _contextMenuLast = Facts.NoneValue;
             _contextMenuOpen = false;
@@ -763,7 +780,44 @@ namespace MUXControlsTestApp
             _contextMenuItem = Facts.NoneValue;
             _contextMenuTarget = Facts.NoneValue;
             _contextMenuFocus = Facts.NoneValue;
+            _cancelEditorMenuCloseOnce = false;
+            _editorMenuOpen = false;
+            _editorMenuClosings = 0;
             RefreshContextMenuReadout();
+        }
+
+        private void OnCancelEditorMenuCloseClick(object sender, RoutedEventArgs e) => _cancelEditorMenuCloseOnce = true;
+
+        private void ConfigureEditorMenuWithCancelledClose()
+        {
+            var editor = FindDescendant<TextBox>(ContextMenuTable);
+            if (editor == null)
+            {
+                throw new InvalidOperationException("The context-menu test requires an active text editor.");
+            }
+
+            var flyout = new CommandBarFlyout { AlwaysExpanded = true, AreOpenCloseAnimationsEnabled = false };
+            flyout.SecondaryCommands.Add(new AppBarButton { Label = "Keep editing" });
+            flyout.Opened += (s, args) =>
+            {
+                _editorMenuOpen = true;
+                RefreshContextMenuReadout();
+            };
+            flyout.Closing += (s, args) =>
+            {
+                _editorMenuClosings++;
+                if (_editorMenuClosings == 1)
+                {
+                    args.Cancel = true;
+                }
+                RefreshContextMenuReadout();
+            };
+            flyout.Closed += (s, args) =>
+            {
+                _editorMenuOpen = false;
+                RefreshContextMenuReadout();
+            };
+            editor.ContextFlyout = flyout;
         }
 
         // Groups ContextMenuTable by City; Reset ungroups it.
@@ -777,6 +831,23 @@ namespace MUXControlsTestApp
         private void OnMirrorContextMenuTableClick(object sender, RoutedEventArgs e)
         {
             ContextMenuTable.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        // Puts RowTemplateMenu on the template root of every realized row; Reset removes it.
+        private void OnAttachRowTemplateMenuClick(object sender, RoutedEventArgs e)
+        {
+            SetRowTemplateMenu((FlyoutBase)ContextMenuTableHost.Resources[Facts.RowTemplateMenu]);
+        }
+
+        private void SetRowTemplateMenu(FlyoutBase menu)
+        {
+            foreach (var row in FindDescendants<TableViewRow>(ContextMenuTable))
+            {
+                if (VisualTreeHelper.GetChildrenCount(row) > 0 && VisualTreeHelper.GetChild(row, 0) is UIElement templateRoot)
+                {
+                    templateRoot.ContextFlyout = menu;
+                }
+            }
         }
 
         private void RefreshContextMenuReadout()
@@ -794,6 +865,8 @@ namespace MUXControlsTestApp
                 Facts.ItemField + "=" + _contextMenuItem + ";" +
                 Facts.TargetField + "=" + _contextMenuTarget + ";" +
                 Facts.FocusField + "=" + _contextMenuFocus + ";" +
+                Facts.EditorMenuOpenField + "=" + _editorMenuOpen + ";" +
+                Facts.EditorMenuClosingsField + "=" + _editorMenuClosings + ";" +
                 Facts.EditingField + "=" + ContextMenuTable.IsEditing + ";" +
                 Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
 

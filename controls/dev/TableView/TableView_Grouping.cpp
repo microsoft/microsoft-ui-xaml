@@ -1476,9 +1476,8 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
     }
 
-    // Update the projection in place. Re-pointing Content at a fresh instance every prepare would
-    // re-evaluate every binding in the content template and drop any binding the app made against
-    // the previous instance.
+    // Keep bindings live within a group, but never retarget an object held by an open menu to a
+    // different group when its header is recycled.
     auto const keyText = StringifyGroupKey(groupKey);
     auto const existing = header.Content().try_as<winrt::TableViewGroupInfo>();
 
@@ -1508,7 +1507,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     // are written before the projection changes, which is then synced once.
     headerImpl->SetExpansionStateInternal(isExpandable, isExpanded, false /* syncContent */, false /* useTransitions */);
 
-    if (existing)
+    if (sameGroup)
     {
         winrt::get_self<TableViewGroupInfo>(existing)->UpdateInternal(groupKey, itemCount, level, keyText);
     }
@@ -1593,10 +1592,9 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
         return;
     }
 
-    // Leave Content in place: the pooled header is handed back for the next group and
-    // UpdateInternal re-points the same projection, which is the whole reason bindings survive
-    // recycling. Only the app-owned template is dropped, so a GroupHeaderTemplate change while
-    // this header sits in the pool cannot resurface.
+    // Leave Content in place for a same-group prepare. A different group gets a fresh projection,
+    // so references held by an open menu retain their original identity. Drop the app-owned
+    // template so a GroupHeaderTemplate change while this header sits in the pool cannot resurface.
     //
     // The owning-TableView weak ref is deliberately NOT cleared. On the element-factory path the
     // repeater leaves recycled containers parented, so an AT client that holds a provider across a

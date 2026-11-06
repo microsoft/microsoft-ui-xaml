@@ -127,6 +127,15 @@ TableViewRow::TableViewRow()
 
     auto weakRow = get_weak();
 
+    RegisterPropertyChangedCallback(winrt::UIElement::ContextFlyoutProperty(),
+        [weakRow](auto&&, auto&&)
+        {
+            if (auto const strongRow = weakRow.get())
+            {
+                strongRow->m_contextFlyoutOpeningRevoker = TableViewDetails::HookContextFlyoutSuppression(*strongRow);
+            }
+        });
+
     // handledEventsToo: a row that participates in selection marks the press handled, which also
     // suppresses XAML's gesture recognizer - this registration is what keeps begin-edit reachable.
     m_editingPointerPressedHandler = winrt::PointerEventHandler(
@@ -170,6 +179,17 @@ TableViewRow::TableViewRow()
             if (auto strongRow = weakRow.get())
             {
                 strongRow->OnRowGotFocus(args.OriginalSource().try_as<winrt::DependencyObject>());
+            }
+        });
+
+    // auto_revoke owns this self-event subscription until row destruction.
+    m_contextRequestedRevoker = ContextRequested(
+        winrt::auto_revoke,
+        [weakRow](winrt::UIElement const&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                strongRow->OnRowContextRequested(args);
             }
         });
 
@@ -1154,13 +1174,28 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     auto pointerPoint = args.GetCurrentPoint(*this);
     auto props = pointerPoint.Properties();
 
-    // Mouse/pen: primary button only - a right-click opens a context menu and must not select.
+    // Right-button focus must precede native template menus opening, without arming selection.
     // Touch reports no pressed button, so it is admitted on device type instead, matching the
     // begin-edit gesture. Without this a touch press never arms the release-time selection.
     const auto deviceType = args.Pointer().PointerDeviceType();
     if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
         !props.IsLeftButtonPressed())
     {
+        auto const owner = GetOwningTableView();
+        auto const source = args.OriginalSource().try_as<winrt::DependencyObject>();
+        if (!props.IsRightButtonPressed() || !owner ||
+            !TableViewDetails::IsOwnRequestSource(source, *this))
+        {
+            return;
+        }
+
+        // Resolve from the source only, as the ContextRequested that follows does. A pointer
+        // hit-test would pick the cell under the expander chevron, which belongs to the row.
+        auto const target = ResolveContextMenuTarget(source);
+        if (target && target->Column)
+        {
+            winrt::get_self<TableView>(owner)->FocusContextMenuTargetFromPointer(*target);
+        }
         return;
     }
 
@@ -2980,6 +3015,24 @@ void TableViewRow::OnTemplateRootContextRequested(winrt::ContextRequestedEventAr
     }
 }
 
+// Row requests raised on the row itself: Shift+F10 / Menu key while the row (not a cell) has
+// focus. They start above the template root, so neither handler above sees them; without this
+// the row-template menu is skipped and the table fallback opens. Requests that bubbled up from
+// inside the row were already offered to the handlers above and keep bubbling.
+void TableViewRow::OnRowContextRequested(winrt::ContextRequestedEventArgs const& args)
+{
+    auto const source = args.OriginalSource().try_as<winrt::TableViewRow>();
+    if (args.Handled() || !source || winrt::get_self<TableViewRow>(source) != this)
+    {
+        return;
+    }
+
+    if (auto const target = ResolveContextMenuTarget(args); target && !target->Column)
+    {
+        ProcessContextRequest(*target, args);
+    }
+}
+
 bool TableViewRow::ShowContextMenuFromPeer()
 {
     auto const owner = GetOwningTableView();
@@ -3012,6 +3065,12 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::MakeRowContextM
 std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextMenuTarget(
     winrt::ContextRequestedEventArgs const& args)
 {
+    return ResolveContextMenuTarget(args.OriginalSource().try_as<winrt::DependencyObject>());
+}
+
+std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextMenuTarget(
+    winrt::DependencyObject const& source)
+{
     auto target = MakeRowContextMenuTarget();
     if (!target)
     {
@@ -3019,7 +3078,6 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     }
 
     winrt::TableViewRow const self = *this;
-    auto const source = args.OriginalSource().try_as<winrt::DependencyObject>();
     if (!TableViewDetails::IsOwnRequestSource(source, self))
     {
         return std::nullopt;
@@ -3169,56 +3227,31 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
     const winrt::IInspectable& originalSource,
     const winrt::Point& hostPoint)
 {
-    // A nested TableView's press bubbles through this row, and the walk would reach the INNER
-    // table's tagged Border before it ever reached this row - so filter on ownership rather than
-    // trying to stop the walk. A column this table does not own is not ours to act on.
-    auto const owner = GetOwningTableView();
-    auto const ownedByThisTable = [&owner](winrt::TableViewColumn const& candidate)
+    auto const source = originalSource.try_as<winrt::DependencyObject>();
+    if (!TableViewDetails::IsOwnRequestSource(source, *this))
     {
-        if (!candidate || !owner)
-        {
-            return false;
-        }
+        return nullptr;
+    }
 
-        if (auto const columns = owner.Columns())
-        {
-            for (auto const& column : columns)
-            {
-                if (column == candidate)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    };
-
-    auto current = originalSource.try_as<winrt::DependencyObject>();
-    while (current)
+    // Only a direct child of our cells host can identify a column. Application content can have
+    // its own Tag, including one naming another column in this table.
+    if (auto const cell = FindOwnCellInternal(source, false /* requireExact */))
     {
-        if (auto const cell = current.try_as<winrt::Grid>())
-        {
-            if (auto const tagged = cell.Tag().try_as<winrt::TableViewColumn>())
-            {
-                return ownedByThisTable(tagged) ? tagged : nullptr;
-            }
-        }
-
-        current = winrt::VisualTreeHelper::GetParent(current);
+        return GetCellOwningColumn(cell);
     }
 
     for (auto const& hit : winrt::VisualTreeHelper::FindElementsInHostCoordinates(hostPoint, *this))
     {
-        if (auto const cell = hit.try_as<winrt::Grid>())
+        if (!TableViewDetails::IsOwnRequestSource(hit, *this))
         {
-            if (auto const tagged = cell.Tag().try_as<winrt::TableViewColumn>())
-            {
-                return ownedByThisTable(tagged) ? tagged : nullptr;
-            }
+            return nullptr;
+        }
+
+        if (auto const cell = FindOwnCellInternal(hit, false /* requireExact */))
+        {
+            return GetCellOwningColumn(cell);
         }
     }
 
     return nullptr;
 }
-

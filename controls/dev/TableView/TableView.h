@@ -449,6 +449,8 @@ public:
         TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);
 
+    bool FocusContextMenuTargetFromPointer(TableViewDetails::ContextMenuTarget const& target);
+
     // The one context menu policy check: no TableView menu opens while a cell is editing.
     bool AreContextMenusSuppressed() const noexcept { return IsEditInProgress(); }
 
@@ -1565,7 +1567,9 @@ private:
     void OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args);
     std::optional<TableViewDetails::ContextMenuTarget> ResolveHeaderContextMenuTarget(
         winrt::ContextRequestedEventArgs const& args);
-    TableViewDetails::ContextMenuCandidate ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
+    TableViewDetails::ContextMenuCandidate ResolveContextFlyout(
+        TableViewDetails::ContextMenuTarget const& target,
+        bool includeTableFlyout);
     void ShowContextFlyout(
         TableViewDetails::ContextMenuTarget const& target,
         TableViewDetails::ContextMenuCandidate const& candidate,

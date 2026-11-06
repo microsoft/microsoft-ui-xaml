@@ -7,6 +7,7 @@
 #include "TableViewGroupingHelpers.h"
 #include "ResourceAccessor.h"
 
+#include <cmath>
 #include <string>
 #include <winrt/Windows.UI.Xaml.Interop.h>
 
@@ -241,10 +242,20 @@ bool SameGroupKey(winrt::IInspectable const& left, winrt::IInspectable const& ri
                 return leftValue.GetUInt64() == rightValue.GetUInt64();
             case winrt::PropertyType::Boolean:
                 return leftValue.GetBoolean() == rightValue.GetBoolean();
+            // NaN != NaN, but a NaN key is still one group; treat it as equal so the cached
+            // projection is updated in place rather than replaced.
             case winrt::PropertyType::Double:
-                return leftValue.GetDouble() == rightValue.GetDouble();
+            {
+                auto const l = leftValue.GetDouble();
+                auto const r = rightValue.GetDouble();
+                return l == r || (std::isnan(l) && std::isnan(r));
+            }
             case winrt::PropertyType::Single:
-                return leftValue.GetSingle() == rightValue.GetSingle();
+            {
+                auto const l = leftValue.GetSingle();
+                auto const r = rightValue.GetSingle();
+                return l == r || (std::isnan(l) && std::isnan(r));
+            }
             case winrt::PropertyType::UInt8:
                 return leftValue.GetUInt8() == rightValue.GetUInt8();
             case winrt::PropertyType::Int16:
