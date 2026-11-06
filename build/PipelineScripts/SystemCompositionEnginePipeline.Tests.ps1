@@ -93,6 +93,12 @@ Describe 'System composition engine pipeline review fixes' {
         $script:sliceRunner = Join-Path `
             $script:repositoryRoot `
             'Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1'
+        $script:runSetupIfNeeded = Join-Path `
+            $script:repositoryRoot `
+            'Helix\common\test\RunSetupIfNeeded.ps1'
+        $script:pipelineJobTemplate = Join-Path `
+            $script:repositoryRoot `
+            'build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml'
         $script:excludedTestsManifest = Join-Path `
             $PSScriptRoot `
             'SystemCompositionEngineExcludedTests-WPF.csv'
@@ -361,6 +367,123 @@ Describe 'System composition engine pipeline review fixes' {
                 $plan.SelectSingleNode('/Project/ItemGroup/HelixWorkItem').Command)
             $command | Should Match (
                 [regex]::Escape("NOT(@Name='$excludedTestName')"))
+        }
+    }
+
+    Context 'protected pipeline setup ordering' {
+        It 'runs setup without the token before the secured test task' {
+            $pipelineContent = Get-Content `
+                -LiteralPath $script:pipelineJobTemplate `
+                -Raw
+            $preTestStepsIndex = $pipelineContent.IndexOf(
+                '- ${{ each step in parameters.preTestSteps }}:')
+            $setupTaskIndex = $pipelineContent.IndexOf(
+                "displayName: 'Prepare machine for protected test launch'")
+            $runTestsIndex = $pipelineContent.IndexOf(
+                'displayName: Run Tests')
+            $postTestIndex = $pipelineContent.IndexOf(
+                "displayName: 'PostTestRun: Total lifetime native crashes/warnings'")
+
+            ($preTestStepsIndex -ge 0) | Should Be $true
+            ($setupTaskIndex -ge 0) | Should Be $true
+            ($runTestsIndex -ge 0) | Should Be $true
+            ($postTestIndex -ge 0) | Should Be $true
+            ($preTestStepsIndex -lt $setupTaskIndex) | Should Be $true
+            ($setupTaskIndex -lt $runTestsIndex) | Should Be $true
+            ($runTestsIndex -lt $postTestIndex) | Should Be $true
+
+            $setupTaskContent = $pipelineContent.Substring(
+                $setupTaskIndex,
+                $runTestsIndex - $setupTaskIndex)
+            $runTestsContent = $pipelineContent.Substring(
+                $runTestsIndex,
+                $postTestIndex - $runTestsIndex)
+
+            $setupTaskContent | Should Match (
+                'filePath:\s+\$\(testPayloadDir\)' +
+                '\\RunSetupIfNeeded\.ps1')
+            $setupTaskContent | Should Match (
+                'workingDirectory:\s+\$\(testPayloadDir\)')
+            $setupTaskContent | Should Match (
+                'HELIX_CORRELATION_PAYLOAD:\s+\$\(testPayloadDir\)')
+            $setupTaskContent | Should Match (
+                'HELIX_DUMP_FOLDER:\s+C:\\dumps')
+            $setupTaskContent | Should Not Match (
+                'COMPOSITION_ENGINE_LAF_TOKEN')
+            $runTestsContent | Should Match 'pwsh:\s+false'
+            $runTestsContent | Should Match 'COMPOSITION_ENGINE_LAF_TOKEN'
+            [regex]::Matches(
+                $pipelineContent,
+                '(?m)^\s*COMPOSITION_ENGINE_LAF_TOKEN:').Count |
+                Should Be 1
+        }
+
+        It 'requires completed setup before applying policy or creating the mapping' {
+            $runnerContent = Get-Content -LiteralPath $script:sliceRunner -Raw
+            $tokenBranchIndex = $runnerContent.IndexOf(
+                'if (-not [string]::IsNullOrEmpty($env:COMPOSITION_ENGINE_LAF_TOKEN))')
+            $markerPathIndex = $runnerContent.IndexOf(
+                '$setupMarkerPath = Join-Path $TestPayloadDir "setupcomplete.txt"')
+            $markerCheckIndex = $runnerContent.IndexOf(
+                'Test-Path -LiteralPath $setupMarkerPath -PathType Leaf')
+            $applyIndex = $runnerContent.IndexOf(
+                '$systemCompositionEngineCrashDumpPolicyState = &')
+            $launchRequestIndex = $runnerContent.IndexOf(
+                '& $setLaunchRequestScript @launchRequestParameters')
+
+            ($tokenBranchIndex -ge 0) | Should Be $true
+            ($markerPathIndex -ge 0) | Should Be $true
+            ($markerCheckIndex -ge 0) | Should Be $true
+            ($applyIndex -ge 0) | Should Be $true
+            ($launchRequestIndex -ge 0) | Should Be $true
+            ($tokenBranchIndex -lt $markerPathIndex) | Should Be $true
+            ($markerPathIndex -lt $markerCheckIndex) | Should Be $true
+            ($markerCheckIndex -lt $applyIndex) | Should Be $true
+            ($markerCheckIndex -lt $launchRequestIndex) | Should Be $true
+        }
+
+        It 'makes work-item setup a no-op after the preflight marker is written' {
+            $payloadPath = Join-Path $TestDrive 'payload'
+            $invocationLog = Join-Path $payloadPath 'core-invoked.txt'
+            New-Item -ItemType Directory -Path $payloadPath | Out-Null
+            @'
+Add-Content -LiteralPath (Join-Path $PSScriptRoot 'core-invoked.txt') -Value 'invoked'
+'@ | Set-Content `
+                -LiteralPath (
+                    Join-Path $payloadPath 'TestPass-OneTimeMachineSetupCore.ps1')
+
+            $hadCorrelationPayload = Test-Path `
+                -LiteralPath Env:\HELIX_CORRELATION_PAYLOAD
+            $previousCorrelationPayload =
+                $env:HELIX_CORRELATION_PAYLOAD
+            try {
+                $env:HELIX_CORRELATION_PAYLOAD = $payloadPath
+                Push-Location $payloadPath
+                try {
+                    & $script:runSetupIfNeeded
+                    & $script:runSetupIfNeeded
+                }
+                finally {
+                    Pop-Location
+                }
+            }
+            finally {
+                if ($hadCorrelationPayload) {
+                    $env:HELIX_CORRELATION_PAYLOAD =
+                        $previousCorrelationPayload
+                }
+                else {
+                    Remove-Item `
+                        -LiteralPath Env:\HELIX_CORRELATION_PAYLOAD `
+                        -ErrorAction SilentlyContinue
+                }
+            }
+
+            @(Get-Content -LiteralPath $invocationLog).Count | Should Be 1
+            (Get-Content `
+                -LiteralPath (Join-Path $payloadPath 'setupcomplete.txt') `
+                -Raw).Trim() |
+                Should Be 'done'
         }
     }
 

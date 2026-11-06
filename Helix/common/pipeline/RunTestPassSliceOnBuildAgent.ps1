@@ -123,6 +123,14 @@ try
         {
             if ($workItemsToRun.Count -gt 0)
             {
+                $setupMarkerPath = Join-Path $TestPayloadDir "setupcomplete.txt"
+                if (-not (Test-Path -LiteralPath $setupMarkerPath -PathType Leaf))
+                {
+                    Throw (
+                        "Protected test setup is incomplete. Expected setup marker " +
+                        "'$setupMarkerPath' before creating the token-bearing launch request.")
+                }
+
                 $repositoryRoot = [IO.Path]::GetFullPath(
                     (Join-Path $PSScriptRoot "..\..\.."))
                 $systemCompositionEngineCrashDumpPolicyScript = Join-Path `

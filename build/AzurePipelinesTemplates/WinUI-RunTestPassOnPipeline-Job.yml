@@ -114,6 +114,19 @@ jobs:
   - ${{ each step in parameters.preTestSteps }}:
     - ${{ step }}
 
+  - ${{ if ne(parameters.compositionEngineLafToken, '') }}:
+    - task: PowerShell@2
+      displayName: 'Prepare machine for protected test launch'
+      inputs:
+        targetType: filePath
+        pwsh: false
+        filePath: $(testPayloadDir)\RunSetupIfNeeded.ps1
+        workingDirectory: $(testPayloadDir)
+        errorActionPreference: stop
+      env:
+        HELIX_CORRELATION_PAYLOAD: $(testPayloadDir)
+        HELIX_DUMP_FOLDER: C:\dumps
+
   - task: powershell@2
     displayName: Run Tests
     inputs:
