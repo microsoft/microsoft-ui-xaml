@@ -846,6 +846,7 @@ namespace Controls {
     interface IScrollContentPresenter2;
     interface IScrollContentPresenterStatics2;
     interface IScrollViewer;
+    interface IScrollViewerFactory;
     interface IScrollViewer2;
     interface IScrollViewer3;
     interface IScrollViewer4;
