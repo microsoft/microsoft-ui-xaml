@@ -8,7 +8,7 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [NativeName("CRichTextBlockOverflow")]
     [Guids(ClassGuid = "28b1261a-787e-402c-8c99-70e0e5afa1f8")]
-    public sealed class RichTextBlockOverflow
+    public class RichTextBlockOverflow
         : Microsoft.UI.Xaml.FrameworkElement
     {
         #region Properties

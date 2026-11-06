@@ -828,6 +828,7 @@ namespace Controls {
     interface IRichTextBlock5;
     interface IRichTextBlock6;
     interface IRichTextBlockOverflow;
+    interface IRichTextBlockOverflowFactory;
     interface IRichTextBlockOverflow2;
     interface IRichTextBlockOverflow3;
     interface IRichTextBlockOverflowStatics;
