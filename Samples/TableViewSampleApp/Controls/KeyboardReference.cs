@@ -22,7 +22,7 @@ public sealed partial class KeyboardReference : RailSection
         ("Tab / Shift+Tab", "The column headers and the table body are one tab stop each: Tab goes to the headers, then the body, then out. Shift+Tab back into the body resumes the row or cell you left, or lands on the last visible row without scrolling"),
         ("Enter / Esc", "On a template cell: into its control / back to the cell"),
         ("Space", "Selects the focused row; toggles a check box once focus is inside it"),
-        ("F2", "Edits the focused text cell where editing is allowed; Enter commits, Esc cancels"),
+        ("F2", "Edits the focused text cell where editing is allowed; Enter commits, Tab moves to the next editable cell, Esc cancels"),
         ("Enter / Space", "On a focused column header: sorts by that column"),
         ("Right / Left", "On a group header: expands / collapses the group"),
         ("Space / Enter", "On a group header: toggles the group"),

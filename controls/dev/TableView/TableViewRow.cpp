@@ -873,6 +873,14 @@ void TableViewRow::EnableRowFocusInternal()
     IsTabStop(true);
 }
 
+void TableViewRow::PrepareTabWalkFromCellInternal()
+{
+    if (IsGridLevelFocusInternal())
+    {
+        SuppressCellContentTabStopsForTabWalkInternal();
+    }
+}
+
 void TableViewRow::OnRowGotFocus(winrt::DependencyObject const& focusedElement)
 {
     if (auto const owner = GetOwningTableView())

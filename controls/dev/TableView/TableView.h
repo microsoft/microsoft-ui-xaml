@@ -822,6 +822,37 @@ private:
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
 
+    struct TabEditTarget
+    {
+        int32_t Row{ -1 };
+        int32_t VisibleColumn{ -1 };
+        winrt::TableViewColumn Column{ nullptr };
+    };
+    int32_t GetVisibleColumnIndex(winrt::TableViewColumn const& column);
+    std::optional<TabEditTarget> FindAdjacentTabEditTarget(int32_t rowIndex, int32_t visibleColumn, bool forward);
+    // True when Tab is consumed, including by a vetoed commit.
+    bool TryMoveEditToAdjacentCell(bool forward);
+    void MoveEditToTarget(TabEditTarget target, int32_t sourceRow);
+    void OpenTabEditTarget(int32_t rowIndex, winrt::IInspectable const& item, TabEditTarget const& target);
+    bool AdvancePendingTabEdit(bool forward);
+    bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
+    void RequestPendingTabEdit(TabEditTarget const& target, winrt::IInspectable const& item);
+    void TryCompletePendingTabEdit(uint32_t generation);
+    void QueuePendingTabEditTurn(winrt::DispatcherQueuePriority priority = winrt::DispatcherQueuePriority::Normal);
+    void CancelPendingTabEdit();
+    void CancelPendingTabEditForKey(winrt::Windows::System::VirtualKey key);
+    void CancelPendingTabEditForFocusMove(const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+
+    uint32_t m_pendingTabEditGeneration{ 0 };
+    bool m_pendingTabEditActive{ false };
+    bool m_pendingTabEditTurnQueued{ false };
+    int32_t m_pendingTabEditRow{ -1 };
+    int32_t m_pendingTabEditVisibleColumn{ -1 };
+    int32_t m_pendingTabEditAttemptsLeft{ 0 };
+    tracker_ref<winrt::IInspectable> m_pendingTabEditItem{ this };
+    tracker_ref<winrt::TableViewColumn> m_pendingTabEditColumn{ this };
+    winrt::FrameworkElement::LayoutUpdated_revoker m_pendingTabEditLayoutRevoker{};
+
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
     std::deque<std::function<void()>> m_pendingEditReshapes;

@@ -415,6 +415,7 @@ Editing starts only from user input in this release. There is no programmatic wa
 | `F2` | Begins editing the current cell |
 | `Enter` | Commits and closes the editor |
 | `Esc` | Cancels and discards the editor |
+| `Tab` / `Shift+Tab` | Commits and edits the next / previous editable cell; past the last (first), focus leaves the table |
 | Moving focus outside the editor and its owned flyouts/popups | Attempts to commit after focus settles; validation or an edit-ending handler can keep the edit open |
 | Moving focus within the editor or into an editor-owned flyout/popup | Keeps editing; focus-loss commit is re-evaluated after the flyout/popup closes |
 
@@ -424,6 +425,8 @@ the editor. These remain part of the editing interaction even though their popup
 is outside the editor's visual tree. An unrelated popup is not part of the editor and
 does not postpone focus-loss commit. Escape consumed by the editor, or used to dismiss
 its own menu, does not also cancel the cell edit.
+
+While `Tab` moves an edit, a vetoed or failed commit keeps the editor open, selection follows a move to another row, and live shaping waits until the editor that `Tab` opens is closed. For a column that overrides `CommitCellEditCore` to commit an `{x:Bind}` editor (see the `CellEditingTemplate` binding note under `TableViewTemplateColumn`), an editor that writes on every keystroke has already changed the item, so a veto cannot revert it.
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
 
@@ -1455,7 +1458,7 @@ Added here:
 - Vetoable events `BeginningEdit` and `CellEditEnding`. `CellEditEnding` is synchronous, so handlers must set `Cancel` before returning.
 - Rollback for a cancelled cell edit by using `UpdateSourceTrigger=Explicit`; the source is unchanged until commit, so cancelling discards the editor and re-displays the original value.
 - Validation via `INotifyDataErrorInfo`, scoped to the property the column edits. The edited property is derived from the column's `Binding` rather than authored separately, so it stays one concept with the base column's `SortMemberPath`.
-- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit when focus leaves the editor and its owned flyouts/popups. Focus-loss commit is re-evaluated after an editor-owned flyout/popup closes. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
+- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, `Tab` / `Shift+Tab` (commit and edit the next / previous editable cell), and commit when focus leaves the editor and its owned flyouts/popups. Focus-loss commit is re-evaluated after an editor-owned flyout/popup closes. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
 
 ### Editing is cell-scoped in this release
 

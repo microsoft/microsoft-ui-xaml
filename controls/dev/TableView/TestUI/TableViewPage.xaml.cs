@@ -180,6 +180,7 @@ namespace MUXControlsTestApp
             // second F2 that did nothing from one that re-reported the same column.
             BasicTableView.BeginningEdit += OnBasicTableViewBeginningEdit;
             BasicTableView.CellEditEnding += OnBasicTableViewCellEditEnding;
+            ScrollingTableView.CellEditEnding += OnScrollingTableViewCellEditEnding;
 
             _basicItems[0].PropertyChanged += OnFirstItemPropertyChanged;
             FirstItemNameTextBlock.Text = _basicItems[0].Name;
@@ -340,6 +341,37 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
         {
             EditEndReportTextBlock.Text += args.EditAction + ";";
+            if (VetoCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                args.Cancel = true;
+            }
+
+            if (SortOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                // Raised while the edit is closing, so the control replays the sort once the commit completes.
+                TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+                if (age != null)
+                {
+                    BasicTableView.SortByColumn(age, SortDirection.Descending);
+                }
+            }
+
+            if (FocusAwayOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High,
+                    () => AfterTableButton.Focus(FocusState.Programmatic));
+            }
+
+            if (FocusHeaderInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic);
+            }
+
+            if (FocusHeaderOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High,
+                    () => FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic));
+            }
         }
 
         // Reports the editor an edit opened, by an in-process visual-tree walk. Posted at Low priority: the
@@ -380,6 +412,11 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
         {
             EditColumnReportTextBlock.Text += (args.Column?.Header?.ToString() ?? "null") + ";";
+            if (CancelAgeBeginEditCheckBox.IsChecked == true && (args.Column?.Header as string) == "Age")
+            {
+                args.Cancel = true;
+                return;
+            }
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, ProbeEditor);
         }
 
@@ -1118,6 +1155,79 @@ namespace MUXControlsTestApp
             RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
             ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
             ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
+        }
+
+        private void OnAllowSecondaryTableEditingToggled(object sender, RoutedEventArgs e)
+        {
+            bool allow = ((CheckBox)sender).IsChecked == true;
+            // Scrolling and Rtl are editable by default and follow IsReadOnlyCheckBox; unchecking restores that.
+            ScrollingTableView.IsReadOnly = !allow && BasicTableView.IsReadOnly;
+            RtlTableView.IsReadOnly = !allow && BasicTableView.IsReadOnly;
+            GroupedTableView.IsReadOnly = !allow;
+            _groupedSource.IsLiveShaping = allow;
+        }
+
+        private void OnHideScoreColumnToggled(object sender, RoutedEventArgs e)
+        {
+            ScoreColumn.Visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void OnShowExtraEditColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PairColumn.Visibility = visibility;
+            XBindColumn.Visibility = visibility;
+        }
+
+        private void OnSingleEditableScrollingToggled(object sender, RoutedEventArgs e)
+        {
+            bool on = ((CheckBox)sender).IsChecked == true;
+            ScrollCityColumn.IsReadOnly = on;
+            ScrollAgeColumn.IsReadOnly = on;
+            ScrollIdColumn.IsReadOnly = on;
+        }
+
+        private TableViewSource _liveGroupedScrollingSource;
+
+        private void OnLiveGroupScrollingToggled(object sender, RoutedEventArgs e)
+        {
+            bool on = ((CheckBox)sender).IsChecked == true;
+            ScrollAgeColumn.IsReadOnly = on;
+            ScrollIdColumn.IsReadOnly = on;
+            if (on)
+            {
+                _liveGroupedScrollingSource = TableViewSource.From(_scrollingItems)
+                    .GroupBy(item => ((TableViewTestPerson)item).City);
+                _liveGroupedScrollingSource.IsLiveShaping = true;
+                ScrollingTableView.ItemsSource = _liveGroupedScrollingSource;
+            }
+            else
+            {
+                ScrollingTableView.ItemsSource = _scrollingItems;
+                _liveGroupedScrollingSource = null;
+            }
+        }
+
+        private void OnScrollingTableViewCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
+        {
+            if (FocusAwayOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High,
+                    () => AfterTableButton.Focus(FocusState.Programmatic));
+            }
+
+            if (RemoveRowAboveOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit &&
+                args.Item is TableViewTestPerson person)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, () =>
+                {
+                    int index = _scrollingItems.IndexOf(person);
+                    if (index > 0)
+                    {
+                        _scrollingItems.RemoveAt(index - 1);
+                    }
+                });
+            }
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the

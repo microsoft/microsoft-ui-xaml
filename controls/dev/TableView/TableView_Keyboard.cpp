@@ -1279,6 +1279,7 @@ void TableView::OnPreviewKeyDownForNavigation(
     case winrt::Windows::System::VirtualKey::RightWindows:
         break;
     default:
+        CancelPendingTabEditForKey(args.Key());
         if (!IsKeyboardBodyFocusPending())
         {
             CancelReshapeFocusRestoreForUserInput();
@@ -2101,6 +2102,9 @@ void TableView::CancelReshapeFocusRestore()
         LayoutUpdated(m_reshapeFocusLayoutToken);
         m_reshapeFocusLayoutToken = {};
     }
+
+    // A Tab edit waiting for this keyboard scroll resumes its retries.
+    QueuePendingTabEditTurn();
 }
 
 // A restore re-aims at its row until it confirms, which is right against the repeater's own focus
@@ -3368,6 +3372,7 @@ bool TableView::FocusRowElementInternal(
     }
 
     // This request is newer intent than any keyboard or re-shape focus still settling.
+    CancelPendingTabEdit();
     CancelReshapeFocusRestore();
 
     // A row the repeater has not realized is scrolled to first and focused once realized.
