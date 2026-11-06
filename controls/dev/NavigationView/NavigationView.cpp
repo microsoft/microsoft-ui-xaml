@@ -1423,6 +1423,15 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
     m_layoutUpdatedToken.revoke();
     m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
 
+    m_lastMeasureAvailableHeight = availableSize.Height;
+    const bool isHeightUnconstrained = availableSize.Height == std::numeric_limits<float>::infinity();
+    if (m_isHeightUnconstrained != isHeightUnconstrained)
+    {
+        m_isHeightUnconstrained = isHeightUnconstrained;
+        // Runs before the pane is measured below, so the new limits apply to this pass.
+        UpdatePaneLayout();
+    }
+
     return __super::MeasureOverride(availableSize);
 }
 
@@ -1566,6 +1575,24 @@ void NavigationView::UpdatePaneLayout()
 {
     if (!IsTopNavigationView())
     {
+        if (m_isHeightUnconstrained)
+        {
+            // With unlimited height the pane rows size to their content, so there is no height to share between the
+            // menu and footer items. The limits below are computed from the current row height, which here comes from
+            // the content itself: capping the menu at it would only let it grow a few pixels per layout pass while it
+            // expands (#8291).
+            if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
+            {
+                menuItemsScrollViewer.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+            }
+            if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
+            {
+                footerItemsScrollViewer.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+            }
+            winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
+            return;
+        }
+
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
@@ -1577,7 +1604,12 @@ void NavigationView::UpdatePaneLayout()
                     }
                     return 0.0;
                 }();
-                return paneContentRow.ActualHeight() - itemsContainerMargin;
+                // When NavigationView is arranged shorter than it was offered (VerticalAlignment Top/Center/Bottom), the
+                // row is only as tall as its content. Count the unused height too, otherwise the cap below would only let
+                // the menu grow a few pixels per layout pass (#8291).
+                const double actualHeight = ActualHeight();
+                const double unusedHeight = actualHeight > 0 ? std::max(0.0, m_lastMeasureAvailableHeight - actualHeight) : 0.0;
+                return paneContentRow.ActualHeight() + unusedHeight - itemsContainerMargin;
             }
             return 0.0;
         }();
