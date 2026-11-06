@@ -139,21 +139,21 @@ namespace winrt::");
                     "\r\n    bool XamlSystemBaseType::IsArray() const\r\n    {\r\n        throw ::winrt::hr" +
                     "esult_not_implemented {};\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsCollection() " +
                     "const\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n    b" +
-                    "ool XamlSystemBaseType::IsConstructible() const\r\n    {\r\n        throw ::winrt::h" +
-                    "result_not_implemented {};\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsDictionary()" +
-                    " const\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n    " +
-                    "bool XamlSystemBaseType::IsMarkupExtension() const\r\n    {\r\n        throw ::winrt" +
-                    "::hresult_not_implemented {};\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsEnum() co" +
-                    "nst\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n    boo" +
-                    "l XamlSystemBaseType::IsSystemType() const\r\n    {\r\n        throw ::winrt::hresul" +
-                    "t_not_implemented {};\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsBindable() const\r" +
-                    "\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n    IXamlTy" +
-                    "pe XamlSystemBaseType::ItemType() const\r\n    {\r\n        throw ::winrt::hresult_n" +
-                    "ot_implemented {};\r\n    }\r\n\r\n    IXamlType XamlSystemBaseType::KeyType() const\r\n" +
-                    "    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n    IXamlTyp" +
-                    "e XamlSystemBaseType::BoxedType() const\r\n    {\r\n        throw ::winrt::hresult_n" +
-                    "ot_implemented {};\r\n    }\r\n\r\n    TypeName XamlSystemBaseType::UnderlyingType() c" +
-                    "onst\r\n    {\r\n        return { _fullName, TypeKind::Primitive };\r\n    }\r\n\r\n    ");
+                    "ool XamlSystemBaseType::IsConstructible() const\r\n    {\r\n        return false;\r\n " +
+                    "   }\r\n\r\n    bool XamlSystemBaseType::IsDictionary() const\r\n    {\r\n        throw " +
+                    "::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsMa" +
+                    "rkupExtension() const\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};" +
+                    "\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsEnum() const\r\n    {\r\n        throw ::w" +
+                    "inrt::hresult_not_implemented {};\r\n    }\r\n\r\n    bool XamlSystemBaseType::IsSyste" +
+                    "mType() const\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r" +
+                    "\n\r\n    bool XamlSystemBaseType::IsBindable() const\r\n    {\r\n        throw ::winrt" +
+                    "::hresult_not_implemented {};\r\n    }\r\n\r\n    IXamlType XamlSystemBaseType::ItemTy" +
+                    "pe() const\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n" +
+                    "    IXamlType XamlSystemBaseType::KeyType() const\r\n    {\r\n        throw ::winrt:" +
+                    ":hresult_not_implemented {};\r\n    }\r\n\r\n    IXamlType XamlSystemBaseType::BoxedTy" +
+                    "pe() const\r\n    {\r\n        throw ::winrt::hresult_not_implemented {};\r\n    }\r\n\r\n" +
+                    "    TypeName XamlSystemBaseType::UnderlyingType() const\r\n    {\r\n        return {" +
+                    " _fullName, TypeKind::Primitive };\r\n    }\r\n\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
             this.Write(@"::IInspectable XamlSystemBaseType::ActivateInstance() const
     {
