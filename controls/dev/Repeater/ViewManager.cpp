@@ -532,6 +532,79 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         break;
     }
 
+    case winrt::NotifyCollectionChangedAction::Move:
+    {
+        const auto oldIndex = args.OldStartingIndex();
+        const auto newIndex = args.NewStartingIndex();
+        const auto count = args.OldItems() != nullptr ? static_cast<int>(args.OldItems().Size()) : 1;
+
+        if (oldIndex != newIndex && count > 0)
+        {
+            auto updateIndex = [oldIndex, newIndex, count](int dataIndex) -> int
+            {
+                if (oldIndex < newIndex)
+                {
+                    if (dataIndex >= oldIndex && dataIndex < oldIndex + count)
+                    {
+                        return dataIndex + (newIndex - oldIndex);
+                    }
+                    else if (dataIndex >= oldIndex + count && dataIndex <= newIndex + count - 1)
+                    {
+                        return dataIndex - count;
+                    }
+                }
+                else // newIndex < oldIndex
+                {
+                    if (dataIndex >= oldIndex && dataIndex < oldIndex + count)
+                    {
+                        return dataIndex - (oldIndex - newIndex);
+                    }
+                    else if (dataIndex >= newIndex && dataIndex < oldIndex)
+                    {
+                        return dataIndex + count;
+                    }
+                }
+                return dataIndex;
+            };
+
+            struct IndexChange
+            {
+                winrt::UIElement element;
+                int oldIndex;
+                int newIndex;
+            };
+            std::vector<IndexChange> changes;
+            const auto children = m_owner->Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                const auto element = children.GetAt(i);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                if (virtInfo->IsRealized())
+                {
+                    const auto oldDataIndex = virtInfo->Index();
+                    const auto newDataIndex = updateIndex(oldDataIndex);
+                    if (oldDataIndex != newDataIndex)
+                    {
+                        changes.push_back({ element, oldDataIndex, newDataIndex });
+                    }
+                }
+            }
+
+            // Pinned elements are also children. Update each container once, and
+            // finish remapping before callbacks can query or realize elements.
+            for (const auto& change : changes)
+            {
+                ItemsRepeater::GetVirtualizationInfo(change.element)->UpdateIndex(change.newIndex);
+            }
+            InvalidateRealizedIndicesHeldByLayout();
+            for (const auto& change : changes)
+            {
+                m_owner->OnElementIndexChanged(change.element, change.oldIndex, change.newIndex);
+            }
+        }
+        break;
+    }
+
     case winrt::NotifyCollectionChangedAction::Reset:
         // If we get multiple resets back to back before
         // running layout, we dont have to clear all the elements again.         
