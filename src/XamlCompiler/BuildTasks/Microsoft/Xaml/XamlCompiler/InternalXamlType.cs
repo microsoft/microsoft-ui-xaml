@@ -293,7 +293,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         {
             // Name and Declaring type must already be set, and correct.
             Debug.Assert(Name == xamlMember.Name
-                      && DeclaringType == schemaInfo.AddType(xamlMember.DeclaringType));
+                      // Pass isReturnTypeStub=true to avoid accidentally unstubbing the type during the check
+                      && DeclaringType == schemaInfo.AddType(xamlMember.DeclaringType, true));
 
             // We can't call AddTypeAndProperties() here because that would cause us to
             // codegen the properties of every type of every property, and every property
