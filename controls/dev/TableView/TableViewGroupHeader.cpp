@@ -14,6 +14,15 @@ static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBord
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
+
+    RegisterPropertyChangedCallback(winrt::UIElement::ContextFlyoutProperty(),
+        [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->m_contextFlyoutOpeningRevoker = TableViewDetails::HookContextFlyoutSuppression(*strongThis);
+            }
+        });
 }
 
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
