@@ -1249,16 +1249,16 @@ bool TableView::TryBringPendingItemIntoView()
     // extent is brought into view. The column header band is outside the body scroller.
     if (!bring.TargetRect())
     {
-        if (auto const scroller = m_bodyScroller.get(); scroller && scroller.ViewportWidth() > 0.0)
+        if (auto const bodyScroller = m_bodyScroller.get(); bodyScroller && bodyScroller.ViewportWidth() > 0.0)
         {
-            const double viewportWidth = scroller.ViewportWidth();
+            const double viewportWidth = bodyScroller.ViewportWidth();
             double frozenWidth = ComputeLeadingFrozenWidth();
             if (!(frozenWidth < viewportWidth))
             {
                 frozenWidth = 0.0;
             }
             bring.TargetRect(winrt::Rect{
-                static_cast<float>(scroller.HorizontalOffset() + frozenWidth), 0.0f,
+                static_cast<float>(bodyScroller.HorizontalOffset() + frozenWidth), 0.0f,
                 static_cast<float>(viewportWidth - frozenWidth), static_cast<float>(std::max(1.0, element.ActualHeight())) });
         }
     }
