@@ -36,6 +36,48 @@ $companyName = "Microsoft Corporation"
 $productName = "Windows App SDK"
 $copyright = "Copyright (c) Microsoft Corporation. All rights reserved."
 
+$binaryVersion = $env:WindowsAppSDKBinaryVersion
+# Azure Pipelines leaves an absent optional variable as an unexpanded macro.
+if ($binaryVersion -eq '$(WindowsAppSDKBinaryVersion)')
+{
+    $binaryVersion = $null
+}
+$binaryVersionParts = $null
+if (-not [string]::IsNullOrWhiteSpace($binaryVersion))
+{
+    if ($binaryVersion -notmatch '^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
+    {
+        throw "WindowsAppSDKBinaryVersion '$binaryVersion' is not a numeric four-part version."
+    }
+
+    $binaryVersionParts = @($Matches[1], $Matches[2], $Matches[3], $Matches[4])
+    foreach ($part in $binaryVersionParts)
+    {
+        if ([int]$part -gt 65535)
+        {
+            throw "WindowsAppSDKBinaryVersion '$binaryVersion' contains a part outside the VERSIONINFO range."
+        }
+    }
+}
+
+$versionDefinitions = if ($binaryVersionParts)
+{
+@"
+#define WINDOWSAPPSDK_UNIFIED_BINARY_VERSION                  1
+#define WINDOWSAPPSDK_PRODUCT_VERSION                         $($binaryVersionParts -join ', ')
+#define WINDOWSAPPSDK_PRODUCT_VERSION_STRING                  "$binaryVersion"
+#define VER_FILEVERSION                                       WINDOWSAPPSDK_PRODUCT_VERSION
+#define VER_FILEVERSION_STR                                   WINDOWSAPPSDK_PRODUCT_VERSION_STRING
+"@
+}
+else
+{
+@"
+#define WINDOWSAPPSDK_PRODUCT_VERSION    WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR
+#define WINDOWSAPPSDK_PRODUCT_VERSION_STRING   STR2(WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR)
+"@
+}
+
 # Generating WindowsAppSDK-ProductInfo.h override
 $productInfo = @"
 // Copyright (c) Microsoft Corporation and Contributors.
@@ -69,8 +111,7 @@ $productInfo = @"
 #define WINDOWSAPPSDK_RELEASE_MAJOR                         $ProductMajor
 #define WINDOWSAPPSDK_RELEASE_MINOR                         $ProductMinor
 
-#define WINDOWSAPPSDK_PRODUCT_VERSION    WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR
-#define WINDOWSAPPSDK_PRODUCT_VERSION_STRING   STR2(WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR)
+$versionDefinitions
 #define WINDOWSAPPSDK_COMPANY_NAME              "$companyName"
 #define WINDOWSAPPSDK_LEGAL_COPYRIGHT           "$copyright"
 #define WINDOWSAPPSDK_PRODUCT_NAME              "$productName"
