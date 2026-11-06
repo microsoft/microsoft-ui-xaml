@@ -155,6 +155,8 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     m_owner->OnElementClearing(element);
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    // MoveOwnershipToElementFactory resets the index, which focus recovery below still needs.
+    const int clearedIndex = virtInfo->Index();
     virtInfo->MoveOwnershipToElementFactory();
 
     // During creation of this object, we were the one setting the DataContext, so clear it now.
@@ -212,7 +214,6 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         // Focused element is going away. Remove the tracked last focused element
         // and pick a reasonable next focus if we can find one within the layout 
         // realized elements.
-        const int clearedIndex = virtInfo->Index();
         MoveFocusFromClearedIndex(clearedIndex);
     }
 
@@ -307,7 +308,7 @@ winrt::Control ViewManager::FindFocusCandidate(int clearedIndex, winrt::UIElemen
     {
         focusedChild = previousElement.try_as<winrt::UIElement>();
         focusCandidate = previousElement.try_as<winrt::Control>();
-        if (!previousElement)
+        if (!focusCandidate)
         {
             if (auto lastFocus = winrt::FocusManager::FindLastFocusableElement(previousElement))
             {
@@ -451,12 +452,8 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     case winrt::NotifyCollectionChangedAction::Replace:
     {
         // Requirement: oldStartIndex == newStartIndex. It is not a replace if this is not true.
-        // Two cases here
-        // case 1: oldCount == newCount 
-        //         indices are not affected. nothing to do here.  
-        // case 2: oldCount != newCount
-        //         Replaced with less or more items. This is like an insert or remove
-        //         depending on the counts.
+        // Clear replaced elements whose lifetime we manage, and shift later indices
+        // when the replacement changes the item count.
         const auto oldStartIndex = args.OldStartingIndex();
         const auto newStartingIndex = args.NewStartingIndex();
         const auto oldCount = static_cast<int>(args.OldItems().Size());
@@ -477,28 +474,109 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         }
 
         const int countChange = newCount - oldCount;
+        const int oldEndIndex = oldStartIndex + oldCount;
+        const auto children = m_owner->Children();
+
+        // Offsets of the new items by object identity, built on first use, to find elements that are
+        // themselves items of the replacement (UIElement items without a template). The items are read from
+        // the source because NewItems only holds placeholders for IObservableVector sources.
+        std::unordered_map<void*, int> newItemOffsets;
+        bool newItemOffsetsBuilt = false;
+        const auto findNewItemOffset = [this, &newItemOffsets, &newItemOffsetsBuilt, oldStartIndex, newCount](const winrt::UIElement& element)
+        {
+            if (!newItemOffsetsBuilt)
+            {
+                newItemOffsetsBuilt = true;
+                const auto itemsSourceView = m_owner->ItemsSourceView();
+                for (int i = 0; i < newCount; ++i)
+                {
+                    if (const auto item = itemsSourceView.GetAt(oldStartIndex + i))
+                    {
+                        newItemOffsets.emplace(winrt::get_abi(item.as<winrt::IUnknown>()), i);
+                    }
+                }
+            }
+            const auto offset = newItemOffsets.find(winrt::get_abi(element.as<winrt::IUnknown>()));
+            return offset != newItemOffsets.end() ? offset->second : -1;
+        };
+
+        // Pass 1: a NonVirtualizingLayout is not notified of collection changes and cannot recycle elements, so
+        // retire the elements it holds for the replaced items. Virtualizing layouts are notified through
+        // OnItemsChangedCore, which runs after this, and can recycle replaced elements themselves (the built-in
+        // ones do), so their elements are left to them. This runs before any index changes so that handlers of
+        // the events raised below never find a replaced element at an index that a shifted element now uses.
+        // Elements are visited from the end because clearing a UIElement item without a template removes it
+        // from Children.
+        std::vector<std::pair<winrt::UIElement, int>> reusedElements;
+        const auto layout = m_owner->Layout();
+        if (layout && layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            for (unsigned i = children.Size(); i > 0u; --i)
+            {
+                const auto element = children.GetAt(i - 1u);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                const auto dataIndex = virtInfo->Index();
+
+                if (!virtInfo->IsHeldByLayout() || !virtInfo->AutoRecycleCandidate() ||
+                    dataIndex < oldStartIndex || dataIndex >= oldEndIndex)
+                {
+                    continue;
+                }
+
+                const int newItemOffset = findNewItemOffset(element);
+                if (newItemOffset >= 0)
+                {
+                    // The element is itself an item of the replacement (for example items[i] = items[i] with
+                    // UIElement items), so it stays realized instead of being recycled while it is re-realized.
+                    reusedElements.emplace_back(element, oldStartIndex + newItemOffset);
+                }
+                else
+                {
+                    m_owner->ClearElementImpl(element);
+                }
+            }
+        }
+
+        // Pass 2: move the surviving elements to their new indices. Reused elements stay within the replaced
+        // range and later elements move past it; reused elements that trade places within the range can briefly
+        // share an index while they are updated.
+        const auto updateReusedElements = [this, &reusedElements]()
+        {
+            for (const auto& [element, newIndex] : reusedElements)
+            {
+                UpdateElementIndex(element, ItemsRepeater::GetVirtualizationInfo(element), newIndex);
+            }
+        };
+
+        if (countChange < 0)
+        {
+            updateReusedElements();
+        }
+
         if (countChange != 0)
         {
-            // countChange > 0 : countChange items were added
-            // countChange < 0 : -countChange  items were removed
-            const auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
                 const auto element = children.GetAt(i);
                 const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 const auto dataIndex = virtInfo->Index();
 
-                if (virtInfo->IsRealized())
+                if (virtInfo->IsRealized() && dataIndex >= oldEndIndex)
                 {
-                    if (dataIndex >= oldStartIndex + oldCount)
-                    {
-                        UpdateElementIndex(element, virtInfo, dataIndex + countChange);
-                    }
+                    UpdateElementIndex(element, virtInfo, dataIndex + countChange);
                 }
             }
+        }
 
-            EnsureFirstLastRealizedIndices();
-            m_lastRealizedElementIndexHeldByLayout += countChange;
+        if (countChange >= 0)
+        {
+            updateReusedElements();
+        }
+
+        if (countChange != 0 || !reusedElements.empty())
+        {
+            // Indices moved: drop the cached range so that it is recomputed from all children.
+            InvalidateRealizedIndicesHeldByLayout();
         }
         break;
     }
@@ -669,9 +747,7 @@ winrt::UIElement ViewManager::GetElementFromUniqueIdResetPool(int index)
             virtInfo->MoveOwnershipToLayoutFromUniqueIdResetPool();
             UpdateElementIndex(element, virtInfo, index);
 
-            // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            ExtendRealizedIndicesHeldByLayout(index);
         }
     }
 
@@ -708,9 +784,7 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
             element = elementInfo.PinnedElement();
             elementInfo.VirtualizationInfo()->MoveOwnershipToLayoutFromPinnedPool();
 
-            // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            ExtendRealizedIndicesHeldByLayout(index);
             break;
         }
     }
@@ -877,9 +951,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         m_phaser.PhaseElement(element, virtInfo);
     }
 
-    // Update realized indices
-    m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-    m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    ExtendRealizedIndicesHeldByLayout(index);
 
 #ifdef DBG
     if (VirtualizationInfo::GetLogItemIndex() == index)
@@ -1040,6 +1112,19 @@ void ViewManager::InvalidateRealizedIndicesHeldByLayout()
 {
     m_firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
     m_lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
+}
+
+void ViewManager::ExtendRealizedIndicesHeldByLayout(int index)
+{
+    // Only widen a known range. Widening an invalidated range would make it cover just the elements realized
+    // since then (layouts that realize with ForceCreate never look up held elements), so a later Add could skip
+    // renumbering held elements outside it. An invalidated range is recomputed from all children on the next
+    // lookup instead (see GetElementIfAlreadyHeldByLayout).
+    if (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault)
+    {
+        m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
+        m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    }
 }
 
 ViewManager::PinnedElementInfo::PinnedElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element) :
