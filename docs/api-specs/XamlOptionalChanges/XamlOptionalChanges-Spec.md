@@ -250,6 +250,7 @@ descriptions evolve.
 |------------|----------|----------------------------------------|----------|
 | `Perf2026` | 60952725 | Breaking perf changes shipped in 2026. | Disabled |
 | `CollectionMoveNotifications` | 1503 | Adapt collection Move notifications without resetting the entire list. | Disabled |
+| `NotifySetterApplied` | 1504 | Notify every applied style setter, including setters considered shadowed by another style. | Disabled |
 
 _Spec note: The team will add new values here as future optional changes
 are introduced.  When a value is promoted to default-on it will be marked
@@ -276,6 +277,28 @@ reference becomes a compile error._
 * When a change becomes **permanent**, its `XamlChangeId` value is
   removed from the enum.  Any remaining reference is a compile error —
   no special annotation is needed.
+
+### NotifySetterApplied
+
+With this change enabled, style application always calls `NotifySetterApplied`
+after invalidating each setter's property. This allows the style to retain a
+value's peer if applying the value created that peer.
+Notification only protects already-realized values; it does not construct
+deferred values that property evaluation did not need.
+
+With the change disabled, `OptimizeApplyStyles` may skip that notification when
+`IsPropertySetByStyle` indicates a style-sourced value. Because that flag does
+not distinguish `BuiltInStyle` from `Style`, duplicate default-style setters can
+skip notification even for the effective value.
+
+Native tests can select either path without rebuilding:
+
+```cpp
+TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges",
+    L"{OptimizeApplyStyles:true|NotifySetterApplied:true}")
+```
+
+Use `NotifySetterApplied:false` to select conditional notification.
 
 ### CollectionMoveNotifications
 

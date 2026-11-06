@@ -270,6 +270,7 @@
     <Page Include="customTypes\XDeferCustomPageNested.xaml" />
     <Page Include="customTypes\XDeferCustomPageResourcesDT.xaml" />
     <Page Include="customTypes\ResourceReferenceTraceDeferredTemplates.xaml" />
+    <Page Include="customTypes\DuplicateDefaultStyle.xaml" />
   </ItemGroup>
   <Import Project="$(DetoursPath)\build\native\Detours.targets" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />

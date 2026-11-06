@@ -4308,6 +4308,125 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
+    void StyleIntegrationTests::DefaultStyleValueSurvivesExplicitStyleRemoval()
+    {
+        TestCleanupWrapper cleanup;
+        DefaultStyleControl^ control = nullptr;
+
+        // Helper to get the Width value from the Style in the AttachedTag property.
+        auto verifyEffectiveWidth = [&](double expectedWidth)
+        {
+            // Apply the Style pointed to in the DefaultStyleControl's AttachedTag property
+            auto probe = ref new ContentControl();
+            probe->Style = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            // Read the Width from the control, which should have been applied from the style.
+            const double actualWidth = probe->Width;
+            VERIFY_ARE_EQUAL(expectedWidth, actualWidth,
+                WEX::Common::String().Format(
+                    L"The effective setter value must still be a usable Style (expectedWidth=%g, actualWidth=%g)",
+                    expectedWidth, actualWidth));
+        };
+
+        // Create a DefaultStyleControl and set its default style to our test file.
+        RunOnUIThread([&]()
+        {
+            control = ref new DefaultStyleControl();
+            control->DefaultStyleResourceUri = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            m_rootCanvas->Children->Append(control);
+            m_rootCanvas->UpdateLayout();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // The custom default style sets AttachedTag to a style, and that style sets default Width=37
+            auto originalStyle = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            WeakReference originalStyleWeakRef(originalStyle);
+            originalStyle = nullptr; // The test must not keep the peer alive through a strong reference.
+            verifyEffectiveWidth(37.0);
+
+            // Create a Style which sets Width=73
+            auto replacementValue = ref new Style();
+            replacementValue->TargetType = Control::typeid;
+            auto widthSetter = ref new Setter();
+            widthSetter->Property = FrameworkElement::WidthProperty;
+            widthSetter->Value = 73.0;
+            replacementValue->Setters->Append(widthSetter);
+
+            // Create an outer Style (like the original .xaml above) which uses the Width=73
+            // style in the CustomControl.AttachedTag property.
+            auto overridingStyle = ref new Style();
+            overridingStyle->TargetType = DefaultStyleControl::typeid;
+            auto tagSetter = ref new Setter();
+            tagSetter->Property = CustomControl::AttachedTagProperty;
+            tagSetter->Value = replacementValue;
+            overridingStyle->Setters->Append(tagSetter);
+
+            // Use the outer Style, which should use the Width=73
+            control->Style = overridingStyle;
+            verifyEffectiveWidth(73.0);
+            VERIFY_IS_NOT_NULL(originalStyleWeakRef.Resolve<Style>(),
+                L"The default style must keep the original value's peer alive while overridden");
+
+            // Clear the custom outer Style which will return back to the custom
+            // default Style. Make sure everything correctly restored.
+            LOG_OUTPUT(L"Removing the explicit Style should not crash");
+            control->ClearValue(FrameworkElement::StyleProperty);
+            auto restoredStyle = safe_cast<Style^>(control->GetValue(CustomControl::AttachedTagProperty));
+            VERIFY_IS_NOT_NULL(originalStyleWeakRef.Resolve<Style>(),
+                L"The original value's peer must survive removal of the override");
+            VERIFY_IS_TRUE(originalStyleWeakRef.Resolve<Style>() == restoredStyle,
+                L"Restoring the default-style value must reuse the original peer");
+            LOG_OUTPUT(L"Verify that removing the Style restores the correct default-style value");
+            verifyEffectiveWidth(37.0);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void StyleIntegrationTests::StyleSetterValuesStayDeferredWhileShadowed()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            CustomObject::ClearInstanceCount();
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            auto style = safe_cast<Style^>(resources->Lookup(L"DeferredCustomObjectStyle"));
+            VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount());
+
+            auto control = ref new ContentControl();
+            control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
+            control->Style = style;
+            VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount(),
+                L"Notifying a shadowed setter must not construct its deferred value");
+            VERIFY_ARE_EQUAL(L"Local override", safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
+
+            control->SetValue(CustomControl::AttachedTagProperty, L"Updated local override");
+            VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount(),
+                L"Changing a local value must not construct the shadowed setter's deferred value");
+            VERIFY_ARE_EQUAL(L"Updated local override", safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
+
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            VERIFY_IS_NOT_NULL(safe_cast<CustomObject^>(control->GetValue(CustomControl::AttachedTagProperty)));
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetInstanceCount(),
+                L"The deferred value must be created when it becomes effective");
+
+            control->SetValue(CustomControl::AttachedTagProperty, L"Override after realization");
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetInstanceCount(),
+                L"The style must retain the realized value while it is overridden");
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            VERIFY_IS_NOT_NULL(safe_cast<CustomObject^>(control->GetValue(CustomControl::AttachedTagProperty)));
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetInstanceCount());
+
+            control->ClearValue(FrameworkElement::StyleProperty);
+            resources = nullptr;
+            style = nullptr;
+            VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount(),
+                L"The realized setter value must be released when the style is detached and its owners are released");
+        });
+    }
+
     void StyleIntegrationTests::VerifyImplicitStyleInvalidationInThemeDictionaries()
     {
         TestCleanupWrapper cleanup;

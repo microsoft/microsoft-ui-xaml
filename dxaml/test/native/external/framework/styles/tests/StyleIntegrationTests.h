@@ -337,6 +337,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DefaultStyleValueSurvivesExplicitStyleRemoval)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify through a weak reference that the default-style value's peer survives an explicit Style "
+                L"override and is reused when the override is removed.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StyleSetterValuesStayDeferredWhileShadowed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that notification does not realize a shadowed setter, and its value is created and retained when needed.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root and its ThemeDictionaries contains an implicit style")
