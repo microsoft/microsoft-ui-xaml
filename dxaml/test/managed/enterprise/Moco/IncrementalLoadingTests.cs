@@ -2,8 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Private.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using WEX.Logging.Interop;
@@ -486,6 +488,569 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
             Log.Comment("event is triggered!");
             _eventFireCount++;
             loadMoreItemsAsyncFiredEvent.Set();
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupWaitsForItemMeasureWithItemsWrapGrid()
+        {
+            VerifySynchronousStartup(wrapping: true, seeded: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupWaitsForItemMeasureWithItemsStackPanel()
+        {
+            VerifySynchronousStartup(wrapping: false, seeded: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupWithMeasuredSeedUsesPageSizedBatches()
+        {
+            VerifySynchronousStartup(wrapping: true, seeded: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupWaitsForItemMeasureWithVerticalItemsWrapGrid()
+        {
+            VerifySynchronousStartup(wrapping: true, seeded: false, vertical: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupWaitsForItemMeasureWithVerticalItemsStackPanel()
+        {
+            VerifySynchronousStartup(wrapping: false, seeded: false, vertical: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupWithPartialBatchesFillsViewport()
+        {
+            VerifySynchronousStartup(wrapping: true, seeded: false, maximumBatchSize: 1);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void DeferredStartupWaitsForItemMeasure()
+        {
+            SynchronousStartupSource data = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false) { HoldCompletion = true };
+                ShowStartupListView(data, wrapping: true);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1, data.RequestedCounts.Count, "Only one load may be outstanding.");
+                Verify.AreEqual(0, data.Count);
+                data.CompletePendingLoad();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() => VerifyStartupRequests(data, seeded: false));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void DeferredStartupDoesNotRetryAfterRemoval()
+        {
+            SynchronousStartupSource data = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false) { HoldCompletion = true };
+                ShowStartupListView(data, wrapping: true);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1, data.RequestedCounts.Count);
+                TestServices.WindowHelper.WindowContent = new Grid();
+                data.CompletePendingLoad();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() => Verify.AreEqual(1, data.RequestedCounts.Count,
+                "Completing a load on a detached list must not request another batch."));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void ManualStartupDoesNotEnableAutomaticLoading()
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false);
+                inner = ShowStartupListView(data, wrapping: true, manual: true);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            IAsyncOperation<LoadMoreItemsResult> load = null;
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(0, data.RequestedCounts.Count);
+                load = inner.LoadMoreItemsAsync();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1, data.RequestedCounts.Count);
+                Verify.AreEqual(1, data.Count);
+                load.Cancel();
+                load.Close();
+                load = inner.LoadMoreItemsAsync();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(2, data.RequestedCounts.Count, "Only the two explicit calls may request data.");
+                Verify.IsTrue(data.Count > 1, "The second explicit load must add a measured page-sized batch.");
+                load.Cancel();
+                load.Close();
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void EmptyBatchDoesNotStopAutomaticLoading()
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false) { EmptyLoadsRemaining = 1 };
+                for (int index = 0; index < 40; index++)
+                {
+                    data.Add(index.ToString());
+                }
+                inner = ShowStartupListView(data, wrapping: true, manual: true);
+                inner.Width = 500;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(0, data.RequestedCounts.Count);
+                inner.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+                var scrollViewer = inner.FindElementOfTypeInSubtree<ScrollViewer>();
+                Verify.IsTrue(scrollViewer.ScrollableWidth > 0);
+                Verify.IsTrue(scrollViewer.ChangeView(scrollViewer.ScrollableWidth, null, null, true));
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(0, data.EmptyLoadsRemaining);
+                Verify.IsTrue(data.RequestedCounts.Count > 1, "An empty batch must not prevent the next load.");
+                Verify.IsTrue(data.Count > 40, "The following load must supply items without another user action.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void DeferredEdgeLoadingPreservesLoadingWithStackPanel()
+        {
+            VerifyLegacyPanelEdgeLoading("<StackPanel Orientation='Horizontal'/>");
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void DeferredEdgeLoadingPreservesLoadingWithWrapGrid()
+        {
+            VerifyLegacyPanelEdgeLoading("<WrapGrid Orientation='Vertical' MaximumRowsOrColumns='2'/>");
+        }
+
+        private void VerifyLegacyPanelEdgeLoading(string panelMarkup)
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false)
+                {
+                    MaximumBatchSize = 1,
+                    HoldCompletion = true,
+                    HoldSubsequentLoads = true,
+                    EmptyLoadsRemaining = 1
+                };
+                for (int index = 0; index < 40; index++)
+                {
+                    data.Add(index.ToString());
+                }
+                inner = ShowStartupListView(data, wrapping: true, manual: true, panelMarkup: panelMarkup);
+                inner.Width = 500;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(0, data.RequestedCounts.Count);
+                inner.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+                var scrollViewer = inner.FindElementOfTypeInSubtree<ScrollViewer>();
+                Verify.IsTrue(scrollViewer.ScrollableWidth > 0);
+                Verify.IsTrue(scrollViewer.ChangeView(scrollViewer.ScrollableWidth, null, null, true));
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(40, data.Count);
+                Verify.AreEqual(1, data.RequestedCounts.Count);
+                // Isolate the resume-notification contract from adding unmeasured legacy containers.
+                inner.ItemsPanelRoot.InvalidateMeasure();
+                data.CompletePendingLoad();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Log.Comment("Requested batches: " + string.Join(", ", data.RequestedCounts));
+                Verify.AreEqual(40, data.Count);
+                Verify.AreEqual(2, data.RequestedCounts.Count, "Loading must continue after the first completed batch.");
+                TestServices.WindowHelper.WindowContent = new Grid();
+                data.CompletePendingLoad();
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void UnrelatedArrangeDoesNotStartLoading()
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false) { LoadingEnabled = false };
+                inner = ShowStartupListView(data, wrapping: true);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(0, data.RequestedCounts.Count);
+                data.LoadingEnabled = true;
+                inner.ItemsPanelRoot.InvalidateArrange();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() => Verify.AreEqual(0, data.RequestedCounts.Count,
+                "An unrelated arrange must not initiate an automatic loading check."));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void IncrementalLoadingZoomOutHorizontal()
+        {
+            VerifyZoomedPageEstimate(vertical: false, zoomFactor: 0.5f);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void IncrementalLoadingZoomInHorizontal()
+        {
+            VerifyZoomedPageEstimate(vertical: false, zoomFactor: 2.0f);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void IncrementalLoadingZoomOutVertical()
+        {
+            VerifyZoomedPageEstimate(vertical: true, zoomFactor: 0.5f);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void IncrementalLoadingZoomInVertical()
+        {
+            VerifyZoomedPageEstimate(vertical: true, zoomFactor: 2.0f);
+        }
+
+        private void VerifyZoomedPageEstimate(bool vertical, float zoomFactor)
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            ScrollViewer scrollViewer = null;
+            using (var viewChanged = new AutoResetEvent(false))
+            {
+                UIExecutor.Execute(() =>
+                {
+                    data = new SynchronousStartupSource(true);
+                    inner = ShowStartupListView(data, wrapping: true, vertical: vertical, manual: true);
+                    inner.DataFetchSize = 1;
+                    if (vertical)
+                    {
+                        inner.Height = 300;
+                        inner.Width = 100;
+                    }
+                    else
+                    {
+                        inner.Width = 500;
+                        inner.Height = 100;
+                    }
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() =>
+                {
+                    var panel = (ItemsWrapGrid)inner.ItemsPanelRoot;
+                    panel.ItemWidth = 100;
+                    panel.ItemHeight = 100;
+                    panel.MaximumRowsOrColumns = 1;
+                    scrollViewer = inner.FindElementOfTypeInSubtree<ScrollViewer>();
+                    scrollViewer.MinZoomFactor = 0.5f;
+                    scrollViewer.MaxZoomFactor = 2.0f;
+                    scrollViewer.ZoomMode = ZoomMode.Enabled;
+                    scrollViewer.ViewChanged += (sender, args) =>
+                    {
+                        if (!args.IsIntermediate)
+                        {
+                            viewChanged.Set();
+                        }
+                    };
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() => Verify.IsTrue(scrollViewer.ChangeView(null, null, zoomFactor, true)));
+                Verify.IsTrue(viewChanged.WaitOne(TimeSpan.FromSeconds(10)), "Zoom must complete.");
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() =>
+                {
+                    Verify.AreEqual(zoomFactor, scrollViewer.ZoomFactor);
+                    Verify.AreEqual(0, data.RequestedCounts.Count);
+                    double viewport = vertical ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
+                    uint expected = (uint)Math.Ceiling(viewport / zoomFactor / 100);
+                    Verify.IsTrue(expected > 0);
+                    var load = inner.LoadMoreItemsAsync();
+                    Verify.AreEqual(1, data.RequestedCounts.Count);
+                    Log.Comment("Zoom " + zoomFactor + ", viewport " + viewport + ", requested " + data.RequestedCounts[0]);
+                    Verify.AreEqual(expected, data.RequestedCounts[0],
+                        "A page must use the zoom-adjusted scrolling viewport and one stacking line.");
+                    load.Cancel();
+                    load.Close();
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() => VerifyStartupViewportFilled(inner, data, vertical));
+            }
+        }
+
+        private void VerifySynchronousStartup(bool wrapping, bool seeded, bool vertical = false, uint maximumBatchSize = 64)
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(seeded) { MaximumBatchSize = maximumBatchSize };
+                inner = ShowStartupListView(data, wrapping, vertical);
+            });
+
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                VerifyStartupRequests(data, seeded);
+                VerifyStartupViewportFilled(inner, data, vertical);
+            });
+        }
+
+        private static StartupListView ShowStartupListView(SynchronousStartupSource data, bool wrapping, bool vertical = false, bool manual = false, string panelMarkup = null)
+        {
+            string panel = panelMarkup ?? (wrapping
+                ? "<ItemsWrapGrid Orientation='" + (vertical ? "Horizontal" : "Vertical") + "' MaximumRowsOrColumns='2'/>"
+                : "<ItemsStackPanel Orientation='" + (vertical ? "Vertical" : "Horizontal") + "'/>");
+            var inner = new StartupListView(data.RecordFirstItemMeasure)
+            {
+                ItemsSource = data,
+                VerticalAlignment = vertical ? VerticalAlignment.Stretch : VerticalAlignment.Center,
+                HorizontalAlignment = vertical ? HorizontalAlignment.Center : HorizontalAlignment.Stretch,
+                DataFetchSize = 3,
+                IncrementalLoadingThreshold = 0,
+                IncrementalLoadingTrigger = manual ? IncrementalLoadingTrigger.None : IncrementalLoadingTrigger.Edge,
+                ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                        <Grid Width='100' Height='100'><TextBlock Text='{Binding}'/></Grid>
+                      </DataTemplate>"),
+                ItemsPanel = (ItemsPanelTemplate)XamlReader.Load(
+                    "<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                    panel + "</ItemsPanelTemplate>")
+            };
+            if (wrapping)
+            {
+                // Isolate startup scheduling from the separate unbounded wrap-grid estimator fix.
+                if (vertical)
+                {
+                    inner.Width = 200;
+                }
+                else
+                {
+                    inner.Height = 200;
+                }
+            }
+            ScrollViewer.SetVerticalScrollBarVisibility(inner, vertical ? ScrollBarVisibility.Visible : ScrollBarVisibility.Disabled);
+            ScrollViewer.SetVerticalScrollMode(inner, vertical ? ScrollMode.Enabled : ScrollMode.Disabled);
+            ScrollViewer.SetHorizontalScrollBarVisibility(inner, vertical ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Visible);
+            ScrollViewer.SetHorizontalScrollMode(inner, vertical ? ScrollMode.Disabled : ScrollMode.Enabled);
+
+            var outer = new ListView { Width = 600, Height = 400 };
+            if (vertical)
+            {
+                outer.ItemsPanel = (ItemsPanelTemplate)XamlReader.Load(
+                    @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                        <ItemsStackPanel Orientation='Horizontal'/>
+                      </ItemsPanelTemplate>");
+                ScrollViewer.SetVerticalScrollBarVisibility(outer, ScrollBarVisibility.Disabled);
+                ScrollViewer.SetVerticalScrollMode(outer, ScrollMode.Disabled);
+                ScrollViewer.SetHorizontalScrollBarVisibility(outer, ScrollBarVisibility.Visible);
+                ScrollViewer.SetHorizontalScrollMode(outer, ScrollMode.Enabled);
+            }
+            outer.Items.Add(inner);
+            TestServices.WindowHelper.WindowContent = outer;
+            return inner;
+        }
+
+        private static void VerifyStartupRequests(SynchronousStartupSource data, bool seeded)
+        {
+            Log.Comment("Requested batches: " + string.Join(", ", data.RequestedCounts));
+            Log.Comment("Requests before first item measure: " + data.RequestsBeforeFirstItemMeasure);
+            Verify.AreEqual(seeded ? 0 : 1, data.RequestsBeforeFirstItemMeasure,
+                "Loading must allow the first item to be measured before requesting another batch.");
+            Verify.IsTrue(data.RequestedCounts.Exists(count => count > 1),
+                "Loading should use a page-sized batch once the item has been measured.");
+            Verify.IsTrue(data.Count < 64, "Startup must not exhaust a source larger than the viewport.");
+        }
+
+        private static void VerifyStartupViewportFilled(StartupListView inner, SynchronousStartupSource data, bool vertical)
+        {
+            int lastVisible = inner.ItemsPanelRoot is ItemsWrapGrid wrap
+                ? wrap.LastVisibleIndex
+                : ((ItemsStackPanel)inner.ItemsPanelRoot).LastVisibleIndex;
+            Verify.IsTrue(lastVisible >= 0);
+            Verify.IsTrue(lastVisible < data.Count - 1,
+                "Loaded content must extend beyond the viewport, not stop after an underfilled partial batch.");
+
+            var scrollViewer = inner.FindElementOfTypeInSubtree<ScrollViewer>();
+            var lastContainer = inner.ContainerFromIndex(lastVisible) as FrameworkElement;
+            Verify.IsNotNull(scrollViewer);
+            Verify.IsNotNull(lastContainer);
+            Rect bounds = lastContainer.TransformToVisual(scrollViewer).TransformBounds(
+                new Rect(0, 0, lastContainer.ActualWidth, lastContainer.ActualHeight));
+            double viewport = vertical ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
+            Verify.IsTrue(viewport > 0);
+            Verify.IsTrue(vertical ? bounds.Bottom >= viewport - bounds.Height : bounds.Right >= viewport - bounds.Width,
+                "Realized containers must fill the scrolling viewport to within one item.");
+        }
+
+        private sealed partial class SynchronousStartupSource : ObservableCollection<string>, ISupportIncrementalLoading
+        {
+            private TaskCompletionSource<LoadMoreItemsResult> pendingLoad;
+            private uint pendingCount;
+
+            public List<uint> RequestedCounts { get; } = new List<uint>();
+            public int RequestsBeforeFirstItemMeasure { get; private set; } = -1;
+            public bool HasMoreItems => LoadingEnabled && Count < 64 && RequestedCounts.Count < 64;
+            public bool LoadingEnabled { get; set; } = true;
+            public uint MaximumBatchSize { get; set; } = 64;
+            public bool HoldCompletion { get; set; }
+            public bool HoldSubsequentLoads { get; set; }
+            public int EmptyLoadsRemaining { get; set; }
+
+            public SynchronousStartupSource(bool seeded)
+            {
+                if (seeded)
+                {
+                    Add("seed");
+                }
+            }
+
+            public void RecordFirstItemMeasure()
+            {
+                if (RequestsBeforeFirstItemMeasure == -1)
+                {
+                    RequestsBeforeFirstItemMeasure = RequestedCounts.Count;
+                }
+            }
+
+            public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count)
+            {
+                RequestedCounts.Add(count);
+                return AsyncInfo.Run(_ =>
+                {
+                    if (HoldCompletion || (HoldSubsequentLoads && RequestedCounts.Count > 1))
+                    {
+                        Verify.IsNull(pendingLoad, "Only one load may be outstanding.");
+                        pendingCount = count;
+                        pendingLoad = new TaskCompletionSource<LoadMoreItemsResult>();
+                        return pendingLoad.Task;
+                    }
+                    return Task.FromResult(AddItems(count));
+                });
+            }
+
+            public void CompletePendingLoad()
+            {
+                Verify.IsNotNull(pendingLoad);
+                var completion = pendingLoad;
+                pendingLoad = null;
+                HoldCompletion = false;
+                completion.SetResult(AddItems(pendingCount));
+            }
+
+            private LoadMoreItemsResult AddItems(uint count)
+            {
+                if (EmptyLoadsRemaining > 0)
+                {
+                    EmptyLoadsRemaining--;
+                    return new LoadMoreItemsResult();
+                }
+                uint returned = Math.Min(Math.Min(count, MaximumBatchSize), (uint)(64 - Count));
+                for (uint index = 0; index < returned; index++)
+                {
+                    Add(Count.ToString());
+                }
+                return new LoadMoreItemsResult { Count = returned };
+            }
+        }
+
+        private sealed partial class StartupListView : ListView
+        {
+            private readonly Action itemMeasured;
+
+            public StartupListView(Action itemMeasured)
+            {
+                this.itemMeasured = itemMeasured;
+            }
+
+            protected override DependencyObject GetContainerForItemOverride()
+            {
+                return new StartupListViewItem(itemMeasured);
+            }
+        }
+
+        private sealed partial class StartupListViewItem : ListViewItem
+        {
+            private readonly Action measured;
+
+            public StartupListViewItem(Action measured)
+            {
+                this.measured = measured;
+            }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                Size desired = base.MeasureOverride(availableSize);
+                measured();
+                return desired;
+            }
         }
 
         private async void LoadMoreItemsAsyncHelper(ListViewBase lvb)
