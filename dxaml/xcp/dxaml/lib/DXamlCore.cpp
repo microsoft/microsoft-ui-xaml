@@ -110,6 +110,7 @@
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
+#include "RuntimeProfiler.h"
 #include <XamlProfilerTracing.h>
 #include "XamlOptionalChanges.g.h"
 
@@ -577,6 +578,8 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     {
         IFC(UpdateAnimationsEnabled());
     }
+
+    RuntimeProfiler::FireStartupEvent();
 
 Cleanup:
     if (FAILED(hr))

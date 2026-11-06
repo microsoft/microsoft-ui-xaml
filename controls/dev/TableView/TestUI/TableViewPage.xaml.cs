@@ -1042,6 +1042,9 @@ namespace MUXControlsTestApp
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
         {
             BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;
+            RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
+            ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
+            ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the
@@ -1055,6 +1058,72 @@ namespace MUXControlsTestApp
             }
 
             BasicTableView.CanUserSortColumns = ((CheckBox)sender).IsChecked == true;
+        }
+
+        private void OnCanUserResizeColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserResizeColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserResizeColumns = BasicTableView.CanUserResizeColumns;
+            }
+        }
+
+        private void OnHideColumnHeadersToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? TableViewHeadersVisibility.None : TableViewHeadersVisibility.Column;
+            BasicTableView.HeadersVisibility = visibility;
+            ScrollingTableView.HeadersVisibility = visibility;
+            RtlTableView.HeadersVisibility = visibility;
+        }
+
+        private void OnEmptyBasicToggled(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.ItemsSource = ((CheckBox)sender).IsChecked == true ? new ObservableCollection<TableViewTestPerson>() : _basicItems;
+        }
+
+        // A menu makes RtlAge, beyond the viewport, the only actionable column of the read-only RTL
+        // table, and the hierarchy table becomes a wide read-only tree.
+        private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
+        {
+            bool on = ((CheckBox)sender).IsChecked == true;
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "Age" });
+            RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
+            RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
+            HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
+            HierarchyTable.IsReadOnly = on;
+            if (on && ScrollingTableView.Columns.Count == 4)
+            {
+                ScrollingTableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Link",
+                    Width = new GridLength(160),
+                    CellTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock VerticalAlignment='Center'><Hyperlink AutomationProperties.Name='" + Facts.CellHyperlink + "'>Open</Hyperlink></TextBlock>" +
+                        "</DataTemplate>"),
+                });
+            }
+            else if (!on && ScrollingTableView.Columns.Count > 4)
+            {
+                ScrollingTableView.Columns.RemoveAt(4);
+            }
+        }
+
+        // Read-only, ScrollCity is then the last actionable column, right after the frozen one, with
+        // wide trailing content.
+        private void OnScrollCityMenuToggled(object sender, RoutedEventArgs e)
+        {
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "City" });
+            ScrollingTableView.Columns[1].CellContextFlyout = ((CheckBox)sender).IsChecked == true ? menu : null;
+        }
+
+        // App code scrolling the body: no pointer or wheel input reaches the table.
+        private void OnScrollScrollingBodyClick(object sender, RoutedEventArgs e)
+        {
+            _scrollingBodyScroller?.ChangeView(_scrollingBodyScroller.HorizontalOffset + 120, null, null, true);
         }
 
         // Page switching without a Pivot: hosting the TableViews in a Pivot asserts in
@@ -1209,6 +1278,16 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
+        {
+            _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
+        }
+
+        private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.Select(3);
         }
 
         private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)

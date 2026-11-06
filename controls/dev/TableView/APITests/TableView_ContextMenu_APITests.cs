@@ -547,6 +547,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Button after = null;
             var f = LoadFixture(configure: x =>
             {
+                // Headers hidden: the body is the table's tab stop.
+                x.Table.HeadersVisibility = TableViewHeadersVisibility.None;
                 after = new Button { Content = "After" };
                 x.Root.Child = null;
                 var panel = new StackPanel();
@@ -584,7 +586,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "A row menu requested in the same turn as a cell focus on that drilled-in row leaves the row at row level, so closing the menu restores focus to the row (GH #12442).")]
         public void RowRequestAfterSameTurnCellFocusKeepsRowLevel()
         {
-            var f = LoadFixture();
+            var f = LoadFixture(configure: x => x.OfficeColumn.CellContextFlyout = x.CellMenu);
             RunOnUIThread.Execute(() => GetCellPeer(f.Table, f.P(4), NameCol).SetFocus());
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() => Verify.IsFalse(RowOf(f, 4).IsTabStop, "Precondition: row 4 is at cell level."));
@@ -609,8 +611,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A row menu opened from a cell request focuses that cell and leaves the selection unchanged.")]
-        public void RowMenuFromCellRequestFocusesCell()
+        [TestProperty("Description", "A row menu opened from a request on an inactive cell focuses that cell's row and leaves the selection unchanged.")]
+        public void RowMenuFromInactiveCellRequestFocusesRow()
         {
             var f = LoadFixture();
             SelectRow(f, 1);
@@ -621,8 +623,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreSame(CellOf(f, 5, OfficeCol), f.Recorder.Opened[0].FocusAtOpening,
-                    $"Focus must be on the row 5 Office cell when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
+                // A read-only cell with no tooltip, control or menu is not a focus target.
+                Verify.AreSame(RowOf(f, 5), f.Recorder.Opened[0].FocusAtOpening,
+                    $"Focus must be on row 5 when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
                 Verify.AreSame(f.P(1), f.Table.SelectedItem, "Selection must be unchanged.");
             });
             CloseMenus(f);

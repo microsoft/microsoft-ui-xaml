@@ -201,6 +201,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "In a read-only table a cell whose only action is a context menu still takes keyboard focus, and Shift+F10 opens its menu.")]
+        public void ShiftF10OnReadOnlyCellWithOnlyAMenuOpensCellMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+
+                VerifyMenuOpened(CellMenu, ContextMenuName(4), CellFocus(4, ContextMenuNameColumn));
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Shift+F10 on a focused row (not a cell) opens the row's menu, not a column's cell menu.")]
         public void ShiftF10OnRowOpensRowMenu()
         {
