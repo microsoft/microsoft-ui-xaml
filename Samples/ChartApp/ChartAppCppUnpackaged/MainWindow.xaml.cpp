@@ -716,31 +716,26 @@ namespace winrt::ChartsSample::implementation
     {
         auto text = ErrorText(error);
         status.Text(text);
-        AnnounceStatus(text);
+        AnnounceStatus(status, text);
     }
 
-    void MainWindow::AnnounceStatus(hstring const& message)
+    void MainWindow::AnnounceStatus(TextBlock const& target, hstring const& message)
     {
         if (message.empty()) return;
         // A live-region update is dropped when focus moves at the same time (leaving an edited field,
-        // or a button disabled by the edit), so raise a notification after focus has settled.
-        DispatcherQueue().TryEnqueue(DispatcherQueuePriority::Low, [weak = get_weak(), message]
+        // or a button disabled by the edit), so raise the event after focus has settled.
+        DispatcherQueue().TryEnqueue(DispatcherQueuePriority::Low, [weak = get_weak(), target]
         {
-            auto self = weak.get();
-            if (!self) return;
-            if (auto peer = Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(self->StatusText()))
+            if (!weak.get()) return;
+            if (auto peer = Automation::Peers::FrameworkElementAutomationPeer::FromElement(target))
             {
-                peer.RaiseNotificationEvent(
-                    Automation::Peers::AutomationNotificationKind::Other,
-                    Automation::Peers::AutomationNotificationProcessing::MostRecent,
-                    message,
-                    L"ChartsSampleStatus");
+                peer.RaiseAutomationEvent(Automation::Peers::AutomationEvents::LiveRegionChanged);
             }
         });
     }
 
     void MainWindow::ApplyEdit(std::function<void()> const& edit, TextBlock const& status, hstring const& message,
-        Chart const& chart, std::function<void()> const& restore, hstring const& announcement)
+        Chart const& chart, std::function<void()> const& restore)
     {
         if (!m_ready || m_syncing || m_closing) return;
         try
@@ -749,7 +744,7 @@ namespace winrt::ChartsSample::implementation
             // Brush changes alone can leave the rendered plot at its previous appearance.
             if (chart) chart.InvalidateArrange();
             status.Text(message);
-            AnnounceStatus(announcement.empty() ? message : announcement);
+            AnnounceStatus(status, message);
         }
         catch (hresult_error const& error)
         {
@@ -790,7 +785,7 @@ namespace winrt::ChartsSample::implementation
             }
             synchronize();
             status.Text(message);
-            AnnounceStatus(message);
+            AnnounceStatus(status, message);
         }
         catch (hresult_error const& error)
         {
@@ -799,7 +794,7 @@ namespace winrt::ChartsSample::implementation
                 ? hstring{ area ? L"The area option is not valid. Choose an available option." : L"The bar option is not valid. Choose an available option." }
                 : hstring{ area ? L"Area options: " : L"Bar options: " } + ErrorText(error);
             status.Text(text);
-            AnnounceStatus(text);
+            AnnounceStatus(status, text);
         }
     }
 
@@ -817,7 +812,7 @@ namespace winrt::ChartsSample::implementation
             SyncAxisAvailability();
             UpdateDataText();
             PresentationKnobStatusText().Text(message);
-            AnnounceStatus(message);
+            AnnounceStatus(PresentationKnobStatusText(), message);
         }
         catch (hresult_error const& error)
         {
@@ -825,7 +820,7 @@ namespace winrt::ChartsSample::implementation
             SyncAxisAvailability();
             auto const text = ErrorText(error);
             PresentationKnobStatusText().Text(text);
-            AnnounceStatus(text);
+            AnnounceStatus(PresentationKnobStatusText(), text);
         }
     }
 
@@ -1252,7 +1247,7 @@ namespace winrt::ChartsSample::implementation
             m_secondaryState->stop.store(true);
             SecondaryButton().IsEnabled(false);
             StatusText().Text(L"Closing the secondary UI thread...");
-            AnnounceStatus(L"Closing the secondary UI thread...");
+            AnnounceStatus(StatusText(), L"Closing the secondary UI thread...");
             return;
         }
         m_secondaryState = std::make_shared<SecondaryChartState>();
@@ -1262,14 +1257,14 @@ namespace winrt::ChartsSample::implementation
             m_secondaryThread = std::thread{ RunSecondaryWindow, m_secondaryState };
             m_secondaryPoll.Start();
             StatusText().Text(L"Opening an independently updating chart on a secondary UI thread.");
-            AnnounceStatus(L"Opening an independently updating chart on a secondary UI thread.");
+            AnnounceStatus(StatusText(), L"Opening an independently updating chart on a secondary UI thread.");
         }
         catch (std::system_error const&)
         {
             m_secondaryState.reset();
             m_secondaryLifetime = nullptr;
             StatusText().Text(L"Unable to start the secondary UI thread. Close other sample windows and try again.");
-            AnnounceStatus(L"Unable to start the secondary UI thread. Close other sample windows and try again.");
+            AnnounceStatus(StatusText(), L"Unable to start the secondary UI thread. Close other sample windows and try again.");
         }
     }
 
@@ -1281,7 +1276,7 @@ namespace winrt::ChartsSample::implementation
         m_secondaryPoll.Stop();
         auto const secondaryMessage = m_secondaryState->error.empty() ? hstring{ L"Secondary UI thread closed. Toggle to open it again." } : m_secondaryState->error;
         StatusText().Text(secondaryMessage);
-        AnnounceStatus(secondaryMessage);
+        AnnounceStatus(StatusText(), secondaryMessage);
         m_secondaryState.reset();
         m_secondaryLifetime = nullptr;
         SecondaryButton().IsEnabled(true);
@@ -1765,8 +1760,8 @@ namespace winrt::ChartsSample::implementation
             axis.IntervalType(IntervalTypes[index]);
             warning.Text(note);
             warning.Visibility(note.empty() ? Visibility::Collapsed : Visibility::Visible);
-        }, StatusText(), L"Date interval updated.", nullptr, [&] { box.SelectedIndex(static_cast<int32_t>(axis.IntervalType())); },
-            note.empty() ? hstring{} : L"Date interval updated. " + note);
+        }, StatusText(), note.empty() ? hstring{ L"Date interval updated." } : hstring{ std::wstring{ L"Date interval updated. " } + note.c_str() }, nullptr,
+            [&] { box.SelectedIndex(static_cast<int32_t>(axis.IntervalType())); });
     }
 
     void MainWindow::ApplyDateFormat(bool monthly)
