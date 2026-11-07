@@ -907,7 +907,7 @@ void TableViewCellAutomationPeer::RealizeCore()
         {
             if (auto const cellElement = cell.try_as<winrt::FrameworkElement>())
             {
-                cellElement.StartBringIntoView();
+                tableImpl->StartExplicitBringIntoViewInternal(cellElement);
                 return;
             }
         }
@@ -915,7 +915,7 @@ void TableViewCellAutomationPeer::RealizeCore()
 
     if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
     {
-        frameworkElement.StartBringIntoView();
+        tableImpl->StartExplicitBringIntoViewInternal(frameworkElement);
     }
 }
 

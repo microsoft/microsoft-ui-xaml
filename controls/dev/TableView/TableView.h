@@ -367,6 +367,15 @@ public:
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
     // Releases the rows repeater's layout anchor, made by GetOrCreateElement(anchor's index), without scrolling.
     void ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor);
+    // Explicit scroll requests (UIA ScrollItem / ScrollIntoView, realize) are honored even for a row a toggle kept focused.
+    void StartExplicitBringIntoViewInternal(winrt::UIElement const& element, winrt::BringIntoViewOptions const& options = nullptr);
+    static bool IsRowElementArrangedInternal(winrt::UIElement const& element) { return IsRowElementArranged(element); }
+    // Scrolls the body to a row the repeater holds without a laid-out position (a focused row it parked
+    // off-screen), estimating where it sits from the arranged rows.
+    bool ScrollBodyToUnarrangedRowInternal(int32_t index);
+    void ArmUnarrangedRowReveal(winrt::weak_ref<winrt::UIElement> const& weakElement, int32_t attemptsLeft);
+    void RevokeUnarrangedRowReveal();
+    static constexpr int32_t s_unarrangedRowRevealAttempts{ 6 };
 
     // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
     // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
@@ -1176,11 +1185,25 @@ private:
         winrt::FocusState gestureState = winrt::FocusState::Unfocused);
     winrt::hstring CaptureFocusedContainerForRestore();
     void RestoreContainerFocusIfPending(winrt::hstring const& identity);
+    void ClearPendingContainerFocus();
+    // Revokes an armed restore and clears its state along with any capture.
+    void CancelContainerFocusRestore();
     void ArmContainerFocusRestore(
-        winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft);
+        winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft,
+        winrt::hstring const& bystanderIdentity = {}, int32_t bystanderColumn = -1);
     bool FocusContainerByIdentity(
         winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, bool finalAttempt);
+    // Focus on another row or header when a toggle reshapes: keep it on that item, or move it to the
+    // toggled container when the toggle collapsed the item away. bystanderColumn < 0: row level.
+    bool FocusBystanderByIdentity(
+        winrt::hstring const& bystanderIdentity, int32_t bystanderColumn, winrt::hstring const& toggledIdentity,
+        winrt::FocusState focusState, bool finalAttempt);
+    bool FocusUnrealizedBystander(
+        int32_t index, winrt::com_ptr<::IUnknown> const& expected, int32_t bystanderColumn, winrt::FocusState focusState);
     static constexpr int32_t s_containerFocusRestoreAttempts{ 4 };
+    void QuietBystanderReveals(winrt::UIElement const& element);
+    void ClearBystanderQuietReveal();
+    static constexpr int32_t s_bystanderQuietFrames{ 4 };
     bool CanRestoreContainerFocus();
     // Row identity for a realized container. Identity is index-independent once captured.
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
@@ -1316,7 +1339,19 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     bool m_pendingGroupFocusFromPointerGesture{ false };
+    winrt::hstring m_pendingGroupFocusBystanderIdentity{};
+    int32_t m_pendingGroupFocusBystanderColumn{ -1 };
+    // The container FocusBystanderByIdentity found focused; confirmed on its next attempt.
+    winrt::weak_ref<winrt::UIElement> m_bystanderFocusSettling{};
+    // The bystander an armed restore will focus; user input cancels that restore.
+    winrt::hstring m_armedBystanderIdentity{};
+    // The row that restore kept focused; its stale focus reveals are dropped for a few frames, or until
+    // focus moves or an explicit scroll request arrives.
+    winrt::weak_ref<winrt::UIElement> m_bystanderQuietReveal{};
+    int32_t m_bystanderQuietFrames{ 0 };
+    winrt::CompositionTarget::Rendering_revoker m_bystanderQuietRendering{};
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
+    winrt::event_token m_unarrangedRowRevealToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
     // Only edge that restamps realized rows when hierarchy metadata changes without the row set

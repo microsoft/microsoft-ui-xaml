@@ -838,11 +838,7 @@ try
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
 
-    if (m_pendingGroupFocusLayoutToken.value)
-    {
-        LayoutUpdated(m_pendingGroupFocusLayoutToken);
-        m_pendingGroupFocusLayoutToken = {};
-    }
+    CancelContainerFocusRestore();
     if (m_pendingGroupRowRefreshLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupRowRefreshLayoutToken);
@@ -3861,11 +3857,8 @@ void TableView::OnTableViewUnloaded()
     m_headerCollapseFocusRevoker.revoke();
     RevokeTipInitializationLayout();
 
-    if (m_pendingGroupFocusLayoutToken.value)
-    {
-        LayoutUpdated(m_pendingGroupFocusLayoutToken);
-        m_pendingGroupFocusLayoutToken = {};
-    }
+    CancelContainerFocusRestore();
+    RevokeUnarrangedRowReveal();
     if (m_pendingGroupRowRefreshLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupRowRefreshLayoutToken);
@@ -3893,9 +3886,6 @@ void TableView::OnTableViewUnloaded()
     m_terminalGridLineColumnIndex = -1;
     m_terminalGridLineHorizontalOffset = std::numeric_limits<double>::quiet_NaN();
     m_terminalGridLineVerticalOffset = std::numeric_limits<double>::quiet_NaN();
-    m_pendingGroupFocusIdentity.clear();
-    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
-    m_pendingGroupFocusFromPointerGesture = false;
 
     // Null ItemsSource on unload to release repeater cache work before it ticks on a detached subtree.
     // OnRowsRepeaterLoaded re-sources cached pages when they return.

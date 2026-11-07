@@ -295,9 +295,7 @@ void TableView::CaptureContainerFocusForRestore(
     winrt::FocusState gestureState)
 {
     // Clear any prior capture: a fresh toggle supersedes an earlier one whose restore has not run.
-    m_pendingGroupFocusIdentity.clear();
-    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
-    m_pendingGroupFocusFromPointerGesture = false;
+    ClearPendingContainerFocus();
 
     if (identity.empty() || !container)
     {
@@ -325,6 +323,33 @@ void TableView::CaptureContainerFocusForRestore(
     }
     if (!focusInContainer)
     {
+        // Focus on another row or header. A grouped-tree toggle rebuilds with a Reset that recycles
+        // that container too, and the repeater's rescue would move focus and scroll (#12456).
+        int32_t row = -1;
+        int32_t column = -1;
+        bool cellLevel = false;
+        if (!m_tableViewSourceRowMetadata || !TryResolveLiveBodyFocusPosition(row, column, cellLevel))
+        {
+            return;
+        }
+
+        winrt::hstring bystander;
+        try
+        {
+            bystander = m_tableViewSourceRowMetadata->GetIdentity(row);
+        }
+        catch (...)
+        {
+            return;
+        }
+
+        if (!bystander.empty() && bystander != identity)
+        {
+            m_pendingGroupFocusIdentity = identity;
+            m_pendingGroupFocusBystanderIdentity = bystander;
+            m_pendingGroupFocusBystanderColumn = cellLevel ? column : -1;
+            m_pendingGroupFocusState = GetRestoreFocusStateFor(focused);
+        }
         return;
     }
 
@@ -374,9 +399,7 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
 {
     // A bulk expand/collapse supersedes any earlier capture whose restore has not run, exactly as
     // a fresh single-group toggle does.
-    m_pendingGroupFocusIdentity.clear();
-    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
-    m_pendingGroupFocusFromPointerGesture = false;
+    ClearPendingContainerFocus();
 
     auto const root = XamlRoot();
     if (!root)
@@ -635,20 +658,47 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 
     const auto focusState = m_pendingGroupFocusState;
     const bool fromPointerGesture = m_pendingGroupFocusFromPointerGesture;
-    m_pendingGroupFocusIdentity.clear();
-    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
-    m_pendingGroupFocusFromPointerGesture = false;
+    auto const bystanderIdentity = m_pendingGroupFocusBystanderIdentity;
+    const int32_t bystanderColumn = m_pendingGroupFocusBystanderColumn;
+    ClearPendingContainerFocus();
+    m_bystanderFocusSettling = nullptr;
 
     // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
     // header container during the next layout pass; focusing now would land on a container layout
     // is about to recycle, dropping focus a second time. A one-shot LayoutUpdated fires once the
     // tree has settled.
-    ArmContainerFocusRestore(identity, focusState, fromPointerGesture, s_containerFocusRestoreAttempts);
+    ArmContainerFocusRestore(identity, focusState, fromPointerGesture, s_containerFocusRestoreAttempts,
+        bystanderIdentity, bystanderColumn);
 }
 
-// Re-armed while the header is still unarranged after the relayout; the last attempt focuses anyway.
+void TableView::ClearPendingContainerFocus()
+{
+    m_pendingGroupFocusIdentity.clear();
+    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
+    m_pendingGroupFocusBystanderIdentity.clear();
+    m_pendingGroupFocusBystanderColumn = -1;
+}
+
+void TableView::CancelContainerFocusRestore()
+{
+    if (m_pendingGroupFocusLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupFocusLayoutToken);
+        m_pendingGroupFocusLayoutToken = {};
+    }
+    ClearPendingContainerFocus();
+    m_bystanderFocusSettling = nullptr;
+    m_armedBystanderIdentity.clear();
+    ClearBystanderQuietReveal();
+}
+
+// Re-armed while the target is not yet laid out (a header still unarranged, or a row the repeater
+// has not rebound after the Reset) and once more to confirm a bystander's focus settled; the last
+// attempt focuses anyway.
 void TableView::ArmContainerFocusRestore(
-    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft)
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft,
+    winrt::hstring const& bystanderIdentity, int32_t bystanderColumn)
 {
     if (m_pendingGroupFocusLayoutToken.value)
     {
@@ -657,8 +707,10 @@ void TableView::ArmContainerFocusRestore(
     }
 
     auto weakThis = get_weak();
+    const uint64_t generation = m_rowMetadataGeneration;
     m_pendingGroupFocusLayoutToken = LayoutUpdated(
-        [weakThis, identity, focusState, fromPointerGesture, attemptsLeft](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, identity, focusState, fromPointerGesture, attemptsLeft, bystanderIdentity, bystanderColumn, generation](
+            winrt::IInspectable const&, winrt::IInspectable const&)
         {
             auto strongThis = weakThis.get();
             if (!strongThis)
@@ -670,6 +722,15 @@ void TableView::ArmContainerFocusRestore(
             {
                 strongThis->LayoutUpdated(strongThis->m_pendingGroupFocusLayoutToken);
                 strongThis->m_pendingGroupFocusLayoutToken = {};
+            }
+            strongThis->m_armedBystanderIdentity.clear();
+
+            // Identities are value strings: after an ItemsSource swap one could name an unrelated row.
+            if (generation != strongThis->m_rowMetadataGeneration)
+            {
+                strongThis->m_bystanderFocusSettling = nullptr;
+                strongThis->ClearBystanderQuietReveal();
+                return;
             }
 
             // This runs from a LAYOUT callback, where an escaping exception reaches no app handler
@@ -684,9 +745,13 @@ void TableView::ArmContainerFocusRestore(
                 }
 
                 const bool finalAttempt = attemptsLeft <= 1;
-                if (!strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture, finalAttempt))
+                const bool done = bystanderIdentity.empty()
+                    ? strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture, finalAttempt)
+                    : strongThis->FocusBystanderByIdentity(bystanderIdentity, bystanderColumn, identity, focusState, finalAttempt);
+                if (!done)
                 {
-                    strongThis->ArmContainerFocusRestore(identity, focusState, fromPointerGesture, attemptsLeft - 1);
+                    strongThis->ArmContainerFocusRestore(identity, focusState, fromPointerGesture, attemptsLeft - 1,
+                        bystanderIdentity, bystanderColumn);
                 }
             }
             catch (...)
@@ -694,6 +759,7 @@ void TableView::ArmContainerFocusRestore(
                 // Best-effort focus restore: the header or row can be gone by the time layout settles.
             }
         });
+    m_armedBystanderIdentity = bystanderIdentity;
 }
 
 // Returns false only when a non-final attempt found the group header not yet arranged.
@@ -808,6 +874,200 @@ bool TableView::FocusContainerByIdentity(
     return true;
 }
 
+// The item a row or group header container currently shows.
+static winrt::com_ptr<::IUnknown> ShownRowItem(winrt::UIElement const& element)
+{
+    winrt::IInspectable shown{ nullptr };
+    if (auto const row = element.try_as<winrt::TableViewRow>())
+    {
+        shown = row.DataContext();
+    }
+    else if (auto const header = element.try_as<winrt::TableViewGroupHeader>())
+    {
+        shown = winrt::get_self<TableViewGroupHeader>(header)->GroupEntryInternal();
+    }
+    return shown.try_as<::IUnknown>();
+}
+
+// Returns false while a non-final attempt waits for the repeater to lay out the Reset, or for focus to
+// settle on the item's container.
+bool TableView::FocusBystanderByIdentity(
+    winrt::hstring const& bystanderIdentity, int32_t bystanderColumn, winrt::hstring const& toggledIdentity,
+    winrt::FocusState focusState, bool finalAttempt)
+{
+    if (!m_tableViewSourceRowMetadata)
+    {
+        return true;
+    }
+
+    int32_t index = -1;
+    if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(bystanderIdentity, index) || index < 0)
+    {
+        // The toggle collapsed the item away; focus moves up to the collapsed row or header, as in TreeView.
+        return FocusContainerByIdentity(toggledIdentity, focusState, false /* fromPointerGesture */, finalAttempt);
+    }
+
+    auto const repeater = m_rowsRepeater.get();
+    auto const sourceView = repeater ? repeater.ItemsSourceView() : nullptr;
+    if (!sourceView || index >= sourceView.Count())
+    {
+        return true;
+    }
+
+    auto const expected = GetRowsSourceItemAt(index).try_as<::IUnknown>();
+
+    auto const element = repeater.TryGetElement(index);
+    if (!element)
+    {
+        // Scrolled out of the realized range: only focus kept it realized, and the Reset cleared it.
+        m_bystanderFocusSettling = nullptr;
+        return FocusUnrealizedBystander(index, expected, bystanderColumn, focusState);
+    }
+
+    // The repeater can still hold the pre-reshape container at this index until it lays out the Reset.
+    const bool showsItem = expected && ShownRowItem(element).get() == expected.get();
+    if (showsItem && !IsRowElementArranged(element) && IsBodyFocusInContainer(element))
+    {
+        // Still focused where the repeater parks a focused row scrolled out of view.
+        m_bystanderFocusSettling = nullptr;
+        return true;
+    }
+    if (!IsRowElementArranged(element) || !showsItem)
+    {
+        m_bystanderFocusSettling = nullptr;
+        if (finalAttempt)
+        {
+            return true;
+        }
+        InvalidateArrange();
+        return false;
+    }
+
+    // Focused where it is, even if the toggle pushed it partly or wholly out of view, as a splice in
+    // an ungrouped tree leaves it; the reveals this focus and the repeater's rescue queued are
+    // dropped. Confirmed on one more layout pass, in case the repeater had not laid out the Reset yet.
+    const bool wasFocused = IsBodyFocusInContainer(element);
+    if (wasFocused && (finalAttempt || m_bystanderFocusSettling.get() == element))
+    {
+        m_bystanderFocusSettling = nullptr;
+        QuietBystanderReveals(element);
+        return true;
+    }
+
+    const bool focused = wasFocused ||
+        (bystanderColumn >= 0
+            ? FocusRealizedRowCell(element, bystanderColumn, focusState)
+            : FocusRowContainerInternal(element, focusState));
+    if (!focused)
+    {
+        m_bystanderFocusSettling = nullptr;
+        return true;
+    }
+
+    QuietBystanderReveals(element);
+    if (finalAttempt)
+    {
+        m_bystanderFocusSettling = nullptr;
+        return true;
+    }
+    m_bystanderFocusSettling = winrt::make_weak(element);
+    InvalidateArrange();
+    return false;
+}
+
+// Realizes the item where it is instead of scrolling to it. GetOrCreateElement makes it the layout
+// anchor, and a layout pass around an anchor outside the realized range re-realizes the rows on screen
+// around it; the anchor is handed to a row in view before any layout runs. Focus then pins it,
+// off-screen, as the repeater keeps any focused row scrolled out of view.
+bool TableView::FocusUnrealizedBystander(
+    int32_t index, winrt::com_ptr<::IUnknown> const& expected, int32_t bystanderColumn, winrt::FocusState focusState)
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || !expected)
+    {
+        return true;
+    }
+
+    winrt::UIElement inView{ nullptr };
+    int32_t inViewIndex = -1;
+    const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+    for (int32_t i = 0; i < childCount; ++i)
+    {
+        auto const child = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::UIElement>();
+        const int32_t childIndex = child ? repeater.GetElementIndex(child) : -1;
+        if (childIndex >= 0 && IsRowElementArranged(child) && IsRowElementInViewport(child))
+        {
+            inView = child;
+            inViewIndex = childIndex;
+            break;
+        }
+    }
+    if (!inView)
+    {
+        return true;
+    }
+
+    winrt::UIElement element{ nullptr };
+    try
+    {
+        element = repeater.GetOrCreateElement(index);
+        repeater.GetOrCreateElement(inViewIndex);
+    }
+    catch (...)
+    {
+    }
+    ReleaseRowsRepeaterAnchor(inView);
+
+    if (!element || repeater.GetElementIndex(element) != index || ShownRowItem(element).get() != expected.get())
+    {
+        return true;
+    }
+
+    const bool focused = bystanderColumn >= 0
+        ? FocusRealizedRowCell(element, bystanderColumn, focusState)
+        : FocusRowContainerInternal(element, focusState);
+    if (focused)
+    {
+        QuietBystanderReveals(element);
+    }
+    return true;
+}
+
+// Scoped to the restore. The stale reveals of the repeater's rescue and of the restore's own focus
+// arrive within the next frame (measured: none after the first), so the window closes a few frames on.
+void TableView::QuietBystanderReveals(winrt::UIElement const& element)
+{
+    m_bystanderQuietReveal = winrt::make_weak(element);
+    m_bystanderQuietFrames = 0;
+    m_bystanderQuietRendering = winrt::CompositionTarget::Rendering(winrt::auto_revoke,
+        [weakThis = get_weak()](winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            if (auto strongThis = weakThis.get();
+                strongThis && (!strongThis->m_bystanderQuietReveal || ++strongThis->m_bystanderQuietFrames >= s_bystanderQuietFrames))
+            {
+                strongThis->ClearBystanderQuietReveal();
+            }
+        });
+}
+
+void TableView::ClearBystanderQuietReveal()
+{
+    m_bystanderQuietReveal = nullptr;
+    m_bystanderQuietRendering.revoke();
+}
+
+void TableView::StartExplicitBringIntoViewInternal(winrt::UIElement const& element, winrt::BringIntoViewOptions const& options)
+{
+    ClearBystanderQuietReveal();
+    if (options)
+    {
+        element.StartBringIntoView(options);
+    }
+    else
+    {
+        element.StartBringIntoView();
+    }
+}
 void TableView::ExpandAllGroups()
 {
     SetBulkExpansion(true, BulkExpansionAxis::Groups);

@@ -266,9 +266,15 @@ namespace
             {
                 ThrowElementNotAvailable();
             }
+            // A focused row the repeater parked off-screen reports no position of its own.
+            if (!TableView::IsRowElementArrangedInternal(row))
+            {
+                Realize();
+                return;
+            }
             winrt::BringIntoViewOptions options;
             options.AnimationDesired(false);
-            row.StartBringIntoView(options);
+            winrt::get_self<TableView>(m_table.get())->StartExplicitBringIntoViewInternal(row, options);
         }
 
     private:
