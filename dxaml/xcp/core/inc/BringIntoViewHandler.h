@@ -54,6 +54,15 @@ public:
         _In_ XFLOAT physicalPixels);
 
 //private:
+    static _Check_return_ HRESULT GetFocusedElementBoundingRect(
+        _In_ CUIElement* rootElement,
+        _In_ float rootHeightInDips,
+        _In_ bool isIHMShowing,
+        _In_ CUIElement* focusedElement,
+        _In_ CUIElement* innerScroller,
+        _Out_ XRECTF_RB& rectFocusedElementGlobal,
+        _Out_ XRECTF& rectFocusedElement);
+
     static _Check_return_ HRESULT BringFocusedElementIntoView(
         _In_ CUIElement* const rootElement,
         _In_ const float rootHeightInDips,
