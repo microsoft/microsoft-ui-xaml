@@ -2278,24 +2278,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"scrollViewerBounds: (%f, %f, %f, %f)", scrollViewerBounds.X, scrollViewerBounds.Y, scrollViewerBounds.Width, scrollViewerBounds.Height);
             LOG_OUTPUT(L"visibleBounds:      (%f, %f, %f, %f)", visibleBounds.X, visibleBounds.Y, visibleBounds.Width, visibleBounds.Height);
 
-            wf::Point topLeftCorner = { 0, 0 };
-
             // If we're on desktop with windowed popups enabled, then we expect the popup to be able to overlap with the window chrome.
             if (PopupHelper::AreWindowedPopupsEnabled())
             {
-                wf::Rect windowBounds = TestServices::WindowHelper->WindowBounds;
-                LOG_OUTPUT(L"windowBounds:       (%f, %f, %f, %f)", windowBounds.X, windowBounds.Y, windowBounds.Width, windowBounds.Height);
-
-                topLeftCorner.X -= windowBounds.X;
-                topLeftCorner.Y -= windowBounds.Y;
-                visibleBounds.X += windowBounds.X;
-                visibleBounds.Y += windowBounds.Y;
+                wf::Point screenOffset = {};
+                wf::Point targetPointScreenPhysical = {};
+                wf::Rect inputPaneOccludeRectScreenLogical = {};
+                TestServices::WindowHelper->GetAvailableMonitorBounds(
+                    comboBox,
+                    wf::Point(0, 0),
+                    &visibleBounds,
+                    &screenOffset,
+                    &targetPointScreenPhysical,
+                    &inputPaneOccludeRectScreenLogical);
+                LOG_OUTPUT(L"availableMonitorBounds: (%f, %f, %f, %f)", visibleBounds.X, visibleBounds.Y, visibleBounds.Width, visibleBounds.Height);
             }
 
-            VERIFY_IS_TRUE(scrollViewerBounds.X >= topLeftCorner.X);
-            VERIFY_IS_TRUE(scrollViewerBounds.X + scrollViewerBounds.Width <= topLeftCorner.X + visibleBounds.X + visibleBounds.Width);
-            VERIFY_IS_TRUE(scrollViewerBounds.Y >= topLeftCorner.Y);
-            VERIFY_IS_TRUE(scrollViewerBounds.Y + scrollViewerBounds.Height <= topLeftCorner.Y + visibleBounds.Y + visibleBounds.Height);
+            VERIFY_IS_TRUE(scrollViewerBounds.X >= visibleBounds.X);
+            VERIFY_IS_TRUE(scrollViewerBounds.X + scrollViewerBounds.Width <= visibleBounds.X + visibleBounds.Width);
+            VERIFY_IS_TRUE(scrollViewerBounds.Y >= visibleBounds.Y);
+            VERIFY_IS_TRUE(scrollViewerBounds.Y + scrollViewerBounds.Height <= visibleBounds.Y + visibleBounds.Height);
         });
 
         ComboBoxHelper::CloseComboBox(comboBox);

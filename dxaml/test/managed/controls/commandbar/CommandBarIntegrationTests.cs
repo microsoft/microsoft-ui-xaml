@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates that a submenu is shown on the left of its parent menu when no room is available on the right.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateSubMenuPositioning()
         {
             TestServices.WindowHelper.SetWindowSizeOverride(new Size(1024, 400));
@@ -183,6 +183,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             CommandBarFlyout commandBarFlyout = null;
             AppBarButton secondaryAppBarButton = null;
             MenuFlyout menuFlyout = null;
+            MenuFlyoutItem menuFlyoutItem = null;
             ManualResetEvent menuFlyoutOpenedEvent = new ManualResetEvent(false);
             ManualResetEvent menuFlyoutClosedEvent = new ManualResetEvent(false);
             ManualResetEvent menuFlyoutItemClickEvent = new ManualResetEvent(false);
@@ -201,7 +202,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
                 commandBarFlyout.SecondaryCommands.Add(secondaryAppBarButton);
 
-                var menuFlyoutItem = new MenuFlyoutItem()
+                menuFlyoutItem = new MenuFlyoutItem()
                 {
                     Text = "MenuFlyoutItem",
                     Icon = new SymbolIcon(Symbol.Flag),
@@ -274,14 +275,21 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             {
                 Log.Comment("MenuFlyout expected open");
                 Verify.IsTrue(menuFlyout.IsOpen);
+
+                var itemBounds = menuFlyoutItem.TransformToVisual(rootPanel).TransformBounds(
+                    new Rect(0, 0, menuFlyoutItem.ActualWidth, menuFlyoutItem.ActualHeight));
+                var buttonBounds = secondaryAppBarButton.TransformToVisual(rootPanel).TransformBounds(
+                    new Rect(0, 0, secondaryAppBarButton.ActualWidth, secondaryAppBarButton.ActualHeight));
+                Verify.IsTrue(itemBounds.Left < buttonBounds.Left && itemBounds.Right <= buttonBounds.Right,
+                    "The submenu must open to the left when there is no room on the right.");
             });
 
-            Log.Comment("Moving mouse over expected MenuFlyout position");
-            TestServices.InputHelper.MoveMouse(new Point(675, 95));
+            Log.Comment("Moving mouse over MenuFlyoutItem");
+            TestServices.InputHelper.MoveMouse(menuFlyoutItem);
             TestServices.WindowHelper.WaitForIdle();
 
             Log.Comment("Left-button-clicking over MenuFlyoutItem");
-            TestServices.InputHelper.LeftMouseClick(new Point(675, 95));
+            TestServices.InputHelper.LeftMouseClick(menuFlyoutItem);
             Verify.IsTrue(menuFlyoutItemClickEvent.WaitOne(5000));
             Verify.IsTrue(menuFlyoutClosedEvent.WaitOne(5000));
             TestServices.WindowHelper.WaitForIdle();

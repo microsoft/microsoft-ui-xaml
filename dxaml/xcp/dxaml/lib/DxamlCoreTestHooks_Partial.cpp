@@ -760,6 +760,21 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::ShrinkApplicationViewVisibleBounds(_In
     window->SetShrinkApplicationViewVisibleBounds(enabled);
 }
 
+IFACEMETHODIMP DxamlCoreTestHooks::ShrinkXamlIslandVisibleBounds(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled)
+{
+    IFCPTR_RETURN(xamlRoot);
+    ctl::ComPtr<XamlRoot> root;
+    IFC_RETURN(xamlRoot->QueryInterface(IID_PPV_ARGS(&root)));
+    auto visualTree = root->GetVisualTreeNoRef();
+    IFCEXPECT_RETURN(visualTree);
+    auto contentRoot = visualTree->GetContentRootNoRef();
+    IFCEXPECT_RETURN(contentRoot);
+    auto islandRoot = contentRoot->GetXamlIslandRootNoRef();
+    IFCEXPECT_RETURN(islandRoot);
+    islandRoot->SetShouldShrinkVisibleBoundsForTesting(enabled);
+    return S_OK;
+}
+
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::RequestReplayPreviousPointerUpdate_TempTestHook()
 {
     m_pDXamlCoreNoRef->RequestReplayPreviousPointerUpdate_TempTestHook();
@@ -1114,7 +1129,7 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::SetMockUIAClientsListening()
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::ClearMockUIAClientsListening()
 {
-    DXamlCore::GetCurrent()->SetMockUIAClientsListening(true);
+    DXamlCore::GetCurrent()->SetMockUIAClientsListening(false);
 }
 
 IFACEMETHODIMP DxamlCoreTestHooks::GetLightsTargetingElement(

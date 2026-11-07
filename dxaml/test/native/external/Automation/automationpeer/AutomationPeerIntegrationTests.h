@@ -27,7 +27,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyCommonUiaPropertyChangesBeingRaised)
             TEST_METHOD_PROPERTY(L"Description", L"Validates if common UIA property change events are being raised on layout update.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")//WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyMockUiaClientsListening)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the UIA listening mock is enabled and cleared for an island.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyControllerForPropertyChanged)

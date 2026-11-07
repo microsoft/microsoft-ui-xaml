@@ -10,6 +10,7 @@
 //------------------------------------------------------------------------
 
 #include "InputManager.g.h"
+#include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
 
 
@@ -53,6 +54,25 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, 0, "InputManager_GetLastInputDeviceType", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::InputManagerFactory::GetLastInputDeviceTypeForXamlRoot(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "InputManager_GetLastInputDeviceTypeForXamlRoot", 0);
+    }
+    ARG_NOTNULL(pXamlRoot, "xamlRoot");
+    ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
+    IFC(CheckActivationAllowed());
+    IFC(GetLastInputDeviceTypeForXamlRootImpl(pXamlRoot, pResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "InputManager_GetLastInputDeviceTypeForXamlRoot", hr);
     }
     RRETURN(hr);
 }

@@ -889,9 +889,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         AccessKeyTester spb1(L"spb1");
         AccessKeyTester spb2(L"spb2");
 
-        auto gotFocusButtonEvent = std::make_shared<Event>();
-        auto gotFocusButtonRegistration = CreateSafeEventRegistration(xaml_controls::Button, GotFocus);
-
         auto gotFocusButton2Event = std::make_shared<Event>();
         auto gotFocusButton2Registration = CreateSafeEventRegistration(xaml_controls::Button, GotFocus);
 
@@ -914,12 +911,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             btn1 = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"spb1"));
             btn = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"spb2"));
 
-            gotFocusButtonRegistration.Attach(btn1, [gotFocusButtonEvent]()
-            {
-                LOG_OUTPUT(L"Button got focus");
-                gotFocusButtonEvent->Set();
-            });
-
             gotFocusButton2Registration.Attach(btn, [gotFocusButton2Event]()
             {
                 LOG_OUTPUT(L"Button2 got focus");
@@ -932,7 +923,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             btn1->Focus(FocusState::Keyboard);
         });
 
-        gotFocusButtonEvent->WaitForDefault();
+        FocusTestHelper::EnsureFocus(btn1, FocusState::Keyboard);
 
         {
             EnableAccessKeyMode akMode(false);
@@ -959,9 +950,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         AccessKeyTester spb1(L"spb1");
 
-        auto gotFocusButtonEvent = std::make_shared<Event>();
-        auto gotFocusButtonRegistration = CreateSafeEventRegistration(xaml_controls::Button, GotFocus);
-
         auto keydownEvent = std::make_shared<Event>();
         auto keydownRegistration = CreateSafeEventRegistration(xaml_controls::Button, KeyDown);
 
@@ -987,19 +975,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 keydownEvent->Set();
             });
 
-            gotFocusButtonRegistration.Attach(btn, [gotFocusButtonEvent]()
-            {
-                LOG_OUTPUT(L"Button got focus");
-                gotFocusButtonEvent->Set();
-            });
-
             spb1.Attach(rootPanel);
 
             btn->Focus(FocusState::Keyboard);
 
         });
 
-        gotFocusButtonEvent->WaitForDefault();
+        FocusTestHelper::EnsureFocus(btn, FocusState::Keyboard);
 
         {
             EnableAccessKeyMode akMode(false);

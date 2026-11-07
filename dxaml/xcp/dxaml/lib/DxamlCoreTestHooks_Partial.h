@@ -308,6 +308,8 @@ namespace DirectUI
         IFACEMETHOD_(size_t, GetAllocationSize)() override;
         IFACEMETHOD_(size_t, GetDeallocationCount)() override;
 
+        IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled) override;
+
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppvObject) override;
 

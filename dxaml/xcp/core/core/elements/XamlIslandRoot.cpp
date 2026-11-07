@@ -125,6 +125,16 @@ _Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIslandResources()
         m_dragDropManager = nullptr;
     }
 
+    if (m_appWindow)
+    {
+        if (m_appWindowChangedToken.value != 0)
+        {
+            IGNOREHR(m_appWindow->remove_Changed(m_appWindowChangedToken));
+            m_appWindowChangedToken = {};
+        }
+        m_appWindow = nullptr;
+    }
+
     if (m_topLevelHost != nullptr)
     {
         if (m_topLevelHost_StateChanged.value != 0)
@@ -313,8 +323,21 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeContentIsland()
 
     if (m_topLevelHost)
     {
-        auto stateChangedCallback = [](ixp::IContentIslandEnvironment*, ixp::IContentEnvironmentStateChangedEventArgs*) -> HRESULT
+        IFC_RETURN(UpdateAppWindow());
+
+        auto stateChangedCallback = [weakXamlIslandRoot](ixp::IContentIslandEnvironment*, ixp::IContentEnvironmentStateChangedEventArgs* args) -> HRESULT
         {
+            CXamlIslandRoot* that = weakXamlIslandRoot.lock();
+            if (that && that->m_contentRoot)
+            {
+                boolean didAppWindowIdChange = false;
+                IFC_RETURN(args->get_DidAppWindowIdChange(&didAppWindowIdChange));
+                if (didAppWindowIdChange)
+                {
+                    IFC_RETURN(that->UpdateAppWindow());
+                }
+            }
+
             if (auto dxamlCore = DirectUI::DXamlCore::GetCurrent())
             {
                 dxamlCore->GetControl()->OnDisplayChanged();
@@ -356,6 +379,58 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeContentIsland()
         IFCFAILFAST(contentIslandEnvironmentExperimental->add_ThemeChanged(
             WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::ContentIslandEnvironment*, IInspectable*>>(themeChangedCallback).Get(),
             &m_topLevelHost_ThemeChanged));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT CXamlIslandRoot::UpdateAppWindow()
+{
+    if (m_appWindow)
+    {
+        if (m_appWindowChangedToken.value != 0)
+        {
+            IFC_RETURN(m_appWindow->remove_Changed(m_appWindowChangedToken));
+            m_appWindowChangedToken = {};
+        }
+        m_appWindow = nullptr;
+    }
+
+    mu::WindowId appWindowId = {};
+    IFC_RETURN(m_topLevelHost->get_AppWindowId(&appWindowId));
+    if (appWindowId.Value == 0)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<ixp::IAppWindowStatics> appWindowStatics;
+    IFC_RETURN(ctl::GetActivationFactory(
+        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Windowing_AppWindow).Get(),
+        &appWindowStatics));
+    IFC_RETURN(appWindowStatics->GetFromWindowId(appWindowId, &m_appWindow));
+
+    // Not all island hosts are associated with a top-level AppWindow.
+    if (m_appWindow)
+    {
+        xref::weakref_ptr<CXamlIslandRoot> weakXamlIslandRoot(this);
+        auto changedCallback = [weakXamlIslandRoot](ixp::IAppWindow* sender, ixp::IAppWindowChangedEventArgs* args) -> HRESULT
+        {
+            CXamlIslandRoot* that = weakXamlIslandRoot.lock();
+            if (that && that->m_contentRoot && that->m_appWindow.Get() == sender)
+            {
+                boolean didPositionChange = false;
+                IFC_RETURN(args->get_DidPositionChange(&didPositionChange));
+                if (didPositionChange)
+                {
+                    IFC_RETURN(that->m_contentRoot->GetAKExport().ExitAccessKeyMode());
+                }
+            }
+            return S_OK;
+        };
+
+        IFC_RETURN(m_appWindow->add_Changed(
+            WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::AppWindow*, ixp::AppWindowChangedEventArgs*>>(changedCallback).Get(),
+            &m_appWindowChangedToken));
     }
 
     return S_OK;
@@ -1082,6 +1157,7 @@ void CXamlIslandRoot::OnIslandActualSizeChanged()
         if (m_contentRoot != nullptr)
         {
             m_contentRoot->AddPendingXamlRootChangedEvent(CContentRoot::ChangeType::Size);
+            IFCFAILFAST(m_contentRoot->GetAKExport().ExitAccessKeyMode());
         }
         else
         {

@@ -295,7 +295,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanCarouselPanelHandleReset()
         {
             //
@@ -313,46 +313,48 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
                 comboBox.HorizontalAlignment = HorizontalAlignment.Center;
                 comboBox.VerticalAlignment = VerticalAlignment.Center;
                 comboBox.ItemsSource = new ResetCollection(Enumerable.Range(0, 100).Select(i => "Item #" + i).ToList());
-                TestServices.WindowHelper.WindowContent = comboBox;
                 comboBox.Loaded += delegate
                 {
                     comboBox.IsDropDownOpen = true;
                     comboBoxLoaded.Set();
                 };
+                TestServices.WindowHelper.WindowContent = comboBox;
             });
 
             Verify.IsTrue(comboBoxLoaded.WaitOne(TimeSpan.FromSeconds(10)), "ComboBox loaded.");
             TestServices.WindowHelper.WaitForIdle();
 
-            bool dispatchingResetOperations = true;
-
-            UIExecutor.Execute(() =>
+            Task resetOperations = Task.Run(async () =>
             {
-                var taskNotAwaited = comboBox.Dispatcher.RunAsync(global::Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                await Task.Delay(200);
+                for (int i = 0; i < 2; ++i)
                 {
-                    await Task.Delay(200);
-
-                    for (int i = 0; i < 2; ++i)
+                    ResetCollection collection = null;
+                    UIExecutor.Execute(() =>
                     {
                         Log.Comment("Setting a new ItemsSource...");
-                        var collection = new ResetCollection(Enumerable.Range(0, 75).Select(j => "Item #" + j).ToList());
+                        collection = new ResetCollection(Enumerable.Range(0, 75).Select(j => "Item #" + j).ToList());
                         comboBox.ItemsSource = collection;
-                        await Task.Delay(200);
+                    });
+                    await Task.Delay(200);
 
+                    UIExecutor.Execute(() =>
+                    {
                         Log.Comment("Resetting the ItemsSource...");
                         collection.ResetWith(Enumerable.Range(75, 80).Select(j => "Item #" + j).ToList());
-                        await Task.Delay(200);
+                    });
+                    await Task.Delay(200);
 
+                    UIExecutor.Execute(() =>
+                    {
                         Log.Comment("Reset with the same data...");
                         collection.Reset();
-                        await Task.Delay(200);
-                    }
-
-                    dispatchingResetOperations = false;
-                });
+                    });
+                    await Task.Delay(200);
+                }
             });
 
-            while (dispatchingResetOperations)
+            while (!resetOperations.IsCompleted)
             {
                 Log.Comment("Panning up...");
                 TestServices.InputHelper.PanFromCenter(comboBox, 0, 200, 0.1);
@@ -361,6 +363,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
                 TestServices.InputHelper.PanFromCenter(comboBox, 0, -200, 0.1);
                 TestServices.WindowHelper.WaitForIdle();
             }
+            resetOperations.GetAwaiter().GetResult();
         }
 
         private ListView PrepareListView(bool isHorizontal = false)

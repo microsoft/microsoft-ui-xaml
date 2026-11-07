@@ -26,6 +26,7 @@
 #include "host.h"
 #include <XamlOneCoreTransforms.h>
 #include <Windows.UI.Composition.h>
+#include <XamlIslandRoot.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -591,75 +592,86 @@ WindowType::Enum Window::GetWindowType()
 
     if (shrinkApplicationViewVisibleBounds)
     {
-        const float horizontalOverscan = 100.0f;
-        const float verticalOverscan = 40.0f;
         const auto coreServices = DXamlCore::GetCurrent()->GetHandle();
-        const auto rootCoordinator = coreServices->GetContentRootCoordinator();
-        const auto mainRoot = rootCoordinator->Unsafe_IslandsIncompatible_CoreWindowContentRoot();
-        const float zoomScale = RootScale::GetRasterizationScaleForContentRoot(mainRoot);
-        float monitorHeight = 0.0f;
-        float monitorWidth = 0.0f;
+        const auto mainRoot = coreServices->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot();
+        IFC_RETURN(ShrinkVisibleBoundsForTesting(mainRoot, pApplicationViewVisibleBounds));
+    }
 
-        if (XamlOneCoreTransforms::IsEnabled())
+    return S_OK;
+}
+
+/*static*/ _Check_return_ HRESULT Window::ShrinkVisibleBoundsForTesting(_In_ CContentRoot* contentRoot, _Inout_ wf::Rect* pApplicationViewVisibleBounds)
+{
+    IFCPTR_RETURN(contentRoot);
+    const float horizontalOverscan = 100.0f;
+    const float verticalOverscan = 40.0f;
+    const float zoomScale = RootScale::GetRasterizationScaleForContentRoot(contentRoot);
+    const auto islandRoot = contentRoot->GetXamlIslandRootNoRef();
+    float monitorHeight = 0.0f;
+    float monitorWidth = 0.0f;
+
+    if (XamlOneCoreTransforms::IsEnabled() && !islandRoot)
+    {
+        // While DisplayInformation Screen Width/Height does not account for any shell chrome (e.g. taskbar, window title
+        // bar), that is OK because all we want to do is ensure that there is space around the "active" xaml surface where the
+        // pointer can travel to.  It doesn't matter whether this is the desktop, chrome or artificial padding on the xaml
+        // surface (which is what this method creates).
+        ctl::ComPtr<wgrd::IDisplayInformation> displayInformation(DXamlCore::GetCurrent()->GetDisplayInformationNoRef());
+        IFCPTR_RETURN(displayInformation);
+
+        ctl::ComPtr<wgrd::IDisplayInformation4> displayInformation4;
+        IFC_RETURN(displayInformation.As(&displayInformation4));
+
+        UINT screenWidth;
+        UINT screenHeight;
+        IFC_RETURN(displayInformation4->get_ScreenWidthInRawPixels(&screenWidth));
+        IFC_RETURN(displayInformation4->get_ScreenHeightInRawPixels(&screenHeight));
+
+        monitorWidth = static_cast<float>(static_cast<double>(screenWidth) / zoomScale);
+        monitorHeight = static_cast<float>(static_cast<double>(screenHeight) / zoomScale);
+    }
+    else
+    {
+        RECT rectFrom = {};
+        HMONITOR hMonitor = islandRoot ?
+            MonitorFromWindow(islandRoot->GetBridgeHostingHWND(), MONITOR_DEFAULTTONEAREST) :
+            MonitorFromRect(&rectFrom, MONITOR_DEFAULTTOPRIMARY);
+        MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+        monitorInfo.cbSize = sizeof(monitorInfo);
+        if (hMonitor == nullptr || !GetMonitorInfo(hMonitor, &monitorInfo))
         {
-            // While DisplayInformation Screen Width/Height does not account for any shell chrome (e.g. taskbar, window title
-            // bar), that is OK because all we want to do is ensure that there is space around the "active" xaml surface where the
-            // pointer can travel to.  It doesn't matter whether this is the desktop, chrome or artificial padding on the xaml
-            // surface (which is what this method creates).
-            ctl::ComPtr<wgrd::IDisplayInformation> displayInformation(DXamlCore::GetCurrent()->GetDisplayInformationNoRef());
-            IFCPTR_RETURN(displayInformation);
-
-            ctl::ComPtr<wgrd::IDisplayInformation4> displayInformation4;
-            IFC_RETURN(displayInformation.As(&displayInformation4));
-
-            UINT screenWidth;
-            UINT screenHeight;
-            IFC_RETURN(displayInformation4->get_ScreenWidthInRawPixels(&screenWidth));
-            IFC_RETURN(displayInformation4->get_ScreenHeightInRawPixels(&screenHeight));
-
-            monitorWidth = static_cast<float>(static_cast<double>(screenWidth) / zoomScale);
-            monitorHeight = static_cast<float>(static_cast<double>(screenHeight) / zoomScale);
+            IFCEXPECT_RETURN(!islandRoot);
+            // We have no way to get any monitor info, so just return.
+            return S_OK;
         }
-        else
-        {
-            RECT rectFrom = {};
-            HMONITOR hMonitor = MonitorFromRect(&rectFrom, MONITOR_DEFAULTTOPRIMARY);
-            MONITORINFO monitorInfo = { sizeof(monitorInfo) };
-            monitorInfo.cbSize = sizeof(monitorInfo);
-            if (hMonitor == nullptr || !GetMonitorInfo(hMonitor, &monitorInfo))
-            {
-                // We have no way to get any monitor info, so just return.
-                return S_OK;
-            }
-            monitorWidth = static_cast<float>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left) / zoomScale;
-            monitorHeight = static_cast<float>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top) / zoomScale;
-        }
+        monitorWidth = static_cast<float>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left) / zoomScale;
+        monitorHeight = static_cast<float>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top) / zoomScale;
+    }
 
-        const float left = horizontalOverscan - pApplicationViewVisibleBounds->X;
-        if (left > 0.0f)
-        {
-            pApplicationViewVisibleBounds->X += left;
-            pApplicationViewVisibleBounds->Width -= left;
-        }
+    const float left = std::min(horizontalOverscan - pApplicationViewVisibleBounds->X, pApplicationViewVisibleBounds->Width);
+    if (left > 0.0f)
+    {
+        pApplicationViewVisibleBounds->X += left;
+        pApplicationViewVisibleBounds->Width -= left;
+    }
 
-        const float top = verticalOverscan - pApplicationViewVisibleBounds->Y;
-        if (top > 0.0f)
-        {
-            pApplicationViewVisibleBounds->Y += top;
-            pApplicationViewVisibleBounds->Height -= top;
-        }
+    const float top = std::min(verticalOverscan - pApplicationViewVisibleBounds->Y, pApplicationViewVisibleBounds->Height);
+    if (top > 0.0f)
+    {
+        pApplicationViewVisibleBounds->Y += top;
+        pApplicationViewVisibleBounds->Height -= top;
+    }
 
-        const float right = pApplicationViewVisibleBounds->Width - (monitorWidth - 2 * horizontalOverscan);
-        if (right > 0.0f)
-        {
-            pApplicationViewVisibleBounds->Width -= right;
-        }
+    const float right = pApplicationViewVisibleBounds->Width - std::max(0.0f, monitorWidth - 2 * horizontalOverscan);
+    if (right > 0.0f)
+    {
+        pApplicationViewVisibleBounds->Width -= right;
+    }
 
-        const float bottom = pApplicationViewVisibleBounds->Height - (monitorHeight - 2 * verticalOverscan);
-        if (bottom > 0.0f)
-        {
-            pApplicationViewVisibleBounds->Height -= bottom;
-        }
+    const float bottom = pApplicationViewVisibleBounds->Height - std::max(0.0f, monitorHeight - 2 * verticalOverscan);
+    if (bottom > 0.0f)
+    {
+        pApplicationViewVisibleBounds->Height -= bottom;
     }
 
     return S_OK;

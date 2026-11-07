@@ -1782,7 +1782,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 rootPanel = dynamic_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
                     LR"(<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                             <Button x:Name="btn" Content="Button 1"/>
-                            <Popup IsOpen="True">
+                            <Popup x:Name="preEngagementPopup">
                                 <StackPanel>
                                     <Button x:Name="popupButton" Content="Button 2"/>
                                 </StackPanel>
@@ -1795,6 +1795,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                         </StackPanel>)"));
 
                 TestServices::WindowHelper->WindowContent = rootPanel;
+                safe_cast<xaml_primitives::Popup^>(rootPanel->FindName(L"preEngagementPopup"))->IsOpen = true;
             });
 
             TestServices::WindowHelper->WaitForIdle();
