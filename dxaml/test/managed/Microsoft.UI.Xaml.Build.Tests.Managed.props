@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <!-- Merged WinUI generation needs the Resources reference projection, which does not flow transitively. -->
-  <ItemGroup Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
+  <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
       <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>

@@ -67,7 +67,7 @@
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
     <!-- Native activation also needs the WebView2 runtime forwarder. -->
-    <BinplaceItem Include="$(OutDir)Microsoft.Web.WebView2.Core.Projection.dll">
+    <BinplaceItem Include="$(NuGetPackageRoot)\microsoft.web.webview2\$(WebView2PackageVersion)\lib\$(TargetFramework)\Microsoft.Web.WebView2.Core.Projection.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
     <!-- Deploy Foundation's runtime projections from lib, not its compile-time references from ref. -->
