@@ -222,9 +222,15 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     bool isContentDialog = false;
     XTHICKNESS focusVisualMarginInPhysicalPixels = { 0.0f, 0.0f, 0.0f, 0.0f };
     XTHICKNESS focusVisualMargin;
+    CFocusManager* focusManager = nullptr;
+    bool addExtraPadding = true;
 
     IFCPTR(focusedElement);
     IFCPTR(innerScroller);
+
+    // ListView asks for this when focus enters it onto an already fully visible item, so the item does not move.
+    focusManager = VisualTree::GetFocusManagerForElement(focusedElement);
+    addExtraPadding = !focusManager || !focusManager->IsBringingIntoViewWithoutPadding();
 
     // Get the global bounds in physical pixels to get the real width and height that contains the render
     // transform and DM zoom factor etc. In HIDPI, this will include  the DPI RenderTransform set
@@ -306,6 +312,7 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
         rectInnerScrollerGlobal,
         isIHMShowing,
         focusVisualMarginInPhysicalPixels,
+        addExtraPadding,
         &rectFocusedElement));
 
     if ((isIHMShowing || !rootElement->IsScroller()) && focusedElement->GetRootOfPopupSubTree())
@@ -563,6 +570,7 @@ CBringIntoViewHandler::GetFocusedElementBoundingRectForPadding(
     _In_ XRECTF_RB rectInnerScrollerViewportBounds,
     _In_ bool isIHMShowing,
     _In_ XTHICKNESS focusVisualMargin,
+    _In_ bool addExtraPadding,
     _Inout_ XRECTF* const focusedElementRect)
 {
     XRECTF_RB rectVisibleBoundsAdjustment = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -619,7 +627,8 @@ CBringIntoViewHandler::GetFocusedElementBoundingRectForPadding(
     {
         // adjust for focus visual margin if larger than 20 logical pixels, if not just use 20 logical pixels.
         // Negative values show by how much the focus visual goes outside the element
-        const XFLOAT extraPhysicalPixelsForBringIntoView = DipsToPhysicalPixels(innerScroller, static_cast<XFLOAT>(ExtraPixelsForBringIntoView));
+        const XFLOAT extraPhysicalPixelsForBringIntoView = addExtraPadding ?
+            DipsToPhysicalPixels(innerScroller, static_cast<XFLOAT>(ExtraPixelsForBringIntoView)) : 0.0f;
         XRECTF_RB paddingAdjustment = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         paddingAdjustment.left = MIN(focusVisualMargin.left < 0 ? -focusVisualMargin.left : 0, innermostHorizontallyScrollableScrollerWidth - focusedElementRect->Width);

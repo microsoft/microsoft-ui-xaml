@@ -210,6 +210,11 @@ public:
     void SetIgnoreFocusLock(_In_ bool value) { m_ignoreFocusLock = value; }
     void SetCurrentFocusOperationCancellable(_In_ bool value) { m_currentFocusOperationCancellable = value; }
 
+    // Called from a GettingFocus handler: if the in-progress focus change ends on this element, bring it
+    // into view without the extra padding that normally keeps keyboard focus away from scroller edges.
+    void SetBringIntoViewWithoutPaddingTarget(_In_opt_ CDependencyObject* target) { m_bringIntoViewWithoutPaddingTarget = target; }
+    bool IsBringingIntoViewWithoutPadding() const { return m_isBringingIntoViewWithoutPadding; }
+
     _Check_return_ HRESULT SetWindowFocus(
         _In_ const bool isFocused,
         _In_ const bool isShiftDown);
@@ -320,6 +325,9 @@ private:
     bool m_currentFocusOperationCancellable = true;
 
     bool m_initialFocus = false;
+
+    xref_ptr<CDependencyObject> m_bringIntoViewWithoutPaddingTarget;
+    bool m_isBringingIntoViewWithoutPadding = false;
 
     // This represents the IAsyncOperation that can initiated through a public async FocusManager method, such as TryFocusAsync.
     // We store it as a memeber because the operation can continue to run even after the api has finished executing.
