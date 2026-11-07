@@ -204,6 +204,7 @@
   <Thickness x:Key="AppBarToggleButtonTextLabelMargin">2,0,2,8</Thickness>
   <Thickness x:Key="AppBarToggleButtonTextLabelOnRightMargin">8,16,12,10</Thickness>
   <Thickness x:Key="AppBarToggleButtonOverflowTextLabelPadding">0,5,0,8</Thickness>
+  <x:Double x:Key="AppBarToggleButtonWidth">68</x:Double>
   <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource DefaultAppBarToggleButtonStyle}" />
   <Style x:Key="AppBarToggleButtonOverflowStyle" TargetType="AppBarToggleButton" BasedOn="{StaticResource DefaultAppBarToggleButtonStyle}">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -218,7 +219,7 @@
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
     <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="Width" Value="68" />
+    <Setter Property="Width" Value="{ThemeResource AppBarToggleButtonWidth}" />
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="FocusVisualMargin" Value="-3" />
     <Setter Property="AllowFocusOnInteraction" Value="False" />
