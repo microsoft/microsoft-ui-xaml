@@ -9,17 +9,6 @@
 using namespace DirectUI;
 
 _Check_return_ HRESULT
-InputManagerFactory::GetLastInputDeviceTypeImpl(
-    _Out_ xaml_input::LastInputDeviceType* pReturnValue)
-{
-    // MSFT:19551633
-    CContentRoot* contentRoot = DXamlCore::GetCurrent()->GetHandle()->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot();
-    *pReturnValue = static_cast<xaml_input::LastInputDeviceType>(contentRoot->GetInputManager().GetLastInputDeviceType());
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
 InputManagerFactory::GetLastInputDeviceTypeForXamlRootImpl(
     _In_ xaml::IXamlRoot* xamlRootInterface,
     _Out_ xaml_input::LastInputDeviceType* pReturnValue)

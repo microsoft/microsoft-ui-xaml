@@ -532,12 +532,6 @@ namespace Microsoft.UI.Xaml.Input
     public static class InputManager
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static Microsoft.UI.Xaml.Input.LastInputDeviceType GetLastInputDeviceType()
-        {
-            return default(Microsoft.UI.Xaml.Input.LastInputDeviceType);
-        }
-
-        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public static Microsoft.UI.Xaml.Input.LastInputDeviceType GetLastInputDeviceTypeForXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
             return default(Microsoft.UI.Xaml.Input.LastInputDeviceType);

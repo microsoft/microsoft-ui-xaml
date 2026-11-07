@@ -39,24 +39,6 @@ HRESULT DirectUI::InputManagerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outp
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::InputManagerFactory::GetLastInputDeviceType(_Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult)
-{
-    HRESULT hr = S_OK;
-    if (EventEnabledApiFunctionCallStart())
-    {
-        XamlTelemetry::PublicApiCall(true, 0, "InputManager_GetLastInputDeviceType", 0);
-    }
-    ARG_VALIDRETURNPOINTER(pResult);
-    *pResult={};
-    IFC(CheckActivationAllowed());
-    IFC(GetLastInputDeviceTypeImpl(pResult));
-Cleanup:
-    if (EventEnabledApiFunctionCallStop())
-    {
-        XamlTelemetry::PublicApiCall(false, 0, "InputManager_GetLastInputDeviceType", hr);
-    }
-    RRETURN(hr);
-}
 IFACEMETHODIMP DirectUI::InputManagerFactory::GetLastInputDeviceTypeForXamlRoot(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult)
 {
     HRESULT hr = S_OK;
