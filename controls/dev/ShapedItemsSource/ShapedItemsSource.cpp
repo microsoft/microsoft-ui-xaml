@@ -261,7 +261,7 @@ void ShapedItemsSource::SetSort(
     winrt::hstring const& previousAxisToken,
     winrt::hstring const& axisToken,
     ShapingHelpers::KeySelector const& key,
-    winrt::Windows::Foundation::IUnknown const& keyIdentity,
+    void const* keyIdentity,
     winrt::hstring const& sortMemberPath,
     winrt::SortDirection direction)
 {

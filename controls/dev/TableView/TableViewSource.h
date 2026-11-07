@@ -162,6 +162,35 @@ public:
     bool CanApplySort() const;
 
 private:
+    // The engine's copies of an app delegate reach it through one of these, not through a strong
+    // ref: a delegate whose closure captures this source would otherwise form a cycle across the
+    // native boundary that the GC cannot see, so neither would ever be collected (#12474). The
+    // tracker_ref lets the GC walk this source's edge to the delegate instead.
+    struct TrackedDelegateBase
+    {
+        virtual ~TrackedDelegateBase() = default;
+        virtual void Release() noexcept = 0;
+    };
+    template <typename D>
+    struct TrackedDelegate final : TrackedDelegateBase
+    {
+        TrackedDelegate(ITrackerHandleManager const* owner, D const& value) : m_value(owner, value) {}
+        // Null when the GC already collected the target or this source is gone.
+        D Get() const { return m_value.template safe_get<D>(); }
+        void Release() noexcept override { auto const released = std::move(m_value); }
+        tracker_ref<D> m_value;
+    };
+    template <typename D>
+    std::shared_ptr<TrackedDelegate<D>> Track(D const& value)
+    {
+        // The engine's copies are the only owners, so a cleared or replaced delegate goes with them.
+        std::erase_if(m_trackedDelegates, [](auto const& tracked) { return tracked.expired(); });
+        auto tracked = std::make_shared<TrackedDelegate<D>>(this, value);
+        m_trackedDelegates.push_back(tracked);
+        return tracked;
+    }
+    std::function<winrt::IInspectable(winrt::IInspectable const&)> MakeKeySelector(winrt::TableViewKeySelector const& key);
+
     struct ShapingTip;
     struct ShapingTipHandlers
     {
@@ -179,6 +208,8 @@ private:
     // structure-changed event that a programmatic reshape has no other trigger for.
     void NotifyOwnerShapingChanged(bool reorderOnly);
 
+    // Weak, so it can release the tracker handles of engine copies that outlive this source.
+    std::vector<std::weak_ptr<TrackedDelegateBase>> m_trackedDelegates{};
     std::shared_ptr<ShapedItemsSource> m_engine{};
     // Weak, and typed as IInspectable rather than TableView: this slot exists only to detect a
     // second owner binding, and the owning TableView references this source through its
