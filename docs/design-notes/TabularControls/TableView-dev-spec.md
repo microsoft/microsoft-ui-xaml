@@ -292,7 +292,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
 | `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
-| `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
+| `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 32/40/48) and padding. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
 

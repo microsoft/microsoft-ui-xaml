@@ -1571,7 +1571,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // TableView-dev-spec.md:83 states it directly: "Header cells use the density row minimum height,
-        // so the header band matches body rows." Most visible at Compact, where the difference is 10px.
+        // so the header band matches body rows." Most visible at Compact, where the difference is 8px.
         [TestMethod]
         public void VerifyHeaderBandHeightFollowsDensity()
         {
@@ -1893,7 +1893,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(realizedRow, rowAfter,
                     "The density change should update the existing row rather than force a rebuild.");
-                Verify.AreEqual(30.0, rowAfter.MinHeight,
+                Verify.AreEqual(32.0, rowAfter.MinHeight,
                     "An already-realized row must pick up the Compact metric; otherwise the table shows a mix of densities as the user scrolls.");
 
                 var cellText = RequireFirstCellTextBlock(tableView);
@@ -1943,7 +1943,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Verify.AreEqual(overriddenMinHeight, row.MinHeight,
-                        "An app-scope TableViewRowMinHeightCompact override must win. A value of 30 here means the metric came " +
+                        "An app-scope TableViewRowMinHeightCompact override must win. A value of 32 here means the metric came " +
                         "from the C++ fallback constant and the resource key is decorative.");
                 });
             }
@@ -2236,7 +2236,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var second = RequireColumnHeader(tableView, 1);
                 Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle's BasedOn Background must win over ColumnHeaderStyle.");
-                Verify.AreEqual(30.0, second.MinHeight, "Without a style MinHeight the header follows the Compact row height.");
+                Verify.AreEqual(32.0, second.MinHeight, "Without a style MinHeight the header follows the Compact row height.");
             });
         }
 
@@ -3376,7 +3376,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // agree today; VerifyDensityResourceOverrideWins is what proves the resource is the real source.
         internal static readonly DensityCase[] DensityCases = new[]
         {
-            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 30.0, CellPadding = new Thickness(8, 2, 8, 2) },
+            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 32.0, CellPadding = new Thickness(8, 2, 8, 2) },
             new DensityCase { Density = TableViewDensity.Standard, RowMinHeight = 40.0, CellPadding = new Thickness(8, 4, 8, 4) },
             new DensityCase { Density = TableViewDensity.Comfortable, RowMinHeight = 48.0, CellPadding = new Thickness(8, 8, 8, 8) },
         };

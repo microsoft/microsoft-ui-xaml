@@ -1029,9 +1029,9 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisi
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Compact` | 0 | Compact spacing. |
-| `Standard` | 1 | Standard spacing. |
-| `Comfortable` | 2 | Comfortable spacing. |
+| `Compact` | 0 | Compact spacing with a default row minimum height of 32 effective pixels. |
+| `Standard` | 1 | Standard spacing with a default row minimum height of 40 effective pixels. |
+| `Comfortable` | 2 | Comfortable spacing with a default row minimum height of 48 effective pixels. |
 
 ### TableViewSelectionMode
 
