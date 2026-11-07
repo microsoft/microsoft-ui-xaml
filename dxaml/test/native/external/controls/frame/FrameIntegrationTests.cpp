@@ -174,10 +174,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
+            // These types must activate successfully so navigation reaches the Page validation.
             wxaml_interop::TypeName destinationTypes[] =
             {
                 { L"Microsoft.UI.Xaml.Controls.UserControl", wxaml_interop::TypeKind::Primitive },
-                { L"Microsoft.UI.Xaml.Window", wxaml_interop::TypeKind::Primitive },
                 { L"Microsoft.UI.Xaml.Controls.Grid", wxaml_interop::TypeKind::Primitive }
             };
 
