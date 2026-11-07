@@ -4,21 +4,22 @@
     <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
     <!-- Mimic src\XamlCompiler\Targets\Microsoft.UI.Xaml.Markup.Compiler.interop.targets, but using the in-repo copy of the package -->
-    <XamlCompilerOutDir Condition=" '$(MSBuildRuntimeType)' == 'Core' and '$(XamlCompilerOutDir)' == '' ">$(ToolsPackageLocation)\net10.0\</XamlCompilerOutDir>
-    <XamlCompilerOutDir Condition=" '$(XamlCompilerOutDir)' == '' ">$(ToolsPackageLocation)\net472\</XamlCompilerOutDir>
+    <XamlCompilerOutDir Condition=" '$(XamlCompilerOutDir)' == '' ">$(ToolsPackageLocation)\</XamlCompilerOutDir>
     <GenXbfPath>$(ArtifactsBinRoot)GenXbf</GenXbfPath>
-    <!-- There is no in-process compiler task for .NET MSBuild, which always uses the native compiler (tools\net10.0\<rid>\XamlCompiler.exe) -->
-    <XamlCompilerTaskPath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(XamlCompilerOutDir)Microsoft.UI.Xaml.Markup.Compiler.dll</XamlCompilerTaskPath>
-    <XamlCompilerJsonTaskPath>$(XamlCompilerOutDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll</XamlCompilerJsonTaskPath>
+    <XamlCompilerTaskPath>$(XamlCompilerOutDir)Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll</XamlCompilerTaskPath>
+    <!--
+      Always the x64 compiler, whatever the flavor and the machine: like the GenXbf.dll it loads (GenXbfPath, built for x64 only by
+      eng\BuildGenXbfForMSBuild), it must match the architecture of the compiler process.
+    -->
+    <XamlCompilerNativeExePath>$(XamlCompilerOutDir)win-x64\XamlCompiler.exe</XamlCompilerNativeExePath>
     <XamlCompilerPropsAndTargetsDirectory>$(BuildTargetsPackageLocation)\</XamlCompilerPropsAndTargetsDirectory>
-    <UseXamlCompilerExecutable>false</UseXamlCompilerExecutable>
   </PropertyGroup>
   
   <Target Name="EnsureCompilerExists" BeforeTargets="Build" Condition="'$(SkipXamlCompilerProjectReferences)' == 'true'">
-    <Error Condition="'$(XamlCompilerTaskPath)' != '' and !Exists('$(XamlCompilerTaskPath)')"
-        Text="$(XamlCompilerTaskPath) does not exist, which is needed to compile XAML.  Please build $(ProjectRoot)src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.csproj before building $(MSBuildProjectName)$(MSBuildProjectExtension)." />
-    <Error Condition="!Exists('$(XamlCompilerJsonTaskPath)')"
-        Text="$(XamlCompilerJsonTaskPath) does not exist, which is needed to compile XAML.  Please build $(ProjectRoot)src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.csproj before building $(MSBuildProjectName)$(MSBuildProjectExtension)." />
+    <Error Condition="!Exists('$(XamlCompilerTaskPath)')"
+        Text="$(XamlCompilerTaskPath) does not exist, which is needed to compile XAML.  Please build $(ProjectRoot)src\XamlCompiler\Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj before building $(MSBuildProjectName)$(MSBuildProjectExtension)." />
+    <Error Condition="!Exists('$(XamlCompilerNativeExePath)')"
+        Text="$(XamlCompilerNativeExePath) does not exist, which is needed to compile XAML.  Please build $(ProjectRoot)src\XamlCompiler\Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj before building $(MSBuildProjectName)$(MSBuildProjectExtension)." />
   </Target>
 
   <Import Project="$(XamlCompilerPropsAndTargetsDirectory)Microsoft.UI.Xaml.Markup.Compiler.props" Condition="'$(ExcludeRestorePackageImports)'!='true'"/>

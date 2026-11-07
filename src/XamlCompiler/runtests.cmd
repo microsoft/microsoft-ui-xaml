@@ -12,8 +12,6 @@ if not defined _BuildType goto :not_initialized
 
 set "Flavor=%_BuildArch%%_BuildType%"
 set "TestDir=%BuildOutputRoot%\%Flavor%\src\XamlCompiler\Tests\UnitTests\XamlCompilerUnitTests"
-rem runtests-net10.cmd sets this to run the net10.0 (CoreCLR) build of the tests against the net10.0 build of the compiler
-if /i "%XamlCompilerUnitTestsTargetFramework%"=="net10.0" set "TestDir=%BuildOutputRoot%\%Flavor%\src\XamlCompiler\Tests\UnitTests\Net10\XamlCompilerUnitTests.Net10"
 set "RunSettings=%RepoRoot%\src\XamlCompiler\Tests\UnitTests\test.runsettings"
 set "PayloadMarker=%TestDir%\XamlCompilerUnitTests.payload.complete"
 

@@ -59,10 +59,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
                 // Avoid rewriting identical bytes to prevent downstream build ripples (copy, PRI, packaging).
                 if (ContentChanged())
                 {
-                    using (var fileStream = new FileStream(_filePath, FileMode.Create, FileAccess.Write))
-                    {
-                        _memoryStream.WriteTo(fileStream);
-                    }
+                    AtomicFile.Write(_filePath, fileStream => _memoryStream.WriteTo(fileStream));
                 }
                 else
                 {

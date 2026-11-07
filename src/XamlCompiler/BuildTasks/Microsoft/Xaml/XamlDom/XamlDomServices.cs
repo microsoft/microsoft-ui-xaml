@@ -23,11 +23,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XamlDom
             XamlDomReader dr = new XamlDomReader(rootObjectNode, schemaContext);
             XmlWriterSettings xws = new XmlWriterSettings();
             xws.Indent = true;
-            using (XmlWriter xw = XmlWriter.Create(fileName, xws))
+            AtomicFile.Write(fileName, stream =>
             {
-                XamlXmlWriter xxw = new XamlXmlWriter(xw, schemaContext);
-                XamlServices.Transform(dr, xxw);
-            }
+                using (XmlWriter xw = XmlWriter.Create(stream, xws))
+                {
+                    XamlXmlWriter xxw = new XamlXmlWriter(xw, schemaContext);
+                    XamlServices.Transform(dr, xxw);
+                }
+            });
         }
     }
 }

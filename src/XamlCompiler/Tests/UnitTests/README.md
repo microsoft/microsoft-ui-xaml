@@ -88,57 +88,47 @@ would otherwise run from a partial copied payload.
 
 The script returns VSTest's exit code unchanged.
 
-## .NET (net10.0) build of the tests
+## What the tests run against
 
-`src\XamlCompiler\runtests-net10.cmd` runs the same tests on .NET (CoreCLR)
-against the net10.0 build of the compiler. That build compiles the same sources
-as the Native AOT executable compiler (`XamlCompiler.exe`, net10.0), including
-its net10.0-only code paths: the source-generated COM interop used for XBF
-generation, `LmrReflection`/`KnownRuntimeTypes`, the System.Xaml runtime pieces
-that are compiled out, and so on. The tests themselves don't run on Native AOT
-(the test framework relies on reflection); the native binary is validated end to
-end by `src\XamlCompiler\runtests-native.cmd` (see below).
+The tests run on .NET (CoreCLR) against `XamlCompiler.dll`, the IL build of the
+XAML compiler executable (`Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj`):
+the code the Native AOT compiler (`XamlCompiler.exe`) is compiled from, which is
+the only build of the compiler. The tests themselves don't run on Native AOT (the
+test framework relies on reflection); the native binary is validated end to end
+by `src\XamlCompiler\runtests-native.cmd` (see below).
 
-It uses the same build sequence and arguments as `runtests.cmd`:
-
-```cmd
-msbuild src\XamlCompiler\XamlCompiler.sln /restore
-msbuild src\XamlCompiler\XamlCompilerTests.sln /restore
-src\XamlCompiler\runtests-net10.cmd
-src\XamlCompiler\runtests-net10.cmd /Tests:TestProxies
-```
-
-The pieces are:
-
-- `Microsoft.UI.Xaml.Markup.Compiler.csproj` also targets `net10.0` (built by
-  `XamlCompiler.sln`, not packaged), with the same interop configuration as the
-  executable compiler (`DisableRuntimeMarshalling`, the `*.NativeAot.cs` files).
-  Its output folder, `BuildOutput\obj\<flavor>\src\XamlCompiler\net10.0\Microsoft.UI.Xaml.Markup.Compiler`,
-  has the compiler and its dependency closure.
-- `Net10\XamlCompilerUnitTests.Net10.csproj` and
-  `XamlCompilerProxies\Net10\XamlCompilerProxies.Net10.csproj` compile the same
-  sources as `XamlCompilerUnitTests.csproj` and `XamlCompilerProxies.csproj`,
-  with MSTest from NuGet. The test project stages the same payload as the
-  .NET Framework one, into
-  `%BuildOutputRoot%\%_BuildArch%%_BuildType%\src\XamlCompiler\Tests\UnitTests\Net10\XamlCompilerUnitTests.Net10`.
+- `XamlCompiler.sln` builds the compiler; its IL output folder,
+  `BuildOutput\obj\<flavor>\src\XamlCompiler\Exe\net10.0\Microsoft.UI.Xaml.Markup.Compiler.Executable`,
+  has `XamlCompiler.dll` and its dependency closure, which the test project
+  stages next to `UnitTests.dll`.
+- `XamlCompilerProxies\XamlCompilerProxies.csproj` wraps the internal compiler
+  types through reflection (see `ProxyHelper`, which loads `XamlCompiler.dll`).
 - The test process runs with invariant globalization, like the native compiler.
-- The few places where the tests themselves differ between .NET Framework and
-  .NET are under `#if NET` in the shared test sources (saving dynamic assemblies
-  with `PersistedAssemblyBuilder`, the core library being `System.Private.CoreLib`,
-  and `TestProxies` giving the schema context metadata assemblies rather than
-  runtime ones).
+- `runtests-net10.cmd` is an obsolete alias of `runtests.cmd`.
+## CompileXaml task
 
-## Native AOT compiler
+`TaskTests` runs the CompileXaml MSBuild task (`Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj`,
+staged from the package layout XamlCompiler.sln builds) against a stand-in compiler,
+`FakeXamlCompiler\FakeXamlCompiler.csproj`, with a fake build engine and fake Visual Studio host
+objects (both the legacy and the free-threaded file manager interfaces). `ContractTests` checks
+that the task (DataContractJsonSerializer) and the compiler (System.Text.Json source generator)
+agree on every member of the JSON contract (`src\XamlCompiler\Contracts`).
+
+## End to end (Native AOT compiler)
 
 `src\XamlCompiler\runtests-native.cmd` (`Tests\RunNativeCompilerTests.ps1`)
-builds the regression projects with the Native AOT compiler
-(`UseNativeXamlCompiler=true`) and runs `CodegenTests` against the masters. With
-`-Differential`, it also builds them with the default compiler (the in-process
-.NET Framework task) first and
-requires the native compiler to generate byte-identical files. With `-Samples`,
-it does the same differential comparison for real sample apps from `Samples\`
-(see the script header for the list and the requirements).
-
+builds the regression projects with the Native AOT compiler and the CompileXaml task
+that XamlCompiler.sln built (or the compiler given with `-ExePath`) and runs
+`CodegenTests` against the masters. With `-Differential -ReferencePackage <dir>`, it
+also builds them with the XAML compiler of another package layout first (e.g.
+`BuildOutput\packaging\<configuration>` of another build, or an extracted WinUI
+package, including the older ones with the in-process .NET Framework compiler) and
+requires byte-identical generated files. With `-Samples`, it also builds real sample
+apps from `Samples\` (compared the same way with `-ReferencePackage`). With
+`-DesignTime`, it checks the design-time (IntelliSense) builds of a C# and a
+C++/WinRT project: they must not change the outputs of the last real build, must
+generate the IntelliSense files of the next real build, and must report XAML errors
+as warnings. See the script header for the details and the requirements.
 ## Primitive and array metadata regressions
 
 `Schema_CppWinRTArray*` and `Schema_ArrayTypeNamesPreserveOtherLanguages` cover

@@ -5,10 +5,10 @@
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
     <AssemblyName>XamlCompiler</AssemblyName>
     <!--
-      Published as a Native AOT, self-contained binary (XamlCompiler.exe), so it can be launched directly by the MSBuild targets
-      without any requirement on the host (.NET runtime or SDK, MSBuild flavor). It is what 'dotnet build' (.NET MSBuild) always
-      uses, and what the .NET Framework MSBuild (Visual Studio, msbuild.exe) uses with UseNativeXamlCompiler=true instead of the
-      in-process CompileXaml task (see Microsoft.UI.Xaml.Markup.Compiler.interop.targets).
+      The XAML compiler. Published as a Native AOT, self-contained binary (XamlCompiler.exe), so it can be launched directly by
+      the CompileXaml task (Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj) without any requirement on the host (.NET
+      runtime or SDK, MSBuild flavor), for every build (see Microsoft.UI.Xaml.Markup.Compiler.interop.targets). The unit tests run
+      the IL build of the same code (XamlCompiler.dll) on CoreCLR.
     -->
     <TargetFramework>net10.0</TargetFramework>
     <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
@@ -26,7 +26,7 @@
   <PropertyGroup>
     <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
     <PublishAot>true</PublishAot>
-    <!-- Link both GC modes (the MSBuild task selects one through the 'DOTNET_gcServer' variable of the compiler process, see GetXamlCompilerGCMode) -->
+    <!-- Link both GC modes (the CompileXaml task selects one through the 'DOTNET_gcServer' variable of the compiler process) -->
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
     <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
@@ -50,10 +50,7 @@
     <IlcDehydrate>false</IlcDehydrate>
     <!-- Legacy formatter-serialization members in the shared System.Xaml/LMR/ANTLR sources -->
     <NoWarn>$(NoWarn);SYSLIB0050;SYSLIB0051;CA2235</NoWarn>
-    <!-- Each flavor produces the native compiler for its own architecture; the package merges them (see eng\packaging.targets) -->
-    <_NativeXamlCompilerRid Condition="'$(_BuildArch)' == 'amd64'">win-x64</_NativeXamlCompilerRid>
-    <_NativeXamlCompilerRid Condition="'$(_BuildArch)' == 'arm64'">win-arm64</_NativeXamlCompilerRid>
-    <_NativeXamlCompilerDir>$(OutDir)native\$(_NativeXamlCompilerRid)\</_NativeXamlCompilerDir>
+    <_NativeXamlCompilerDir>$(OutDir)native\</_NativeXamlCompilerDir>
     <!-- The IL-only output isn't deployed, only the native binary published below is -->
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
     <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.NativeAot.cs) -->
@@ -68,6 +65,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2046;IL2055;IL2057;IL2060;IL2067;IL2070;IL2072;IL2073;IL2075;IL2080;IL2085;IL2092;IL2093;IL2094;IL2111;IL3000;IL3001;IL3002;IL3003;IL3050;IL3051;CA1420</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(BuildTasksDir)AssertionTraceListener.cs" />
     <Compile Include="$(BuildTasksDir)ConsoleLogger.cs" />
     <Compile Include="$(BuildTasksDir)Program.cs" />
     <Compile Include="$(BuildTasksDir)ConsoleCompileXaml.cs" />
@@ -508,16 +506,6 @@
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj">
-      <Project>{a1175d44-d47d-4d3e-a319-cefc7170d29c}</Project>
-      <Name>Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop</Name>
-      <GlobalPropertiesToRemove>TargetFramework;RuntimeIdentifier;PublishDir;_IsPublishing</GlobalPropertiesToRemove>
-    </ProjectReference>
-    <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.IO\Microsoft.UI.Xaml.Markup.Compiler.IO.csproj">
-      <Project>{1fbde93d-5c21-4761-87d6-2504f772bf28}</Project>
-      <Name>Microsoft.UI.Xaml.Markup.Compiler.IO</Name>
-      <GlobalPropertiesToRemove>TargetFramework;RuntimeIdentifier;PublishDir;_IsPublishing</GlobalPropertiesToRemove>
-    </ProjectReference>
     <!-- Never compiled against: it is embedded as a resource, see below -->
     <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes\Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.csproj"
                       ReferenceOutputAssembly="false"
@@ -535,29 +523,36 @@
     <PackageContent Include="NOTICE.txt" PackageLocation="$(ToolsPackageLocation)" />
   </ItemGroup>
   <!--
-    The package has one self-contained native binary per architecture under tools\net10.0\<rid>, next to the assemblies of the
-    tasks that .NET MSBuild loads to run it (tools\net10.0, see Microsoft.UI.Xaml.Markup.Compiler.csproj).
+    The native compiler of each flavor: always win-x64, which also runs the XAML compiler of the repo's own builds whatever the
+    flavor (like eng\BuildGenXbfForMSBuild always builds the x64 GenXbf.dll it loads), plus win-arm64 in arm64 flavors. The package
+    has them under tools\win-<rid>, next to the tasks that run them (tools\Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll); the
+    pipeline only keeps the binary of the flavor's architecture in its packaging artifact, like for GenXbf.dll.
   -->
-  <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' and '$(_NativeXamlCompilerRid)' != '' ">
-    <PackageContent Include="$(_NativeXamlCompilerDir)$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\net10.0\$(_NativeXamlCompilerRid)" />
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' ">
+    <_NativeXamlCompilerRid Include="win-x64" />
+    <_NativeXamlCompilerRid Include="win-arm64" Condition="'$(_BuildArch)' == 'arm64'" />
+    <_NativeXamlCompilerRid Update="@(_NativeXamlCompilerRid)" PublishedPath="$(_NativeXamlCompilerDir)%(Identity)\$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\%(Identity)" />
+    <PackageContent Include="@(_NativeXamlCompilerRid->'%(PublishedPath)')" />
   </ItemGroup>
   <!--
-    PublishAot only takes effect on publish, which needs a RuntimeIdentifier, so build the native binary through a nested publish
-    of the current target framework. This runs before the binplace targets, which pick up the native binary and its symbols.
+    PublishAot only takes effect on publish, which needs a RuntimeIdentifier, so build the native binaries through nested publishes
+    of the current target framework. This runs before the binplace targets, which pick up the native binaries and their symbols.
+    The native binaries are always optimized: without it (Debug flavors), ILC generates code that makes XAML compilation several
+    times slower, and every build of the repository with XAML runs it. The IL build (XamlCompiler.dll) is the one to debug.
   -->
   <Target Name="PublishNativeXamlCompiler"
           AfterTargets="Build"
           BeforeTargets="AddBinplaceItems"
-          Condition=" '$(RuntimeIdentifier)' == '' and '$(_NativeXamlCompilerRid)' != '' ">
+          Condition=" '$(RuntimeIdentifier)' == '' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
-             Properties="TargetFramework=$(TargetFramework);RuntimeIdentifier=$(_NativeXamlCompilerRid);OutDir=$(_NativeXamlCompilerDir)build\;PublishDir=$(_NativeXamlCompilerDir);_IsPublishing=true" />
+             Properties="TargetFramework=$(TargetFramework);RuntimeIdentifier=%(_NativeXamlCompilerRid.Identity);OutDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\build\;PublishDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\;_IsPublishing=true;Optimize=true" />
     <ItemGroup>
-      <BinplaceItem Include="$(_NativeXamlCompilerDir)$(TargetName).exe">
-        <Destination>$(TargetDestination)\$(_NativeXamlCompilerRid)</Destination>
+      <BinplaceItem Include="$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).exe">
+        <Destination>$(TargetDestination)\%(_NativeXamlCompilerRid.Identity)</Destination>
       </BinplaceItem>
-      <BinplaceItem Include="$(_NativeXamlCompilerDir)$(TargetName).pdb" Condition="Exists('$(_NativeXamlCompilerDir)$(TargetName).pdb')">
-        <Destination>$(SymbolsBinDir)\$(_NativeXamlCompilerRid)</Destination>
+      <BinplaceItem Include="$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).pdb" Condition="Exists('$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).pdb')">
+        <Destination>$(SymbolsBinDir)\%(_NativeXamlCompilerRid.Identity)</Destination>
       </BinplaceItem>
     </ItemGroup>
   </Target>
@@ -575,6 +570,7 @@
   <Import Project="$(BuildTasksDir)Core.projitems" Label="Shared" />
   <Import Project="..\Microsoft.UI.Xaml.Markup.Compiler.Core\Microsoft.UI.Xaml.Markup.Compiler.Core.projitems" Label="Shared" />
   <Import Project="..\Microsoft.UI.Xaml.Markup.Compiler.Parsing\Microsoft.UI.Xaml.Markup.Compiler.Parsing.projitems" Label="Shared" />
+  <Import Project="..\Contracts\Contracts.projitems" Label="Shared" />
 
 	<Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
 </Project>

@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
             foreach (ITaskItem item in items)
             {
                 string dep = item.GetMetadata("DependentUpon");
-                if (dep.EndsWith(KnownStrings.XamlExtension, StringComparison.OrdinalIgnoreCase))
+                if (dep.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
                 {
                     xamlDependentItems.Add(item);
                 }

@@ -459,8 +459,18 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'themeresources_perf2026' And ('$(ThemeResourceFilePerf2026NeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\themeresources_perf2026.xbf'))" />
     </ItemGroup>
     <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
-    <!-- We need to do both Pass1 and Pass2 to properly plug into incremental building, even though we only need the output of Pass2. -->
+    <!--
+      We need to do both Pass1 and Pass2 to properly plug into incremental building, even though we only need the output of Pass2.
+      Both get the same references: MarkupCompilePass2 doesn't run in this project (all its pages are compiled here), so there is no
+      @(XamlReferencesToCompile), and each pass is its own XamlCompiler.exe process (the in-process compiler used to keep the
+      assemblies loaded by Pass1 for Pass2, which hid that Pass2 didn't get Microsoft.UI.winmd).
+    -->
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
+        XamlCompilerPath="$(XamlCompilerNativeExePath)"
+        EnableServerGC="$(XamlCompilerEnableServerGC)"
+        YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
+        InputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass1.input.json"
+        OutputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass1.output.json"
         LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
         Language="$(XamlLanguage)"
         RootNamespace="$(RootNamespace)"
@@ -503,6 +513,11 @@
       <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
     </CompileXaml>
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
+        XamlCompilerPath="$(XamlCompilerNativeExePath)"
+        EnableServerGC="$(XamlCompilerEnableServerGC)"
+        YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
+        InputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass2.input.json"
+        OutputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass2.output.json"
         LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
         Language="$(Language)"
         RootNamespace="$(RootNamespace)"
@@ -522,7 +537,7 @@
         OutputPath="$(XamlGeneratedOutputPath)"
         OutputType="$(OutputType)"
         ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-        ReferenceAssemblies="@(XamlReferencesToCompile);$(MUXCXamlConsumeWinmd)"
+        ReferenceAssemblies="@(ReferencePath);$(MUXCXamlConsumeWinmd)"
         ForceSharedStateShutdown="False"
         CompileMode="RealBuildPass2"
         XAMLFingerprint="$(XAMLFingerprint)"

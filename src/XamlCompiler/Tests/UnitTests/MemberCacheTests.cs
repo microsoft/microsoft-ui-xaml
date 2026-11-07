@@ -80,11 +80,9 @@ namespace UnitTests
         private static Assembly LoadCoreLibrary(XamlTypeUniverse universe)
         {
             Assembly coreLibrary = universe.LoadAssemblyFromFile(typeof(object).Assembly.Location);
-#if NET
             // System.Private.CoreLib on .NET, where this assembly references the core types through System.Runtime, which
             // forwards them to System.Private.CoreLib
             universe.LoadAssemblyFromFile(Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "System.Runtime.dll"));
-#endif
             return coreLibrary;
         }
 
@@ -246,7 +244,6 @@ namespace UnitTests
         public void MemberCache_FailedEnumerationCanRecover()
         {
             var name = new AssemblyName("MemberDependency");
-#if NET
             // .NET has no AssemblyBuilderAccess.RunAndSave: PersistedAssemblyBuilder saves the assembly, but can't run it
             var dependency = new PersistedAssemblyBuilder(name, typeof(object).Assembly);
             ModuleBuilder depModule = dependency.DefineDynamicModule(name.Name);
@@ -255,15 +252,6 @@ namespace UnitTests
             var consumerName = new AssemblyName("MemberConsumer");
             var consumer = new PersistedAssemblyBuilder(consumerName, typeof(object).Assembly);
             ModuleBuilder module = consumer.DefineDynamicModule(consumerName.Name);
-#else
-            var dependency = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave, _directory);
-            ModuleBuilder depModule = dependency.DefineDynamicModule(name.Name, name.Name + ".dll");
-            Type depType = depModule.DefineType("MemberDependency.Value", TypeAttributes.Public).CreateType();
-            dependency.Save(name.Name + ".dll");
-            var consumerName = new AssemblyName("MemberConsumer");
-            var consumer = AppDomain.CurrentDomain.DefineDynamicAssembly(consumerName, AssemblyBuilderAccess.RunAndSave, _directory);
-            ModuleBuilder module = consumer.DefineDynamicModule(consumerName.Name, consumerName.Name + ".dll");
-#endif
             TypeBuilder builder = module.DefineType("MemberConsumer.Type", TypeAttributes.Public, depType);
             PropertyBuilder property = builder.DefineProperty("Item", PropertyAttributes.None, depType, Type.EmptyTypes);
             MethodBuilder getter = builder.DefineMethod("get_Item", MethodAttributes.Public | MethodAttributes.SpecialName,
@@ -272,11 +260,7 @@ namespace UnitTests
             getter.GetILGenerator().Emit(OpCodes.Ret);
             property.SetGetMethod(getter);
             builder.CreateType();
-#if NET
             consumer.Save(Path.Combine(_directory, consumerName.Name + ".dll"));
-#else
-            consumer.Save(consumerName.Name + ".dll");
-#endif
             Type metadata = _universe.LoadAssemblyFromFile(Path.Combine(_directory, "MemberConsumer.dll")).GetType("MemberConsumer.Type", true);
             for (int i = 0; i < 2; i++)
             {

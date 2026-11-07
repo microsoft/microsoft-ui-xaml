@@ -57,15 +57,34 @@ Xaml compiler as part of the project's build.
 
 ## Interfacing with the Build System
 
-We ship the Xaml compiler in two forms, as an MSBuild task in a dll, and as a standalone executable.
+The XAML compiler is a standalone executable, XamlCompiler.exe, which an MSBuild task runs.
+
+### The compiler
+
+XamlCompiler.exe is built with .NET Native AOT (net10.0,
+`src\XamlCompiler\Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj`): a self-contained
+native binary per architecture (tools\win-x64 and tools\win-arm64 in the package), so it
+doesn't need any .NET runtime or SDK on the machine, and it is the same compiler whatever
+the MSBuild that runs the build: Visual Studio and msbuild.exe (.NET Framework MSBuild),
+`dotnet build` (.NET MSBuild), or any other host. It requires a 64-bit version of Windows
+(the x64 binary also runs on ARM64). It accepts two arguments via the command line, the
+path to the compiler inputs in a JSON file, and the path to an output JSON file where the
+compiler writes its outputs (generated files, errors and warnings with their location).
+XamlCompilerNativeExePath can be set to use a specific build of the compiler.
 
 ### MSBuild Task
 
-The primary form of the XAML Compiler is a .NET Framework MSBuild Task.
 We ship with the WinUI NuGet package with these relevant files:
 
-* Microsoft.UI.Xaml.Markup.Compiler.dll - the .NET Framework MS Build Task dll, a managed,
-strong-name-signed assembly that contains all the XAML Compiler code.
+* Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll - a thin .NET Standard 2.0 MSBuild task
+assembly (tools\ in the package), which both .NET Framework MSBuild and .NET MSBuild load,
+without any dependency other than the MSBuild API. Its CompileXaml task is a `ToolTask`
+that writes the task inputs to the JSON file of the compiler
+(`XamlCompiler.<CompileMode>.input.json` in the XAML output directory), runs
+XamlCompiler.exe, reads its output JSON file back and turns it into MSBuild outputs and
+diagnostics. The JSON contract is defined in `src\XamlCompiler\Contracts`, which both
+the task and the compiler compile. The task also selects the GC mode of the compiler
+(XamlCompilerEnableServerGC). There is no compiler code in this assembly.
 
 * Microsoft.UI.Xaml.Markup.Compiler.interop.targets - the MS Build targets file, an XML
 that describes and is used to invoke our tasks. This file is the glue between
@@ -73,47 +92,33 @@ MS Build and the XAML Compiler. If you open it, you will see that we receive
 and mangle with a variety of MS Build variables that are being collected as
 part of the project build’s setup phase, or by other previously executed tasks.
 
-### As a Standalone Executable
+### Design-time builds
 
-We also ship the Xaml compiler as a standalone executable, built with .NET Native AOT
-(net10.0): a self-contained native binary per architecture
-(tools\net10.0\win-x64 and tools\net10.0\win-arm64 in the package), so it doesn't need
-any .NET runtime or SDK on the machine. Its main purpose is to allow the compiler to be
-used in .NET builds (e.g. `dotnet build`), which use a .NET Core version of MSBuild
-instead of a .NET Framework version: the MSBuild task version of the compiler is built
-on .NET Framework, so it can't be loaded in-process in the .NET Core MSBuild, which
-therefore always uses the executable. The .NET Framework MSBuild (Visual Studio,
-msbuild.exe) uses the in-process task by default, and the executable with
-`UseNativeXamlCompiler=true`. Thin .NET Standard wrappers convert MSBuild input to the
-JSON format, run the executable compiler with the input JSON, and then convert the JSON
-outputted by the compiler back into MSBuild outputs (like generated files, errors, and
-warnings). The relevant files are:
-
- * XamlCompiler.exe - the standalone executable compiler.  Accepts two arguments via
-the command line, the path to the compiler inputs in a JSON file, and the path to an
-output JSON file where the compiler should write its outputs to.
-
- * Microsoft.UI.Xaml.Markup.Compiler.IO.dll - a .NET Standard MSBuild task dll,
-containing the MSBuild tasks to convert MSBuild inputs to JSON compiler inputs, and from
-JSON compiler outputs to MSBuild outputs.
+Visual Studio runs design-time builds (for IntelliSense) of the projects, which run the
+first pass of the XAML compiler (DesignTimeMarkupCompilation) in a design-time mode: it
+generates the files IntelliSense needs (e.g. `*.g.i.cs`) without touching the outputs of
+the last real build, and XAML errors are reported as warnings. In those builds, Visual
+Studio gives the CompileXaml task a host object (IVsMSBuildTaskFileManager, or the
+free-threaded variant of the CPS project system), through which the task reads the
+unsaved text of the XAML files open in the editor; it passes them to the compiler in a
+short-lived overlays file that is deleted after the run. Design-time builds use their own
+JSON files (`XamlCompiler.DesignTimeBuild.*.json`), so they never race with a command-line
+build of the same project.
 
 ### Host Process and Lifetime
 
-In Visual Studio, the XAML Compiler MS Build task is hosted in MSBuild.exe for
-regular builds, and in devenv.exe for designer builds. VS reuses MSBuild.exe
-processes and thus the XAML Compiler is optimized to cache various objects
-obtained through heavy operations, such as assembly reflection. While this
-greatly improves perf, it can also lead to bugs, of course, which are often
-resolved by restarting VS.
-
+The CompileXaml task runs in the MSBuild node that builds the project (it must not run in
+a task host, so that Visual Studio can give it its host object), and starts a new
+XamlCompiler.exe process for each compilation pass: the compiler keeps no state across
+passes or builds, except for its incremental build state file (XamlSaveStateFile.xml).
 Talking about perf, a typical XAML compilation takes under a couple seconds for smaller
 projects, but for larger projects can take upwards of a minute.  We are investigating
 improvements to speed up compile times for large projects with many .xaml files.
 
 ### Parameters
 
-The CompileXaml object exposed by the Xaml Compiler task takes multiple
-parameters. To see them all, open the Common.targets file referenced above.
+The CompileXaml task takes multiple parameters. To see them all, open the
+Microsoft.UI.Xaml.Markup.Compiler.interop.targets file referenced above.
 Among them, some of the important ones are:
 
 * *Language*: the language for which we're generating code. The 4 supported
@@ -141,10 +146,6 @@ detect and disable features that cannot run on those older SDKs.
 
 There are other parameters that are not covered above. Browse through the
 targets file and code to see what they're used for.
-
-The executable compiler accepts two arguments via the command line, the path
-to the compiler inputs in a JSON file, and the path to an output JSON file where
-the compiler should write its outputs to.
 
 
 ## Development
@@ -179,9 +180,10 @@ The Xaml Compiler builds both from the command line and from VS.
 To build the Xaml Compiler, load the XamlCompiler.sln in VS and build.
 Alternatively, build from the command line like you would WinUI product code.
 Incremental builds work fine.  Note that the MSBuild processes used to build
-WinUI will keep a handle on compiler dlls with MSBuild tasks.
+WinUI will keep a handle on the XAML compiler task assembly
+(Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll).
 If you see file access errors because of this, you can run this command to kill
-any existing MSBuild processes keeping a handle on the dlls:
+any existing MSBuild processes keeping a handle on it:
 
 taskkill /IM "msbuild.exe" /f
 
@@ -197,13 +199,16 @@ Note that:
 Compiler.
 * You **do** need to shut down VS/MSBuild instances that use the newly built compiler.
 
-After you're done, open a test project, and do a clean build once to have
-MSBuild.exe start again. Then, in the original instance of Visual Studio where
-you have the Xaml Compiler project loaded, attach to MSBuild.exe (you may have
-multiple instanced running - attach to all). Set a breakpoint on
-genxbf!OnFailureEncountered. Do another clean build of the project in VS. The
-breakpoint should get hit at the point of failure.
-
+Every build leaves the inputs of the last run of the compiler next to the generated files
+(`XamlCompiler.<CompileMode>.input.json`, e.g. `XamlCompiler.RealBuildPass1.input.json`).
+To debug the compiler code, run its IL build (XamlCompiler.dll, in
+`BuildOutput\obj\<flavor>\src\XamlCompiler\Exe\net10.0\Microsoft.UI.Xaml.Markup.Compiler.Executable`)
+under the debugger from the project directory, with that input file and an output file:
+`dotnet XamlCompiler.dll <input.json> <output.json>` (e.g. with a Visual Studio debug
+profile). To debug XamlCompiler.exe itself (e.g. a failure in GenXbf.dll, with
+a breakpoint on genxbf!OnFailureEncountered), attach a native debugger to it, or set
+`XamlCompilerNativeExePath` to a build with symbols. The unit tests (see
+`src\XamlCompiler\Tests\UnitTests\README.md`) run the same compiler code in-process.
 ### Regression and Unit Tests
 
 The XamlCompilerTests.sln contains 50 some projects that test various features

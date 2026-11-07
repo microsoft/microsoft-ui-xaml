@@ -80,16 +80,10 @@ namespace UnitTests
 
             CompilerDomRootToken compilerDomRootToken = new CompilerDomRootToken(null);
 
-#if NET
             // The .NET build of the compiler only reflects over the assemblies it reads from metadata (like the Native AOT one, which
             // shares its code), which is all the product ever gives it (see CompileXamlInternal), not over runtime assemblies
             DirectUISchemaContext directUISchemaContext = LoadSchema(SchemaMode.ManagedRuntime);
-#else
-            Assembly[] currentAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            DirectUISchemaContext directUISchemaContext = new DirectUISchemaContext(currentAssemblies, null, null, null, true);
-#endif
 
-            CompileXaml compileXaml = new CompileXaml();
             EventAssignment eventAssignment = new EventAssignment(null);
             FieldDefinition fieldDefinition = new FieldDefinition(null);
             InternalTypeEntry internalTypeEntry = new InternalTypeEntry(null);

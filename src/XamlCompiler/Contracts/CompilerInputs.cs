@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
 
@@ -15,6 +14,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
         {
 
         }
+
+        // The version of this contract the producer (the CompileXaml task) implements: see CompilerContract
+        public int ContractVersion { get; set; }
+
+        // Whether this is a design-time (IntelliSense) build. Set by the task from CompileMode and from the IDE host object, if
+        // any; the compiler also treats CompileMode=DesignTimeBuild as a design-time build, for the inputs of older tasks.
+        public bool IsDesignTimeBuild { get; set; }
+
+        // Optional path to a JSON list of FileOverlay: the contents and/or last change times of the XAML files open in the IDE
+        // (design-time builds only). The task deletes it after the run.
+        public string FileOverlaysPath { get; set; }
 
         public string ProjectPath { get; set; }
 
@@ -111,89 +121,5 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
 
         public string EnabledXamlOptionalChanges { get; set; }
         public string DisabledXamlOptionalChanges { get; set; }
-
-        public static CompilerInputs FromMSBuildTaskInputs(ICompileXamlInputs i)
-        {
-            CompilerInputs r = new CompilerInputs();
-            r.BuildConfiguration = i.BuildConfiguration;
-            r.CIncludeDirectories = i.CIncludeDirectories;
-            r.ClIncludeFiles = GetMSBuildItems(i.ClIncludeFiles);
-            r.CodeGenerationControlFlags = i.CodeGenerationControlFlags;
-            r.CompileMode = i.CompileMode;
-            r.DisableXbfGeneration = i.DisableXbfGeneration;
-            r.DisableXbfLineInfo = i.DisableXbfLineInfo;
-            r.EnableXBindDiagnostics = i.EnableXBindDiagnostics;
-            r.FeatureControlFlags = i.FeatureControlFlags;
-            r.FingerprintIgnorePaths = i.FingerprintIgnorePaths;
-            r.ForceSharedStateShutdown = i.ForceSharedStateShutdown;
-            r.GenXbfPath = i.GenXbfPath;
-            r.PrecompiledHeaderFile = i.PrecompiledHeaderFile;
-            r.IgnoreSpecifiedTargetPlatformMinVersion = i.IgnoreSpecifiedTargetPlatformMinVersion;
-            r.IsPass1 = i.IsPass1;
-            r.Language = i.Language;
-            r.LanguageSourceExtension = i.LanguageSourceExtension;
-            r.LocalAssembly = GetMSBuildItems(i.LocalAssembly);
-            r.OutputPath = i.OutputPath;
-            r.OutputType = i.OutputType;
-            r.PriIndexName = i.PriIndexName;
-            r.ProjectName = i.ProjectName;
-            r.ProjectPath = i.ProjectPath;
-            r.ReferenceAssemblies = GetMSBuildItems(i.ReferenceAssemblies);
-            r.ReferenceAssemblyPaths = GetMSBuildItems(i.ReferenceAssemblyPaths);
-            r.RootNamespace = i.RootNamespace;
-            r.RootsLog = i.RootsLog;
-            r.SavedStateFile = i.SavedStateFile;
-            r.SdkXamlPages = GetMSBuildItems(i.SdkXamlPages);
-            r.SuppressWarnings = i.SuppressWarnings;
-            r.TargetFileName = i.TargetFileName;
-            r.TargetPlatformMinVersion = i.TargetPlatformMinVersion;
-            r.VCInstallDir = i.VCInstallDir;
-            r.VCInstallPath32 = i.VCInstallPath32;
-            r.VCInstallPath64 = i.VCInstallPath64;
-            r.WindowsSdkPath = i.WindowsSdkPath;
-            r.XamlApplications = GetMSBuildItems(i.XamlApplications);
-            r.XamlComponentResourceLocation = i.XamlComponentResourceLocation;
-            r.XAMLFingerprint = i.XAMLFingerprint;
-            r.UseVCMetaManaged = i.UseVCMetaManaged;
-            r.XamlPages = GetMSBuildItems(i.XamlPages);
-            r.XamlPlatform = i.XamlPlatform;
-            r.XamlResourceMapName = i.XamlResourceMapName;
-            r.EnabledXamlOptionalChanges = i.EnabledXamlOptionalChanges;
-            r.DisabledXamlOptionalChanges = i.DisabledXamlOptionalChanges;
-            return r;
-        }
-
-        private static MSBuildItem GetMSBuildItem(ITaskItem source)
-        {
-            if (!StringEq(source.GetMetadata("ExcludedFromBuild"), "true"))
-            {
-                return new MSBuildItem(source);
-            }
-
-            return null;
-        }
-
-        private static List<MSBuildItem> GetMSBuildItems(ITaskItem[] source)
-        {
-            List<MSBuildItem> target = null;
-            if (source != null)
-            {
-                target = new List<MSBuildItem>();
-                foreach (ITaskItem item in source)
-                {
-                    MSBuildItem buildItem = GetMSBuildItem(item);
-                    if (buildItem != null)
-                    {
-                        target.Add(buildItem);
-                    }
-                }
-            }
-            return target;
-        }
-
-        private static bool StringEq(string a, string b)
-        {
-            return string.Equals(a, b, StringComparison.Ordinal);
-        }
     }
 }
