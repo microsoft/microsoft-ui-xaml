@@ -838,9 +838,9 @@ bool TableView::TrySetBodyEntryTarget(const winrt::Microsoft::UI::Xaml::Input::G
 }
 
 // The empty-state content when it is shown; else the selected row in view if it was selected after
-// the remembered row was recorded (by the app or a right-click); else the remembered row (or its
-// actionable remembered cell) in view; else the selected row in view; else the first (last) row or
-// group header in view.
+// the remembered row or group header was recorded (by the app or a right-click); else the remembered
+// row (or its actionable remembered cell) or group header while at least partly in view, so entry never
+// scrolls to it; else the selected row in view; else the first (last) row or group header in view.
 TableView::FocusEntryTarget TableView::ResolveBodyEntryTarget(bool last)
 {
     FocusEntryTarget result{};
@@ -851,9 +851,9 @@ TableView::FocusEntryTarget TableView::ResolveBodyEntryTarget(bool last)
         return result;
     }
 
-    auto const usable = [this](winrt::TableViewRow const& row)
+    auto const usable = [this](auto const& element, bool partly)
     {
-        return row && row.IsEnabled() && IsRowElementInViewport(row);
+        return element && element.IsEnabled() && IsRowElementInViewport(element, partly);
     };
 
     winrt::TableViewRow remembered{ nullptr };
@@ -868,7 +868,20 @@ TableView::FocusEntryTarget TableView::ResolveBodyEntryTarget(bool last)
 
     auto const selected = GetRealizedRowAt(SelectedIndexInternal());
     const bool selectionIsNewer = m_selectionSequence != m_rememberedSelectionSequence;
-    result.Row = selectionIsNewer && usable(selected) ? selected : usable(remembered) ? remembered : usable(selected) ? selected : nullptr;
+    if (!(selectionIsNewer && usable(selected, false)))
+    {
+        if (auto const header = FindRememberedGroupHeader(); usable(header, true))
+        {
+            result.Element = header;
+            result.Remembered = true;
+            return result;
+        }
+    }
+
+    result.Row = selectionIsNewer && usable(selected, false) ? selected
+        : usable(remembered, true) ? remembered
+        : usable(selected, false) ? selected
+        : nullptr;
     result.Remembered = result.Row && result.Row == remembered;
 
     if (result.Row)
@@ -887,6 +900,48 @@ TableView::FocusEntryTarget TableView::ResolveBodyEntryTarget(bool last)
     result.Element = FindViewportEdgeElementInternal(last, true /* includeGroupHeaders */, true /* allowNoViewport */);
     result.Row = result.Element.try_as<winrt::TableViewRow>();
     return result;
+}
+
+winrt::TableViewGroupHeader TableView::FindRememberedGroupHeader()
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (m_rememberedGroupIdentity.empty() || !repeater)
+    {
+        return nullptr;
+    }
+
+    // Group identities are keys, so a replaced source can repeat them.
+    if (auto const rememberedSource = m_rememberedGroupSource.get(); !rememberedSource || rememberedSource != m_activeSource.get())
+    {
+        m_rememberedGroupIdentity = {};
+        return nullptr;
+    }
+
+    const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+    for (int32_t i = 0; i < childCount; ++i)
+    {
+        auto const header = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewGroupHeader>();
+        if (header && repeater.GetElementIndex(header) >= 0 && TryGetContainerIdentity(header) == m_rememberedGroupIdentity)
+        {
+            return header;
+        }
+    }
+    return nullptr;
+}
+
+void TableView::RememberGroupHeaderEntry(winrt::TableViewGroupHeader const& header)
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || winrt::VisualTreeHelper::GetParent(header) != repeater || repeater.GetElementIndex(header) < 0)
+    {
+        return;
+    }
+
+    m_rememberedGroupIdentity = TryGetContainerIdentity(header);
+    auto const activeSource = m_activeSource.get();
+    m_rememberedGroupSource = activeSource ? winrt::make_weak(activeSource) : winrt::weak_ref<winrt::TableViewSource>{ nullptr };
+    m_currentCellRow = -1;
+    m_rememberedSelectionSequence = m_selectionSequence;
 }
 
 // Down from the header row (selection follows focus unless Ctrl is held), or a deferred entry.
@@ -1881,6 +1936,11 @@ void TableView::OnTableViewGotFocusForBodyTracking(
     if (auto const source = args.OriginalSource().try_as<winrt::DependencyObject>())
     {
         m_lastFocusedWithin = winrt::make_weak(source);
+        // Rows record their entry position themselves (OnRowCellFocusChanged).
+        if (auto const header = source.try_as<winrt::TableViewGroupHeader>())
+        {
+            RememberGroupHeaderEntry(header);
+        }
     }
     TrackBodyFocusPosition();
 }
@@ -2360,7 +2420,7 @@ bool TableView::IsRowElementArranged(winrt::UIElement const& element)
     return !(offset.x <= -9999.0f && offset.y <= -9999.0f);
 }
 
-bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
+bool TableView::IsRowElementInViewport(winrt::UIElement const& element, bool partly) const
 {
     auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
     auto const scroller = m_bodyScroller.get();
@@ -2394,6 +2454,10 @@ bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
     // or once it covers the whole viewport (a bottom-aligned PageDown target leaves its top negative).
     constexpr double slack = 0.5;
     const double bottom = top + frameworkElement.ActualHeight();
+    if (partly)
+    {
+        return frameworkElement.ActualHeight() > 0.0 && bottom > slack && top < viewportHeight - slack;
+    }
     return (top >= -slack && (bottom <= viewportHeight + slack || top <= slack)) ||
         (top <= slack && bottom >= viewportHeight - slack);
 }
@@ -3226,6 +3290,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
         {
             m_currentCellRow = rowIndex;
             m_rememberedSelectionSequence = m_selectionSequence;
+            m_rememberedGroupIdentity = {};
             winrt::IInspectable item{ nullptr };
             SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
@@ -3251,6 +3316,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row, winrt::Dep
     {
         m_currentCellRow = rowIndex;
         m_rememberedSelectionSequence = m_selectionSequence;
+        m_rememberedGroupIdentity = {};
     }
 
     ArmCellLevelRowInternal(row);
