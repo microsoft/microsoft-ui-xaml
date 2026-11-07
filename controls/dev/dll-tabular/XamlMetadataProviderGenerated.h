@@ -168,6 +168,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewStatics statics = GetFactory<winrt::ITableViewStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableView");
                     {
                         xamlType.AddDPMember(L"AlternatingRowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.AlternatingRowBackgroundProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserReorderColumns", L"Boolean", statics.CanUserReorderColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserResizeColumns", L"Boolean", statics.CanUserResizeColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserSortColumns", L"Boolean", statics.CanUserSortColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ColumnHeaderStyle", L"Microsoft.UI.Xaml.Style", statics.ColumnHeaderStyleProperty(), false /* isContent */);
@@ -237,6 +238,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewColumnStatics statics = GetFactory<winrt::ITableViewColumnStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn");
                     {
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanReorder", L"Boolean", statics.CanReorderProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanResize", L"Boolean", statics.CanResizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.CellContextFlyoutProperty(), false /* isContent */);

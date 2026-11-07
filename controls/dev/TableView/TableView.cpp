@@ -941,6 +941,10 @@ try
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
+    CancelColumnReorderDrag();
+    m_columnReorderOverlay.set(nullptr);
+    m_columnReorderIndicator.set(nullptr);
+    HookColumnReorderInput();
     // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
     // has all three, so a missing one is the app's template.
     if (!m_rowsRepeater.get() || !m_headerRow.get() || !m_headerHost.get())
@@ -3403,7 +3407,12 @@ void TableView::RebuildHeadersCore()
                 {
                     if (auto strongThis = weakThis.get())
                     {
-                        if (strongThis->ToggleSortDirection(column))
+                        // A press that became a reorder drag is not a click.
+                        if (strongThis->ConsumeColumnReorderTap())
+                        {
+                            args.Handled(true);
+                        }
+                        else if (strongThis->ToggleSortDirection(column))
                         {
                             args.Handled(true);
                         }
@@ -3727,10 +3736,15 @@ void TableView::QueueRebuildHeaders()
 
     m_rebuildHeadersQueued = true;
     auto weakThis = get_weak();
-    if (!dispatcher.TryEnqueue([weakThis]()
+    if (!dispatcher.TryEnqueue([weakThis, generation = m_rebuildHeadersQueueGeneration]()
         {
             if (auto strongThis = weakThis.get())
             {
+                // A user reorder already ran this rebuild.
+                if (generation != strongThis->m_rebuildHeadersQueueGeneration)
+                {
+                    return;
+                }
                 strongThis->m_rebuildHeadersQueued = false;
                 try
                 {
@@ -3846,6 +3860,7 @@ void TableView::OnTableViewUnloaded()
     }
 
     CancelColumnResizeDrag();
+    CancelColumnReorderDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);

@@ -146,6 +146,10 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanReorder { get; set; };
+
     overridable String GetSortMemberPathCore();
     Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
     overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
@@ -170,6 +174,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanReorderProperty { get; };
 }
 
 [MUX_PREVIEW]
@@ -228,6 +233,25 @@ runtimeclass TableViewSortedEventArgs
 {
     MU_XC_NAMESPACE.TableViewColumn Column { get; };
     SortDirection Direction { get; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewColumnReorderingEventArgs
+{
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    Int32 OldIndex { get; };
+    Int32 NewIndex { get; };
+    Boolean Cancel;
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewColumnReorderedEventArgs
+{
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    Int32 OldIndex { get; };
+    Int32 NewIndex { get; };
 }
 
 [MUX_PREVIEW]
@@ -378,6 +402,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserSortColumns { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean CanUserReorderColumns { get; set; };
+
     Boolean CommitEdit();
     Boolean CancelEdit();
     void Select(Int32 index);
@@ -397,6 +425,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortingEventArgs> Sorting;
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortedEventArgs> Sorted;
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewColumnReorderingEventArgs> ColumnReordering;
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewColumnReorderedEventArgs> ColumnReordered;
 
     static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
@@ -414,6 +444,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanUserSortColumnsProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserReorderColumnsProperty { get; };
 }
 
 [MUX_PREVIEW]

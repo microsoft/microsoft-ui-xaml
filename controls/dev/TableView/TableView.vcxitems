@@ -55,6 +55,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewToolTipHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumnReorderingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumnReorderedEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableView.properties.cpp" />
@@ -73,6 +75,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Telemetry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_ContextMenu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_ColumnReorder.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewColumn.cpp" />

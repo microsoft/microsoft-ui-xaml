@@ -12,6 +12,9 @@ public:
     void AlternatingRowBackground(winrt::Brush const& value);
     winrt::Brush AlternatingRowBackground();
 
+    void CanUserReorderColumns(bool value);
+    bool CanUserReorderColumns();
+
     void CanUserResizeColumns(bool value);
     bool CanUserResizeColumns();
 
@@ -58,6 +61,7 @@ public:
     winrt::TableViewSelectionMode SelectionMode();
 
     static winrt::DependencyProperty AlternatingRowBackgroundProperty() { return s_AlternatingRowBackgroundProperty; }
+    static winrt::DependencyProperty CanUserReorderColumnsProperty() { return s_CanUserReorderColumnsProperty; }
     static winrt::DependencyProperty CanUserResizeColumnsProperty() { return s_CanUserResizeColumnsProperty; }
     static winrt::DependencyProperty CanUserSortColumnsProperty() { return s_CanUserSortColumnsProperty; }
     static winrt::DependencyProperty ColumnHeaderStyleProperty() { return s_ColumnHeaderStyleProperty; }
@@ -75,6 +79,7 @@ public:
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
 
     static GlobalDependencyProperty s_AlternatingRowBackgroundProperty;
+    static GlobalDependencyProperty s_CanUserReorderColumnsProperty;
     static GlobalDependencyProperty s_CanUserResizeColumnsProperty;
     static GlobalDependencyProperty s_CanUserSortColumnsProperty;
     static GlobalDependencyProperty s_ColumnHeaderStyleProperty;
@@ -95,6 +100,10 @@ public:
     void BeginningEdit(winrt::event_token const& token);
     winrt::event_token CellEditEnding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs> const& value);
     void CellEditEnding(winrt::event_token const& token);
+    winrt::event_token ColumnReordered(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderedEventArgs> const& value);
+    void ColumnReordered(winrt::event_token const& token);
+    winrt::event_token ColumnReordering(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderingEventArgs> const& value);
+    void ColumnReordering(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value);
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value);
@@ -104,6 +113,8 @@ public:
 
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs>> m_beginningEditEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs>> m_cellEditEndingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderedEventArgs>> m_columnReorderedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderingEventArgs>> m_columnReorderingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs>> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs>> m_sortedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs>> m_sortingEventSource;
@@ -112,6 +123,10 @@ public:
     static void ClearProperties();
 
     static void OnAlternatingRowBackgroundPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCanUserReorderColumnsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

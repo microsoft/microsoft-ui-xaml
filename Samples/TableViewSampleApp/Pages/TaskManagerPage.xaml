@@ -111,11 +111,12 @@
                     AutomationProperties.AutomationId="TaskManagerTable"
                     AutomationProperties.Name="Processes"
                     ItemsSource="{x:Bind Source}"
+                    CanUserReorderColumns="{x:Bind ReorderColumnsToggle.IsOn, Mode=OneWay}"
                     SelectionMode="Single"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
                     <!-- SortMemberPath names the raw value behind each template; a cell is announced by its value. -->
-                    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
+                    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name" FrozenEdge="Leading" CanReorder="False"/>
                     <tv:TableViewTemplateColumn Header="Status" Width="130" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
                     <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="100" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent" HeaderToolTip="CPU use per core. Opens sorted highest first"/>
                     <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="100" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB" HeaderToolTip="Working set. Opens sorted highest first"/>
@@ -154,6 +155,25 @@
                     </ComboBox>
                 </controls:RailSection>
                 <!-- /snippet -->
+
+                <controls:RailSection
+                    Header="Column order"
+                    Description="With CanUserReorderColumns on, drag a header, or press Ctrl+Shift+Left or Right on a focused header, to move a column. Name is frozen and cannot be moved, so it stays first. ColumnReordered saves the order, and the page restores it the next time it opens, as Task Manager does.">
+                    <StackPanel Spacing="8">
+                        <ToggleSwitch
+                            x:Name="ReorderColumnsToggle"
+                            AutomationProperties.AutomationId="TaskManagerReorderColumnsToggle"
+                            Header="Reorder columns"
+                            IsOn="True"/>
+                        <Button
+                            x:Name="ResetColumnOrderButton"
+                            AutomationProperties.AutomationId="TaskManagerResetColumnOrderButton"
+                            Content="Reset column order"
+                            Click="OnResetColumnOrderClick"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </controls:RailSection>
 
                 <controls:ShapingOptions
                     x:Name="Shaping"

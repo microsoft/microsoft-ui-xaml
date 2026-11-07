@@ -409,6 +409,13 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnCanSortChanged(*this);
         }
     }
+    else if (property == s_CanReorderProperty)
+    {
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->OnColumnCanReorderChanged();
+        }
+    }
 }
 
 void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& value)

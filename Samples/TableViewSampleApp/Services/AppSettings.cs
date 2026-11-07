@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI.Xaml;
 
@@ -10,9 +11,9 @@ namespace TableViewSampleApp.Services;
 /// <summary>
 /// Tiny key/value persistence for the unpackaged sample. We do NOT use
 /// Windows.Storage.ApplicationData here because that surface throws on
-/// unpackaged WinUI 3 apps (no app identity). A single-line text file
-/// in %LocalAppData%\TableViewSampleApp\theme.txt is enough for the one
-/// setting we expose (Default | Light | Dark).
+/// unpackaged WinUI 3 apps (no app identity). Small text files under
+/// %LocalAppData%\TableViewSampleApp\ are enough for the settings we expose:
+/// the theme (Default | Light | Dark) and the Task Manager page's column order.
 /// </summary>
 internal static class AppSettings
 {
@@ -83,5 +84,39 @@ internal static class AppSettings
     {
         var baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         return Path.Combine(baseDir, "TableViewSampleApp", ThemeFileName);
+    }
+
+    // One value per line; an empty list when nothing is saved yet.
+    public static IReadOnlyList<string> LoadColumnOrder(string key)
+    {
+        try
+        {
+            var path = GetColumnOrderFilePath(key);
+            return File.Exists(path) ? File.ReadAllLines(path) : Array.Empty<string>();
+        }
+        catch
+        {
+            return Array.Empty<string>();
+        }
+    }
+
+    public static void SaveColumnOrder(string key, IEnumerable<string> order)
+    {
+        try
+        {
+            var path = GetColumnOrderFilePath(key);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllLines(path, order);
+        }
+        catch
+        {
+            // The order still applies to the running page.
+        }
+    }
+
+    private static string GetColumnOrderFilePath(string key)
+    {
+        var baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        return Path.Combine(baseDir, "TableViewSampleApp", key + ".txt");
     }
 }

@@ -56,6 +56,12 @@
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
                                                                       HorizontalAlignment="Left" />
                                     </ScrollViewer>
+                                    <Canvas x:Name="PART_ColumnReorderOverlay" x:Load="False" IsHitTestVisible="False">
+                                        <Rectangle x:Name="PART_ColumnReorderIndicator"
+                                                   Visibility="Collapsed"
+                                                   Width="{StaticResource TableViewColumnReorderIndicatorWidth}"
+                                                   Fill="{ThemeResource TableViewColumnReorderIndicatorBrush}" />
+                                    </Canvas>
                                 </Grid>
                             </Border>
                             <ScrollViewer x:Name="PART_BodyScroller"

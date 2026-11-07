@@ -12,6 +12,9 @@ public:
     void ActualWidth(double value);
     double ActualWidth();
 
+    void CanReorder(bool value);
+    bool CanReorder();
+
     void CanResize(bool value);
     bool CanResize();
 
@@ -70,6 +73,7 @@ public:
     winrt::GridLength Width();
 
     static winrt::DependencyProperty ActualWidthProperty() { return s_ActualWidthProperty; }
+    static winrt::DependencyProperty CanReorderProperty() { return s_CanReorderProperty; }
     static winrt::DependencyProperty CanResizeProperty() { return s_CanResizeProperty; }
     static winrt::DependencyProperty CanSortProperty() { return s_CanSortProperty; }
     static winrt::DependencyProperty CellContextFlyoutProperty() { return s_CellContextFlyoutProperty; }
@@ -91,6 +95,7 @@ public:
     static winrt::DependencyProperty WidthProperty() { return s_WidthProperty; }
 
     static GlobalDependencyProperty s_ActualWidthProperty;
+    static GlobalDependencyProperty s_CanReorderProperty;
     static GlobalDependencyProperty s_CanResizeProperty;
     static GlobalDependencyProperty s_CanSortProperty;
     static GlobalDependencyProperty s_CellContextFlyoutProperty;
@@ -113,6 +118,10 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnCanReorderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCanResizePropertyChanged(
         winrt::DependencyObject const& sender,

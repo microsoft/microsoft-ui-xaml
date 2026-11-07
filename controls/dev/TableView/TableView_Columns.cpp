@@ -226,7 +226,12 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
-    ExpireLockedColumnHolds();
+    ++m_columnsChangeStamp;
+    CancelColumnReorderDrag();
+    if (!m_movingColumn.get())
+    {
+        ExpireLockedColumnHolds();
+    }
 
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
@@ -248,7 +253,11 @@ void TableView::OnColumnsVectorChanged(
                 {
                     // A re-inserted / recycled column instance may carry a stale grow-only accumulator
                     // from a prior position or table; clear it so it re-grows from its content here.
-                    colImpl->ResetDesiredWidthInternal();
+                    // A user reorder keeps the width the column has already grown to.
+                    if (!IsColumnMovingInternal(col))
+                    {
+                        colImpl->ResetDesiredWidthInternal();
+                    }
                     RestoreSortOfMovedColumn(col);
                 }
                 else
@@ -348,8 +357,9 @@ void TableView::OnColumnsVectorChanged(
     }
 
     // A column that left may be added to another TableView before the queued rebuild runs. Last,
-    // because releasing runs app code that can change Columns again.
-    if (change != winrt::CollectionChange::ItemInserted)
+    // because releasing runs app code that can change Columns again. A column a user reorder is
+    // moving comes straight back, so its header keeps its content and focus until the rebuild.
+    if (change != winrt::CollectionChange::ItemInserted && !m_movingColumn.get())
     {
         ReleaseHeaderCells(m_headerHost.get(), HeaderRelease::DetachedColumns);
     }
@@ -357,6 +367,7 @@ void TableView::OnColumnsVectorChanged(
 
 void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
 {
+    CancelColumnReorderDrag();
     if (!column)
     {
         return;
@@ -399,6 +410,11 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     InvalidateMeasure();
     RefreshFrozenColumns();
     RefreshResizeGripperAvailability();
+    // Whether a header can be reordered depends on the visibility of the others.
+    if (CanUserReorderColumns())
+    {
+        RefreshHeaderTabStopsInternal();
+    }
 
     // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
     // indices just like an add/remove.
@@ -548,6 +564,7 @@ void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& colum
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
 {
+    CancelColumnReorderDrag();
     if (!column)
     {
         return;
