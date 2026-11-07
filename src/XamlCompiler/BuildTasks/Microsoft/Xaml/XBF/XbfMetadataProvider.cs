@@ -7,7 +7,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
     using System.Collections.Generic;
     using DirectUI;
 
-    internal class XbfMetadataProvider : IXbfMetadataProvider, IXmpXamlType
+    internal partial class XbfMetadataProvider : IXbfMetadataProvider, IXmpXamlType
     {
         private DirectUISchemaContext _schema;
         private Dictionary<string, IXbfType> _standardNames = new Dictionary<string, IXbfType>();

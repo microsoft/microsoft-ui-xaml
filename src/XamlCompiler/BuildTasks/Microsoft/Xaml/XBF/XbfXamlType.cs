@@ -9,7 +9,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
     using System.Xaml;
     using DirectUI;
 
-    internal class XbfXamlType : IXbfType
+    internal partial class XbfXamlType : IXbfType
     {
         private DirectUIXamlType _xamlType;
         private IXmpXamlType _xmp;

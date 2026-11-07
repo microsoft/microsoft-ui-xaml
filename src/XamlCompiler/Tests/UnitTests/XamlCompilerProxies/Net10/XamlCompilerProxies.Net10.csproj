@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<!--
+  net10.0 build of XamlCompilerProxies.csproj (same sources), used by ..\..\Net10\XamlCompilerUnitTests.Net10.csproj to run the
+  unit tests against the net10.0 build of the XAML compiler on CoreCLR. See ..\..\README.md.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Win8Xaml.CompilerProxies</AssemblyName>
+    <RootNamespace>Win8Xaml.CompilerProxies</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Same versions as the XAML compiler (Microsoft.UI.Xaml.Markup.Compiler.csproj), which the proxies wrap -->
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
+  </ItemGroup>
+  <Import Project="..\BuildKnownVersions.targets" />
+</Project>

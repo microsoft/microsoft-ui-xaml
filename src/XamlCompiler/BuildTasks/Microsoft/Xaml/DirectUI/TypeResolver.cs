@@ -71,7 +71,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             foreach (Assembly asm in clrAssemblies)
             {
                 knownAssemblies.Add(asm.ToString());
-                foreach (Type type in asm.GetTypes())
+                foreach (Type type in asm.GetTypesLmr())
                 {
                     if (!type.IsPublic)
                     {
@@ -119,7 +119,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 knownAssemblies.Add(assemblyName);
             }
 
-            foreach (Type type in winmdAsm.GetTypes())
+            foreach (Type type in winmdAsm.GetTypesLmr())
             {
                 if (IsClrImplementationOfWinRTType(type))
                 {

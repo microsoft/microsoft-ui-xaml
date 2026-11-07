@@ -4,7 +4,13 @@
     <SigningMethods Include="StrongName" />
   </ItemGroup>
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <!--
+      net472 is the in-process compiler task of the .NET Framework MSBuild (Visual Studio, msbuild.exe). net10.0 isn't shipped (see
+      the PackageContent items below): it is the in-proc, CoreCLR build of the same code the Native AOT executable compiler
+      (Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj, net10.0) runs, so the unit tests can exercise the net10.0-only code
+      paths (see Tests\UnitTests\Net10\XamlCompilerUnitTests.Net10.csproj).
+    -->
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AssemblyName>Microsoft.UI.Xaml.Markup.Compiler</AssemblyName>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
@@ -51,11 +57,37 @@
     <PackageReference Include="Microsoft.Build" Version="15.8.166" />
     <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
-    <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
+    <!--
+      Not a dependency of this assembly (there is nothing to compile against): only restored to package the dependencies of the
+      InputSerializer/OutputDeserializer tasks (Exe\Microsoft.UI.Xaml.Markup.Compiler.IO), see the PackageContent items below.
+    -->
+    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" ExcludeAssets="compile" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
+  </ItemGroup>
+  <!-- Same configuration as the net10.0 (Native AOT) build of the executable compiler, so this build runs the same code -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Not shared with the other target frameworks, which use the same output folder; also has the runtime dependencies -->
+    <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
+    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt): not a runtime dependency -->
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
+    <AdditionalFiles Include="BuildTasks\NativeMethods.txt;BuildTasks\NativeMethods.json" />
+    <Compile Include="BuildTasks\NativeMethods.NativeAot.cs" />
+    <Compile Include="BuildTasks\Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
+    <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />
+    <Compile Include="BuildTasks\Microsoft\Xaml\XBF\XbfNativeComClasses.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildTasks\AddDefaultXamlLinkMetadata.cs" />
@@ -493,13 +525,49 @@
   <Import Project="BuildTasks\Core.projitems" Label="Shared" />
   <Import Project="Microsoft.UI.Xaml.Markup.Compiler.Core\Microsoft.UI.Xaml.Markup.Compiler.Core.projitems" Label="Shared" />
   <Import Project="Microsoft.UI.Xaml.Markup.Compiler.Parsing\Microsoft.UI.Xaml.Markup.Compiler.Parsing.projitems" Label="Shared" />
-  <ItemGroup Condition=" '$(TargetFramework)' != '' ">
-    <!-- Arbitrarily using net472 to avoid double-writes of these TF-agnostic files -->
-    <PackageContent Include="Targets\*" PackageLocation="$(BuildTargetsPackageLocation)" Condition=" '$(TargetFramework)' == 'net472' " />
+  <!--
+    The package layout of the XAML compiler tasks (the Native AOT executable compiler is packaged, under tools\net10.0\<rid>, by
+    Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj):
+      * tools\net472: the in-process compiler task (CompileXaml) of the .NET Framework MSBuild (Visual Studio, msbuild.exe), and the
+        tasks that run the executable compiler there with UseNativeXamlCompiler=true (Microsoft.UI.Xaml.Markup.Compiler.IO.dll), with
+        their dependencies.
+      * tools\net10.0: the tasks that run the executable compiler, which .NET MSBuild ('dotnet build') always uses: there is no
+        in-process compiler task for .NET MSBuild.
+    They are all packaged by the net472 build (the net10.0 build of this project is only used by the unit tests).
+  -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageContent Include="Targets\*" PackageLocation="$(BuildTargetsPackageLocation)" />
 
-    <PackageContent Include="$(OutDir)$(AssemblyName).dll" PackageLocation="$(ToolsPackageLocation)\$(TargetFramework)" />
-    <PackageContent Include="$(OutDir)System.Reflection.Metadata.dll" PackageLocation="$(ToolsPackageLocation)\$(TargetFramework)" Condition=" '$(TargetFramework)' == 'net472' " />
+    <PackageContent Include="$(OutDir)$(AssemblyName).dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Reflection.Metadata.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Collections.Immutable.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Memory.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Buffers.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Numerics.Vectors.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Runtime.CompilerServices.Unsafe.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)Microsoft.Build.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)Microsoft.Build.Framework.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)Microsoft.Build.Utilities.Core.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Threading.Tasks.Dataflow.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <!-- Dependencies of Microsoft.UI.Xaml.Markup.Compiler.IO.dll (see AddXamlCompilerIOPackageContent) -->
+    <PackageContent Include="$(OutDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Text.Encodings.Web.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)Microsoft.Bcl.AsyncInterfaces.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+    <PackageContent Include="$(OutDir)System.Threading.Tasks.Extensions.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+
+    <PackageContent Include="$(OutDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net10.0" />
+    <PackageContent Include="$(NuGetPackageRoot)\system.text.json\$(SystemTextJsonVersion)\lib\netstandard2.0\System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net10.0" />
+    <PackageContent Include="$(OutDir)System.Text.Encodings.Web.dll" PackageLocation="$(ToolsPackageLocation)\net10.0" />
+    <PackageContent Include="$(OutDir)Microsoft.Bcl.AsyncInterfaces.dll" PackageLocation="$(ToolsPackageLocation)\net10.0" />
+    <PackageContent Include="$(OutDir)System.Runtime.CompilerServices.Unsafe.dll" PackageLocation="$(ToolsPackageLocation)\net10.0" />
   </ItemGroup>
+  <Target Name="AddXamlCompilerIOPackageContent" AfterTargets="ResolveProjectReferences" Condition=" '$(TargetFramework)' == 'net472' ">
+    <ItemGroup>
+      <PackageContent Include="@(XamlCompilerIOAssembly)" PackageLocation="$(ToolsPackageLocation)\net472" />
+      <PackageContent Include="@(XamlCompilerIOAssembly)" PackageLocation="$(ToolsPackageLocation)\net10.0" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj">
       <Project>{a1175d44-d47d-4d3e-a319-cefc7170d29c}</Project>
@@ -508,15 +576,29 @@
     <!-- These aren't actually dependencies of the dll compiler, but are listed here so that when the dll compiler is built, the exe compiler is built too.
          Ideally these project references would be in usexamlcompiler.props alongside the dll compiler as build dependencies for any project that wants to use the compiler.
          However, other projects complain about .NET Standard project references, even when ReferenceOutputAssembly=false so the actual output isn't referenced.  -->
-    <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false">
+    <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" Private="false"
+                      SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework">
       <Project>{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}</Project>
       <Name>Microsoft.UI.Xaml.Markup.Compiler.Executable</Name>
     </ProjectReference>
-    <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.IO\Microsoft.UI.Xaml.Markup.Compiler.IO.csproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false">
+    <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.IO\Microsoft.UI.Xaml.Markup.Compiler.IO.csproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false"
+                      OutputItemType="XamlCompilerIOAssembly">
       <Project>{1FBDE93D-5C21-4761-87D6-2504F772BF28}</Project>
       <Name>Microsoft.UI.Xaml.Markup.Compiler.IO</Name>
     </ProjectReference>
+    <!-- Never compiled against: it is embedded as a resource, see below -->
+    <ProjectReference Include="Exe\Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes\Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      GlobalPropertiesToRemove="TargetFramework"
+                      OutputItemType="XamlProxyTypesAssembly" />
   </ItemGroup>
+  <!-- The XAML compiler loads this metadata-only assembly at runtime to get the proxy types it uses for some markup extensions (see XamlTypeUniverse.GetXamlProxyAssembly) -->
+  <Target Name="EmbedXamlProxyTypes" AfterTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <EmbeddedResource Include="@(XamlProxyTypesAssembly)" LogicalName="Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.dll" />
+    </ItemGroup>
+  </Target>
   <!-- Referencing a .NET Standard project includes a reference to System.Xaml, which conflicts with our private System.Xaml.  Remove the auto-included reference here -->
   <Target Name="RemoveSystemXamlReference" BeforeTargets="ResolveAssemblyReferences">
     <ItemGroup>

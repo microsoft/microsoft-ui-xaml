@@ -116,6 +116,10 @@ namespace System.Windows.Markup
         /// <returns>The value serializer associated with the given type</returns>
         public static ValueSerializer GetSerializerFor(Type type)
         {
+#if NET10_0_OR_GREATER
+            // Needs TypeDescriptor and type converters (runtime reflection), and the XAML compiler doesn't serialize values.
+            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ValueSerializer.GetSerializerFor(Type)");
+#else
             if (type == null)
                 throw new ArgumentNullException("type");
 
@@ -163,6 +167,7 @@ namespace System.Windows.Markup
             }
 
             return result;
+#endif
         }
 
         /// <summary>
@@ -173,6 +178,10 @@ namespace System.Windows.Markup
         /// <returns>A value serializer associated with the given property</returns>
         public static ValueSerializer GetSerializerFor(PropertyDescriptor descriptor)
         {
+#if NET10_0_OR_GREATER
+            // Needs TypeDescriptor and type converters (runtime reflection), and the XAML compiler doesn't serialize values.
+            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("ValueSerializer.GetSerializerFor(PropertyDescriptor)");
+#else
             ValueSerializer result;
             if (descriptor == null)
             {
@@ -197,6 +206,7 @@ namespace System.Windows.Markup
                 }
             }
             return result;
+#endif
         }
 
         /// <summary>

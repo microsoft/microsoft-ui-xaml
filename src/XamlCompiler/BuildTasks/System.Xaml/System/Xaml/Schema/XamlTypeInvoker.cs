@@ -36,8 +36,10 @@ namespace System.Xaml.Schema
         ///           is initialized.
         ///           Can be used to instantiate object bypassing ctor access checks.
         /// </SecurityNote>
+#if !NET10_0_OR_GREATER // Only used by DefaultCtorXamlActivator
         [SecurityCritical]
         private Action<object> _constructorDelegate;
+#endif
 
         /// <SecurityNote>
         /// Critical: Used to determine whether it's safe to instantiate this object via _constructorDelegate,
@@ -333,6 +335,18 @@ namespace System.Xaml.Schema
             }
         }
 
+#if NET10_0_OR_GREATER
+        // The default constructor activator creates instances of user types through constructor delegates (runtime
+        // reflection). The XAML compiler never creates instances of the types it compiles against, so in its Native AOT
+        // build this only throws.
+        private static class DefaultCtorXamlActivator
+        {
+            public static object CreateInstance(XamlTypeInvoker type)
+            {
+                throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("XamlTypeInvoker.CreateInstance");
+            }
+        }
+#else
         private static class DefaultCtorXamlActivator
         {
             private static ThreeValuedBool s_securityFailureWithCtorDelegate;
@@ -444,6 +458,7 @@ namespace System.Xaml.Schema
                 }
             }
         }
+#endif
 
         private class UnknownTypeInvoker : XamlTypeInvoker
         {

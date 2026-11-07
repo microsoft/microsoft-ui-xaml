@@ -75,17 +75,19 @@ part of the project build’s setup phase, or by other previously executed tasks
 
 ### As a Standalone Executable
 
-We also ship the Xaml compiler as a .NET Framework executable.  The executable's
-main purpose is to allow the compiler to be used in .NET 5 builds,
-which use a .NET Core version of MSBuild instead of a .NET Framework version.
-Because the MSBuild task version of the compiler is built on .NET Framework,
-it can't be loaded in-process and used in the .NET Core MSBuild.  Dual-building
-the Xaml compiler for .NET Framework and .NET Core would require
-a significant amount of refactoring in the Xaml compiler.  So instead, we use thin
-.NET Standard wrappers to convert MSBuild input to the JSON format,
-run the executable compiler with the input JSON, and then convert the JSON outputted
-by the compiler back into MSBuild outputs (like generated files, errors, and warnings).
-The relevant files are:
+We also ship the Xaml compiler as a standalone executable, built with .NET Native AOT
+(net10.0): a self-contained native binary per architecture
+(tools\net10.0\win-x64 and tools\net10.0\win-arm64 in the package), so it doesn't need
+any .NET runtime or SDK on the machine. Its main purpose is to allow the compiler to be
+used in .NET builds (e.g. `dotnet build`), which use a .NET Core version of MSBuild
+instead of a .NET Framework version: the MSBuild task version of the compiler is built
+on .NET Framework, so it can't be loaded in-process in the .NET Core MSBuild, which
+therefore always uses the executable. The .NET Framework MSBuild (Visual Studio,
+msbuild.exe) uses the in-process task by default, and the executable with
+`UseNativeXamlCompiler=true`. Thin .NET Standard wrappers convert MSBuild input to the
+JSON format, run the executable compiler with the input JSON, and then convert the JSON
+outputted by the compiler back into MSBuild outputs (like generated files, errors, and
+warnings). The relevant files are:
 
  * XamlCompiler.exe - the standalone executable compiler.  Accepts two arguments via
 the command line, the path to the compiler inputs in a JSON file, and the path to an

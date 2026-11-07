@@ -25,7 +25,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// Any new methods this class adds beyond Type should not be public. 
     /// </remarks>
     [System.Diagnostics.DebuggerDisplay(@"\{Name = {Name} FullName = {FullName}\}")]
-    internal abstract class MetadataOnlyCommonType : Type
+    internal abstract class MetadataOnlyCommonType : LmrTypeBase
     {
         /// <summary>
         /// Get the resolver object that the type's TypeDef token is valid in.
@@ -79,7 +79,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         private Dictionary<BindingFlags, PropertyInfo[]> _propertiesCache;
 
         // Implementation of System.Type.GetProperties(BindingFlags)
-        public override PropertyInfo[] GetProperties(System.Reflection.BindingFlags flags)
+        internal override PropertyInfo[] GetPropertiesCore(System.Reflection.BindingFlags flags)
         {
             if (_propertiesCache == null)
             {
@@ -97,7 +97,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return (PropertyInfo[])result.Clone();
         }
 
-        protected override PropertyInfo GetPropertyImpl(
+        internal override PropertyInfo GetPropertyImplCore(
             String name, BindingFlags bindingAttr, Binder binder, Type returnType,
             Type[] types, ParameterModifier[] modifiers)
         {
@@ -106,7 +106,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         private Dictionary<BindingFlags, MethodInfo[]> _methodsCache;
 
-        public override MethodInfo[] GetMethods(System.Reflection.BindingFlags flags)
+        internal override MethodInfo[] GetMethodsCore(System.Reflection.BindingFlags flags)
         {
             if (_methodsCache == null)
             {
@@ -124,7 +124,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return (MethodInfo[])result.Clone();
         }
 
-        protected override MethodInfo GetMethodImpl(string name, System.Reflection.BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, System.Reflection.ParameterModifier[] modifiers)
+        internal override MethodInfo GetMethodImplCore(string name, System.Reflection.BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, System.Reflection.ParameterModifier[] modifiers)
         {
             // This overload requests a specific Method. Common implementation is to build
             // this by searching over the list of all methods and filter out. 
@@ -133,7 +133,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         private Dictionary<BindingFlags, MemberInfo[]> _membersCache = new Dictionary<BindingFlags, MemberInfo[]>();
 
-        public override MemberInfo[] GetMembers(System.Reflection.BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMembersCore(System.Reflection.BindingFlags bindingAttr)
         {
             MemberInfo[] memberInfo = null;
             if (!_membersCache.TryGetValue(bindingAttr, out memberInfo))
@@ -144,11 +144,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return memberInfo;
         }
 
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override ConstructorInfo GetConstructorImplCore(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             return MetadataOnlyModule.GetConstructorOnType(this, bindingAttr, binder, callConvention, types, modifiers);
         }
-        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
+        internal override ConstructorInfo[] GetConstructorsCore(BindingFlags bindingAttr)
         {
             return MetadataOnlyModule.GetConstructorsOnType(this, bindingAttr);
         }
@@ -261,7 +261,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return false;
         }
 
-        public override MemberInfo[] GetDefaultMembers()
+        internal override MemberInfo[] GetDefaultMembersCore()
         {
             Type defaultMemberAttrType = this.Resolver.AssemblyResolver.GetTypeXFromName("System.Reflection.DefaultMemberAttribute");
             if (defaultMemberAttrType == null)
@@ -291,7 +291,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 return new MemberInfo[0];
             string defaultMember = attr.ConstructorArguments[0].Value as string;
 
-            MemberInfo[] members = this.GetMember(defaultMember);
+            MemberInfo[] members = this.GetMemberLmr(defaultMember);
             if (members == null)
                 members = new MemberInfo[0];
             return members;
@@ -450,7 +450,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         {
             throw new ArgumentException(Resources.OperationValidOnArrayTypeOnly);
         }
-        public override Type MakeGenericType(Type[] argTypes)
+        internal override Type MakeGenericTypeCore(Type[] argTypes)
         {
             throw new InvalidOperationException();
         }
@@ -465,7 +465,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return this.Resolver.Factory.CreatePointerType(this);
         }
 
-        public override Type MakeArrayType()
+        internal override Type MakeArrayTypeCore()
         {
             // This method returns a vector type.
             // A vector, which always has only one dimension, is 
@@ -477,7 +477,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return this.Resolver.Factory.CreateVectorType(this);
         }
 
-        public override Type MakeArrayType(int rank)
+        internal override Type MakeArrayTypeCore(int rank)
         {
             // This method returns a multidimensional array type.
             // You cannot use this method overload to create a vector 

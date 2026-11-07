@@ -1200,6 +1200,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 assemblies.Add(mscorlib);
             }
+#if NET10_0_OR_GREATER
+            else if (isSystemAssembly && s_typeUniverse.IsSystemAssemblyLoaded)
+            {
+                // The type universe is kept from pass 1 to pass 2 when the compiler runs in the build process (see CompileXaml.Execute),
+                // so in pass 2 mscorlib can be already loaded without being one of the references (C++ projects). It must still be
+                // in the system assemblies, see DirectUISystem.LoadCoreDirectUIAssemblies.
+                mscorlib = s_typeUniverse.GetSystemAssembly();
+                if (!assemblies.Contains(mscorlib))
+                {
+                    assemblies.Add(mscorlib);
+                }
+            }
+#endif
 
             return assemblies;
         }
@@ -1587,10 +1600,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         private bool WriteRootsFile(Roots roots, String filename)
         {
-            XamlObjectReaderSettings objRdrSettings = new XamlObjectReaderSettings();
-            objRdrSettings.LocalAssembly = Assembly.GetExecutingAssembly();
-            XamlObjectReader objReader = new XamlObjectReader(roots, objRdrSettings);
-
             MemoryStream memoryStream = new MemoryStream();
             XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
             xmlWriterSettings.Encoding = new UTF8Encoding(false);
@@ -1598,15 +1607,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             xmlWriterSettings.Indent = true;
 
             XmlWriter xmlWriter = XmlWriter.Create(memoryStream, xmlWriterSettings);
-            XamlXmlWriter xamlXmlWriter = new XamlXmlWriter(xmlWriter, objReader.SchemaContext);
-
-            XamlServices.Transform(objReader, xamlXmlWriter);
+            RootsXmlWriter.Write(roots, xmlWriter);
 
             xmlWriter.Flush();
             xmlWriter.Close();
+
             String xamlSaveString = Encoding.UTF8.GetString(memoryStream.ToArray());
 
-            String localXmlns = "xmlns=\"clr-namespace:Microsoft.UI.Xaml.Markup.Compiler.RootLog;assembly=Microsoft.UI.Xaml.Markup.Compiler\"";
+            String localXmlns = "xmlns=\"" + RootsXmlWriter.Namespace + "\"";
             String looseXmlString = xamlSaveString.Replace(localXmlns, String.Empty);
 
             string pathName = Path.Combine(OutputFolderFullpath, filename);
@@ -1933,7 +1941,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             Type type;
             foreach (Assembly asm in loadedAssemblies)
             {
-                type = asm.GetType(typeName);
+                type = asm.GetTypeLmr(typeName);
                 if (type != null)
                 {
                     return type;
@@ -2578,28 +2586,46 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                             // Convert the markup string into a literal (e.g. if there's a quote in the current markup string, the literalized string will have a
                             // backslash to escape it so the compiler won't complain after spitting it out in codegen).
+#if NET10_0_OR_GREATER
+                            // The same literals as the CodeDom providers below (see CodeDomStringLiteral)
+                            switch (Language.Name)
+                            {
+                                case ProgrammingLanguage.CSharp:
+                                    storedProp.DefaultValueMarkup = CodeDomStringLiteral.ToCSharp(modifiedDefaultValueMarkup);
+                                    break;
+                                case ProgrammingLanguage.VB:
+                                    storedProp.DefaultValueMarkup = CodeDomStringLiteral.ToVisualBasic(modifiedDefaultValueMarkup);
+                                    break;
+                                default:
+                                    // The cpp codedom provider was deprecated by VS in version dev15.
+                                    LogError(new ErrorXPropertyUsageNotSupported(domPropertyObject, Language));
+                                    return false;
+                            }
+#else
                             using (var writer = new StringWriter())
                             {
-                                string providerLang = null;
+                                System.CodeDom.Compiler.CodeDomProvider codeDomProvider = null;
                                 switch (Language.Name)
                                 {
                                     case ProgrammingLanguage.CSharp:
-                                        providerLang = "cs";
+                                        codeDomProvider = new Microsoft.CSharp.CSharpCodeProvider();
                                         break;
                                     case ProgrammingLanguage.VB:
-                                        providerLang = "vb";
+                                        codeDomProvider = new Microsoft.VisualBasic.VBCodeProvider();
                                         break;
                                     default:
                                         // The cpp codedom provider was deprecated by VS in version dev15.
                                         LogError(new ErrorXPropertyUsageNotSupported(domPropertyObject, Language));
                                         return false;
                                 }
-                                using (var provider = System.CodeDom.Compiler.CodeDomProvider.CreateProvider(providerLang))
+                                // The providers are created directly instead of by language name, which looks them up by reflection (not supported by Native AOT)
+                                using (var provider = codeDomProvider)
                                 {
                                     provider.GenerateCodeFromExpression(new System.CodeDom.CodePrimitiveExpression(modifiedDefaultValueMarkup), writer, null);
                                     storedProp.DefaultValueMarkup = writer.ToString();
                                 }
                             }
+#endif
                         }
                         else
                         {
@@ -3207,7 +3233,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             XamlException xamlException = e as XamlException;
             int line = xamlException != null ? xamlException.LineNumber : 0;
             int column = xamlException != null ? xamlException.LinePosition : 0;
-            string message = e.Message;
+            string message = Environment.GetEnvironmentVariable("XAMLCOMPILER_DEBUGSTACK") == "1" ? e.ToString() : e.Message;
 
             LogError(subcategory, code, null, file, line, column, 0, 0, message);
             Log.LogDiagnosticMessage(e.StackTrace);

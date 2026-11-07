@@ -2,6 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// This runtime falls back to DynamicMethodRuntime (Reflection.Emit, not supported by Native AOT) and is only used by
+// XamlObjectWriter for a non-null XamlObjectWriterSettings.AccessLevel. The XAML compiler doesn't write object graphs,
+// so it isn't compiled in the Native AOT build of the XAML compiler (see XamlObjectWriter.CreateRuntime).
+#if !NET10_0_OR_GREATER
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -465,3 +470,4 @@ namespace MS.Internal.Xaml.Runtime
         }
     }
 }
+#endif // !NET10_0_OR_GREATER

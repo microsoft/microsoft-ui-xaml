@@ -24,7 +24,9 @@ namespace System.Xaml.Schema
         private static object[] s_emptyObjectArray = new object[0];
 
         private XamlMember _member;
+#if !NET10_0_OR_GREATER // Only used by ShouldSerializeValue
         private NullableReference<MethodInfo> _shouldSerializeMethod;
+#endif
 
         protected XamlMemberInvoker()
         {
@@ -138,6 +140,10 @@ namespace System.Xaml.Schema
         // Returns true/false if ShouldSerialize method was invoked, null if no method was found
         public virtual ShouldSerializeResult ShouldSerializeValue(object instance)
         {
+#if NET10_0_OR_GREATER
+            // The XAML compiler never writes or reads object graphs (XamlObjectWriter/XamlObjectReader), and this needs runtime reflection.
+            throw Microsoft.UI.Xaml.Markup.Compiler.NativeAotUnsupported.Create("XamlMemberInvoker.ShouldSerializeValue");
+#else
             if (IsUnknown)
             {
                 return ShouldSerializeResult.Default;
@@ -179,6 +185,7 @@ namespace System.Xaml.Schema
                 return result ? ShouldSerializeResult.True : ShouldSerializeResult.False;
             }
             return ShouldSerializeResult.Default;
+#endif
         }
 
         // vvvvv---- Unused members.  Servicing policy is to retain these anyway.  -----vvvvv

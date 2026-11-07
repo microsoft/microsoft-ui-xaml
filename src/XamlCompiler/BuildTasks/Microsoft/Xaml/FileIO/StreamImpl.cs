@@ -8,7 +8,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
-    internal class StreamImpl : IStream, IDisposable
+    internal partial class StreamImpl : IStream, IDisposable
     {
         private bool disposedValue = false; // To detect redundant calls
         protected Stream _underlyingStream;

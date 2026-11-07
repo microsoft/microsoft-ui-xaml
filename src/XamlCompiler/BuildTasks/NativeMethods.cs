@@ -5,11 +5,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
 {
     using System;
     using System.IO;
+#if !NET10_0_OR_GREATER
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
     using XBF;
+#endif
 
-    internal static class NativeMethodsHelper
+    // The Native AOT (net10.0) build can't use built-in COM interop/runtime marshalling, so the Write
+    // bridge and the P/Invokes it uses are implemented separately for it in NativeMethods.NativeAot.cs.
+    internal static partial class NativeMethodsHelper
     {
         private static bool s_VcMetaIsLoaded = false;
         public static bool EnsureVcMetaIsLoaded(string vsInstallDir, string vcInstallPath32, string vcInstallPath64)
@@ -60,9 +64,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
         private static IntPtr LoadLibrary32_64(string path32bit, string path64bit)
         {
             string dllPath = (System.Environment.Is64BitProcess) ? path64bit : path32bit;
+#if NET10_0_OR_GREATER
+            IntPtr handle = NativeMethods.LoadLibraryEx(dllPath, IntPtr.Zero, NativeMethods.LOAD_WITH_ALTERED_SEARCH_PATH);
+            if (handle != IntPtr.Zero)
+            {
+                NativeMethods.VcMetaHandle = handle;
+            }
+            return handle;
+#else
             return NativeMethods.LoadLibraryEx(dllPath, IntPtr.Zero, NativeMethods.LOAD_WITH_ALTERED_SEARCH_PATH);
+#endif
         }
 
+#if !NET10_0_OR_GREATER
         public static int Write(IntPtr dllHandle, IStream[] xamlStreams, int numFiles, string[] pbChecksum, int checksumSize, 
             IXbfMetadataProvider provider, TargetOSVersion targetVersion, uint xbfGenerationFlags, IStream[] xbfStreams,
             out int errorCode, out int errorFileIndex, out int errorLine, out int errorColumn)
@@ -86,11 +100,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             errorColumn = -1;
             return -1;
         }
+#endif
     }
-    internal static class NativeMethods
+    internal static partial class NativeMethods
     {
         public static int LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008;
 
+#if !NET10_0_OR_GREATER
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LoadLibraryEx")]
         public static extern IntPtr LoadLibraryEx(string libFilename, IntPtr reserved, int flags);
 
@@ -107,5 +123,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             IStream[] xamlStreams, int numFiles, string[] pbChecksum, int checksumSize, 
             IXbfMetadataProvider provider, TargetOSVersion targetVersion, uint xbfGenerationFlags, IStream[] xbfStreams,
             out int errorCode, out int errorFileIndex, out int errorLine, out int errorColumn);
+#endif
     }
 }

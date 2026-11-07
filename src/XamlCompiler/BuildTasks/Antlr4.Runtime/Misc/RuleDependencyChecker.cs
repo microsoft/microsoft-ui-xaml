@@ -28,6 +28,11 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// RuleDependencyChecker.CheckDependencies (the only entry point) validates [RuleDependency] annotations of generated
+// parsers through runtime reflection over their types. Nothing in the XAML compiler calls it, so it isn't compiled in
+// the Native AOT build of the compiler.
+#if !NET10_0_OR_GREATER
+
 #if NET45PLUS
 
 using System;
@@ -1134,3 +1139,4 @@ namespace Antlr4.Runtime.Misc
 }
 
 #endif
+#endif // !NET10_0_OR_GREATER

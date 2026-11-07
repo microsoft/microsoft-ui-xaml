@@ -21,7 +21,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <UseVCMetaManaged Condition="'$(UseVCMetaManaged)' == ''">true</UseVCMetaManaged>
         <DisableXbfGeneration Condition="'$(DisableXbfGeneration)' == '' AND '$(TargetPlatformVersion)' == '8.0'">true</DisableXbfGeneration>
         <DisableXbfGeneration Condition="'$(DisableXbfGeneration)' == ''">false</DisableXbfGeneration>
-        <_MuxPackageToolsFolder Condition=" '$(MSbuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\tools\net8.0\</_MuxPackageToolsFolder>
+        <_MuxPackageToolsFolder Condition=" '$(MSbuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\tools\net10.0\</_MuxPackageToolsFolder>
         <_MuxPackageToolsFolder Condition=" '$(_MuxPackageToolsFolder)' == '' ">$(MSBuildThisFileDirectory)..\tools\net472\</_MuxPackageToolsFolder>
         <GenXbfPath Condition="$(GenXbfPath) == ''">$(_MuxPackageToolsFolder)..\</GenXbfPath>
         <UseXamlCompilerExecutable Condition=" '$(MSbuildRuntimeType)' == 'Core' ">true</UseXamlCompilerExecutable>
@@ -182,7 +182,13 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <XamlGeneratedOutputPath Condition="'$(XamlGeneratedOutputPath)' == ''">$(IntermediateOutputPath)</XamlGeneratedOutputPath>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(XamlCompilerTaskPath) == ''">
+    <!--
+        There is no in-process compiler task for .NET MSBuild (e.g. 'dotnet build'), which always runs the native executable compiler
+        (see below), so XamlCompilerTaskPath (Microsoft.UI.Xaml.Markup.Compiler.dll, also the assembly of the AddDefaultXamlLinkMetadata
+        and GetXamlCppIncludeDirectories tasks, which only C++ projects use) has no default there: the tasks it has are only registered
+        when it is set. With .NET MSBuild, tools\net10.0 only has the tasks that run the executable compiler (XamlCompilerJsonTaskPath).
+    -->
+    <PropertyGroup Condition="'$(XamlCompilerTaskPath)' == '' and '$(MSBuildRuntimeType)' != 'Core'">
         <XamlCompilerTaskPath>$(_MuxPackageToolsFolder)Microsoft.UI.Xaml.Markup.Compiler.dll</XamlCompilerTaskPath>
     </PropertyGroup>
 
@@ -191,34 +197,57 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </PropertyGroup>
 
     <!--
-        Run the .NET build of the executable compiler on the dotnet host of the .NET SDK (DOTNET_HOST_PATH) when it is
-        .NET 8 or later; it is considerably faster than the .NET Framework one. This applies both when MSBuild runs on
-        .NET (e.g. 'dotnet build') and on .NET Framework (Visual Studio, msbuild.exe), where it replaces the in-process
-        CompileXaml task unless UseXamlCompilerExecutable was explicitly set to false.
-        Falls back to the .NET Framework compiler if there is no .NET 8+ SDK, a custom XamlCompilerExePath was
-        specified, or UseNetCoreXamlCompiler is set to false.
+        Native AOT build of the executable compiler (net10.0): a self-contained native binary, so it has no requirements on the host
+        (no .NET SDK or runtime) and can be launched from any MSBuild. .NET MSBuild (e.g. 'dotnet build') always uses it, including for
+        design-time builds. The .NET Framework MSBuild (Visual Studio, msbuild.exe) uses the in-process CompileXaml task by default, and
+        the native compiler with UseNativeXamlCompiler=true (except for design-time builds). XamlCompilerNativeExePath can be set to use
+        a specific build of the native compiler.
     -->
     <PropertyGroup>
-        <XamlCompilerNetCoreDllPath Condition="'$(XamlCompilerNetCoreDllPath)' == ''">$(_MuxPackageToolsFolder)..\net8.0\XamlCompiler.dll</XamlCompilerNetCoreDllPath>
-        <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' == 'Core'">$([MSBuild]::VersionGreaterThanOrEquals('$(MSBuildVersion)', '17.8'))</_XamlCompilerHasNetCoreSdk>
-        <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(NETCoreSdkVersion)' != ''">$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))</_XamlCompilerHasNetCoreSdk>
-        <UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == '' and '$(XamlCompilerExePath)' == '' and '$(UseXamlCompilerExecutable)' != 'false' and '$(DOTNET_HOST_PATH)' != '' and '$(_XamlCompilerHasNetCoreSdk)' == 'true' and !$(NETCoreSdkVersion.Contains('-')) and Exists('$(XamlCompilerNetCoreDllPath)')">true</UseNetCoreXamlCompiler>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(XamlCompilerExePath) == ''">
-        <XamlCompilerExePath>$(_MuxPackageToolsFolder)..\net472\XamlCompiler.exe</XamlCompilerExePath>
+        <_XamlCompilerNativeRid Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">win-arm64</_XamlCompilerNativeRid>
+        <_XamlCompilerNativeRid Condition="'$(_XamlCompilerNativeRid)' == ''">win-x64</_XamlCompilerNativeRid>
+        <_XamlCompilerNativeExePathIsDefault Condition="'$(XamlCompilerNativeExePath)' == ''">true</_XamlCompilerNativeExePathIsDefault>
+        <XamlCompilerNativeExePath Condition="'$(XamlCompilerNativeExePath)' == ''">$(_MuxPackageToolsFolder)..\net10.0\$(_XamlCompilerNativeRid)\XamlCompiler.exe</XamlCompilerNativeExePath>
+        <!-- A package built from a single flavor has just one architecture; the x64 binary also runs on ARM64 (emulated), like GenXbf. Only for the default path, an explicit XamlCompilerNativeExePath is never replaced -->
+        <XamlCompilerNativeExePath Condition="'$(_XamlCompilerNativeExePathIsDefault)' == 'true' and '$(_XamlCompilerNativeRid)' == 'win-arm64' and !Exists('$(XamlCompilerNativeExePath)')">$(_MuxPackageToolsFolder)..\net10.0\win-x64\XamlCompiler.exe</XamlCompilerNativeExePath>
     </PropertyGroup>
 
     <PropertyGroup>
-        <_UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == 'true' and '$(IsNativeLanguage)' != 'true' and '$(DOTNET_HOST_PATH)' != '' and '$(DesignTimeBuild)' != 'true'">true</_UseNetCoreXamlCompiler>
-        <UseXamlCompilerExecutable Condition="'$(_UseNetCoreXamlCompiler)' == 'true' and '$(UseXamlCompilerExecutable)' == ''">true</UseXamlCompilerExecutable>
-        <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' == 'true'">"$(DOTNET_HOST_PATH)" "$(XamlCompilerNetCoreDllPath)"</_XamlCompilerCommand>
-        <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' != 'true'">"$(XamlCompilerExePath)"</_XamlCompilerCommand>
+        <_UseNativeXamlCompiler Condition="'$(MSBuildRuntimeType)' == 'Core'">true</_UseNativeXamlCompiler>
+        <_UseNativeXamlCompiler Condition="'$(UseNativeXamlCompiler)' == 'true' and '$(DesignTimeBuild)' != 'true'">true</_UseNativeXamlCompiler>
+        <UseXamlCompilerExecutable Condition="'$(_UseNativeXamlCompiler)' == 'true'">true</UseXamlCompilerExecutable>
     </PropertyGroup>
 
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(XamlCompilerTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(XamlCompilerTaskPath)" />
+    <Target Name="_ValidateNativeXamlCompiler" BeforeTargets="MarkupCompilePass1;MarkupCompilePass2;DesignTimeMarkupCompilationCT" Condition="'$(_UseNativeXamlCompiler)' == 'true' and ('@(Page)' != '' or '@(ApplicationDefinition)' != '')">
+        <!-- Only possible if UseXamlCompilerExecutable is overridden after the default above (a global property, or a later import) -->
+        <Error Condition="'$(MSBuildRuntimeType)' == 'Core' and '$(UseXamlCompilerExecutable)' != 'true'"
+               Text="The in-process XAML compiler (UseXamlCompilerExecutable=false) is only available when building with the .NET Framework MSBuild (Visual Studio, msbuild.exe). With .NET MSBuild (e.g. 'dotnet build'), the native XAML compiler is always used: don't set UseXamlCompilerExecutable." />
+        <Error Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86' or '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm'"
+               Text="The native XAML compiler requires a 64-bit version of Windows. On .NET Framework MSBuild (Visual Studio, msbuild.exe) the in-process XAML compiler can be used instead (don't set UseNativeXamlCompiler)." />
+        <Warning Condition="'$(XamlCompilerExePath)' != ''"
+                 Text="XamlCompilerExePath is no longer supported and is ignored (the .NET Framework XAML compiler executable doesn't exist anymore). Use XamlCompilerNativeExePath to select a specific native XAML compiler." />
+        <Error Condition="!Exists('$(XamlCompilerNativeExePath)')" Text="The native XAML compiler was not found at '$(XamlCompilerNativeExePath)'." />
+    </Target>
+
+    <!--
+        The native compiler links both GC modes and picks one from the DOTNET_gcServer variable of its process. XamlCompilerEnableServerGC
+        is empty for workstation GC (the default: on real apps it is as fast as Server GC, with ~35 fewer threads and ~100 MB less memory per
+        compiler process), 'true'/'false' to force a mode, or 'auto' for Server GC on machines with enough cores and memory (see
+        XamlCompilerGCPolicy). A DOTNET_gcServer variable that is already set in the environment is respected when XamlCompilerEnableServerGC is empty.
+    -->
+    <Target Name="_ResolveXamlCompilerGCMode" BeforeTargets="MarkupCompilePass1;MarkupCompilePass2;DesignTimeMarkupCompilationCT" Condition="'$(_UseNativeXamlCompiler)' == 'true' and ('@(Page)' != '' or '@(ApplicationDefinition)' != '')">
+        <GetXamlCompilerGCMode EnableServerGC="$(XamlCompilerEnableServerGC)">
+            <Output TaskParameter="EnvironmentVariable" PropertyName="_XamlCompilerGCEnvironmentVariable" />
+        </GetXamlCompilerGCMode>
+        <ItemGroup Condition="'$(_XamlCompilerGCEnvironmentVariable)' != ''">
+            <_XamlCompilerEnvironmentVariable Include="$(_XamlCompilerGCEnvironmentVariable)" />
+        </ItemGroup>
+    </Target>
+
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" Condition="'$(XamlCompilerTaskPath)' != ''" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(XamlCompilerTaskPath)" Condition="'$(XamlCompilerTaskPath)' != ''" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(XamlCompilerTaskPath)" Condition="'$(XamlCompilerTaskPath)' != ''" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.GetXamlCompilerGCMode"             AssemblyFile="$(XamlCompilerJsonTaskPath)" />
 
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.InputSerializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.OutputDeserializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
@@ -264,12 +293,8 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <AppxManifestMetadata Include="$(XamlCompilerTaskPath)" />
     </ItemGroup>
 
-    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true' and '$(_UseNetCoreXamlCompiler)'=='true'">
-        <AppxManifestMetadata Include="$(XamlCompilerNetCoreDllPath)" />
-    </ItemGroup>
-
-    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true' and '$(_UseNetCoreXamlCompiler)'!='true'">
-        <AppxManifestMetadata Include="$(XamlCompilerExePath)" />
+    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true'">
+        <AppxManifestMetadata Include="$(XamlCompilerNativeExePath)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -404,7 +429,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
         <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNetCoreXamlCompiler)' != 'true'" />
+                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNativeXamlCompiler)' != 'true'" />
 
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
@@ -500,7 +525,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='"$(XamlCompilerNativeExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -535,7 +560,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
         <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNetCoreXamlCompiler)' != 'true'" />
+                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNativeXamlCompiler)' != 'true'" />
 
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
@@ -630,7 +655,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
                 DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='"$(XamlCompilerNativeExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -817,7 +842,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='"$(XamlCompilerNativeExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -917,7 +942,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
             GenXbfPath="$(GenXbfPath)"/>
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" EnvironmentVariables="@(_XamlCompilerEnvironmentVariable)" Command='"$(XamlCompilerNativeExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
                      JsonFilePath="$(XamlCompilerExeOutputJson)">
