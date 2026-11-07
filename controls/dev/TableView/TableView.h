@@ -362,6 +362,8 @@ public:
     winrt::Panel GetHeaderHostInternal() const { return m_headerHost.get(); }
     bool AreColumnHeadersShownInternal() { return ShouldShowColumnHeaders(); }
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
+    // Changes whenever the rows source is replaced or changed; positions read before then may name other items.
+    uint64_t RowsSourceVersionInternal() const noexcept { return m_rowsSourceVersion; }
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
@@ -1411,6 +1413,7 @@ private:
     // Subscribed before the repeater so a Reset is observed while the rows are still realized.
     winrt::ItemsSourceView::CollectionChanged_revoker m_reshapeFocusDetectorRevoker{};
     winrt::ItemsSourceView m_reshapeFocusDetectorView{ nullptr };
+    uint64_t m_rowsSourceVersion{ 0 };
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 

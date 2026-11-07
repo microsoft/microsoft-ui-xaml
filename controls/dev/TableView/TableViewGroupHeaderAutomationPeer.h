@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "TableViewGroupHeaderAutomationPeer.g.h"
+#include "TableViewItemPeerCache.h"
 
 // Automation peer for the group-header band.
 //
@@ -21,13 +22,20 @@ class TableViewGroupHeaderAutomationPeer :
         winrt::implementation::TableViewGroupHeaderAutomationPeerT>
 {
 public:
+    struct GroupPeerTag {};
+
+    // A header's own peer, which the header's OnCreateAutomationPeer may replace with a derived one.
     explicit TableViewGroupHeaderAutomationPeer(winrt::TableViewGroupHeader const& owner);
+    // The peer of the group a header shows; see TableViewGroupHeader::SyncAutomationPeerToGroupInternal.
+    TableViewGroupHeaderAutomationPeer(winrt::TableViewGroupHeader const& owner, GroupPeerTag);
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    winrt::hstring GetLocalizedControlTypeCore();
     winrt::hstring GetClassNameCore();
     winrt::hstring GetNameCore();
+    winrt::AutomationPeer GetLabeledByCore();
 
     // Lands keyboard focus for UIA SetFocus; see the definition.
     void SetFocusCore();
@@ -39,6 +47,49 @@ public:
     void Expand();
     void Collapse();
     winrt::ExpandCollapseState ExpandCollapseState();
+
+    // A header's own peer (possibly an app-derived type) is an internal forwarder; UIA is handed
+    // its group's peer, always this base type, through EventsSource. A group peer answers only
+    // while a header shows its group: it keeps ExpandCollapse and GridItem, forwards the rest
+    // below to that header's own peer, and otherwise throws ElementNotAvailable. Forwarded patterns
+    // come from that header's peer, as a ListView item peer's come from its container's.
+    winrt::IInspectable NavigateCore(winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection const& direction);
+    winrt::IVector<winrt::AutomationPeer> GetChildrenCore();
+    winrt::Rect GetBoundingRectangleCore();
+    bool IsOffscreenCore();
+    bool IsEnabledCore();
+    bool HasKeyboardFocusCore();
+    bool IsKeyboardFocusableCore();
+    winrt::Point GetClickablePointCore();
+    winrt::hstring GetAutomationIdCore();
+    winrt::hstring GetHelpTextCore();
+    winrt::hstring GetItemStatusCore();
+    winrt::hstring GetItemTypeCore();
+    winrt::hstring GetFullDescriptionCore();
+    winrt::Windows::Foundation::Collections::IIterable<winrt::AutomationPeer> GetDescribedByCore();
+    winrt::hstring GetAccessKeyCore();
+    winrt::hstring GetAcceleratorKeyCore();
+    winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting GetLiveSettingCore();
+    winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationHeadingLevel GetHeadingLevelCore();
+    int32_t GetCultureCore();
+    bool IsRequiredForFormCore();
+    bool IsControlElementCore();
+    bool IsContentElementCore();
+    int32_t GetPositionInSetCore();
+    int32_t GetSizeOfSetCore();
+    winrt::Windows::Foundation::Collections::IVectorView<winrt::AutomationPeer> GetControlledPeersCore();
+    winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLandmarkType GetLandmarkTypeCore();
+    winrt::hstring GetLocalizedLandmarkTypeCore();
+    winrt::Windows::Foundation::Collections::IIterable<winrt::AutomationPeer> GetFlowsToCore();
+    winrt::Windows::Foundation::Collections::IIterable<winrt::AutomationPeer> GetFlowsFromCore();
+    bool IsPeripheralCore();
+    bool IsDataValidForFormCore();
+    winrt::IVector<winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation> GetAnnotationsCore();
+    bool IsDialogCore();
+
+    TableViewItemPeerBinding& ItemPeerBindingInternal() noexcept { return m_binding; }
+    // The header still showing this group peer's group and forwarding to it; else null.
+    winrt::UIElement ResolveBoundHeaderInternal() const;
 
     // Grouping is hierarchical, and Level is how an ExpandCollapse container conveys depth.
     // Without it Narrator hears two nested groups as siblings.
@@ -62,6 +113,15 @@ public:
 
 private:
     winrt::TableViewGroupHeader GetHeader() const;
-    winrt::TableView GetOwningTableView() const;
+    // The header showing this peer's group (for a header's own peer, its owner); throws ElementNotAvailable if stale.
+    winrt::TableViewGroupHeader GetBoundHeader() const;
+    // For a group peer, its bound header's own peer; else null.
+    winrt::AutomationPeer GetForwardingPeer() const;
+    winrt::TableView GetOwningTableView();
     void SetExpansion(bool expand);
+
+    TableViewItemPeerBinding m_binding;
+    // A group peer keeps the header that created it, its Owner, alive: the framework holds the owner
+    // unreferenced, and this peer outlives that header whenever the group moves to another one.
+    tracker_ref<winrt::TableViewGroupHeader> m_ownerHeader{ this };
 };

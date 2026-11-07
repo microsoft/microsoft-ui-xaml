@@ -541,9 +541,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal static TableViewGroupHeaderAutomationPeer GetGroupHeaderPeer(TableView tableView, int index)
         {
             var header = GetGroupHeader(tableView, index);
-            var peer = header == null ? null : FrameworkElementAutomationPeer.CreatePeerForElement(header) as TableViewGroupHeaderAutomationPeer;
+            var peer = header == null ? null : GroupHeaderPeerOf(header) as TableViewGroupHeaderAutomationPeer;
             Verify.IsNotNull(peer, "A TableViewGroupHeader must produce a TableViewGroupHeaderAutomationPeer.");
             return peer;
+        }
+
+        // The peer UIA reaches for the group a header shows: a rebound header exposes it as EventsSource.
+        internal static AutomationPeer GroupHeaderPeerOf(TableViewGroupHeader header)
+        {
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+            return peer?.EventsSource ?? peer;
         }
 
         // Setting TableViewGroupHeader.IsExpanded only mirrors state onto the header; the reshape runs
@@ -564,9 +571,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static TableViewRowAutomationPeer GetRowPeer(TableViewRow row)
         {
-            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(row) as TableViewRowAutomationPeer;
+            var peer = RowPeerOf(row) as TableViewRowAutomationPeer;
             Verify.IsNotNull(peer, "A TableViewRow must produce a TableViewRowAutomationPeer.");
             return peer;
+        }
+
+        // The peer UIA reaches for the item a row shows: the row's own peer exposes it as EventsSource.
+        internal static AutomationPeer RowPeerOf(UIElement row)
+        {
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+            return peer?.EventsSource ?? peer;
         }
 
         internal static TableViewCellAutomationPeer GetCellPeer(TableViewRowAutomationPeer rowPeer, int visibleColumnIndex)

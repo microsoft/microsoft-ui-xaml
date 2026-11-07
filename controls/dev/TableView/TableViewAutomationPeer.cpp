@@ -7,6 +7,7 @@
 #include "TableViewRow.h"
 #include "TableViewGroupHeader.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewGroupHeaderAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewRowAutomationPeer.h"
@@ -23,6 +24,31 @@ TableViewAutomationPeer::TableViewAutomationPeer(winrt::TableView const& owner)
 
 namespace
 {
+    // The identity binding of a container's item peer; null for any other peer.
+    TableViewItemPeerBinding* ItemPeerBindingOf(winrt::AutomationPeer const& peer)
+    {
+        if (auto* const rowPeer = TableViewRowAutomationPeer::FromPeerInternal(peer))
+        {
+            return &rowPeer->ItemPeerBindingInternal();
+        }
+        if (auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr)
+        {
+            return &winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer)->ItemPeerBindingInternal();
+        }
+        return nullptr;
+    }
+
+    // The source index an item peer stands for: its container's, or for a row with none, its item's.
+    int32_t ItemPeerIndexOf(winrt::AutomationPeer const& peer, TableViewItemPeerBinding const& binding, winrt::ItemsRepeater const& repeater)
+    {
+        if (auto const container = TableViewItemPeers::ContainerOf(binding, peer))
+        {
+            return repeater.GetElementIndex(container);
+        }
+        auto* const rowPeer = TableViewRowAutomationPeer::FromPeerInternal(peer);
+        return rowPeer ? rowPeer->TrackedItemIndexInternal() : -1;
+    }
+
     // Marked composable like the IDL-generated peer bases, which ReferenceTracker relies on.
     template <typename D, typename... I>
     using ComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
@@ -145,26 +171,11 @@ namespace
         // Parented where realized rows are; re-resolved on use, as the template may have been reapplied.
         winrt::AutomationPeer RefreshParent()
         {
-            auto const table = m_table.get();
-            if (!table)
+            auto const parent = TableViewAutomationPeer::RowsParentPeerInternal(m_table.get());
+            if (parent)
             {
-                return nullptr;
+                SetParent(parent);
             }
-            winrt::AutomationPeer parent = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(table);
-            if (auto const repeater = winrt::get_self<TableView>(table)->GetRowsRepeaterInternal();
-                repeater && winrt::VisualTreeHelper::GetChildrenCount(repeater) > 0)
-            {
-                if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(
-                        winrt::VisualTreeHelper::GetChild(repeater, 0).try_as<winrt::UIElement>()))
-                {
-                    if (auto const rowParent = rowPeer.Navigate(
-                            winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
-                    {
-                        parent = rowParent;
-                    }
-                }
-            }
-            SetParent(parent);
             return parent;
         }
 
@@ -184,11 +195,7 @@ namespace
             // Read from the source: m_item may be a weak reference to a box nothing else keeps alive.
             auto const tableImpl = winrt::get_self<TableView>(m_table.get());
             auto const item = tableImpl->UnwrapEditingDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
-            if (auto const composed = ComposeTextColumnValues(*tableImpl, item); !composed.empty())
-            {
-                return composed;
-            }
-            return ItemToName(item);
+            return TableViewAutomationPeer::ComposeItemNameInternal(*tableImpl, item);
         }
 
         bool IsEnabledCore()
@@ -344,7 +351,7 @@ namespace
         winrt::AutomationPeer RealizedRowPeer(int32_t index)
         {
             auto const row = RealizedRow(index);
-            return row ? winrt::FrameworkElementAutomationPeer::CreatePeerForElement(row) : nullptr;
+            return row ? TableViewItemPeers::ItemPeerOfContainer(row, true) : nullptr;
         }
 
         winrt::weak_ref<winrt::TableView> m_table{ nullptr };
@@ -619,7 +626,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
 
     if (auto const header = element.try_as<winrt::TableViewGroupHeader>())
     {
-        if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header))
+        if (auto const headerPeer = TableViewItemPeers::ItemPeerOfContainer(header, true))
         {
             return ProviderFromPeer(headerPeer);
         }
@@ -660,7 +667,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
     if (auto const cellFE = cellElement.try_as<winrt::FrameworkElement>())
     {
         // Route through the row peer so Grid.GetItem and tree navigation share provider identity.
-        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement)
+        if (auto const rowPeer = TableViewItemPeers::ItemPeerOfContainer(rowElement, true)
                 .try_as<winrt::TableViewRowAutomationPeer>())
         {
             if (auto const cellPeer = winrt::get_self<TableViewRowAutomationPeer>(rowPeer)
@@ -720,14 +727,29 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         auto const rowElement = repeater.TryGetElement(selectedIndex);
         if (rowElement)
         {
-            peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement);
+            peer = TableViewItemPeers::ItemPeerOfContainer(rowElement, true);
         }
 
         // Kept while its row is realized too, so a held item keeps one RuntimeId as it scrolls in and out.
         winrt::AutomationPeer itemPeer{ nullptr };
         if (item)
         {
-            itemPeer = GetOrCreateSelectedItemPeer(*impl, item, selectedIndex, !rowElement /* create */);
+            itemPeer = GetOrCreateSelectedItemPeer(*impl, item, selectedIndex, false /* create */);
+            if (!itemPeer && !rowElement)
+            {
+                // A row's item peer outlives its row, so an item that had one keeps that RuntimeId.
+                const bool byIndex = !TableView::SameInspectableIdentity(
+                    item, impl->UnwrapEditingDataItem(repeater.ItemsSourceView().GetAt(selectedIndex)));
+                if (auto const rowItemPeer = TableViewRowAutomationPeer::FindItemPeerInternal(
+                        m_rowPeers, impl->get_strong().as<winrt::TableView>(), item, selectedIndex, byIndex))
+                {
+                    peer = rowItemPeer;
+                }
+                else
+                {
+                    itemPeer = GetOrCreateSelectedItemPeer(*impl, item, selectedIndex, true /* create */);
+                }
+            }
         }
         if (itemPeer)
         {
@@ -781,6 +803,38 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
 
     winrt::get_self<TableViewRowItemAutomationPeer>(peer.as<winrt::IVirtualizedItemProvider>())->RefreshParent();
     return peer;
+}
+
+winrt::hstring TableViewAutomationPeer::ComposeItemNameInternal(TableView& table, winrt::IInspectable const& item)
+{
+    if (auto const composed = ComposeTextColumnValues(table, item); !composed.empty())
+    {
+        return composed;
+    }
+    return ItemToName(item);
+}
+
+winrt::AutomationPeer TableViewAutomationPeer::RowsParentPeerInternal(winrt::TableView const& table)
+{
+    if (!table)
+    {
+        return nullptr;
+    }
+    winrt::AutomationPeer parent = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(table);
+    if (auto const repeater = winrt::get_self<TableView>(table)->GetRowsRepeaterInternal();
+        repeater && winrt::VisualTreeHelper::GetChildrenCount(repeater) > 0)
+    {
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(
+                winrt::VisualTreeHelper::GetChild(repeater, 0).try_as<winrt::UIElement>()))
+        {
+            if (auto const rowParent = rowPeer.Navigate(
+                    winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
+            {
+                parent = rowParent;
+            }
+        }
+    }
+    return parent;
 }
 
 bool TableViewAutomationPeer::CanSelectMultiple()
@@ -939,7 +993,7 @@ static bool MatchesItemName(
 {
     if (element)
     {
-        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(element))
+        if (auto const peer = TableViewItemPeers::ItemPeerOfContainer(element, true))
         {
             return peer.GetName() == requested;
         }
@@ -995,14 +1049,17 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         bool resolved = false;
         if (auto const startPeer = PeerFromProvider(startAfter).try_as<winrt::FrameworkElementAutomationPeer>())
         {
-            if (auto const ownerElement = startPeer.Owner().try_as<winrt::UIElement>())
+            // An item peer can be bound to a container other than its owner, or to none while virtualized.
+            auto const* const binding = ItemPeerBindingOf(startPeer);
+            if (binding && binding->IsItemPeer())
             {
-                if (const int32_t index = repeater.GetElementIndex(ownerElement); index >= 0)
-                {
-                    startIndex = index;
-                    resolved = true;
-                }
+                startIndex = ItemPeerIndexOf(startPeer, *binding, repeater);
             }
+            else if (auto const ownerElement = startPeer.Owner().try_as<winrt::UIElement>())
+            {
+                startIndex = repeater.GetElementIndex(ownerElement);
+            }
+            resolved = startIndex >= 0;
         }
 
         // An unresolvable startAfter - virtualized away, or not one of ours - must not degrade to
@@ -1052,7 +1109,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 hstring candidate;
                 if (auto rowElement = repeater.TryGetElement(i))
                 {
-                    if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+                    if (auto rowPeer = TableViewItemPeers::ItemPeerOfContainer(rowElement, true))
                     {
                         candidate = rowPeer.GetAutomationId();
                     }
@@ -1066,7 +1123,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 hstring candidate = winrt::hstring_name_of<winrt::TableViewRow>();
                 if (auto rowElement = repeater.TryGetElement(i))
                 {
-                    if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+                    if (auto rowPeer = TableViewItemPeers::ItemPeerOfContainer(rowElement, true))
                     {
                         candidate = rowPeer.GetClassName();
                     }
@@ -1082,7 +1139,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                     auto candidate = winrt::AutomationControlType::DataItem;
                     if (auto rowElement = repeater.TryGetElement(i))
                     {
-                        if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+                        if (auto rowPeer = TableViewItemPeers::ItemPeerOfContainer(rowElement, true))
                         {
                             candidate = rowPeer.GetAutomationControlType();
                         }
@@ -1138,7 +1195,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 continue;
             }
 
-            if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+            if (auto rowPeer = TableViewItemPeers::ItemPeerOfContainer(rowElement, true))
             {
                 return ProviderFromPeer(rowPeer);
             }

@@ -2204,11 +2204,30 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
     }
 }
 
-void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& args)
 {
     SupersedeTipOperation();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
+
+    // A boxed-value row's peer is keyed by index in one version of the source, which just changed.
+    // Realized rows the repeater kept (it has already moved their indices) take a peer for their new
+    // key now; a Reset re-prepares every row anyway. A held peer of a boxed value, realized or not,
+    // reports ElementNotAvailable after any change rather than following an index to another value.
+    auto const changed = args.try_as<winrt::NotifyCollectionChangedEventArgs>();
+    if (changed && changed.Action() == winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+    auto const repeater = m_rowsRepeater.get();
+    ForEachRealizedRow([&repeater](winrt::TableViewRow const& row)
+    {
+        auto* const rowImpl = winrt::get_self<TableViewRow>(row);
+        if (rowImpl->IsRowItemKeyedByIndexInternal() && repeater && repeater.GetElementIndex(row) >= 0)
+        {
+            rowImpl->SyncAutomationPeerToItemInternal();
+        }
+    });
 }
 
 void TableView::UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view)
@@ -2221,6 +2240,7 @@ void TableView::UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceV
 
     m_reshapeFocusDetectorRevoker = {};
     m_reshapeFocusDetectorView = nullptr;
+    ++m_rowsSourceVersion;
 
     if (view)
     {
@@ -2234,6 +2254,8 @@ void TableView::OnRowsSourceResetForFocus(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
+    ++m_rowsSourceVersion;
+
     // Only a Reset recycles every realized row; on Add/Remove focus rides along with its element.
     if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {

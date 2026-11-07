@@ -5,6 +5,7 @@
 
 #include "TableView.h"
 #include "TableViewAutomationPeer.g.h"
+#include "TableViewItemPeerCache.h"
 
 #include <vector>
 
@@ -61,6 +62,13 @@ public:
         winrt::TableView const& tableView,
         winrt::TableViewColumn const& column);
 
+    TableViewItemPeerCache& RowPeerCacheInternal() noexcept { return m_rowPeers; }
+    TableViewItemPeerCache& GroupHeaderPeerCacheInternal() noexcept { return m_groupHeaderPeers; }
+    // An unrealized row's name, as its realized text cells would compose it.
+    static winrt::hstring ComposeItemNameInternal(TableView& table, winrt::IInspectable const& item);
+    // The peer realized rows are parented to.
+    static winrt::AutomationPeer RowsParentPeerInternal(winrt::TableView const& table);
+
 private:
     // One peer per column, kept alive for as long as the column stays in Columns(). Each call
     // to GetColumnHeaders must hand back the same provider for a given column.
@@ -86,4 +94,6 @@ private:
     std::vector<ColumnHeaderPeerCacheEntry> m_columnHeaderPeerCache;
     // Peers for unrealized selected rows, so repeated GetSelection calls return the same provider.
     std::vector<tracker_ref<winrt::AutomationPeer>> m_selectedItemPeerCache;
+    TableViewItemPeerCache m_rowPeers;
+    TableViewItemPeerCache m_groupHeaderPeers;
 };

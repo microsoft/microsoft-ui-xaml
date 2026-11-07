@@ -99,6 +99,8 @@ public:
     // app code (TableView_Instance).
     bool HasFilter() const;
     bool HasGroupBy() const;
+    // Unique across sources; taken anew by GroupBy and ClearGroupBy.
+    uint64_t GroupByGenerationInternal() const noexcept { return m_groupByGeneration; }
     bool HasParentBy() const;
     // Rows before the filter (every node for a tree), and data rows after it, without group headers and whatever is
     // expanded. Neither reads app code.
@@ -180,6 +182,7 @@ private:
     void NotifyOwnerShapingChanged(bool reorderOnly);
 
     std::shared_ptr<ShapedItemsSource> m_engine{};
+    uint64_t m_groupByGeneration{ 0 };
     // Weak, and typed as IInspectable rather than TableView: this slot exists only to detect a
     // second owner binding, and the owning TableView references this source through its
     // ItemsSource property, so a strong back-pointer would be a cycle.

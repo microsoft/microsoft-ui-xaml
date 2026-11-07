@@ -1230,6 +1230,30 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         header.DataContext(info);
     }
 
+    winrt::hstring groupIdentity;
+    auto const activeSource = m_activeSource.get();
+    if (hasRowInfo && activeSource && m_tableViewSourceRowMetadata)
+    {
+        try
+        {
+            // RowMetadataProvider::GetGroupExpansionKey for a header row: a GroupBy bucket identity,
+            // never empty. Bucket identities are key values, so they are scoped to the GroupBy.
+            auto const key = m_tableViewSourceRowMetadata->GetIdentity(index);
+            MUX_ASSERT(!key.empty());
+            if (!key.empty())
+            {
+                auto const generation = winrt::get_self<::TableViewSource>(activeSource)->GroupByGenerationInternal();
+                groupIdentity = winrt::hstring{ std::to_wstring(generation) + L":" } + key;
+            }
+        }
+        catch (...)
+        {
+            // Best-effort: the projection can change underneath a deferred reshape.
+        }
+    }
+    headerImpl->SetGroupIdentityInternal(groupIdentity);
+    headerImpl->SyncAutomationPeerToGroupInternal();
+
     if (sameGroup && previousState != newState)
     {
         headerImpl->RaiseExpandCollapseStateChanged(previousState, newState);
@@ -1300,13 +1324,14 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     // template so a GroupHeaderTemplate change while this header sits in the pool cannot resurface.
     //
     // The owning-TableView weak ref is deliberately NOT cleared. On the element-factory path the
-    // repeater leaves recycled containers parented, so an AT client that holds a provider across a
-    // scroll can still call Expand()/Row()/ContainingGrid() on this element -- nulling the owner
-    // turns those into silent no-ops, which is worse than the ancestor walk it replaced. A weak
-    // ref costs nothing to keep and stays correct.
+    // repeater leaves recycled containers parented; a provider an AT client still holds reports
+    // ElementNotAvailable from its group-identity check rather than a silent no-op. A weak ref
+    // costs nothing to keep and stays correct.
     winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
     header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
     winrt::get_self<TableViewGroupHeader>(header)->SetGroupEntryInternal(nullptr);
+    winrt::get_self<TableViewGroupHeader>(header)->SetGroupIdentityInternal({});
+    winrt::get_self<TableViewGroupHeader>(header)->SyncAutomationPeerToGroupInternal();
 }
 
 void TableView::UpdateGroupHeaderWidth(winrt::TableViewGroupHeader const& header)
