@@ -190,8 +190,30 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <XamlCompilerJsonTaskPath>$(_MuxPackageToolsFolder)Microsoft.UI.Xaml.Markup.Compiler.IO.dll</XamlCompilerJsonTaskPath>
     </PropertyGroup>
 
+    <!--
+        Run the .NET build of the executable compiler on the dotnet host of the .NET SDK (DOTNET_HOST_PATH) when it is
+        .NET 8 or later; it is considerably faster than the .NET Framework one. This applies both when MSBuild runs on
+        .NET (e.g. 'dotnet build') and on .NET Framework (Visual Studio, msbuild.exe), where it replaces the in-process
+        CompileXaml task unless UseXamlCompilerExecutable was explicitly set to false.
+        Falls back to the .NET Framework compiler if there is no .NET 8+ SDK, a custom XamlCompilerExePath was
+        specified, or UseNetCoreXamlCompiler is set to false.
+    -->
+    <PropertyGroup>
+        <XamlCompilerNetCoreDllPath Condition="'$(XamlCompilerNetCoreDllPath)' == ''">$(_MuxPackageToolsFolder)..\net8.0\XamlCompiler.dll</XamlCompilerNetCoreDllPath>
+        <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' == 'Core'">$([MSBuild]::VersionGreaterThanOrEquals('$(MSBuildVersion)', '17.8'))</_XamlCompilerHasNetCoreSdk>
+        <_XamlCompilerHasNetCoreSdk Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(NETCoreSdkVersion)' != ''">$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))</_XamlCompilerHasNetCoreSdk>
+        <UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == '' and '$(XamlCompilerExePath)' == '' and '$(UseXamlCompilerExecutable)' != 'false' and '$(DOTNET_HOST_PATH)' != '' and '$(_XamlCompilerHasNetCoreSdk)' == 'true' and !$(NETCoreSdkVersion.Contains('-')) and Exists('$(XamlCompilerNetCoreDllPath)')">true</UseNetCoreXamlCompiler>
+    </PropertyGroup>
+
     <PropertyGroup Condition="$(XamlCompilerExePath) == ''">
         <XamlCompilerExePath>$(_MuxPackageToolsFolder)..\net472\XamlCompiler.exe</XamlCompilerExePath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <_UseNetCoreXamlCompiler Condition="'$(UseNetCoreXamlCompiler)' == 'true' and '$(IsNativeLanguage)' != 'true' and '$(DOTNET_HOST_PATH)' != '' and '$(DesignTimeBuild)' != 'true'">true</_UseNetCoreXamlCompiler>
+        <UseXamlCompilerExecutable Condition="'$(_UseNetCoreXamlCompiler)' == 'true' and '$(UseXamlCompilerExecutable)' == ''">true</UseXamlCompilerExecutable>
+        <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' == 'true'">"$(DOTNET_HOST_PATH)" "$(XamlCompilerNetCoreDllPath)"</_XamlCompilerCommand>
+        <_XamlCompilerCommand Condition="'$(_UseNetCoreXamlCompiler)' != 'true'">"$(XamlCompilerExePath)"</_XamlCompilerCommand>
     </PropertyGroup>
 
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" />
@@ -242,7 +264,11 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <AppxManifestMetadata Include="$(XamlCompilerTaskPath)" />
     </ItemGroup>
 
-    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true'">
+    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true' and '$(_UseNetCoreXamlCompiler)'=='true'">
+        <AppxManifestMetadata Include="$(XamlCompilerNetCoreDllPath)" />
+    </ItemGroup>
+
+    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true' and '$(_UseNetCoreXamlCompiler)'!='true'">
         <AppxManifestMetadata Include="$(XamlCompilerExePath)" />
     </ItemGroup>
 
@@ -378,7 +404,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
         <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true'" />
+                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNetCoreXamlCompiler)' != 'true'" />
 
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
@@ -474,7 +500,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -509,7 +535,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
         <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true'" />
+                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true' And '$(_UseNetCoreXamlCompiler)' != 'true'" />
 
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
@@ -604,7 +630,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
                 DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -791,7 +817,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -891,7 +917,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
             GenXbfPath="$(GenXbfPath)"/>
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
                      JsonFilePath="$(XamlCompilerExeOutputJson)">

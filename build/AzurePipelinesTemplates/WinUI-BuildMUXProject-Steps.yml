@@ -640,6 +640,7 @@ steps:
             **/Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
             **/Microsoft.UI.Xaml.Design.dll
             **/XamlCompiler.exe
+            **/XamlCompiler.dll
             **/GenXbf.dll
             **/Add-AppDevPackage.psd1
           KeyCode: 'CP-230012'
