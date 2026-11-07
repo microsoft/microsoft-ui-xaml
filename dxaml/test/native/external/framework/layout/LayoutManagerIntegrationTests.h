@@ -44,6 +44,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(ThrowsExceptionOnInvalidateViewportForNonScrollers)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that calling InvalidateViewport throws an exception unless the element has been registered as a scroller.")
             END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ValidateStaticInvalidateViewportRaisesEffectiveViewportChanged)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that UIElement.InvalidateViewport re-evaluates the effective viewport of content moved without a layout pass inside a scroll port that is not a subclass.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ThrowsExceptionOnStaticInvalidateViewportForNonScrollers)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that UIElement.InvalidateViewport throws for a null element or an element that has not been registered as a scroll port.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ThrowsExceptionOnStaticInvalidateViewportFromAnotherXamlThread)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that UIElement.InvalidateViewport throws RPC_E_WRONG_THREAD when called from a different XAML thread than the one that owns the element.")
+            END_TEST_METHOD()
     };
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Framework::Layout

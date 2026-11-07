@@ -9,6 +9,7 @@
 #include <RuntimeEnabledFeatureOverride.h>
 #include <SafeEventRegistration.h>
 #include <TestCleanupWrapper.h>
+#include <thread>
 
 using namespace test_infra;
 using namespace ::Tests::Native::External::Framework::Layout;
@@ -477,6 +478,167 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 InvalidateViewportHelper::InvalidateViewport(nonScroller),
                 Platform::Exception^);
         });
+    }
+
+    void LayoutManagerIntegrationTests::ValidateStaticInvalidateViewportRaisesEffectiveViewportChanged()
+    {
+        TestCleanupWrapper cleanup;
+        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
+
+        int eventCount = 0;
+        wf::Rect lastEffectiveViewport = {};
+        Grid^ scrollPort = nullptr;
+        TranslateTransform^ transform = nullptr;
+        auto eventReg = CreateSafeEventRegistration(xaml::FrameworkElement, EffectiveViewportChanged);
+
+        LOG_OUTPUT(L"Register a plain Grid as a scroll port and listen to the effective viewport of its content.");
+        RunOnUIThread([&]()
+        {
+            transform = ref new TranslateTransform;
+
+            auto content = ref new Border;
+            content->Width = 300;
+            content->Height = 100;
+            content->RenderTransform = transform;
+
+            auto canvas = ref new Canvas;
+            canvas->Children->Append(content);
+
+            scrollPort = ref new Grid;
+            scrollPort->Width = 100;
+            scrollPort->Height = 100;
+            scrollPort->Children->Append(canvas);
+            xaml::UIElement::RegisterAsScrollPort(scrollPort);
+
+            TestServices::WindowHelper->WindowContent = scrollPort;
+
+            eventReg.Attach(
+                safe_cast<xaml::FrameworkElement^>(content),
+                ref new wf::TypedEventHandler<xaml::FrameworkElement^, xaml::EffectiveViewportChangedEventArgs^>(
+                    [&eventCount, &lastEffectiveViewport](Platform::Object^ sender, xaml::EffectiveViewportChangedEventArgs^ e)
+            {
+                ++eventCount;
+                lastEffectiveViewport = e->EffectiveViewport;
+            }));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_TRUE(eventCount > 0);
+        VERIFY_ARE_EQUAL(0.0f, lastEffectiveViewport.X);
+        VERIFY_ARE_EQUAL(0.0f, lastEffectiveViewport.Y);
+        VERIFY_ARE_EQUAL(100.0f, lastEffectiveViewport.Width);
+        VERIFY_ARE_EQUAL(100.0f, lastEffectiveViewport.Height);
+        const int initialEventCount = eventCount;
+
+        LOG_OUTPUT(L"Move the content with a render transform. No layout pass runs, so the effective viewport is not re-evaluated.");
+        RunOnUIThread([&]()
+        {
+            transform->X = -50.0;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_ARE_EQUAL(initialEventCount, eventCount);
+
+        LOG_OUTPUT(L"Invalidate the viewport twice with UIElement.InvalidateViewport and verify that a single event reports the moved viewport.");
+        RunOnUIThread([&]()
+        {
+            xaml::UIElement::InvalidateViewport(scrollPort);
+            xaml::UIElement::InvalidateViewport(scrollPort);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_ARE_EQUAL(initialEventCount + 1, eventCount);
+        VERIFY_ARE_EQUAL(50.0f, lastEffectiveViewport.X);
+        VERIFY_ARE_EQUAL(0.0f, lastEffectiveViewport.Y);
+        VERIFY_ARE_EQUAL(100.0f, lastEffectiveViewport.Width);
+        VERIFY_ARE_EQUAL(100.0f, lastEffectiveViewport.Height);
+
+        LOG_OUTPUT(L"Invalidate again without moving the content and verify that the event does not fire.");
+        RunOnUIThread([&]()
+        {
+            xaml::UIElement::InvalidateViewport(scrollPort);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_ARE_EQUAL(initialEventCount + 1, eventCount);
+    }
+
+    void LayoutManagerIntegrationTests::ThrowsExceptionOnStaticInvalidateViewportForNonScrollers()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            Grid^ scroller = ref new Grid;
+            xaml::UIElement::RegisterAsScrollPort(scroller);
+            xaml::UIElement::InvalidateViewport(scroller);
+
+            Border^ nonScroller = ref new Border;
+            VERIFY_THROWS_WINRT(
+                xaml::UIElement::InvalidateViewport(nonScroller),
+                Platform::Exception^);
+
+            VERIFY_THROWS_WINRT(
+                xaml::UIElement::InvalidateViewport(nullptr),
+                Platform::InvalidArgumentException^);
+        });
+    }
+
+    void LayoutManagerIntegrationTests::ThrowsExceptionOnStaticInvalidateViewportFromAnotherXamlThread()
+    {
+        TestCleanupWrapper cleanup;
+        Grid^ scrollPort = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            scrollPort = ref new Grid;
+            xaml::UIElement::RegisterAsScrollPort(scrollPort);
+        });
+
+        LOG_OUTPUT(L"Call UIElement.InvalidateViewport from a second XAML thread with a scroll port owned by the UI thread.");
+        HRESULT setupResult = E_FAIL;
+        HRESULT callResult = S_OK;
+        std::thread otherXamlThread([&]()
+        {
+            setupResult = ::RoInitialize(RO_INIT_SINGLETHREADED);
+            if (FAILED(setupResult))
+            {
+                return;
+            }
+
+            try
+            {
+                auto queueController = Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+                auto xamlManager = Microsoft::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
+
+                try
+                {
+                    xaml::UIElement::InvalidateViewport(scrollPort);
+                }
+                catch (Platform::Exception^ e)
+                {
+                    callResult = e->HResult;
+                }
+
+                delete xamlManager;
+                MSG msg = {};
+                while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+                {
+                    ::DispatchMessage(&msg);
+                }
+                queueController->ShutdownQueue();
+            }
+            catch (Platform::Exception^ e)
+            {
+                setupResult = e->HResult;
+            }
+
+            ::RoUninitialize();
+        });
+        otherXamlThread.join();
+
+        VERIFY_SUCCEEDED(setupResult);
+        VERIFY_ARE_EQUAL(RPC_E_WRONG_THREAD, callResult);
     }
 
     void LayoutManagerIntegrationTests::ThrowsExceptionIfLayoutIsInvalidatedDuringViewportWalk()
