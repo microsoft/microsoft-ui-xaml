@@ -99,9 +99,6 @@ namespace System.Xaml
             new Lazy<XamlType>(() => GetXamlType(typeof(INameScope)));
         private static Lazy<XamlType> s_iXmlSerializable =
             new Lazy<XamlType>(() => GetXamlType(typeof(System.Xml.Serialization.IXmlSerializable)), true);
-        // This isn't a language built-in, but we use it in ObjectWriter
-        private static Lazy<XamlType> s_positionalParameterDescriptor =
-            new Lazy<XamlType>(() => GetXamlType(typeof(PositionalParameterDescriptor)), true);
 
         private static Lazy<XamlType> s_char =
             new Lazy<XamlType>(() => GetXamlType(typeof(Char)), true);
@@ -248,7 +245,6 @@ namespace System.Xaml
 
         internal static XamlType MarkupExtension { get { return s_markupExtension.Value; } }
         internal static XamlType INameScope { get { return s_iNameScope.Value; } }
-        internal static XamlType PositionalParameterDescriptor { get { return s_positionalParameterDescriptor.Value; } }
         // Careful: accessing this faults in System.Xml
         internal static XamlType IXmlSerializable { get { return s_iXmlSerializable.Value; } }
 
@@ -471,40 +467,5 @@ namespace System.Xaml
     }
 
 
-#if TARGETTING35SP1   
-    public delegate T Initializer<T>();
-
-    public struct Lazy<T> where T : class
-    {
-        private Initializer<T> m_init;
-        private T m_value;
-        public bool IsValueCreated
-        {
-            get { return m_value != null; }
-        }
-        public Lazy(Initializer<T> init)
-        {
-            m_init = init;
-            m_value = null;
-        }
-
-        public T Value
-        {
-            get
-            {
-                if (m_value == null)
-                {
-                    T newValue = m_init();
-                    if (Interlocked.CompareExchange(ref m_value, newValue, null) != null &&
-                            newValue is IDisposable)
-                    {
-                        ((IDisposable)newValue).Dispose();
-                    }
-                }
-            return m_value;
-            }
-        }
-    }
-#endif
 
 }

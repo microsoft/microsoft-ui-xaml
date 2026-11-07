@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Xaml.Context;
 using System.Xaml.MS.Impl;
 using System.Diagnostics;
 using System.Xaml;

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-// Native AOT (net10.0) only: source-generated COM declarations of the metadata provider interfaces that GenXbf.dll consumes.
-// They mirror the native ABI in dxaml\xcp\tools\GenXbfDLL\XbfMetadataProvider.h exactly (vtable order and signatures),
-// which is not always what the legacy managed declarations in IXmfXamlMetadataProvider_COM.cs say (see the notes below).
-// The COM source generator only supports methods, so property getters are declared as get_X methods in vtable order.
-// All methods return an HRESULT, with the managed return value (if any) being the native [out, retval] parameter.
+// Source-generated COM declarations of the metadata provider interfaces that GenXbf.dll consumes, implemented by
+// XbfMetadataProvider, XbfXamlType and XbfXamlMember. They mirror the native ABI in dxaml\xcp\tools\GenXbfDLL\XbfMetadataProvider.h
+// exactly (vtable order and signatures). The COM source generator only supports methods, so property getters are declared as
+// get_X methods in vtable order. All methods return an HRESULT, with the managed return value (if any) being the native
+// [out, retval] parameter.
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 {
@@ -25,7 +25,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 
     [GeneratedComInterface]
     [Guid("d0aa6fc8-087f-46cf-b36a-7e68f8295ceb")]
-    internal partial interface IXbfMemberNative
+    internal partial interface IXbfMember
     {
         [return: MarshalAs(UnmanagedType.U1)]
         bool get_IsAttachable();
@@ -39,9 +39,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
         [return: MarshalUsing(typeof(BStrStringMarshaller))]
         string get_Name();
 
-        IXbfTypeNative get_TargetType();
+        IXbfType get_TargetType();
 
-        IXbfTypeNative get_Type();
+        IXbfType get_Type();
 
         // IInspectable* parameters/results (not used by GenXbf.dll, and not implemented)
         IntPtr GetValue(IntPtr instance);
@@ -51,11 +51,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 
     [GeneratedComInterface]
     [Guid("a50fc345-4c61-411b-8a68-13da7b7c4ee4")]
-    internal unsafe partial interface IXbfTypeNative
+    internal unsafe partial interface IXbfType
     {
-        IXbfTypeNative get_BaseType();
+        IXbfType get_BaseType();
 
-        IXbfMemberNative get_ContentProperty();
+        IXbfMember get_ContentProperty();
 
         [return: MarshalUsing(typeof(BStrStringMarshaller))]
         string get_FullName();
@@ -78,21 +78,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
         [return: MarshalAs(UnmanagedType.U1)]
         bool get_IsBindable();
 
-        IXbfTypeNative get_ItemType();
+        IXbfType get_ItemType();
 
-        IXbfTypeNative get_KeyType();
+        IXbfType get_KeyType();
 
-        IXbfTypeNative get_BoxedType();
+        IXbfType get_BoxedType();
 
-        // Native: get_UnderlyingType(TypeName*). The legacy managed declaration returned a System.Type here, which has no
-        // valid marshalling to TypeName; GenXbf.dll doesn't call it (XamlTypeAdapter builds the TypeName from get_FullName).
+        // Native: get_UnderlyingType(TypeName*). GenXbf.dll doesn't call it (XamlTypeAdapter builds the TypeName from get_FullName).
         void get_UnderlyingType(XbfTypeName* value);
 
         IntPtr ActivateInstance();
 
         IntPtr CreateFromString([MarshalUsing(typeof(BStrStringMarshaller))] string value);
 
-        IXbfMemberNative GetMember([MarshalUsing(typeof(BStrStringMarshaller))] string name);
+        IXbfMember GetMember([MarshalUsing(typeof(BStrStringMarshaller))] string name);
 
         void AddToVector(IntPtr instance, IntPtr value);
 
@@ -103,16 +102,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 
     [GeneratedComInterface]
     [Guid("ef46679c-4ec5-447a-bd26-e04f1d2c2551")]
-    internal unsafe partial interface IXbfMetadataProviderNative
+    internal unsafe partial interface IXbfMetadataProvider
     {
-        // Native: GetXamlType(TypeName by value, IXbfType**). The legacy managed declaration took a System.Type instead.
-        // GenXbf.dll doesn't call it (XamlMetadataProviderAdapter::GetXamlType forwards to GetXamlTypeByFullName).
-        IXbfTypeNative GetXamlType(XbfTypeName type);
+        // Native: GetXamlType(TypeName by value, IXbfType**). GenXbf.dll doesn't call it (XamlMetadataProviderAdapter::GetXamlType
+        // forwards to GetXamlTypeByFullName).
+        IXbfType GetXamlType(XbfTypeName type);
 
-        IXbfTypeNative GetXamlTypeByFullName([MarshalUsing(typeof(BStrStringMarshaller))] string fullName);
+        IXbfType GetXamlTypeByFullName([MarshalUsing(typeof(BStrStringMarshaller))] string fullName);
 
-        // Native: GetXmlnsDefinitions(UINT* length, XmlnsDefinition** definitions). The legacy managed declaration
-        // returned an object[] (i.e. a single SAFEARRAY** parameter). Never implemented on the managed side.
+        // Native: GetXmlnsDefinitions(UINT* length, XmlnsDefinition** definitions). Not used by GenXbf.dll.
         void GetXmlnsDefinitions(uint* length, void** definitions);
     }
 }

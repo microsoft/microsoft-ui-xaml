@@ -158,12 +158,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     // In the managed case don't fall back on this because this mscorlib is not
                     // right for a managed app.
                     // It isn't exactly right in the C++ case either but the differences are mitigated.
-#if NET10_0_OR_GREATER
                     path = GetNetFrameworkMscorlibPath();
-#else
-                    Assembly runtimeAssembly = typeof(int).Assembly;
-                    path = runtimeAssembly.Location;
-#endif
                 }
                 try
                 {
@@ -179,7 +174,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return base.GetSystemAssembly();
         }
 
-#if NET10_0_OR_GREATER
         private static string GetNetFrameworkMscorlibPath()
         {
             string windowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -223,7 +217,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 "The mscorlib.dll of the .NET Framework 4 was not found in the Windows directory, " +
                 "nor in a .NET Framework 4.x targeting pack under 'Reference Assemblies'.");
         }
-#endif
 
         // The metadata-only assembly that has the types the XAML compiler uses to stand in for markup extensions that don't exist
         // anywhere (see DirectUI\TypeProxyMetadata.cs). It is embedded in the compiler as a resource.

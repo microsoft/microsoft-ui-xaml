@@ -68,11 +68,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             return _metadata.IsConstructible;
         }
 
-        protected override XamlTypeInvoker LookupInvoker()
-        {
-            return null;
-        }
-
         protected override bool LookupIsMarkupExtension()
         {
             return _metadata.IsMarkupExtension;
@@ -188,11 +183,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         }
 
         protected override XamlValueConverter<TypeConverter> LookupTypeConverter()
-        {
-            return null;
-        }
-
-        protected override XamlValueConverter<ValueSerializer> LookupValueSerializer()
         {
             return null;
         }

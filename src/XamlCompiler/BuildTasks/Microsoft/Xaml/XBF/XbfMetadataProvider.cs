@@ -5,22 +5,29 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.InteropServices.Marshalling;
     using DirectUI;
 
-    internal partial class XbfMetadataProvider : IXbfMetadataProvider, IXmpXamlType
+    /// <summary>
+    /// The XAML type information GenXbf.dll needs to generate XBF, which it gets as a COM object (see XbfComInterfaces.cs).
+    /// The objects themselves are the COM servers (rather than separate wrapper objects), so that every managed instance maps to a
+    /// single, stable COM identity. The members GenXbf.dll doesn't use throw NotImplementedException (E_NOTIMPL).
+    /// </summary>
+    [GeneratedComClass]
+    internal sealed partial class XbfMetadataProvider : IXbfMetadataProvider
     {
         private DirectUISchemaContext _schema;
-        private Dictionary<string, IXbfType> _standardNames = new Dictionary<string, IXbfType>();
-        private Dictionary<DirectUIXamlType, IXbfType> _typeMap = new Dictionary<DirectUIXamlType, IXbfType>();
+        private Dictionary<string, XbfXamlType> _standardNames = new Dictionary<string, XbfXamlType>();
+        private Dictionary<DirectUIXamlType, XbfXamlType> _typeMap = new Dictionary<DirectUIXamlType, XbfXamlType>();
 
         public XbfMetadataProvider(DirectUISchemaContext schema)
         {
             this._schema = schema;
         }
 
-        public IXbfType GetXamlType(string fullName)
+        public XbfXamlType GetXamlType(string fullName)
         {
-            IXbfType xmpXamlType = null;
+            XbfXamlType xmpXamlType = null;
 
             if (!this._standardNames.TryGetValue(fullName, out xmpXamlType))
             {
@@ -30,20 +37,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             return xmpXamlType;
         }
 
-        public IXbfType GetXamlType(Type type)
-        {
-            DirectUIXamlType xamlType = (DirectUIXamlType)this._schema.GetXamlType(type);
-            return this.GetXmpXamlType(xamlType);
-        }
-
-        public IXbfType GetXmpXamlType(DirectUIXamlType xamlType)
+        public XbfXamlType GetXmpXamlType(DirectUIXamlType xamlType)
         {
             if (xamlType == null)
             {
                 return null;
             }
 
-            IXbfType xmpXamlType;
+            XbfXamlType xmpXamlType;
             if (!this._typeMap.TryGetValue(xamlType, out xmpXamlType))
             {
                 xmpXamlType = new XbfXamlType(xamlType, this);
@@ -56,9 +57,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             return xmpXamlType;
         }
 
-        public object[] GetXmlnsDefinitions()
-        {
-            throw new NotImplementedException();
-        }
+        IXbfType IXbfMetadataProvider.GetXamlType(XbfTypeName type) => throw new NotImplementedException();
+
+        IXbfType IXbfMetadataProvider.GetXamlTypeByFullName(string fullName) => GetXamlType(fullName);
+
+        unsafe void IXbfMetadataProvider.GetXmlnsDefinitions(uint* length, void** definitions) => throw new NotImplementedException();
     }
 }

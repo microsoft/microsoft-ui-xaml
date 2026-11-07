@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#if NET10_0_OR_GREATER
 using System;
 using System.Globalization;
 using System.Text;
@@ -11,10 +10,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
     /// <summary>
     /// Writes a string as a C# or Visual Basic string literal, exactly like generating a <c>CodePrimitiveExpression</c> with
     /// <c>CSharpCodeProvider</c>/<c>VBCodeProvider</c> of System.CodeDom 8.0 (with the default <c>CodeGeneratorOptions</c>), which
-    /// is what the other builds of the compiler do.
+    /// is what the compiler used to do.
     /// </summary>
     /// <remarks>
-    /// The Native AOT build of the compiler doesn't use the CodeDom providers: the static constructor of <c>CodeDomProvider</c>
+    /// The compiler doesn't use the CodeDom providers: the static constructor of <c>CodeDomProvider</c>
     /// registers <c>CompilerInfo</c>s, which load the provider types by name (<c>Type.GetType</c>, not supported by trimming).
     /// The code below is a port of <c>QuoteSnippetString</c> of <c>Microsoft.CSharp.CSharpCodeGenerator</c> and
     /// <c>Microsoft.VisualBasic.VBCodeGenerator</c> in dotnet/runtime v8.0.0 (src/libraries/System.CodeDom, MIT license).
@@ -242,4 +241,3 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
     }
 }
-#endif

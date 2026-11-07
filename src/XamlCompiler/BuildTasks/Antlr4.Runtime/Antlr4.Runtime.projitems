@@ -130,7 +130,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Misc\NotNullAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\NullableAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\ParseCanceledException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Misc\RuleDependencyChecker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NoViableAltException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser.cs" />
@@ -147,15 +146,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\AtomicReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\BitSet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Collections.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\CollectionDebuggerView.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\ConcurrentDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\Funcs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\IStructuralComparable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\IStructuralEquatable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\SerializableAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\SplitOrderedList.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\Tuple.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Compat\Tuples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\DictionaryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\ListExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sharpen\Runtime.cs" />

@@ -9,7 +9,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
-    using System.Runtime.InteropServices.ComTypes;
     using FileIO;
     using Utilities;
     
@@ -22,7 +21,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
     {
         private static Dictionary<Version, IntPtr> s_GenXbfDllHandles = new Core.InstanceCache<Version, IntPtr>(ClearCache);
         private List<IXbfFileNameInfo> xamlFiles = new List<IXbfFileNameInfo>();
-        private IXbfMetadataProvider xbfMetadataProvider;
+        private XbfMetadataProvider xbfMetadataProvider;
         private XamlProjectInfo projectInfo;
 
         private Lazy<List<XamlCompileWarning>> warningMessages = new Lazy<List<XamlCompileWarning>>(() => new List<XamlCompileWarning>());
@@ -31,7 +30,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
         public List<XamlCompileWarning> XbfWarnings { get { return warningMessages.Value; } }
         public List<XamlCompileError> XbfErrors { get { return errorMessages.Value; } }
 
-        public XbfGenerator(XamlProjectInfo projectInfo, IXbfMetadataProvider xbfMetadataProvider)
+        public XbfGenerator(XamlProjectInfo projectInfo, XbfMetadataProvider xbfMetadataProvider)
         {
             this.projectInfo = projectInfo;
             this.xbfMetadataProvider = xbfMetadataProvider;
@@ -108,9 +107,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             return ret;
         }
 
-        internal virtual List<IStream> GetInputOutputStreams()
+        internal virtual List<StreamImpl> GetInputOutputStreams()
         {
-            List<IStream> streams = new List<IStream>();
+            List<StreamImpl> streams = new List<StreamImpl>();
 
             // Build the list of in/out Streams.
             foreach (XbfFileNameInfo xamlFile in this.xamlFiles)
@@ -146,8 +145,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 
         internal virtual bool GenerateXbfFromStreams(
             IntPtr dllHandle,
-            IStream[] inputStreams,
-            IStream[] outputStreams,
+            StreamImpl[] inputStreams,
+            StreamImpl[] outputStreams,
             uint xbfGenerationFlags,
             string[] checksums,
             TargetOSVersion targetOS,
@@ -217,7 +216,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             int errorLine;
             int errorPosition;
 
-            List<IStream> streams = this.GetInputOutputStreams();
+            List<StreamImpl> streams = this.GetInputOutputStreams();
 
             if (streams == null || streams.Count == 0)
             {
@@ -226,8 +225,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
 
             try
             {
-                IEnumerable<IStream> inputStreamsArray = streams.Where(s => (s is IXamlStream) && ((IXamlStream)s).StreamType == StreamType.Input);
-                IEnumerable<IStream> outputStreamsArray = streams.Where(s => (s is IXamlStream) && ((IXamlStream)s).StreamType == StreamType.Output);
+                IEnumerable<StreamImpl> inputStreamsArray = streams.Where(s => (s is IXamlStream) && ((IXamlStream)s).StreamType == StreamType.Input);
+                IEnumerable<StreamImpl> outputStreamsArray = streams.Where(s => (s is IXamlStream) && ((IXamlStream)s).StreamType == StreamType.Output);
 
                 if (!this.GenerateXbfFromStreams(
                     dllHandle,
@@ -252,7 +251,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             }
             finally
             {
-                foreach (StreamImpl stream in streams.OfType<StreamImpl>())
+                foreach (StreamImpl stream in streams)
                 {
                     stream.Dispose();
                 }

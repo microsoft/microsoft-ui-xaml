@@ -14,9 +14,7 @@
     <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
     <TargetDestination>$(MarkupCompilerDestinationPath).Executable\$(TargetFramework)</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn);0419;1570;1572;1573;1574;1591;3021;0618;0672;0436;0108;SYSLIB0003;SYSLIB0005;SYSLIB0012;SYSLIB0019;SYSLIB0021;CA2002;CA1060;CA1063;CA2229;CA1001;CA1033;CA1416;CA2101;CA2213;CA2231</NoWarn>
-    <!-- USE_CLR_V4 is only for the LMR code -->
-    <DefineConstants>$(DefineConstants);USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
+    <NoWarn>$(NoWarn);3021;0618;0672;0108;SYSLIB0005;SYSLIB0012;CA2002;CA1063;CA1033;CA1416;CA2213;CA2231</NoWarn>
     <BuildTasksDir>$(MSBuildThisFileDirectory)..\BuildTasks\</BuildTasksDir>
     <SystemXamlPathRoot>$(BuildTasksDir)System.Xaml</SystemXamlPathRoot>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -53,13 +51,13 @@
     <_NativeXamlCompilerDir>$(OutDir)native\</_NativeXamlCompilerDir>
     <!-- The IL-only output isn't deployed, only the native binary published below is -->
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
-    <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.NativeAot.cs) -->
+    <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.cs) -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--
       Regression guard: this build has no trim/AOT/single-file warning at all, neither from the analyzers nor from ILC, so keep any
       new one an error even when warnings in general aren't (e.g. /p:TreatWarningsAsErrors=false). Reflection over the types of the
-      compiled projects goes through LmrReflection (see LmrTypeBase and KnownRuntimeTypes), and the runtime-only parts of the shared
-      sources are compiled out (see NativeAotUnsupported). The analyzer IDs are the ones this build had to fix.
+      compiled projects goes through LmrReflection (see LmrTypeBase and KnownRuntimeTypes), and the System.Xaml fork only has its
+      schema and parser (no object writer/reader, invokers or value conversion). The analyzer IDs are the ones this build had to fix.
     -->
     <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
     <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2046;IL2055;IL2057;IL2060;IL2067;IL2070;IL2072;IL2073;IL2075;IL2080;IL2085;IL2092;IL2093;IL2094;IL2111;IL3000;IL3001;IL3002;IL3003;IL3050;IL3051;CA1420</WarningsAsErrors>
@@ -71,13 +69,9 @@
     <Compile Include="$(BuildTasksDir)ConsoleCompileXaml.cs" />
     <Compile Include="$(BuildTasksDir)CompilerJsonContext.cs" />
   </ItemGroup>
-  <!-- Native AOT replacements for the built-in COM interop used to call GenXbf.dll and vcmeta.dll by the .NET Framework build of the compiler -->
+  <!-- The Win32 P/Invokes and COM interfaces CsWin32 generates for the interop with GenXbf.dll and vcmeta.dll (see NativeMethods.cs) -->
   <ItemGroup>
     <AdditionalFiles Include="$(BuildTasksDir)NativeMethods.txt;$(BuildTasksDir)NativeMethods.json" />
-    <Compile Include="$(BuildTasksDir)NativeMethods.NativeAot.cs" />
-    <Compile Include="$(BuildTasksDir)Microsoft\Xaml\FileIO\StreamImpl.NativeAot.cs" />
-    <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XBF\XbfNativeInterfaces.cs" />
-    <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XBF\XbfNativeComClasses.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XamlCompiler\CodeGenerators\CX\CXMetadataDelegates.cs">
@@ -461,49 +455,16 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="$(BuildTasksDir)XamlCompiler.bp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(BuildTasksDir)packages.config" />
-  </ItemGroup>
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>;0419;1570;1572;1573;1574;1591;3021;0618</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>;0419;1570;1572;1573;1574;1591;3021;0618</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
   <ItemGroup>
+    <!-- CompilerErrorCollection, used by the preprocessed T4 templates of the code generators (see T4Base) -->
     <PackageReference Include="System.CodeDom" Version="8.0.0" />
     <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
-    <!-- Compile-time only: the legacy CAS code paths in System.Xaml that need it are never executed -->
-    <PackageReference Include="System.Security.Permissions" Version="8.0.0" ExcludeAssets="runtime" />
   </ItemGroup>
   <ItemGroup>
     <!-- Never compiled against: it is embedded as a resource, see below -->

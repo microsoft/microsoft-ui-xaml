@@ -6,32 +6,29 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
     using System;
     using System.Collections.Generic;
     using System.Reflection;
+    using System.Runtime.InteropServices.Marshalling;
     using System.Xaml;
     using DirectUI;
 
-    internal partial class XbfXamlType : IXbfType
+    // A XAML type of XbfMetadataProvider
+    [GeneratedComClass]
+    internal sealed partial class XbfXamlType : IXbfType
     {
         private DirectUIXamlType _xamlType;
-        private IXmpXamlType _xmp;
+        private XbfMetadataProvider _xmp;
         private Dictionary<string, XbfXamlMember> _memberMap = new Dictionary<string, XbfXamlMember>();
         private bool? isBindable;
         private string _fullName;
 
-        public XbfXamlType(DirectUIXamlType xamlType, IXmpXamlType xmp)
+        public XbfXamlType(DirectUIXamlType xamlType, XbfMetadataProvider xmp)
         {
             _xamlType = xamlType;
             _xmp = xmp;
         }
 
-        public IXbfType BaseType
-        {
-            get
-            {
-                return _xmp.GetXmpXamlType((DirectUIXamlType)_xamlType.BaseType);
-            }
-        }
+        public XbfXamlType BaseType => _xmp.GetXmpXamlType((DirectUIXamlType)_xamlType.BaseType);
 
-        public IXbfMember ContentProperty
+        public XbfXamlMember ContentProperty
         {
             get
             {
@@ -50,15 +47,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             {
                 if (_fullName == null)
                 {
-                    _fullName = XamlSchemaCodeInfo.GetFullGenericNestedName(UnderlyingType, XamlSchemaCodeInfo.SetAirityOnGenericTypeNames);
+                    _fullName = XamlSchemaCodeInfo.GetFullGenericNestedName(_xamlType.UnderlyingType, XamlSchemaCodeInfo.SetAirityOnGenericTypeNames);
                 }
                 return _fullName;
             }
         }
 
-        public IXbfMember GetMember(string name)
+        public XbfXamlMember GetMember(string name)
         {
-
             XbfXamlMember mdpXamlMember;
             if (!_memberMap.TryGetValue(name, out mdpXamlMember))
             {
@@ -84,10 +80,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             return mdpXamlMember;
         }
 
-        public bool IsArray
-        {
-            get { return _xamlType.IsArray; }
-        }
+        public bool IsArray => _xamlType.IsArray;
 
         public bool IsBindable
         {
@@ -101,79 +94,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             }
         }
 
-        public bool IsCollection
-        {
-            get { return _xamlType.IsCollection; }
-        }
+        public bool IsCollection => _xamlType.IsCollection;
 
-        public bool IsConstructible
-        {
-            get { return _xamlType.IsConstructible; }
-        }
+        public bool IsConstructible => _xamlType.IsConstructible;
 
-        public bool IsDictionary
-        {
-            get { return _xamlType.IsDictionary; }
-        }
+        public bool IsDictionary => _xamlType.IsDictionary;
 
-        public bool IsMarkupExtension
-        {
-            get { return _xamlType.IsMarkupExtension; }
-        }
+        public bool IsMarkupExtension => _xamlType.IsMarkupExtension;
 
-        public IXbfType ItemType
-        {
-            get
-            {
-                return _xmp.GetXmpXamlType((DirectUIXamlType)_xamlType.ItemType);
-            }
-        }
+        public XbfXamlType ItemType => _xmp.GetXmpXamlType((DirectUIXamlType)_xamlType.ItemType);
 
-        public IXbfType KeyType
-        {
-            get
-            {
-                return _xmp.GetXmpXamlType((DirectUIXamlType)_xamlType.KeyType);
-            }
-        }
-
-        public IXbfType BoxedType
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public Type UnderlyingType
-        {
-            get { return _xamlType.UnderlyingType; }
-        }
-
-        public object ActivateInstance()
-        {
-            throw new NotImplementedException();    // not used
-        }
-
-        public void AddToMap(object instance, object key, object value)
-        {
-            throw new NotImplementedException();    // not used
-        }
-
-        public void AddToVector(object instance, object value)
-        {
-            throw new NotImplementedException();    // not used
-        }
-
-        public object CreateFromString(string value)
-        {
-            throw new NotImplementedException();    // not used
-        }
-
-        public void RunInitializer()
-        {
-            throw new NotImplementedException();    // not used
-        }
+        public XbfXamlType KeyType => _xmp.GetXmpXamlType((DirectUIXamlType)_xamlType.KeyType);
 
         private bool HasBindableAttribute()
         {
@@ -184,5 +115,43 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
             }
             return false;
         }
+
+        IXbfType IXbfType.get_BaseType() => BaseType;
+
+        IXbfMember IXbfType.get_ContentProperty() => ContentProperty;
+
+        string IXbfType.get_FullName() => FullName;
+
+        bool IXbfType.get_IsArray() => IsArray;
+
+        bool IXbfType.get_IsCollection() => IsCollection;
+
+        bool IXbfType.get_IsConstructible() => IsConstructible;
+
+        bool IXbfType.get_IsDictionary() => IsDictionary;
+
+        bool IXbfType.get_IsMarkupExtension() => IsMarkupExtension;
+
+        bool IXbfType.get_IsBindable() => IsBindable;
+
+        IXbfType IXbfType.get_ItemType() => ItemType;
+
+        IXbfType IXbfType.get_KeyType() => KeyType;
+
+        IXbfType IXbfType.get_BoxedType() => null;
+
+        unsafe void IXbfType.get_UnderlyingType(XbfTypeName* value) => throw new NotImplementedException();
+
+        IntPtr IXbfType.ActivateInstance() => throw new NotImplementedException();
+
+        IntPtr IXbfType.CreateFromString(string value) => throw new NotImplementedException();
+
+        IXbfMember IXbfType.GetMember(string name) => GetMember(name);
+
+        void IXbfType.AddToVector(IntPtr instance, IntPtr value) => throw new NotImplementedException();
+
+        void IXbfType.AddToMap(IntPtr instance, IntPtr key, IntPtr value) => throw new NotImplementedException();
+
+        void IXbfType.RunInitializer() => throw new NotImplementedException();
     }
 }

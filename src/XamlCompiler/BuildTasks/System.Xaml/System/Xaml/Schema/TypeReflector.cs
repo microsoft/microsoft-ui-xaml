@@ -60,17 +60,12 @@ namespace System.Xaml.Schema
         private NullableReference<XamlMember> _dictionaryKeyProperty;
         private NullableReference<XamlMember> _uidProperty;
 
-        private NullableReference<MethodInfo> _isReadOnlyMethod;
         private NullableReference<XamlValueConverter<TypeConverter>> _typeConverter;
-        private NullableReference<XamlValueConverter<XAML3.ValueSerializer>> _valueSerializer;
         private NullableReference<XamlValueConverter<XamlDeferringLoader>> _deferringLoader;
 
-        private NullableReference<EventHandler<XAML3.XamlSetMarkupExtensionEventArgs>> _xamlSetMarkupExtensionHandler;
-        private NullableReference<EventHandler<XAML3.XamlSetTypeConverterEventArgs>> _xamlSetTypeConverterHandler;
 
         private NullableReference<MethodInfo> _addMethod;
         private NullableReference<XamlType> _baseType;
-        private NullableReference<MethodInfo> _getEnumeratorMethod;
 
         // Used for UnknownReflector only
         private TypeReflector()
@@ -89,18 +84,11 @@ namespace System.Xaml.Schema
             _contentProperty.Value = null;
             _deferringLoader.Value = null;
             _dictionaryKeyProperty.Value = null;
-            _getEnumeratorMethod.Value = null;
-            _isReadOnlyMethod.Value = null;
             _runtimeNameProperty.Value = null;
             _typeConverter.Value = null;
             _uidProperty.Value = null;
-            _valueSerializer.Value = null;
-            _xamlSetMarkupExtensionHandler.Value = null;
-            _xamlSetTypeConverterHandler.Value = null;
             _xmlLangProperty.Value = null;
             CustomAttributeProvider = null;
-
-            Invoker = XamlTypeInvoker.UnknownInvoker;
         }
 
         public TypeReflector(Type underlyingType)
@@ -222,16 +210,6 @@ namespace System.Xaml.Schema
 
         internal XamlType KeyType { get; set; }
 
-        internal XamlTypeInvoker Invoker { get; set; }
-
-        internal MethodInfo IsReadOnlyMethod
-        {
-            get { return _isReadOnlyMethod.Value; }
-            set { _isReadOnlyMethod.Value = value; }
-        }
-
-        internal bool IsReadOnlyMethodIsSet { get { return _isReadOnlyMethod.IsSet; } }
-
         // No need to check valid flag, this is set in constructor
         internal bool IsUnknown { get { return (_boolTypeBits & (int)BoolTypeBits.Unknown) != 0; } }
 
@@ -263,30 +241,6 @@ namespace System.Xaml.Schema
         internal bool TypeConverterIsSet { get { return _typeConverter.IsSet; } }
 
         internal Type UnderlyingType { get; set; }
-
-        internal XamlValueConverter<XAML3.ValueSerializer> ValueSerializer
-        {
-            get { return _valueSerializer.Value; }
-            set { _valueSerializer.Value = value; }
-        }
-
-        internal bool ValueSerializerIsSet { get { return _valueSerializer.IsSet; } }
-
-        internal EventHandler<XAML3.XamlSetMarkupExtensionEventArgs> XamlSetMarkupExtensionHandler
-        {
-            get { return _xamlSetMarkupExtensionHandler.Value; }
-            set { _xamlSetMarkupExtensionHandler.Value = value; }
-        }
-
-        internal bool XamlSetMarkupExtensionHandlerIsSet { get { return _xamlSetMarkupExtensionHandler.IsSet; } }
-
-        internal EventHandler<XAML3.XamlSetTypeConverterEventArgs> XamlSetTypeConverterHandler
-        {
-            get { return _xamlSetTypeConverterHandler.Value; }
-            set { _xamlSetTypeConverterHandler.Value = value; }
-        }
-
-        internal bool XamlSetTypeConverterHandlerIsSet { get { return _xamlSetTypeConverterHandler.IsSet; } }
 
         internal bool TryGetPositionalParameters(int paramCount, out IList<XamlType> result)
         {
@@ -383,46 +337,7 @@ namespace System.Xaml.Schema
 
         internal bool AddMethodIsSet { get { return _addMethod.IsSet; } }
 
-        internal MethodInfo GetEnumeratorMethod
-        {
-            get { return _getEnumeratorMethod.Value; }
-            set { _getEnumeratorMethod.Value = value; }
-        }
-
-        internal bool GetEnumeratorMethodIsSet { get { return _getEnumeratorMethod.IsSet; } }
-
         #endregion
-
-        // We don't cache NameScopeProperty because it's only used at the root.
-        // But we have the lookup logic here so that we don't need to do reflection in ObjectWriter.
-        internal static XamlMember LookupNameScopeProperty(XamlType xamlType)
-        {
-            if (xamlType.UnderlyingType == null)
-            {
-                return null;
-            }
-            // We only check this once, at the root of the doc, and only in ObjectWriter.
-            // So it's fine to use live reflection here.
-            object obj = GetCustomAttribute(typeof(XAML3.NameScopePropertyAttribute), xamlType.UnderlyingType);
-            XAML3.NameScopePropertyAttribute nspAttr = obj as XAML3.NameScopePropertyAttribute;
-            if (nspAttr != null)
-            {
-                Type ownerType = nspAttr.Type;
-                string propertyName = nspAttr.Name;
-                XamlMember prop;
-                if (ownerType != null)
-                {
-                    XamlType ownerXamlType = xamlType.SchemaContext.GetXamlType(ownerType);
-                    prop = ownerXamlType.GetAttachableMember(propertyName);
-                }
-                else
-                {
-                    prop = xamlType.GetMember(propertyName);
-                }
-                return prop;
-            }
-            return null;
-        }
 
         /// <summary>
         /// Checks whether a type is annotated with <c>[RequiredMember]</c>.
@@ -434,9 +349,8 @@ namespace System.Xaml.Schema
         {
             const string AttributeName = "System.Runtime.CompilerServices.RequiredMemberAttribute";
 
-            // Check all attributes and match the type name. We can't lookup the attribute by type,
-            // because the attribute is only defined in the .NET 7+ corelib, but XamlCompiler targets
-            // both .NET 5+ and .NET Framework.
+            // Check all attributes and match the type name. We can't lookup the attribute by type, because the attributes are
+            // read from metadata (the corelib the project references, which may not even define it), not runtime types.
             return global::Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ReflectionHelper.FindAttributeByTypeName(type, inherit: false, AttributeName) != null;
         }
 
