@@ -439,17 +439,48 @@ void TableViewAutomationPeer::SetScrollPercent(double horizontalPercent, double 
     }
 
     const double oldExtent = scroller.ExtentHeight();
+    const bool toEnd = verticalPercent >= 100.0 - 1e-9;
+    // The default element anchoring pulls the offset back whenever a re-measured row above the viewport
+    // shifts the anchor, so aiming for the end could stall short of it. Anchor at the far edge meanwhile.
+    auto const anchorRatioProperty = winrt::ScrollViewer::VerticalAnchorRatioProperty();
+    auto const localAnchorRatio = scroller.ReadLocalValue(anchorRatioProperty);
+    if (toEnd)
+    {
+        scroller.VerticalAnchorRatio(1.0);
+    }
+    auto restoreAnchorRatio = gsl::finally([&]()
+    {
+        if (!toEnd)
+        {
+            return;
+        }
+        if (localAnchorRatio == winrt::DependencyProperty::UnsetValue())
+        {
+            scroller.ClearValue(anchorRatioProperty);
+        }
+        else
+        {
+            scroller.SetValue(anchorRatioProperty, localAnchorRatio);
+        }
+    });
     inner.SetScrollPercent(horizontalPercent, verticalPercent);
     scroller.UpdateLayout();
-    if (verticalPercent >= 100.0 - 1e-9)
+    if (toEnd)
     {
-        // Each pass realizes rows nearer the end, so the extent converges on the true one.
-        for (int attempt = 0; attempt < 8 && request == m_scrollRequest && !IsLastRowAtBottom(); ++attempt)
+        // Each pass realizes rows nearer the end, so the extent converges on the true one; keep going
+        // while a pass still moves it. The cap only guards against a layout that never settles.
+        double lastExtent = -1.0;
+        double lastOffset = -1.0;
+        for (int attempt = 0; attempt < 32 && request == m_scrollRequest && !IsLastRowAtBottom(); ++attempt)
         {
-            if (!inner.VerticallyScrollable())
+            const double extent = scroller.ExtentHeight();
+            const double offset = scroller.VerticalOffset();
+            if (!inner.VerticallyScrollable() || (extent == lastExtent && offset == lastOffset))
             {
                 break;
             }
+            lastExtent = extent;
+            lastOffset = offset;
             inner.SetScrollPercent(winrt::ScrollPatternIdentifiers::NoScroll(), 100.0);
             scroller.UpdateLayout();
         }

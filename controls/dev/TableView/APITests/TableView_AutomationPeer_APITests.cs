@@ -881,6 +881,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when a few very tall rows follow many short ones.")]
+        public void VerifySetScrollPercentReachesLastRowWithShortThenTallRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateShortThenTallTable(width: 600);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 150.0, verifyMidpoint: false);
+        }
+
+        // 50 one-line rows, then 10 rows of wrapped text about 250px tall, as on the sample's Fix demos page. Rows
+        // re-measured above the viewport shift the ScrollViewer's anchor element while aiming for the end.
+        private TableView CreateShortThenTallTable(double width)
+        {
+            var items = Enumerable.Range(1, 60)
+                .Select(i => new SizedPerson
+                {
+                    Name = $"Row {i}",
+                    Notes = i <= 50 ? "Short note." : string.Concat(Enumerable.Repeat("This row has a long note that wraps onto several lines, so it is much taller than the rows above it. ", 4 + (i % 3))),
+                })
+                .ToList();
+            var tableView = CreateTableViewShell(items, width, 320);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            var notes = MakeTemplateColumn("Notes", (DataTemplate)XamlReader.Load(
+                @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                      <TextBlock Text=""{Binding Notes}"" TextWrapping=""Wrap"" />
+                  </DataTemplate>"));
+            notes.Width = new GridLength(320);
+            tableView.Columns.Add(notes);
+            return tableView;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a SetScrollPercent(100) retry stops once a newer Scroll request arrives during its layout pass.")]
         public void VerifySetScrollPercentRetryYieldsToNewerRequest()
         {
@@ -1005,6 +1043,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public string Name { get; set; }
 
             public double RowHeight { get; set; }
+
+            public string Notes { get; set; }
         }
 
         [TestMethod]
