@@ -798,8 +798,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroll pattern is answered by a provider that wraps the body scroller's peer, never by the TableView peer itself.")]
-        public void VerifyScrollPatternIsForwardedToBodyScrollerNotThePeer()
+        [TestProperty("Description", "Verifies the Scroll pattern is answered by the TableView peer itself, so repeated lookups return one stable provider.")]
+        public void VerifyScrollPatternIsAnsweredByTheStablePeer()
         {
             TableView tableView = null;
 
@@ -824,13 +824,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                // The negative half is IDL-backed: TableView.idl:617-624 lists four provider interfaces
-                // and IScrollProvider is NOT among them, so the peer must not answer as itself. A peer
-                // claiming a pattern it does not implement fails at the cast in every client.
-                Verify.IsFalse(ReferenceEquals(provider, peer),
-                    "Scroll must be answered by a provider wrapping the body scroller's peer; TableView.idl does not declare IScrollProvider on the TableView peer.");
-                Verify.IsNotNull(provider as IScrollProvider,
-                    "The forwarded Scroll provider must cast to IScrollProvider.");
+                // A fresh non-peer object per lookup would be kept by the framework until the peer is torn down.
+                Verify.IsTrue(ReferenceEquals(provider, peer), "Scroll must be answered by the TableView peer itself.");
+                Verify.IsTrue(ReferenceEquals(provider, peer.GetPattern(PatternInterface.Scroll)), "Repeated Scroll lookups must return the same provider.");
+                Verify.IsNotNull(provider as IScrollProvider, "The Scroll provider must cast to IScrollProvider.");
             });
         }
 
@@ -881,6 +878,60 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
             VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 0.0, verifyMidpoint: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a SetScrollPercent(100) retry stops once a newer Scroll request arrives during its layout pass.")]
+        public void VerifySetScrollPercentRetryYieldsToNewerRequest()
+        {
+            TableView tableView = null;
+            double noScroll = ScrollPatternIdentifiers.NoScroll;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = Enumerable.Range(0, 200)
+                    .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Border Height=""{Binding RowHeight}"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                bool issued = false;
+                EventHandler<object> handler = null;
+                handler = (s, e) =>
+                {
+                    if (!issued && scroller.VerticalOffset > 0)
+                    {
+                        issued = true;
+                        scroller.LayoutUpdated -= handler;
+                        ((IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll)).SetScrollPercent(noScroll, 0.0);
+                    }
+                };
+                scroller.LayoutUpdated += handler;
+                ((IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll)).SetScrollPercent(noScroll, 100.0);
+                scroller.LayoutUpdated -= handler;
+                Verify.IsTrue(issued, "Precondition: the newer request was issued during the first request's layout.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                Log.Comment($"After the superseding request: table={scroll.VerticalScrollPercent} offset={GetBodyScroller(tableView).VerticalOffset}");
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "The newer SetScrollPercent(NoScroll, 0) must win.");
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be at the top.");
+            });
         }
 
         private static IScrollProvider BodyScrollProvider(TableView tableView) =>
