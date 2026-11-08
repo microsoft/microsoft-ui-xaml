@@ -795,7 +795,7 @@ void PopupAutomationIntegrationTests::VerifyPopupButtonAutomationPropertyChanged
     });
     TestServices::WindowHelper->WaitForIdle();
 
-    RunOnUIThread([&]()
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
     {
         spAutomationPropertyChangedEventHandler->ConfirmAndUnregister();
     });
