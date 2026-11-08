@@ -212,6 +212,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a collection change that reaches a shaped source after the GC collected its delegates, but before the source's posted delete runs, does not throw into the app's collection call.")]
+        [TestProperty("data:Shaping", "{GroupBy, GroupByWithIdentity, ParentBy}")]
+        public void VerifyCollectionChangeOnCollectedSourceDoesNotThrow()
+        {
+            var shaping = ((string)TestContext.DataRow["Shaping"]).Trim();
+            var items = new ObservableCollection<Person>(MakeManyItems(40));
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() => CreateAndLoadSelfCapturingShapedTable(items, shaping, tracked));
+            SettleAfterLoad();
+            RunOnUIThread.Execute(() => Content = null);
+            SettleAfterLoad();
+
+            var collected = false;
+            Exception thrown = null;
+            RunOnUIThread.Execute(() =>
+            {
+                // Collected on the UI thread, so the delete the finalizer posts here cannot run before the Add.
+                for (var attempt = 0; attempt < 5 && !collected; attempt++)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    collected = !tracked["KeySelector"].IsAlive;
+                }
+
+                if (collected)
+                {
+                    try
+                    {
+                        items.Add(new Person { Name = "Person 40", Role = "Role 40" });
+                    }
+                    catch (Exception e)
+                    {
+                        thrown = e;
+                    }
+                }
+            });
+
+            Verify.IsTrue(collected, "Precondition: the key selector was collected while the source was still subscribed.");
+            Verify.IsNull(thrown, $"A collection change must not throw into the app once the source is obsolete: {thrown}");
+            Verify.AreEqual(41, items.Count, "The app's Add must complete.");
+            AssertCollected(tracked);
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies realizing automation peers for a TableView does not keep the control alive after unload.")]
         public void VerifyAutomationPeersDoNotKeepTheTableAlive()
         {

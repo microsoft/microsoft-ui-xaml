@@ -93,6 +93,10 @@ public:
     // Fired after a shaping verb rewrote the projection. `reorderOnly` distinguishes a pure
     // re-order, which preserves membership, from a change that may have altered which rows exist.
     void SetShapingChangedHandler(std::function<void(bool reorderOnly)> handler) { m_shapingChanged = std::move(handler); }
+    // Set by the owner once it is torn down or its app delegates were collected. Source changes then
+    // stop shaping, and must not fail the app's collection call.
+    void SetObsoleteFlag(std::shared_ptr<bool const> flag) { m_obsolete = std::move(flag); }
+    bool IsObsolete() const noexcept { return m_obsolete && *m_obsolete; }
 
     // -- shaping verbs --------------------------------------------------------------------
     // Filters are conjunctive. The untokenized overloads are the single-filter shorthand; the
@@ -491,6 +495,7 @@ private:
     std::shared_ptr<HierarchicalSourceAdapter> m_hierarchicalAdapter{};
 
     std::function<void()> m_projectionRebuilt{ nullptr };
+    std::shared_ptr<bool const> m_obsolete{};
     std::function<void()> m_shapeSwapped{ nullptr };
     std::function<void(bool)> m_shapingChanged{ nullptr };
 

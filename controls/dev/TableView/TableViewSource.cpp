@@ -100,6 +100,10 @@ void TableViewSource::SetShapingTipHandlers(
 
 TableViewSource::~TableViewSource()
 {
+    // An engine pass still on the stack keeps the engine alive; it must stop and not call back here.
+    *m_obsolete = true;
+    m_engine->SetProjectionRebuiltHandler(nullptr);
+    m_engine->SetShapingChangedHandler(nullptr);
     for (auto const& entry : m_trackedDelegates)
     {
         if (auto const tracked = entry.lock())
@@ -128,6 +132,7 @@ TableViewSource::TableViewSource(winrt::IInspectable const& items) :
     // later one -- the control never has to special-case its own construction.
     m_engine->SetProjectionRebuiltHandler([this]() { OnProjectionRebuilt(); });
     m_engine->SetShapingChangedHandler([this](bool reorderOnly) { NotifyOwnerShapingChanged(reorderOnly); });
+    m_engine->SetObsoleteFlag(m_obsolete);
     m_engine->Start();
 }
 

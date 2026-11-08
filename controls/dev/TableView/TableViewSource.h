@@ -174,18 +174,29 @@ private:
     template <typename D>
     struct TrackedDelegate final : TrackedDelegateBase
     {
-        TrackedDelegate(ITrackerHandleManager const* owner, D const& value) : m_value(owner, value) {}
-        // Null when the GC already collected the target or this source is gone.
-        D Get() const { return m_value.template safe_get<D>(); }
+        TrackedDelegate(ITrackerHandleManager const* owner, D const& value, std::shared_ptr<bool> obsolete) :
+            m_value(owner, value), m_obsolete(std::move(obsolete)) {}
+        // Null when the GC already collected the target or this source is gone; either way the
+        // source is unreachable, so its engine's remaining work is obsolete.
+        D Get() const
+        {
+            auto value = m_value.template safe_get<D>();
+            if (!value)
+            {
+                *m_obsolete = true;
+            }
+            return value;
+        }
         void Release() noexcept override { auto const released = std::move(m_value); }
         tracker_ref<D> m_value;
+        std::shared_ptr<bool> m_obsolete;
     };
     template <typename D>
     std::shared_ptr<TrackedDelegate<D>> Track(D const& value)
     {
         // The engine's copies are the only owners, so a cleared or replaced delegate goes with them.
         std::erase_if(m_trackedDelegates, [](auto const& tracked) { return tracked.expired(); });
-        auto tracked = std::make_shared<TrackedDelegate<D>>(this, value);
+        auto tracked = std::make_shared<TrackedDelegate<D>>(this, value, m_obsolete);
         m_trackedDelegates.push_back(tracked);
         return tracked;
     }
@@ -210,6 +221,7 @@ private:
 
     // Weak, so it can release the tracker handles of engine copies that outlive this source.
     std::vector<std::weak_ptr<TrackedDelegateBase>> m_trackedDelegates{};
+    std::shared_ptr<bool> m_obsolete{ std::make_shared<bool>(false) };
     std::shared_ptr<ShapedItemsSource> m_engine{};
     // Weak, and typed as IInspectable rather than TableView: this slot exists only to detect a
     // second owner binding, and the owning TableView references this source through its
