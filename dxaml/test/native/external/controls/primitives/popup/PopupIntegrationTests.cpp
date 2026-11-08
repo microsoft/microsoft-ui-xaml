@@ -2793,15 +2793,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
     // Regression coverage for GitHub #3879: a Popup initialized with IsOpen='True' during
-    // XAML parsing has no popup root available yet, so the open must be deferred until the
+    // XAML parsing has no usable popup root yet, so the open must be deferred until the
     // element enters the live tree (EnterImpl) instead of calling Open() during parsing.
+    // Parse before initializing the host island to cover the dummy main popup root fallback.
     //
     // Scenario 1: IsOpen is set before the child (attribute ordering). The deferral happens
     // in CPopup::SetChild.
     void PopupIntegrationTests::InitializeWithIsOpenTrueDoesNotCrash()
     {
         TestCleanupWrapper cleanup;
-        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
 
         xaml_primitives::Popup^ popup = nullptr;
         xaml_controls::Border^ child = nullptr;
@@ -2837,6 +2837,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(popup->IsOpen);
             VERIFY_ARE_EQUAL(100.0, child->ActualHeight);
             VERIFY_ARE_EQUAL(100.0, child->ActualWidth);
+            VERIFY_IS_NOT_NULL(child->XamlRoot);
+            VERIFY_IS_TRUE(child->XamlRoot->Equals(popup->XamlRoot));
         });
     }
 
@@ -2847,7 +2849,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     void PopupIntegrationTests::InitializeWithChildBeforeIsOpenDoesNotCrash()
     {
         TestCleanupWrapper cleanup;
-        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
 
         xaml_primitives::Popup^ popup = nullptr;
         xaml_controls::Border^ child = nullptr;
@@ -2885,6 +2886,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(popup->IsOpen);
             VERIFY_ARE_EQUAL(100.0, child->ActualHeight);
             VERIFY_ARE_EQUAL(100.0, child->ActualWidth);
+            VERIFY_IS_NOT_NULL(child->XamlRoot);
+            VERIFY_IS_TRUE(child->XamlRoot->Equals(popup->XamlRoot));
         });
     }
 
