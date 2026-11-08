@@ -359,13 +359,13 @@ private:
     // subscribes to source changes with weak_from_this(), and performs the initial Refresh().
     void AttachSource(winrt::Windows::Foundation::IInspectable const& source);
 
-    // Subscribes to the accessor's one notification interface (switch on GetObserveKind(); the
-    // accessor owns the INotifyCollectionChanged > IObservableVector > IBindableObservableVector
-    // precedence) and stores m_sourceEventToken.
+    // Subscribes through CollectionAccessor2::Subscribe (the accessor owns the
+    // INotifyCollectionChanged > IObservableVector > IBindableObservableVector precedence) and
+    // stores m_sourceEventToken.
     void SubscribeToSourceChanges();
 
-    // Revokes through the same GetObserveKind() switch, using the accessor's safe_get (AsXxx(true)),
-    // so a collected source is skipped. Swallows revoke failures.
+    // Revokes through CollectionAccessor2::Unsubscribe (safe_get, so a collected source is
+    // skipped; revoke failures are swallowed).
     void UnsubscribeFromSourceChanges() noexcept;
     void OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);

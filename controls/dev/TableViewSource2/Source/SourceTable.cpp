@@ -132,101 +132,43 @@ void SourceTable::AttachSource(Inspectable const& source)
 
 void SourceTable::SubscribeToSourceChanges()
 {
-    using Kind = CollectionAccessor2::ObserveKind;
-
     // The thread is checked before the table is locked: a lock taken off the bound thread could
     // become the last strong reference and destroy the table there.
     auto const weak = weak_from_this();
     auto const binding = m_binding;
 
-    switch (m_sourceAccessor->GetObserveKind())
-    {
-    case Kind::NotifyCollectionChanged:
-        m_sourceEventToken = m_sourceAccessor->AsNotifyCollectionChanged().CollectionChanged(
-            [weak, binding](Inspectable const&, interop::NotifyCollectionChangedEventArgs const& args)
+    m_sourceEventToken = m_sourceAccessor->Subscribe(
+        [weak, binding](Inspectable const&, interop::NotifyCollectionChangedEventArgs const& args)
+        {
+            ThrowIfOffBoundThread(*binding);
+            if (auto const self = weak.lock(); self && !self->IsDetached())
             {
-                ThrowIfOffBoundThread(*binding);
-                if (auto const self = weak.lock(); self && !self->IsDetached())
-                {
-                    self->OnSourceCollectionChanged(args);
-                }
-            });
-        break;
-
-    case Kind::ObservableVector:
-        m_sourceEventToken = m_sourceAccessor->AsObservableVector().VectorChanged(
-            [weak, binding](wfc::IObservableVector<Inspectable> const&, wfc::IVectorChangedEventArgs const& args)
+                self->OnSourceCollectionChanged(args);
+            }
+        },
+        [weak, binding](wfc::IObservableVector<Inspectable> const&, wfc::IVectorChangedEventArgs const& args)
+        {
+            ThrowIfOffBoundThread(*binding);
+            if (auto const self = weak.lock(); self && !self->IsDetached())
             {
-                ThrowIfOffBoundThread(*binding);
-                if (auto const self = weak.lock(); self && !self->IsDetached())
-                {
-                    self->OnSourceVectorChanged(args);
-                }
-            });
-        break;
-
-    case Kind::BindableObservableVector:
-        m_sourceEventToken = m_sourceAccessor->AsBindableObservableVector().VectorChanged(
-            [weak, binding](interop::IBindableObservableVector const&, Inspectable const&)
+                self->OnSourceVectorChanged(args);
+            }
+        },
+        [weak, binding](interop::IBindableObservableVector const&, Inspectable const&)
+        {
+            ThrowIfOffBoundThread(*binding);
+            if (auto const self = weak.lock(); self && !self->IsDetached())
             {
-                ThrowIfOffBoundThread(*binding);
-                if (auto const self = weak.lock(); self && !self->IsDetached())
-                {
-                    self->OnSourceBindableVectorChanged();
-                }
-            });
-        break;
-
-    case Kind::None:
-        break;
-    }
+                self->OnSourceBindableVectorChanged();
+            }
+        });
 }
 
 void SourceTable::UnsubscribeFromSourceChanges() noexcept
 {
-    using Kind = CollectionAccessor2::ObserveKind;
-
-    if (!m_sourceAccessor || !m_sourceEventToken.value)
+    if (m_sourceAccessor)
     {
-        return;
-    }
-
-    auto const token = std::exchange(m_sourceEventToken, winrt::event_token{});
-    try
-    {
-        // safe_get: on teardown the GC may already have collected the source; then there is no
-        // subscription left to revoke.
-        switch (m_sourceAccessor->GetObserveKind())
-        {
-        case Kind::NotifyCollectionChanged:
-            if (auto const source = m_sourceAccessor->AsNotifyCollectionChanged(true))
-            {
-                source.CollectionChanged(token);
-            }
-            break;
-
-        case Kind::ObservableVector:
-            if (auto const source = m_sourceAccessor->AsObservableVector(true))
-            {
-                source.VectorChanged(token);
-            }
-            break;
-
-        case Kind::BindableObservableVector:
-            if (auto const source = m_sourceAccessor->AsBindableObservableVector(true))
-            {
-                source.VectorChanged(token);
-            }
-            break;
-
-        case Kind::None:
-            break;
-        }
-    }
-    catch (...)
-    {
-        // A failed revoke leaves nothing for the table to clean up; the lambda holds only weak
-        // pointers.
+        m_sourceAccessor->Unsubscribe(m_sourceEventToken);
     }
 }
 

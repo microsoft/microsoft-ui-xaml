@@ -266,3 +266,47 @@ interop::IBindableObservableVector CollectionAccessor2::AsBindableObservableVect
 
     return useSafeGet ? m_observe.safe_get<interop::IBindableObservableVector>() : FromSlot<interop::IBindableObservableVector>(m_observe.get());
 }
+
+void CollectionAccessor2::Unsubscribe(winrt::event_token& token) const noexcept
+{
+    if (!token.value)
+    {
+        return;
+    }
+
+    auto const revoked = std::exchange(token, winrt::event_token{});
+    try
+    {
+        // safe_get: never get() here. On teardown the GC may already have collected the target.
+        switch (m_observeKind)
+        {
+        case ObserveKind::NotifyCollectionChanged:
+            if (auto const source = AsNotifyCollectionChanged(true))
+            {
+                source.CollectionChanged(revoked);
+            }
+            break;
+
+        case ObserveKind::ObservableVector:
+            if (auto const source = AsObservableVector(true))
+            {
+                source.VectorChanged(revoked);
+            }
+            break;
+
+        case ObserveKind::BindableObservableVector:
+            if (auto const source = AsBindableObservableVector(true))
+            {
+                source.VectorChanged(revoked);
+            }
+            break;
+
+        case ObserveKind::None:
+            break;
+        }
+    }
+    catch (...)
+    {
+        // A failed revoke leaves nothing to clean up; subscribers capture only weak pointers.
+    }
+}

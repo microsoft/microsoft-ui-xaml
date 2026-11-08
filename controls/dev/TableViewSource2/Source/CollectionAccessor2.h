@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include <winrt/Microsoft.UI.Xaml.Interop.h>
@@ -98,6 +99,36 @@ public:
     winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged AsNotifyCollectionChanged(bool useSafeGet = false) const;
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::Windows::Foundation::IInspectable> AsObservableVector(bool useSafeGet = false) const;
     winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector AsBindableObservableVector(bool useSafeGet = false) const;
+
+    // Attaches to the one resolved notification interface and returns its token (empty when
+    // ObserveKind::None). Only the handler for GetObserveKind() is turned into a delegate, so the
+    // other two cost nothing. Each handler takes the event's own (sender, args) signature.
+    // Throws whatever the collection's add_ throws.
+    template <typename OnCollectionChanged, typename OnVectorChanged, typename OnBindableVectorChanged>
+    winrt::event_token Subscribe(
+        OnCollectionChanged&& onCollectionChanged,
+        OnVectorChanged&& onVectorChanged,
+        OnBindableVectorChanged&& onBindableVectorChanged) const
+    {
+        switch (m_observeKind)
+        {
+        case ObserveKind::NotifyCollectionChanged:
+            return AsNotifyCollectionChanged().CollectionChanged(std::forward<OnCollectionChanged>(onCollectionChanged));
+        case ObserveKind::ObservableVector:
+            return AsObservableVector().VectorChanged(std::forward<OnVectorChanged>(onVectorChanged));
+        case ObserveKind::BindableObservableVector:
+            return AsBindableObservableVector().VectorChanged(std::forward<OnBindableVectorChanged>(onBindableVectorChanged));
+        case ObserveKind::None:
+            break;
+        }
+
+        return {};
+    }
+
+    // Revokes a token from Subscribe() and empties it. Teardown-safe: resolves the target through
+    // safe_get, so a collection the GC already collected is skipped (nothing left to revoke), and
+    // a failing revoke is swallowed. An empty token is a no-op.
+    void Unsubscribe(winrt::event_token& token) const noexcept;
 
 private:
     // Resolves the read interface by precedence; read receives the try_as result for the kind.
