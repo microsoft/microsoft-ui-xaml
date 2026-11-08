@@ -111,16 +111,6 @@ void SourceTable::BindOwnerThread() noexcept
     }
 }
 
-void SourceTable::ThrowIfOffBoundThread(ThreadBinding const& binding)
-{
-    DWORD const bound = binding.threadId.load(std::memory_order_acquire);
-    if (bound != 0 && bound != ::GetCurrentThreadId())
-    {
-        MUX_ASSERT_MSG(false, "A source collection change was raised off the thread TableViewSource2 is bound to.");
-        throw winrt::hresult_wrong_thread();
-    }
-}
-
 // ---- Source lifecycle ----------------------------------------------------------------------
 
 void SourceTable::AttachSource(Inspectable const& source)

@@ -18,6 +18,7 @@
 #include "CollectionAccessor2.h"
 #include "SourceRecord.h"
 #include "Hierarchy/SourceHierarchy.h"
+#include "ThreadBinding.h"
 
 // The record table for one input source and its source tree, plus their lookups.
 //
@@ -515,20 +516,9 @@ private:
 
     bool m_liveShapingEnabled{ false };
 
-    // Thread binding (see Threading). Written once: at Create() on a dispatcher thread, or by the
-    // first BindOwnerThread() while unbound; never changed after. Shared so the item lambdas read
-    // it without locking the table off-thread. threadId == 0 means unbound; it is stored after
-    // queue with release order and loaded with acquire, so a reader that sees it also sees queue.
-    struct ThreadBinding
-    {
-        winrt::Microsoft::UI::Dispatching::DispatcherQueue queue{ nullptr };
-        std::atomic<DWORD> threadId{ 0 };
-    };
+    // Thread binding (see Threading and Source/ThreadBinding.h). Shared with every event lambda,
+    // root, child collection and item.
     std::shared_ptr<ThreadBinding> m_binding{ std::make_shared<ThreadBinding>() };
-
-    // Root-collection lambdas, before locking the table: throws hresult_wrong_thread (asserting in
-    // debug) when bound and the current thread is not the bound one (see Threading).
-    static void ThrowIfOffBoundThread(ThreadBinding const& binding);
 
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;
