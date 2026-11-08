@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Media;
 namespace ChartsSample
 {
     // Test hook: --dump-series-colors=<path> rewrites <path> twice a second with the app-set series colors
-    // of the Line, Area and Bar charts and the current surface, so contrast fixes can be checked through
+    // of the Line, Area, Bar and code-created charts (series, label, marker and override brushes) and the current surface, so contrast fixes can be checked through
     // UI Automation when no screen capture is possible (for example a disconnected remote session).
     public sealed partial class MainWindow
     {
@@ -29,12 +29,14 @@ namespace ChartsSample
             {
                 var text = new StringBuilder();
                 text.AppendLine($"theme={RootGrid.ActualTheme} surface={(_darkSurface ? "dark" : "light")}");
-                foreach (var (name, chart) in new[] { ("Line", MarkupChart), ("Area", AreaMarkupChart), ("Bar", BarMarkupChart) })
+                foreach (var (name, chart) in new[] { ("Line", MarkupChart), ("Area", AreaMarkupChart), ("Bar", BarMarkupChart), ("Code", _codeChart) })
                 {
                     foreach (var series in chart.Series)
                     {
                         Brush fill = series is AreaSeries area ? area.Fill : series is BarSeries bar ? bar.Fill : null;
-                        text.AppendLine($"{name}|{series.Title}|stroke={Hex(series.Stroke)}|fill={Hex(fill)}");
+                        string labels = string.Join(",", series.DataLabelOverrides.Select(o => $"{o.Key}:{Hex(o.Value?.Brush)}"));
+                        string markers = string.Join(",", series.DataMarkerOverrides.Select(o => $"{o.Key}:{Hex(o.Value?.Brush)}"));
+                        text.AppendLine($"{name}|{series.Title}|stroke={Hex(series.Stroke)}|fill={Hex(fill)}|label={Hex(series.DataLabelBrush)}|marker={Hex(series.DataMarkerBrush)}|labelOverrides={labels}|markerOverrides={markers}");
                     }
                 }
                 try

@@ -50,9 +50,16 @@ namespace ChartsSample
             Color.FromArgb(0xFF, 0x5C, 0xC4, 0x5C),
             Color.FromArgb(0xFF, 0xF9, 0x8B, 0x5B)
         };
+        // Point editor colors (series label and marker brushes, label and marker overrides). On a dark
+        // surface ForSurface swaps each for its dark variant: labels keep 4.5:1 and markers 3:1.
+        private static readonly Color PointLabelColor = Color.FromArgb(0xFF, 0x00, 0x63, 0xB1);
+        private static readonly Color PointMarkerColor = Color.FromArgb(0xFF, 0xD8, 0x3B, 0x01);
+        private static readonly Color LabelOverrideColor = Color.FromArgb(0xFF, 0x10, 0x7C, 0x10);
+        private static readonly Color MarkerOverrideColor = Color.FromArgb(0xFF, 0x88, 0x17, 0x98);
         // Light/dark pairs for every app-set series color, matched on RGB (alpha is kept).
         private static readonly (Color Light, Color Dark)[] SurfaceColorPairs = BuildSurfaceColorPairs();
         private bool _darkSurface;
+        private Chart _codeChart;
         private static readonly double[] ProfitSeed = { 18, 27, 22, 41, 36, 52 };
         private static readonly double[] ExpensesSeed = { 31, 25, 29, 24, 32, 28 };
         private static readonly double[] AreaSeed = { 8, 18, 14, 29, 24, 37 };
@@ -143,6 +150,7 @@ namespace ChartsSample
             var chart = new Chart { ShowLegend = true };
             chart.Series.Add(line);
             CodeChartHost.Child = chart;
+            _codeChart = chart;
 
             // Connect the handles before supplying their observable collections.
             var xValues = new Samples();
@@ -155,8 +163,8 @@ namespace ChartsSample
             line.StrokeDashStyle = StrokeDashStyle.DashDot;
             line.StrokeThickness = 3;
             line.Stroke = ColorBrush(0, 120, 212);
-            line.DataLabelOverrides[1] = new DataLabelOverride("Beta", ColorBrush(16, 124, 16));
-            line.DataMarkerOverrides[3] = new DataMarkerOverride(MarkerShape.Diamond, ColorBrush(136, 23, 152));
+            line.DataLabelOverrides[1] = new DataLabelOverride("Beta", SurfaceBrush(LabelOverrideColor));
+            line.DataMarkerOverrides[3] = new DataMarkerOverride(MarkerShape.Diamond, SurfaceBrush(MarkerOverrideColor));
             AutomationProperties.SetName(chart, "Code-created line chart");
             AutomationProperties.SetHelpText(chart, "Five categories, a dash-dot line, a custom Beta label and a diamond at Delta. Exact values are in Current data.");
         }
@@ -278,6 +286,7 @@ namespace ChartsSample
                 2 => ElementTheme.Dark,
                 _ => ElementTheme.Default
             };
+            _secondary?.SetTheme(RootGrid.RequestedTheme);
         }
 
         // A page chosen from the navigation pane with the keyboard takes keyboard focus to its first
@@ -481,6 +490,8 @@ namespace ChartsSample
             var values = new ObservableVector<double>();
             foreach (double value in seed)
                 values.Add(value * (0.65 + 0.05 * (number % 4)) + number * 3);
+            // The new values can widen an automatic Y range past the tick limit the axis editors keep.
+            if (chart == MarkupChart) CheckYAxisTicks(_yAxis.Minimum, _yAxis.Maximum, _yAxis.Spacing, values);
             var samples = new Samples { ItemsSource = values };
             series.Title = $"Series {number}";
             series.XValues = categories;
@@ -540,7 +551,7 @@ namespace ChartsSample
         private void OnLineAddSeriesClick(object sender, RoutedEventArgs e)
         {
             int number = _nextLineSeries;
-            EditLine(() =>
+            ApplyEdit(() =>
             {
                 var series = new LineSeries
                 {
@@ -550,7 +561,9 @@ namespace ChartsSample
                 };
                 AddExampleSeries(MarkupChart, PresentationSeriesComboBox, series, Month, ProfitSeed, number);
                 _nextLineSeries++;
-            }, $"Added Series {number}.");
+            }, SyncPresentationKnobs, PresentationKnobStatusText, $"Added Series {number}.",
+                $"Series {number} was not added: with the current Y spacing its values would give the Y axis more than {MaxYAxisTicks} ticks. Increase the spacing or set it to Auto, then add the series.",
+                MarkupChart);
         }
 
         private void OnAreaAddSeriesClick(object sender, RoutedEventArgs e)
@@ -622,6 +635,8 @@ namespace ChartsSample
                 (OriginalAreaStroke, Color.FromArgb(0xFF, 0x9A, 0xAE, 0xFF)),
                 (OriginalAreaFill, Color.FromArgb(0xFF, 0x8C, 0xA0, 0xF8)),
                 (OriginalBarStroke, Color.FromArgb(0xFF, 0xA9, 0xD3, 0xFF)),
+                (PointLabelColor, Color.FromArgb(0xFF, 0x60, 0xCD, 0xFF)),
+                (MarkerOverrideColor, Color.FromArgb(0xFF, 0xC7, 0x7D, 0xDB)),
             };
             for (int i = 0; i < ExampleColors.Length; i++) pairs.Add((ExampleColors[i], DarkExampleColors[i]));
             return pairs.ToArray();
@@ -642,6 +657,8 @@ namespace ChartsSample
             }
             return color;
         }
+
+        private SolidColorBrush SurfaceBrush(Color color) => new(ForSurface(color));
 
         private static Color ToLightSurface(Color color)
         {
@@ -675,13 +692,25 @@ namespace ChartsSample
             bool dark = IsDarkSurface();
             if (dark == _darkSurface) return;
             _darkSurface = dark;
-            foreach (var chart in new[] { MarkupChart, AreaMarkupChart, BarMarkupChart })
+            foreach (var chart in new[] { MarkupChart, AreaMarkupChart, BarMarkupChart, _codeChart })
             {
                 foreach (var series in chart.Series)
                 {
                     if (series.Stroke is SolidColorBrush stroke) series.Stroke = new SolidColorBrush(ForSurface(stroke.Color));
                     if (series is AreaSeries area && area.Fill is SolidColorBrush areaFill) area.Fill = new SolidColorBrush(ForSurface(areaFill.Color));
                     if (series is BarSeries bar && bar.Fill is SolidColorBrush barFill) bar.Fill = new SolidColorBrush(ForSurface(barFill.Color));
+                    if (series.DataLabelBrush is SolidColorBrush labelBrush) series.DataLabelBrush = SurfaceBrush(labelBrush.Color);
+                    if (series.DataMarkerBrush is SolidColorBrush markerBrush) series.DataMarkerBrush = SurfaceBrush(markerBrush.Color);
+                    foreach (var entry in new List<KeyValuePair<uint, DataLabelOverride>>(series.DataLabelOverrides))
+                    {
+                        if (entry.Value?.Brush is SolidColorBrush brush)
+                            series.DataLabelOverrides[entry.Key] = new DataLabelOverride(entry.Value.Text, SurfaceBrush(brush.Color));
+                    }
+                    foreach (var entry in new List<KeyValuePair<uint, DataMarkerOverride>>(series.DataMarkerOverrides))
+                    {
+                        if (entry.Value?.Brush is SolidColorBrush brush)
+                            series.DataMarkerOverrides[entry.Key] = new DataMarkerOverride(entry.Value.Shape, SurfaceBrush(brush.Color));
+                    }
                 }
             }
         }
@@ -1094,17 +1123,17 @@ namespace ChartsSample
             EditPresentation(() => SelectedPresentationSeries().ShowDataMarkers = ShowDataMarkersCheckBox.IsChecked == true,
                 () => ShowDataMarkersCheckBox.IsChecked = SelectedPresentationSeries().ShowDataMarkers, "Default markers updated.");
         private void OnDataLabelBrushClick(object sender, RoutedEventArgs e) =>
-            EditPresentation(() => SelectedPresentationSeries().DataLabelBrush = DataLabelBrushCheckBox.IsChecked == true ? ColorBrush(0, 99, 177) : null,
+            EditPresentation(() => SelectedPresentationSeries().DataLabelBrush = DataLabelBrushCheckBox.IsChecked == true ? SurfaceBrush(PointLabelColor) : null,
                 () => DataLabelBrushCheckBox.IsChecked = SelectedPresentationSeries().DataLabelBrush != null, "Series label brush updated.");
         private void OnDataMarkerBrushClick(object sender, RoutedEventArgs e) =>
-            EditPresentation(() => SelectedPresentationSeries().DataMarkerBrush = DataMarkerBrushCheckBox.IsChecked == true ? ColorBrush(216, 59, 1) : null,
+            EditPresentation(() => SelectedPresentationSeries().DataMarkerBrush = DataMarkerBrushCheckBox.IsChecked == true ? SurfaceBrush(PointMarkerColor) : null,
                 () => DataMarkerBrushCheckBox.IsChecked = SelectedPresentationSeries().DataMarkerBrush != null, "Series marker brush updated.");
 
         private void OnApplyLabelOverrideClick(object sender, RoutedEventArgs e)
         {
             if (SelectedOverrideIndex() is uint index)
                 EditPresentation(() => SelectedPresentationSeries().DataLabelOverrides[index] =
-                    new DataLabelOverride(LabelOverrideTextBox.Text, LabelOverrideBrushCheckBox.IsChecked == true ? ColorBrush(16, 124, 16) : null),
+                    new DataLabelOverride(LabelOverrideTextBox.Text, LabelOverrideBrushCheckBox.IsChecked == true ? SurfaceBrush(LabelOverrideColor) : null),
                     () => SyncLabelOverrideEditor(index),
                     $"Label override applied at index {index}.");
         }
@@ -1126,7 +1155,7 @@ namespace ChartsSample
                 return;
             }
             EditPresentation(() => SelectedPresentationSeries().DataMarkerOverrides[index] =
-                new DataMarkerOverride((MarkerShape)shape, MarkerOverrideBrushCheckBox.IsChecked == true ? ColorBrush(136, 23, 152) : null),
+                new DataMarkerOverride((MarkerShape)shape, MarkerOverrideBrushCheckBox.IsChecked == true ? SurfaceBrush(MarkerOverrideColor) : null),
                 () => SyncMarkerOverrideEditor(index),
                 $"Marker override applied at index {index}.");
         }
@@ -1224,10 +1253,16 @@ namespace ChartsSample
         // axis is 600,000 ticks) freezes the UI thread. The sample keeps the Y axis to a readable tick count.
         private const int MaxYAxisTicks = 200;
 
-        private void CheckYAxisTicks(double? minimum, double? maximum, double? spacing)
+        // added: values of a series about to be added, which widen an automatic range.
+        private void CheckYAxisTicks(double? minimum, double? maximum, double? spacing, IEnumerable<double> added = null)
         {
             if (spacing is not double step) return;
             double dataMin = 0, dataMax = 0;
+            foreach (double value in added ?? Array.Empty<double>())
+            {
+                dataMin = Math.Min(dataMin, value);
+                dataMax = Math.Max(dataMax, value);
+            }
             foreach (var series in MarkupChart.Series)
             {
                 if (!_seriesValues.TryGetValue(series, out var values)) continue;
@@ -1390,7 +1425,7 @@ namespace ChartsSample
                 }
 
                 if (_closing) return;
-                var secondary = new SecondaryChartWindow();
+                var secondary = new SecondaryChartWindow(RootGrid.RequestedTheme);
                 _secondary = secondary;
                 string error = await secondary.Ready;
                 if (_closing) return;

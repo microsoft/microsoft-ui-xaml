@@ -27,16 +27,38 @@ namespace ChartsSample
         private readonly TaskCompletionSource<bool> _stopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private DispatcherQueue _dispatcher;
         private bool _stopRequested;
+        // The main window's theme choice. This window has its own UI thread, so it does not inherit the
+        // main window's RequestedTheme; SetTheme passes later changes over this window's dispatcher.
+        private ElementTheme _theme;
+        private Grid _root;
         private string _stage = "starting the secondary UI thread";
 
-        internal SecondaryChartWindow()
+        internal SecondaryChartWindow(ElementTheme theme)
         {
+            _theme = theme;
             _thread = new Thread(Run) { Name = "Secondary chart UI" };
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.Start();
         }
 
         internal Task<string> Ready => _ready.Task;
+
+        internal void SetTheme(ElementTheme theme)
+        {
+            lock (_gate)
+            {
+                _theme = theme;
+                _dispatcher?.TryEnqueue(ApplyTheme);
+            }
+        }
+
+        // Runs on this window's UI thread.
+        private void ApplyTheme()
+        {
+            ElementTheme theme;
+            lock (_gate) theme = _theme;
+            if (_root != null) _root.RequestedTheme = theme;
+        }
         internal bool IsRunning => _thread.IsAlive;
 
         internal async Task StopAsync()
@@ -108,6 +130,8 @@ namespace ChartsSample
                 var root = (Grid)XamlReader.Load(
                     "<Grid xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" Background=\"{ThemeResource ApplicationPageBackgroundThemeBrush}\" />");
                 root.Children.Add(new ScrollViewer { Content = content, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled });
+                _root = root;
+                ApplyTheme();
                 var window = new Window { Title = "Charts secondary UI thread", Content = root };
                 window.AppWindow.Resize(new SizeInt32(620, 500));
                 bool closed = false;
@@ -154,6 +178,8 @@ namespace ChartsSample
                         _dispatcher = dispatcher;
                         if (_stopRequested) dispatcher.EnqueueEventLoopExit();
                     }
+                    // A theme change made before the dispatcher was published is applied here.
+                    dispatcher.TryEnqueue(ApplyTheme);
                     dispatcher.TryEnqueue(() => _ready.TrySetResult(null));
                     _stage = "running the secondary window";
                     dispatcher.RunEventLoop();
@@ -161,6 +187,7 @@ namespace ChartsSample
                 finally
                 {
                     lock (_gate) _dispatcher = null;
+                    _root = null;
                     timer.Stop();
                     timer.Tick -= OnTick;
                     liveToggle.Click -= OnLiveToggleClick;
