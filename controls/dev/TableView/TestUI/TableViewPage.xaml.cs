@@ -400,6 +400,11 @@ namespace MUXControlsTestApp
             {
                 return "align=no-display-text";
             }
+            // GetRectFromCharacterIndex throws for empty text.
+            if (string.IsNullOrEmpty(editor.Text))
+            {
+                return "align=empty-editor";
+            }
 
             // Flush the SizeChanged padding pass.
             editor.UpdateLayout();

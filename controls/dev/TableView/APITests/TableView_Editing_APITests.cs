@@ -2588,6 +2588,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsLessThanOrEqual(Math.Abs(m.RowHeightAfter - m.RowHeightBefore), 0.5, "Opening the editor must not change the row height.");
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies the editor re-centres its line when a taller fallback-font line is replaced by shorter text.")]
+        [TestProperty("TestPass:MinOSVer", MUXControlsTestApp.WindowsOSVersion._22H2)]
+        public void VerifyEditorRecentresAfterFallbackGlyphIsRemoved()
+        {
+            // Myanmar Text's line is taller than Segoe UI's, so the editor grows its text view for it first.
+            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha", "Asha \u1019\u103C\u1014\u103A\u1019\u102C", "Asha");
+            VerifyLinesMatch("Compact, fallback glyph removed", m.DisplayLine, m.EditorLine);
+        }
+
         private sealed class EditorMeasurement
         {
             public Rect DisplayLine;
@@ -2598,8 +2608,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public double RowHeightAfter;
         }
 
-        // Opens an edit on the first row's Name cell, held open by a rejected value, then shows the display text in it.
-        private EditorMeasurement OpenEditorAndMeasure(TableViewDensity density, FlowDirection flowDirection, string name)
+        // Opens an edit on the first row's Name cell, held open by a rejected value, then types each of editorTexts
+        // into it in turn (by default the display text).
+        private EditorMeasurement OpenEditorAndMeasure(TableViewDensity density, FlowDirection flowDirection, string name, params string[] editorTexts)
         {
             TableView tableView = null;
             List<EditablePerson> items = null;
@@ -2632,8 +2643,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() => FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Single().Text = name);
-            IdleSynchronizer.Wait();
+            foreach (var text in editorTexts.Length > 0 ? editorTexts : new[] { name })
+            {
+                RunOnUIThread.Execute(() => FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Single().Text = text);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var editor = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Single();
+                    var view = (FrameworkElement)FindVisualChildrenByType<ScrollViewer>(editor).Single(s => s.Name == "ContentElement").Content;
+                    Log.Comment($"Editor text '{text}': line {view.DesiredSize.Height}, text view {view.ActualHeight}, padding {editor.Padding}");
+                });
+            }
 
             RunOnUIThread.Execute(() =>
             {
