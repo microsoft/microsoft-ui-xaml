@@ -12,6 +12,7 @@
 #include "TableViewTextColumn.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
+#include "TableViewAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewCell.h"
@@ -347,7 +348,22 @@ void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionSta
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
 {
-    return winrt::make<TableViewRowAutomationPeer>(*this);
+    auto const peer = winrt::make<TableViewRowAutomationPeer>(*this);
+    SyncItemAutomationPeer(peer, true);
+    return peer;
+}
+
+void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding)
+{
+    auto const owner = GetOwningTableView();
+    if (!owner || m_inRecyclePool)
+    {
+        rowPeer.EventsSource(nullptr);
+    }
+    else if (newBinding || !rowPeer.EventsSource())
+    {
+        rowPeer.EventsSource(TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this));
+    }
 }
 
 // Typed accessor for the owning TableView.
@@ -1021,6 +1037,11 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
+    if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewRowAutomationPeer>())
+    {
+        SyncItemAutomationPeer(rowPeer, true);
+    }
+
     if (!rebuildCells)
     {
         // Without the rebuild, pooled cell peers would keep their item index and advertise VirtualizedItem.
@@ -1069,6 +1090,7 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
             chromeRefreshed = skipRebuild ? false : RebuildCells();
         }
         peerImpl->TrackCurrentRowItem(*this, owner);
+        SyncItemAutomationPeer(rowPeer, true);
         return chromeRefreshed;
     }
 
@@ -1077,9 +1099,11 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     if (peerImpl)
     {
         peerImpl->TrackCurrentRowItem(*this, owner);
+        SyncItemAutomationPeer(rowPeer, false);
     }
 
     return chromeRefreshed;
+
 }
 
 // Rewire realized rows when Columns changes but the owner identity does not.
