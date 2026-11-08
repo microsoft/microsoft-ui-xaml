@@ -730,6 +730,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        // Retargeting to the presenter the toolbar already drives (TargetInkPresenter set to, then cleared back to,
+        // the target canvas's own presenter) must keep Ruler: the shown stencil is still on that presenter. Moving to a
+        // different canvas clears it, since the stencil belongs to the old presenter.
+        [TestMethod]
+        public void InkToolbarStencilButtonKeepsRulerWhenPresenterDoesNotChangeTest()
+        {
+            InkToolbar toolbar = null;
+            InkCanvas canvas = null;
+            InkCanvas otherCanvas = null;
+            RunOnUIThread.Execute(() =>
+            {
+                canvas = new InkCanvas { Width = 400, Height = 300 };
+                otherCanvas = new InkCanvas { Width = 400, Height = 300 };
+                toolbar = new InkToolbar { TargetInkCanvas = canvas };
+                var root = new StackPanel();
+                root.Children.Add(toolbar);
+                root.Children.Add(canvas);
+                root.Children.Add(otherCanvas);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var stencil = (InkToolbarStencilButton)toolbar.GetMenuButton(InkToolbarMenuKind.Stencil);
+                stencil.SelectedStencil = InkToolbarStencilKind.Ruler;
+                toolbar.IsStencilButtonChecked = true;
+                var ruler = stencil.Ruler;
+                Verify.IsNotNull(ruler, "Showing the ruler should fill InkToolbarStencilButton.Ruler.");
+
+                toolbar.TargetInkPresenter = canvas.InkPresenter;
+                Verify.AreEqual(ruler, stencil.Ruler, "Setting TargetInkPresenter to the same presenter should keep Ruler.");
+                Verify.IsTrue(stencil.Ruler.IsVisible, "The ruler should still be visible.");
+
+                toolbar.TargetInkPresenter = null;
+                Verify.AreEqual(ruler, stencil.Ruler, "Clearing TargetInkPresenter back to the same canvas's presenter should keep Ruler.");
+                Verify.IsTrue(stencil.Ruler.IsVisible, "The ruler should still be visible.");
+
+                toolbar.TargetInkCanvas = otherCanvas;
+                Verify.IsNull(stencil.Ruler, "Moving to a different canvas should clear Ruler.");
+
+                toolbar.IsStencilButtonChecked = false;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================

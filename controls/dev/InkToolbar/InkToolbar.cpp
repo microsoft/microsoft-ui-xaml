@@ -1641,16 +1641,18 @@ void InkToolbar::OnTargetInkPresenterChanged(
     muxc::InkPresenter const& oldInkPresenter,
     muxc::InkPresenter const& newInkPresenter)
 {
-    UNREFERENCED_PARAMETER(oldInkPresenter);
-    UNREFERENCED_PARAMETER(newInkPresenter);
-
     // Ruler / Protractor belong to the old presenter. Clear them so changing SelectedStencil can't hide a stencil
-    // on the old canvas; they are set again when a stencil is shown on the new target.
-    if (auto stencilButton = m_buttonManager ? m_buttonManager->GetStencilButton() : nullptr)
+    // on the old canvas; they are set again when a stencil is shown on the new target. If the effective presenter
+    // did not change (e.g. TargetInkPresenter cleared back to the same canvas's presenter), the shown stencil is
+    // still on it, so keep them.
+    if (oldInkPresenter != newInkPresenter)
     {
-        auto stencilImpl = winrt::get_self<InkToolbarStencilButton>(stencilButton);
-        stencilImpl->Ruler(nullptr);
-        stencilImpl->Protractor(nullptr);
+        if (auto stencilButton = m_buttonManager ? m_buttonManager->GetStencilButton() : nullptr)
+        {
+            auto stencilImpl = winrt::get_self<InkToolbarStencilButton>(stencilButton);
+            stencilImpl->Ruler(nullptr);
+            stencilImpl->Protractor(nullptr);
+        }
     }
 
     // Portable core: reconcile the stencil button state and push the current tool state to the canvas.
