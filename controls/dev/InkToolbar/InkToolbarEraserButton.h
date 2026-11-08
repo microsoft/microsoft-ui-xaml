@@ -97,6 +97,7 @@ private:
         winrt::event_token& token,
         winrt::DependencyObject const& flyoutContent,
         EraserFlyoutItemKind kind);
+    void UpdateEraserFlyoutItemsSetInfo(winrt::DependencyObject const& flyoutContent);
     bool GetIsItemVisible(EraserFlyoutItemKind kind);
     static wchar_t const* EraserKindToEraserItemName(EraserKind kind);
     static EraserKind EraserItemNameToEraserKind(std::wstring_view name);
