@@ -1626,6 +1626,7 @@ void TableViewRow::UpdateExpanderGutterClip()
         {
             gutter.IsHitTestVisible(false);
         }
+        m_isGutterPressed = false;
         return;
     }
 
@@ -1639,6 +1640,10 @@ void TableViewRow::UpdateExpanderGutterClip()
         if (gutter.IsHitTestVisible() != IsExpandable())
         {
             gutter.IsHitTestVisible(IsExpandable());
+        }
+        if (!IsExpandable())
+        {
+            m_isGutterPressed = false;
         }
         return;
     }
@@ -1668,6 +1673,11 @@ void TableViewRow::UpdateExpanderGutterClip()
     if (gutter.IsHitTestVisible() != hitTestable)
     {
         gutter.IsHitTestVisible(hitTestable);
+    }
+    // A gutter that stops hit-testing gets no release or exit, so drop any pending press here.
+    if (!hitTestable)
+    {
+        m_isGutterPressed = false;
     }
 }
 
