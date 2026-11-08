@@ -1,5 +1,5 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="PublishAot">
+<Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <PropertyGroup>
     <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
@@ -27,8 +27,6 @@
   <!-- CsWinRT 3.0 uses a reference projection here, separate from implementation code. -->
   <PropertyGroup Condition="'$(UseCsWinRT3)'=='true'">
     <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
-    <!-- Consumers generate the merged implementation and interop assemblies, not this reference-projection producer. -->
-    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>

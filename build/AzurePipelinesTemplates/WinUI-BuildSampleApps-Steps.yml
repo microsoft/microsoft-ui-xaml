@@ -98,9 +98,9 @@ steps:
         $publishAot = $false
         $galleryPublishArgs = "/p:PublishAot=$publishAot /p:PublishTrimmed=false"
       }
-      Write-Host "##vso[task.setvariable variable=publishAotValue;]$publishAot"
+      # Keep Gallery's AOT choice separate from the solution value used by both CsWinRT passes.
       Write-Host "##vso[task.setvariable variable=galleryPublishArgs;]$galleryPublishArgs"
-    displayName: Set PublishAot variable
+    displayName: Set Gallery publish arguments
 
   - template: WinUI-BuildSampleApp-Steps.yml
     parameters:
