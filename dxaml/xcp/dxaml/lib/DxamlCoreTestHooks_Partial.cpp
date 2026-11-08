@@ -749,17 +749,6 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetAtlasSizeHint()
     m_pDXamlCoreNoRef->ResetAtlasSizeHint();
 }
 
-IFACEMETHODIMP_(void) DxamlCoreTestHooks::ShrinkApplicationViewVisibleBounds(_In_ bool enabled, _In_opt_ xaml::IWindow* iwindow)
-{
-    auto window = GetTargetWindow(iwindow);
-    if (!window)
-    {
-        return;
-    }
-
-    window->SetShrinkApplicationViewVisibleBounds(enabled);
-}
-
 IFACEMETHODIMP DxamlCoreTestHooks::ShrinkXamlIslandVisibleBounds(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled)
 {
     IFCPTR_RETURN(xamlRoot);

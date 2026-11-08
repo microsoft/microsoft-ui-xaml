@@ -146,7 +146,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
 
     IFACEMETHOD_(void, ResetAtlasSizeHint)() = 0;
 
-    IFACEMETHOD_(void, ShrinkApplicationViewVisibleBounds)(_In_ bool enabled, _In_opt_ xaml::IWindow* iwindow = nullptr) = 0;
+    IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled) = 0;
 
     IFACEMETHOD_(void, RequestReplayPreviousPointerUpdate_TempTestHook)() = 0;
 
@@ -364,6 +364,4 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD_(size_t, GetAllocationCount)() = 0;
     IFACEMETHOD_(size_t, GetAllocationSize)() = 0;
     IFACEMETHOD_(size_t, GetDeallocationCount)() = 0;
-
-    IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled) = 0;
 };

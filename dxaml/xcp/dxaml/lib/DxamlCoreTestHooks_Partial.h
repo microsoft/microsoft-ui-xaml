@@ -93,7 +93,7 @@ namespace DirectUI
 
         IFACEMETHOD_(void, ResetAtlasSizeHint)() override;
 
-        IFACEMETHOD_(void, ShrinkApplicationViewVisibleBounds)(_In_ bool enabled, _In_opt_ xaml::IWindow* iwindow = nullptr) override;
+        IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled) override;
 
         IFACEMETHOD_(void, RequestReplayPreviousPointerUpdate_TempTestHook)() override;
 
@@ -307,8 +307,6 @@ namespace DirectUI
         IFACEMETHOD_(size_t, GetAllocationCount)() override;
         IFACEMETHOD_(size_t, GetAllocationSize)() override;
         IFACEMETHOD_(size_t, GetDeallocationCount)() override;
-
-        IFACEMETHOD(ShrinkXamlIslandVisibleBounds)(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled) override;
 
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppvObject) override;

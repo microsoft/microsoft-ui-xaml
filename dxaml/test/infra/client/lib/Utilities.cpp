@@ -1150,19 +1150,6 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 
-    HRESULT Utilities::ShrinkApplicationViewVisibleBounds(_In_ BOOLEAN enabled)
-    {
-        COM_START
-        {
-            RunOnUIThread([&]()
-            {
-                wrl::ComPtr<IXamlTestHooks> windowTestHooks = WindowHelper::GetTestHooks();
-                windowTestHooks->ShrinkApplicationViewVisibleBounds(!!enabled);
-            });
-        }
-        COM_END
-    }
-
     HRESULT Utilities::ShrinkXamlIslandVisibleBounds(_In_ xaml::IXamlRoot* xamlRoot, _In_ BOOLEAN enabled)
     {
         COM_START
