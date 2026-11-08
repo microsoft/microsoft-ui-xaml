@@ -301,7 +301,7 @@ namespace MUXControlsTestApp
             return cell.TransformToVisual(ScrollingTableView)
                        .TransformPoint(new Windows.Foundation.Point(0, 0))
                        .X
-                       .ToString("F0");
+                       .ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         // Diagnostic only: the counter-translation the product wrote. Never summed into the rendered x.

@@ -1009,6 +1009,9 @@ private:
     void OnBodyScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::ScrollViewerViewChangedEventArgs& args);
+    void StartHeaderScrollAnimation();
+    void UpdateHeaderScrollOffset();
+    void StopHeaderScrollAnimation();
 
     // Defer ScrollViewer ancestor lookup until Loaded because ScrollViewer template names are shadowed.
     void OnHeaderHostLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -1266,6 +1269,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    winrt::ScrollViewer::ViewChanged_revoker m_headerScrollerViewChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
@@ -1274,6 +1278,9 @@ private:
     // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
     std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
+    // PART_HeaderHost's Translation expression and the PART_HeaderScroller offset it reads.
+    winrt::ExpressionAnimation m_headerScrollAnimation{ nullptr };
+    winrt::CompositionPropertySet m_headerScrollOffset{ nullptr };
 
     winrt::event_token m_rowElementPreparedToken{};
     winrt::event_token m_rowElementClearingToken{};

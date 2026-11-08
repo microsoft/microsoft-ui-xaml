@@ -2858,6 +2858,212 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
+    // The header band follows the body's horizontal scroll (ADO 64513223). Each header cell's left edge
+    // must match the left edge of the same column's body cell.
+    [TestClass]
+    public class TableViewHeaderScrollSyncTests : TableViewApiTestBase
+    {
+        private const double c_alignmentTolerance = 0.5;
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header cells stay over their body cells across programmatic horizontal scrolls, with and without leading frozen columns.")]
+        public void VerifyHeaderTracksProgrammaticHorizontalScroll()
+        {
+            foreach (int frozenCount in new[] { 0, 2 })
+            {
+                TableView tableView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateScrollableTable(columnCount: 6);
+                    for (int i = 0; i < frozenCount; i++)
+                    {
+                        tableView.Columns[i].FrozenEdge = TableViewFrozenEdge.Leading;
+                    }
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+
+                foreach (double offset in new[] { c_scrollOffset, 2 * c_scrollOffset, 0.0 })
+                {
+                    ScrollBodyTo(tableView, ScrollAxis.Horizontal, offset);
+                    VerifyHeaderOverBody(tableView, tableView, $"{frozenCount} frozen, offset {offset}");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header cells stay over their body cells under RightToLeft, frozen and scrolled.")]
+        public void VerifyHeaderTracksHorizontalScrollInRightToLeft()
+        {
+            TableView tableView = null;
+            FrameworkElement wrapper = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 6);
+                tableView.FlowDirection = FlowDirection.RightToLeft;
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+
+                // Measured from an LTR frame so the mirror sits between the frame and the cells.
+                wrapper = new Grid { FlowDirection = FlowDirection.LeftToRight, Children = { tableView } };
+                LoadContent(wrapper);
+            });
+            SettleLayout(tableView);
+
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+            VerifyHeaderOverBody(tableView, wrapper, "RTL after scrolling");
+
+            RunOnUIThread.Execute(() => Verify.IsGreaterThan(
+                GetVisualLeft(GetHeaderCell(tableView, 1), wrapper), GetVisualLeft(GetHeaderCell(tableView, 2), wrapper),
+                "Precondition: under RTL column 1 must sit to the right of column 2."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header cells stay over their body cells after a column width change and a TableView resize that clamps the offset.")]
+        public void VerifyHeaderTracksAfterColumnWidthChangeAndResize()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 5);
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                scroller.ChangeView(scroller.ScrollableWidth, null, null, true);
+            });
+            SettleLayout(tableView);
+            VerifyHeaderOverBody(tableView, tableView, "scrolled to the end");
+
+            RunOnUIThread.Execute(() => tableView.Columns[2].Width = new GridLength(60.0));
+            SettleLayout(tableView);
+            VerifyHeaderOverBody(tableView, tableView, "after narrowing a column");
+
+            RunOnUIThread.Execute(() => tableView.Width = 560.0);
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Log.Comment($"Offset after widening the table: {GetBodyHorizontalOffset(tableView)}."));
+            VerifyHeaderOverBody(tableView, tableView, "after widening the table");
+
+            RunOnUIThread.Execute(() => tableView.Width = 300.0);
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+            VerifyHeaderOverBody(tableView, tableView, "after shrinking the table and scrolling");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focusing an off-screen header cell scrolls the body, and the header stays over it.")]
+        public void VerifyFocusingOffscreenHeaderScrollsBodyAndStaysAligned()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 6);
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => GetHeaderCell(tableView, 5).Focus(FocusState.Keyboard));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0,
+                "Focusing the off-screen last header must scroll the body to it."));
+            VerifyHeaderOverBody(tableView, tableView, "after focusing the last header");
+
+            RunOnUIThread.Execute(() => GetHeaderCell(tableView, 1).Focus(FocusState.Keyboard));
+            SettleLayout(tableView);
+            VerifyHeaderOverBody(tableView, tableView, "after focusing back to the first scrolling header");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header tracking survives an unload/reload and a template re-apply.")]
+        public void VerifyHeaderTrackingSurvivesReloadAndRetemplate()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 6);
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+
+            RunOnUIThread.Execute(() => Content = null);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => LoadContent(tableView));
+            SettleLayout(tableView);
+            VerifyHeaderOverBody(tableView, tableView, "after reload");
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, 2 * c_scrollOffset);
+            VerifyHeaderOverBody(tableView, tableView, "scrolled after reload");
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = tableView.Template;
+                tableView.Template = null;
+                tableView.UpdateLayout();
+                tableView.Template = template;
+            });
+            SettleLayout(tableView);
+            VerifyHeaderOverBody(tableView, tableView, "after re-applying the template");
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+            VerifyHeaderOverBody(tableView, tableView, "scrolled after re-applying the template");
+        }
+
+        // Every header cell against the same column's cell in each realized row. XAML reads PART_HeaderHost's
+        // animated Translation back from the compositor asynchronously; it is 0 at rest but can trail a freshly
+        // started animation, so poll briefly before failing.
+        private static void VerifyHeaderOverBody(TableView tableView, FrameworkElement frame, string context)
+        {
+            string worst = null;
+            double worstSkew = 0.0;
+            int attempt = 0;
+            for (; attempt < 5; attempt++)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    worst = null;
+                    worstSkew = 0.0;
+                    var rows = GetRealizedRows(tableView).Where(row => row.DataContext != null).ToList();
+                    Verify.IsGreaterThan(rows.Count, 0, $"At least one row should be realized ({context}).");
+
+                    foreach (var header in GetHeaderHost(tableView).Children.OfType<FrameworkElement>())
+                    {
+                        if (!(header.Tag is TableViewColumn column) || column.Visibility != Visibility.Visible)
+                        {
+                            continue;
+                        }
+
+                        double headerLeft = GetVisualLeft(header, frame);
+                        foreach (var row in rows)
+                        {
+                            var cell = GetCellsHost(row).Children.OfType<FrameworkElement>().First(c => c.Tag == column);
+                            double skew = Math.Abs(headerLeft - GetVisualLeft(cell, frame));
+                            if (skew > worstSkew)
+                            {
+                                worstSkew = skew;
+                                worst = $"header '{column.Header}' at x={headerLeft}, body cell at x={headerLeft - skew} or {headerLeft + skew}";
+                            }
+                        }
+                    }
+                });
+
+                if (worstSkew <= c_alignmentTolerance)
+                {
+                    break;
+                }
+                IdleSynchronizer.Wait();
+                global::System.Threading.Tasks.Task.Delay(50).Wait();
+            }
+
+            Log.Comment($"{context}: worst skew {worstSkew:F2} after {attempt} extra polls.");
+            RunOnUIThread.Execute(() => Verify.IsLessThanOrEqual(worstSkew, c_alignmentTolerance,
+                $"Every header cell must sit over its body cells ({context}, offset {GetBodyHorizontalOffset(tableView)}); worst: {worst ?? "none"}."));
+        }
+    }
     internal static class TableViewSizingTestHelpers
     {
         // TableViewColumn.ActualWidth's declared default (TableView.idl:145), which is also the

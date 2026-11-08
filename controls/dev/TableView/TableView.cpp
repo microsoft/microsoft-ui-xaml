@@ -930,11 +930,13 @@ try
         m_bodyScrollerViewChangedToken = {};
         m_bodyScrollerSizeChangedRevoker.revoke();
     }
+    m_headerScrollerViewChangedRevoker.revoke();
 
     // Reset resolved-on-Loaded refs so re-templating re-resolves them against the new tree.
     m_headerRow.set(nullptr);
     m_headerScroller.set(nullptr);
     m_bodyScroller.set(nullptr);
+    StopHeaderScrollAnimation();
 
     m_bodyBringIntoViewRevoker.revoke();
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
@@ -1147,6 +1149,19 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
         m_headerScroller.set(scroller);
         // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
+        if (scroller)
+        {
+            // Covers the header scroller moving by itself, which the body's ViewChanged would not report.
+            m_headerScrollerViewChangedRevoker = scroller.ViewChanged(winrt::auto_revoke,
+                [weakThis = get_weak()](winrt::IInspectable const&, winrt::ScrollViewerViewChangedEventArgs const&)
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->UpdateHeaderScrollOffset();
+                    }
+                });
+        }
+        StartHeaderScrollAnimation();
     }
 }
 
@@ -1201,6 +1216,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
             InvalidateMeasure();
             RefreshFrozenColumns();
             QueueTerminalGridLineRefresh();
+            StartHeaderScrollAnimation();
         }
     }
 }
@@ -1272,6 +1288,81 @@ void TableView::OnBodyScrollerViewChanged(
 
     // Instant tracking keeps header and body visually glued.
     headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
+    UpdateHeaderScrollOffset();
+}
+
+// PART_HeaderScroller's offset is set on the UI thread, which is what hit-testing, UIA and TransformToVisual
+// read. Touch and precision-touchpad pans move the body on the compositor first, so PART_HeaderHost.Translation
+// shifts the band there by however far the body has moved past the header's last applied offset, which is
+// 0 at rest. The header scroller has no DirectManipulation, so its offset is fed in through m_headerScrollOffset.
+void TableView::StartHeaderScrollAnimation()
+{
+    auto const headerHost = m_headerHost.get();
+    auto const headerScroller = m_headerScroller.get();
+    auto const bodyScroller = m_bodyScroller.get();
+    if (m_headerScrollOffset || !headerHost || !headerScroller || !bodyScroller || headerScroller == bodyScroller)
+    {
+        return;
+    }
+
+    // After a reload the body can sit at a different offset without having raised ViewChanged.
+    if (std::abs(headerScroller.HorizontalOffset() - bodyScroller.HorizontalOffset()) >= 0.5)
+    {
+        headerScroller.ChangeView(bodyScroller.HorizontalOffset(), nullptr, nullptr, true);
+        // ViewChanging is raised synchronously, and a handler can re-template or unload the TableView;
+        // the new parts start their own animation once they load.
+        if (m_headerScrollOffset || m_headerHost.get() != headerHost || m_headerScroller.get() != headerScroller ||
+            m_bodyScroller.get() != bodyScroller)
+        {
+            return;
+        }
+    }
+
+    try
+    {
+        auto const bodyProperties = winrt::ElementCompositionPreview::GetScrollViewerManipulationPropertySet(bodyScroller);
+        auto const compositor = bodyProperties.Compositor();
+        auto offset = compositor.CreatePropertySet();
+        offset.InsertScalar(L"X", static_cast<float>(headerScroller.HorizontalOffset()));
+        auto const animation = compositor.CreateExpressionAnimation(L"Vector3(body.Translation.X + header.X, 0, 0)");
+        animation.SetReferenceParameter(L"body", bodyProperties);
+        animation.SetReferenceParameter(L"header", offset);
+        animation.Target(L"Translation");
+        headerHost.StartAnimation(animation);
+        m_headerScrollAnimation = animation;
+        m_headerScrollOffset = offset;
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Starting the header scroll animation failed.");
+    }
+}
+
+void TableView::UpdateHeaderScrollOffset()
+{
+    if (auto const headerScroller = m_headerScroller.get(); headerScroller && m_headerScrollOffset)
+    {
+        try
+        {
+            m_headerScrollOffset.InsertScalar(L"X", static_cast<float>(headerScroller.HorizontalOffset()));
+        }
+        catch (...)
+        {
+            // The compositor can already be closed while the window shuts down.
+            StopHeaderScrollAnimation();
+        }
+    }
+}
+
+// Reverts PART_HeaderHost.Translation to its static 0 so a stale offset cannot leave the band shifted.
+void TableView::StopHeaderScrollAnimation()
+{
+    if (auto const headerHost = m_headerHost.get(); headerHost && m_headerScrollAnimation)
+    {
+        try { headerHost.StopAnimation(m_headerScrollAnimation); } catch (...) {}
+    }
+    m_headerScrollAnimation = nullptr;
+    m_headerScrollOffset = nullptr;
 }
 
 winrt::AutomationPeer TableView::OnCreateAutomationPeer()
@@ -3931,8 +4022,10 @@ void TableView::OnTableViewUnloaded()
         }
     }
     m_bodyScrollerSizeChangedRevoker.revoke();
+    m_headerScrollerViewChangedRevoker.revoke();
     m_bodyScroller.set(nullptr);
     m_headerScroller.set(nullptr);
+    StopHeaderScrollAnimation();
 
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
