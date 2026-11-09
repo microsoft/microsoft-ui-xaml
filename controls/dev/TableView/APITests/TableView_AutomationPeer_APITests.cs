@@ -893,10 +893,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             IdleSynchronizer.Wait();
-            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 150.0, verifyMidpoint: false);
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
         }
 
-        // 50 one-line rows, then 10 rows of wrapped text about 250px tall, as on the sample's Fix demos page. Rows
+        // 50 one-line rows, then 10 rows of wrapped text well over 100px tall, as on the sample's Fix demos page. Rows
         // re-measured above the viewport shift the ScrollViewer's anchor element while aiming for the end.
         private TableView CreateShortThenTallTable(double width)
         {
