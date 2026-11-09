@@ -261,7 +261,7 @@ void ShapedItemsSource::SetSort(
     winrt::hstring const& previousAxisToken,
     winrt::hstring const& axisToken,
     ShapingHelpers::KeySelector const& key,
-    winrt::Windows::Foundation::IUnknown const& keyIdentity,
+    void const* keyIdentity,
     winrt::hstring const& sortMemberPath,
     winrt::SortDirection direction)
 {
@@ -450,7 +450,12 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
     auto weakThis = weak_from_this();
     auto applyVectorChange = [weakThis](auto&&, auto&& args)
     {
-        if (auto strongThis = weakThis.lock())
+        auto const strongThis = weakThis.lock();
+        if (!strongThis || strongThis->IsObsolete())
+        {
+            return;
+        }
+        try
         {
             if (auto vectorArgs = TryAsVectorChangedArgs(args))
             {
@@ -459,6 +464,14 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
             else
             {
                 strongThis->OnSourceCollectionChanged();
+            }
+        }
+        catch (...)
+        {
+            // Obsolete mid-pass: the failure belongs to work nobody will see, not to the app's call.
+            if (!strongThis->IsObsolete())
+            {
+                throw;
             }
         }
     };
@@ -470,9 +483,21 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
         m_sourceCollectionChangedRevoker = collection.CollectionChanged(winrt::auto_revoke,
             [weakThis](auto&&, winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
             {
-                if (auto strongThis = weakThis.lock())
+                auto const strongThis = weakThis.lock();
+                if (!strongThis || strongThis->IsObsolete())
+                {
+                    return;
+                }
+                try
                 {
                     strongThis->OnSourceCollectionChanged(args);
+                }
+                catch (...)
+                {
+                    if (!strongThis->IsObsolete())
+                    {
+                        throw;
+                    }
                 }
             });
     }
