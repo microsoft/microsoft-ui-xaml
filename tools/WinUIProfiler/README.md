@@ -950,7 +950,9 @@ the UI elements and composition visuals the events mention. Its MCP server,
 `WinUIProfiler.Mcp`, reads session files with `SessionFile` and the views
 above, where they are and without changing them, even while the app is still
 recording one. It never returns the events' field values. It can also read a
-recorded trace (`.etl`) into a session file, as **Open trace** does.
+recorded trace (`.etl`) into a session file, as **Open trace** does, with the
+providers of the marker configuration (see
+[Marker configuration](#marker-configuration)).
 
 To install it from a clone, run from this directory:
 
@@ -975,17 +977,20 @@ that no session has started for 30 days.
 | Tool | Views | What they answer |
 | --- | --- | --- |
 | `sessions` | `list`, `summary` | Which session files there are; what one holds, and which tools have data in it |
-| `record_trace` | | Reads one process's events from a recorded trace into a session file, or returns the session file it read them into before, if the trace hasn't changed since |
+| `record_trace` | | Reads one process's events from a recorded trace into a session file, or returns the session file it read them into before, if the trace and the marker configuration's providers haven't changed since |
 | `launch` | `milestones`, `frames` | How the launch went, from `LaunchSummary`, `InterestingRows` and `Ticks`, and how soon the first frames drew |
 | `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
 | `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
 
 Beside each session file that `record_trace` reads to the trace's end, it
-keeps `<session file>.trace.json`: the trace's size and a SHA-256 of its first
-and last MiB. It returns that session file again only while the trace still
-matches, so a trace copied over the one it read is read again, even when the
-copy keeps an older time. It doesn't reuse the app's session files, which have
-no such record.
+keeps `<session file>.trace.json`: the trace's size, a SHA-256 of its first
+and last MiB, and the marker providers it read. It returns that session file
+again only while the trace still matches and the marker configuration has the
+same providers, so a trace copied over the one it read is read again, even
+when the copy keeps an older time, and so is a trace read before a provider
+was added. It doesn't reuse the app's session files, which have no such
+record. As in the app, when `%LOCALAPPDATA%\WinUIProfiler\markers.json` isn't
+valid, it reads the default configuration's providers, and a note says why.
 
 Two skills tell Copilot how to use the tools. Copilot reads
 `winui-profiler-analysis` for questions about a WinUI app's performance.
@@ -1028,7 +1033,10 @@ been written to for 30 days. The self-tests don't write to it.
 The plugin answers only what a processor stores. It doesn't answer questions
 about the events' field values, GPU memory, CPU samples, call stacks, thread
 waits or the XAML and composition trees; tools for them come with the
-processors that store them.
+processors that store them. Its `launch` milestones are its own, from
+`LaunchSummary`, `InterestingRows` and `Ticks`, not the Launch tab's: it
+doesn't give the marker configuration's milestones, such as an app's own
+markers, or the launcher's.
 
 Run the server's checks from this directory:
 

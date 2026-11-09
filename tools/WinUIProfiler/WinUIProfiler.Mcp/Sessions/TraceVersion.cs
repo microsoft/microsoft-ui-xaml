@@ -14,8 +14,10 @@ namespace WinUIProfiler.Mcp.Sessions;
 /// </summary>
 /// <remarks>
 /// record_trace keeps the version it read beside each session file it reads to the trace's end, in
-/// &lt;session file&gt;.trace.json, and reuses that session only while the trace is still that version. The trace's time
-/// can't tell: a trace copied over another keeps its own time, which can be older than the session file.
+/// &lt;session file&gt;.trace.json, with the marker providers it read (see <see cref="TraceMarkers"/>), and reuses that
+/// session only while the trace is still that version and the providers are the same. The trace's time can't tell: a
+/// trace copied over another keeps its own time, which can be older than the session file. A record without the
+/// providers, kept before they were read, doesn't match, so its session, which holds no marker events, is read again.
 /// </remarks>
 internal sealed record TraceVersion(long Bytes, string Sha256)
 {
@@ -48,9 +50,9 @@ internal sealed record TraceVersion(long Bytes, string Sha256)
 
     /// <summary>
     /// The version of the trace a session file was read from, as the record beside it says; null when there's no record
-    /// of that session and trace.
+    /// of that session and trace, or the session was read with other marker providers.
     /// </summary>
-    internal static TraceVersion? Recorded(string sessionPath, SessionFileInfo info, string trace)
+    internal static TraceVersion? Recorded(string sessionPath, SessionFileInfo info, string trace, TraceMarkers markers)
     {
         Record? record;
         try
@@ -62,23 +64,24 @@ internal sealed record TraceVersion(long Bytes, string Sha256)
             return null;
         }
 
-        return record is { Sha256OfFirstAndLastMiB: { } sha256 } && record.SessionStartedUtc == info.StartedUtc &&
-            string.Equals(record.Trace, trace, StringComparison.OrdinalIgnoreCase)
+        return record is { Sha256OfFirstAndLastMiB: { } sha256, MarkerProviders: { } providers } &&
+            record.SessionStartedUtc == info.StartedUtc && string.Equals(record.Trace, trace, StringComparison.OrdinalIgnoreCase) &&
+            providers.SequenceEqual(markers.Key, StringComparer.Ordinal)
             ? new(record.Bytes, sha256)
             : null;
     }
 
     /// <summary>
-    /// Records beside a session file that it was read from this version of the trace. The record names the session by
-    /// when it started, so a record left beside an earlier session file of the same name isn't taken for the new one's. A
-    /// record that can't be written only means the session isn't reused.
+    /// Records beside a session file that it was read from this version of the trace, with these marker providers. The
+    /// record names the session by when it started, so a record left beside an earlier session file of the same name isn't
+    /// taken for the new one's. A record that can't be written only means the session isn't reused.
     /// </summary>
-    internal void Keep(string sessionPath, SessionFileInfo info, string trace)
+    internal void Keep(string sessionPath, SessionFileInfo info, string trace, TraceMarkers markers)
     {
         try
         {
             File.WriteAllText(sessionPath + RecordSuffix,
-                JsonSerializer.Serialize(new Record(trace, Bytes, Sha256, info.StartedUtc), RecordOptions));
+                JsonSerializer.Serialize(new Record(trace, Bytes, Sha256, info.StartedUtc, markers.Key), RecordOptions));
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
@@ -86,6 +89,7 @@ internal sealed record TraceVersion(long Bytes, string Sha256)
         }
     }
 
-    // What <session file>.trace.json holds.
-    private sealed record Record(string? Trace, long Bytes, string? Sha256OfFirstAndLastMiB, DateTime SessionStartedUtc);
+    // What <session file>.trace.json holds. MarkerProviders is TraceMarkers.Key.
+    private sealed record Record(string? Trace, long Bytes, string? Sha256OfFirstAndLastMiB, DateTime SessionStartedUtc,
+        IReadOnlyList<string>? MarkerProviders);
 }

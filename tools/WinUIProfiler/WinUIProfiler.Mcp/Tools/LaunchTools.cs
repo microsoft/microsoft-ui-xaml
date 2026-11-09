@@ -21,15 +21,16 @@ internal static class LaunchTools
 
     [McpServerTool(Name = "launch", ReadOnly = true, Idempotent = true, OpenWorld = false), Description(
         "Answers questions about how a session's launch went, from what the WinUI Profiler app's frame processor stored. " +
-        "Views: \"milestones\" (the default): in time order, when the process was created (for a launch recorded from " +
-        "process start), when the recording started, the first UI-thread tick, the first of each PerfXamlEvent operation " +
+        "Views: \"milestones\" (the default): in time order, when the process was created (when known), " +
+        "when the recording started (not for a trace), the first UI-thread tick, the first of each PerfXamlEvent operation " +
         "(such as WXM::InitializeForCurrentThread, WinUI initializing on a thread) with its duration and count, graphics " +
         "device creation, the first UpdateLayout pass in a region of interest, the first navigation and window focus " +
         "change, the first region of interest and the first frame drawn. \"frames\": when each of the first ten ticks that " +
-        "drew on the first UI thread ended, from the process's creation for a launch recorded from process start, else " +
-        "from the start of the recording; with the time since the previous one and each tick's own duration. Times are in " +
-        "ms (see the session's timeBase); msFromProcessStart is given for a session recorded from process start, when it " +
-        "knows when the process was created.")]
+        "drew on the first UI thread ended, from the process's creation when known, else from the start of the recording " +
+        "(for a trace, the process's first event in it); with the time since the previous one and each tick's own " +
+        "duration. The process's creation is known for a launch recorded from process start and for a trace with the " +
+        "kernel's process events; a session that connected to the running process doesn't use it. Times are in ms (see " +
+        "the session's timeBase); msFromProcessStart is given when the creation is known.")]
     public static Task<object> Launch(
         [Description("\"milestones\" or \"frames\". Omit it for the milestones.")] string? view = null,
         [Description(SessionCatalog.SessionPathDescription)] string? sessionPath = null,
@@ -169,7 +170,9 @@ internal static class LaunchTools
         IReadOnlyList<LaunchFrame> launch, IReadOnlyList<SessionFrame> ticks, IReadOnlyList<InterestingRow> rows)
     {
         var launchTicks = LaunchTicks(launch, ticks);
-        var processStart = info.Coverage == SessionCoverage.ProcessStart ? info.ProcessStartMilliseconds : null;
+
+        // As the LaunchSummary view: a recording that connected to the running process doesn't measure from its creation.
+        var processStart = info.Coverage == SessionCoverage.Connection ? null : info.ProcessStartMilliseconds;
         var milestones = new List<(string Milestone, double Ms, int Order, object Item)>();
 
         void Add(string milestone, double ms, int? threadId = null, double? durationMs = null, string? name = null,
@@ -293,14 +296,13 @@ internal static class LaunchTools
             notes.Add("These are the first frames drawn after the profiler connected, not the launch's.");
         }
 
-        if (SessionCatalog.IsTrace(info))
+        if (info.Coverage != SessionCoverage.Connection && info.ProcessStartMilliseconds is null)
         {
-            notes.Add("A trace doesn't say when the process was created, so launch times count from the process's first " +
-                "event in the trace, not from its creation.");
-        }
-        else if (info.Coverage == SessionCoverage.ProcessStart && info.ProcessStartMilliseconds is null)
-        {
-            notes.Add("When the process was created isn't known, so launch times count from the start of the recording.");
+            notes.Add(SessionCatalog.IsTrace(info)
+                ? "The trace doesn't say when the process was created (only a trace that recorded the kernel's process " +
+                    "events when the process started does), so launch times count from the process's first event in the " +
+                    "trace, not from its creation."
+                : "When the process was created isn't known, so launch times count from the start of the recording.");
         }
 
         return notes;

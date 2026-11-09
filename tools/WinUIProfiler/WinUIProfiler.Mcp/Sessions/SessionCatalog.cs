@@ -265,23 +265,24 @@ internal static class SessionCatalog
         timeBase = TimeBase(info),
     };
 
-    /// <summary>What the times in a session's results count from.</summary>
+    /// <summary>
+    /// What the times in a session's results count from. A trace's count from the process's first event in it, and say
+    /// when the process was created only when the trace has the kernel's event for it.
+    /// </summary>
     internal static string TimeBase(SessionFileInfo info)
     {
-        if (IsTrace(info))
-        {
-            return "Milliseconds from the first of the process's events in the trace; the trace doesn't say when the process was created.";
-        }
-
+        var origin = IsTrace(info)
+            ? "Milliseconds from the first of the process's events in the trace"
+            : "Milliseconds from the start of the recording";
         if (info.ProcessStartMilliseconds is { } start)
         {
             var distance = Math.Abs(start).ToString("0.###", CultureInfo.InvariantCulture);
-            return start >= 0
-                ? $"Milliseconds from the start of the recording; the process was created {distance} ms after it."
-                : $"Milliseconds from the start of the recording; the process was created {distance} ms before it.";
+            return $"{origin}; the process was created {distance} ms {(start >= 0 ? "after" : "before")} it.";
         }
 
-        return "Milliseconds from the start of the recording; when the process was created isn't known.";
+        return IsTrace(info)
+            ? $"{origin}; the trace doesn't say when the process was created."
+            : $"{origin}; when the process was created isn't known.";
     }
 
     /// <summary>

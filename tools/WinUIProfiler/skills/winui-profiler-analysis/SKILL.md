@@ -63,7 +63,11 @@ say so and don't estimate them from other data:
 - the events' field values, and counts of raw events by provider;
 - GPU memory, CPU samples and call stacks, context switches and thread waits;
 - the XAML and composition trees;
-- app-defined markers, and other processes.
+- the Launch tab's milestones from the marker configuration, such as an app's
+  own markers (a marker event fired on a UI thread shows only among the
+  events of the tick it fired in, in the Other bucket, under its provider's
+  name; one fired on another thread doesn't show);
+- other processes, such as the one that launched the app.
 
 More answers come as the app gets processors for them.
 
@@ -203,10 +207,10 @@ Rules:
 ## Times
 
 - Times are in milliseconds, from the origin `session.timeBase` gives: for a
-  live session, the start of the recording, and when the process was created
-  relative to it, if that's known; for a trace, the first of the process's
-  events in the trace, because a trace doesn't say when the process was
-  created.
+  live session, the start of the recording; for a trace, the first of the
+  process's events in the trace. It also says when the process was created,
+  relative to that origin, when the session knows: a trace says so only when
+  it has the kernel's process events, as a WPR trace has.
 - For a session read from a trace, `startedUtc` and `endedUtc` are when the
   trace was read into the session file, not when it was recorded, and the time
   between them is how long the reading took. The file doesn't say when the
@@ -215,19 +219,20 @@ Rules:
   first tick started (`firstStartMs`) and when its last finished tick ended
   (`lastEndMs`). For a session recorded live, the time from `startedUtc` to
   `endedUtc` is how long the recording ran. A trace's own length isn't stored.
-- `launch` also gives `msFromProcessStart` for a session recorded from process
-  start, when it knows when the process was created; `measuredFrom` says what
-  its frames count from.
+- `launch` also gives `msFromProcessStart` when the session knows when the
+  process was created, unless it starts at the connection; `measuredFrom` says
+  what its frames count from.
 
 ## Builds
 
 - Ticks, regions and launch come from Microsoft-Windows-XAML, whatever the
   WinUI build.
-- WinUI writes most Microsoft-Windows-XAML-Profiler events only in builds with
-  the profiler compiled in (`XamlProfilerEnabled`, which WinUI's own build sets
-  for Debug builds only). They include every composition visual event, so a
-  session of another build has no visuals; its elements come from the
-  Microsoft-Windows-XAML events that name them.
+- Current WinUI builds write the Microsoft-Windows-XAML-Profiler events,
+  including every composition visual event, whenever a session enables the
+  provider. Older builds wrote most of them only with the profiler compiled in
+  (`XamlProfilerEnabled`, which WinUI's own build set for Debug builds only),
+  so a session of an older Release build has no visuals; its elements come
+  from the Microsoft-Windows-XAML events that name them.
 
 ## Limits
 

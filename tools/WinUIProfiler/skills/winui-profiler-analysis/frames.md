@@ -79,24 +79,27 @@ bucket's. Events' field values aren't shown.
 
 ### `milestones` (the default)
 
-In time order: when the process was created (for a session recorded from
-process start), when the recording started (not for a trace), the first tick,
-the first of each PerfXamlEvent operation (such as WinUI initializing on a
-thread) with its duration and count, graphics device creation, the first
-UpdateLayout pass in a region, the first navigation and focus change, the
-first region and the first frame drawn. Each has `ms`, and, for a session
-recorded from process start, `msFromProcessStart` when the process's creation
-is known.
+In time order: when the process was created (when known), when the
+recording started (not for a trace), the first tick, the first of each
+PerfXamlEvent operation (such as WinUI initializing on a thread) with its
+duration and count, graphics device creation, the first UpdateLayout pass in
+a region, the first navigation and focus change, the first region and the
+first frame drawn. Each has `ms`, and `msFromProcessStart` when the process's
+creation is known.
 
 ### `frames`
 
 The first ten ticks that drew on the first UI thread: when each ended, from
-the process's creation for a session recorded from process start, else from
-the start of the recording (`measuredFrom` says which); the time since the
-previous one; and each tick's own start, end and duration.
+the process's creation when it is known, else from the start of the
+recording (`measuredFrom` says which); the time since the previous one; and
+each tick's own start, end and duration.
 
-A session that starts at the connection misses most of the launch, and a
-trace doesn't say when the process was created; the notes say so.
+The process's creation is known for a launch recorded from process start,
+and for a trace with the kernel's process events, as a WPR trace has; a
+trace's times count from the process's first event in it. A session that
+starts at the connection misses most of the launch and doesn't measure from
+the creation, and a trace without those events doesn't say when the process
+was created; the notes say so.
 
 ## Recipes
 
@@ -125,5 +128,5 @@ tick's state isn't proof of what reached the screen.
 2. `launch`, view `frames`: how soon the first ten frames drew, and how long
    each drawing tick took.
 
-Only a session recorded from process start measures from the process's
-creation.
+Only a launch recorded from process start, or a trace with the kernel's
+process events, measures from the process's creation.

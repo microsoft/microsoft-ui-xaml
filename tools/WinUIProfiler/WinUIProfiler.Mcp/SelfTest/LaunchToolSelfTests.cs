@@ -115,22 +115,57 @@ internal static class LaunchToolSelfTests
 
     private static void Coverage(SelfTestContext context)
     {
+        var etl = Path.Combine(context.TempDirectory, "fixture.etl");
         var trace = Write(Path.Combine(context.TempDirectory, "trace.sqlite"), MainEvents, coverage: SessionCoverage.Trace,
-            etlPath: Path.Combine(context.TempDirectory, "fixture.etl"));
+            etlPath: etl);
         var fromTrace = Run(() => LaunchTools.Launch(sessionPath: trace));
         Expect.Equal("FirstTickStarted,FirstFrameDrawn",
             string.Join(",", fromTrace.Items("milestones").Select(item => item.Text("milestone"))),
-            "A trace's milestones: it doesn't say when the process was created or when a recording started.");
-        HasNote(fromTrace, "A trace doesn't say when the process was created");
+            "The milestones of a trace without the kernel's process events: it doesn't say when the process was created, " +
+            "and a trace has no recording start.");
+        HasNote(fromTrace, "The trace doesn't say when the process was created");
+        Contains(fromTrace.Property("session").Text("timeBase"), "The time base of a trace that doesn't say when the process " +
+            "was created", "the first of the process's events in the trace; the trace doesn't say when the process was created.");
         Expect.Equal("RecordingStart", Run(() => LaunchTools.Launch(view: "frames", sessionPath: trace)).Text("measuredFrom"),
             "A trace's launch times");
         ExpectSummaryAgrees(trace, "A trace");
+
+        // A trace with the kernel's process events says when the process was created: here, 30 ms before its first event.
+        var started = Write(Path.Combine(context.TempDirectory, "trace-started.sqlite"), MainEvents,
+            coverage: SessionCoverage.Trace, etlPath: etl, processStartMs: -30);
+        var fromStart = Run(() => LaunchTools.Launch(sessionPath: started));
+        var milestones = fromStart.Items("milestones");
+        Expect.Equal("ProcessCreated,FirstTickStarted,FirstFrameDrawn",
+            string.Join(",", milestones.Select(item => item.Text("milestone"))),
+            "The milestones of a trace with the kernel's process events");
+        var created = milestones.Single(item => item.Text("milestone") == "ProcessCreated");
+        Expect.Equal(-30.0, created.Double("ms"), "When the process was created, from the trace's first event");
+        Expect.Equal(0.0, created.Double("msFromProcessStart"), "When the process was created, from its creation");
+        var drawn = milestones.Single(item => item.Text("milestone") == "FirstFrameDrawn");
+        Expect.Equal(4.0, drawn.Double("ms"), "When the first frame was drawn, from the trace's first event");
+        Expect.Equal(34.0, drawn.Double("msFromProcessStart"), "When the first frame was drawn, from the process's creation");
+        LacksNote(fromStart, "say when the process was created");
+        Contains(fromStart.Property("session").Text("timeBase"), "The time base of a trace that says when the process was " +
+            "created", "the first of the process's events in the trace; the process was created 30 ms before it.");
+        var startedFrames = Run(() => LaunchTools.Launch(view: "frames", sessionPath: started));
+        Expect.Equal("ProcessStart", startedFrames.Text("measuredFrom"), "Launch times of a trace that says when the process " +
+            "was created");
+        Expect.Equal(34.0, startedFrames.Items("frames")[0].Double("ms"), "Frame 1's end, from the process's creation");
+        var startedSummary = Run(() => SessionTools.Sessions(sessionPath: started));
+        Expect.Equal(-30.0, startedSummary.Double("processStartMs"), "The summary's process creation");
+        Expect.Equal(34.0, startedSummary.Property("firstFrame").Double("ms"), "The summary's first frame");
+        ExpectSummaryAgrees(started, "A trace that says when the process was created");
 
         var connection = Write(Path.Combine(context.TempDirectory, "connection.sqlite"), MainEvents,
             coverage: SessionCoverage.Connection);
         var connected = Run(() => LaunchTools.Launch(view: "frames", sessionPath: connection));
         Expect.Equal("RecordingStart", connected.Text("measuredFrom"), "Launch times of a session from the connection");
         HasNote(connected, "These are the first frames drawn after the profiler connected, not the launch's.");
+        Contains(connected.Property("session").Text("timeBase"), "The time base of a session from the connection",
+            "the process was created");
+        Expect.True(Run(() => LaunchTools.Launch(sessionPath: connection)).Items("milestones")
+                .All(item => item.Text("milestone") != "ProcessCreated" && item.IsNull("msFromProcessStart")),
+            "A session from the connection knows when the process was created, but its launch doesn't count from it.");
         ExpectSummaryAgrees(connection, "A session from the connection");
 
         var empty = Write(Path.Combine(context.TempDirectory, "empty.sqlite"), []);

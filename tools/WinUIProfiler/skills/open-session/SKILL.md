@@ -26,8 +26,8 @@ command: a session file (`.sqlite`), a folder of them, a recorded trace
      name, events, first and last time), ask the user which one, and call
      `record_trace` again with `processId`.
    - It reuses a session it already read from the same trace and process,
-     unless the trace has changed since. Pass `reread: true` only if the user
-     asks to read the trace again.
+     with the same marker providers, unless the trace has changed since. Pass
+     `reread: true` only if the user asks to read the trace again.
    - Then call `sessions` with view `summary` and the returned
      `session.sessionPath`.
 3. **A folder:** call `sessions` with view `list` and `folder`, show the

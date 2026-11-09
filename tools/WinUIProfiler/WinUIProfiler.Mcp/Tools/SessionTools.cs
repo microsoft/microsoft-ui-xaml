@@ -202,10 +202,12 @@ internal static class SessionTools
 
     [McpServerTool(Name = "record_trace", ReadOnly = false, Destructive = false, Idempotent = false, OpenWorld = false), Description(
         "Reads one process's events from a recorded trace (.etl) into a new session file, as the WinUI Profiler app's " +
-        "\"Recorded trace (.etl)\" mode does, so the other tools can read it. A session file holds one process: when the " +
-        "trace has XAML events from several, pass processId, or the tool asks (when the client supports it) or lists them. " +
-        "A finished session file this tool read from the same process of the same trace is reused while the trace is " +
-        "unchanged, unless reread is true. Returns the session file's path.")]
+        "\"Recorded trace (.etl)\" mode does, so the other tools can read it: the XAML providers' events, and those of the " +
+        "marker configuration's providers, the user's (%LOCALAPPDATA%\\WinUIProfiler\\markers.json) when it exists and is " +
+        "valid, else the default's. A session file holds one process: when the trace has XAML events from several, pass " +
+        "processId, or the tool asks (when the client supports it) or lists them. A finished session file this tool read " +
+        "from the same process of the same trace, with the same marker providers, is reused while the trace is unchanged, " +
+        "unless reread is true. Returns the session file's path.")]
     public static Task<object> RecordTrace(
         McpServer server,
         IProgress<ProgressNotificationValue> progress,
@@ -220,16 +222,16 @@ internal static class SessionTools
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(server);
-        return RecordTraceCore(etlPath, processId, folder, reread,
+        return RecordTraceCore(etlPath, processId, folder, reread, TraceMarkers.Load(),
             (processes, message, token) => ChooseProcessAsync(server, processes, message, token), progress, cancellationToken);
     }
 
     /// <summary>
-    /// record_trace without the server: choose asks the client for a process, or returns null when it can't, and progress
-    /// may be null.
+    /// record_trace without the server: markers are the marker providers to read, choose asks the client for a process, or
+    /// returns null when it can't, and progress may be null.
     /// </summary>
     internal static async Task<object> RecordTraceCore(string etlPath, int? processId, string? folder, bool reread,
-        Func<IReadOnlyList<TraceProcess>, string, CancellationToken, Task<int?>>? choose,
+        TraceMarkers markers, Func<IReadOnlyList<TraceProcess>, string, CancellationToken, Task<int?>>? choose,
         IProgress<ProgressNotificationValue>? progress, CancellationToken cancellationToken)
     {
         // Started in this flow, so the reads of the Task.Runs below report to it.
@@ -247,9 +249,9 @@ internal static class SessionTools
         }
 
         if (processId is { } wanted && !reread &&
-            await Task.Run(() => FindFinishedSession(directory, trace, wanted), cancellationToken).ConfigureAwait(false) is { } found)
+            await Task.Run(() => FindFinishedSession(directory, trace, wanted, markers), cancellationToken).ConfigureAwait(false) is { } found)
         {
-            return trail.Finish(Reused(found, trace, wanted));
+            return trail.Finish(Reused(found, trace, wanted, markers));
         }
 
         var contents = await Task.Run(() => ListProcesses(trace, cancellationToken), cancellationToken).ConfigureAwait(false);
@@ -295,14 +297,14 @@ internal static class SessionTools
         }
 
         if (processId is null && !reread &&
-            await Task.Run(() => FindFinishedSession(directory, trace, chosen.ProcessId), cancellationToken).ConfigureAwait(false) is { } existing)
+            await Task.Run(() => FindFinishedSession(directory, trace, chosen.ProcessId, markers), cancellationToken).ConfigureAwait(false) is { } existing)
         {
-            return trail.Finish(Reused(existing, trace, chosen.ProcessId));
+            return trail.Finish(Reused(existing, trace, chosen.ProcessId, markers));
         }
 
         // Taken again after the read, so a trace that changed while it was read isn't recorded as read.
         var version = await Task.Run(() => TraceVersion.Read(trace), cancellationToken).ConfigureAwait(false);
-        var replay = await Task.Run(() => StartReplay(trace, chosen, directory), cancellationToken).ConfigureAwait(false);
+        var replay = await Task.Run(() => StartReplay(trace, chosen, directory, markers), cancellationToken).ConfigureAwait(false);
         TraceReplayStatus status;
         string sessionPath;
         string? failure;
@@ -377,10 +379,10 @@ internal static class SessionTools
         var info = SessionCatalog.Read(sessionPath, () => SessionFile.ReadInfo(sessionPath));
         if (status.State == TraceReplayState.Finished && version is not null && version == TraceVersion.Read(trace))
         {
-            version.Keep(sessionPath, info, trace);
+            version.Keep(sessionPath, info, trace, markers);
         }
 
-        var notes = new List<string>(SessionCatalog.Notes(info));
+        var notes = TraceNotes(info, markers);
         if (status.OutOfOrderEvents > 0)
         {
             notes.Add((status.OutOfOrderEvents == 1
@@ -407,11 +409,14 @@ internal static class SessionTools
         // Without reread, a session file to reuse was looked for first, by FindFinishedSession: before the processes were
         // listed when processId was given, and after one was chosen when it wasn't.
         var computed = string.Create(CultureInfo.InvariantCulture,
-            $"Listed the trace's processes that have XAML events and read process {chosen.ProcessId}'s events from the " +
-            $"trace with ETW, into a new session file (those writes aren't listed); then read the new file's session record.") +
+            $"Listed the trace's processes that have XAML events and read process {chosen.ProcessId}'s events of the XAML " +
+            $"providers and the marker configuration's {EventJson.Count(markers.Providers.Count, "provider", "providers")} " +
+            $"from the trace with ETW, into a new session file (those writes aren't listed); then read the new file's session " +
+            $"record.") +
             (reread ? "" : string.Create(CultureInfo.InvariantCulture,
                 $" Before reading the events, looked among the folder's closed session files named for process " +
-                $"{chosen.ProcessId} for one read from this unchanged trace to reuse, and found none."));
+                $"{chosen.ProcessId} for one read from this unchanged trace with the same marker providers to reuse, and " +
+                $"found none."));
         return trail.Finish(new(new
         {
             session = SessionCatalog.Header(sessionPath, info),
@@ -430,11 +435,11 @@ internal static class SessionTools
     }
 
     /// <summary>
-    /// A session file record_trace read from the same process of this version of the trace (see
-    /// <see cref="TraceVersion"/>), read to the trace's end and closed since the trace was last written; null when there's
-    /// none. The app keeps no record of the version it read, so its session files aren't reused.
+    /// A session file record_trace read from the same process of this version of the trace, with these marker providers
+    /// (see <see cref="TraceVersion"/>), read to the trace's end and closed since the trace was last written; null when
+    /// there's none. The app keeps no record of the version it read, so its session files aren't reused.
     /// </summary>
-    internal static string? FindFinishedSession(string directory, string trace, int processId)
+    internal static string? FindFinishedSession(string directory, string trace, int processId, TraceMarkers markers)
     {
         DateTime traceWritten;
         try
@@ -464,7 +469,7 @@ internal static class SessionTools
                 var info = SessionFile.ReadInfo(file.Path);
                 if (SessionCatalog.IsTrace(info) && info.ProcessId == processId && info.EndReason == SessionCatalog.EndOfTrace &&
                     string.Equals(info.EtlPath, trace, StringComparison.OrdinalIgnoreCase) &&
-                    TraceVersion.Recorded(file.Path, info, trace) is { } recorded && recorded == version.Value)
+                    TraceVersion.Recorded(file.Path, info, trace, markers) is { } recorded && recorded == version.Value)
                 {
                     return file.Path;
                 }
@@ -545,7 +550,7 @@ internal static class SessionTools
         label = Label(process),
     };
 
-    private static ToolAnswer Reused(string sessionPath, string trace, int processId)
+    private static ToolAnswer Reused(string sessionPath, string trace, int processId, TraceMarkers markers)
     {
         var info = SessionCatalog.Read(sessionPath, () => SessionFile.ReadInfo(sessionPath));
         return new(new
@@ -554,13 +559,27 @@ internal static class SessionTools
             reused = true,
             state = TraceReplayState.Finished.ToString(),
             storedEvents = info.StoredEvents,
-            message = $"{sessionPath} already holds this process's events from {trace}, read to the trace's end, and the " +
-                "trace hasn't changed since, so it was reused. Pass reread=true to read the trace again into a new session file.",
-            notes = SessionCatalog.Notes(info),
+            message = $"{sessionPath} already holds this process's events from {trace}, read to the trace's end with the same " +
+                "marker providers, and the trace hasn't changed since, so it was reused. Pass reread=true to read the trace " +
+                "again into a new session file.",
+            notes = TraceNotes(info, markers),
         }, string.Create(CultureInfo.InvariantCulture,
             $"Read the session records of the folder's closed session files named for process {processId} and written since " +
-            $"the trace was, newest first, until one had been read from this trace to its end and the trace hadn't changed " +
-            $"since. Reused that file instead of reading the trace again, and read its session record."));
+            $"the trace was, newest first, until one had been read from this trace to its end with the same marker providers " +
+            $"and the trace hadn't changed since. Reused that file instead of reading the trace again, and read its session " +
+            $"record."));
+    }
+
+    /// <summary>A trace's session's notes, and why the default marker providers were read, when the user's weren't.</summary>
+    private static List<string> TraceNotes(SessionFileInfo info, TraceMarkers markers)
+    {
+        var notes = new List<string>(SessionCatalog.Notes(info));
+        if (markers.Note is { } note)
+        {
+            notes.Add(note);
+        }
+
+        return notes;
     }
 
     private static string TracePath(string etlPath)
@@ -611,11 +630,11 @@ internal static class SessionTools
         }
     }
 
-    private static TraceReplay StartReplay(string trace, TraceProcess process, string directory)
+    private static TraceReplay StartReplay(string trace, TraceProcess process, string directory, TraceMarkers markers)
     {
         try
         {
-            return TraceReplay.Start(trace, process.ProcessId, process.Name, directory);
+            return TraceReplay.Start(trace, process.ProcessId, process.Name, directory, markers: markers.Providers);
         }
         catch (FileNotFoundException error)
         {

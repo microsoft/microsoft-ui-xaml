@@ -104,12 +104,16 @@ internal static class SessionFixtures
         Manifest(ms, DiagnosticsThread, XamlProvider.XamlDiagnostics, "PropertyChanged", 0, F("ElementId", 0x2000L),
             F("ParentId", 0x1000L));
 
-    /// <summary>Writes a finished session file of the fixture process.</summary>
+    /// <summary>
+    /// Writes a finished session file of the fixture process. For a trace, processStartMs is when the process was created,
+    /// in ms from the start of the recording, as the kernel's process start event in a trace gives it; null when the trace
+    /// has no such event.
+    /// </summary>
     internal static string Write(string path, IEnumerable<FixtureEvent> events, string endReason = EndReason,
         SessionCoverage coverage = SessionCoverage.ProcessStart, int? lostByEtw = null, long? droppedByProfiler = null,
-        string? etlPath = null)
+        string? etlPath = null, double? processStartMs = null)
     {
-        using var recording = new FixtureRecording(path, coverage, etlPath);
+        using var recording = new FixtureRecording(path, coverage, etlPath, processStartMs);
         recording.Add(events);
         recording.Close(endReason, lostByEtw, droppedByProfiler);
         return path;
@@ -152,13 +156,19 @@ internal sealed class FixtureRecording : IDisposable
     private readonly long startQpc;
     private long sequence;
 
-    internal FixtureRecording(string path, SessionCoverage coverage = SessionCoverage.ProcessStart, string? etlPath = null)
+    internal FixtureRecording(string path, SessionCoverage coverage = SessionCoverage.ProcessStart, string? etlPath = null,
+        double? processStartMs = null)
     {
         // A recording from process start knows when the process was created: here, just before the recording started.
         DateTime? created = coverage == SessionCoverage.Trace ? null : DateTime.UtcNow.AddMilliseconds(-50);
         startQpc = Stopwatch.GetTimestamp();
         Writer = SessionWriter.Create(path, new SessionStart(SessionFixtures.ProcessId, SessionFixtures.ProcessName, created,
             Stopwatch.Frequency, startQpc, coverage, etlPath));
+        if (processStartMs is { } ms)
+        {
+            // As a trace's reader stores it, with the process that created this one.
+            Writer.SetProcessStart(new TraceProcessStart(Qpc(ms), SessionFixtures.ProcessName, 4100, "explorer"));
+        }
     }
 
     internal SessionWriter Writer { get; }
@@ -169,9 +179,8 @@ internal sealed class FixtureRecording : IDisposable
     {
         foreach (var item in events)
         {
-            var qpc = startQpc + (long)Math.Round(item.Milliseconds * Stopwatch.Frequency / 1000.0);
-            Writer.Process(++sequence, new ProfilerEvent(qpc, item.Milliseconds, SessionFixtures.ProcessId, item.ThreadId,
-                item.Provider, item.TraceLogging, item.Name, item.Opcode, item.Fields, item.Marker));
+            Writer.Process(++sequence, new ProfilerEvent(Qpc(item.Milliseconds), item.Milliseconds, SessionFixtures.ProcessId,
+                item.ThreadId, item.Provider, item.TraceLogging, item.Name, item.Opcode, item.Fields, item.Marker));
         }
     }
 
@@ -207,4 +216,7 @@ internal sealed class FixtureRecording : IDisposable
     }
 
     public void Dispose() => Writer.Dispose();
+
+    // On the events' clock: QPC ticks from the start of the recording.
+    private long Qpc(double ms) => startQpc + (long)Math.Round(ms * Stopwatch.Frequency / 1000.0);
 }

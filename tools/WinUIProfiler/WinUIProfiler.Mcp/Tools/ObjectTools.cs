@@ -22,8 +22,8 @@ internal static class ObjectTools
         "provider's events; visuals come only from the XAML-Profiler provider's visual and visual surface events.";
 
     internal const string NoVisuals = "No event in the session mentions a Composition visual. Visuals come only from the " +
-        "XAML-Profiler provider's visual and visual surface events, and most of those need a WinUI build with " +
-        "XamlProfilerEnabled, such as a Debug build from main.";
+        "XAML-Profiler provider's visual and visual surface events. Current WinUI builds write them whenever a session " +
+        "enables the provider; older builds wrote most of them only when built with XamlProfilerEnabled, such as a Debug build.";
 
     internal const string NoElements = "No event in the session mentions a UI element. Elements come from " +
         "Microsoft-Windows-XAML's TraceLogging events, such as DependencyObject_Enter, and from the XAML-Profiler provider's events.";

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Data.Sqlite;
 using ModelContextProtocol;
 using WinUIProfiler.Engine.Events;
@@ -15,7 +16,8 @@ using static WinUIProfiler.Mcp.SelfTest.ToolResults;
 namespace WinUIProfiler.Mcp.SelfTest;
 
 /// <summary>
-/// record_trace's argument checks, and its reuse of a session file it already read from the same, unchanged trace.
+/// record_trace's argument checks, and its reuse of a session file it already read from the same, unchanged trace with the
+/// same marker providers.
 /// </summary>
 internal static class RecordTraceSelfTests
 {
@@ -25,6 +27,9 @@ internal static class RecordTraceSelfTests
 
     // The full path of a real trace to read end to end; without it, record_trace.real is skipped.
     private const string TraceVariable = "WINUIPROFILER_SELFTEST_ETL";
+
+    private static readonly MarkerProviderSettings Contoso =
+        new(new MarkerProvider("Contoso-Startup", new Guid("6F3E1A52-0D8C-4C4B-9C1E-2B7A9E5D4F10")));
 
     public static IEnumerable<SelfTestCase> Tests =>
     [
@@ -66,10 +71,10 @@ internal static class RecordTraceSelfTests
         var sessions = Directory.CreateDirectory(Path.Combine(folder, "sessions")).FullName;
         var session = WriteTraceSession(sessions, SessionName, trace);
 
-        Expect.Equal(session, SessionTools.FindFinishedSession(sessions, trace, ProcessId), "The session read from the trace");
-        Expect.Equal(session, SessionTools.FindFinishedSession(sessions, trace.ToUpperInvariant(), ProcessId),
+        Expect.Equal(session, Find(sessions, trace, ProcessId), "The session read from the trace");
+        Expect.Equal(session, Find(sessions, trace.ToUpperInvariant(), ProcessId),
             "The session, with the trace's path in other case");
-        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId + 1) is null, "No session of another process");
+        Expect.True(Find(sessions, trace, ProcessId + 1) is null, "No session of another process");
 
         Expect.True(FindAlone(folder, "stopped", trace, endReason: "Stopped") is null, "No session stopped before the trace's end");
         Expect.True(FindAlone(folder, "unnamed", trace, fileName: "20261104-120000-FixtureApp.sqlite") is null,
@@ -84,39 +89,46 @@ internal static class RecordTraceSelfTests
             "No session without a record of the trace's version, as the app writes them");
 
         File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddHours(1));
-        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null,
+        Expect.True(Find(sessions, trace, ProcessId) is null,
             "No session written before the trace last changed");
         File.SetLastWriteTimeUtc(trace, DateTime.UtcNow.AddMinutes(-1));
 
         // A trace copied over the one that was read keeps its own time, which can be older than the session file.
         ReplaceTrace(trace, "This is not a trace!");
-        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null,
+        Expect.True(Find(sessions, trace, ProcessId) is null,
             "No session once another trace of the same size, and an older time, replaced the one read");
         ReplaceTrace(trace, "This isn't a trace either, and it's longer.");
-        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null,
+        Expect.True(Find(sessions, trace, ProcessId) is null,
             "No session once a trace of another size, and an older time, replaced the one read");
         ReplaceTrace(trace, FakeTraceText);
-        Expect.Equal(session, SessionTools.FindFinishedSession(sessions, trace, ProcessId),
+        Expect.Equal(session, Find(sessions, trace, ProcessId),
             "The session, once the trace it was read from is back");
 
         var record = session + TraceVersion.RecordSuffix;
         var kept = File.ReadAllText(record);
         File.WriteAllText(record, "{");
-        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null, "No session whose record can't be read");
+        Expect.True(Find(sessions, trace, ProcessId) is null, "No session whose record can't be read");
+
+        // A record kept before record_trace read the marker providers is of a session without their events.
+        var withoutMarkers = JsonNode.Parse(kept)!.AsObject();
+        Expect.True(withoutMarkers.Remove("markerProviders"), $"The record names the marker providers: {kept}");
+        File.WriteAllText(record, withoutMarkers.ToJsonString());
+        Expect.True(Find(sessions, trace, ProcessId) is null, "No session whose record doesn't name the marker providers");
         File.WriteAllText(record, kept);
+        MarkerProviders(folder, sessions, trace, session);
 
         // Deleting a session file alone leaves its record, which a later session file of the same name doesn't take.
         var renamed = Directory.CreateDirectory(Path.Combine(folder, "renamed")).FullName;
         File.Delete(WriteTraceSession(renamed, SessionName, trace));
         var later = WriteTraceSession(renamed, SessionName, trace, keep: false);
-        Expect.True(SessionTools.FindFinishedSession(renamed, trace, ProcessId) is null,
+        Expect.True(Find(renamed, trace, ProcessId) is null,
             "No session whose record is of an earlier session file of its name");
-        TraceVersion.Read(trace)!.Keep(later, SessionFile.ReadInfo(later), trace);
-        Expect.Equal(later, SessionTools.FindFinishedSession(renamed, trace, ProcessId),
+        TraceVersion.Read(trace)!.Keep(later, SessionFile.ReadInfo(later), trace, TraceMarkers.Default);
+        Expect.Equal(later, Find(renamed, trace, ProcessId),
             "The later session file, once its own record is kept");
 
         File.WriteAllBytes(session + "-wal", []);
-        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId) is null, "No session with a write-ahead log");
+        Expect.True(Find(sessions, trace, ProcessId) is null, "No session with a write-ahead log");
         File.Delete(session + "-wal");
 
         // A newer session file of the process that can't be read is passed over.
@@ -128,20 +140,75 @@ internal static class RecordTraceSelfTests
         Expect.True(!File.Exists(bad + "-wal"), "The damaged session file has no write-ahead log.");
         File.SetLastWriteTimeUtc(good, DateTime.UtcNow.AddSeconds(-20));
         File.SetLastWriteTimeUtc(bad, DateTime.UtcNow.AddSeconds(-10));
-        Expect.Equal(good, SessionTools.FindFinishedSession(damaged, trace, ProcessId), "The session after a damaged one");
+        Expect.Equal(good, Find(damaged, trace, ProcessId), "The session after a damaged one");
 
         var result = Run(() => Record(trace, ProcessId, sessions));
         Expect.True(result.Bool("reused"), "The session was reused.");
         Expect.Equal(session, result.Property("session").Text("sessionPath"), "The reused session");
         Expect.Equal("Finished", result.Text("state"), "Its state");
         Expect.Equal((long)MainEvents.Count, result.Long("storedEvents"), "Its events");
-        Expect.Equal($"{session} already holds this process's events from {trace}, read to the trace's end, and the trace " +
-            "hasn't changed since, so it was reused. Pass reread=true to read the trace again into a new session file.",
+        Expect.Equal($"{session} already holds this process's events from {trace}, read to the trace's end with the same " +
+            "marker providers, and the trace hasn't changed since, so it was reused. Pass reread=true to read the trace " +
+            "again into a new session file.",
             result.Text("message"), "The message");
+        LacksNote(result, "marker configuration");
 
         // Looking for a session to reuse read the session record of the folder's one session file of the process, and
         // reusing it read the record again.
         Expect.Equal(2L, SessionRecordRuns(result, "Reusing a session"), "Runs of the session record's statement");
+
+        // As in the app, a marker configuration that isn't valid is replaced by the default, and the result says why.
+        var invalid = Path.Combine(folder, "invalid-markers.json");
+        File.WriteAllText(invalid, "{");
+        var fallback = TraceMarkers.Load(invalid);
+        Expect.True(fallback.Error?.Contains(invalid, StringComparison.OrdinalIgnoreCase) == true,
+            $"The error names the configuration: {fallback.Error}");
+        Expect.True(fallback.Key.SequenceEqual(TraceMarkers.Default.Key, StringComparer.Ordinal),
+            "The default configuration's providers are read instead.");
+        var noted = Run(() => Record(trace, ProcessId, sessions, markers: fallback));
+        Expect.Equal(session, noted.Property("session").Text("sessionPath"), "The session reused with the default's providers");
+        HasNote(noted, "The default marker configuration's providers were read instead of the user's, which couldn't be " +
+            $"used: {fallback.Error}");
+    }
+
+    /// <summary>
+    /// The marker providers decide which events a session read from a trace holds: their GUIDs, the names their events are
+    /// stored under, and which are read from the launcher too; not their order, levels or keywords, which a trace read
+    /// doesn't use. session was read from trace with the default configuration's.
+    /// </summary>
+    private static void MarkerProviders(string folder, string sessions, string trace, string session)
+    {
+        var defaults = TraceMarkers.Default.Providers;
+        Expect.True(defaults.Count > 1, "The default configuration has several marker providers.");
+        var first = defaults[0];
+        string? FindWith(IReadOnlyList<MarkerProviderSettings> providers) =>
+            SessionTools.FindFinishedSession(sessions, trace, ProcessId, new(providers));
+
+        Expect.Equal(session, FindWith([.. defaults.Reverse()]), "The session, with the marker providers in another order");
+        Expect.Equal(session, FindWith([.. defaults.Select(provider => provider with { Level = 1, Keywords = 1 })]),
+            "The session, with the marker providers at other levels and keywords");
+        Expect.True(FindWith([.. defaults, Contoso]) is null, "No session read before a marker provider was added");
+        Expect.True(FindWith([.. defaults.Skip(1)]) is null, "No session read with a marker provider removed since");
+        Expect.True(FindWith([first with { Provider = first.Provider with { Name = "Renamed" } }, .. defaults.Skip(1)]) is null,
+            "No session whose marker events are stored under another provider's name");
+        Expect.True(FindWith([first with { Launcher = !first.Launcher }, .. defaults.Skip(1)]) is null,
+            "No session read with another marker provider read from the launcher");
+
+        // The user's configuration is read as the app reads it.
+        var user = Path.Combine(folder, "markers.json");
+        File.WriteAllText(user, """
+            {
+              "version": 1,
+              "providers": [ { "name": "Contoso.App" } ],
+              "milestones": [ { "provider": "Contoso.App", "event": "ReadyToInteract", "label": "Ready to interact" } ]
+            }
+            """);
+        var loaded = TraceMarkers.Load(user);
+        Expect.Equal("Contoso.App", string.Join(",", loaded.Providers.Select(provider => provider.Provider.Name)),
+            "The configuration's marker providers");
+        Expect.True(loaded.Error is null && loaded.Note is null, $"A valid configuration has no error: {loaded.Error}");
+        Expect.True(SessionTools.FindFinishedSession(sessions, trace, ProcessId, loaded) is null,
+            "No session read with the default configuration's providers, for the user's");
     }
 
     /// <summary>Reads a real trace into a session file, then reuses that file, then reads the trace again.</summary>
@@ -171,8 +238,8 @@ internal static class RecordTraceSelfTests
         Expect.Equal(SessionCatalog.EndOfTrace, session.Text("endReason"), "Its end reason");
         var read = first.Long("xamlEvents") + first.Long("profilerEvents") + first.Long("gpuMemoryEvents");
         Expect.True(read > 0, "Events were read.");
-        Expect.Equal(read + FocusEvents(path!), first.Long("storedEvents"),
-            "Stored events: those read, and the process's window focus events, which aren't counted as read");
+        Expect.Equal(read + UncountedEvents(path!), first.Long("storedEvents"),
+            "Stored events: those read, and the process's window focus and marker events, which aren't counted as read");
         Expect.True(File.Exists(path + TraceVersion.RecordSuffix), "The trace's version is recorded beside the session file.");
 
         int? processId = (int)session.Long("processId");
@@ -201,8 +268,11 @@ internal static class RecordTraceSelfTests
         return queries[0].IsNull("runs") ? 1 : queries[0].Long("runs");
     }
 
-    /// <summary>The window focus events (Win32k) a session file holds.</summary>
-    private static long FocusEvents(string path)
+    /// <summary>
+    /// The events a session file holds that a trace read doesn't count: window focus events (Win32k), and the marker
+    /// configuration's providers' events, of the process or its launcher.
+    /// </summary>
+    private static long UncountedEvents(string path)
     {
         using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
         {
@@ -212,8 +282,9 @@ internal static class RecordTraceSelfTests
         }.ToString());
         connection.Open();
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT COUNT(*) FROM Events JOIN EventTypes USING (TypeId) WHERE Provider = $provider";
-        command.Parameters.AddWithValue("$provider", nameof(XamlProvider.Win32k));
+        command.CommandText = "SELECT COUNT(*) FROM Events JOIN EventTypes USING (TypeId) WHERE Provider IN ($focus, $marker)";
+        command.Parameters.AddWithValue("$focus", nameof(XamlProvider.Win32k));
+        command.Parameters.AddWithValue("$marker", nameof(XamlProvider.Marker));
         return (long)command.ExecuteScalar()!;
     }
 
@@ -228,7 +299,7 @@ internal static class RecordTraceSelfTests
         var progress = new CancelOnReport(cancellation);
         try
         {
-            SessionTools.RecordTraceCore(trace, processId, folder, true, null, progress, cancellation.Token)
+            SessionTools.RecordTraceCore(trace, processId, folder, true, TraceMarkers.Default, null, progress, cancellation.Token)
                 .GetAwaiter().GetResult();
         }
         catch (OperationCanceledException)
@@ -274,8 +345,15 @@ internal static class RecordTraceSelfTests
             : variable;
     }
 
-    private static Task<object> Record(string etlPath, int? processId, string? folder, bool reread = false) =>
-        SessionTools.RecordTraceCore(etlPath, processId, folder, reread, null, null, CancellationToken.None);
+    /// <summary>record_trace, with the default marker configuration's providers unless others are given.</summary>
+    private static Task<object> Record(string etlPath, int? processId, string? folder, bool reread = false,
+        TraceMarkers? markers = null) =>
+        SessionTools.RecordTraceCore(etlPath, processId, folder, reread, markers ?? TraceMarkers.Default, null, null,
+            CancellationToken.None);
+
+    /// <summary>A finished session file read from the trace with the default marker configuration's providers.</summary>
+    private static string? Find(string directory, string trace, int processId) =>
+        SessionTools.FindFinishedSession(directory, trace, processId, TraceMarkers.Default);
 
     /// <summary>A text file named as a trace, last written a minute ago, so session files written now are newer.</summary>
     private static string FakeTrace(string folder)
@@ -294,7 +372,8 @@ internal static class RecordTraceSelfTests
 
     /// <summary>
     /// A session file of the fixture process read from a trace to its end, as record_trace and the app write one. Unless
-    /// keep is false, it has record_trace's record of the trace's version beside it; the app writes none.
+    /// keep is false, it has record_trace's record of the trace's version and the default marker configuration's providers
+    /// beside it; the app writes none.
     /// </summary>
     private static string WriteTraceSession(string folder, string fileName, string trace, string endReason = SessionCatalog.EndOfTrace,
         SessionCoverage coverage = SessionCoverage.Trace, string? etlPath = null, bool keep = true)
@@ -303,7 +382,7 @@ internal static class RecordTraceSelfTests
         if (keep)
         {
             var version = TraceVersion.Read(trace) ?? throw new SelfTestFailedException($"{trace} couldn't be read.");
-            version.Keep(path, SessionFile.ReadInfo(path), etlPath ?? trace);
+            version.Keep(path, SessionFile.ReadInfo(path), etlPath ?? trace, TraceMarkers.Default);
         }
 
         return path;
@@ -316,6 +395,6 @@ internal static class RecordTraceSelfTests
     {
         var directory = Directory.CreateDirectory(Path.Combine(folder, name)).FullName;
         WriteTraceSession(directory, fileName, trace, endReason, coverage, etlPath, keep);
-        return SessionTools.FindFinishedSession(directory, trace, processId);
+        return Find(directory, trace, processId);
     }
 }
