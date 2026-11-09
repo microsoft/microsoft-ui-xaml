@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Data.Sqlite;
@@ -238,8 +239,19 @@ internal static class RecordTraceSelfTests
         Expect.Equal(SessionCatalog.EndOfTrace, session.Text("endReason"), "Its end reason");
         var read = first.Long("xamlEvents") + first.Long("profilerEvents") + first.Long("gpuMemoryEvents");
         Expect.True(read > 0, "Events were read.");
-        Expect.Equal(read + UncountedEvents(path!), first.Long("storedEvents"),
-            "Stored events: those read, and the process's window focus and marker events, which aren't counted as read");
+        var uncounted = UncountedEvents(path!);
+        Expect.Equal(read + uncounted, first.Long("storedEvents"),
+            "Stored events: those read, and the window focus and marker events of the process or its launcher, which aren't " +
+            "counted as read");
+        if (uncounted > 0)
+        {
+            HasNote(first, string.Create(CultureInfo.InvariantCulture,
+                $"storedEvents is {uncounted:N0} more than xamlEvents, profilerEvents and gpuMemoryEvents together"));
+        }
+        else
+        {
+            LacksNote(first, "storedEvents is");
+        }
         Expect.True(File.Exists(path + TraceVersion.RecordSuffix), "The trace's version is recorded beside the session file.");
 
         int? processId = (int)session.Long("processId");

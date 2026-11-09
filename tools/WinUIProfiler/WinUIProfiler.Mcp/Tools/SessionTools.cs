@@ -392,6 +392,15 @@ internal static class SessionTools
         }
 
         var read = status.XamlEvents + status.ProfilerEvents + status.GpuMemoryEvents;
+        if (info.CompleteFromSeq is null && info.StoredEvents > read)
+        {
+            // The trace reader counts only these three kinds; a trimmed file no longer holds every event it read.
+            notes.Add(string.Create(CultureInfo.InvariantCulture,
+                $"storedEvents is {info.StoredEvents - read:N0} more than xamlEvents, profilerEvents and gpuMemoryEvents " +
+                $"together: it also counts the process's window focus and marker events, and any marker events of the " +
+                $"process that launched it."));
+        }
+
         var events = EventJson.Count(read, "event", "events");
         var name = chosen.Name ?? "the process";
         var outcome = status.State switch
