@@ -34,7 +34,7 @@ using Microsoft.UI.Xaml.Shapes;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public partial class TeachingTipTests : ApiTestBase
+    public class TeachingTipTests : ApiTestBase
     {
         // Scenario: open a normal tip and a light-dismiss tip (the light-dismiss one has a blue Background set before
         //           it is shown), set Background on the normal tip through its property and its identifier, then turn
@@ -2632,61 +2632,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Scenario (issue #8095): a closed tip whose IsOpen is bound by ElementName to a ToggleButton is removed from the tree
-        //           and added back, so the tip raises Unloaded while it is closed.
-        // Expected: the IsOpen binding survives, so checking the button still opens the tip and unchecking closes it.
-        // A failure means: the tip's Unloaded handler replaced the app's IsOpen binding with a local value.
+        // Scenario (issue #8095): a closed tip has Target and IsOpen bound by ElementName to a ToggleButton. The button is
+        //           removed from the tree and added back, then the tip itself is, so each raises Unloaded while the tip is closed.
+        // Expected: the IsOpen binding survives both, so checking the button still opens the tip next to it and unchecking closes it.
+        // A failure means: the tip's Unloaded handling replaced the app's IsOpen binding with a local value.
         [TestMethod]
         public void BoundTipStillOpensAfterUnloadWhileClosed()
         {
-            TeachingTip tip = null;
-            StackPanel tipHost = null;
-            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggle = null;
-            RunOnUIThread.Execute(() =>
+            var (tip, target, root) = CreateBoundTargetedTip();
+            foreach (var (element, name, host) in new (FrameworkElement, string, string)[] { (target, "target", "TargetHostA"), (tip, "tip", "TipHostA") })
             {
-                var root = (StackPanel)XamlReader.Load(@"
-                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                        <ToggleButton x:Name='Toggle' Content='Toggle'/>
-                        <StackPanel x:Name='TipHost'>
-                            <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle'
-                                IsOpen='{Binding ElementName=Toggle, Path=IsChecked}'/>
-                        </StackPanel>
-                    </StackPanel>");
-                toggle = (Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)root.FindName("Toggle");
-                tipHost = (StackPanel)root.FindName("TipHost");
-                tip = (TeachingTip)root.FindName("Tip");
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
+                var unloaded = new ManualResetEvent(false);
+                RunOnUIThread.Execute(() =>
+                {
+                    element.Unloaded += (s, e) => unloaded.Set();
+                    ((StackPanel)root.FindName(host)).Children.Remove(element);
+                });
+                Verify.IsTrue(unloaded.WaitOne(TimeSpan.FromSeconds(5)), "The " + name + " should raise Unloaded");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    ((StackPanel)root.FindName(host)).Children.Add(element);
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
 
-            var unloaded = new ManualResetEvent(false);
-            RunOnUIThread.Execute(() =>
-            {
-                tip.Unloaded += (s, e) => unloaded.Set();
-                tipHost.Children.Remove(tip);
-            });
-            Verify.IsTrue(unloaded.WaitOne(TimeSpan.FromSeconds(5)), "TeachingTip should raise Unloaded");
-            IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() =>
-            {
-                tipHost.Children.Add(tip);
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsFalse(tip.IsOpen, "Tip should still be closed");
-                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the tip unloading while closed");
-                toggle.IsChecked = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "TeachingTip should open through its binding");
-
-            RunOnUIThread.Execute(() => toggle.IsChecked = false);
-            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "TeachingTip should close through its binding");
+                VerifyBoundTipOpensAndCloses(tip, target, $"after the {name} unloaded while the tip was closed");
+            }
         }
 
         // Scenario (issue #8095, light-dismiss variant): a light-dismiss tip whose IsOpen is bound by ElementName to a
@@ -2732,20 +2704,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Scenario (issue #8095 review): a closed tip whose IsOpen is bound to a ToggleButton is closed again through its
-        //           automation peer (IWindowProvider.Close).
-        // Expected: the IsOpen binding survives, so checking the button still opens the tip.
+        // Scenario (issue #8095 review): a tip whose IsOpen is bound to a ToggleButton is closed through its automation peer
+        //           (IWindowProvider.Close), first while it is open, then again while it is closed.
+        // Expected: the open tip closes, and the IsOpen binding survives both calls, so the button still drives the tip.
         // A failure means: the automation peer replaced the app's IsOpen binding with a local value.
         [TestMethod]
-        public void BoundTipSurvivesAutomationPeerCloseWhileClosed()
+        public void BoundTipSurvivesAutomationPeerClose()
         {
             var (tip, toggle) = CreateBoundTip(t => { });
             SetBoundSourceAndWait(tip, toggle, true);
-            SetBoundSourceAndWait(tip, toggle, false);
+
+            RunOnUIThread.Execute(() => GetWindowProvider(tip).Close());
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "IWindowProvider.Close should close the open tip");
+            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after IWindowProvider.Close on an open tip");
 
             RunOnUIThread.Execute(() => GetWindowProvider(tip).Close());
             IdleSynchronizer.Wait();
-
             VerifyBindingSurvivesAndTipReopens(tip, toggle, "after IWindowProvider.Close on a closed tip");
         }
 
@@ -2807,19 +2781,60 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyBindingSurvivesAndTipReopens(tip, toggle, "after a Closing handler cleared the source of a tip that did not fit");
         }
 
-        // Scenario (issue #8095 review): an OPEN tip outside a NavigationView targets a ToggleButton inside a NavigationViewItem,
-        //           with Target and IsOpen bound by ElementName to that button. PaneDisplayMode is then switched
-        //           (Top, Left, LeftCompact, Left), so NavigationView re-hosts its menu items and the target is unloaded and
-        //           loaded again.
-        // Expected: the tip stays open next to its target with its IsOpen binding intact, and unchecking the button closes it.
-        // A failure means: a transient unload of the target closed the open tip and replaced the app's IsOpen binding.
+        // Scenario (issue #8095): an OPEN light-dismiss tip whose IsOpen is bound by ElementName to a ToggleButton is
+        //           light-dismissed (its light-dismiss popup closes, as for a click outside the tip).
+        // Expected: the tip closes with reason LightDismiss and the IsOpen binding survives, so the button still drives the tip.
+        // A failure means: light dismiss replaced the app's IsOpen binding with a local value.
         [TestMethod]
-        public void OpenBoundTipStaysOpenWhenNavigationViewRehostsTarget()
+        public void BoundTipKeepsBindingAfterLightDismiss()
+        {
+            var (tip, toggle) = CreateBoundTip(t => t.IsLightDismissEnabled = true);
+            var closedReasons = new List<TeachingTipCloseReason>();
+            RunOnUIThread.Execute(() => tip.Closed += (s, a) => closedReasons.Add(a.Reason));
+            SetBoundSourceAndWait(tip, toggle, true);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var tipPopup = TeachingTipTestHooks.GetPopup(tip);
+                var indicator = VisualTreeHelper.GetOpenPopupsForXamlRoot(tip.XamlRoot).Single(p => p != tipPopup && p.IsLightDismissEnabled);
+                indicator.IsOpen = false;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "Light dismiss should close the tip");
+            RunOnUIThread.Execute(() => Verify.AreEqual("LightDismiss", string.Join(",", closedReasons), "Close reason"));
+
+            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after light dismiss");
+        }
+
+        // Scenario (issue #8095): an OPEN tip whose IsOpen is bound by ElementName to a ToggleButton is closed with its close
+        //           button (no CloseButtonClick handler).
+        // Expected: the tip closes with reason CloseButton and the IsOpen binding survives, so the button still drives the tip.
+        // A failure means: the close button replaced the app's IsOpen binding with a local value.
+        [TestMethod]
+        public void BoundTipKeepsBindingAfterCloseButton()
+        {
+            var (tip, toggle) = CreateBoundTip(t => t.CloseButtonContent = "Close");
+            var closedReasons = new List<TeachingTipCloseReason>();
+            RunOnUIThread.Execute(() => tip.Closed += (s, a) => closedReasons.Add(a.Reason));
+            SetBoundSourceAndWait(tip, toggle, true);
+
+            RunOnUIThread.Execute(() => InvokeButton(GetTemplateButton(tip, "CloseButton")));
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The close button should close the tip");
+            RunOnUIThread.Execute(() => Verify.AreEqual("CloseButton", string.Join(",", closedReasons), "Close reason"));
+
+            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after the close button closed the tip");
+        }
+
+        // Scenario (issue #8095): an OPEN tip outside a NavigationView targets a ToggleButton inside a NavigationViewItem, with
+        //           Target and IsOpen bound by ElementName to that button. PaneDisplayMode is then switched (Top, Left,
+        //           LeftCompact, Left), so NavigationView re-hosts its menu items and the target raises Unloaded.
+        // Expected: the IsOpen binding survives each switch, so the button still opens the tip next to it and closes it again.
+        // A failure means: closing the open tip for its target's Unloaded replaced the app's IsOpen binding with a local value.
+        [TestMethod]
+        public void OpenBoundTipKeepsBindingWhenNavigationViewRehostsTarget()
         {
             TeachingTip tip = null;
             NavigationView navView = null;
             Microsoft.UI.Xaml.Controls.Primitives.ToggleButton target = null;
-            var events = new List<string>();
             RunOnUIThread.Execute(() =>
             {
                 var root = (StackPanel)XamlReader.Load(@"
@@ -2846,82 +2861,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
-            SetBoundSourceAndWait(tip, target, true);
-            RunOnUIThread.Execute(() => LogTargetLoadedAndUnloaded(target, tip, events));
 
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Left })
             {
+                SetBoundSourceAndWait(tip, target, true);
                 RunOnUIThread.Execute(() =>
                 {
-                    events.Add($"PaneDisplayMode = {mode}");
                     navView.PaneDisplayMode = mode;
                     navView.IsPaneOpen = true;
                     Content.UpdateLayout();
                 });
-                bool stayedOpen = WaitForTipState(tip, isOpen: true);
-                RunOnUIThread.Execute(() =>
-                {
-                    Log.Comment(string.Join(Environment.NewLine, events));
-                    events.Clear();
-                    Verify.IsTrue(stayedOpen, $"The open tip should stay open when NavigationView re-hosts its target ({mode})");
-                    Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), $"IsOpen binding should survive the target being re-hosted ({mode})");
-                    Verify.IsTrue(target.IsLoaded, "Target should be loaded");
-                    if (stayedOpen)
-                    {
-                        VerifyTipIsNextToTarget(tip, target, mode.ToString());
-                    }
-                });
+                IdleSynchronizer.Wait();
+                SetBoundSourceAndWait(tip, target, false);
+                VerifyBoundTipOpensAndCloses(tip, target, $"after NavigationView re-hosted it ({mode})");
             }
-
-            SetBoundSourceAndWait(tip, target, false);
         }
 
-        // Scenario (issue #8095 review): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton. In one
-        //           UI-thread step the button is moved to another panel; later the open tip itself is moved to another panel.
-        // Expected: both moves leave the tip open with its IsOpen binding intact, and unchecking the button closes it.
-        // A failure means: an element that left the tree and came straight back made the tip close and drop its binding.
+        // Scenario (issue #8095): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton. In one UI-thread
+        //           step the button is moved to another panel; later the open tip itself is moved to another panel.
+        // Expected: the IsOpen binding survives both moves, so the button still opens the tip next to it and closes it again.
+        // A failure means: closing the open tip for an Unloaded replaced the app's IsOpen binding with a local value.
         [TestMethod]
-        public void OpenBoundTipStaysOpenWhenTargetOrTipIsReparented()
+        public void OpenBoundTipKeepsBindingWhenTargetOrTipIsReparented()
         {
             var (tip, target, root) = CreateBoundTargetedTip();
-            var events = new List<string>();
-            SetBoundSourceAndWait(tip, target, true);
-            RunOnUIThread.Execute(() => LogTargetLoadedAndUnloaded(target, tip, events));
-
-            RunOnUIThread.Execute(() =>
+            foreach (var (element, name, from, to) in new (FrameworkElement, string, string, string)[] { (target, "target", "TargetHostA", "TargetHostB"), (tip, "tip", "TipHostA", "TipHostB") })
             {
-                events.Add("Moving the target");
-                ((StackPanel)root.FindName("TargetHostA")).Children.Remove(target);
-                ((StackPanel)root.FindName("TargetHostB")).Children.Add(target);
-            });
-            bool stayedOpen = WaitForTipState(tip, isOpen: true);
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment(string.Join(Environment.NewLine, events));
-                Verify.IsTrue(stayedOpen, "The open tip should stay open when its target is moved to another panel");
-                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the target being moved");
-                if (stayedOpen)
+                SetBoundSourceAndWait(tip, target, true);
+                RunOnUIThread.Execute(() =>
                 {
-                    VerifyTipIsNextToTarget(tip, target, "after the target moved");
-                }
-
-                ((StackPanel)root.FindName("TipHostA")).Children.Remove(tip);
-                ((StackPanel)root.FindName("TipHostB")).Children.Add(tip);
-            });
-            stayedOpen = WaitForTipState(tip, isOpen: true);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(stayedOpen, "The open tip should stay open when it is moved to another panel");
-                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the tip being moved");
-            });
-
-            SetBoundSourceAndWait(tip, target, false);
+                    ((StackPanel)root.FindName(from)).Children.Remove(element);
+                    ((StackPanel)root.FindName(to)).Children.Add(element);
+                });
+                IdleSynchronizer.Wait();
+                SetBoundSourceAndWait(tip, target, false);
+                VerifyBoundTipOpensAndCloses(tip, target, $"after the {name} moved to another panel");
+            }
         }
 
-        // Scenario (issue #8095 review): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton, and the
-        //           button is removed from the tree for good.
-        // Expected: the tip closes (the #1327 behavior: an open tip must not stay up for a target that is gone).
-        // A failure means: deferring the close for a transient unload kept a tip open for a target that really left.
+        // Scenario (issue #8095): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton, and the button is
+        //           removed from the tree. Later it is added back.
+        // Expected: the tip closes (#1327: an open tip must not stay up for a target that is gone) without changing the
+        //           OneWay source, and the IsOpen binding survives, so the button drives the tip again once it is back.
+        // A failure means: the tip stayed up for a removed target, or closing it replaced the app's IsOpen binding.
         [TestMethod]
         public void OpenBoundTipClosesWhenTargetIsRemoved()
         {
@@ -2933,1342 +2915,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => ((StackPanel)root.FindName("TargetHostA")).Children.Remove(target));
             Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "Closed should be raised when the target is removed");
             Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close when its target is removed");
-        }
-
-        // Scenario (issue #8095 review, Copilot): an OPEN tip's target is removed for good, and an app Unloaded handler on
-        //           the target (registered after the tip's) closes the tip; the app's Closing handler cancels every close.
-        // Expected: the popup still closes, as it did before #8095 (an unload closed the popup directly).
-        // A failure means: the IsOpen change made the deferred unload check skip its popup cleanup, so a cancelled close
-        //           left the tip up for a target that is gone.
-        [TestMethod]
-        public void OpenTipPopupClosesWhenRemovedTargetUnloadHandlerClosesTipAndClosingCancels()
-        {
-            TeachingTip tip = null;
-            StackPanel host = null;
-            Button target = null;
-            int closingCount = 0;
             RunOnUIThread.Execute(() =>
             {
-                host = new StackPanel();
-                target = new Button() { Content = "Target" };
-                host.Children.Add(target);
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target };
-                var root = new StackPanel();
-                root.Children.Add(host);
-                root.Children.Add(tip);
-                Content = root;
+                Verify.IsTrue(target.IsChecked == true, "Closing the tip should not change its OneWay source");
+                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the target being removed");
+                ((StackPanel)root.FindName("TargetHostA")).Children.Add(target);
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => tip.IsOpen = true);
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open");
-
-            RunOnUIThread.Execute(() =>
-            {
-                target.Unloaded += (s, e) => tip.IsOpen = false;
-                tip.Closing += (s, e) => { closingCount++; e.Cancel = true; };
-                host.Children.Remove(target);
-            });
-            WaitForFrames(2);
-            bool closed = WaitForTipState(tip, isOpen: false);
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment($"After removal: tip.IsOpen={tip.IsOpen}, popup.IsOpen={TeachingTipTestHooks.GetPopup(tip).IsOpen}, target.IsLoaded={target.IsLoaded}, Closing raised {closingCount} time(s)");
-                Verify.IsFalse(target.IsLoaded, "Precondition: the target is gone");
-            });
-            Verify.IsTrue(closed, "The popup should close when the target is removed, even though the app cancels Closing");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review, Copilot 4453497564): an OPEN tip whose IsOpen is a OneWay binding lives as a UIElement
-        //           item of an ItemsRepeater whose ItemsSource is an app IList. Its static target is removed, so the deferred
-        //           unload check scans the tip's ancestry and calls the app's IList indexer (ItemsSourceView.GetAt). Inside
-        //           that callout the app clears the IsOpen source.
-        // Expected: the tip closes and the IsOpen binding survives (no local write onto a tip the app already closed).
-        // A failure means: the check wrote IsOpen from a value read before it called out to app code.
-        [TestMethod]
-        public void UnloadCheckRereadsStateAfterAppCodeInItsContainerChecks()
-        {
-            const string what = "the app clears the IsOpen source inside the check";
-            TeachingTip tip = null;
-            StackPanel host = null;
-            Button target = null;
-            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton source = null;
-            CalloutList items = null;
-            int calloutCount = 0;
-            RunOnUIThread.Execute(() =>
-            {
-                host = new StackPanel();
-                target = new Button() { Content = "Target" };
-                host.Children.Add(target);
-                source = new Microsoft.UI.Xaml.Controls.Primitives.ToggleButton() { Content = "IsOpen source" };
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                tip.SetBinding(TeachingTip.IsOpenProperty, new Microsoft.UI.Xaml.Data.Binding()
-                {
-                    Source = source,
-                    Path = new PropertyPath("IsChecked"),
-                    Mode = Microsoft.UI.Xaml.Data.BindingMode.OneWay
-                });
-                items = new CalloutList(tip);
-                items.OnArmedGet = () =>
-                {
-                    calloutCount++;
-                    source.IsChecked = false;
-                };
-                var root = new StackPanel();
-                root.Children.Add(source);
-                root.Children.Add(host);
-                root.Children.Add(new ItemsRepeater() { ItemsSource = items });
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => source.IsChecked = true);
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open through its binding");
-
-            RunOnUIThread.Execute(() =>
-            {
-                // Arm the callout on the next Rendering, after layout and before the tip's deferred check (registered later,
-                // when the target's Unloaded is raised), so only the check's GetAt call runs the app code.
-                EventHandler<object> arm = null;
-                arm = (s, e) =>
-                {
-                    CompositionTarget.Rendering -= arm;
-                    items.Armed = true;
-                };
-                CompositionTarget.Rendering += arm;
-                host.Children.Remove(target);
-            });
-            WaitForFrames(3);
-            bool settled = WaitForTipState(tip, isOpen: false);
-            bool bindingAlive = false, tipOpen = false;
-            RunOnUIThread.Execute(() =>
-            {
-                items.Armed = false;
-                bindingAlive = tip.GetBindingExpression(TeachingTip.IsOpenProperty) != null;
-                tipOpen = tip.IsOpen;
-            });
-            Verify.AreEqual(1, calloutCount, "Precondition: the app code ran once, inside the deferred check: " + what);
-            Verify.IsTrue(bindingAlive, $"The IsOpen binding should survive: {what} (tip.IsOpen={tipOpen})");
-            Verify.IsTrue(settled, $"The tip should be closed: {what} (tip.IsOpen={tipOpen})");
-            RunOnUIThread.Execute(() => source.IsChecked = true);
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The binding should still open the tip");
-            RunOnUIThread.Execute(() => source.IsChecked = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-        // Scenario (issue #8095 review, Sol S3/S4, page navigation right after a tip opens): the expand animation is slowed to 2s so the tip is still opening (not
-        //           idle) when its target is removed for good.
-        //           Run 1 (S4): IsOpen=true and the target removal happen in the same UI step.
-        //           Run 2 (S3): while the tip is opening, the app sets IsOpen=false (rejected and reverted, because the tip
-        //                       is busy) in the same UI step as the target removal.
-        // Expected: the tip ends up closed: IsOpen false, popup closed, idle.
-        // A failure means: the busy-state revert of IsOpen looked like an app reopen and abandoned the unload close (S3), or
-        //           the forced close during the expand animation was reverted to IsOpen=true with the popup closed (S4).
-        // Skipped (with a warning) when system animations are off: the tip is idle as soon as it opens.
-        [TestMethod]
-        public void TargetRemovedWhileTipIsOpeningClosesTheTip()
-        {
-            if (AnimationsAreDisabled())
-            {
-                Log.Warning("Test is disabled when animations are turned off: the tip becomes idle as soon as it opens.");
-                return;
-            }
-            VerifyTargetRemovedWhileOpening(appClosesWhileOpening: false);
-            VerifyTargetRemovedWhileOpening(appClosesWhileOpening: true);
-        }
-
-        private void VerifyTargetRemovedWhileOpening(bool appClosesWhileOpening)
-        {
-            string what = appClosesWhileOpening ? "app sets IsOpen=false while opening, target removed" : "opened and target removed in one step";
-            TeachingTip tip = null;
-            StackPanel host = null;
-            Button target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                host = new StackPanel();
-                target = new Button() { Content = "Target" };
-                host.Children.Add(target);
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                var root = new StackPanel();
-                root.Children.Add(host);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(2));
-            });
-            IdleSynchronizer.Wait();
-
-            if (appClosesWhileOpening)
-            {
-                RunOnUIThread.Execute(() => tip.IsOpen = true);
-                bool opening = false;
-                var stopwatch = Stopwatch.StartNew();
-                while (!opening && stopwatch.ElapsedMilliseconds < 5000)
-                {
-                    RunOnUIThread.Execute(() =>
-                    {
-                        var popup = TeachingTipTestHooks.GetPopup(tip);
-                        opening = popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
-                        if (opening)
-                        {
-                            tip.IsOpen = false;
-                            host.Children.Remove(target);
-                        }
-                    });
-                    if (!opening)
-                    {
-                        Thread.Sleep(20);
-                    }
-                }
-                Verify.IsTrue(opening, "Precondition: the tip was observed while opening: " + what);
-            }
-            else
-            {
-                RunOnUIThread.Execute(() =>
-                {
-                    tip.IsOpen = true;
-                    host.Children.Remove(target);
-                });
-            }
-
-            bool settled = WaitForTipState(tip, isOpen: false);
-            bool tipOpen = true, popupOpen = true, idle = false;
-            RunOnUIThread.Execute(() =>
-            {
-                var popup = TeachingTipTestHooks.GetPopup(tip);
-                tipOpen = tip.IsOpen;
-                popupOpen = popup != null && popup.IsOpen;
-                idle = TeachingTipTestHooks.GetIsIdle(tip);
-            });
-            Verify.IsTrue(settled, $"The tip should end closed: {what} (tip.IsOpen={tipOpen}, popup.IsOpen={popupOpen}, idle={idle})");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review, Copilot 4467656656): the expand animation is slowed to 2s. While the tip is opening,
-        //           its target is removed (the unload close ends the opening transition), then the target is put back and
-        //           the tip reopened with a 6s expand animation, before the first animation's completion arrives (~2s).
-        // Expected: the tip stays busy (not idle) until the second animation completes; the first animation's completion
-        //           is ignored.
-        // A failure means: the stale completion of the aborted expand animation marked the reopened tip idle early.
-        // Skipped (with a warning) when system animations are off.
-        [TestMethod]
-        public void StaleExpandCompletionDoesNotEndReopenedTipsAnimation()
-        {
-            if (AnimationsAreDisabled())
-            {
-                Log.Warning("Test is disabled when animations are turned off: the tip becomes idle as soon as it opens.");
-                return;
-            }
-
-            TeachingTip tip = null;
-            StackPanel host = null;
-            Button target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                host = new StackPanel();
-                target = new Button() { Content = "Target" };
-                host.Children.Add(target);
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = target, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                var root = new StackPanel();
-                root.Children.Add(host);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(2));
-            });
-            IdleSynchronizer.Wait();
-
-            var sinceFirstOpen = Stopwatch.StartNew();
-            RunOnUIThread.Execute(() => tip.IsOpen = true);
-            Verify.IsTrue(PollUIWithoutIdleWait(() =>
-            {
-                var popup = TeachingTipTestHooks.GetPopup(tip);
-                return popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
-            }), "Precondition: the tip is opening");
-
-            RunOnUIThread.Execute(() => host.Children.Remove(target));
-            Verify.IsTrue(PollUIWithoutIdleWait(() => !tip.IsOpen && TeachingTipTestHooks.GetIsIdle(tip)),
-                "Precondition: removing the target closed the opening tip and ended its transition");
-
-            RunOnUIThread.Execute(() =>
-            {
-                host.Children.Add(target);
-                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(6));
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(PollUIWithoutIdleWait(() =>
-            {
-                var popup = TeachingTipTestHooks.GetPopup(tip);
-                return popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
-            }), "Precondition: the reopened tip is opening");
-            var reopenedAt = sinceFirstOpen.Elapsed;
-            Log.Comment($"Reopened {reopenedAt.TotalMilliseconds:F0} ms after the first open");
-            Verify.IsTrue(reopenedAt < TimeSpan.FromSeconds(1.8), "Precondition: reopened before the first animation's completion");
-
-            // Past the first (2s) animation's completion, well before the second (6s) one ends.
-            var remaining = TimeSpan.FromSeconds(3.5) - sinceFirstOpen.Elapsed;
-            if (remaining > TimeSpan.Zero)
-            {
-                Thread.Sleep(remaining);
-            }
-            bool idle = true, popupOpen = false;
-            RunOnUIThread.Execute(() =>
-            {
-                idle = TeachingTipTestHooks.GetIsIdle(tip);
-                popupOpen = TeachingTipTestHooks.GetPopup(tip).IsOpen;
-            });
-            Log.Comment($"At {sinceFirstOpen.Elapsed.TotalMilliseconds:F0} ms: idle={idle}, popup.IsOpen={popupOpen}");
-            Verify.IsTrue(popupOpen, "Precondition: the reopened tip is still open");
-            Verify.IsFalse(idle, $"The reopened tip should still be opening (its 6s animation is running), not idle (idle={idle})");
-
-            // Poll without IdleSynchronizer: in a long run it can give up while the slowed animation is still running.
-            Verify.IsTrue(PollUIWithoutIdleWait(() => TeachingTipTestHooks.GetIsIdle(tip) && TeachingTipTestHooks.GetPopup(tip).IsOpen),
-                "The reopened tip should finish opening");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            PollUIWithoutIdleWait(() => TeachingTipTestHooks.GetIsIdle(tip) && !TeachingTipTestHooks.GetPopup(tip).IsOpen);
-        }
-
-        // Scenario (issue #8095 review, Copilot): an OPEN tip targets a static Button; the Button is removed, and the app's
-        //           Unloaded handler on it (registered after the tip's) retargets the tip to an already loaded element that
-        //           an ItemsRepeater generated for a string item, all before the next Rendering tick.
-        //           Run 2: the TIP itself is removed and its app Unloaded handler retargets it to a static loaded Button.
-        // Expected: run 1 stays open on the new target (it never unloaded; the former target's pending check is dropped);
-        //           run 2 closes (the tip's own unload is still checked after a retarget).
-        // A failure means: the former target's pending unload check judged the new target (and closed the tip because the
-        //           new target is in a generated container), or a retarget dropped the tip's own removal check.
-        [TestMethod]
-        public void PendingUnloadCheckFollowsTheElementThatUnloaded()
-        {
-            VerifyRetargetDuringUnload(tipUnloads: false);
-            VerifyRetargetDuringUnload(tipUnloads: true);
-        }
-
-        private void VerifyRetargetDuringUnload(bool tipUnloads)
-        {
-            string what = tipUnloads ? "the tip removed and retargeted in its Unloaded handler" : "the target removed and the tip retargeted in its Unloaded handler";
-            TeachingTip tip = null;
-            StackPanel host = null, root = null;
-            Button oldTarget = null, staticTarget = null;
-            ItemsRepeater repeater = null;
-            FrameworkElement newTarget = null;
-            RunOnUIThread.Execute(() =>
-            {
-                host = new StackPanel();
-                oldTarget = new Button() { Content = "Old target" };
-                staticTarget = new Button() { Content = "Static target" };
-                host.Children.Add(oldTarget);
-                repeater = new ItemsRepeater() { ItemsSource = new List<string> { "Item" } };
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", Target = oldTarget, PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                root = new StackPanel();
-                root.Children.Add(host);
-                root.Children.Add(staticTarget);
-                root.Children.Add(repeater);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() =>
-            {
-                newTarget = (FrameworkElement)repeater.TryGetElement(0);
-                Verify.IsNotNull(newTarget, "Precondition: the repeater generated an element for 'Item'");
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open: " + what);
-
-            RunOnUIThread.Execute(() =>
-            {
-                if (tipUnloads)
-                {
-                    tip.Unloaded += (s, e) => tip.Target = staticTarget;
-                    root.Children.Remove(tip);
-                }
-                else
-                {
-                    oldTarget.Unloaded += (s, e) => tip.Target = newTarget;
-                    host.Children.Remove(oldTarget);
-                }
-            });
-            WaitForFrames(2);
-            bool settled = WaitForTipState(tip, isOpen: !tipUnloads);
-            bool retargeted = false, newTargetInTree = false, tipOpen = false;
-            RunOnUIThread.Execute(() =>
-            {
-                retargeted = tip.Target == (tipUnloads ? (FrameworkElement)staticTarget : newTarget);
-                // Not IsLoaded: the tip registers a Loaded handler on its new target, which makes an already loaded element report
-                // IsLoaded=false until a Loaded event is raised for it.
-                newTargetInTree = tip.Target != null && VisualTreeHelper.GetParent(tip.Target) != null && tip.Target.XamlRoot == root.XamlRoot;
-                tipOpen = tip.IsOpen;
-                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, retargeted={retargeted}, newTargetInTree={newTargetInTree}, tip.IsLoaded={tip.IsLoaded}");
-            });
-            Verify.IsTrue(retargeted, "Precondition: the app's Unloaded handler retargeted the tip: " + what);
-            Verify.IsTrue(newTargetInTree, "Precondition: the new target is in the tree: " + what);
-            Verify.IsTrue(settled, (tipUnloads ? "The tip should close when it is removed, even if it was retargeted: " + what
-                                               : "The tip should stay open on a new target that never unloaded: " + what) + $" (tip.IsOpen={tipOpen})");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): NavigationView.MenuItemsSource holds 3 strings, so NavigationView wraps them in
-        //           NavigationViewItems from a shared, recycled pool. An OPEN tip targets the container of "Item0", then
-        //           PaneDisplayMode switches Left -> Top, which recycles the containers into the top repeater.
-        // Expected: the tip either closes or its target still shows "Item0".
-        // A failure means: the tip stayed open on a container that was recycled to a different item.
-        [TestMethod]
-        public void OpenTipClosesWhenNavigationViewRecyclesTargetToAnotherItem()
-        {
-            TeachingTip tip = null;
-            NavigationView navView = null;
-            NavigationViewItem container = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var root = (StackPanel)XamlReader.Load(@"
-                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                        <controls:NavigationView x:Name='NavView' PaneDisplayMode='Left' IsSettingsVisible='False'/>
-                        <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle' PreferredPlacement='BottomRight'/>
-                    </StackPanel>");
-                navView = (NavigationView)root.FindName("NavView");
-                tip = (TeachingTip)root.FindName("Tip");
-                navView.MenuItemsSource = new List<string> { "Item0", "Item1", "Item2" };
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                container = (NavigationViewItem)navView.ContainerFromMenuItem("Item0");
-                Verify.IsNotNull(container, "Container for Item0");
-                tip.Target = container;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the Item0 container");
-
-            RunOnUIThread.Execute(() =>
-            {
-                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-            WaitForTipState(tip, isOpen: false);
-
-            RunOnUIThread.Execute(() =>
-            {
-                var shownItem = container.Content as string;
-                Log.Comment($"After Left -> Top: tip.IsOpen={tip.IsOpen}, target.IsLoaded={container.IsLoaded}, target.Content={shownItem}, target.DataContext={container.DataContext}");
-                Verify.IsTrue(!tip.IsOpen || shownItem == "Item0",
-                    $"An open tip must not stay on a container that now shows '{shownItem}' instead of 'Item0'");
-            });
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): an OPEN tip's target is moved, in one UI-thread step, into a second window
-        //           (a different XamlRoot); the tip stays in the main window.
-        // Expected: the tip closes, because its popup belongs to the main window's XamlRoot and can't follow the target.
-        // A failure means: the tip stayed open in the old window, pointing at a target that is now in another window.
-        [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public void OpenTipClosesWhenTargetMovesToAnotherXamlRoot()
-        {
-            var (tip, target, root) = CreateBoundTargetedTip();
-            Window secondWindow = null;
-            StackPanel secondHost = null;
-            var secondLoaded = new ManualResetEvent(false);
-            RunOnUIThread.Execute(() =>
-            {
-                secondHost = new StackPanel();
-                secondHost.Loaded += (s, e) => secondLoaded.Set();
-                secondWindow = new Window() { Title = "TeachingTip second XamlRoot", Content = secondHost };
-                secondWindow.Activate();
-            });
-
-            try
-            {
-                Verify.IsTrue(secondLoaded.WaitOne(DefaultWaitTimeInMS), "Waiting for the second window to load");
-                IdleSynchronizer.Wait();
-                SetBoundSourceAndWait(tip, target, true);
-
-                RunOnUIThread.Execute(() =>
-                {
-                    Verify.AreNotEqual(tip.XamlRoot, secondHost.XamlRoot, "The second window should have its own XamlRoot");
-                    ((StackPanel)root.FindName("TargetHostA")).Children.Remove(target);
-                    secondHost.Children.Add(target);
-                });
-                IdleSynchronizer.Wait();
-                bool closed = WaitForTipState(tip, isOpen: false);
-                RunOnUIThread.Execute(() =>
-                {
-                    Log.Comment($"After moving the target: tip.IsOpen={tip.IsOpen}, target.IsLoaded={target.IsLoaded}, sameXamlRoot={target.XamlRoot == tip.XamlRoot}");
-                    Verify.IsTrue(closed, "The tip should close when its target moves to another XamlRoot");
-                });
-            }
-            finally
-            {
-                // Close the second window on the UI thread and wait for Closed, so the test host doesn't shut down
-                // with a window still closing.
-                var windowClosed = new ManualResetEvent(false);
-                RunOnUIThread.Execute(() =>
-                {
-                    tip.IsOpen = false;
-                    secondHost.Children.Clear();
-                    secondWindow.Closed += (s, e) => windowClosed.Set();
-                    secondWindow.Close();
-                });
-                Verify.IsTrue(windowClosed.WaitOne(DefaultWaitTimeInMS), "Waiting for the second window to close");
-                IdleSynchronizer.Wait();
-            }
-        }
-
-        // Scenario (issue #8095 review): Target and IsOpen=true are set while the tip and the target are still detached; both
-        //           are then added under a panel that has a DataContext, so the target inherits it only after the tip
-        //           opened. Then, while open, a new detached target is assigned and added. Each time the target is moved
-        //           to another panel under the same parent.
-        // Expected: the tip stays open after each move.
-        // A failure means: the tip compared the target's data with a value read before the target was in the tree.
-        [TestMethod]
-        public void OpenTipStaysOpenWhenTargetInheritsDataContextAfterOpening()
-        {
-            TeachingTip tip = null;
-            StackPanel hostA = null, hostB = null;
-            Button target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var root = new StackPanel() { DataContext = new object() };
-                hostA = new StackPanel();
-                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
-                target = new Button() { Content = "Target" };
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle" };
-                tip.Target = target;
-                tip.IsOpen = true;
-                hostA.Children.Add(target);
-                root.Children.Add(hostA);
-                root.Children.Add(hostB);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open once it and its target are in the tree");
-            VerifyTipStaysOpenWhenTargetMoves(tip, target, hostA, hostB, "a target that inherited its DataContext after the tip opened");
-
-            Button newTarget = null;
-            RunOnUIThread.Execute(() =>
-            {
-                newTarget = new Button() { Content = "New target" };
-                tip.Target = newTarget;
-                hostA.Children.Add(newTarget);
-                Content.UpdateLayout();
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should stay open on the new target");
-            VerifyTipStaysOpenWhenTargetMoves(tip, newTarget, hostA, hostB, "a detached target assigned while the tip was open");
-
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close");
-        }
-
-        // Scenario (issue #8095 review): two ItemsRepeaters share an element factory whose elements (a Border holding a
-        //           Button) use a compiled-binding style DataTemplateComponent (as x:Bind does), so ItemsRepeater calls
-        //           ProcessBindings instead of setting DataContext. An OPEN tip targets the element for "A0" (first run)
-        //           or the Button inside it (second run); the first repeater's items are cleared and the second repeater
-        //           gets "B0", so the shared pool hands the same element to "B0".
-        // Expected: the tip either closes or its target still shows "A0".
-        // A failure means: the tip stayed open on an element that now represents a different item.
-        [TestMethod]
-        public void OpenTipClosesWhenCompiledTemplateElementIsReusedForAnotherItem()
-        {
-            VerifyTipOnReusedCompiledTemplateElement(targetDescendant: false);
-            VerifyTipOnReusedCompiledTemplateElement(targetDescendant: true);
-        }
-
-        private void VerifyTipOnReusedCompiledTemplateElement(bool targetDescendant)
-        {
-            string what = targetDescendant ? "the Button inside the reused element" : "the reused element";
-            TeachingTip tip = null;
-            ItemsRepeater repeaterA = null, repeaterB = null;
-            Border element = null;
-            FrameworkElement target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var factory = new SharedPoolCompiledBindingFactory();
-                repeaterA = new ItemsRepeater() { ItemTemplate = factory, ItemsSource = new List<string> { "A0" } };
-                repeaterB = new ItemsRepeater() { ItemTemplate = factory };
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                var root = new StackPanel();
-                root.Children.Add(repeaterA);
-                root.Children.Add(repeaterB);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                element = (Border)repeaterA.TryGetElement(0);
-                Verify.IsNotNull(element, "Element for A0");
-                Verify.IsNull(element.DataContext, "A compiled-binding element gets no DataContext from ItemsRepeater");
-                target = targetDescendant ? (FrameworkElement)element.Child : element;
-                tip.Target = target;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), $"The tip should open on {what} for A0");
-
-            RunOnUIThread.Execute(() =>
-            {
-                repeaterA.ItemsSource = null;
-                repeaterB.ItemsSource = new List<string> { "B0" };
-                Content.UpdateLayout();
-            });
-            WaitForFrames(2);
-            WaitForTipState(tip, isOpen: false);
-
-            RunOnUIThread.Execute(() =>
-            {
-                var shownItem = ((Button)element.Child).Content as string;
-                Log.Comment($"After reuse ({what}): tip.IsOpen={tip.IsOpen}, target.IsLoaded={target.IsLoaded}, shows={shownItem}, target.DataContext={target.DataContext}");
-                Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(element), "Precondition: the shared pool should hand the A0 element to the second repeater");
-                Verify.AreEqual(0, repeaterB.GetElementIndex(element), "Precondition: the reused element represents B0 (index 0) in the second repeater");
-                Verify.IsTrue(target.IsLoaded, "Precondition: the target is loaded again, so a close isn't caused by it being unloaded");
-                Verify.AreSame(tip.XamlRoot, target.XamlRoot, "Precondition: the target is back in the tip's XamlRoot");
-                Verify.IsTrue(!tip.IsOpen || shownItem == "A0",
-                    $"An open tip must not stay on {what} when it now shows '{shownItem}' instead of 'A0'");
-                tip.IsOpen = false;
-            });
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): two ItemsRepeaters share an element factory whose elements hold a Popup with a Button
-        //           as its Child. The A0 element's Popup is opened (as a template binding would) and an OPEN tip targets the
-        //           Button in it. In one UI-thread step the first repeater's items are cleared and the second gets "B0", so the
-        //           same element (and Popup) is reused for "B0"; the Popup, closed when it left the tree, is opened again.
-        // Expected: the tip either closes or its target still shows "A0".
-        // A failure means: the ancestor check stopped at the PopupRoot (an open Popup's child is a visual child of the
-        //           PopupRoot) and missed the generated container that owns the Popup.
-        [TestMethod]
-        public void OpenTipClosesWhenTargetInPopupOfReusedTemplateElement()
-        {
-            TeachingTip tip = null;
-            ItemsRepeater repeaterA = null, repeaterB = null;
-            StackPanel element = null;
-            Microsoft.UI.Xaml.Controls.Primitives.Popup popup = null;
-            Button target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var factory = new SharedPoolPopupTemplateFactory();
-                repeaterA = new ItemsRepeater() { ItemTemplate = factory, ItemsSource = new List<string> { "A0" } };
-                repeaterB = new ItemsRepeater() { ItemTemplate = factory };
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                var root = new StackPanel();
-                root.Children.Add(repeaterA);
-                root.Children.Add(repeaterB);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                element = (StackPanel)repeaterA.TryGetElement(0);
-                Verify.IsNotNull(element, "Element for A0");
-                popup = (Microsoft.UI.Xaml.Controls.Primitives.Popup)element.Children[0];
-                target = (Button)popup.Child;
-                popup.IsOpen = true;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(popup.IsOpen && target.IsLoaded, "Precondition: the Popup in the A0 element is open");
-                tip.Target = target;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the Button in the A0 element's Popup");
-
-            RunOnUIThread.Execute(() =>
-            {
-                repeaterA.ItemsSource = null;
-                repeaterB.ItemsSource = new List<string> { "B0" };
-                Content.UpdateLayout();
-                popup.IsOpen = true;
-                Content.UpdateLayout();
-            });
-            WaitForFrames(2);
-            WaitForTipState(tip, isOpen: false);
-
-            RunOnUIThread.Execute(() =>
-            {
-                var shownItem = target.Content as string;
-                Log.Comment($"After reuse: tip.IsOpen={tip.IsOpen}, popup.IsOpen={popup.IsOpen}, target.IsLoaded={target.IsLoaded}, shows={shownItem}");
-                Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(element), "Precondition: the shared pool should hand the A0 element to the second repeater");
-                Verify.AreEqual(0, repeaterB.GetElementIndex(element), "Precondition: the reused element represents B0 (index 0) in the second repeater");
-                Verify.IsTrue(popup.IsOpen, "Precondition: the reused element's Popup is open again");
-                Verify.IsTrue(target.IsLoaded, "Precondition: the target is loaded again, so a close isn't caused by it being unloaded");
-                Verify.AreSame(tip.XamlRoot, target.XamlRoot, "Precondition: the target is back in the tip's XamlRoot");
-                Verify.IsTrue(!tip.IsOpen || shownItem == "A0",
-                    $"An open tip must not stay on the Button in a reused Popup when it now shows '{shownItem}' instead of 'A0'");
-                tip.IsOpen = false;
-                popup.IsOpen = false;
-            });
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): an OPEN tip targets a Button that is the Child of a Popup.
-        //           Run 1: the Popup is in static content; its panel is moved to another panel in one UI-thread step, which
-        //                  closes the Popup (a Popup closes when it leaves the tree), and it is reopened in the same step.
-        //           Run 2: the Popup is not in the visual tree (like a flyout's); it is closed and reopened in one step.
-        // Expected: run 1 stays open (the ancestor check follows the Popup's Child to the Popup and finds no generated
-        //           container); run 2 closes, because a Popup outside the visual tree has no owner the check can inspect.
-        // A failure means: the Popup step of the ancestor check over-closes static content, or keeps a tip open on content
-        //           whose owner it can't verify.
-        [TestMethod]
-        public void OpenTipOnPopupChildTargetAfterPopupReopens()
-        {
-            VerifyTipOnPopupChildAfterReopen(inVisualTree: true);
-            VerifyTipOnPopupChildAfterReopen(inVisualTree: false);
-        }
-
-        private void VerifyTipOnPopupChildAfterReopen(bool inVisualTree)
-        {
-            string what = inVisualTree ? "a Popup in static content that is moved" : "a Popup outside the visual tree";
-            TeachingTip tip = null;
-            StackPanel hostA = null, hostB = null, popupHost = null;
-            Microsoft.UI.Xaml.Controls.Primitives.Popup popup = null;
-            Button target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                target = new Button() { Content = "In popup", Width = 100, Height = 40 };
-                popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup() { Child = target };
-                hostA = new StackPanel();
-                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
-                popupHost = new StackPanel();
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", PreferredPlacement = TeachingTipPlacementMode.BottomRight };
-                var root = new StackPanel();
-                if (inVisualTree)
-                {
-                    popupHost.Children.Add(popup);
-                    hostA.Children.Add(popupHost);
-                }
-                root.Children.Add(hostA);
-                root.Children.Add(hostB);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-                if (!inVisualTree)
-                {
-                    popup.XamlRoot = root.XamlRoot;
-                }
-                popup.IsOpen = true;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(target.IsLoaded, "Precondition: the Button in the open Popup is loaded: " + what);
-                tip.Target = target;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the Button in " + what);
-
-            RunOnUIThread.Execute(() =>
-            {
-                if (inVisualTree)
-                {
-                    hostA.Children.Remove(popupHost);
-                    hostB.Children.Add(popupHost);
-                }
-                else
-                {
-                    popup.IsOpen = false;
-                }
-                popup.IsOpen = true;
-                Content.UpdateLayout();
-            });
-            WaitForFrames(2);
-            bool settled = WaitForTipState(tip, isOpen: inVisualTree);
-            bool targetLoaded = false, sameRoot = false, popupOpen = false;
-            RunOnUIThread.Execute(() =>
-            {
-                targetLoaded = target.IsLoaded;
-                sameRoot = target.XamlRoot == tip.XamlRoot;
-                popupOpen = popup.IsOpen;
-                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, popup.IsOpen={popupOpen}, target.IsLoaded={targetLoaded}, sameXamlRoot={sameRoot}");
-            });
-            Verify.IsTrue(popupOpen, "Precondition: the Popup is open again: " + what);
-            Verify.IsTrue(targetLoaded, "Precondition: the target is loaded again: " + what);
-            Verify.IsTrue(sameRoot, "Precondition: the target is in the tip's XamlRoot: " + what);
-            Verify.IsTrue(settled, inVisualTree ? "The tip should stay open on the Button in " + what : "The tip should close on the Button in " + what);
-            RunOnUIThread.Execute(() =>
-            {
-                tip.IsOpen = false;
-                popup.IsOpen = false;
-            });
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): an OPEN tip targets an element hosted by an ItemsRepeater or an ItemsControl, and the
-        //           whole items host is moved to another panel in one UI-thread step, so the target unloads and comes back.
-        //           Covered: UIElement items that are their own container (ItemsRepeater, ItemsControl), generated elements
-        //           for string items, a Button inside a generated template, nested repeaters, ItemsControl containers, a
-        //           Button item that ListView wraps in a generated ListViewItem, and an untargeted tip.
-        // Expected: the tip stays open when no element from the target up is a container generated for a data item, and
-        //           closes otherwise. The close is deliberate: a generated container can be recycled to another item, and
-        //           TeachingTip can't tell a same-item re-host from a reuse, so it keeps the pre-#8095 behavior there.
-        // Every targeted case first checks that the target is loaded again, in the tip's XamlRoot, at the expected index in its
-        // items host, so a close can't simply come from the target staying unloaded or moving elsewhere.
-        // A failure means: the ancestor check missed (or wrongly found) a generated item container.
-        [TestMethod]
-        public void OpenTipAfterItemsHostMovesKeepsOnlyNonGeneratedTargets()
-        {
-            VerifyTipAfterItemsHostMoves("an ItemsRepeater UIElement item",
-                () => new ItemsRepeater() { ItemsSource = new List<UIElement> { new Button() { Content = "Static" } } },
-                host => (FrameworkElement)((ItemsRepeater)host).TryGetElement(0),
-                (host, target) => ((ItemsRepeater)host).GetElementIndex(target),
-                expectOpen: true);
-            VerifyTipAfterItemsHostMoves("an ItemsControl UIElement item",
-                () => new ItemsControl() { ItemsSource = new List<UIElement> { new Button() { Content = "Static" } } },
-                host => (FrameworkElement)((ItemsControl)host).ContainerFromIndex(0),
-                (host, target) => ((ItemsControl)host).IndexFromContainer(target),
-                expectOpen: true);
-            VerifyTipAfterItemsHostMoves("an untargeted tip that is itself moved",
-                () => new Button() { Content = "Not a target" },
-                host => null,
-                null,
-                expectOpen: true);
-            VerifyTipAfterItemsHostMoves("an ItemsRepeater element generated for a string item",
-                () => new ItemsRepeater() { ItemsSource = new List<string> { "Item" } },
-                host => (FrameworkElement)((ItemsRepeater)host).TryGetElement(0),
-                (host, target) => ((ItemsRepeater)host).GetElementIndex(target),
-                expectOpen: false);
-            VerifyTipAfterItemsHostMoves("a Button inside an ItemsRepeater template generated for a string item",
-                () => new ItemsRepeater()
-                {
-                    ItemsSource = new List<string> { "Item" },
-                    ItemTemplate = (DataTemplate)XamlReader.Load(@"
-                        <DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                            <StackPanel><Button Content='{Binding}'/></StackPanel>
-                        </DataTemplate>")
-                },
-                host => (FrameworkElement)((StackPanel)((ItemsRepeater)host).TryGetElement(0)).Children[0],
-                (host, target) => ((ItemsRepeater)host).GetElementIndex((UIElement)VisualTreeHelper.GetParent(target)),
-                expectOpen: false);
-            VerifyTipAfterItemsHostMoves("an inner ItemsRepeater string item nested in an outer UIElement item",
-                () => new ItemsRepeater() { ItemsSource = new List<UIElement> { new ItemsRepeater() { ItemsSource = new List<string> { "Inner" } } } },
-                host => (FrameworkElement)((ItemsRepeater)((ItemsRepeater)host).TryGetElement(0)).TryGetElement(0),
-                (host, target) => ((ItemsRepeater)((ItemsRepeater)host).TryGetElement(0)).GetElementIndex(target),
-                expectOpen: false);
-            VerifyTipAfterItemsHostMoves("an ItemsControl container generated for a string item",
-                () => new ItemsControl() { ItemsSource = new List<string> { "Item" } },
-                host => (FrameworkElement)((ItemsControl)host).ContainerFromIndex(0),
-                (host, target) => ((ItemsControl)host).IndexFromContainer(target),
-                expectOpen: false);
-            VerifyTipAfterItemsHostMoves("a Button item that ListView wraps in a generated ListViewItem",
-                () => new ListView() { ItemsSource = new List<UIElement> { new Button() { Content = "Wrapped" } } },
-                host => (FrameworkElement)((ListView)host).Items[0],
-                (host, target) =>
-                {
-                    var container = ((ListView)host).ContainerFromItem(target);
-                    Verify.IsNotNull(container as ListViewItem, "ListView wraps the Button in a ListViewItem");
-                    return ((ListView)host).IndexFromContainer(container);
-                },
-                expectOpen: false);
-        }
-
-        private void VerifyTipAfterItemsHostMoves(string what, Func<FrameworkElement> createHost, Func<FrameworkElement, FrameworkElement> findTarget,
-            Func<FrameworkElement, FrameworkElement, int> indexInHost, bool expectOpen)
-        {
-            TeachingTip tip = null;
-            StackPanel hostA = null, hostB = null;
-            FrameworkElement host = null, target = null;
-            RunOnUIThread.Execute(() =>
-            {
-                host = createHost();
-                hostA = new StackPanel();
-                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
-                hostA.Children.Add(host);
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle" };
-                hostA.Children.Add(tip);
-                var root = new StackPanel();
-                root.Children.Add(hostA);
-                root.Children.Add(hostB);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                target = findTarget(host);
-                tip.Target = target;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on " + what);
-
-            RunOnUIThread.Execute(() =>
-            {
-                // Without a target, move the tip itself so that it is the element that unloads and comes back.
-                var moved = target != null ? (UIElement)host : tip;
-                hostA.Children.Remove(moved);
-                hostB.Children.Add(moved);
-            });
-            WaitForFrames(2);
-            bool settled = WaitForTipState(tip, expectOpen);
-            bool targetLoaded = false, sameRoot = false;
-            int index = -1;
-            RunOnUIThread.Execute(() =>
-            {
-                if (target != null)
-                {
-                    targetLoaded = target.IsLoaded;
-                    sameRoot = target.XamlRoot == tip.XamlRoot;
-                    index = indexInHost(host, target);
-                }
-                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, target.IsLoaded={targetLoaded}, sameXamlRoot={sameRoot}, indexInHost={index}");
-            });
-            if (target != null)
-            {
-                Verify.IsTrue(targetLoaded, "Precondition: the target is loaded again: " + what);
-                Verify.IsTrue(sameRoot, "Precondition: the target is in the tip's XamlRoot: " + what);
-                Verify.AreEqual(0, index, "Precondition: the target is still at index 0 in its items host: " + what);
-            }
-            Verify.IsTrue(settled, expectOpen ? "The tip should stay open on " + what : "The tip should close on " + what);
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): an OPEN TeachingTip lives inside an element generated for "A0" by one of two
-        //           ItemsRepeaters that share a RecyclePool. The tip is untargeted (first run) or targets a static Button
-        //           outside both repeaters (second run). The first repeater's items are cleared and the second gets "B0",
-        //           so the element (and the tip in it) is reused for "B0".
-        // Expected: the tip closes, after checking that the tip is loaded again in the same XamlRoot, inside the element
-        //           that now represents "B0" at index 0.
-        // A failure means: a tip inside a recycled template stayed open for an item it wasn't opened for.
-        [TestMethod]
-        public void OpenTipInsideReusedTemplateElementCloses()
-        {
-            VerifyTipInsideReusedTemplateElement(useExternalTarget: false);
-            VerifyTipInsideReusedTemplateElement(useExternalTarget: true);
-        }
-
-        private void VerifyTipInsideReusedTemplateElement(bool useExternalTarget)
-        {
-            string what = useExternalTarget ? "a tip targeting a static Button outside the repeaters" : "an untargeted tip";
-            ItemsRepeater repeaterA = null, repeaterB = null;
-            Button externalTarget = null;
-            StackPanel element = null;
-            TeachingTip tip = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var factory = new SharedPoolTipTemplateFactory();
-                repeaterA = new ItemsRepeater() { ItemTemplate = factory, ItemsSource = new List<string> { "A0" } };
-                repeaterB = new ItemsRepeater() { ItemTemplate = factory };
-                externalTarget = new Button() { Content = "External target" };
-                var root = new StackPanel();
-                root.Children.Add(externalTarget);
-                root.Children.Add(repeaterA);
-                root.Children.Add(repeaterB);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                element = (StackPanel)repeaterA.TryGetElement(0);
-                Verify.IsNotNull(element, "Element for A0");
-                tip = (TeachingTip)element.Children[1];
-                tip.Target = useExternalTarget ? externalTarget : null;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), $"{what} should open inside the A0 element");
-
-            RunOnUIThread.Execute(() =>
-            {
-                repeaterA.ItemsSource = null;
-                repeaterB.ItemsSource = new List<string> { "B0" };
-                Content.UpdateLayout();
-            });
-            WaitForFrames(2);
-            bool closed = WaitForTipState(tip, isOpen: false);
-            bool tipLoaded = false, sameRoot = false, targetLoaded = true;
-            int index = -1;
-            string shownItem = null;
-            object parent = null;
-            RunOnUIThread.Execute(() =>
-            {
-                tipLoaded = tip.IsLoaded;
-                sameRoot = tip.XamlRoot == repeaterB.XamlRoot;
-                parent = VisualTreeHelper.GetParent(element);
-                index = repeaterB.GetElementIndex(element);
-                shownItem = ((Button)element.Children[0]).Content as string;
-                if (useExternalTarget)
-                {
-                    targetLoaded = externalTarget.IsLoaded;
-                }
-                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, tip.IsLoaded={tipLoaded}, sameXamlRoot={sameRoot}, indexInB={index}, shows={shownItem}");
-            });
-            Verify.AreSame(repeaterB, parent, "Precondition: the element is reused by the second repeater: " + what);
-            Verify.AreEqual(0, index, "Precondition: the element represents index 0 in the second repeater: " + what);
-            Verify.AreEqual("B0", shownItem, "Precondition: the element now shows B0: " + what);
-            Verify.IsTrue(tipLoaded, "Precondition: the tip is loaded again: " + what);
-            Verify.IsTrue(sameRoot, "Precondition: the tip is in the same XamlRoot: " + what);
-            Verify.IsTrue(targetLoaded, "Precondition: the external target stayed loaded: " + what);
-            Verify.IsTrue(closed, $"{what} inside an element reused for another item should close");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): an OPEN tip targets an element an ItemsRepeater generated (from a DataTemplate) for
-        //           "Item". In one UI-thread step the repeater's items are cleared (the element goes to the template's
-        //           RecyclePool, which keeps it as a child of the repeater) and the repeater is moved to another panel.
-        // Expected: the tip closes. The pooled element is loaded and still a visual child of the repeater, but it represents
-        //           no item (GetElementIndex returns -1), so it is treated as a generated container.
-        // A failure means: a pooled repeater child with no item mapping was treated like static content.
-        [TestMethod]
-        public void OpenTipClosesWhenTargetIsAPooledRepeaterChild()
-        {
-            ItemsRepeater repeater = null;
-            StackPanel hostA = null, hostB = null;
-            Button target = null;
-            TeachingTip tip = null;
-            RunOnUIThread.Execute(() =>
-            {
-                repeater = new ItemsRepeater()
-                {
-                    ItemsSource = new List<string> { "Item" },
-                    ItemTemplate = (DataTemplate)XamlReader.Load(@"
-                        <DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                            <Button Content='{Binding}'/>
-                        </DataTemplate>")
-                };
-                hostA = new StackPanel();
-                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
-                hostA.Children.Add(repeater);
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle" };
-                var root = new StackPanel();
-                root.Children.Add(hostA);
-                root.Children.Add(hostB);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                target = (Button)repeater.TryGetElement(0);
-                Verify.IsNotNull(target, "Element for Item");
-                tip.Target = target;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the generated element");
-
-            RunOnUIThread.Execute(() =>
-            {
-                repeater.ItemsSource = null;
-                hostA.Children.Remove(repeater);
-                hostB.Children.Add(repeater);
-            });
-            WaitForFrames(2);
-            bool closed = WaitForTipState(tip, isOpen: false);
-            bool targetLoaded = false, sameRoot = false;
-            int index = 0;
-            object parent = null;
-            RunOnUIThread.Execute(() =>
-            {
-                targetLoaded = target.IsLoaded;
-                sameRoot = target.XamlRoot == tip.XamlRoot;
-                parent = VisualTreeHelper.GetParent(target);
-                index = repeater.GetElementIndex(target);
-                Log.Comment($"Pooled child: tip.IsOpen={tip.IsOpen}, target.IsLoaded={targetLoaded}, sameXamlRoot={sameRoot}, parentIsRepeater={parent == repeater}, index={index}");
-            });
-            Verify.AreSame(repeater, parent, "Precondition: the pooled element is still a visual child of the repeater");
-            Verify.AreEqual(-1, index, "Precondition: the pooled element represents no item");
-            Verify.IsTrue(targetLoaded, "Precondition: the pooled element is loaded");
-            Verify.IsTrue(sameRoot, "Precondition: the pooled element is in the tip's XamlRoot");
-            Verify.IsTrue(closed, "The tip should close on a pooled repeater child that represents no item");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // Scenario (issue #8095 review): an OPEN tip targets the element for index 1 of an ItemsRepeater whose source supports
-        //           key/index mapping. In one UI-thread step the repeater is collapsed (so it isn't measured), the source is
-        //           reset to a single item (the element goes to the unique-id reset pool and keeps its old index 1), and the
-        //           repeater is moved to another panel.
-        // Expected: the tip closes without asking the source for an out-of-range item.
-        // A failure means: a stale repeater index was used to read the source (crash) or treated as a valid mapping.
-        [TestMethod]
-        public void OpenTipClosesWhenTargetRepeaterIndexIsStale()
-        {
-            ItemsRepeater repeater = null;
-            StackPanel hostA = null, hostB = null;
-            FrameworkElement target = null;
-            TeachingTip tip = null;
-            var source = new KeyedStringCollection { "A", "B" };
-            RunOnUIThread.Execute(() =>
-            {
-                repeater = new ItemsRepeater() { ItemsSource = source };
-                hostA = new StackPanel();
-                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
-                hostA.Children.Add(repeater);
-                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle" };
-                var root = new StackPanel();
-                root.Children.Add(hostA);
-                root.Children.Add(hostB);
-                root.Children.Add(tip);
-                Content = root;
-                Content.UpdateLayout();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                target = (FrameworkElement)repeater.TryGetElement(1);
-                Verify.IsNotNull(target, "Element for B");
-                tip.Target = target;
-                tip.IsOpen = true;
-            });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the element for B");
-
-            RunOnUIThread.Execute(() =>
-            {
-                repeater.Visibility = Visibility.Collapsed;
-                source.ResetTo("A");
-                hostA.Children.Remove(repeater);
-                hostB.Children.Add(repeater);
-                // Read before any tick, so the state the deferred unload check will see is logged even if that check crashes.
-                int indexAfterReset = repeater.GetElementIndex(target);
-                int countAfterReset = repeater.ItemsSourceView.Count;
-                Verify.IsTrue(indexAfterReset >= countAfterReset, $"Precondition: right after the reset the repeater reports a stale index ({indexAfterReset}) outside the source ({countAfterReset} items)");
-            });
-            WaitForFrames(2);
-            bool closed = WaitForTipState(tip, isOpen: false);
-            bool targetLoaded = false, sameRoot = false;
-            int index = -1, count = -1;
-            RunOnUIThread.Execute(() =>
-            {
-                targetLoaded = target.IsLoaded;
-                sameRoot = target.XamlRoot == tip.XamlRoot;
-                index = repeater.GetElementIndex(target);
-                count = repeater.ItemsSourceView.Count;
-                Log.Comment($"Stale index: tip.IsOpen={tip.IsOpen}, target.IsLoaded={targetLoaded}, sameXamlRoot={sameRoot}, index={index}, count={count}");
-            });
-            Verify.IsTrue(targetLoaded, "Precondition: the target is loaded");
-            Verify.IsTrue(sameRoot, "Precondition: the target is in the tip's XamlRoot");
-            Verify.IsTrue(index >= count, $"Precondition: the repeater reports a stale index ({index}) outside the source ({count} items)");
-            Verify.IsTrue(closed, "The tip should close when its target's repeater index is stale");
-            RunOnUIThread.Execute(() => tip.IsOpen = false);
-            WaitForTipState(tip, isOpen: false);
-        }
-
-        // String list with key/index mapping, so ItemsRepeater keeps elements in its unique-id reset pool on Reset.
-        // App IList whose indexer runs app code once when armed (to run code inside a framework callout such as
-        // ItemsSourceView.GetAt).
-        private partial class CalloutList : global::System.Collections.IList
-        {
-            private readonly global::System.Collections.ArrayList _items = new global::System.Collections.ArrayList();
-
-            public CalloutList(params object[] items)
-            {
-                _items.AddRange(items);
-            }
-
-            public bool Armed { get; set; }
-            public Action OnArmedGet { get; set; }
-
-            public object this[int index]
-            {
-                get
-                {
-                    if (Armed)
-                    {
-                        Armed = false;
-                        OnArmedGet?.Invoke();
-                    }
-                    return _items[index];
-                }
-                set => _items[index] = value;
-            }
-
-            public bool IsFixedSize => false;
-            public bool IsReadOnly => false;
-            public int Count => _items.Count;
-            public bool IsSynchronized => false;
-            public object SyncRoot => this;
-            public int Add(object value) => _items.Add(value);
-            public void Clear() => _items.Clear();
-            public bool Contains(object value) => _items.Contains(value);
-            public int IndexOf(object value) => _items.IndexOf(value);
-            public void Insert(int index, object value) => _items.Insert(index, value);
-            public void Remove(object value) => _items.Remove(value);
-            public void RemoveAt(int index) => _items.RemoveAt(index);
-            public void CopyTo(Array array, int index) => _items.CopyTo(array, index);
-            public global::System.Collections.IEnumerator GetEnumerator() => _items.GetEnumerator();
-        }
-
-        private partial class KeyedStringCollection : global::System.Collections.ObjectModel.ObservableCollection<string>, IKeyIndexMapping
-        {
-            public string KeyFromIndex(int index) => this[index];
-
-            public int IndexFromKey(string key) => IndexOf(key);
-
-            public void ResetTo(params string[] items)
-            {
-                Items.Clear();
-                foreach (var item in items)
-                {
-                    Items.Add(item);
-                }
-                OnCollectionChanged(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(global::System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
-            }
-        }
-
-        // Element factory with one RecyclePool shared by every repeater that uses it. Each element is a StackPanel holding a
-        // Button (whose Content is set by a compiled-binding style DataTemplateComponent) and a TeachingTip.
-        private partial class SharedPoolTipTemplateFactory : ElementFactory
-        {
-            private const string PoolKey = "Item";
-            private readonly RecyclePool _pool = new RecyclePool();
-
-            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
-            {
-                if (_pool.TryGetElement(PoolKey, args.Parent) is UIElement recycled)
-                {
-                    return recycled;
-                }
-                var button = new Button() { Width = 100, Height = 40 };
-                var element = new StackPanel();
-                element.Children.Add(button);
-                element.Children.Add(new TeachingTip() { Title = "Title", Subtitle = "Subtitle" });
-                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(button));
-                return element;
-            }
-
-            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
-            {
-                _pool.PutElement(args.Element, PoolKey, args.Parent);
-            }
-        }
-
-        // Waits until the UI thread has rendered the given number of frames, so a check deferred to the next
-        // CompositionTarget.Rendering has run.
-        private static void WaitForFrames(int frameCount)
-        {
-            var rendered = new ManualResetEvent(false);
-            RunOnUIThread.Execute(() =>
-            {
-                int remaining = frameCount;
-                EventHandler<object> onRendering = null;
-                onRendering = (s, e) =>
-                {
-                    if (--remaining == 0)
-                    {
-                        CompositionTarget.Rendering -= onRendering;
-                        rendered.Set();
-                    }
-                };
-                CompositionTarget.Rendering += onRendering;
-            });
-            Verify.IsTrue(rendered.WaitOne(DefaultWaitTimeInMS), "Waiting for frames to render");
-            IdleSynchronizer.Wait();
-        }
-
-        private static void VerifyTipStaysOpenWhenTargetMoves(TeachingTip tip, FrameworkElement target, Panel from, Panel to, string what)
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                from.Children.Remove(target);
-                to.Children.Add(target);
-            });
-            WaitForFrames(2);
-            bool stayedOpen = WaitForTipState(tip, isOpen: true);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(stayedOpen, "The tip should stay open when it targets " + what + " and that target moves to another panel");
-                to.Children.Remove(target);
-                from.Children.Add(target);
-            });
-            WaitForFrames(2);
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should stay open when the target moves back");
-        }
-
-        // Element factory with one pool shared by every repeater that uses it. Each element (a Border holding a Button) carries a DataTemplateComponent,
-        // like a compiled x:Bind template, so ItemsRepeater runs ProcessBindings instead of setting DataContext.
-        private partial class SharedPoolCompiledBindingFactory : ElementFactory
-        {
-            private const string PoolKey = "Item";
-            private readonly RecyclePool _pool = new RecyclePool();
-
-            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
-            {
-                // RecyclePool hands out an element recycled by another repeater by removing it from that repeater.
-                if (_pool.TryGetElement(PoolKey, args.Parent) is UIElement recycled)
-                {
-                    return recycled;
-                }
-                var button = new Button() { Width = 100, Height = 40 };
-                var element = new Border() { Child = button };
-                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(button));
-                return element;
-            }
-
-            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
-            {
-                _pool.PutElement(args.Element, PoolKey, args.Parent);
-            }
-        }
-
-        // Element factory with one RecyclePool shared by every repeater that uses it. Each element is a StackPanel holding a
-        // Popup whose Child is a Button (whose Content is set by a compiled-binding style DataTemplateComponent).
-        private partial class SharedPoolPopupTemplateFactory : ElementFactory
-        {
-            private const string PoolKey = "Item";
-            private readonly RecyclePool _pool = new RecyclePool();
-
-            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
-            {
-                if (_pool.TryGetElement(PoolKey, args.Parent) is UIElement recycled)
-                {
-                    return recycled;
-                }
-                var button = new Button() { Width = 100, Height = 40 };
-                var popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup() { Child = button };
-                var element = new StackPanel() { Height = 40 };
-                element.Children.Add(popup);
-                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(button));
-                return element;
-            }
-
-            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
-            {
-                _pool.PutElement(args.Element, PoolKey, args.Parent);
-            }
-        }
-
-        private partial class ContentBindingComponent : IDataTemplateComponent
-        {
-            private readonly Button _element;
-
-            public ContentBindingComponent(Button element)
-            {
-                _element = element;
-            }
-
-            public void Recycle()
-            {
-            }
-
-            public void ProcessBindings(object item, int itemIndex, int phase, out int nextPhase)
-            {
-                _element.Content = item;
-                nextPhase = -1;
-            }
+            SetBoundSourceAndWait(tip, target, false);
+            VerifyBoundTipOpensAndCloses(tip, target, "after it was removed and added back");
         }
 
         private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton, StackPanel) CreateBoundTargetedTip()
@@ -4300,13 +2956,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
             return (tip, target, root);
-        }
-
-        // Logs the target's Loaded/Unloaded order, and its IsLoaded state at each event, to show how the target is re-hosted.
-        private static void LogTargetLoadedAndUnloaded(FrameworkElement target, TeachingTip tip, List<string> events)
-        {
-            target.Loaded += (s, e) => events.Add($"Target Loaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
-            target.Unloaded += (s, e) => events.Add($"Target Unloaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
         }
 
         private static void VerifyTipIsNextToTarget(TeachingTip tip, FrameworkElement target, string what)
@@ -4357,6 +3006,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(tip.IsOpen, "Tip should be closed " + what);
                 Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive " + what);
             });
+            // When the tip closed itself, its OneWay source still says "open"; the app resets it before opening the tip again.
+            SetBoundSourceAndWait(tip, toggle, false);
             SetBoundSourceAndWait(tip, toggle, true);
             SetBoundSourceAndWait(tip, toggle, false);
         }
@@ -4807,22 +3458,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Waits for a UI-thread condition that has no completion event; the timeout is only an outer safety bound.
-        // Polls a UI-thread condition without IdleSynchronizer (which can wait for running animations to finish).
-        private static bool PollUIWithoutIdleWait(Func<bool> condition)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            bool reached = false;
-            while (!reached && stopwatch.ElapsedMilliseconds < 10000)
-            {
-                RunOnUIThread.Execute(() => reached = condition());
-                if (!reached)
-                {
-                    Thread.Sleep(20);
-                }
-            }
-            return reached;
-        }
-
         private static bool WaitForUIState(Func<bool> condition)
         {
             var stopwatch = Stopwatch.StartNew();

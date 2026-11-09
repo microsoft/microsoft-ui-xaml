@@ -148,8 +148,6 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         if (args.OldValue()) {
             m_TargetUnloadedRevoker.revoke();
         }
-        // A pending unload check queued by the former target no longer applies: the new target didn't unload.
-        m_pendingUnloadCheckForTarget = false;
 
         // Register to new target if it exists
         if (const auto& value = args.NewValue()) {
@@ -834,11 +832,6 @@ void TeachingTip::OnIsOpenChanged()
     }
     else
     {
-        // Count requests to open, not the busy-state revert below (it only undoes a request the tip rejected).
-        if (IsOpen())
-        {
-            ++m_openRequestCount;
-        }
         SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
             if (strongThis->m_isIdle) {
@@ -927,12 +920,7 @@ void TeachingTip::IsOpenChangedToOpen()
         auto const closedArgs = winrt::make_self<TeachingTipClosedEventArgs>();
         closedArgs->Reason(m_lastCloseReason);
         m_closedEventSource(*this, *closedArgs);
-        // The Closing/Closed handlers may already have reset an IsOpen binding's source; writing false again would
-        // replace that binding with a local value.
-        if (IsOpen())
-        {
-            IsOpen(false);
-        }
+        IsOpen(false);
     }
     else
     {
@@ -1295,19 +1283,9 @@ void TeachingTip::OnAutomationIdChanged(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
-    // The click can arrive while the tip is already closing (the popup stays up during the close animation), and the
-    // CloseButtonClick handler may itself reset an IsOpen binding's source. Only claim the close (reason + IsOpen write)
-    // if the tip was open, and don't write IsOpen onto an already closed tip: that would replace an app's IsOpen binding.
-    const bool wasOpen = IsOpen();
     m_closeButtonClickEventSource(*this, nullptr);
-    if (wasOpen || IsOpen())
-    {
-        m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
-    }
-    if (IsOpen())
-    {
-        IsOpen(false);
-    }
+    m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
+    IsOpen(false);
 }
 
 void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -1408,178 +1386,19 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     }
 }
 
-void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& sender, winrt::RoutedEventArgs const&)
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // Only write IsOpen when the tip is open. Setting it while it is already closed would replace an app's
-    // IsOpen binding with a local value, so the tip could never be opened through that binding again. That
-    // happens for a Target inside a NavigationViewItem, which can be unloaded while NavigationView (re)hosts its items.
-    if (!IsOpen())
-    {
-        ClosePopupForUnload();
-        return;
-    }
-
-    // The tip is open. Unloaded is raised asynchronously, and an element that is only being moved (for example a
-    // NavigationViewItem's content when NavigationView re-hosts its items) is already back in the tree, or gets its
-    // Loaded raised before the next CompositionTarget.Rendering. So check on that tick and close only if the tip or
-    // its target really left the tree. Closing writes a local IsOpen=false, which replaces an app's IsOpen binding.
-    // Remember which element unloaded: a check caused by the target is dropped if the app retargets the tip first.
-    if (auto const target = m_target.get(); target && sender == target)
-    {
-        m_pendingUnloadCheckForTarget = true;
-    }
-    else
-    {
-        m_pendingUnloadCheckForTip = true;
-    }
-    const auto generation = ++m_unloadCloseGeneration;
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation, openRequestCount = m_openRequestCount]()
-    {
-        strongThis->CloseIfUnloaded(generation, openRequestCount);
-    });
-}
-
-void TeachingTip::CloseIfUnloaded(uint32_t generation, uint32_t openRequestCount)
-{
-    // Only the latest queued check runs; it covers every unload recorded since the last check.
-    if (generation != m_unloadCloseGeneration)
-    {
-        return;
-    }
-    const bool tipUnloaded = std::exchange(m_pendingUnloadCheckForTip, false);
-    const bool targetUnloaded = std::exchange(m_pendingUnloadCheckForTarget, false);
-    if (!tipUnloaded && !targetUnloaded)
-    {
-        // Only a former target unloaded, and the tip was retargeted since.
-        return;
-    }
-    const bool isOpen = IsOpen();
-    if (isOpen && openRequestCount != m_openRequestCount)
-    {
-        // The app reopened the tip after the unload; don't override that newer request.
-        return;
-    }
-
-    auto const target = m_target.get();
-    auto const xamlRoot = XamlRoot();
-    auto const popup = m_popup.get();
-    // Keep the tip open only if the tip and its target are both back in the same XamlRoot as the tip's popup (the popup
-    // can't move to another window), and neither of them is inside a container generated for a data item: such a
-    // container can be recycled to a different item (for example by NavigationView's shared NavigationViewItem pool), and
-    // there is no reliable way to tell that it still shows the same item.
-    const bool tipIsBack = IsLoaded() && xamlRoot && (!popup || popup.XamlRoot() == xamlRoot) && !IsInGeneratedItemContainer(*this);
-    const bool targetIsBack = !target ||
-        (target.IsLoaded() && target.XamlRoot() == xamlRoot && !IsInGeneratedItemContainer(target));
-    if (tipIsBack && targetIsBack)
-    {
-        // The element was only moved; keep the tip open and follow the target to its new position.
-        if (isOpen)
-        {
-            RepositionPopup();
-        }
-        return;
-    }
-
-    // Really removed. If the app closed the tip in the meantime (for example a later Unloaded handler cleared the bound
-    // source), its close may still be pending on a Closing deferral or be cancelled; close the popup anyway, as an
-    // unload always did before #8095. Only write IsOpen while it is still true, so a closed tip's binding is kept. Re-read
-    // it here: the container checks above can run app code (ItemsSourceView.GetAt, IsItemItsOwnContainerOverride).
-    if (IsOpen())
-    {
-        IsOpen(false);
-    }
-    ClosePopupForUnload();
-}
-
-void TeachingTip::ClosePopupForUnload()
-{
+    IsOpen(false);
     ClosePopup();
-    if (m_isExpandAnimationPlaying)
-    {
-        // The popup is gone, so the opening transition is over. Don't let it keep the tip busy: a busy tip reverts a
-        // pending IsOpen=false (ours or the app's) to true on the next tick, which would leave IsOpen true with no popup.
-        m_isExpandAnimationPlaying = false;
-        ++m_expandAnimationGeneration;
-        if (!m_isContractAnimationPlaying)
-        {
-            SetIsIdle(true);
-        }
-    }
-}
-
-// Returns the Popup whose Child is the element, or null.
-static winrt::Popup GetPopupOwningChild(const winrt::DependencyObject& element)
-{
-    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
-    {
-        if (auto const popup = frameworkElement.Parent().try_as<winrt::Popup>())
-        {
-            if (popup.Child() == frameworkElement)
-            {
-                return popup;
-            }
-        }
-    }
-    return nullptr;
-}
-
-bool TeachingTip::IsInGeneratedItemContainer(const winrt::DependencyObject& element)
-{
-    // Walk up the visual parents from the element (and from a Popup's child to the Popup). A child of an ItemsRepeater, or
-    // an ItemsControl item container, that is not itself its item was generated for a data item and can be reused for
-    // another one.
-    winrt::DependencyObject current = element;
-    while (current)
-    {
-        winrt::DependencyObject parent{ nullptr };
-        if (auto const popup = GetPopupOwningChild(current))
-        {
-            // An open Popup's child is a visual child of the PopupRoot, not of the Popup, so continue from the Popup
-            // that owns it. A Popup that isn't in the visual tree (for example a flyout's) has no owner we can check,
-            // so fail closed: it may belong to a generated container.
-            if (!winrt::VisualTreeHelper::GetParent(popup))
-            {
-                return true;
-            }
-            parent = popup;
-        }
-        else
-        {
-            parent = winrt::VisualTreeHelper::GetParent(current);
-        }
-        if (auto const repeater = parent.try_as<winrt::ItemsRepeater>())
-        {
-            // Fail closed unless the repeater maps this child to an item that is the child itself. A recycled child kept
-            // in a pool has no index (-1), and a child in the unique-id reset pool keeps its old index until the next
-            // measure, which may be outside the current source.
-            const int index = repeater.GetElementIndex(current.as<winrt::UIElement>());
-            auto const itemsSourceView = repeater.ItemsSourceView();
-            if (index < 0 || !itemsSourceView || index >= itemsSourceView.Count() || itemsSourceView.GetAt(index) != current)
-            {
-                return true;
-            }
-        }
-        else if (auto const itemsControl = winrt::ItemsControl::ItemsControlFromItemContainer(current))
-        {
-            if (itemsControl.ItemFromContainer(current) != current)
-            {
-                return true;
-            }
-        }
-        current = parent;
-    }
-    return false;
 }
 
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    // The indicator popup also closes whenever the tip itself closes, so don't write IsOpen on an already closed tip
-    // (that would replace an app's IsOpen binding with a local value).
     if (IsOpen())
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
-        IsOpen(false);
     }
+    IsOpen(false);
 }
 
 void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
@@ -1952,15 +1771,8 @@ void TeachingTip::StartExpandToOpen()
     }();
     scopedBatch.End();
 
-    // An unload can end this transition early (ClosePopupForUnload); then this completion belongs to an aborted
-    // animation and must not touch a newer one.
-    const auto expandGeneration = ++m_expandAnimationGeneration;
-    scopedBatch.Completed([strongThis = get_strong(), expandGeneration](auto, auto)
+    scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
-        if (expandGeneration != strongThis->m_expandAnimationGeneration)
-        {
-            return;
-        }
         strongThis->m_isExpandAnimationPlaying = false;
         if (!strongThis->m_isContractAnimationPlaying)
         {
