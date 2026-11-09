@@ -1389,7 +1389,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     UIObject itemContainer = scrollPresenter.Children[index];
                     Verify.AreEqual("ItemContainer", itemContainer.Name, "Verifying that the target is an ItemContainer");
 
-                    Rect itemBounds = itemContainer.BoundingRectangle;
+                    Rectangle itemBounds = itemContainer.BoundingRectangle;
                     Log.Comment("Clicking on ItemsView item {0} to select it. Bounds={1}", index, itemBounds);
                     InputHelper.LeftClick(
                         itemContainer,
