@@ -494,7 +494,9 @@ void TableView::ApplyGroupExpansionByIdentity(
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, identity, desired, generation, axis, bulkGeneration, subtree]()
+            QueueCoalescedEditReshape(
+                axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+                [this, identity, desired, generation, axis, bulkGeneration, subtree]()
             {
                 ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
             });
@@ -873,7 +875,9 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, expand, axis]()
+            QueueCoalescedEditReshape(
+                axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+                [this, expand, axis]()
             {
                 ApplyBulkExpansion(expand, axis);
             });

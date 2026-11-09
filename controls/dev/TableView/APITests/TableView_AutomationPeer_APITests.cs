@@ -788,6 +788,142 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectionItem calls on the data-item peer of an unrealized row fail with UIA_E_ELEMENTNOTENABLED on a disabled table, as the row peer's do.")]
+        public void VerifyDataItemPeerSelectionItemFailsWhenTableIsDisabled()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItem = RequireUnrealizedDataItemSelectionItem(tableView, 150);
+
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.RemoveFromSelection(), "RemoveFromSelection() on a disabled table must fail.");
+                Verify.AreEqual(150, tableView.SelectedIndex, "A failed RemoveFromSelection() must leave the row selected.");
+
+                tableView.IsEnabled = true;
+                tableView.Select(0);
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.Select(), "Select() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.AddToSelection(), "AddToSelection() on a disabled table must fail.");
+                Verify.AreEqual(0, tableView.SelectedIndex, "Failed calls on a disabled table must leave the selection unchanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection on the data-item peer of an unrealized row fails with UIA_E_INVALIDOPERATION in Single mode when another row is selected, as the row peer's does.")]
+        public void VerifyDataItemPeerAddToSelectionFailsWhenAnotherRowIsSelectedInSingleMode()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItem = RequireUnrealizedDataItemSelectionItem(tableView, 150);
+
+                selectionItem.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "AddToSelection() on the selected row must succeed.");
+
+                tableView.Select(0);
+                tableView.UpdateLayout();
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => selectionItem.AddToSelection(),
+                    "AddToSelection() on another row of a single-select table must fail.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(0, tableView.SelectedIndex, "A failed AddToSelection() must leave the selection on row 0.");
+                Verify.IsFalse(selectionItem.IsSelected, "The data-item peer's row must not become selected.");
+                Verify.AreEqual(0, selectionChangedCount, "A failed AddToSelection() must not raise SelectionChanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row peer's SelectionItem calls act on its own row when an app-derived IsEnabledCore inserts a row before it.")]
+        public void VerifyRowPeerSelectionItemResolvesRowAfterEnabledCheck()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(20));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = items[3];
+                var row = GetRowsRepeater(tableView).TryGetElement(3) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: the target row must be realized.");
+                var peer = new InsertingOnEnabledQueryRowPeer(row);
+                var selectionItem = (ISelectionItemProvider)peer;
+                int inserted = 0;
+                Action insertBefore = () => items.Insert(0, new NamedPerson { Name = $"Inserted {++inserted}", Role = "Inserted" });
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.Select();
+                Verify.AreEqual(1, inserted, "Precondition: the enabled check must have inserted a row.");
+                Verify.AreSame(target, tableView.SelectedItem, "Select() must select the peer's own row.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.AddToSelection();
+                Verify.AreSame(target, tableView.SelectedItem, "AddToSelection() on the selected row must succeed and keep it selected.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.RemoveFromSelection();
+                Verify.AreEqual(3, inserted, "Precondition: each call must have inserted a row.");
+                Verify.AreEqual(-1, tableView.SelectedIndex, "RemoveFromSelection() must deselect the peer's own row.");
+            });
+        }
+
+        private sealed class InsertingOnEnabledQueryRowPeer : TableViewRowAutomationPeer
+        {
+            public InsertingOnEnabledQueryRowPeer(TableViewRow owner) : base(owner) { }
+
+            public Action OnEnabledQuery { get; set; }
+
+            protected override bool IsEnabledCore()
+            {
+                var action = OnEnabledQuery;
+                OnEnabledQuery = null;
+                action?.Invoke();
+                return base.IsEnabledCore();
+            }
+        }
+
+        private static ISelectionItemProvider RequireUnrealizedDataItemSelectionItem(TableView tableView, int index)
+        {
+            tableView.Select(index);
+            tableView.UpdateLayout();
+            Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(index), "Precondition: the selected row must not be realized.");
+            var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+            Verify.IsTrue(itemPeer.IsOffscreen(), "Precondition: the selection must be reported through the off-screen data-item peer.");
+            var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+            Verify.IsNotNull(selectionItem, "The data-item peer must offer SelectionItem.");
+            return selectionItem;
+        }
+
         private static bool IsInViewport(FrameworkElement element, ScrollViewer scroller)
         {
             var top = element.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
@@ -920,8 +1056,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroll pattern is answered by the body scroller's peer and never by the TableView peer itself.")]
-        public void VerifyScrollPatternIsForwardedToBodyScrollerNotThePeer()
+        [TestProperty("Description", "Verifies the Scroll pattern is answered by the TableView peer itself, so repeated lookups return one stable provider.")]
+        public void VerifyScrollPatternIsAnsweredByTheStablePeer()
         {
             TableView tableView = null;
 
@@ -946,14 +1082,227 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                // The negative half is IDL-backed: TableView.idl:617-624 lists four provider interfaces
-                // and IScrollProvider is NOT among them, so the peer must not answer as itself. A peer
-                // claiming a pattern it does not implement fails at the cast in every client.
-                Verify.IsFalse(ReferenceEquals(provider, peer),
-                    "Scroll must be forwarded to the body scroller's peer; TableView.idl does not declare IScrollProvider on the TableView peer.");
-                Verify.IsNotNull(provider as IScrollProvider,
-                    "The forwarded Scroll provider must cast to IScrollProvider.");
+                // A fresh non-peer object per lookup would be kept by the framework until the peer is torn down.
+                Verify.IsTrue(ReferenceEquals(provider, peer), "Scroll must be answered by the TableView peer itself.");
+                Verify.IsTrue(ReferenceEquals(provider, peer.GetPattern(PatternInterface.Scroll)), "Repeated Scroll lookups must return the same provider.");
+                Verify.IsNotNull(provider as IScrollProvider, "The Scroll provider must cast to IScrollProvider.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when rows near the end are taller than the estimate (#12449), 0 returns to the top, and 50 lands mid-extent.")]
+        public void VerifySetScrollPercentReachesLastRowWithVariableHeightRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = Enumerable.Range(0, 200)
+                    .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Border Height=""{Binding RowHeight}"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
+                Verify.IsNotNull(first, "Precondition: row 0 is realized.");
+                Log.Comment($"Row 0 ActualHeight={first.ActualHeight}");
+                Verify.IsLessThan(first.ActualHeight, 60.0, "Precondition: the early rows are short.");
+            });
+
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 140.0, verifyMidpoint: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Non-regression control: one SetScrollPercent(NoScroll, 100) still lands on the last row with fixed-height rows, and 0 returns to the top.")]
+        public void VerifySetScrollPercentReachesLastRowWithFixedHeightRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable(TableViewRowTestHelpers.MakeManyItems(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 0.0, verifyMidpoint: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when a few very tall rows follow many short ones.")]
+        public void VerifySetScrollPercentReachesLastRowWithShortThenTallRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateShortThenTallTable(width: 600);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
+        }
+
+        // 50 one-line rows, then 10 rows of wrapped text well over 100px tall, as on the sample's Fix demos page. Rows
+        // re-measured above the viewport shift the ScrollViewer's anchor element while aiming for the end.
+        private TableView CreateShortThenTallTable(double width)
+        {
+            var items = Enumerable.Range(1, 60)
+                .Select(i => new SizedPerson
+                {
+                    Name = $"Row {i}",
+                    Notes = i <= 50 ? "Short note." : string.Concat(Enumerable.Repeat("This row has a long note that wraps onto several lines, so it is much taller than the rows above it. ", 4 + (i % 3))),
+                })
+                .ToList();
+            var tableView = CreateTableViewShell(items, width, 320);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            var notes = MakeTemplateColumn("Notes", (DataTemplate)XamlReader.Load(
+                @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                      <TextBlock Text=""{Binding Notes}"" TextWrapping=""Wrap"" />
+                  </DataTemplate>"));
+            notes.Width = new GridLength(320);
+            tableView.Columns.Add(notes);
+            return tableView;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a SetScrollPercent(100) retry stops once a newer Scroll request arrives during its layout pass.")]
+        public void VerifySetScrollPercentRetryYieldsToNewerRequest()
+        {
+            TableView tableView = null;
+            double noScroll = ScrollPatternIdentifiers.NoScroll;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = Enumerable.Range(0, 200)
+                    .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Border Height=""{Binding RowHeight}"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                bool issued = false;
+                EventHandler<object> handler = null;
+                handler = (s, e) =>
+                {
+                    if (!issued && scroller.VerticalOffset > 0)
+                    {
+                        issued = true;
+                        scroller.LayoutUpdated -= handler;
+                        ((IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll)).SetScrollPercent(noScroll, 0.0);
+                    }
+                };
+                scroller.LayoutUpdated += handler;
+                ((IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll)).SetScrollPercent(noScroll, 100.0);
+                scroller.LayoutUpdated -= handler;
+                Verify.IsTrue(issued, "Precondition: the newer request was issued during the first request's layout.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                Log.Comment($"After the superseding request: table={scroll.VerticalScrollPercent} offset={GetBodyScroller(tableView).VerticalOffset}");
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "The newer SetScrollPercent(NoScroll, 0) must win.");
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be at the top.");
+            });
+        }
+
+        private static IScrollProvider BodyScrollProvider(TableView tableView) =>
+            (IScrollProvider)FrameworkElementAutomationPeer.CreatePeerForElement(GetBodyScroller(tableView)).GetPattern(PatternInterface.Scroll);
+
+        private static void VerifySetScrollPercentToEndAndBack(TableView tableView, double minLastRowHeight, bool verifyMidpoint)
+        {
+            double noScroll = ScrollPatternIdentifiers.NoScroll;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll) as IScrollProvider;
+                Verify.IsNotNull(scroll, "The TableView peer must answer the Scroll pattern.");
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "Precondition: the table starts at the top.");
+                scroll.SetScrollPercent(noScroll, 100.0);
+                Log.Comment($"Right after SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent}");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                var scroller = GetBodyScroller(tableView);
+                Log.Comment($"After SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent} offset={scroller.VerticalOffset} scrollable={scroller.ScrollableHeight}");
+                Verify.AreEqual(100.0, scroll.VerticalScrollPercent, "One SetScrollPercent(NoScroll, 100) must report 100.");
+                Verify.IsLessThanOrEqual(Math.Abs(scroller.ScrollableHeight - scroller.VerticalOffset), 0.5, "The body must be at the end of its extent.");
+                var lastIndex = GetRowsRepeater(tableView).ItemsSourceView.Count - 1;
+                var last = GetRowsRepeater(tableView).TryGetElement(lastIndex) as FrameworkElement;
+                Verify.IsTrue(last != null && IsInViewport(last, scroller), "The last row must be realized and fully visible.");
+                Log.Comment($"Last row ActualHeight={last?.ActualHeight}");
+                Verify.IsGreaterThanOrEqual(last.ActualHeight, minLastRowHeight, "The last row must have its own height.");
+                scroll.SetScrollPercent(noScroll, 0.0);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "SetScrollPercent(NoScroll, 0) must return to the top.");
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be back at offset 0.");
+                var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
+                Verify.IsTrue(first != null && IsInViewport(first, GetBodyScroller(tableView)), "The first row must be visible again.");
+                if (verifyMidpoint)
+                {
+                    scroll.SetScrollPercent(noScroll, 50.0);
+                }
+            });
+
+            if (!verifyMidpoint)
+            {
+                return;
+            }
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                var scroller = GetBodyScroller(tableView);
+                Log.Comment($"After SetScrollPercent(50): table={scroll.VerticalScrollPercent} offset={scroller.VerticalOffset} scrollable={scroller.ScrollableHeight}");
+                // The percent is of the estimated extent, which can still move after the one correction.
+                var percent = scroll.VerticalScrollPercent;
+                Verify.IsLessThanOrEqual(Math.Abs(percent - 50.0), 5.0, $"SetScrollPercent(NoScroll, 50) must land mid-extent; got {percent}.");
+            });
+        }
+
+        public sealed class SizedPerson
+        {
+            public string Name { get; set; }
+
+            public double RowHeight { get; set; }
+
+            public string Notes { get; set; }
         }
 
         [TestMethod]

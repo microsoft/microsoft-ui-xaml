@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using MUXControlsTestApp.Utilities;
@@ -18,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using Windows.Foundation;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
@@ -513,6 +515,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 TableView tableView = null;
                 List<EditablePerson> items = null;
                 bool vetoClose = true;
+                Rect displayLine = default;
+                Rect editorLine = default;
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -528,6 +532,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
+                    var row = GetRowForItem(tableView, items[0]);
+                    displayLine = TableViewEditorAlignmentTests.GetDisplayLine(row,
+                        TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView));
                     var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Editing");
                     Verify.IsNotNull(error, "A vetoed commit must leave the editor open for inspection.");
                     Verify.IsTrue(tableView.IsEditing);
@@ -543,9 +550,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, $"Editing must not grow a {testCase.Density} row.");
                     Verify.AreEqual(testCase.CellPadding.Left, editor.Padding.Left + editor.BorderThickness.Left,
                         "Editor text must retain the display cell's horizontal inset.");
-                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, testCase.CellPadding).Top,
-                        editor.Padding.Top + editor.BorderThickness.Top,
-                        "Editor text must retain the density inset and row-divider compensation.");
+                    TableViewEditorAlignmentTests.VerifyLinesMatch(testCase.Density.ToString(), displayLine,
+                        TableViewEditorAlignmentTests.GetEditorLine(row, editor));
                     tableView.Density = nextCase.Density;
                 });
                 IdleSynchronizer.Wait();
@@ -556,8 +562,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsTrue(tableView.IsEditing, "Changing density must preserve the open editor.");
                     Verify.AreEqual(nextCase.FontSize, editor.FontSize, "The open editor must follow density typography.");
                     Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "The open editor must follow a runtime density change.");
-                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.CellPadding).Top,
-                        editor.Padding.Top + editor.BorderThickness.Top);
+                    editorLine = TableViewEditorAlignmentTests.GetEditorLine(row, editor);
                     vetoClose = false;
                     Verify.IsTrue(tableView.CancelEdit());
                 });
@@ -571,6 +576,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.TextPadding),
                         TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).Padding,
                         "Restoring display text must restore its optical padding without changing editor padding.");
+                    TableViewEditorAlignmentTests.VerifyLinesMatch($"Runtime density change to {nextCase.Density}",
+                        TableViewEditorAlignmentTests.GetDisplayLine(row,
+                            TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView)), editorLine);
                 });
             }
         }
@@ -2917,6 +2925,157 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
+    }
+
+    // GH #12354: swapping the display TextBlock for the built-in TextBox editor must not move the text.
+    [TestClass]
+    public class TableViewEditorAlignmentTests : TableViewApiTestBase
+    {
+        [TestMethod]
+        [TestProperty("Description", "Verifies the built-in editor's text starts at the display text's position at every density, LTR and RTL.")]
+        // Windows 10 places the display TextBlock's line about 1.7px higher than Windows 11 does while the editor's
+        // line is unchanged, so the display text is not a stable reference there.
+        [TestProperty("TestPass:MinOSVer", MUXControlsTestApp.WindowsOSVersion._22H2)]
+        public void VerifyEditorTextDoesNotShiftWhenEditOpens()
+        {
+            foreach (var layout in new[]
+            {
+                (GridLines: TableViewGridLinesVisibility.All, Rounding: true),
+                (GridLines: TableViewGridLinesVisibility.None, Rounding: true),
+                (GridLines: TableViewGridLinesVisibility.All, Rounding: false),
+                (GridLines: TableViewGridLinesVisibility.None, Rounding: false)
+            })
+            {
+                foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+                {
+                    foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+                    {
+                        var m = OpenEditorAndMeasure(density, flowDirection, "Asha", layout.Rounding, layout.GridLines);
+                        VerifyLinesMatch($"{density}/{flowDirection}/{layout.GridLines}/rounding={layout.Rounding}", m.DisplayLine, m.EditorLine);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a fallback-font glyph at Compact density neither grows the editor past the cell nor grows the row.")]
+        public void VerifyFallbackGlyphKeepsCompactEditorAndRowHeight()
+        {
+            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha \U0001F600");
+            Log.Comment($"Fallback glyph: dy(top)={m.EditorLine.Top - m.DisplayLine.Top} dy(bottom)={m.EditorLine.Bottom - m.DisplayLine.Bottom}; " +
+                $"cell {m.CellHeightBefore} -> editor {m.EditorHeight}; row {m.RowHeightBefore} -> {m.RowHeightAfter}");
+
+            Verify.IsLessThanOrEqual(Math.Abs(m.EditorHeight - m.CellHeightBefore), 0.5, "The editor must be exactly as tall as the cell it replaces.");
+            Verify.IsLessThanOrEqual(Math.Abs(m.RowHeightAfter - m.RowHeightBefore), 0.5, "Opening the editor must not change the row height.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the editor re-centres its line when a taller fallback-font line is replaced by shorter text.")]
+        [TestProperty("TestPass:MinOSVer", MUXControlsTestApp.WindowsOSVersion._22H2)]
+        public void VerifyEditorRecentresAfterFallbackGlyphIsRemoved()
+        {
+            // Myanmar Text's line is taller than Segoe UI's, so the editor grows its text view for it first.
+            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha",
+                editorTexts: new[] { "Asha \u1019\u103C\u1014\u103A\u1019\u102C", "Asha" });
+            VerifyLinesMatch("Compact, fallback glyph removed", m.DisplayLine, m.EditorLine);
+        }
+
+        private sealed class EditorMeasurement
+        {
+            public Rect DisplayLine;
+            public Rect EditorLine;
+            public double CellHeightBefore;
+            public double RowHeightBefore;
+            public double EditorHeight;
+            public double RowHeightAfter;
+        }
+
+        // Opens an edit on the first row's Name cell, held open by a rejected value, then types each of editorTexts
+        // into it in turn (by default the display text).
+        private EditorMeasurement OpenEditorAndMeasure(TableViewDensity density, FlowDirection flowDirection, string name,
+            bool useLayoutRounding = true, TableViewGridLinesVisibility? gridLines = null, params string[] editorTexts)
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            var m = new EditorMeasurement();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems(name, "Diego", "Mei");
+                items[0].RejectPrefix = InvalidPrefix;
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                tableView.Density = density;
+                tableView.FlowDirection = flowDirection;
+                tableView.UseLayoutRounding = useLayoutRounding;
+                if (gridLines.HasValue) { tableView.GridLinesVisibility = gridLines.Value; }
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowForItem(tableView, items[0]);
+                var display = FindVisualChildrenByType<TextBlock>(row).Single(t => t.Text == name);
+                m.DisplayLine = GetDisplayLine(row, display);
+                m.CellHeightBefore = ((FrameworkElement)Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(display)).ActualHeight;
+                m.RowHeightBefore = row.ActualHeight;
+
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var text in editorTexts.Length > 0 ? editorTexts : new[] { name })
+            {
+                RunOnUIThread.Execute(() => FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Single().Text = text);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var editor = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Single();
+                    var view = (FrameworkElement)FindVisualChildrenByType<ScrollViewer>(editor).Single(s => s.Name == "ContentElement").Content;
+                    Log.Comment($"Editor text '{text}': line {view.DesiredSize.Height}, text view {view.ActualHeight}, padding {editor.Padding}");
+                });
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowForItem(tableView, items[0]);
+                var editor = FindVisualChildrenByType<TextBox>(row).Single();
+                m.EditorLine = GetEditorLine(row, editor);
+                m.EditorHeight = editor.ActualHeight;
+                m.RowHeightAfter = row.ActualHeight;
+            });
+            return m;
+        }
+
+        // Compares the line's start edge, and its top (or its bottom when the line heights differ). Both rects are
+        // in the row's own coordinates, which are mirrored under RTL, so Left is the start edge either way. Under RTL
+        // the editor's start edge is its text view's start edge, not a glyph edge (see TableViewPage.EditorLineRect).
+        internal static Rect GetDisplayLine(TableViewRow row, TextBlock display)
+        {
+            var line = display.ContentStart.GetCharacterRect(LogicalDirection.Forward);
+            line.Union(display.ContentEnd.GetCharacterRect(LogicalDirection.Backward));
+            return display.TransformToVisual(row).TransformBounds(line);
+        }
+
+        internal static Rect GetEditorLine(TableViewRow row, TextBox editor)
+        {
+            var textView = (FrameworkElement)FindVisualChildrenByType<ScrollViewer>(editor).Single(s => s.Name == "ContentElement").Content;
+            return textView.TransformToVisual(row).TransformBounds(MUXControlsTestApp.TableViewPage.EditorLineRect(editor, textView));
+        }
+
+        internal static void VerifyLinesMatch(string context, Rect display, Rect editor)
+        {
+            Log.Comment($"{context}: display line {display}, editor line {editor}");
+            double dx = editor.Left - display.Left;
+            bool sameLineHeight = Math.Abs(editor.Height - display.Height) <= 0.5;
+            double dy = sameLineHeight ? editor.Top - display.Top : editor.Bottom - display.Bottom;
+            Log.Comment($"{context}: dx={dx} dy={dy} ({(sameLineHeight ? "tops" : "line bottoms")}); line heights display={display.Height} editor={editor.Height}");
+
+            Verify.IsLessThanOrEqual(Math.Abs(dx), 0.5, $"{context}: the editor text must not move horizontally (dx={dx}).");
+            Verify.IsLessThanOrEqual(Math.Abs(dy), 0.5, $"{context}: the editor text must not move vertically (dy={dy}).");
+        }
     }
 
     internal static class TableViewEditingTestHelpers

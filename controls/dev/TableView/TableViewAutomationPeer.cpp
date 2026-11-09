@@ -237,25 +237,9 @@ namespace
             return peer ? ProviderFromPeer(peer) : nullptr;
         }
 
-        void AddToSelection()
-        {
-            const int32_t index = RequireEnabledIndex();
-            auto const tableImpl = winrt::get_self<TableView>(m_table.get());
-            EnsureCanAddRowToSelection(*tableImpl, index);
-            tableImpl->SelectRowIndexFromInteraction(index, false);
-        }
-
-        void RemoveFromSelection()
-        {
-            const int32_t index = RequireEnabledIndex();
-            winrt::get_self<TableView>(m_table.get())->Deselect(index);
-        }
-
-        void Select()
-        {
-            const int32_t index = RequireEnabledIndex();
-            winrt::get_self<TableView>(m_table.get())->SelectRowIndexFromInteraction(index, false);
-        }
+        void AddToSelection() { ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Add); }
+        void RemoveFromSelection() { ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Remove); }
+        void Select() { ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Select); }
 
         void Realize()
         {
@@ -278,6 +262,14 @@ namespace
         }
 
     private:
+        void ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction action)
+        {
+            // Enabled first: a realized row's app-derived peer can change the rows the index is resolved against.
+            TableViewRowAutomationPeer::ThrowIfSelectionItemNotEnabled(IsEnabledCore());
+            const int32_t index = RequireIndex();
+            TableViewRowAutomationPeer::ApplySelectionItemActionAt(action, m_table.get(), index);
+        }
+
         // -1 once the item left the source (or a boxed value's row was deselected); the table is alive when >= 0.
         int32_t ItemIndex()
         {
@@ -326,16 +318,6 @@ namespace
             if (index < 0)
             {
                 ThrowElementNotAvailable();
-            }
-            return index;
-        }
-
-        int32_t RequireEnabledIndex()
-        {
-            const int32_t index = RequireIndex();
-            if (!IsEnabledCore())
-            {
-                throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
             }
             return index;
         }
@@ -396,6 +378,150 @@ static int32_t VisibleColumnToChildIndex(TChildren const& children, int32_t visi
     return -1;
 }
 
+// The body ScrollViewer's percent is computed against the repeater's estimated extent, which grows as
+// rows near the end are realized, so a single SetScrollPercent(100) could land short. The peer itself is
+// the Scroll provider, so every lookup returns the same object and every request goes through it.
+winrt::IScrollProvider TableViewAutomationPeer::GetBodyScrollProvider()
+{
+    if (auto const impl = GetImpl())
+    {
+        if (auto const bodyScroller = impl->GetBodyScrollerInternal())
+        {
+            if (auto const svPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(bodyScroller))
+            {
+                return svPeer.GetPattern(winrt::PatternInterface::Scroll).try_as<winrt::IScrollProvider>();
+            }
+        }
+    }
+    return nullptr;
+}
+
+winrt::IScrollProvider TableViewAutomationPeer::BodyScrollProvider()
+{
+    if (auto const provider = GetBodyScrollProvider())
+    {
+        return provider;
+    }
+    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
+bool TableViewAutomationPeer::HorizontallyScrollable() { return BodyScrollProvider().HorizontallyScrollable(); }
+double TableViewAutomationPeer::HorizontalScrollPercent() { return BodyScrollProvider().HorizontalScrollPercent(); }
+double TableViewAutomationPeer::HorizontalViewSize() { return BodyScrollProvider().HorizontalViewSize(); }
+bool TableViewAutomationPeer::VerticallyScrollable() { return BodyScrollProvider().VerticallyScrollable(); }
+double TableViewAutomationPeer::VerticalViewSize() { return BodyScrollProvider().VerticalViewSize(); }
+
+void TableViewAutomationPeer::Scroll(winrt::ScrollAmount const& horizontalAmount, winrt::ScrollAmount const& verticalAmount)
+{
+    ++m_scrollRequest;
+    BodyScrollProvider().Scroll(horizontalAmount, verticalAmount);
+}
+
+double TableViewAutomationPeer::VerticalScrollPercent()
+{
+    const double percent = BodyScrollProvider().VerticalScrollPercent();
+    return percent != winrt::ScrollPatternIdentifiers::NoScroll() && IsLastRowAtBottom() ? 100.0 : percent;
+}
+
+void TableViewAutomationPeer::SetScrollPercent(double horizontalPercent, double verticalPercent)
+{
+    auto const inner = BodyScrollProvider();
+    auto const impl = GetImpl();
+    auto const scroller = impl ? impl->GetBodyScrollerInternal() : nullptr;
+    // A request made during one of the layout passes below (by any caller) supersedes this one.
+    auto const request = ++m_scrollRequest;
+    if (!scroller || verticalPercent == winrt::ScrollPatternIdentifiers::NoScroll())
+    {
+        inner.SetScrollPercent(horizontalPercent, verticalPercent);
+        return;
+    }
+
+    const double oldExtent = scroller.ExtentHeight();
+    const bool toEnd = verticalPercent >= 100.0 - 1e-9;
+    // The default element anchoring pulls the offset back whenever a re-measured row above the viewport
+    // shifts the anchor, so aiming for the end could stall short of it. Anchor at the far edge meanwhile.
+    auto const anchorRatioProperty = winrt::ScrollViewer::VerticalAnchorRatioProperty();
+    auto const localAnchorRatio = scroller.ReadLocalValue(anchorRatioProperty);
+    if (toEnd)
+    {
+        scroller.VerticalAnchorRatio(1.0);
+    }
+    auto restoreAnchorRatio = gsl::finally([&]()
+    {
+        if (!toEnd)
+        {
+            return;
+        }
+        if (localAnchorRatio == winrt::DependencyProperty::UnsetValue())
+        {
+            scroller.ClearValue(anchorRatioProperty);
+        }
+        else
+        {
+            scroller.SetValue(anchorRatioProperty, localAnchorRatio);
+        }
+    });
+    inner.SetScrollPercent(horizontalPercent, verticalPercent);
+    scroller.UpdateLayout();
+    if (toEnd)
+    {
+        // Each pass realizes rows nearer the end, so the extent converges on the true one; keep going
+        // while a pass still moves it. The cap only guards against a layout that never settles.
+        double lastExtent = -1.0;
+        double lastOffset = -1.0;
+        for (int attempt = 0; attempt < 32 && request == m_scrollRequest && !IsLastRowAtBottom(); ++attempt)
+        {
+            const double extent = scroller.ExtentHeight();
+            const double offset = scroller.VerticalOffset();
+            if (!inner.VerticallyScrollable() || (extent == lastExtent && offset == lastOffset))
+            {
+                break;
+            }
+            lastExtent = extent;
+            lastOffset = offset;
+            inner.SetScrollPercent(winrt::ScrollPatternIdentifiers::NoScroll(), 100.0);
+            scroller.UpdateLayout();
+        }
+    }
+    else if (request == m_scrollRequest && std::abs(scroller.ExtentHeight() - oldExtent) >= 0.5)
+    {
+        inner.SetScrollPercent(winrt::ScrollPatternIdentifiers::NoScroll(), verticalPercent);
+        scroller.UpdateLayout();
+    }
+}
+
+bool TableViewAutomationPeer::IsLastRowAtBottom()
+{
+    auto const impl = GetImpl();
+    auto const scroller = impl ? impl->GetBodyScrollerInternal() : nullptr;
+    auto const repeater = impl ? impl->GetRowsRepeaterInternal() : nullptr;
+    auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+    if (!scroller || !view || view.Count() == 0 || !(scroller.ViewportHeight() > 0.0))
+    {
+        return false;
+    }
+
+    auto const last = repeater.TryGetElement(view.Count() - 1).try_as<winrt::FrameworkElement>();
+    if (!last || !(last.ActualHeight() > 0.0))
+    {
+        return false;
+    }
+    try
+    {
+        // Under half the range, so a sub-pixel range (e.g. 1px at 200%) never reads as both top and end.
+        const double range = scroller.ScrollableHeight();
+        const double tolerance = (std::min)(0.5, range / 2.0);
+        const double bottom = last.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y + last.ActualHeight();
+        return range > 0.0 &&
+            std::abs(bottom - scroller.ViewportHeight()) <= tolerance &&
+            range - scroller.VerticalOffset() <= tolerance;
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return false;
+    }
+}
+
 winrt::IInspectable TableViewAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
     if (Owner().try_as<winrt::TableView>())
@@ -424,22 +550,9 @@ winrt::IInspectable TableViewAutomationPeer::GetPatternCore(winrt::PatternInterf
             }
         }
 
-        // Forward Scroll to the body ScrollViewer's peer.
-        if (patternInterface == winrt::PatternInterface::Scroll)
+        if (patternInterface == winrt::PatternInterface::Scroll && GetBodyScrollProvider())
         {
-            if (auto const impl = GetImpl())
-            {
-                if (auto bodyScroller = impl->GetBodyScrollerInternal())
-                {
-                    if (auto svPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(bodyScroller))
-                    {
-                        if (auto provider = svPeer.GetPattern(winrt::PatternInterface::Scroll))
-                        {
-                            return provider;
-                        }
-                    }
-                }
-            }
+            return *this;
         }
     }
 

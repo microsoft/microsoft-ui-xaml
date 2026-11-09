@@ -1631,7 +1631,7 @@ void TableViewRow::OnExpanderGutterPointerPressed(
 {
     if (!IsExpandable())
     {
-        // Unhandled so a press on a leaf's gutter selects like the cell.
+        // Defensive: a leaf's gutter is not hit-testable. Unhandled, so the row still selects.
         return;
     }
 
@@ -1712,6 +1712,7 @@ void TableViewRow::OnCellsArrangedInternal(double leadLeft, double leadWidth, do
 // Confine the chevron to the lead cell's slot so it never paints over or takes presses from the next
 // column. Gutter and host share origin and Translation, so subtracting the gutter's left margin maps
 // the slot into gutter space (holds under frozen pinning and RTL). Clip also bounds hit-testing.
+// A leaf draws no chevron, so its gutter is not hit-testable and presses reach the lead cell.
 void TableViewRow::UpdateExpanderGutterClip()
 {
     auto const gutter = m_rowExpanderGutter.get();
@@ -1739,6 +1740,7 @@ void TableViewRow::UpdateExpanderGutterClip()
         {
             gutter.IsHitTestVisible(false);
         }
+        m_isGutterPressed = false;
         return;
     }
 
@@ -1749,9 +1751,13 @@ void TableViewRow::UpdateExpanderGutterClip()
         {
             gutter.Clip(nullptr);
         }
-        if (!gutter.IsHitTestVisible())
+        if (gutter.IsHitTestVisible() != IsExpandable())
         {
-            gutter.IsHitTestVisible(true);
+            gutter.IsHitTestVisible(IsExpandable());
+        }
+        if (!IsExpandable())
+        {
+            m_isGutterPressed = false;
         }
         return;
     }
@@ -1777,10 +1783,15 @@ void TableViewRow::UpdateExpanderGutterClip()
         geometry.Rect(rect);
     }
 
-    const bool hitTestable = visibleWidth > 0.0;
+    const bool hitTestable = IsExpandable() && visibleWidth > 0.0;
     if (gutter.IsHitTestVisible() != hitTestable)
     {
         gutter.IsHitTestVisible(hitTestable);
+    }
+    // A gutter that stops hit-testing gets no release or exit, so drop any pending press here.
+    if (!hitTestable)
+    {
+        m_isGutterPressed = false;
     }
 }
 
@@ -3307,7 +3318,7 @@ void TableViewRow::OnPointerPressedForEditing(
     }
 
     // A chevron press is a toggle, not a lead-cell press; otherwise two quick toggles would read as
-    // a double-click and open an editor. Leaf gutters (no toggle) fall through.
+    // a double-click and open an editor. Only expandable rows' gutters are hit-testable.
     if (IsExpandable() && IsWithinExpanderGutter(args.OriginalSource()))
     {
         return;

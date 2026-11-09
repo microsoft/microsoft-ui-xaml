@@ -8,6 +8,7 @@
 #include "TableViewAutomationHelpers.h"
 #include "TableViewRow.h"
 #include "TableViewFocusHelpers.h"
+#include "SharedHelpers.h"
 
 #include <winrt/Windows.UI.Xaml.Interop.h>
 
@@ -111,8 +112,8 @@ void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, win
         editor.FontSize(fontSize);
     }
     auto padding = owner
-        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
-        : winrt::ThicknessHelper::FromLengths(12, 10, 12, 10);
+        ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding()
+        : winrt::ThicknessHelper::FromLengths(12, 9, 12, 11);
     for (auto parent = winrt::VisualTreeHelper::GetParent(editor); parent;
         parent = winrt::VisualTreeHelper::GetParent(parent))
     {
@@ -124,16 +125,37 @@ void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, win
         }
     }
     const auto border = editor.BorderThickness();
-    const auto editorPadding = winrt::ThicknessHelper::FromLengths(
+    auto editorPadding = winrt::ThicknessHelper::FromLengths(
         std::max(0.0, padding.Left - border.Left),
         std::max(0.0, padding.Top - border.Top),
         std::max(0.0, padding.Right - border.Right),
         std::max(0.0, padding.Bottom - border.Bottom));
+    const auto minHeight = owner ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight() : 40.0;
+    const auto contentElement = SharedHelpers::FindInVisualTreeByName(editor, L"ContentElement");
+    const auto scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
+    const auto textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
+    if (textView)
+    {
+        // Center against a fixed density target, not ActualHeight, so fallback fonts cannot grow the row cumulatively.
+        const auto line = textView.DesiredSize().Height;
+        const auto target = std::max(minHeight - border.Top - border.Bottom, line + editorPadding.Top + editorPadding.Bottom);
+        auto displayOffset = std::max(0.0, (minHeight - line - padding.Top - padding.Bottom) / 2.0);
+        if (editor.UseLayoutRounding())
+        {
+            if (auto const root = editor.XamlRoot(); root && root.RasterizationScale() > 0.0)
+            {
+                const auto scale = root.RasterizationScale();
+                displayOffset = std::round(displayOffset * scale) / scale;
+            }
+        }
+        // The centered display rounds its allocation offset; split the editor's remaining padding the same way.
+        editorPadding.Top = std::clamp(padding.Top + displayOffset - border.Top, 0.0, target - line);
+        editorPadding.Bottom = target - line - editorPadding.Top;
+    }
     if (editor.Padding() != editorPadding)
     {
         editor.Padding(editorPadding);
     }
-    const auto minHeight = owner ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight() : 40.0;
     if (editor.MinHeight() != minHeight)
     {
         editor.MinHeight(minHeight);
@@ -172,9 +194,25 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
         {
             RefreshEditorMetrics(sender.as<winrt::TextBox>(), weakOwner.get());
         });
-    textBox.Loaded([weakOwner](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&)
+    textBox.Loaded([weakOwner, hooked = false](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&) mutable
         {
-            RefreshEditorMetrics(sender.as<winrt::TextBox>(), weakOwner.get());
+            auto const textBox = sender.as<winrt::TextBox>();
+            textBox.ApplyTemplate();
+            auto const contentElement = SharedHelpers::FindInVisualTreeByName(textBox, L"ContentElement");
+            auto const scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
+            auto const textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
+            if (textView && !hooked)
+            {
+                textView.SizeChanged([weakTextBox = winrt::make_weak(textBox), weakOwner](winrt::IInspectable const&, auto const&)
+                    {
+                        if (auto const editor = weakTextBox.get())
+                        {
+                            RefreshEditorMetrics(editor, weakOwner.get());
+                        }
+                    });
+                hooked = true;
+            }
+            RefreshEditorMetrics(textBox, weakOwner.get());
         });
     RefreshEditorMetrics(textBox, owner);
 

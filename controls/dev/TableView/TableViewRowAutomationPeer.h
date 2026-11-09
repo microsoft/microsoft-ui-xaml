@@ -46,6 +46,12 @@ public:
     void RemoveFromSelection();
     void Select();
 
+    // Shared with the data-item peer for an unrealized selected row, so both enforce the same checks.
+    // Callers check the enabled state (which can run app code) before resolving the table and row.
+    enum class SelectionItemAction { Add, Remove, Select };
+    static void ThrowIfSelectionItemNotEnabled(bool isEnabled);
+    static void ApplySelectionItemActionAt(SelectionItemAction action, winrt::TableView const& tableView, int32_t rowIndex);
+
     // IVirtualizedItemProvider — available only after the realized row has been recycled out.
     void Realize();
     // Creates the row at rowIndex and brings it into view (UIA Realize only, never a read). Throws
@@ -93,6 +99,7 @@ private:
     winrt::TableView GetOwningTableView();
     // This row's index in the owner's ItemsSource index space, or -1 when unrealized.
     int32_t GetRowIndex();
+    void ApplySelectionItemAction(SelectionItemAction action);
     bool IsVirtualized();
     void RealizeCore();
     winrt::IInspectable GetTrackedItem() const;

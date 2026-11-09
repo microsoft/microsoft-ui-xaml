@@ -1406,6 +1406,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
         // stale content no longer pins the columns.
         ResetColumnDesiredWidths();
+        ExpireLockedColumnHolds();
 
         // A different collection invalidates any projection we synthesized over the old one, so the
         // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
@@ -3154,16 +3155,8 @@ static winrt::DataTemplate SelectStyleHeaderTemplate(
     const winrt::ContentControl& header,
     const winrt::IInspectable& headerContent)
 {
-    try
-    {
-        header.Content(headerContent);
-        return styleSelector.SelectTemplate(headerContent, header);
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
-        return nullptr;
-    }
+    header.Content(headerContent);
+    return styleSelector.SelectTemplate(headerContent, header);
 }
 
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
@@ -3637,7 +3630,18 @@ void TableView::RebuildHeadersCore()
                 winrt::DataTemplate selected{ nullptr };
                 if (styleContentTemplateSelector)
                 {
-                    selected = SelectStyleHeaderTemplate(styleContentTemplateSelector, header, column.Header());
+                    // Contained, unlike a column's HeaderTemplateSelector that the framework calls: TableView calls this
+                    // one while it rebuilds the band, so a throw would leave the band half built.
+                    try
+                    {
+                        selected = SelectStyleHeaderTemplate(styleContentTemplateSelector, header, column.Header());
+                    }
+                    catch (...)
+                    {
+                        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
+                        NoteRecoveredAppFault(TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh,
+                            TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
+                    }
                 }
                 if (selected)
                 {
@@ -3919,7 +3923,7 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
         // A sort cannot run while an edit is opening, and must not close it once open; clear once no edit is open.
         if (m_editState == EditState::Beginning)
         {
-            QueueReshapeAfterEditCloses([this]()
+            QueueReshapeAfterEditCloses(TableViewTip::Operation::Sort, [this]()
             {
                 // A source sort the app declared since the opt-out is newer: adopt it before clearing.
                 if (std::exchange(m_sortReconcileQueued, false))
@@ -3951,7 +3955,7 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     {
         if (m_editState == EditState::Beginning)
         {
-            QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
+            QueueReshapeAfterEditCloses(TableViewTip::Operation::Sort, [this, weakColumn = winrt::make_weak(column)]()
             {
                 // A source sort the app declared since the opt-out is newer: adopt it before clearing.
                 if (std::exchange(m_sortReconcileQueued, false))
@@ -4671,6 +4675,9 @@ bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
     return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi), true /* commitPixelWidth */);
 }
 
+// Host-driven cancels: Escape, and the table's Unloaded. The table's Unloaded is dispatched before
+// the gripper's, so a removed table reverts the drag even if the app goes idle between the two; the
+// gripper's later Unloaded then finds no drag. Idempotent - EndDrag no-ops when no drag is in flight.
 void TableView::CancelColumnResizeDrag()
 {
     auto const state = m_activeColumnResizeDrag;

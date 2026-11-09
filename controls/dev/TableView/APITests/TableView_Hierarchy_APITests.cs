@@ -1255,6 +1255,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 // Dan's indent exceeds the 30px lead column, so his chevron is fully clipped.
+                Verify.IsTrue(FindTreeRow(tableView, "Dan").IsExpandable, "Precondition: Dan is expandable.");
                 Verify.IsFalse(GetChevron(tableView, "Dan").IsHitTestVisible, "Dan's chevron is past the lead cell.");
             });
         }
@@ -1293,7 +1294,106 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("ok", CheckChevronClip(tableView, "Dan"), "Widened: chevron clip for Dan.");
                 Verify.AreEqual("ok", CheckChevronClip(tableView, "Ben"), "Widened: chevron clip for Ben.");
                 Verify.IsTrue(GetChevron(tableView, "Dan").IsHitTestVisible, "Widened: Dan's chevron is hit-testable.");
+                Verify.AreEqual("ok", CheckChevronClip(tableView, "Hal"), "Widened: chevron clip for Hal.");
+                Verify.IsFalse(GetChevron(tableView, "Hal").IsHitTestVisible, "Widened: leaf Hal's gutter stays non-hit-testable.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on a leaf row's chevron gutter opens the lead cell menu, while an expandable row's gutter keeps the row menu, across leaf/expandable changes and recycling.")]
+        public void VerifyLeafGutterRequestOpensCellMenu()
+        {
+            var list = MakeLiveTree();
+            var recorder = new MenuRecorder();
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var source = TableViewSource.From(list).ParentBy(LiveById, LiveByParent);
+                source.IsLiveShaping = true;
+                tableView = CreateTreeTable(source);
+                tableView.Columns[0].CellContextFlyout = recorder.Create("CellMenu");
+                tableView.Resources[typeof(TableViewRow)] = new Style(typeof(TableViewRow))
+                {
+                    Setters = { new Setter(UIElement.ContextFlyoutProperty, recorder.Create("RowMenu")) },
+                };
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ann1- Bob2 Cat2 Dee1- Eli2", "expanded"));
+
+            VerifyGutterRequest(tableView, recorder, "Ann", expandable: true, "expandable root");
+            VerifyGutterRequest(tableView, recorder, "Bob", expandable: false, "leaf child");
+
+            // Bob gains a child: leaf -> expandable on the same container.
+            var fin = new LiveRow { Id = 6, Name = "Fin", Score = 1, Team = "X", ParentId = 2 };
+            RunOnUIThread.Execute(() => list.Add(fin));
+            SettleLayout(tableView);
+            VerifyGutterRequest(tableView, recorder, "Bob", expandable: true, "Bob after gaining Fin");
+            VerifyGutterRequest(tableView, recorder, "Fin", expandable: false, "new leaf grandchild");
+
+            // And back: expandable -> leaf.
+            RunOnUIThread.Execute(() => list.Remove(fin));
+            SettleLayout(tableView);
+            VerifyGutterRequest(tableView, recorder, "Bob", expandable: false, "Bob after losing Fin");
+
+            // Scroll a taller tree so containers are recycled; one that hosted an expandable row must
+            // now host a leaf, and its gutter must follow.
+            RunOnUIThread.Execute(() =>
+            {
+                for (var i = 0; i < 40; i++)
+                {
+                    list.Add(new LiveRow { Id = 100 + i, Name = $"R{i}", Score = 100 + i, Team = "Z" });
+                    list.Add(new LiveRow { Id = 200 + i, Name = $"C{i}", Score = 1, Team = "Z", ParentId = 100 + i });
+                }
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            var wasExpandable = new Dictionary<TableViewRow, object>();
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var row in GetRealizedRows(tableView).Where(r => r.IsExpandable))
+                {
+                    wasExpandable[row] = row.DataContext;
+                }
+            });
+
+            string reusedName = null;
+            TableViewRow reused = null;
+            for (var offset = 400.0; offset <= 2400.0 && reusedName == null; offset += 400.0)
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
+                RunOnUIThread.Execute(() =>
+                {
+                    var viewport = GetBodyScroller(tableView);
+                    var bounds = viewport.TransformToVisual(null).TransformBounds(new Rect(0, 0, viewport.ActualWidth, viewport.ActualHeight));
+                    foreach (var pair in wasExpandable)
+                    {
+                        var row = pair.Key;
+                        var item = row.DataContext;
+                        if (item == null || ReferenceEquals(item, pair.Value) || row.IsExpandable ||
+                            !ReferenceEquals(GetRowForItem(tableView, item), row))
+                        {
+                            continue;
+                        }
+
+                        var rowBounds = row.TransformToVisual(null).TransformBounds(new Rect(0, 0, row.ActualWidth, row.ActualHeight));
+                        if (rowBounds.Top >= bounds.Top && rowBounds.Bottom <= bounds.Bottom)
+                        {
+                            reusedName = NameOf(item);
+                            reused = row;
+                            break;
+                        }
+                    }
+                });
+            }
+
+            Verify.IsNotNull(reusedName, "Precondition: a container that hosted an expandable row must be reused for a visible leaf.");
+            VerifyGutterRequest(tableView, recorder, reusedName, expandable: false, "container recycled from expandable to leaf", reused);
         }
 
         [TestMethod]
@@ -1517,14 +1617,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // A 30px Name lead column plus a star Dept column, fully expanded.
+        // A 30px Name lead column plus a star Dept column, fully expanded. Hal under Dan makes Dan an
+        // expandable row whose chevron is clipped away.
         private TableView PlaceNarrowLeadColumn()
         {
             TableView tableView = null;
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                tableView = CreateTreeTable(Tree(MakeTree()));
+                var list = MakeTree();
+                list.Add(new TreeEmployee { Id = 8, ManagerId = 4, Name = "Hal", Dept = "Eng", Code = "H", ParentCode = "D", Score = 5 });
+                tableView = CreateTreeTable(Tree(list));
                 tableView.Columns[0].Width = new GridLength(30);
                 tableView.Columns.Add(MakeTextColumn("Dept", "Dept", new GridLength(1, GridUnitType.Star)));
                 LoadContent(tableView);
@@ -1543,16 +1646,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // "ok" when the gutter clip is the lead column width past the gutter's indent and hit-testing
-        // matches a non-empty clip.
+        // matches a non-empty clip on an expandable row.
         private static string CheckChevronClip(TableView tableView, string name)
         {
             var gutter = GetChevron(tableView, name);
             var expected = Math.Max(0.0, tableView.Columns[0].ActualWidth - gutter.Margin.Left);
             var clip = gutter.Clip;
-            var ok = clip != null && Math.Abs(clip.Rect.Width - expected) < 0.5 && gutter.IsHitTestVisible == expected > 0;
+            var hitTestable = expected > 0 && FindTreeRow(tableView, name).IsExpandable;
+            var ok = clip != null && Math.Abs(clip.Rect.Width - expected) < 0.5 && gutter.IsHitTestVisible == hitTestable;
             return ok
                 ? "ok"
                 : $"{name} clip={(clip == null ? "null" : clip.Rect.Width.ToString())} expected={expected} hit={gutter.IsHitTestVisible}";
+        }
+
+        // Hit-tests the centre of the row's chevron gutter and raises a context request from the topmost
+        // element there, as a right-click would. Leaf gutters must yield the lead cell menu.
+        private static void VerifyGutterRequest(TableView tableView, MenuRecorder recorder, string name, bool expandable, string context, TableViewRow container = null)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var row = container ?? FindTreeRow(tableView, name);
+                var gutter = row.FindVisualChildByName("PART_RowExpanderGutter") as Border;
+                Verify.IsNotNull(gutter, $"Row {name} should have PART_RowExpanderGutter.");
+                Verify.AreEqual(expandable, row.IsExpandable, $"Precondition ({context}): {name}.IsExpandable.");
+                Verify.AreEqual(expandable, gutter.IsHitTestVisible, $"{context}: {name}'s gutter hit-testability.");
+
+                var centre = gutter.TransformToVisual(null).TransformPoint(new Point(gutter.ActualWidth / 2.0, gutter.ActualHeight / 2.0));
+                var hit = Microsoft.UI.Xaml.Media.VisualTreeHelper.FindElementsInHostCoordinates(centre, row).OfType<FrameworkElement>().FirstOrDefault();
+                Verify.IsNotNull(hit, $"{context}: something under {name}'s gutter must be hit-testable.");
+
+                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(hit)
+                    ?? new Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer(hit);
+                Log.Comment($"{context}: {name} hit {hit.GetType().Name} '{hit.Name}'.");
+                peer.ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(expandable ? "RowMenu" : "CellMenu", recorder.Describe(), $"{context}: menu opened from {name}'s gutter.");
+                recorder.HideAll();
+                recorder.Clear();
+            });
+            IdleSynchronizer.Wait();
         }
 
         #endregion
