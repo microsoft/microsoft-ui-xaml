@@ -619,7 +619,6 @@ WindowType::Enum Window::GetWindowType()
         monitorInfo.cbSize = sizeof(monitorInfo);
         if (hMonitor == nullptr || !GetMonitorInfo(hMonitor, &monitorInfo))
         {
-            IFCEXPECT_RETURN(!islandRoot);
             // We have no way to get any monitor info, so just return.
             return S_OK;
         }
