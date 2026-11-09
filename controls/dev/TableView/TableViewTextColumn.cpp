@@ -9,6 +9,19 @@
 #include "TableViewRow.h"
 #include "TableViewFocusHelpers.h"
 
+#include <winrt/Windows.UI.Xaml.Interop.h>
+
+namespace
+{
+    winrt::DependencyProperty GeneratedFontSizeProperty()
+    {
+        static auto const property = winrt::DependencyProperty::RegisterAttached(
+            L"TableViewGeneratedFontSize", winrt::xaml_typename<double>(),
+            winrt::xaml_typename<winrt::TableViewTextColumn>(), winrt::PropertyMetadata{ winrt::box_value(0.0) });
+        return property;
+    }
+}
+
 TableViewTextColumn::TableViewTextColumn()
 {
 }
@@ -37,7 +50,19 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     // Cell content is left-aligned and vertically centered within the row (standard grid look).
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
     // FontWeight stays unset so a TableView/app value inherits.
-    textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0;
+    textBlock.FontSize(fontSize);
+    textBlock.SetValue(GeneratedFontSizeProperty(), winrt::box_value(fontSize));
+    textBlock.RegisterPropertyChangedCallback(winrt::TextBlock::FontSizeProperty(),
+        [](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            auto const text = sender.as<winrt::TextBlock>();
+            auto const stamp = text.ReadLocalValue(GeneratedFontSizeProperty()).try_as<winrt::IReference<double>>();
+            if (stamp && (text.GetBindingExpression(winrt::TextBlock::FontSizeProperty()) || text.FontSize() != stamp.Value()))
+            {
+                text.ClearValue(GeneratedFontSizeProperty());
+            }
+        });
     if (owner)
     {
         textBlock.Padding(winrt::get_self<TableView>(owner)->GetDisplayCellPadding());
@@ -54,6 +79,28 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     }
 
     return textBlock;
+}
+
+void TableViewTextColumn::RefreshGeneratedFontSize(winrt::TextBlock const& text, double fontSize)
+{
+    auto const property = GeneratedFontSizeProperty();
+    auto const stamp = text.ReadLocalValue(property).try_as<winrt::IReference<double>>();
+    if (!stamp)
+    {
+        return;
+    }
+    auto const localFont = text.ReadLocalValue(winrt::TextBlock::FontSizeProperty()).try_as<winrt::IReference<double>>();
+    if (!localFont || localFont.Value() != stamp.Value() || text.GetBindingExpression(winrt::TextBlock::FontSizeProperty()))
+    {
+        text.ClearValue(property);
+        return;
+    }
+    if (text.FontSize() != fontSize)
+    {
+        // Update ownership before FontSize so our own callback does not mistake the restamp for an app override.
+        text.SetValue(property, winrt::box_value(fontSize));
+        text.FontSize(fontSize);
+    }
 }
 
 void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner)

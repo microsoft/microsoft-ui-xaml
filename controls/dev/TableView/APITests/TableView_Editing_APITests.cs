@@ -576,6 +576,89 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDensityPreservesCustomTextColumnFontsAndCachedDisplay()
+        {
+            foreach (var mode in new[] { "OwnValue", "BaseValue", "BaseBinding" })
+            {
+                TableView table = null;
+                AuthoredFontTextColumn column = null;
+                TextBlock display = null;
+                BindingExpression fontBinding = null;
+                var items = MakeEditableItems();
+                bool vetoClose = true;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateTableViewShell(items, 500, 350);
+                    table.IsReadOnly = false;
+                    table.IsTextScaleFactorEnabled = false;
+                    table.Resources["TableViewCellFontSize"] = 17.0;
+                    table.Resources["TableViewCellFontSizeExtraCompact"] = 13.0;
+                    table.Density = TableViewDensity.ExtraCompact;
+                    table.Density = TableViewDensity.Standard;
+                    column = new AuthoredFontTextColumn(mode)
+                    {
+                        Header = "Name",
+                        Width = new GridLength(200),
+                        Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    };
+                    table.Columns.Add(column);
+                    table.Columns.Add(MakeTextColumn("Role", width: new GridLength(200)));
+                    table.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+                    LoadContent(table);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    display = (TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0));
+                    fontBinding = display.GetBindingExpression(TextBlock.FontSizeProperty);
+                    Verify.AreEqual(mode == "BaseBinding" ? 17.0 : 24.0, display.FontSize, mode);
+                    table.Density = TableViewDensity.ExtraCompact;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(mode == "BaseBinding" ? 17.0 : 24.0, display.FontSize,
+                        $"A custom factory's font must survive density restamping: {mode}.");
+                    Verify.AreEqual(13.0, ((TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 1))).FontSize,
+                        "Control-owned text must still follow the density font resource.");
+                    table.Density = TableViewDensity.Standard;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Pending"),
+                        "The vetoed commit leaves an editor open.");
+                    Verify.IsTrue(table.IsEditing);
+                    table.Density = TableViewDensity.ExtraCompact;
+                    if (mode == "BaseBinding")
+                    {
+                        column.FontSource.FontSize = 26;
+                    }
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(mode == "BaseBinding" ? 26.0 : 24.0, display.FontSize,
+                        $"The saved editing display must preserve app typography: {mode}.");
+                    if (mode == "BaseBinding")
+                    {
+                        Verify.AreSame(fontBinding, display.GetBindingExpression(TextBlock.FontSizeProperty),
+                            "Restamping must not replace the app's FontSize binding.");
+                    }
+                    vetoClose = false;
+                    Verify.IsTrue(table.CancelEdit());
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreSame(display, GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0)));
+                    Verify.AreEqual(mode == "BaseBinding" ? 26.0 : 24.0, display.FontSize, mode);
+                    Verify.IsFalse(table.IsEditing);
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies cancelling CellEditEnding blocks the value and leaves the edit open, per the IDL's stay-open rule.")]
         public void VerifyCellEditEndingCancelBlocksCommitAndLeavesEditOpen()
         {
@@ -2609,6 +2692,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyCompletedEditDrainsReshapeWhenHeaderRefreshThrows()
+        {
+            foreach (var commit in new[] { true, false })
+            {
+                TableView table = null;
+                TableViewSource source = null;
+                DropDownButton button = null;
+                var items = MakeEditableItems();
+                bool allowClose = false;
+                bool requested = false;
+                bool failRefresh = false;
+                int failures = 0;
+                long token = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    source = TableViewSource.From(items);
+                    source.IsLiveShaping = true;
+                    source.Sort("Name", SortDirection.Ascending);
+                    source.GroupBy(item => ((EditablePerson)item).Role);
+                    table = CreateEditableTable(items);
+                    table.ItemsSource = source;
+                    table.IsReadOnly = false;
+                    table.Columns[0].HeaderFlyout = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Options" } } };
+                    table.CellEditEnding += (s, e) =>
+                    {
+                        if (!allowClose) { e.Cancel = true; return; }
+                        if (!requested)
+                        {
+                            requested = true;
+                            table.SortByColumn(table.Columns[1], SortDirection.Ascending);
+                            table.CollapseAllGroups();
+                        }
+                    };
+                    LoadContent(table);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    button = FindVisualChildrenByType<DropDownButton>(table).Single(b => b.Flyout != null);
+                    token = button.RegisterPropertyChangedCallback(Button.FlyoutProperty, (s, e) =>
+                    {
+                        if (failRefresh && button.Flyout != null)
+                        {
+                            failRefresh = false;
+                            failures++;
+                            throw new InvalidOperationException("Deliberate completed-edit header restoration failure.");
+                        }
+                    });
+                    Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Pending"));
+                    Verify.IsTrue(table.IsEditing);
+                    allowClose = true;
+                    failRefresh = true;
+                    Exception error = null;
+                    try
+                    {
+                        if (commit) { table.CommitEdit(); }
+                        else { table.CancelEdit(); }
+                    }
+                    catch (Exception ex) { error = ex; }
+                    finally
+                    {
+                        failRefresh = false;
+                        button.UnregisterPropertyChangedCallback(Button.FlyoutProperty, token);
+                    }
+                    Verify.IsNotNull(error, "Header restoration errors must still reach the caller.");
+                    Verify.AreEqual(1, failures);
+                    Verify.IsTrue(requested, "The ending handler must queue sorting and group collapse.");
+                    Verify.IsFalse(table.IsEditing, "The editor must remain closed despite restoration failure.");
+                    Verify.AreEqual(commit ? "Pending" : "Asha", items[0].Name, "Preserve commit/cancel semantics.");
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(SortDirection.Ascending, table.Columns[1].SortDirection,
+                        "The queued sort must be replayed.");
+                    Verify.AreEqual(3, GetProjectedElements(table).OfType<TableViewGroupHeader>().Count());
+                    Verify.AreEqual(0, GetProjectedElements(table).OfType<TableViewRow>().Count(),
+                        "The queued group collapse must be replayed.");
+                    items[0].Role = "Analyst";
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(GetProjectedElements(table).OfType<TableViewGroupHeader>()
+                        .Select(header => header.Content).OfType<TableViewGroupInfo>().Any(group => group.KeyText == "Analyst"),
+                        "Live shaping must resume after both successful commit and cancel teardown.");
+                    table.ExpandAllGroups();
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Recovered"),
+                        "A later edit must still succeed.");
+                    Verify.IsFalse(table.IsEditing);
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies failed BeginEdit cleanup drains a queued source replacement even when restoring a header flyout throws, and a later edit succeeds.")]
         public void VerifyBeginEditFailureDrainsReshapeWhenHeaderRefreshThrows()
         {
@@ -2688,6 +2870,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Recovered", replacement[0].Role, "The later edit must target the reshaped source.");
                 Verify.IsFalse(tableView.IsEditing);
             });
+        }
+    }
+
+    internal partial class AuthoredFontTextColumn : TableViewTextColumn
+    {
+        private readonly string _mode;
+        public TextBlock FontSource { get; } = new TextBlock { FontSize = 17 };
+
+        public AuthoredFontTextColumn(string mode) => _mode = mode;
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            var text = _mode == "OwnValue" ? new TextBlock() : (TextBlock)base.GenerateElementCore(dataItem);
+            if (_mode == "OwnValue")
+            {
+                BindingOperations.SetBinding(text, TextBlock.TextProperty, Binding);
+            }
+            if (_mode == "BaseBinding")
+            {
+                BindingOperations.SetBinding(text, TextBlock.FontSizeProperty,
+                    new Binding { Source = FontSource, Path = new PropertyPath("FontSize"), Mode = BindingMode.OneWay });
+            }
+            else
+            {
+                text.FontSize = 24;
+            }
+            return text;
         }
     }
 

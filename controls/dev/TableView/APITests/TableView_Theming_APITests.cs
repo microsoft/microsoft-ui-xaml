@@ -1805,9 +1805,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 EnsureTabularControlsResources();
                 highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+                var resources = new TabularControlsResources();
                 Verify.AreEqual(RequireApplicationColor("SystemColorButtonTextColor"),
-                    RequireBrush(new TabularControlsResources(), "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush").Color,
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush").Color,
                     "The HC section-header foreground must map to ButtonText.");
+                foreach (var key in new[] { "TabularSurfaceGroupHeaderBackgroundBrush", "TabularSurfaceGroupHeaderInteractionBorderBrush" })
+                {
+                    Verify.AreEqual(RequireApplicationColor("SystemColorButtonFaceColor"),
+                        RequireBrush(resources, "HighContrast", key).Color,
+                        "The HC resting section background and interaction border must pair ButtonFace with ButtonText.");
+                }
             });
 
             foreach (var strong in new[] { false, true })
@@ -1847,6 +1854,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             var resource = state == "Normal" ? "SystemColorButtonTextColor" :
                                 state == "Disabled" ? "SystemColorGrayTextColor" : "SystemColorHighlightTextColor";
                             Verify.AreEqual(RequireApplicationColor(resource), foreground, context);
+                            var plate = (Border)header.FindVisualChildByName("PART_Root");
+                            var backgroundResource = state == "Normal" || state == "Disabled"
+                                ? "SystemColorButtonFaceColor" : "SystemColorHighlightColor";
+                            Verify.AreEqual(RequireApplicationColor(backgroundResource),
+                                ((SolidColorBrush)plate.Background).Color, $"Section background: {context}");
+                            Verify.AreEqual(RequireApplicationColor(backgroundResource),
+                                ((SolidColorBrush)plate.BorderBrush).Color, $"Section interaction border: {context}");
                         }
                         Verify.AreEqual(foreground, ((SolidColorBrush)title.Foreground).Color, $"Section title: {context}");
                         Verify.AreEqual(foreground, ((SolidColorBrush)count.Foreground).Color, $"Section count: {context}");
@@ -1854,6 +1868,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     });
                 }
             }
+        }
+
+        [TestMethod]
+        public void VerifyHighContrastGroupHeaderPairingWithDistinctSystemColors()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var appResources = Application.Current.Resources;
+                var colors = new Dictionary<string, Color>
+                {
+                    ["SystemColorWindowColor"] = Color.FromArgb(255, 12, 24, 36),
+                    ["SystemColorButtonFaceColor"] = Color.FromArgb(255, 48, 60, 72),
+                    ["SystemColorButtonTextColor"] = Color.FromArgb(255, 224, 236, 248),
+                };
+                var previous = colors.Keys.ToDictionary(key => key,
+                    key => appResources.Keys.Contains(key) ? appResources[key] : null);
+                try
+                {
+                    foreach (var entry in colors)
+                    {
+                        appResources[entry.Key] = entry.Value;
+                    }
+                    var resources = new TabularControlsResources();
+                    foreach (var key in new[] { "TabularSurfaceGroupHeaderBackgroundBrush", "TabularSurfaceGroupHeaderInteractionBorderBrush" })
+                    {
+                        Verify.AreEqual(colors["SystemColorButtonFaceColor"],
+                            RequireBrush(resources, "HighContrast", key).Color,
+                            "ButtonFace must be used even when it differs from Window in a custom palette.");
+                    }
+                    Verify.AreEqual(colors["SystemColorButtonTextColor"],
+                        RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush").Color);
+                }
+                finally
+                {
+                    foreach (var entry in previous)
+                    {
+                        if (entry.Value == null)
+                        {
+                            appResources.Remove(entry.Key);
+                        }
+                        else
+                        {
+                            appResources[entry.Key] = entry.Value;
+                        }
+                    }
+                }
+            });
         }
 
         [TestMethod]
@@ -2071,9 +2133,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 LoadContent(tableView);
 
                 var resources = new TabularControlsResources();
-                Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"),
+                Verify.AreEqual(RequireApplicationColor("SystemColorButtonFaceColor"),
                     RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderBackgroundBrush").Color,
-                    "High Contrast must retain the system window background.");
+                    "High Contrast section headers must pair ButtonFace with ButtonText.");
             });
 
             IdleSynchronizer.Wait();
@@ -2111,7 +2173,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"), rowFill.Color,
                                 "HC body rows must keep their resting background during interaction.");
                             Verify.AreEqual(RequireApplicationColor(state == "Normal"
-                                ? "SystemColorWindowColor" : "SystemColorHighlightColor"), headerFill.Color,
+                                ? "SystemColorButtonFaceColor" : "SystemColorHighlightColor"), headerFill.Color,
                                 "HC sections retain their approved filled interaction, independently of body outlines.");
                         }
                         else

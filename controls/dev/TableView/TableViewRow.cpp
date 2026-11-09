@@ -2097,7 +2097,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
             }
             if (fontSizeChanged && m_editingColumn.get().try_as<winrt::TableViewTextColumn>())
             {
-                displayText.FontSize(cellFontSize);
+                TableViewTextColumn::RefreshGeneratedFontSize(displayText, cellFontSize);
             }
         }
         childIndex = 0;
@@ -2134,7 +2134,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
                     // Do not overwrite an app's local typography during ordinary layout restamps.
                     if (fontSizeChanged && column.try_as<winrt::TableViewTextColumn>())
                     {
-                        textBlock.FontSize(cellFontSize);
+                        TableViewTextColumn::RefreshGeneratedFontSize(textBlock, cellFontSize);
                     }
                 }
                 else if (auto editor = cellElement.try_as<winrt::TextBox>();

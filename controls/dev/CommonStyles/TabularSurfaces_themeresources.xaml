@@ -196,10 +196,10 @@
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="{ThemeResource SystemColorButtonTextColor}" />

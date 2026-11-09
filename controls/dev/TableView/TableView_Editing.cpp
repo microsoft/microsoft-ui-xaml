@@ -1007,7 +1007,23 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
     }
 
     m_editState = closed ? EditState::None : EditState::Editing;
-    RefreshHeaderFlyouts();
+    try
+    {
+        RefreshHeaderFlyouts();
+    }
+    catch (...)
+    {
+        try
+        {
+            if (closed) { DrainCoalescedEditReshape(); }
+            else { ClearCoalescedEditReshape(); }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] A reshape queued during edit teardown threw after header-flyout restoration failed.");
+        }
+        throw;
+    }
 
     if (closed)
     {

@@ -239,6 +239,10 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 logs header-flyout refresh failures separately from queued reshape-drain failures, so a failed
 refresh cannot escape cleanup or prevent the drain. Normal reset paths refresh headers explicitly.
 
+**Completed edit cleanup.** Once teardown closes the editor, a throwing header-flyout restoration
+still drains queued reshapes and resumes held live shaping before rethrowing the original error.
+A secondary drain failure is logged without replacing the restoration error.
+
 **Re-entrancy rules.** Recycling, rebuilds and property callbacks can run inside layout, where moving focus fails fast (`0xc0000420`):
 
 - `TableViewRow::EndCellEdit` restores the display element and moves focus; it runs only on interactive close paths.
@@ -303,11 +307,11 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | Column-header gridlines | Dividers and bottom rule are always present, independent of body lines. Both use `TabularSurfaceHeaderSeparatorBrush`; the trailing column divider is suppressed at the viewport edge even with a hidden outer frame. |
 | `ShowGroupHeaderCount` | Defaults to true. False collapses the built-in section count and removes it from the default automation name, with no leftover content gap. Runtime updates and recycled headers follow the table setting. Custom templates and explicit automation names/labels remain app-owned. |
 | `BorderBrush`, `BorderThickness` | Outer frame. DividerStrokeColorDefault in Light/Dark; system-color in High Contrast. The default 1px inset is retained by the borderless style for stable layout. |
-| `Density` | `Standard` / `Compact` / `ExtraCompact`: 40/32/24px minimum row and column-header heights (`TableViewRowMinHeight` / `TableViewRowMinHeightCompact` / `TableViewRowMinHeightExtraCompact`). Matching cell/header padding is 12,10,12,10 / 12,6,12,6 / 12,2,12,2. Built-in data cells, text editors, column headers, and section titles/counts use 14px text at every density. Section-header minimums also match at 40/32/24px (`TableViewGroupHeaderMinHeight` and density-suffixed variants), with padding 4,10,12,10 / 4,6,12,6 / 4,2,12,2. Section text is regular by default; its leading inset is 20px (4px padding + 12px expander + 4px gap). Section font size and vertical padding follow cell density metrics, while horizontal padding remains section-specific. App section-header metric overrides are preserved. Density transitions preserve grown Auto widths unless the resolved cell or header font-size resources change; all default presets therefore preserve them. The preview `Comfortable` preset is removed; its numeric value 2 is not reused (`ExtraCompact` = 3). |
+| `Density` | `Standard` / `Compact` / `ExtraCompact`: 40/32/24px minimum row/header heights and 14px text. Cell/header control padding is 12,10,12,10 / 12,6,12,6 / 12,2,12,2; section-host padding is 4,10,12,10 / 4,6,12,6 / 4,2,12,2. App metric overrides win. Auto widths persist unless font resources change. Removed preview `Comfortable` value 2 is not reused (`ExtraCompact` = 3). |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
 | `StrongTableViewGroupHeaderStyle` | Named style from `TabularControlsResources`: semibold section title/count text only. Apply through an implicit `TableViewGroupHeader` style scoped to the table. Omit it for regular text; foreground and count opacity are unchanged. Independent of column-header styling. |
-| Theme keys | `TableViewCellFontSize`, `TableViewHeaderFontSize`, `TableViewCellFontSizeExtraCompact`, and `TableViewHeaderFontSizeExtraCompact` all default to 14. Column-header font styles override the density default. `TableViewCellTextPadding` and `TableViewHeaderTextPadding` explicitly define `12,9,12,11` (Standard), `12,5,12,7` (Compact), and `12,1,12,3` (ExtraCompact). `TableViewGroupHeaderTextPadding` defines the same vertical values with zero horizontal padding, separately from the section host and chevron padding. No optical-offset resource or render transform is used; only divider compensation is calculated. Icons, editors, app-owned content, heights and selection/focus geometry are preserved. `TableViewHeaderFontWeight` (`Normal`), `TabularSurface*` brushes. |
+| Theme keys | Cell/header font resources default to 14; `TableViewHeaderFontWeight` defaults to Normal. Cell/header text-padding resources are literal `12,9,12,11` / `12,5,12,7` / `12,1,12,3`; section text uses the same vertical padding with zero horizontal edges. Only arranged-divider compensation is calculated, preserving total padding. Brushes use `TabularSurface*` keys. |
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
@@ -323,7 +327,14 @@ High Contrast, disabled/non-sortable headers and disabled Windows animations byp
 
 Section-header backplates are transparent at rest in Light/Dark and use the unselected row
 hover/pressed brushes. Their background border binds the same `CornerRadius` as row backplates.
-High Contrast keeps its system window background and highlight/highlight-text interaction pairing.
+High Contrast pairs ButtonText with ButtonFace at rest, including the matching interaction border,
+and retains Highlight/HighlightText during hover/pressed. Disabled sections use GrayText on ButtonFace.
+Do not substitute Window for ButtonFace: custom High Contrast schemes can give them different colors.
+
+The built-in text factory records font ownership on the element. An app FontSize change or
+binding relinquishes it; custom factory elements are unstamped. This also protects the saved
+editing display from density restamps.
+
 Section-header bottom dividers use `TabularSurfaceGroupHeaderBorderBrush`, matching the body's
 gridline colors by default, and are visible for every body
 `GridLinesVisibility` value except `None`, including `Vertical`. `RefreshGridLines` updates the
