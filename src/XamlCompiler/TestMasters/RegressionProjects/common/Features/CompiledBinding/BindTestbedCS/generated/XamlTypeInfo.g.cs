@@ -453,6 +453,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
         private object Activate_72_ColorToStringConverter() { return new global::BindTestbedModel.ColorToStringConverter(); }
         private object Activate_73_EmployeeTextBlock() { return new global::BindTestbedModel.EmployeeTextBlock(); }
         private object Activate_74_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
+        private static object EnumConverter_Int32(long value) { return global::System.Convert.ToInt32(value); }
         private void StaticInitializer_3_BasicTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.BasicTests).TypeHandle);
         private void StaticInitializer_6_DataModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DataModel).TypeHandle);
         private void StaticInitializer_8_DOModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DOModel).TypeHandle);
@@ -1004,6 +1005,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 65:   //  BindTestbedModel.TShirtSize
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Enum"));
+                userType.EnumConverter = EnumConverter_Int32;
                 userType.AddEnumValue("XtraSmall", global::BindTestbedModel.TShirtSize.XtraSmall);
                 userType.AddEnumValue("Small", global::BindTestbedModel.TShirtSize.Small);
                 userType.AddEnumValue("Medium", global::BindTestbedModel.TShirtSize.Medium);
@@ -2722,6 +2724,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
     internal delegate void AddToDictionary(object instance, object key, object item);
     internal delegate object CreateFromStringMethod(string args);
     internal delegate object BoxInstanceMethod(object instance);
+    internal delegate object EnumConverter(long value);
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2869,7 +2872,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                     }
                 }
 
-                return global::System.Convert.ChangeType(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));
+                return EnumConverter(value);
             }
             throw new global::System.ArgumentException(input, FullName);
         }
@@ -2882,6 +2885,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
         public AddToDictionary DictionaryAdd { get; set; }
         public CreateFromStringMethod CreateFromStringMethod {get; set; }
         public BoxInstanceMethod BoxInstance {get; set; }
+        public EnumConverter EnumConverter {get; set; }
 
         public void SetContentPropertyName(string contentPropertyName)
         {

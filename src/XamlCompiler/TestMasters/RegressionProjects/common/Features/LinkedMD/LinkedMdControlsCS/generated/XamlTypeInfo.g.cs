@@ -600,6 +600,7 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
     internal delegate void AddToDictionary(object instance, object key, object item);
     internal delegate object CreateFromStringMethod(string args);
     internal delegate object BoxInstanceMethod(object instance);
+    internal delegate object EnumConverter(long value);
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -747,7 +748,7 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
                     }
                 }
 
-                return global::System.Convert.ChangeType(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));
+                return EnumConverter(value);
             }
             throw new global::System.ArgumentException(input, FullName);
         }
@@ -760,6 +761,7 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
         public AddToDictionary DictionaryAdd { get; set; }
         public CreateFromStringMethod CreateFromStringMethod {get; set; }
         public BoxInstanceMethod BoxInstance {get; set; }
+        public EnumConverter EnumConverter {get; set; }
 
         public void SetContentPropertyName(string contentPropertyName)
         {
