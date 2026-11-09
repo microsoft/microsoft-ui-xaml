@@ -42,12 +42,13 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
     return winrt::make<TeachingTipAutomationPeer>(*this);
 }
 
-// Closes the tip without clearing a binding the app has on IsOpen (e.g. IsOpen="{Binding IsChecked, ElementName=Button}").
-// IsOpen(false) would replace a OneWay binding with a local value, so the tip could never open through it again.
-// Like Popup::Close, this sets only the effective value: the binding stays attached and drives IsOpen on its next update.
-void TeachingTip::CloseKeepingIsOpenBinding()
+// Sets IsOpen for the tip's own reasons (unload, light dismiss, close button, reverting a change it can't take now)
+// without clearing a binding the app has on IsOpen (e.g. IsOpen="{Binding IsChecked, ElementName=Button}").
+// IsOpen(value) would replace a OneWay binding with a local value, so the tip could never be driven by it again.
+// Like Popup::Close, this keeps the binding attached; the binding sets IsOpen again on its next update.
+void TeachingTip::SetIsOpenKeepingBinding(bool isOpen)
 {
-    this->as<winrt::IUIElementPrivate>().SetValuePreservingBinding(s_IsOpenProperty, winrt::box_value(false));
+    this->as<winrt::IUIElementPrivate>().SetValuePreservingBinding(s_IsOpenProperty, winrt::box_value(isOpen));
 }
 
 void TeachingTip::OnApplyTemplate()
@@ -474,7 +475,7 @@ void TeachingTip::PositionPopup()
     }
     if (tipDoesNotFit)
     {
-        CloseKeepingIsOpenBinding();
+        SetIsOpenKeepingBinding(false);
     }
 
 #ifdef DBG
@@ -858,7 +859,7 @@ void TeachingTip::OnIsOpenChanged()
             else
             {
                 strongThis->m_ignoreNextIsOpenChanged = true;
-                strongThis->IsOpen(!strongThis->IsOpen());
+                strongThis->SetIsOpenKeepingBinding(!strongThis->IsOpen());
             }
         });
     }
@@ -928,7 +929,7 @@ void TeachingTip::IsOpenChangedToOpen()
         auto const closedArgs = winrt::make_self<TeachingTipClosedEventArgs>();
         closedArgs->Reason(m_lastCloseReason);
         m_closedEventSource(*this, *closedArgs);
-        CloseKeepingIsOpenBinding();
+        SetIsOpenKeepingBinding(false);
     }
     else
     {
@@ -1293,7 +1294,7 @@ void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::
 {
     m_closeButtonClickEventSource(*this, nullptr);
     m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
-    CloseKeepingIsOpenBinding();
+    SetIsOpenKeepingBinding(false);
 }
 
 void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -1396,7 +1397,7 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    CloseKeepingIsOpenBinding();
+    SetIsOpenKeepingBinding(false);
     ClosePopup();
 }
 
@@ -1406,7 +1407,7 @@ void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&,
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
     }
-    CloseKeepingIsOpenBinding();
+    SetIsOpenKeepingBinding(false);
 }
 
 void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
@@ -1427,7 +1428,7 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
                 {
                     // The developer has changed the Cancel property to true, indicating that they wish to Cancel the
                     // closing of this tip, so we need to revert the IsOpen property to true.
-                    strongThis->IsOpen(true);
+                    strongThis->SetIsOpenKeepingBinding(true);
                 }
             }
         };

@@ -29,8 +29,8 @@ public:
     // UIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
-    // Closes the tip like IsOpen(false) does, but keeps a binding the app has on IsOpen.
-    void CloseKeepingIsOpenBinding();
+    // Sets IsOpen like IsOpen(value) does, but keeps a binding the app has on IsOpen.
+    void SetIsOpenKeepingBinding(bool isOpen);
 
     tracker_ref<winrt::FrameworkElement> m_target{ this };
 

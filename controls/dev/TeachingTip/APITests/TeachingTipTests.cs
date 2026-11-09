@@ -2806,22 +2806,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Scenario (issue #8095): an OPEN tip whose IsOpen is bound by ElementName to a ToggleButton is closed with its close
-        //           button (no CloseButtonClick handler).
+        //           button (no CloseButtonClick handler). Once with a OneWay binding, once with a TwoWay binding.
         // Expected: the tip closes with reason CloseButton and the IsOpen binding survives, so the button still drives the tip.
-        // A failure means: the close button replaced the app's IsOpen binding with a local value.
+        //           Only the TwoWay binding passes the close on to the button.
+        // A failure means: the close button replaced the app's IsOpen binding with a local value, or a TwoWay source was
+        //           not updated.
         [TestMethod]
         public void BoundTipKeepsBindingAfterCloseButton()
         {
-            var (tip, toggle) = CreateBoundTip(t => t.CloseButtonContent = "Close");
-            var closedReasons = new List<TeachingTipCloseReason>();
-            RunOnUIThread.Execute(() => tip.Closed += (s, a) => closedReasons.Add(a.Reason));
+            foreach (var mode in new[] { "OneWay", "TwoWay" })
+            {
+                var (tip, toggle) = CreateBoundTip(t => t.CloseButtonContent = "Close", mode);
+                var closedReasons = new List<TeachingTipCloseReason>();
+                RunOnUIThread.Execute(() => tip.Closed += (s, a) => closedReasons.Add(a.Reason));
+                SetBoundSourceAndWait(tip, toggle, true);
+
+                RunOnUIThread.Execute(() => InvokeButton(GetTemplateButton(tip, "CloseButton")));
+                Verify.IsTrue(WaitForTipState(tip, isOpen: false), $"The close button should close the tip ({mode})");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("CloseButton", string.Join(",", closedReasons), $"Close reason ({mode})");
+                    Verify.AreEqual(mode == "OneWay", toggle.IsChecked == true, $"Only a TwoWay binding should update the source ({mode})");
+                });
+
+                VerifyBindingSurvivesAndTipReopens(tip, toggle, $"after the close button closed the tip ({mode})");
+            }
+        }
+
+        // Scenario (issue #8095, hover): a tip whose IsOpen is bound by ElementName to a ToggleButton is opened through the
+        //           binding, and the source turns false again while the tip is still opening (like IsPointerOver when the
+        //           pointer leaves before the expand animation ends). Skipped when system animations are off.
+        // Expected: the IsOpen binding survives, so the button still opens and closes the tip afterwards.
+        // A failure means: the tip rejected the change it couldn't take while opening by writing a local IsOpen value,
+        //           which replaced the app's binding.
+        [TestMethod]
+        public void BoundTipKeepsBindingWhenSourceChangesWhileOpening()
+        {
+            if (AnimationsAreDisabled())
+            {
+                Log.Warning("Test is disabled when animations are turned off: the tip becomes idle as soon as it opens.");
+                return;
+            }
+
+            var (tip, toggle) = CreateBoundTip(t => { });
+            RunOnUIThread.Execute(() =>
+            {
+                TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(2));
+                toggle.IsChecked = true;
+            });
+
+            // The popup opens on a later composition tick; there is no event for the start of the animation, so poll.
+            bool opening = false;
+            var stopwatch = Stopwatch.StartNew();
+            while (!opening && stopwatch.ElapsedMilliseconds < 5000)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var popup = TeachingTipTestHooks.GetPopup(tip);
+                    opening = popup != null && popup.IsOpen && !TeachingTipTestHooks.GetIsIdle(tip);
+                    if (opening)
+                    {
+                        toggle.IsChecked = false;
+                    }
+                });
+                if (!opening)
+                {
+                    Thread.Sleep(20);
+                }
+            }
+            Verify.IsTrue(opening, "The source should turn false while the tip is opening (popup open, not idle)");
+            Verify.IsTrue(WaitForUIState(() => TeachingTipTestHooks.GetIsIdle(tip)), "The tip should settle");
+
+            RunOnUIThread.Execute(() => Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive a source change while the tip was opening"));
             SetBoundSourceAndWait(tip, toggle, true);
-
-            RunOnUIThread.Execute(() => InvokeButton(GetTemplateButton(tip, "CloseButton")));
-            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The close button should close the tip");
-            RunOnUIThread.Execute(() => Verify.AreEqual("CloseButton", string.Join(",", closedReasons), "Close reason"));
-
-            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after the close button closed the tip");
+            SetBoundSourceAndWait(tip, toggle, false);
+            SetBoundSourceAndWait(tip, toggle, true);
+            SetBoundSourceAndWait(tip, toggle, false);
         }
 
         // Scenario (issue #8095): an OPEN tip outside a NavigationView targets a ToggleButton inside a NavigationViewItem, with
@@ -2861,6 +2921,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
+            int unloadedWhileOpen = 0;
+            RunOnUIThread.Execute(() => target.Unloaded += (s, e) => unloadedWhileOpen += tip.IsOpen ? 1 : 0);
 
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Left })
             {
@@ -2875,6 +2937,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SetBoundSourceAndWait(tip, target, false);
                 VerifyBoundTipOpensAndCloses(tip, target, $"after NavigationView re-hosted it ({mode})");
             }
+            RunOnUIThread.Execute(() => Verify.IsGreaterThan(unloadedWhileOpen, 0, "The target should have raised Unloaded while the tip was open"));
         }
 
         // Scenario (issue #8095): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton. In one UI-thread
@@ -2888,11 +2951,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             foreach (var (element, name, from, to) in new (FrameworkElement, string, string, string)[] { (target, "target", "TargetHostA", "TargetHostB"), (tip, "tip", "TipHostA", "TipHostB") })
             {
                 SetBoundSourceAndWait(tip, target, true);
+                var unloaded = new ManualResetEvent(false);
                 RunOnUIThread.Execute(() =>
                 {
+                    element.Unloaded += (s, e) => unloaded.Set();
                     ((StackPanel)root.FindName(from)).Children.Remove(element);
                     ((StackPanel)root.FindName(to)).Children.Add(element);
                 });
+                Verify.IsTrue(unloaded.WaitOne(TimeSpan.FromSeconds(5)), "The " + name + " should raise Unloaded when it moves");
                 IdleSynchronizer.Wait();
                 SetBoundSourceAndWait(tip, target, false);
                 VerifyBoundTipOpensAndCloses(tip, target, $"after the {name} moved to another panel");
@@ -2958,18 +3024,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return (tip, target, root);
         }
 
-        private static void VerifyTipIsNextToTarget(TeachingTip tip, FrameworkElement target, string what)
-        {
-            Rect targetBounds = GetBoundsInRoot(target);
-            Rect tipRect = GetTipRect(tip);
-            // The tail points at the target, so the tip must touch the target's bounding box (allowing for the tail).
-            const double tolerance = 20;
-            Verify.IsTrue(tipRect.Right >= targetBounds.Left - tolerance && tipRect.Left <= targetBounds.Right + tolerance &&
-                tipRect.Bottom >= targetBounds.Top - tolerance && tipRect.Top <= targetBounds.Bottom + tolerance,
-                $"TeachingTip should be positioned next to its target ({what}): tip={tipRect} target={targetBounds}");
-        }
-
-        private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton) CreateBoundTip(Action<TeachingTip> configure)
+        private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton) CreateBoundTip(Action<TeachingTip> configure, string bindingMode = "OneWay")
         {
             TeachingTip tip = null;
             Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggle = null;
@@ -2981,7 +3036,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
                         <ToggleButton x:Name='Toggle' Content='Toggle'/>
                         <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle'
-                            IsOpen='{Binding ElementName=Toggle, Path=IsChecked}'/>
+                            IsOpen='{Binding ElementName=Toggle, Path=IsChecked, Mode=" + bindingMode + @"}'/>
                     </StackPanel>");
                 toggle = (Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)root.FindName("Toggle");
                 tip = (TeachingTip)root.FindName("Tip");
