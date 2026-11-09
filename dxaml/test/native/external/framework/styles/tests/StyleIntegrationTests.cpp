@@ -4427,6 +4427,74 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
+    void StyleIntegrationTests::TestStyleSetterFailure(bool shadowed, bool throwingConstructor)
+    {
+        TestCleanupWrapper cleanup;
+        DisableErrorReportingScopeGuard disableErrors;
+
+        RunOnUIThread([&]()
+        {
+            CustomObject::SetThrowOnConstruction(throwingConstructor);
+            auto reset = wil::scope_exit([] { CustomObject::SetThrowOnConstruction(false); });
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            auto style = safe_cast<Style^>(resources->Lookup(
+                throwingConstructor ? L"DeferredCustomObjectStyle" : L"MissingResourceStyle"));
+            auto control = ref new ContentControl();
+
+            if (shadowed)
+            {
+                control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
+                control->Style = style;
+                VERIFY_ARE_EQUAL(L"Local override",
+                    safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
+                VERIFY_THROWS_WINRT(control->ClearValue(CustomControl::AttachedTagProperty), Platform::Exception^,
+                    L"Clearing the local override must report the deferred setter's realization failure");
+            }
+            else
+            {
+                VERIFY_THROWS_WINRT(control->Style = style, Platform::Exception^,
+                    L"Applying an effective setter must report its realization failure");
+            }
+        });
+    }
+
+    void StyleIntegrationTests::EffectiveStyleSetterReportsMissingResource()
+    {
+        TestStyleSetterFailure(false, false);
+    }
+
+    void StyleIntegrationTests::EffectiveStyleSetterReportsBasedOnRealizationFailure()
+    {
+        TestCleanupWrapper cleanup;
+        DisableErrorReportingScopeGuard disableErrors;
+
+        RunOnUIThread([]()
+        {
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            auto style = safe_cast<Style^>(resources->Lookup(L"DerivedMissingResourceStyle"));
+            auto control = ref new ContentControl();
+            VERIFY_THROWS_WINRT(control->Style = style, Platform::Exception^,
+                L"Applying an effective setter must report a realization failure from its BasedOn style");
+        });
+    }
+
+    void StyleIntegrationTests::ShadowedStyleSetterReportsMissingResourceWhenExposed()
+    {
+        TestStyleSetterFailure(true, false);
+    }
+
+    void StyleIntegrationTests::EffectiveStyleSetterReportsConstructorFailure()
+    {
+        TestStyleSetterFailure(false, true);
+    }
+
+    void StyleIntegrationTests::ShadowedStyleSetterReportsConstructorFailureWhenExposed()
+    {
+        TestStyleSetterFailure(true, true);
+    }
+
     void StyleIntegrationTests::VerifyImplicitStyleInvalidationInThemeDictionaries()
     {
         TestCleanupWrapper cleanup;

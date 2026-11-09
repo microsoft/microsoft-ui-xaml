@@ -26,4 +26,8 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style x:Key="MissingResourceStyle" TargetType="Control">
+        <Setter Property="local:CustomControl.AttachedTag" Value="{StaticResource MissingSetterResource}" />
+    </Style>
+    <Style x:Key="DerivedMissingResourceStyle" TargetType="Control" BasedOn="{StaticResource MissingResourceStyle}" />
 </ResourceDictionary>

@@ -88,7 +88,11 @@ public:
         return S_OK;
     }
 
-    _Check_return_ HRESULT GetPropertyValue(_In_ KnownPropertyIndex propertyId, _In_ bool getFromBasedOn, _Outptr_opt_ CValue** ppValue);
+    _Check_return_ HRESULT GetPropertyValue(
+        _In_ KnownPropertyIndex propertyId,
+        _In_ bool getFromBasedOn,
+        _Outptr_opt_ CValue** ppValue,
+        _Inout_opt_ HRESULT* deferredValueError = nullptr);
 
     _Check_return_ HRESULT NotifyThemeChanged(_In_ Theming::Theme theme, _In_ bool forceRefresh = false) const;
 

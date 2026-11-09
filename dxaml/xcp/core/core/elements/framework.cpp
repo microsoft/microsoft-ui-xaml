@@ -849,7 +849,10 @@ CFrameworkElement::OnStyleChanged(
             IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
             const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
 
-            IGNOREHR(InvalidateProperty(pDP, baseValueSource));
+            // Preserve ignored conversion/assignment errors, but surface deferred setter realization failures.
+            HRESULT deferredValueError = S_OK;
+            IGNOREHR(InvalidateProperty(pDP, baseValueSource, &deferredValueError));
+            IFC(deferredValueError);
 
             // Applying the value can create its peer. Notify afterward so the style can keep
             // that peer alive even when the value is subsequently overridden.
@@ -924,7 +927,8 @@ _Check_return_ HRESULT CFrameworkElement::UpdateFocusAncestorsTarget(_In_ bool s
 _Check_return_ HRESULT CFrameworkElement::GetValueFromStyle(
     _In_ const CDependencyProperty* dp,
     _Out_ CValue *pValue,
-    _Out_ bool* gotValue)
+    _Out_ bool* gotValue,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     CStyle* pActiveStyle = GetActiveStyle();
 
@@ -935,7 +939,8 @@ _Check_return_ HRESULT CFrameworkElement::GetValueFromStyle(
         IFC_RETURN(pActiveStyle->GetPropertyValue(
             dp->GetIndex(),
             pValue,
-            gotValue));
+            gotValue,
+            deferredValueError));
     }
 
     return S_OK;
@@ -952,7 +957,8 @@ _Check_return_ HRESULT CFrameworkElement::GetValueFromStyle(
 _Check_return_ HRESULT
 CFrameworkElement::InvalidateProperty(
     _In_ const CDependencyProperty* pDP,
-    _In_ BaseValueSource baseValueSource)
+    _In_ BaseValueSource baseValueSource,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     if (pDP->IsSparse())
     {
@@ -961,7 +967,7 @@ CFrameworkElement::InvalidateProperty(
         IFC_RETURN(SetParticipatesInManagedTreeDefault());
     }
 
-    IFC_RETURN(__super::InvalidateProperty(pDP, baseValueSource));
+    IFC_RETURN(__super::InvalidateProperty(pDP, baseValueSource, deferredValueError));
 
     return S_OK;
 }

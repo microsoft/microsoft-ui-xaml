@@ -553,7 +553,11 @@ bool OptimizedStyle::HasPropertySetter(_In_ const KnownPropertyIndex propertyId)
 }
 
 // Get the value of a property in the style. Return null CValue if property is not found.
-_Check_return_ HRESULT OptimizedStyle::GetPropertyValue(_In_ KnownPropertyIndex propertyId, _In_ bool getFromBasedOn, _Outptr_opt_ CValue** ppValue)
+_Check_return_ HRESULT OptimizedStyle::GetPropertyValue(
+    _In_ KnownPropertyIndex propertyId,
+    _In_ bool getFromBasedOn,
+    _Outptr_opt_ CValue** ppValue,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     *ppValue = nullptr;
 
@@ -570,7 +574,7 @@ _Check_return_ HRESULT OptimizedStyle::GetPropertyValue(_In_ KnownPropertyIndex 
     if (!found && m_style->m_pBasedOn && getFromBasedOn)
     {
         bool gotValue = false;
-        IFC_RETURN(m_style->m_pBasedOn->GetPropertyValue(propertyId, &m_latestFoundBasedOnValue, &gotValue));
+        IFC_RETURN(m_style->m_pBasedOn->GetPropertyValue(propertyId, &m_latestFoundBasedOnValue, &gotValue, deferredValueError));
 
         // If we found the property/value in the BasedOn style, just return it immediately,
         // because the found value is already resolved.
@@ -591,7 +595,12 @@ _Check_return_ HRESULT OptimizedStyle::GetPropertyValue(_In_ KnownPropertyIndex 
     // Realize the value if it was deferred
     if (m_runtimeData && !m_realizedStates[foundIndex])
     {
-        IFC_RETURN(EnsureValueRealized(foundIndex));
+        const HRESULT hr = EnsureValueRealized(foundIndex);
+        if (FAILED(hr) && deferredValueError)
+        {
+            *deferredValueError = hr;
+        }
+        IFC_RETURN(hr);
     }
 
     auto& foundVal = m_values[foundIndex];

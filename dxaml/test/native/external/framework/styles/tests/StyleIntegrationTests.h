@@ -348,6 +348,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that notification does not realize a shadowed setter, and its value is created and retained when needed.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsMissingResource)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a missing resource.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsBasedOnRealizationFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a deferred realization failure from its BasedOn style.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ShadowedStyleSetterReportsMissingResourceWhenExposed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a shadowed setter reports a missing resource only when its local override is cleared.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsConstructorFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a constructor failure.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ShadowedStyleSetterReportsConstructorFailureWhenExposed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a shadowed setter reports a constructor failure only when its local override is cleared.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root and its ThemeDictionaries contains an implicit style")
@@ -381,5 +406,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TestCanUseStyleWithNestedTemplateVSM(bool isExplicit);
         void TestCanUseStyleWithDeepNestedTemplateVSM(bool isExplicit);
         void TestCanCreateOptimizedStyle(bool useSetterTarget);
+        void TestStyleSetterFailure(bool shadowed, bool throwingConstructor);
     };
 } } } } } }

@@ -326,7 +326,8 @@ bool CDependencyObject::HasLocalOrModifierValue(_In_ const CDependencyProperty* 
 // Re-evaluate property value.
 _Check_return_ HRESULT CDependencyObject::InvalidateProperty(
     _In_ const CDependencyProperty* dp,
-    _In_ BaseValueSource baseValueSource)
+    _In_ BaseValueSource baseValueSource,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     // Ensure that the property is actually a property on the passed in class.
     if (!dp->IsSparse() && // For now, skip validation on sparse properties, because we never did this validation before either.
@@ -364,7 +365,8 @@ _Check_return_ HRESULT CDependencyObject::InvalidateProperty(
             dp,
             CValue::Empty(),
             GetModifiedValue(dp),
-            ValueOperationReevaluate)));
+            ValueOperationReevaluate),
+        deferredValueError));
 
     return S_OK;
 }
@@ -1233,7 +1235,8 @@ _Check_return_ HRESULT CDependencyObject::EvaluateBaseValue(
     _In_ UINT32 valueOperation,
     _Out_ CValue* pBaseValue,
     _Out_ BaseValueSource* pBaseValueSource,
-    _Out_ bool* valueSetNeeded)
+    _Out_ bool* valueSetNeeded,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     bool gotValue = false;
 
@@ -1274,7 +1277,7 @@ _Check_return_ HRESULT CDependencyObject::EvaluateBaseValue(
         // Try to get value from style.
         if(OfTypeByIndex<KnownTypeIndex::FrameworkElement>())
         {
-            IFC_RETURN(static_cast<CFrameworkElement*>(this)->GetValueFromStyle(dp, pBaseValue, &gotValue));
+            IFC_RETURN(static_cast<CFrameworkElement*>(this)->GetValueFromStyle(dp, pBaseValue, &gotValue, deferredValueError));
         }
 
         if (gotValue)
@@ -1286,7 +1289,7 @@ _Check_return_ HRESULT CDependencyObject::EvaluateBaseValue(
             // Try to get value from built-in style.
             if(OfTypeByIndex<KnownTypeIndex::Control>())
             {
-                IFC_RETURN(static_cast<CControl*>(this)->GetValueFromBuiltInStyle(dp, pBaseValue, &gotValue));
+                IFC_RETURN(static_cast<CControl*>(this)->GetValueFromBuiltInStyle(dp, pBaseValue, &gotValue, deferredValueError));
             }
 
             if (gotValue)
@@ -1316,7 +1319,8 @@ _Check_return_ HRESULT CDependencyObject::EvaluateEffectiveValue(
     _In_ UINT32 valueOperation,
     _Out_ CValue* pEffectiveValue,
     _Out_ BaseValueSource* pBaseValueSource,
-    _Out_ bool* valueSetNeeded)
+    _Out_ bool* valueSetNeeded,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     CValue baseValue;
     bool baseValueSetNeeded = true;
@@ -1325,7 +1329,7 @@ _Check_return_ HRESULT CDependencyObject::EvaluateEffectiveValue(
 
     // Evaluate base value
     IFC_RETURN(EvaluateBaseValue(dp, pModifiedValue, valueOperation, &baseValue,
-        pBaseValueSource, &baseValueSetNeeded));
+        pBaseValueSource, &baseValueSetNeeded, deferredValueError));
 
     // If there is a modifier, set the new base value in pModifiedValue, so it
     // can be set when modifiers are removed
@@ -1828,7 +1832,9 @@ _Check_return_ HRESULT CDependencyObject::TryAddToContentPropertyCollection(
 
 // Updates effective value of a property. This function is called in all cases where the effective value needs to be updated
 // using precedence rules that determine which value source's value is effective.
-_Check_return_ HRESULT CDependencyObject::UpdateEffectiveValue(_In_ const UpdateEffectiveValueParams& args)
+_Check_return_ HRESULT CDependencyObject::UpdateEffectiveValue(
+    _In_ const UpdateEffectiveValueParams& args,
+    _Inout_opt_ HRESULT* deferredValueError)
 {
     CValue effectiveValue;
     BaseValueSource baseValueSource = BaseValueSourceLocal;
@@ -1852,7 +1858,8 @@ _Check_return_ HRESULT CDependencyObject::UpdateEffectiveValue(_In_ const Update
             args.m_valueOperation,
             &effectiveValue,
             &baseValueSource,
-            &valueSetNeeded));
+            &valueSetNeeded,
+            deferredValueError));
 
         pEffectiveValue = &effectiveValue;
     }

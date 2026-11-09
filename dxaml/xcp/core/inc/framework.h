@@ -258,7 +258,8 @@ public:
     _Check_return_ HRESULT GetValueFromStyle(
         _In_ const CDependencyProperty* dp,
         _Out_ CValue* pValue,
-        _Out_ bool* gotValue);
+        _Out_ bool* gotValue,
+        _Inout_opt_ HRESULT* deferredValueError = nullptr);
 
     static  _Check_return_ HRESULT FlowDirection(
         _In_ CDependencyObject *pObject,
@@ -396,7 +397,10 @@ private:
 
     _Check_return_ HRESULT GetGridPropertyValue(_In_ XUINT32 uIndex, _Out_ XUINT32 *puValue);
 
-    _Check_return_ HRESULT InvalidateProperty(_In_ const CDependencyProperty* pDP, _In_ BaseValueSource baseValueSource) final;
+    _Check_return_ HRESULT InvalidateProperty(
+        _In_ const CDependencyProperty* pDP,
+        _In_ BaseValueSource baseValueSource,
+        _Inout_opt_ HRESULT* deferredValueError = nullptr) final;
 
     bool IsPropertyBitSet(_In_ const CDependencyProperty* pDP, const BitField& field) const;
 

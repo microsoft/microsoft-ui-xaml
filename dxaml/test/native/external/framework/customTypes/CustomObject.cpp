@@ -7,9 +7,14 @@
 using namespace Tests::Native::External::Framework;
 
 unsigned int CustomObject::InstanceCount = 0U;
+bool CustomObject::ThrowOnConstruction = false;
 
 CustomObject::CustomObject()
 {
+    if (ThrowOnConstruction)
+    {
+        throw ref new Platform::FailureException(L"Intentional setter constructor failure");
+    }
     InstanceCount++;
 }
 CustomObject::~CustomObject()
@@ -23,4 +28,9 @@ void CustomObject::ClearInstanceCount()
 unsigned int CustomObject::GetInstanceCount()
 {
     return InstanceCount;
+}
+
+void CustomObject::SetThrowOnConstruction(bool value)
+{
+    ThrowOnConstruction = value;
 }

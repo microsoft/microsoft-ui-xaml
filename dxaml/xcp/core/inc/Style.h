@@ -56,13 +56,15 @@ public:
     _Check_return_ HRESULT GetPropertyValue(
         _In_ KnownPropertyIndex uPropertyId,
         _Out_ CValue *pValue,
-        _Out_ bool* gotValue);
+        _Out_ bool* gotValue,
+        _Inout_opt_ HRESULT* deferredValueError = nullptr);
 
     _Check_return_ HRESULT GetPropertyValue(
         _In_ KnownPropertyIndex uPropertyId,
         _In_ bool getFromBasedOn,
         _Out_ CValue *pValue,
-        _Out_ bool* gotValue);
+        _Out_ bool* gotValue,
+        _Inout_opt_ HRESULT* deferredValueError = nullptr);
 
     CStyle* GetBasedOnStyleNoRef() const
     {
