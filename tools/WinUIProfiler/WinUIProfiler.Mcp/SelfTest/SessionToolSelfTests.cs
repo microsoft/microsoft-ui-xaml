@@ -27,6 +27,7 @@ internal static class SessionToolSelfTests
         new("sessions.times", Times),
         new("sessions.damaged", Damaged),
         new("sessions.recording", Recording),
+        new("sessions.newest", Newest),
         new("sessions.newer", Newer),
     ];
 
@@ -378,6 +379,57 @@ internal static class SessionToolSelfTests
         recording.Close(EndReason);
         Expect.Equal(EndReason, Run(() => SessionTools.Sessions(sessionPath: path)).Property("session").Text("endReason"),
             "The end reason once the recording ended");
+    }
+
+    // The newest session file, which the tools read when no session is named. A file's write-ahead log counts only when it
+    // holds writes: reading a file left in WAL mode creates an empty one beside it, which must not make that file the newest.
+    private static void Newest(SelfTestContext context)
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "newest")).FullName;
+        var stale = Write(Path.Combine(folder, "stale.sqlite"), MainEvents);
+
+        // As a recording that didn't end normally leaves a file: in WAL mode, with its writes in the file.
+        Update(stale, "PRAGMA journal_mode = WAL");
+        var newer = Write(Path.Combine(folder, "newer.sqlite"), MainEvents);
+        File.SetLastWriteTimeUtc(stale, DateTime.UtcNow.AddHours(-2));
+        File.SetLastWriteTimeUtc(newer, DateTime.UtcNow.AddHours(-1));
+
+        // Each list reads every file's session record, so the second list and Resolve see what the first read left.
+        foreach (var read in new[] { "first", "second" })
+        {
+            var listed = Listed();
+            Expect.Equal("newer.sqlite,stale.sqlite", Files(listed), $"The files, newest first, on the {read} list");
+            Expect.Equal(File.GetLastWriteTimeUtc(stale), Written(listed[1]),
+                $"The last write of the file left in WAL mode on the {read} list");
+            Expect.Equal(newer, SessionCatalog.Resolve(null, folder), $"The newest session after the {read} list");
+        }
+
+        var log = new FileInfo(stale + "-wal");
+        Expect.True(log.Exists && log.Length == 0 && log.LastWriteTimeUtc > File.GetLastWriteTimeUtc(newer),
+            "Reading the file left in WAL mode left an empty write-ahead log beside it, newer than every session file.");
+
+        // A recording's log holds its newest writes, so it counts.
+        var live = Path.Combine(folder, "live.sqlite");
+        using var recording = new FixtureRecording(live);
+        recording.Add(MainEvents);
+        recording.WaitUntilStored();
+        var liveLog = new FileInfo(live + "-wal");
+        Expect.True(liveLog.Exists && liveLog.Length > 0, "The recording's write-ahead log holds its writes.");
+        File.SetLastWriteTimeUtc(live, DateTime.UtcNow.AddHours(-3));
+        var logWritten = liveLog.LastWriteTimeUtc;
+        var recorded = Listed();
+        Expect.Equal("live.sqlite,newer.sqlite,stale.sqlite", Files(recorded), "The files, newest first, while one is recorded");
+        Expect.True(Written(recorded[0]) >= logWritten, $"The recording's last write is its log's, {logWritten:O}; it was " +
+            $"{Written(recorded[0]):O}.");
+        Expect.Equal(live, SessionCatalog.Resolve(null, folder), "The newest session while one is recorded");
+        recording.Close(EndReason);
+
+        IReadOnlyList<JsonElement> Listed() => Run(() => SessionTools.Sessions(folder: folder)).Items("sessions");
+
+        static string Files(IReadOnlyList<JsonElement> sessions) => string.Join(",", sessions.Select(item => item.Text("file")));
+
+        static DateTime Written(JsonElement session) =>
+            DateTime.Parse(session.Text("lastWrittenUtc")!, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
     }
 
     // A newer version can store a provider or object kind this version doesn't have. The tools that read it say so, and

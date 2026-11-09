@@ -9,7 +9,9 @@ using WinUIProfiler.Mcp.Tools;
 
 namespace WinUIProfiler.Mcp.Sessions;
 
-/// <summary>A session file, with when it was last written and its size, both counting its write-ahead log.</summary>
+/// <summary>
+/// A session file, with when it was last written and its size, both counting its write-ahead log when the log isn't empty.
+/// </summary>
 internal sealed record SessionFileEntry(string Path, DateTime LastWrittenUtc, long Bytes);
 
 /// <summary>
@@ -67,7 +69,11 @@ internal static class SessionCatalog
                     var written = file.LastWriteTimeUtc;
                     var bytes = file.Length;
                     var log = new FileInfo(path + "-wal");
-                    if (log.Exists)
+
+                    // An empty log holds no writes: a checkpoint empties one only once its writes are in the file. Reading
+                    // a file left in WAL mode, as a recording that didn't end normally leaves one, creates an empty log
+                    // beside it that a read-only connection can't remove, and its time would make the file the newest.
+                    if (log.Exists && log.Length > 0)
                     {
                         written = log.LastWriteTimeUtc > written ? log.LastWriteTimeUtc : written;
                         bytes += log.Length;
