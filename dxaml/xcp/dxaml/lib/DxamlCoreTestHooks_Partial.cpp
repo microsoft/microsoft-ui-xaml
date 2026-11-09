@@ -751,15 +751,9 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetAtlasSizeHint()
 
 IFACEMETHODIMP DxamlCoreTestHooks::ShrinkXamlIslandVisibleBounds(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled)
 {
-    IFCPTR_RETURN(xamlRoot);
     ctl::ComPtr<XamlRoot> root;
     IFC_RETURN(xamlRoot->QueryInterface(IID_PPV_ARGS(&root)));
-    auto visualTree = root->GetVisualTreeNoRef();
-    IFCEXPECT_RETURN(visualTree);
-    auto contentRoot = visualTree->GetContentRootNoRef();
-    IFCEXPECT_RETURN(contentRoot);
-    auto islandRoot = contentRoot->GetXamlIslandRootNoRef();
-    IFCEXPECT_RETURN(islandRoot);
+    auto islandRoot = root->GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef();
     islandRoot->SetShouldShrinkVisibleBoundsForTesting(enabled);
     return S_OK;
 }

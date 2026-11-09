@@ -314,7 +314,6 @@ namespace Private.Infrastructure
 
         // XamlOptionalChanges test hooks
         HRESULT ResetOptionalChanges();
-
    }
 
     [version(NTDDI_WINTHRESHOLD)]

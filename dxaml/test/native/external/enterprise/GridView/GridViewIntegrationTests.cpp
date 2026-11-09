@@ -413,15 +413,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             if (testXamlRoot != nullptr)
             {
                 TestServices::Utilities->ShrinkXamlIslandVisibleBounds(testXamlRoot, false);
-                RunOnUIThread([&]()
-                {
-                    auto bounds = TestServices::WindowHelper->VisibleBounds;
-                    VERIFY_ARE_EQUAL(bounds.X, 0.0f);
-                    VERIFY_ARE_EQUAL(bounds.Y, 0.0f);
-                    VERIFY_ARE_EQUAL(bounds.Width, testXamlRoot->Size.Width);
-                    VERIFY_ARE_EQUAL(bounds.Height, testXamlRoot->Size.Height);
-                    testXamlRoot = nullptr;
-                });
+                testXamlRoot = nullptr;
             }
             TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
         });

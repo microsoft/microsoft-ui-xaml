@@ -162,7 +162,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can distinguish between when to consider a popup as a candidate based on when it was opened")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash in test dll
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EngagedElementCanNavigateToPopupOpenedByAnotherPopup)

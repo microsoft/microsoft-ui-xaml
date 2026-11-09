@@ -216,7 +216,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanBindToAnimation)
-                // WPF_HOSTING_MODE_FAILURE - Animates to incorrect value, needs investigation.
                 TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
