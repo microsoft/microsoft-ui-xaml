@@ -4,6 +4,7 @@
 #include <shobjidl.h>
 #include <appmodel.h>
 #include <wrl/client.h>
+#include <format>
 #include <map>
 
 using Microsoft::WRL::ComPtr;
@@ -29,7 +30,13 @@ namespace
     struct MappingView
     {
         DebugContext* data = nullptr;
-        ~MappingView() { if (data) UnmapViewOfFile(data); }
+        ~MappingView()
+        {
+            if (data)
+            {
+                UnmapViewOfFile(data);
+            }
+        }
     };
 
     struct PackageLaunchState
@@ -48,13 +55,19 @@ namespace
             enabled = false;
             activation.Reset();
             debugging.Reset();
-            if (initialized) CoUninitialize();
+            if (initialized)
+            {
+                CoUninitialize();
+            }
             initialized = false;
             return result;
         }
         ~PackageLaunchState()
         {
-            if (FAILED(Close())) OutputDebugStringW(L"WinUI profiler: package-debug cleanup failed.\n");
+            if (FAILED(Close()))
+            {
+                OutputDebugStringW(L"WinUI profiler: package-debug cleanup failed.\n");
+            }
         }
     };
 
@@ -75,16 +88,22 @@ namespace
         std::wstring_view stage, std::wstring_view package = {}, std::wstring_view aumid = {})
     {
         const auto creation = (static_cast<ULONGLONG>(created.dwHighDateTime) << 32) | created.dwLowDateTime;
+        const auto line = std::format(
+            R"({{"schemaVersion":1,"pid":{},"creationTimeFileTime":{},"error":{},)"
+            R"("stage":{},"packageFullName":{},"aumid":{}}})" "\n",
+            pid, creation, error, profiler::Json(stage), profiler::Json(package), profiler::Json(aumid));
         const auto temporary = output + L".tmp";
         {
             profiler::Handle file(CreateFileW(temporary.c_str(), GENERIC_WRITE, 0, nullptr,
                 CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
-            if (!file) return false;
-            if (!profiler::WriteAll(file.get(), "{\"schemaVersion\":1,\"pid\":" + std::to_string(pid) +
-                ",\"creationTimeFileTime\":" + std::to_string(creation) +
-                ",\"error\":" + std::to_string(error) + ",\"stage\":" + profiler::Json(stage) +
-                ",\"packageFullName\":" + profiler::Json(package) + ",\"aumid\":" + profiler::Json(aumid) + "}\n"))
+            if (!file)
+            {
                 return false;
+            }
+            if (!profiler::WriteAll(file.get(), line))
+            {
+                return false;
+            }
         }
         return MoveFileExW(temporary.c_str(), output.c_str(), MOVEFILE_WRITE_THROUGH) != FALSE;
     }
@@ -114,23 +133,41 @@ namespace
     DWORD ProcessIdArgument(const Arguments& args, const wchar_t* name)
     {
         const auto text = Value(args, name);
-        if (text.empty()) return 0;
+        if (text.empty())
+        {
+            return 0;
+        }
         ULONGLONG value = 0;
         for (wchar_t ch : text)
         {
-            if (ch < L'0' || ch > L'9') return 0;
+            if (ch < L'0' || ch > L'9')
+            {
+                return 0;
+            }
             value = value * 10 + static_cast<unsigned>(ch - L'0');
-            if (value > MAXDWORD) return 0;
+            if (value > MAXDWORD)
+            {
+                return 0;
+            }
         }
         return static_cast<DWORD>(value);
     }
 
     DWORD ResumeDebugThread(DWORD pid, DWORD tid)
     {
-        if (!pid || !tid) return ERROR_INVALID_PARAMETER;
+        if (!pid || !tid)
+        {
+            return ERROR_INVALID_PARAMETER;
+        }
         profiler::Handle thread(OpenThread(THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, tid));
-        if (!thread) return GetLastError();
-        if (GetProcessIdOfThread(thread.get()) != pid) return ERROR_INVALID_PARAMETER;
+        if (!thread)
+        {
+            return GetLastError();
+        }
+        if (GetProcessIdOfThread(thread.get()) != pid)
+        {
+            return ERROR_INVALID_PARAMETER;
+        }
         return ResumeThread(thread.get()) == static_cast<DWORD>(-1) ? GetLastError() : ERROR_SUCCESS;
     }
 
@@ -139,7 +176,10 @@ namespace
         const DWORD pid = ProcessIdArgument(args, L"-p");
         const DWORD tid = ProcessIdArgument(args, L"-tid");
         const auto contextName = Value(args, L"--context");
-        if (!pid || !tid || !contextName.starts_with(L"Local\\WinUIPerfTools.Redirect.")) return ERROR_INVALID_PARAMETER;
+        if (!pid || !tid || !contextName.starts_with(L"Local\\WinUIPerfTools.Redirect."))
+        {
+            return ERROR_INVALID_PARAMETER;
+        }
         profiler::Handle mapping(OpenFileMappingW(FILE_MAP_READ | FILE_MAP_WRITE, FALSE,
             contextName.c_str()));
         if (!mapping)
@@ -180,44 +220,80 @@ namespace
         DWORD length = static_cast<DWORD>(actual.size());
         FILETIME created{}, exited{}, kernel{}, user{};
         DWORD session = 0;
-        if (!process || !thread) error = processError ? processError : threadError;
-        else if (GetProcessIdOfThread(thread.get()) != pid) error = ERROR_INVALID_PARAMETER;
+        if (!process || !thread)
+        {
+            error = processError ? processError : threadError;
+        }
+        else if (GetProcessIdOfThread(thread.get()) != pid)
+        {
+            error = ERROR_INVALID_PARAMETER;
+        }
         else if (!GetProcessTimes(process.get(), &created, &exited, &kernel, &user) ||
-            !ProcessIdToSessionId(pid, &session)) error = GetLastError();
+            !ProcessIdToSessionId(pid, &session))
+        {
+            error = GetLastError();
+        }
         else if (CompareFileTime(&created, &context.data->notBefore) < 0 || session != context.data->sessionId)
+        {
             error = ERROR_INVALID_DATA;
-        else if (!QueryFullProcessImageNameW(process.get(), 0, actual.data(), &length)) error = GetLastError();
+        }
+        else if (!QueryFullProcessImageNameW(process.get(), 0, actual.data(), &length))
+        {
+            error = GetLastError();
+        }
         else
         {
             actual.resize(length);
-            if (!profiler::EqualPath(actual, context.data->executable)) error = ERROR_BAD_EXE_FORMAT;
+            if (!profiler::EqualPath(actual, context.data->executable))
+            {
+                error = ERROR_BAD_EXE_FORMAT;
+            }
             else
             {
                 UINT32 packageLength = 0;
                 LONG status = GetPackageFullName(process.get(), &packageLength, nullptr);
                 std::wstring package(packageLength, L'\0');
                 if (status == ERROR_INSUFFICIENT_BUFFER)
+                {
                     status = GetPackageFullName(process.get(), &packageLength, package.data());
-                if (status != ERROR_SUCCESS) error = static_cast<DWORD>(status);
+                }
+                if (status != ERROR_SUCCESS)
+                {
+                    error = static_cast<DWORD>(status);
+                }
                 else
                 {
                     package.resize(packageLength - 1);
-                    if (package != context.data->package) error = ERROR_INVALID_DATA;
+                    if (package != context.data->package)
+                    {
+                        error = ERROR_INVALID_DATA;
+                    }
                 }
             }
             if (!error && InterlockedCompareExchange(&context.data->claimedPid, static_cast<LONG>(pid), 0) != 0)
+            {
                 error = ERROR_ALREADY_EXISTS;
+            }
             if (!error)
             {
                 const auto dll = profiler::ImportPath(context.data->dll);
                 LPCSTR libraries[] = { dll.c_str() };
-                if (dll.empty() || !DetourUpdateProcessWithDll(process.get(), libraries, 1)) error = GetLastError();
+                if (dll.empty() || !DetourUpdateProcessWithDll(process.get(), libraries, 1))
+                {
+                    error = GetLastError();
+                }
             }
         }
         // Even a rejected callback must not strand a package-created process suspended.
         if (thread && GetProcessIdOfThread(thread.get()) == pid &&
-            ResumeThread(thread.get()) == static_cast<DWORD>(-1) && !error) error = GetLastError();
-        if (!SaveResult(context.data->result, pid, created, error, L"package_debugger") && !error) error = GetLastError();
+            ResumeThread(thread.get()) == static_cast<DWORD>(-1) && !error)
+        {
+            error = GetLastError();
+        }
+        if (!SaveResult(context.data->result, pid, created, error, L"package_debugger") && !error)
+        {
+            error = GetLastError();
+        }
         InterlockedCompareExchange(&context.data->error, static_cast<LONG>(error), ERROR_IO_PENDING);
         return error;
     }
@@ -235,11 +311,15 @@ namespace
         DWORD pid = 0;
         std::wstring stage = L"configuration";
         if (output.empty() || exe.empty() || source.empty() || target.empty() || log.empty())
+        {
             return ERROR_INVALID_PARAMETER;
+        }
         FILETIME launcherCreated{};
         if (!CreationTime(GetCurrentProcess(), launcherCreated) ||
             !SaveResult(output + L".owner.json", GetCurrentProcessId(), launcherCreated, ERROR_SUCCESS, L"launcher"))
+        {
             return GetLastError();
+        }
         if (exe.size() >= profiler::MaxPathCharacters || source.size() >= profiler::MaxPathCharacters ||
             target.size() >= profiler::MaxPathCharacters || output.size() + 32 >= profiler::MaxPathCharacters ||
             Value(args, L"--package").size() >= profiler::MaxPathCharacters ||
@@ -252,12 +332,18 @@ namespace
 
         GUID id{};
         HRESULT hr = CoCreateGuid(&id);
-        if (FAILED(hr)) return static_cast<DWORD>(hr);
+        if (FAILED(hr))
+        {
+            return static_cast<DWORD>(hr);
+        }
         wchar_t guid[40]{};
         StringFromGUID2(id, guid, ARRAYSIZE(guid));
         const std::wstring eventName = std::wstring(L"Local\\WinUIPerfTools.Redirect.") + guid;
         profiler::Handle ready(CreateEventW(nullptr, TRUE, FALSE, eventName.c_str()));
-        if (!ready) return GetLastError();
+        if (!ready)
+        {
+            return GetLastError();
+        }
         auto environment = ProfileEnvironment(args, source, target, eventName);
         PROCESS_INFORMATION processInfo{};
         const auto aumid = Value(args, L"--aumid");
@@ -269,23 +355,38 @@ namespace
                 const std::wstring_view pair(entry);
                 const auto equal = pair.find(L'=');
                 if (!SetEnvironmentVariableW(std::wstring(pair.substr(0, equal)).c_str(),
-                    std::wstring(pair.substr(equal + 1)).c_str())) error = GetLastError();
+                    std::wstring(pair.substr(equal + 1)).c_str()))
+                {
+                    error = GetLastError();
+                }
             }
             STARTUPINFOW startup{};
             startup.cb = sizeof(startup);
             std::wstring command = profiler::Quote(exe);
             const auto extra = Value(args, L"--arguments");
-            if (!extra.empty()) command += L" " + extra;
+            if (!extra.empty())
+            {
+                command += L" " + extra;
+            }
             const auto ansiDll = profiler::ImportPath(dll);
-            if (ansiDll.empty() && !error) error = GetLastError();
+            if (ansiDll.empty() && !error)
+            {
+                error = GetLastError();
+            }
             stage = L"create_process";
             if (!error && !DetourCreateProcessWithDllExW(exe.c_str(), command.data(), nullptr, nullptr,
                 FALSE, CREATE_SUSPENDED, nullptr, profiler::ParentPath(exe).c_str(), &startup,
                 &processInfo, ansiDll.c_str(), nullptr))
             {
                 error = GetLastError();
-                if (!error) error = ERROR_DLL_INIT_FAILED;
-                if (processInfo.dwProcessId) stage = L"insert_helper";
+                if (!error)
+                {
+                    error = ERROR_DLL_INIT_FAILED;
+                }
+                if (processInfo.dwProcessId)
+                {
+                    stage = L"insert_helper";
+                }
                 // Detours already terminates the child and closes both handles when insertion fails.
                 processInfo.hProcess = nullptr;
                 processInfo.hThread = nullptr;
@@ -293,14 +394,20 @@ namespace
             if (!error)
             {
                 pid = processInfo.dwProcessId;
-                if (ResumeThread(processInfo.hThread) == static_cast<DWORD>(-1)) error = GetLastError();
+                if (ResumeThread(processInfo.hThread) == static_cast<DWORD>(-1))
+                {
+                    error = GetLastError();
+                }
             }
         }
         else
         {
             stage = L"package_activation";
             hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-            if (FAILED(hr)) error = static_cast<DWORD>(hr);
+            if (FAILED(hr))
+            {
+                error = static_cast<DWORD>(hr);
+            }
             else
             {
                 packageState.initialized = true;
@@ -318,7 +425,10 @@ namespace
                     0, sizeof(DebugContext), contextName.c_str()));
                 context.data = packageState.mapping ? static_cast<DebugContext*>(MapViewOfFile(packageState.mapping.get(),
                     FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(DebugContext))) : nullptr;
-                if (!context.data) hr = HRESULT_FROM_WIN32(GetLastError());
+                if (!context.data)
+                {
+                    hr = HRESULT_FROM_WIN32(GetLastError());
+                }
                 else
                 {
                     context.data->size = sizeof(DebugContext);
@@ -326,7 +436,9 @@ namespace
                     context.data->error = ERROR_IO_PENDING;
                     GetSystemTimeAsFileTime(&context.data->notBefore);
                     if (!ProcessIdToSessionId(GetCurrentProcessId(), &context.data->sessionId))
+                    {
                         hr = HRESULT_FROM_WIN32(GetLastError());
+                    }
                     wcscpy_s(context.data->executable, exe.c_str());
                     wcscpy_s(context.data->dll, dll.c_str());
                     wcscpy_s(context.data->result, debuggerResult.c_str());
@@ -335,7 +447,10 @@ namespace
                 // Package debugging limits its command line; keep per-run paths in the owned mapping.
                 const auto command = profiler::Quote(profiler::ShortPath(profiler::ModulePath(nullptr))) +
                     L" --debugger --context " + profiler::Quote(contextName);
-                if (command.size() >= MAX_PATH) hr = HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE);
+                if (command.size() >= MAX_PATH)
+                {
+                    hr = HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE);
+                }
                 if (SUCCEEDED(hr))
                 {
                     stage = L"package_enable_debugging";
@@ -353,10 +468,16 @@ namespace
                     stage = L"package_activate";
                     hr = activation->ActivateApplication(aumid.c_str(), nullptr, AO_NOERRORUI, &pid);
                 }
-                if (FAILED(hr)) error = static_cast<DWORD>(hr);
+                if (FAILED(hr))
+                {
+                    error = static_cast<DWORD>(hr);
+                }
                 if (context.data)
                 {
-                    if (!pid && context.data->claimedPid > 0) pid = static_cast<DWORD>(context.data->claimedPid);
+                    if (!pid && context.data->claimedPid > 0)
+                    {
+                        pid = static_cast<DWORD>(context.data->claimedPid);
+                    }
                     if (context.data->error != ERROR_SUCCESS && context.data->error != ERROR_IO_PENDING && !error)
                     {
                         error = static_cast<DWORD>(context.data->error);
@@ -367,27 +488,45 @@ namespace
                 {
                     processInfo.hProcess = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION,
                         FALSE, pid);
-                    if (!processInfo.hProcess && !error) error = GetLastError();
+                    if (!processInfo.hProcess && !error)
+                    {
+                        error = GetLastError();
+                    }
                 }
             }
         }
 
         profiler::Handle process(processInfo.hProcess);
         profiler::Handle thread(processInfo.hThread);
-        if (!error && !process) error = ERROR_PROCESS_ABORTED;
+        if (!error && !process)
+        {
+            error = ERROR_PROCESS_ABORTED;
+        }
         if (!error && process)
         {
             stage = L"helper_ready";
             const HANDLE handles[] = { ready.get(), process.get() };
             const DWORD result = WaitForMultipleObjects(ARRAYSIZE(handles), handles, FALSE,
                 profiler::StartupTimeoutMs);
-            if (result == WAIT_OBJECT_0) stage = L"ready";
+            if (result == WAIT_OBJECT_0)
+            {
+                stage = L"ready";
+            }
             else if (result == WAIT_OBJECT_0 + 1)
             {
-                if (!GetExitCodeProcess(process.get(), &error)) error = GetLastError();
-                if (!error) error = ERROR_DLL_INIT_FAILED;
+                if (!GetExitCodeProcess(process.get(), &error))
+                {
+                    error = GetLastError();
+                }
+                if (!error)
+                {
+                    error = ERROR_DLL_INIT_FAILED;
+                }
             }
-            else error = result == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError();
+            else
+            {
+                error = result == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError();
+            }
         }
         if (packageState.context.data && !error && packageState.context.data->error != ERROR_SUCCESS &&
             packageState.context.data->error != ERROR_IO_PENDING)
@@ -412,19 +551,31 @@ namespace
             {
                 actualPackage.resize(length);
                 status = GetPackageFullName(process.get(), &length, actualPackage.data());
-                if (status == ERROR_SUCCESS) actualPackage.resize(length - 1);
+                if (status == ERROR_SUCCESS)
+                {
+                    actualPackage.resize(length - 1);
+                }
             }
-            if (status != ERROR_SUCCESS && status != APPMODEL_ERROR_NO_PACKAGE) error = static_cast<DWORD>(status);
+            if (status != ERROR_SUCCESS && status != APPMODEL_ERROR_NO_PACKAGE)
+            {
+                error = static_cast<DWORD>(status);
+            }
             length = 0;
             status = GetApplicationUserModelId(process.get(), &length, nullptr);
             if (status == ERROR_INSUFFICIENT_BUFFER)
             {
                 actualAumid.resize(length);
                 status = GetApplicationUserModelId(process.get(), &length, actualAumid.data());
-                if (status == ERROR_SUCCESS) actualAumid.resize(length - 1);
+                if (status == ERROR_SUCCESS)
+                {
+                    actualAumid.resize(length - 1);
+                }
             }
             if (status != ERROR_SUCCESS && status != APPMODEL_ERROR_NO_APPLICATION &&
-                status != APPMODEL_ERROR_NO_PACKAGE && !error) error = static_cast<DWORD>(status);
+                status != APPMODEL_ERROR_NO_PACKAGE && !error)
+            {
+                error = static_cast<DWORD>(status);
+            }
             const auto expectedPackage = Value(args, L"--package");
             const auto expectedAumid = Value(args, L"--expected-aumid");
             if ((!expectedPackage.empty() && actualPackage != expectedPackage) ||
@@ -440,7 +591,10 @@ namespace
             error = GetLastError();
             stage = L"process_times";
         }
-        if (!SaveResult(output, pid, created, error, stage, actualPackage, actualAumid)) return GetLastError();
+        if (!SaveResult(output, pid, created, error, stage, actualPackage, actualAumid))
+        {
+            return GetLastError();
+        }
         return error;
     }
 }
@@ -449,21 +603,35 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
     int count = 0;
     wchar_t** words = CommandLineToArgvW(GetCommandLineW(), &count);
-    if (!words) return static_cast<int>(GetLastError());
+    if (!words)
+    {
+        return static_cast<int>(GetLastError());
+    }
     Arguments args;
     bool valid = true;
     for (int index = 1; index < count; ++index)
     {
         const std::wstring key = words[index];
-        if (key == L"--debugger") valid = args.emplace(key, L"1").second && valid;
+        if (key == L"--debugger")
+        {
+            valid = args.emplace(key, L"1").second && valid;
+        }
         else if (index + 1 < count && (key == L"--exe" || key == L"--source" || key == L"--private" ||
             key == L"--controls" || key == L"--log" || key == L"--result" || key == L"--arguments" ||
             key == L"--aumid" || key == L"--package" || key == L"--expected-aumid" || key == L"--context" ||
             key == L"-p" || key == L"-tid"))
+        {
             valid = args.emplace(key, words[++index]).second && valid;
-        else valid = false;
+        }
+        else
+        {
+            valid = false;
+        }
     }
     LocalFree(words);
-    if (!valid) return ERROR_INVALID_PARAMETER;
+    if (!valid)
+    {
+        return ERROR_INVALID_PARAMETER;
+    }
     return static_cast<int>(args.contains(L"--debugger") ? DebuggerLaunch(args) : Launch(args));
 }

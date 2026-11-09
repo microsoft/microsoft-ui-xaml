@@ -16,14 +16,22 @@ namespace profiler
 
     inline std::string Utf8(std::wstring_view value)
     {
-        if (value.empty()) return {};
+        if (value.empty())
+        {
+            return {};
+        }
         const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(),
             static_cast<int>(value.size()), nullptr, 0, nullptr, nullptr);
-        if (!length) throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "UTF-8 conversion");
+        if (!length)
+        {
+            throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "UTF-8 conversion");
+        }
         std::string result(static_cast<size_t>(length), '\0');
         if (!WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value.data(),
             static_cast<int>(value.size()), result.data(), length, nullptr, nullptr))
+        {
             throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "UTF-8 conversion");
+        }
         return result;
     }
 
@@ -45,7 +53,10 @@ namespace profiler
                 result += hex[ch >> 4];
                 result += hex[ch & 15];
             }
-            else result += static_cast<char>(ch);
+            else
+            {
+                result += static_cast<char>(ch);
+            }
         }
         result += '"';
         return result;
@@ -54,8 +65,14 @@ namespace profiler
     inline bool WriteAll(HANDLE file, const std::string& text)
     {
         DWORD written = 0;
-        if (!WriteFile(file, text.data(), static_cast<DWORD>(text.size()), &written, nullptr)) return false;
-        if (written == text.size()) return true;
+        if (!WriteFile(file, text.data(), static_cast<DWORD>(text.size()), &written, nullptr))
+        {
+            return false;
+        }
+        if (written == text.size())
+        {
+            return true;
+        }
         SetLastError(ERROR_WRITE_FAULT);
         return false;
     }
@@ -64,7 +81,10 @@ namespace profiler
     {
         std::wstring result(MaxPathCharacters, L'\0');
         const DWORD length = GetModuleFileNameW(module, result.data(), static_cast<DWORD>(result.size()));
-        if (!length || length >= result.size()) return {};
+        if (!length || length >= result.size())
+        {
+            return {};
+        }
         result.resize(length);
         return result;
     }
@@ -84,19 +104,31 @@ namespace profiler
         {
             std::wstring full(length, L'\0');
             const DWORD copied = GetFullPathNameW(path.c_str(), length, full.data(), nullptr);
-            if (copied && copied < length) result.assign(full.data(), copied);
+            if (copied && copied < length)
+            {
+                result.assign(full.data(), copied);
+            }
         }
-        while (!result.empty() && (result.back() == L'\\' || result.back() == L'/')) result.pop_back();
+        while (!result.empty() && (result.back() == L'\\' || result.back() == L'/'))
+        {
+            result.pop_back();
+        }
         return result;
     }
 
     inline std::wstring ShortPath(const std::wstring& path)
     {
         const DWORD length = GetShortPathNameW(path.c_str(), nullptr, 0);
-        if (!length) return path;
+        if (!length)
+        {
+            return path;
+        }
         std::wstring result(length, L'\0');
         const DWORD copied = GetShortPathNameW(path.c_str(), result.data(), length);
-        if (!copied || copied >= length) return path;
+        if (!copied || copied >= length)
+        {
+            return path;
+        }
         result.resize(copied);
         return result;
     }
@@ -114,15 +146,23 @@ namespace profiler
         if (length &&
             WideCharToMultiByte(CP_ACP, 0, shortPath.data(), size, result.data(), length, nullptr, nullptr) == length &&
             MultiByteToWideChar(CP_ACP, 0, result.data(), length, decoded.data(), size) == size && decoded == shortPath)
+        {
             return result;
+        }
         SetLastError(ERROR_NO_UNICODE_TRANSLATION);
         return {};
     }
 
     inline bool EqualPath(std::wstring_view left, std::wstring_view right)
     {
-        if (left.starts_with(L"\\\\?\\")) left.remove_prefix(4);
-        if (right.starts_with(L"\\\\?\\")) right.remove_prefix(4);
+        if (left.starts_with(L"\\\\?\\"))
+        {
+            left.remove_prefix(4);
+        }
+        if (right.starts_with(L"\\\\?\\"))
+        {
+            right.remove_prefix(4);
+        }
         return CompareStringOrdinal(left.data(), static_cast<int>(left.size()),
             right.data(), static_cast<int>(right.size()), TRUE) == CSTR_EQUAL;
     }
@@ -130,10 +170,16 @@ namespace profiler
     inline std::wstring Environment(const wchar_t* name)
     {
         const DWORD length = GetEnvironmentVariableW(name, nullptr, 0);
-        if (!length || length > MaxPathCharacters) return {};
+        if (!length || length > MaxPathCharacters)
+        {
+            return {};
+        }
         std::wstring result(length, L'\0');
         const DWORD copied = GetEnvironmentVariableW(name, result.data(), length);
-        if (!copied || copied >= length) return {};
+        if (!copied || copied >= length)
+        {
+            return {};
+        }
         result.resize(copied);
         return result;
     }
@@ -144,10 +190,17 @@ namespace profiler
         size_t slashes = 0;
         for (wchar_t ch : value)
         {
-            if (ch == L'\\') { ++slashes; continue; }
+            if (ch == L'\\')
+            {
+                ++slashes;
+                continue;
+            }
             result.append(slashes * (ch == L'"' ? 2 : 1), L'\\');
             slashes = 0;
-            if (ch == L'"') result += L'\\';
+            if (ch == L'"')
+            {
+                result += L'\\';
+            }
             result += ch;
         }
         result.append(slashes * 2, L'\\');
@@ -158,12 +211,21 @@ namespace profiler
     {
     public:
         explicit Handle(HANDLE value = nullptr) noexcept : m_value(value) {}
-        ~Handle() { if (m_value && m_value != INVALID_HANDLE_VALUE) CloseHandle(m_value); }
+        ~Handle()
+        {
+            if (m_value && m_value != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(m_value);
+            }
+        }
         Handle(const Handle&) = delete;
         Handle& operator=(const Handle&) = delete;
         void reset(HANDLE value)
         {
-            if (m_value && m_value != INVALID_HANDLE_VALUE) CloseHandle(m_value);
+            if (m_value && m_value != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(m_value);
+            }
             m_value = value;
         }
         HANDLE get() const noexcept { return m_value; }

@@ -55,14 +55,20 @@ public static class ProfileAppMui
                     MuiTypes = ReadTypes(bytes, 60)
                 };
             }
-            finally { Marshal.FreeHGlobal(buffer); }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
         }
         throw new InvalidDataException("MUI metadata changed while reading: " + path);
     }
 
     private static string ReadStrings(byte[] bytes, int offset, bool multiple)
     {
-        if (offset == 0) return "";
+        if (offset == 0)
+        {
+            return "";
+        }
         var strings = new List<string>();
         do
         {
@@ -70,10 +76,16 @@ public static class ProfileAppMui
             while (true)
             {
                 CheckRange(bytes, offset, 2);
-                if (BitConverter.ToUInt16(bytes, offset) == 0) break;
+                if (BitConverter.ToUInt16(bytes, offset) == 0)
+                {
+                    break;
+                }
                 offset += 2;
             }
-            if (offset == start) break;
+            if (offset == start)
+            {
+                break;
+            }
             strings.Add(Encoding.Unicode.GetString(bytes, start, offset - start));
             offset += 2;
         } while (multiple);
@@ -86,14 +98,19 @@ public static class ProfileAppMui
         int offset = BitConverter.ToInt32(bytes, field + 4);
         CheckRange(bytes, offset, checked(count * 4));
         var ids = new uint[count];
-        for (int i = 0; i < ids.Length; ++i) ids[i] = BitConverter.ToUInt32(bytes, offset + i * 4);
+        for (int i = 0; i < ids.Length; ++i)
+        {
+            ids[i] = BitConverter.ToUInt32(bytes, offset + i * 4);
+        }
         return string.Join(",", ids) + ":" + ReadStrings(bytes, BitConverter.ToInt32(bytes, field + 8), true);
     }
 
     private static void CheckRange(byte[] bytes, int offset, int count)
     {
         if (offset < 0 || count < 0 || offset > bytes.Length - count)
+        {
             throw new InvalidDataException("Invalid PE or MUI metadata bounds.");
+        }
     }
 
     private sealed class Image
@@ -109,12 +126,21 @@ public static class ProfileAppMui
         public Image(string path)
         {
             Bytes = File.ReadAllBytes(path);
-            if (Read16(0) != 0x5a4d) throw new InvalidDataException("Invalid DOS header.");
+            if (Read16(0) != 0x5a4d)
+            {
+                throw new InvalidDataException("Invalid DOS header.");
+            }
             int pe = checked((int)Read32(0x3c));
-            if (Read32(pe) != 0x4550) throw new InvalidDataException("Invalid PE signature.");
+            if (Read32(pe) != 0x4550)
+            {
+                throw new InvalidDataException("Invalid PE signature.");
+            }
             int optional = checked(pe + 24);
             ushort magic = Read16(optional);
-            if (magic != 0x20b && magic != 0x10b) throw new InvalidDataException("Invalid PE optional header.");
+            if (magic != 0x20b && magic != 0x10b)
+            {
+                throw new InvalidDataException("Invalid PE optional header.");
+            }
             int directory = checked(optional + (magic == 0x20b ? 112 : 96) + 16);
             uint resourceRva = Read32(directory);
             int headersSize = checked((int)Read32(optional + 60));
@@ -138,9 +164,13 @@ public static class ProfileAppMui
                 CheckRange(Bytes, raw, rawSize);
                 mappings.Add((rva, Math.Max(virtualSize, (uint)rawSize), raw));
                 if (name == ".rsrc")
+                {
                     Array.Clear(Header, entry + 8, 4);
+                }
                 else
+                {
                     Sections.Add(name, SHA256.HashData(Bytes.AsSpan(raw, rawSize)));
+                }
                 fileEnd = Math.Max(fileEnd, checked(raw + rawSize));
             }
             Overlay = Bytes.AsSpan(fileEnd).ToArray();
@@ -179,7 +209,10 @@ public static class ProfileAppMui
 
         private void Walk(int directory, string prefix, int depth)
         {
-            if (depth > 2) throw new InvalidDataException("Unexpected resource directory depth.");
+            if (depth > 2)
+            {
+                throw new InvalidDataException("Unexpected resource directory depth.");
+            }
             int count = checked(Read16(directory + 12) + Read16(directory + 14));
             CheckRange(Bytes, directory + 16, checked(count * 8));
             for (int i = 0; i < count; ++i)
@@ -194,7 +227,10 @@ public static class ProfileAppMui
                     CheckRange(Bytes, text + 2, size);
                     key = "s:" + Encoding.Unicode.GetString(Bytes, text + 2, size);
                 }
-                else { key = "i:" + name; }
+                else
+                {
+                    key = "i:" + name;
+                }
                 key = prefix + "/" + key;
                 uint child = Read32(entry + 4);
                 int offset = checked(resourceRoot + (int)(child & 0x7fffffff));
@@ -204,7 +240,10 @@ public static class ProfileAppMui
                 }
                 else
                 {
-                    if (depth != 2) throw new InvalidDataException("Unexpected resource leaf depth.");
+                    if (depth != 2)
+                    {
+                        throw new InvalidDataException("Unexpected resource leaf depth.");
+                    }
                     int size = checked((int)Read32(offset + 4));
                     int data = Map(Read32(offset), size);
                     key += "/cp:" + Read32(offset + 8);
@@ -222,16 +261,22 @@ public static class ProfileAppMui
             !before.Header.AsSpan().SequenceEqual(after.Header) ||
             !before.Overlay.AsSpan().SequenceEqual(after.Overlay) ||
             before.Sections.Count != after.Sections.Count || before.Resources.Count != after.Resources.Count)
+        {
             throw new InvalidDataException("MUI preparation changed the PE layout or non-resource metadata.");
+        }
         foreach (var section in before.Sections)
         {
             if (!after.Sections.TryGetValue(section.Key, out byte[] value) || !section.Value.AsSpan().SequenceEqual(value))
+            {
                 throw new InvalidDataException("MUI preparation changed PE section " + section.Key);
+            }
         }
         byte[] oldValue = Convert.FromHexString(oldChecksum);
         byte[] newValue = Convert.FromHexString(newChecksum);
         if (oldValue.Length != 16 || newValue.Length != 16)
+        {
             throw new InvalidDataException("Invalid MUI association checksum.");
+        }
         int changed = 0;
         foreach (var resource in before.Resources)
         {
@@ -244,25 +289,46 @@ public static class ProfileAppMui
                     resource.Key.StartsWith("/i:16/", StringComparison.Ordinal);
                 if (!binaryResource || !resource.Key.EndsWith("/cp:0", StringComparison.Ordinal) ||
                     !after.Resources.TryGetValue(resource.Key.Substring(0, resource.Key.Length - 1) + "1252", out value))
+                {
                     throw new InvalidDataException("MUI preparation changed resource identity " + resource.Key);
+                }
             }
-            if (resource.Value.AsSpan().SequenceEqual(value)) continue;
+            if (resource.Value.AsSpan().SequenceEqual(value))
+            {
+                continue;
+            }
             if (!resource.Key.StartsWith("/s:MUI/", StringComparison.Ordinal) || resource.Value.Length != value.Length)
+            {
                 throw new InvalidDataException("MUI preparation changed resource " + resource.Key);
+            }
             var expected = (byte[])resource.Value.Clone();
             int found = -1;
             for (int i = 0; i <= expected.Length - oldValue.Length; ++i)
             {
-                if (!expected.AsSpan(i, oldValue.Length).SequenceEqual(oldValue)) continue;
-                if (found != -1) throw new InvalidDataException("Ambiguous MUI association checksum.");
+                if (!expected.AsSpan(i, oldValue.Length).SequenceEqual(oldValue))
+                {
+                    continue;
+                }
+                if (found != -1)
+                {
+                    throw new InvalidDataException("Ambiguous MUI association checksum.");
+                }
                 found = i;
             }
-            if (found == -1) throw new InvalidDataException("Original MUI association checksum is missing.");
+            if (found == -1)
+            {
+                throw new InvalidDataException("Original MUI association checksum is missing.");
+            }
             newValue.CopyTo(expected, found);
             if (!expected.AsSpan().SequenceEqual(value))
+            {
                 throw new InvalidDataException("MUI preparation changed more than the association checksum.");
+            }
             ++changed;
         }
-        if (changed != 1) throw new InvalidDataException("Expected exactly one MUI association resource update.");
+        if (changed != 1)
+        {
+            throw new InvalidDataException("Expected exactly one MUI association resource update.");
+        }
     }
 }
