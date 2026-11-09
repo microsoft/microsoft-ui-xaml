@@ -2885,8 +2885,11 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
 
         focusIndex = selectedIndex;
     }
-    else if (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
-             focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous)
+    // For Tab/Shift+Tab, use the last focused item index only if an item last had focus.
+    // Otherwise, preserve the initial or restored group-header target.
+    else if (m_lastFocusedElementType == ElementType::Item &&
+             (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
+              focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous))
     {
         focusIndex = GetLastFocusedIndex();
     }
