@@ -1970,13 +1970,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             string state = PollTipState(stateId, checkStateButton, "PopupOpen=True;Idle=True");
             Log.Comment(stateId + ": " + state);
             Verify.IsTrue(state.Contains("IsPointerOver=True"), targetId + " should report IsPointerOver while hovered");
-            Verify.IsTrue(state.Contains("PopupOpen=True"), "The TeachingTip targeting " + targetId + " should be open while its target is hovered");
+            Verify.IsTrue(state.Contains("PopupOpen=True;Idle=True"), "The TeachingTip targeting " + targetId + " should be open (and done opening) while its target is hovered");
 
             TestEnvironment.Application.CoreWindow.MovePointer(0, 0);
             Wait.ForIdle();
             state = PollTipState(stateId, checkStateButton, "PopupOpen=False;Idle=True");
             Log.Comment(stateId + " after the pointer left: " + state);
-            Verify.IsTrue(state.Contains("PopupOpen=False"), "The TeachingTip targeting " + targetId + " should close when the pointer leaves");
+            Verify.IsTrue(state.Contains("PopupOpen=False;Idle=True"), "The TeachingTip targeting " + targetId + " should close when the pointer leaves");
         }
 
         private static string PollTipState(string stateId, Button checkStateButton, string expected)
