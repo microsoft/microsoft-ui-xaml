@@ -59,6 +59,9 @@ public:
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
 
+    using TableViewColumnProperties::MinWidth;
+    void MinWidth(double value);
+
     // Internal — stable, non-address token used by column-header automation peers.
     uint32_t AutomationIdentity();
 

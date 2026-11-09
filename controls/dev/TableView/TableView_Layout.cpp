@@ -55,9 +55,10 @@ namespace
             : NonNegativeFiniteOrZero(column.MinWidth());
     }
 
-    // Divides `available` in proportion to each column's Star factor. A column that would clamp at
-    // its Min/MaxWidth is fixed there and dropped, then the rest re-divide what is left (the WPF
-    // ComputeStarColumnWidths shape).
+    // Divides `available` in proportion to each column's Star factor. Columns that would clamp at
+    // their Min/MaxWidth are fixed there and dropped, then the rest re-divide what is left. When
+    // both bounds are violated, only the side with the larger total violation is fixed per pass
+    // (as Grid does), so the result does not depend on column order.
     template <typename TFactor, typename TRound, typename TResolve>
     void DistributeStarWidths(
         std::vector<winrt::TableViewColumn> pool,
@@ -76,32 +77,59 @@ namespace
             return total;
         };
 
-        for (bool adjusted = true; adjusted && !pool.empty(); )
+        struct Share
         {
-            adjusted = false;
-
+            double desired;
+            double lo;
+            double hi;
+        };
+        std::vector<Share> shares;
+        while (!pool.empty())
+        {
             const double factorSum = totalFactor();
             const double unit = factorSum > 0.0 ? available / factorSum : 0.0;
 
+            shares.clear();
+            double minViolation = 0.0;
+            double maxViolation = 0.0;
+            for (auto const& c : pool)
+            {
+                const double factor = NonNegativeFiniteOrZero(factorOf(c));
+                const double lo = MinWidthForStarFactor(c, factor);
+                const Share share{ unit * factor, lo, MaxWidthForColumn(c, lo) };
+                if (share.desired < share.lo)
+                {
+                    minViolation += share.lo - share.desired;
+                }
+                else if (share.desired > share.hi)
+                {
+                    maxViolation += share.desired - share.hi;
+                }
+                shares.push_back(share);
+            }
+            if (minViolation == 0.0 && maxViolation == 0.0)
+            {
+                break;
+            }
+
+            const bool fixMin = minViolation >= maxViolation;
+            const bool fixMax = maxViolation >= minViolation;
+            std::vector<winrt::TableViewColumn> rest;
             for (size_t i = 0; i < pool.size(); ++i)
             {
-                auto const& c = pool[i];
-                const double factor = NonNegativeFiniteOrZero(factorOf(c));
-                const double desired = unit * factor;
-                const double lo = MinWidthForStarFactor(c, factor);
-                const double hi = MaxWidthForColumn(c, lo);
-                const double clamped = std::clamp(desired, lo, hi);
-                // std::clamp returns desired exactly when it is already in [lo, hi], so any
-                // inequality is a real Min/MaxWidth clamp.
-                if (clamped != desired)
+                auto const& share = shares[i];
+                if ((fixMin && share.desired < share.lo) || (fixMax && share.desired > share.hi))
                 {
-                    resolve(c, clamped);
+                    const double clamped = std::clamp(share.desired, share.lo, share.hi);
+                    resolve(pool[i], clamped);
                     available -= clamped;
-                    pool.erase(pool.begin() + i);
-                    adjusted = true;
-                    break;
+                }
+                else
+                {
+                    rest.push_back(pool[i]);
                 }
             }
+            pool = std::move(rest);
         }
 
         const double factorSum = totalFactor();
@@ -205,7 +233,7 @@ void TableView::ResolveColumnWidths()
     // Before any early return: a change this pass doesn't size (e.g. a held column collapsing) must still end the holds.
     if (!m_lockedColumnHolds.empty() && LockedColumnHoldsSignature() != m_lockedColumnHoldsSignature)
     {
-        m_lockedColumnHolds.clear();
+        ClearLockedColumnHolds(false);
     }
 
     auto columns = Columns();
@@ -393,20 +421,26 @@ void TableView::ResolveColumnWidths()
     {
         // A locked Star column keeps its authored share while that fits beside the other Star columns'
         // MinWidth, else shares by factor; a hold from FreezeColumnsBeforeResize overrides both.
-        // A copy: resolving a width runs app callbacks that can end the holds partway through this pass.
-        auto holds = m_lockedColumnHolds;
-        auto const heldWidth = [&holds](winrt::TableViewColumn const& c) -> std::optional<double>
+        // Resolved once, and a copy: resolving a width runs app callbacks that can end the holds partway through this pass.
+        std::vector<std::pair<winrt::TableViewColumn, double>> held;
+        held.reserve(m_lockedColumnHolds.size());
+        for (auto const& hold : m_lockedColumnHolds)
         {
-            for (auto const& hold : holds)
+            if (auto column = hold.column.get())
             {
-                if (hold.column.get() == c)
-                {
-                    return hold.width;
-                }
+                held.emplace_back(std::move(column), hold.width);
             }
-            return std::nullopt;
+        }
+        auto const heldWidth = [&](winrt::TableViewColumn const& c) -> double const*
+        {
+            if (!isLocked(c))
+            {
+                return nullptr;
+            }
+            auto const it = std::find_if(held.begin(), held.end(), [&c](auto const& entry) { return entry.first == c; });
+            return it != held.end() ? &it->second : nullptr;
         };
-        auto const isHeld = [&](winrt::TableViewColumn const& c) { return isLocked(c) && heldWidth(c).has_value(); };
+        auto const isHeld = [&](winrt::TableViewColumn const& c) { return heldWidth(c) != nullptr; };
         auto const starFactorOf = [&](winrt::TableViewColumn const& c)
         {
             return std::max(0.0, isLocked(c) ? authoredOf(c).Value : c.Width().Value);
@@ -418,30 +452,27 @@ void TableView::ResolveColumnWidths()
         // An Auto column can grow (scrolling, a header or template change) without changing the hold
         // signature, so a hold that no longer fits once the Auto columns outgrow what they took when
         // it was latched is stale. Only growth counts: a resize may start from an overflowing table.
-        if (!holds.empty() &&
-            std::any_of(holds.begin(), holds.end(), [&](LockedColumnHold const& hold) { return autoTotal > hold.autoTotal + tolerance; }))
+        if (std::any_of(m_lockedColumnHolds.begin(), m_lockedColumnHolds.end(),
+                [&](LockedColumnHold const& hold) { return autoTotal > hold.autoTotal + tolerance; }))
         {
             double needed = fixedTotal;
             for (auto const& c : starColumns)
             {
-                needed += isHeld(c) ? *heldWidth(c) : MinWidthForStarFactor(c, starFactorOf(c));
+                auto const width = heldWidth(c);
+                needed += width ? *width : MinWidthForStarFactor(c, starFactorOf(c));
             }
             if (needed > layoutRound(viewport) + tolerance)
             {
-                holds.clear();
-                m_lockedColumnHolds.clear();
-                if (m_activeColumnResizeDrag)
-                {
-                    m_activeColumnResizeDrag->lockedHoldsBefore.reset();
-                }
+                held.clear();
+                ClearLockedColumnHolds(false);
             }
         }
 
         for (auto const& c : starColumns)
         {
-            if (isHeld(c))
+            if (auto const width = heldWidth(c))
             {
-                changed |= setResolvedActualWidth(c, *heldWidth(c));
+                changed |= setResolvedActualWidth(c, *width);
                 fixedTotal += c.ActualWidth();
             }
         }
@@ -625,6 +656,11 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
 
     // The resized column turns Pixel on this write, so it leaves the Auto total the holds compare against.
     const bool resizingAuto = column.Width().GridUnitType == winrt::GridUnitType::Auto;
+    const size_t signature = holds.empty() ? 0 : LockedColumnHoldsSignature();
+    if (!holds.empty() && signature != m_lockedColumnHoldsSignature)
+    {
+        ClearLockedColumnHolds(false);
+    }
     if (!holds.empty() || (resizingAuto && !m_lockedColumnHolds.empty()))
     {
         state.lockedHoldsBefore.emplace(m_lockedColumnHolds, m_lockedColumnHoldsSignature);
@@ -655,11 +691,6 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
             hold.autoTotal = autoTotal;
         }
 
-        const size_t signature = LockedColumnHoldsSignature();
-        if (signature != m_lockedColumnHoldsSignature)
-        {
-            m_lockedColumnHolds.clear();
-        }
         for (auto const& hold : holds)
         {
             auto const heldColumn = hold.column.get();
@@ -717,11 +748,17 @@ size_t TableView::LockedColumnHoldsSignature()
 // matches again), so the inputs end the holds as they change.
 void TableView::ExpireLockedColumnHolds()
 {
-    if (!m_lockedColumnHolds.empty())
+    ClearLockedColumnHolds(true);
+}
+
+// Also drops the in-flight drag's snapshot, so canceling it cannot bring the holds back.
+void TableView::ClearLockedColumnHolds(bool invalidate)
+{
+    if (invalidate && !m_lockedColumnHolds.empty())
     {
-        m_lockedColumnHolds.clear();
         InvalidateMeasure();
     }
+    m_lockedColumnHolds.clear();
     if (m_activeColumnResizeDrag)
     {
         m_activeColumnResizeDrag->lockedHoldsBefore.reset();

@@ -521,15 +521,23 @@ public:
     // Control-initiated reshape (sort / group / expand). Stays cancelable.
     bool TryTerminateEditForControlInitiatedReshape();
 
+    // A source-reshaping operation deferred past an edit close, tagged with what it does for TiP.
+    struct DeferredEditReshape
+    {
+        TableViewTip::Operation operation;
+        std::function<void()> apply;
+    };
     // Defer a source-reshaping operation until the open edit closes. Opaque action, so editing
     // needs no compile-time knowledge of sorting, grouping or expansion.
-    void QueueCoalescedEditReshape(std::function<void()> operation);
+    void QueueCoalescedEditReshape(TableViewTip::Operation operation, std::function<void()> apply);
     // Unlike the queue above, survives a vetoed close and replays only once no edit is open.
-    void QueueReshapeAfterEditCloses(std::function<void()> operation);
+    void QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
     void QueueDeferredEditReshapeDrain();
     void FlushDeferredEditReshapes();
+    // In a catch: reports the deferred reshape that threw as a recovered app fault.
+    void NoteDeferredEditReshapeFault() noexcept;
     bool IsActiveSourceOwnedByOther() const;
 
     // ----- Editing input gestures (TableView_EditingInput.cpp) -----
@@ -824,9 +832,10 @@ private:
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
-    std::deque<std::function<void()>> m_pendingEditReshapes;
-    std::deque<std::function<void()>> m_reshapesAfterEditCloses;
+    std::deque<DeferredEditReshape> m_pendingEditReshapes;
+    std::deque<DeferredEditReshape> m_reshapesAfterEditCloses;
     bool m_editReshapeDrainQueued{ false };
+    TableViewTip::Operation m_failedEditReshapeOperation{ TableViewTip::Operation::Sort };
 
     // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
     // inside an EditEnding handler stays valid once the edit closes.
@@ -1479,8 +1488,12 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
-    // Hash of every input that sizes the columns other than user resizes; holds die when it changes.
+    // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
+    // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
+    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
+    void ClearLockedColumnHolds(bool invalidate);
     winrt::ResizeGripper GetAvailableResizeGripper(const winrt::TableViewColumn& column);
     bool IsColumnResizeAllowed(const winrt::TableViewColumn& column);
     static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);

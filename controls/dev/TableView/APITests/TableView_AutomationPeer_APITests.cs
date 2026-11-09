@@ -666,6 +666,142 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectionItem calls on the data-item peer of an unrealized row fail with UIA_E_ELEMENTNOTENABLED on a disabled table, as the row peer's do.")]
+        public void VerifyDataItemPeerSelectionItemFailsWhenTableIsDisabled()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItem = RequireUnrealizedDataItemSelectionItem(tableView, 150);
+
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.RemoveFromSelection(), "RemoveFromSelection() on a disabled table must fail.");
+                Verify.AreEqual(150, tableView.SelectedIndex, "A failed RemoveFromSelection() must leave the row selected.");
+
+                tableView.IsEnabled = true;
+                tableView.Select(0);
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.Select(), "Select() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.AddToSelection(), "AddToSelection() on a disabled table must fail.");
+                Verify.AreEqual(0, tableView.SelectedIndex, "Failed calls on a disabled table must leave the selection unchanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection on the data-item peer of an unrealized row fails with UIA_E_INVALIDOPERATION in Single mode when another row is selected, as the row peer's does.")]
+        public void VerifyDataItemPeerAddToSelectionFailsWhenAnotherRowIsSelectedInSingleMode()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItem = RequireUnrealizedDataItemSelectionItem(tableView, 150);
+
+                selectionItem.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "AddToSelection() on the selected row must succeed.");
+
+                tableView.Select(0);
+                tableView.UpdateLayout();
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => selectionItem.AddToSelection(),
+                    "AddToSelection() on another row of a single-select table must fail.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(0, tableView.SelectedIndex, "A failed AddToSelection() must leave the selection on row 0.");
+                Verify.IsFalse(selectionItem.IsSelected, "The data-item peer's row must not become selected.");
+                Verify.AreEqual(0, selectionChangedCount, "A failed AddToSelection() must not raise SelectionChanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row peer's SelectionItem calls act on its own row when an app-derived IsEnabledCore inserts a row before it.")]
+        public void VerifyRowPeerSelectionItemResolvesRowAfterEnabledCheck()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(20));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = items[3];
+                var row = GetRowsRepeater(tableView).TryGetElement(3) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: the target row must be realized.");
+                var peer = new InsertingOnEnabledQueryRowPeer(row);
+                var selectionItem = (ISelectionItemProvider)peer;
+                int inserted = 0;
+                Action insertBefore = () => items.Insert(0, new NamedPerson { Name = $"Inserted {++inserted}", Role = "Inserted" });
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.Select();
+                Verify.AreEqual(1, inserted, "Precondition: the enabled check must have inserted a row.");
+                Verify.AreSame(target, tableView.SelectedItem, "Select() must select the peer's own row.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.AddToSelection();
+                Verify.AreSame(target, tableView.SelectedItem, "AddToSelection() on the selected row must succeed and keep it selected.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.RemoveFromSelection();
+                Verify.AreEqual(3, inserted, "Precondition: each call must have inserted a row.");
+                Verify.AreEqual(-1, tableView.SelectedIndex, "RemoveFromSelection() must deselect the peer's own row.");
+            });
+        }
+
+        private sealed class InsertingOnEnabledQueryRowPeer : TableViewRowAutomationPeer
+        {
+            public InsertingOnEnabledQueryRowPeer(TableViewRow owner) : base(owner) { }
+
+            public Action OnEnabledQuery { get; set; }
+
+            protected override bool IsEnabledCore()
+            {
+                var action = OnEnabledQuery;
+                OnEnabledQuery = null;
+                action?.Invoke();
+                return base.IsEnabledCore();
+            }
+        }
+
+        private static ISelectionItemProvider RequireUnrealizedDataItemSelectionItem(TableView tableView, int index)
+        {
+            tableView.Select(index);
+            tableView.UpdateLayout();
+            Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(index), "Precondition: the selected row must not be realized.");
+            var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+            Verify.IsTrue(itemPeer.IsOffscreen(), "Precondition: the selection must be reported through the off-screen data-item peer.");
+            var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+            Verify.IsNotNull(selectionItem, "The data-item peer must offer SelectionItem.");
+            return selectionItem;
+        }
+
         private static bool IsInViewport(FrameworkElement element, ScrollViewer scroller)
         {
             var top = element.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;

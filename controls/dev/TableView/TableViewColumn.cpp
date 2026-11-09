@@ -302,6 +302,23 @@ winrt::TableView TableViewColumn::GetOwningTableView()
     return m_owningTableView.get();
 }
 
+// A local MinWidth equal to the default still changes a 0* column's minimum, but the property system
+// raises no change for it.
+void TableViewColumn::MinWidth(double value)
+{
+    const bool wasLocal = ReadLocalValue(s_MinWidthProperty) != winrt::DependencyProperty::UnsetValue();
+    const double before = TableViewColumnProperties::MinWidth();
+    TableViewColumnProperties::MinWidth(value);
+    if (!wasLocal && before == value)
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
+            winrt::get_self<TableView>(owner)->OnColumnWidthChanged(*this);
+        }
+    }
+}
+
 uint32_t TableViewColumn::AutomationIdentity()
 {
     if (m_automationIdentity == 0)
@@ -319,8 +336,9 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         property == s_MinWidthProperty ||
         property == s_MaxWidthProperty)
     {
-        // Only an app-driven assignment replaces the authored width; a user resize does not.
-        if (property == s_WidthProperty && !m_inUserResize)
+        // Only an app-driven assignment replaces the authored width and ends the holds; a user resize does neither.
+        const bool appChange = property != s_WidthProperty || !m_inUserResize;
+        if (appChange && property == s_WidthProperty)
         {
             m_authoredWidth = ValueHelper<winrt::GridLength>::CastOrUnbox(args.NewValue());
         }
@@ -328,7 +346,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
-            if (property != s_WidthProperty || !m_inUserResize)
+            if (appChange)
             {
                 winrt::get_self<TableView>(owner)->ExpireLockedColumnHolds();
             }
