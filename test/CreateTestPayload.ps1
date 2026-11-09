@@ -308,7 +308,8 @@ if ($Mode -eq "ScenarioTestSuite")
 }
 
 # Each managed module owns its merged projection; replicate only shared dependencies.
-if ($IsolateManagedTestProjections -and $Mode -eq "DevTestSuite")
+# Scenario packages, certificates, and table data are also resolved relative to the test module.
+if ($IsolateManagedTestProjections -and ($Mode -eq "DevTestSuite" -or $Mode -eq "ScenarioTestSuite"))
 {
     $managedTestRoot = "$outpath\Test"
     $managedTestFolders = @(Get-ChildItem -LiteralPath $managedTestRoot -Directory | Where-Object {
