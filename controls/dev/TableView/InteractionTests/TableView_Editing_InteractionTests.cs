@@ -15,6 +15,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
+using System;
+using System.Globalization;
+using System.Linq;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
@@ -444,7 +447,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
-        // The probe writes one entry per opened edit, "<type>|<automationName>|<text>|focus=<bool>;".
+        // The probe writes one entry per opened edit, "<type>|<automationName>|<text>|focus=<bool>|align=<...>;".
         // Returns the requested field of the FIRST entry, or a diagnostic string the assertion will print.
         private static string ProbeField(string probe, int field)
         {
@@ -459,5 +462,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         #endregion
+
+        // GH #12354: the text must stay put when a real gesture opens the built-in editor, which then shows its
+        // Focused and ButtonVisible states.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a double-clicked, focused, non-empty editor draws its text line where the display text drew it, LTR and RTL.")]
+        public void DoubleClickEditorKeepsTextInPlace()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                VerifyEditorAlignment(rtl: false);
+
+                var toggle = FindElement.ById<Button>(ToggleBasicFlowDirectionButton);
+                if (toggle == null) { Verify.Fail("ToggleBasicFlowDirectionButton was not found on the test page."); return; }
+                toggle.InvokeAndWait();
+
+                VerifyEditorAlignment(rtl: true);
+                toggle.InvokeAndWait();
+            }
+        }
+
+        private static void VerifyEditorAlignment(bool rtl)
+        {
+            string context = rtl ? "RTL" : "LTR";
+            UIObject row = GetRow(FindElement.ById(BasicTable), 0);
+            if (row == null) { Verify.Fail(context + ": the first row was not found."); return; }
+
+            int nameX = BasicColumnCentreX(NameColumn);
+            var bounds = row.BoundingRectangle;
+            DoubleClickPoint(new Point(rtl ? bounds.Right - nameX : bounds.Left + nameX, bounds.Top + (bounds.Height / 2)));
+
+            string[] entries = ReadEditorProbe().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] fields = entries.Length > 0 ? entries[entries.Length - 1].Split('|') : new string[0];
+            Log.Comment("{0}: editor probe entry '{1}'.", context, string.Join("|", fields));
+            Verify.IsTrue(fields.Length >= 5, context + ": the editor probe did not report an alignment.");
+            if (fields.Length < 5) { return; }
+
+            Verify.AreEqual(BasicName(0), fields[2], context + ": the editor must open on the Name cell with its non-empty value.");
+            Verify.AreEqual("focus=True", fields[3], context + ": the editor must be focused.");
+
+            const string alignPrefix = "align=dx:";
+            Verify.IsTrue(fields[4].StartsWith(alignPrefix, StringComparison.Ordinal), context + ": the probe found no display cell to compare: '" + fields[4] + "'.");
+            if (!fields[4].StartsWith(alignPrefix, StringComparison.Ordinal)) { return; }
+
+            var align = fields[4].Substring("align=".Length).Split(',')
+                .Select(p => p.Split(':'))
+                .Where(p => p.Length == 2)
+                .ToDictionary(p => p[0], p => p[1]);
+            if (!align.TryGetValue("dx", out var dxText) || !align.TryGetValue("dy", out var dyText) || !align.TryGetValue("lines", out var lines))
+            {
+                Verify.Fail(context + ": the probe alignment is missing dx, dy or lines: '" + fields[4] + "'.");
+                return;
+            }
+            double dx = double.Parse(dxText, CultureInfo.InvariantCulture);
+            double dy = double.Parse(dyText, CultureInfo.InvariantCulture);
+            Log.Comment("{0}: dx={1} dy={2} lines(display/editor)={3}", context, dx, dy, lines);
+            Verify.IsLessThanOrEqual(Math.Abs(dx), 0.5, context + ": the editor text must not move horizontally.");
+            Verify.IsLessThanOrEqual(Math.Abs(dy), 0.5, context + ": the editor text must not move vertically.");
+
+            KeyboardHelper.PressKey(Key.Escape);
+            Wait.ForIdle();
+        }
     }
 }
