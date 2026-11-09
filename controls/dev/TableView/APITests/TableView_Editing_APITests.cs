@@ -2607,17 +2607,101 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(tableView.IsEditing, "And must close.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies failed BeginEdit cleanup drains a queued source replacement even when restoring a header flyout throws, and a later edit succeeds.")]
+        public void VerifyBeginEditFailureDrainsReshapeWhenHeaderRefreshThrows()
+        {
+            TableView tableView = null;
+            var items = MakeEditableItems();
+            var replacement = MakeEditableItems("Nadia", "Omar");
+            var converter = new ArmableThrowingConverter();
+            DropDownButton button = null;
+            long callbackToken = 0;
+            int headerRefreshFailures = 0;
+            bool failHeaderRefresh = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(items, 500, 300);
+                tableView.IsReadOnly = false;
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = "Name",
+                    Binding = new Binding { Path = new PropertyPath("Name"), Source = items[0], Converter = converter, Mode = BindingMode.OneWay },
+                    HeaderFlyout = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Options" } } },
+                });
+                tableView.Columns.Add(MakeTextColumn("Role"));
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                button = FindVisualChildrenByType<DropDownButton>(tableView).Single(b => b.Flyout != null);
+                callbackToken = button.RegisterPropertyChangedCallback(Button.FlyoutProperty, (s, e) =>
+                {
+                    // Fail only on restoration, not when Beginning detaches the flyout.
+                    if (failHeaderRefresh && button.Flyout != null)
+                    {
+                        failHeaderRefresh = false;
+                        headerRefreshFailures++;
+                        throw new InvalidOperationException("Deliberate header-flyout restoration failure.");
+                    }
+                });
+                GetCellPeer(tableView, items[0], columnIndex: 0).SetFocus();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                converter.BeforeThrow = () =>
+                {
+                    converter.BeforeThrow = null;
+                    tableView.ItemsSource = replacement;
+                };
+                converter.Armed = true;
+                failHeaderRefresh = true;
+                Exception error;
+                try
+                {
+                    error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Rejected");
+                }
+                finally
+                {
+                    converter.Armed = false;
+                    failHeaderRefresh = false;
+                    button.UnregisterPropertyChangedCallback(Button.FlyoutProperty, callbackToken);
+                }
+                Verify.IsNotNull(error, "The editor factory failure must reach the caller.");
+                Verify.AreEqual(1, headerRefreshFailures, "The test must exercise a throwing cleanup refresh.");
+                Verify.IsFalse(tableView.IsEditing, "A cleanup refresh failure must not leave an edit open.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(replacement.Count, GetRowsRepeater(tableView).ItemsSourceView.Count,
+                    "The independently guarded drain must apply the queued source replacement.");
+                var error = CaptureSetValue(GetValueProvider(tableView, replacement[0], columnIndex: 1), "Recovered");
+                Verify.IsNull(error, $"A later edit must succeed after both failures: {error?.Message}");
+                Verify.AreEqual("Recovered", replacement[0].Role, "The later edit must target the reshaped source.");
+                Verify.IsFalse(tableView.IsEditing);
+            });
+        }
     }
 
     // Throws from Convert only while armed, so the display cells build normally.
     internal sealed class ArmableThrowingConverter : IValueConverter
     {
         public bool Armed { get; set; }
+        public Action BeforeThrow { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (Armed)
             {
+                BeforeThrow?.Invoke();
                 throw new InvalidOperationException("Deliberate editor-binding failure.");
             }
             return value;

@@ -43,6 +43,8 @@ namespace TableViewDetails
     // left it Unhandled.
     bool IsOwnRequestSource(winrt::DependencyObject const& source, winrt::DependencyObject const& scope);
 
+    void HideFlyoutWithoutClosingVeto(winrt::FlyoutBase const& flyout);
+
     void SuppressContextFlyoutWhileEditing(winrt::FlyoutBase const& flyout, winrt::TableView const& owner);
 
     // Requests raised on the owner itself never pass through its template-root routing hook.

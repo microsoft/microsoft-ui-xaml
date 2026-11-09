@@ -235,6 +235,10 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 
 **Value transfer.** Editing bindings use `UpdateSourceTrigger=Explicit`; commit calls `UpdateSource()`, validates after the write and undoes a blocked write. A forced close (source change, or read-only) commits a valid value while the item is still in the source and passes the filter, else reports `Cancel` and writes nothing, as WPF does. A rollback inside layout is posted, and skipped if the value changed meanwhile.
 
+**Failed begin cleanup.** `ResetPendingBeginEdit` is state-only and `noexcept`. The unwind guard
+logs header-flyout refresh failures separately from queued reshape-drain failures, so a failed
+refresh cannot escape cleanup or prevent the drain. Normal reset paths refresh headers explicitly.
+
 **Re-entrancy rules.** Recycling, rebuilds and property callbacks can run inside layout, where moving focus fails fast (`0xc0000420`):
 
 - `TableViewRow::EndCellEdit` restores the display element and moves focus; it runs only on interactive close paths.

@@ -882,14 +882,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 oldFlyout = (MenuFlyout)f.NameColumn.HeaderFlyout;
+                oldFlyout.Closing += (s, e) => e.Cancel = true;
                 oldFlyout.ShowAt(FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single());
             });
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => f.NameColumn.HeaderFlyout = f.Recorder.Create("ReplacementOptions"));
+            RunOnUIThread.Execute(() =>
+            {
+                f.NameColumn.HeaderFlyout = f.Recorder.Create("ReplacementOptions");
+                f.NameColumn.HeaderFlyout.Closing += (s, e) => e.Cancel = true;
+            });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(oldFlyout.IsOpen);
+                Verify.IsFalse(oldFlyout.IsOpen, "Replacement must close the old flyout despite a Closing veto.");
                 var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
                 Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
                 button.Flyout.ShowAt(button);
@@ -899,7 +904,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen);
+                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen, "Disabling must close the flyout despite a Closing veto.");
                 var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
                 Verify.IsNull(button.Flyout, "A retained UIA provider cannot open a disabled header's flyout.");
                 f.Table.IsEnabled = true;
@@ -923,7 +928,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen, "Retemplating closes the old button's flyout.");
+                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen, "Retemplating closes the old button's flyout despite a Closing veto.");
                 var header = (TableViewColumnHeader)HeaderOf(f, NameCol);
                 Verify.AreEqual(0, FindVisualChildrenByType<DropDownButton>(header).Count,
                     "Custom templates can omit the dropdown part.");
@@ -938,10 +943,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 button.Flyout.ShowAt(button);
             });
             IdleSynchronizer.Wait();
+            UIElement rootContent = null;
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(f.NameColumn.HeaderFlyout.IsOpen, "Precondition: the dropdown is open before unloading.");
+                rootContent = f.Root.Child;
+                f.Root.Child = null;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen, "Unloading closes the dropdown despite a Closing veto.");
+                f.Root.Child = rootContent;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                button.Flyout.ShowAt(button);
+            });
+            IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() => f.Table.Columns.Remove(f.NameColumn));
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() => Verify.IsFalse(f.NameColumn.HeaderFlyout.IsOpen,
-                "Removing a column must not leave its dropdown open."));
+                "Removing a column must close its dropdown despite a Closing veto."));
             CloseMenus(f);
         }
 
@@ -975,6 +1000,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                f.NameColumn.HeaderFlyout.Closing += (s, e) => e.Cancel = true;
+                f.NameColumn.HeaderFlyout.ShowAt(button);
                 dropdown = (IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(button)
                     .GetPattern(PatternInterface.ExpandCollapse);
                 f.Table.CellEditEnding += (s, e) =>
@@ -983,6 +1010,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsFalse(button.IsEnabled);
                     Verify.IsNull(button.Flyout);
                 };
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(f.NameColumn.HeaderFlyout.IsOpen, "Precondition: the dropdown is open before editing.");
+                f.Recorder.Clear();
             });
             RequestWhileEditing(f, () =>
             {

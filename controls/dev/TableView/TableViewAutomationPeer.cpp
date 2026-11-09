@@ -237,17 +237,23 @@ namespace
             return peer ? ProviderFromPeer(peer) : nullptr;
         }
 
-        void AddToSelection() { Select(); }
+        void AddToSelection()
+        {
+            const int32_t index = RequireEnabledIndex();
+            auto const tableImpl = winrt::get_self<TableView>(m_table.get());
+            EnsureCanAddRowToSelection(*tableImpl, index);
+            tableImpl->SelectRowIndexFromInteraction(index, false);
+        }
 
         void RemoveFromSelection()
         {
-            const int32_t index = RequireIndex();
+            const int32_t index = RequireEnabledIndex();
             winrt::get_self<TableView>(m_table.get())->Deselect(index);
         }
 
         void Select()
         {
-            const int32_t index = RequireIndex();
+            const int32_t index = RequireEnabledIndex();
             winrt::get_self<TableView>(m_table.get())->SelectRowIndexFromInteraction(index, false);
         }
 
@@ -320,6 +326,16 @@ namespace
             if (index < 0)
             {
                 ThrowElementNotAvailable();
+            }
+            return index;
+        }
+
+        int32_t RequireEnabledIndex()
+        {
+            const int32_t index = RequireIndex();
+            if (!IsEnabledCore())
+            {
+                throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
             }
             return index;
         }
@@ -713,7 +729,9 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
     {
         winrt::AutomationPeer peer{ nullptr };
         winrt::IInspectable item{ nullptr };
-        if (auto const view = repeater.ItemsSourceView(); view && selectedIndex < view.Count())
+        auto const view = repeater.ItemsSourceView();
+        const bool hasSelectedIndex = view && selectedIndex < view.Count();
+        if (hasSelectedIndex)
         {
             item = impl->UnwrapEditingDataItem(view.GetAt(selectedIndex));
         }
@@ -725,7 +743,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
 
         // Kept while its row is realized too, so a held item keeps one RuntimeId as it scrolls in and out.
         winrt::AutomationPeer itemPeer{ nullptr };
-        if (item)
+        if (hasSelectedIndex)
         {
             itemPeer = GetOrCreateSelectedItemPeer(*impl, item, selectedIndex, !rowElement /* create */);
         }
@@ -773,7 +791,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
             return nullptr;
         }
         auto const repeater = table.GetRowsRepeaterInternal();
-        const bool byIndex = !TableView::SameInspectableIdentity(
+        const bool byIndex = !item || !TableView::SameInspectableIdentity(
             item, table.UnwrapEditingDataItem(repeater.ItemsSourceView().GetAt(index)));
         peer = winrt::make_self<TableViewRowItemAutomationPeer>(
             table.get_strong().as<winrt::TableView>(), item, index, byIndex).as<winrt::AutomationPeer>();

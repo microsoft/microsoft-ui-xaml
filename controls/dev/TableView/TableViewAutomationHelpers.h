@@ -77,6 +77,16 @@ private:
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
 }
 
+inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
+{
+    // The selection model is authoritative while selection observers are running.
+    if (!table.CanSelectMultipleRows() && table.SelectedIndexInternal() >= 0 &&
+        !table.IsSelected(index))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+}
+
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.
 inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)

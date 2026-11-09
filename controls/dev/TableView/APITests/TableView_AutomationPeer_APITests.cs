@@ -300,6 +300,121 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies retained data-item providers enforce single-selection and disabled-state rules without realizing their rows.")]
+        public void VerifyGetSelectionDataItemPeerSelectionMutationValidation()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the first selected row is unrealized.");
+                var firstPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var first = (ISelectionItemProvider)firstPeer.GetPattern(PatternInterface.SelectionItem);
+                first.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "Adding the selected item must not toggle it off.");
+
+                tableView.Select(180);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(180), "Precondition: the second selected row is unrealized.");
+                var secondPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var second = (ISelectionItemProvider)secondPeer.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsFalse(first.IsSelected, "A retained reference-item provider remains available after another row is selected.");
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => first.AddToSelection(),
+                    "Adding a retained unselected item must not replace the single selection.");
+                first.RemoveFromSelection();
+                Verify.AreEqual(180, tableView.SelectedIndex, "Removing an unselected item must preserve the selected row.");
+
+                tableView.IsEnabled = false;
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => first.Select(), "A disabled data-item provider cannot select.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => first.AddToSelection(), "A disabled data-item provider cannot add.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => second.RemoveFromSelection(), "A disabled data-item provider cannot remove.");
+                Verify.AreEqual(180, tableView.SelectedIndex, "Rejected mutations must preserve the selection.");
+                Verify.AreEqual(0, selectionChangedCount, "Rejected or no-op mutations must not raise SelectionChanged.");
+
+                tableView.IsEnabled = true;
+                first.Select();
+                Verify.AreEqual(150, tableView.SelectedIndex, "Select may replace another row once the table is enabled.");
+                first.RemoveFromSelection();
+                Verify.AreEqual(-1, tableView.SelectedIndex, "An enabled provider can remove its selected row.");
+                first.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "A retained reference-item provider can add to an empty selection.");
+                Verify.IsNull(repeater.TryGetElement(150), "Selection mutations must not realize the first row.");
+                Verify.IsNull(repeater.TryGetElement(180), "Selection mutations must not realize the second row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unrealized selected null entry has a stable index-based provider that does not realize rows and becomes unavailable on deselection.")]
+        public void VerifyGetSelectionReportsUnrealizedNullSelectedRow()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+            items[150] = null;
+            items[180] = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.AreEqual(150, tableView.SelectedIndex, "Precondition: the null source entry is selected by index.");
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the null entry is unrealized.");
+                var offset = GetBodyScroller(tableView).VerticalOffset;
+                var realized = string.Join(",", RealizedRowIndices(tableView));
+                var selection = RequireSelectionProvider(tableView);
+                var selected = selection.GetSelection();
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length, "A selected null entry must have a provider.");
+                var firstPeer = new ProviderPeerProbe().ToPeer(selected[0]);
+                var first = (ISelectionItemProvider)firstPeer.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsTrue(first.IsSelected);
+                Verify.AreSame(firstPeer, new ProviderPeerProbe().ToPeer(selection.GetSelection()[0]),
+                    "Repeated reads must reuse the null entry's provider.");
+
+                tableView.Select(180);
+                VerifyElementNotAvailable(() => _ = first.IsSelected, "IsSelected after another null entry is selected");
+                VerifyElementNotAvailable(() => first.AddToSelection(), "AddToSelection on a stale null-entry provider");
+                VerifyElementNotAvailable(() => first.Select(), "Select on a stale null-entry provider");
+                var secondPeer = new ProviderPeerProbe().ToPeer(selection.GetSelection()[0]);
+                Verify.AreNotSame(firstPeer, secondPeer, "Different null source entries must have different providers.");
+                var second = (ISelectionItemProvider)secondPeer.GetPattern(PatternInterface.SelectionItem);
+                second.RemoveFromSelection();
+                var empty = selection.GetSelection();
+                Verify.AreEqual(0, empty == null ? 0 : empty.Length, "Deselecting the null entry clears the reported selection.");
+                VerifyElementNotAvailable(() => second.RemoveFromSelection(), "RemoveFromSelection after deselection");
+
+                tableView.Select(150);
+                Verify.AreNotSame(firstPeer, new ProviderPeerProbe().ToPeer(selection.GetSelection()[0]),
+                    "Reselecting after deselection must create a fresh provider.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(offset, GetBodyScroller(tableView).VerticalOffset, "Provider reads must not scroll.");
+                Verify.AreEqual(realized, string.Join(",", RealizedRowIndices(tableView)), "Provider reads must not change realization.");
+                Verify.IsNull(repeater.TryGetElement(150));
+                Verify.IsNull(repeater.TryGetElement(180));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the data-item peer for an unrealized selected row reports ElementNotAvailable once its item leaves the source.")]
         public void VerifyGetSelectionDataItemPeerForRemovedItemIsNotAvailable()
         {
@@ -329,7 +444,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 VerifyElementNotAvailable(() => _ = selectionItem.IsSelected, "IsSelected");
                 VerifyElementNotAvailable(() => _ = selectionItem.SelectionContainer, "SelectionContainer");
+                VerifyElementNotAvailable(() => selectionItem.AddToSelection(), "AddToSelection");
                 VerifyElementNotAvailable(() => selectionItem.RemoveFromSelection(), "RemoveFromSelection");
+                VerifyElementNotAvailable(() => selectionItem.Select(), "Select");
                 VerifyElementNotAvailable(() => _ = itemPeer.GetName(), "GetName");
                 Verify.IsNull(itemPeer.GetPattern(PatternInterface.SelectionItem), "A removed item must stop offering SelectionItem.");
             });
@@ -464,6 +581,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(itemPeer.IsEnabled(), "Precondition: the row is enabled.");
                 row.IsEnabled = false;
                 Verify.IsFalse(itemPeer.IsEnabled(), "The held peer must report a disabled row as disabled.");
+                var selectionItem = (ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem);
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.Select(), "A held provider cannot select its disabled realized row.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.AddToSelection(), "A held provider cannot add its disabled realized row.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.RemoveFromSelection(), "A held provider cannot remove its disabled realized row.");
+                Verify.AreEqual(150, tableView.SelectedIndex, "Rejected mutations must preserve the selected row.");
                 row.IsEnabled = true;
 
                 Verify.IsNotNull(itemPeer.GetPattern(PatternInterface.ScrollItem) as IScrollItemProvider, "A realized row must offer ScrollItem.");

@@ -134,7 +134,7 @@ void TableViewColumnHeader::OnApplyTemplate()
                     if (auto const flyout = button.Flyout();
                         flyout && flyout.IsOpen() && flyout.Target() == button)
                     {
-                        flyout.Hide();
+                        TableViewDetails::HideFlyoutWithoutClosingVeto(flyout);
                     }
                 }
             }
@@ -197,7 +197,7 @@ void TableViewColumnHeader::ReleaseFlyoutInternal()
         button.Flyout(nullptr);
         if (flyout && flyout.IsOpen() && flyout.Target() == button)
         {
-            flyout.Hide();
+            TableViewDetails::HideFlyoutWithoutClosingVeto(flyout);
         }
     }
 }
@@ -224,7 +224,7 @@ void TableViewColumnHeader::RefreshFlyoutInternal()
         winrt::VisualStateManager::GoToState(button, L"FlyoutClosed", false);
         if (oldFlyout && oldFlyout.IsOpen() && oldFlyout.Target() == button)
         {
-            oldFlyout.Hide();
+            TableViewDetails::HideFlyoutWithoutClosingVeto(oldFlyout);
         }
         // Closing invokes app code, which can replace this header or update its flyout.
         if (m_flyoutButton.get() != button || Column() != column || GetOwningTableView() != owner ||

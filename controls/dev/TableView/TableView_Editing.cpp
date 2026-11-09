@@ -1307,14 +1307,13 @@ void TableView::DrainCoalescedEditReshape()
     }
 }
 
-void TableView::ResetPendingBeginEdit()
+void TableView::ResetPendingBeginEdit() noexcept
 {
     m_currentEditItem.set(nullptr);
     m_currentEditColumn.set(nullptr);
     m_editUneditedValue.set(nullptr);
     m_editState = EditState::None;
     m_abandonPendingBeginEdit = false;
-    RefreshHeaderFlyouts();
 }
 
 bool TableView::BeginEdit()
@@ -1398,6 +1397,14 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             ResetPendingBeginEdit();
             try
             {
+                RefreshHeaderFlyouts();
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] A failed BeginEdit could not refresh the header flyouts.");
+            }
+            try
+            {
                 DrainCoalescedEditReshape();
             }
             catch (...)
@@ -1424,6 +1431,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             // transaction open, so anything held here belongs to a previous cell in the same row and
             // is still legitimately live. Clearing it would leave the item with an unpaired BeginEdit.
             ResetPendingBeginEdit();
+            RefreshHeaderFlyouts();
             DrainCoalescedEditReshape();
             return false;
         }
@@ -1456,6 +1464,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         {
             tip.Ignore(TableViewTip::IgnoreReason::Stale);
             ResetPendingBeginEdit();
+            RefreshHeaderFlyouts();
             DrainCoalescedEditReshape();
             return false;
         }

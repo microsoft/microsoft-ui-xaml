@@ -730,15 +730,10 @@ void TableViewRowAutomationPeer::AddToSelection()
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
 
-    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
-    // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
     if (auto const tableView = GetOwningTableView())
     {
         auto const impl = winrt::get_self<TableView>(tableView);
-        if (!impl->CanSelectMultipleRows() && impl->SelectedIndexInternal() >= 0 && !impl->IsSelected(GetRowIndex()))
-        {
-            throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
-        }
+        EnsureCanAddRowToSelection(*impl, GetRowIndex());
     }
     Select();
 }
