@@ -9,6 +9,7 @@
 // ------------------------------------------------------------------------------
 namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
+    using System.Linq;
     using System;
     
     /// <summary>
@@ -298,6 +299,7 @@ using System.Diagnostics.CodeAnalysis;
       Output_TypeTables();            
             this.Write("\r\n");
       Output_Activators();            
+      Output_EnumConverters();
       Output_StaticInitializers();    
       Output_ListAndMapMethods();     
             this.Write("\r\n");
@@ -375,6 +377,7 @@ using System.Diagnostics.CodeAnalysis;
     internal delegate void AddToDictionary(object instance, object key, object item);
     internal delegate object CreateFromStringMethod(string args);
     internal delegate object BoxInstanceMethod(object instance);
+    internal delegate object EnumConverter(long value);
 
     ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
@@ -474,26 +477,26 @@ using System.Diagnostics.CodeAnalysis;
                     "value |= enumFieldValue; \r\n                    }\r\n                    catch( glo" +
                     "bal::System.FormatException )\r\n                    {\r\n                        th" +
                     "row new global::System.ArgumentException(input, FullName);\r\n                    " +
-                    "}\r\n                }\r\n\r\n                return global::System.Convert.ChangeType" +
-                    "(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));\r\n          " +
+                    "}\r\n                }\r\n\r\n                return EnumConverter(value);\r\n          " +
                     "  }\r\n            throw new global::System.ArgumentException(input, FullName);\r\n " +
                     "       }\r\n\r\n        // --- End of Interface methods\r\n\r\n        public Activator " +
                     "Activator { get; set; }\r\n        public StaticInitializer StaticInitializer { ge" +
                     "t; set; }\r\n        public AddToCollection CollectionAdd { get; set; }\r\n        p" +
                     "ublic AddToDictionary DictionaryAdd { get; set; }\r\n        public CreateFromStri" +
                     "ngMethod CreateFromStringMethod {get; set; }\r\n        public BoxInstanceMethod B" +
-                    "oxInstance {get; set; }\r\n\r\n        public void SetContentPropertyName(string con" +
-                    "tentPropertyName)\r\n        {\r\n            _contentPropertyName = contentProperty" +
-                    "Name;\r\n        }\r\n\r\n        public void SetIsArray()\r\n        {\r\n            _is" +
-                    "Array = true; \r\n        }\r\n\r\n        public void SetIsMarkupExtension()\r\n       " +
-                    " {\r\n            _isMarkupExtension = true;\r\n        }\r\n\r\n        public void Set" +
-                    "IsBindable()\r\n        {\r\n            _isBindable = true;\r\n        }\r\n\r\n        p" +
-                    "ublic void SetIsReturnTypeStub()\r\n        {\r\n            _isReturnTypeStub = tru" +
-                    "e;\r\n        }\r\n\r\n        public void SetIsLocalType()\r\n        {\r\n            _i" +
-                    "sLocalType = true;\r\n        }\r\n\r\n        public void SetItemTypeName(string item" +
-                    "TypeName)\r\n        {\r\n            _itemTypeName = itemTypeName;\r\n        }\r\n\r\n  " +
-                    "      public void SetKeyTypeName(string keyTypeName)\r\n        {\r\n            _ke" +
-                    "yTypeName = keyTypeName;\r\n        }\r\n\r\n        public void SetBoxedType(");
+                    "oxInstance {get; set; }\r\n        public EnumConverter EnumConverter {get; set; }" +
+                    "\r\n\r\n        public void SetContentPropertyName(string contentPropertyName)\r\n    " +
+                    "    {\r\n            _contentPropertyName = contentPropertyName;\r\n        }\r\n\r\n   " +
+                    "     public void SetIsArray()\r\n        {\r\n            _isArray = true; \r\n       " +
+                    " }\r\n\r\n        public void SetIsMarkupExtension()\r\n        {\r\n            _isMark" +
+                    "upExtension = true;\r\n        }\r\n\r\n        public void SetIsBindable()\r\n        {" +
+                    "\r\n            _isBindable = true;\r\n        }\r\n\r\n        public void SetIsReturnT" +
+                    "ypeStub()\r\n        {\r\n            _isReturnTypeStub = true;\r\n        }\r\n\r\n      " +
+                    "  public void SetIsLocalType()\r\n        {\r\n            _isLocalType = true;\r\n   " +
+                    "     }\r\n\r\n        public void SetItemTypeName(string itemTypeName)\r\n        {\r\n " +
+                    "           _itemTypeName = itemTypeName;\r\n        }\r\n\r\n        public void SetKe" +
+                    "yTypeName(string keyTypeName)\r\n        {\r\n            _keyTypeName = keyTypeName" +
+                    ";\r\n        }\r\n\r\n        public void SetBoxedType(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
             this.Write(@" boxedType)
         {
@@ -984,6 +987,12 @@ this.Write("\");\r\n");
                          }                                                           
                          if(uentry.HasEnumValues)        
                          {                               
+this.Write("                userType.EnumConverter = EnumConverter_");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(System.Enum.GetUnderlyingType(uentry.TypeEntry.UnderlyingType).Name));
+
+this.Write(";\r\n");
+
                              if (uentry.IsDeprecated)    
                              {                           
 this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
@@ -1042,6 +1051,26 @@ this.Write("            }\r\n");
 this.Write("            return xamlType;\r\n        }\r\n");
 
          }           
+         private void Output_EnumConverters()
+         {
+             var underlyingTypes = SchemaInfo.UserTypeInfo
+                 .Where(entry => entry.HasEnumValues)
+                 .Select(entry => System.Enum.GetUnderlyingType(entry.TypeEntry.UnderlyingType).Name)
+                 .Distinct();
+             foreach (string underlyingType in underlyingTypes)
+             {
+this.Write("        private static object EnumConverter_");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(underlyingType));
+
+this.Write("(long value) { return global::System.Convert.To");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(underlyingType));
+
+this.Write("(value); }\r\n");
+
+             }
+         }
          private void Output_Activators()                                        
          {                                                                       
              foreach(InternalXamlUserTypeInfo entry in SchemaInfo.UserTypeInfo)  
