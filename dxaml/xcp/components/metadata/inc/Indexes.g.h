@@ -3210,6 +3210,7 @@ enum class KnownMethodIndex: UINT16
     UIElement_FocusNoActivate,
     UIElement_PauseNewDispatchIfAvailable,
     UIElement_ResumeNewDispatchIfAvailable,
+    UIElement_SetValuePreservingBinding,
     VisualStateManager_GoToState,
     VisualStateManager_GoToStateCore,
     VisualStateManager_RaiseCurrentStateChanging,

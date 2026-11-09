@@ -34,6 +34,9 @@ namespace Microsoft.UI.Xaml
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public void ResumeNewDispatchIfAvailable();
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void SetValuePreservingBinding(Microsoft.UI.Xaml.DependencyProperty dp, Windows.Foundation.Object value);
     }
 
     [CodeGen(partial: true)]

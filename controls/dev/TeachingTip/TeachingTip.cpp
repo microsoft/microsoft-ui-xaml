@@ -42,6 +42,14 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
     return winrt::make<TeachingTipAutomationPeer>(*this);
 }
 
+// Closes the tip without clearing a binding the app has on IsOpen (e.g. IsOpen="{Binding IsChecked, ElementName=Button}").
+// IsOpen(false) would replace a OneWay binding with a local value, so the tip could never open through it again.
+// Like Popup::Close, this sets only the effective value: the binding stays attached and drives IsOpen on its next update.
+void TeachingTip::CloseKeepingIsOpenBinding()
+{
+    this->as<winrt::IUIElementPrivate>().SetValuePreservingBinding(s_IsOpenProperty, winrt::box_value(false));
+}
+
 void TeachingTip::OnApplyTemplate()
 {
     base_type::OnApplyTemplate();
@@ -466,7 +474,7 @@ void TeachingTip::PositionPopup()
     }
     if (tipDoesNotFit)
     {
-        IsOpen(false);
+        CloseKeepingIsOpenBinding();
     }
 
 #ifdef DBG
@@ -920,7 +928,7 @@ void TeachingTip::IsOpenChangedToOpen()
         auto const closedArgs = winrt::make_self<TeachingTipClosedEventArgs>();
         closedArgs->Reason(m_lastCloseReason);
         m_closedEventSource(*this, *closedArgs);
-        IsOpen(false);
+        CloseKeepingIsOpenBinding();
     }
     else
     {
@@ -1285,7 +1293,7 @@ void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::
 {
     m_closeButtonClickEventSource(*this, nullptr);
     m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
-    IsOpen(false);
+    CloseKeepingIsOpenBinding();
 }
 
 void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -1388,7 +1396,7 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    IsOpen(false);
+    CloseKeepingIsOpenBinding();
     ClosePopup();
 }
 
@@ -1398,7 +1406,7 @@ void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&,
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
     }
-    IsOpen(false);
+    CloseKeepingIsOpenBinding();
 }
 
 void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
