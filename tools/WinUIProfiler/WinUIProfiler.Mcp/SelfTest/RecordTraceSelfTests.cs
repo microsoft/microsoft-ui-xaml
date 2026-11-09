@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using ModelContextProtocol;
 using WinUIProfiler.Engine.Events;
@@ -137,6 +138,10 @@ internal static class RecordTraceSelfTests
         Expect.Equal($"{session} already holds this process's events from {trace}, read to the trace's end, and the trace " +
             "hasn't changed since, so it was reused. Pass reread=true to read the trace again into a new session file.",
             result.Text("message"), "The message");
+
+        // Looking for a session to reuse read the session record of the folder's one session file of the process, and
+        // reusing it read the record again.
+        Expect.Equal(2L, SessionRecordRuns(result, "Reusing a session"), "Runs of the session record's statement");
     }
 
     /// <summary>Reads a real trace into a session file, then reuses that file, then reads the trace again.</summary>
@@ -148,12 +153,17 @@ internal static class RecordTraceSelfTests
         var first = Run(() => Record(trace, null, sessions));
         if (!first.IsNull("needsProcessId"))
         {
+            Expect.Equal(0, QuerySelfTests.CheckQueries(first, "Listing a trace's processes").Count,
+                "Statements run to list a trace's processes");
             int? listed = (int)first.Items("processes")[0].Long("processId");
             first = Run(() => Record(trace, listed, sessions));
         }
 
         Expect.True(!first.Bool("reused"), "The first read makes a session file.");
         Expect.Equal("Finished", first.Text("state"), "The first read");
+
+        // The folder had no session file to reuse, so the only statement read the new file's session record.
+        Expect.Equal(1L, SessionRecordRuns(first, "The first read"), "Runs of the session record's statement");
         var session = first.Property("session");
         var path = session.Text("sessionPath");
         Expect.True(File.Exists(path), $"The session file {path} exists.");
@@ -169,11 +179,26 @@ internal static class RecordTraceSelfTests
         var again = Run(() => Record(trace, processId, sessions));
         Expect.True(again.Bool("reused"), "Reading the same process again reuses its session file.");
         Expect.Equal(path, again.Property("session").Text("sessionPath"), "The reused session");
+        Expect.Equal(2L, SessionRecordRuns(again, "Reusing the session"), "Runs of the session record's statement");
 
         var reread = Run(() => Record(trace, processId, sessions, reread: true));
         Expect.True(!reread.Bool("reused"), "reread=true reads the trace again.");
         Expect.True(reread.Property("session").Text("sessionPath") != path, "Reading again makes a new session file.");
         Expect.Equal(first.Long("storedEvents"), reread.Long("storedEvents"), "The events stored again");
+        Expect.Equal(1L, SessionRecordRuns(reread, "Reading the trace again"), "Runs of the session record's statement");
+    }
+
+    /// <summary>
+    /// Checks that record_trace ran one statement, which read the session record of the file it returned, and returns how
+    /// many times it ran. The trace's reads, and the writes to the new session file, aren't listed.
+    /// </summary>
+    private static long SessionRecordRuns(JsonElement result, string what)
+    {
+        var queries = QuerySelfTests.CheckQueries(result, what);
+        Expect.Equal(1, queries.Count, $"Statements {what} ran");
+        Expect.True(queries[0].Text("sql")!.Contains("FROM SessionInfo", StringComparison.Ordinal) && queries[0].IsNull("files"),
+            $"{what} read only the session record of the file it returned: {queries[0]}");
+        return queries[0].IsNull("runs") ? 1 : queries[0].Long("runs");
     }
 
     /// <summary>The window focus events (Win32k) a session file holds.</summary>

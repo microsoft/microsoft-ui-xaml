@@ -149,6 +149,11 @@ internal static class ObjectToolSelfTests
         Expect.Equal(2L, both.Long("total"), "How many objects had the address");
         Expect.True(both.IsNull("nextOffset"), "One page holds both objects.");
 
+        // It read the session record, then the objects at the address, a read that reads the session record again.
+        var ran = QuerySelfTests.CheckQueries(both, "The history view of an address two objects had");
+        Expect.Equal(2, ran.Count, "Statements the history view of an address two objects had ran");
+        Expect.Equal(2L, ran[0].Long("runs"), "Runs of the session record's statement");
+
         var first = Run(() => ObjectTools.Objects(sessionPath: path, address: "0x3000", limit: 1));
         Expect.Equal(1L, first.Long("returned"), "Objects on a page of one");
         Expect.Equal(2L, first.Long("total"), "How many objects had the address, on a page of one");

@@ -141,7 +141,7 @@ internal static class FrameTools
         }, cancellationToken);
     }
 
-    private static object Summary(string path)
+    private static ToolAnswer Summary(string path)
     {
         var info = SessionFile.ReadInfo(path);
         var ticks = SessionFile.ReadFrames(path);
@@ -162,7 +162,16 @@ internal static class FrameTools
         }
 
         var first = launch.Count == 0 ? null : launch[0];
-        return new
+        var threads = ticks.Select(tick => tick.ThreadId).Distinct().Count();
+        var computed = $"Grouped the {EventJson.Count(ticks.Count, "tick", "ticks")} by UI thread " +
+            $"({EventJson.Count(threads, "thread", "threads")}); for each thread, counted the ticks that drew, didn't or aren't " +
+            "known to, and the slow ones; took the total, nearest-rank p50 and p90, and maximum of the known durations, of all " +
+            "its ticks and of those that drew; summed the events by bucket; and took the first start and the last end. " +
+            $"Grouped the {EventJson.Count(regions.Count, "region", "regions")} by trigger and the other " +
+            $"{EventJson.Count(others.Count, "interesting row", "interesting rows")} by type, with their total and maximum " +
+            "durations. " +
+            (first is null ? "There are no launch frames, so there's no first frame." : "The first frame is the first launch frame.");
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "summary",
@@ -184,7 +193,7 @@ internal static class FrameTools
                 measuredFrom = first.FromProcessStart ? "ProcessStart" : "RecordingStart",
             },
             notes,
-        };
+        }, computed);
     }
 
     private static object DescribeThread(IReadOnlyList<SessionFrame> ticks)
@@ -262,7 +271,7 @@ internal static class FrameTools
         }
     }
 
-    private static object Slowest(string path, string order, int offset, int limit)
+    private static ToolAnswer Slowest(string path, string order, int offset, int limit)
     {
         var info = SessionFile.ReadInfo(path);
         var ticks = SessionFile.ReadFrames(path);
@@ -294,7 +303,13 @@ internal static class FrameTools
         }
 
         var page = ranked.Skip(offset).Take(limit).Select(tick => DescribeTick(tick, regions.GetValueOrDefault(tick.FrameId))).ToList();
-        return new
+        var sorted = order == "events"
+            ? $"Sorted the {EventJson.Count(ticks.Count, "tick", "ticks")} by events, most first, ties by tickId"
+            : $"Sorted the {EventJson.Count(ranked.Count, "tick", "ticks")} with a known duration by duration, longest first, " +
+                "ties by tickId" + (ranked.Count < ticks.Count
+                    ? $", leaving out the {EventJson.Count(ticks.Count - ranked.Count, "tick", "ticks")} whose duration isn't known"
+                    : "");
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "slowest",
@@ -305,10 +320,11 @@ internal static class FrameTools
             nextOffset = ToolArguments.NextOffset(offset, page.Count, ranked.Count),
             ticks = page,
             notes,
-        };
+        }, $"{sorted}; {EventJson.Page(offset, page.Count)}; and matched each to the region of interest that ends with it, " +
+            "if one does, from the interesting rows.");
     }
 
-    private static object Regions(string path, string order, int offset, int limit)
+    private static ToolAnswer Regions(string path, string order, int offset, int limit)
     {
         var info = SessionFile.ReadInfo(path);
         var rows = SessionFile.ReadInterestingRows(path);
@@ -337,7 +353,14 @@ internal static class FrameTools
             rows = members[RegionId(region)].GroupBy(row => row.Type).OrderBy(group => group.Key)
                 .ToDictionary(group => group.Key.ToString(), group => group.Count()),
         }).ToList();
-        return new
+        var outside = rows.Count(row => row.Type != InterestingRowType.Region && row.RegionId is null);
+        var computed = $"Took the {EventJson.Count(regions.Count, "region", "regions")} of the " +
+            $"{EventJson.Count(rows.Count, "interesting row", "interesting rows")}" +
+            (order == "time" ? ", in the order they start" : ", sorted by duration, longest first, ties by start") +
+            $"; {EventJson.Page(offset, page.Count)}; and for each, counted its rows by type and found the tick it ends with " +
+            $"among the {EventJson.Count(ticks.Count, "tick", "ticks")}. Grouped all the regions by trigger, and the " +
+            $"{EventJson.Count(outside, "row", "rows")} outside every region by type, with their total and maximum durations.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "regions",
@@ -357,10 +380,10 @@ internal static class FrameTools
                     maxMs = EventJson.Ms(group.Max(row => row.DurationMilliseconds)),
                 }).ToList(),
             notes,
-        };
+        }, computed);
     }
 
-    private static object Rows(string path, long? regionId, InterestingRowType? type, string order, int offset, int limit)
+    private static ToolAnswer Rows(string path, long? regionId, InterestingRowType? type, string order, int offset, int limit)
     {
         var info = SessionFile.ReadInfo(path);
         var rows = SessionFile.ReadInterestingRows(path, regionId);
@@ -387,7 +410,15 @@ internal static class FrameTools
             ? matching.OrderByDescending(row => row.DurationMilliseconds).ThenBy(row => row.StartSeq)
             : matching;
         var page = ordered.Skip(offset).Take(limit).Select(DescribeRow).ToList();
-        return new
+        var read = regionId is { } scope
+            ? string.Create(CultureInfo.InvariantCulture,
+                $"Of the {EventJson.Count(rows.Count, "row", "rows")} of region {scope} (the region and the rows that start in it)")
+            : $"Of the {EventJson.Count(rows.Count, "interesting row", "interesting rows")}";
+        var computed = $"{read}, kept the {EventJson.Count(matching.Count, "row", "rows")} that aren't regions" +
+            (type is null ? "" : $" and are {type} rows") +
+            (order == "duration" ? ", sorted by duration, longest first, ties by start" : ", in the order they start") +
+            $"; {EventJson.Page(offset, page.Count)}.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "rows",
@@ -400,10 +431,10 @@ internal static class FrameTools
             nextOffset = ToolArguments.NextOffset(offset, page.Count, matching.Count),
             rows = page,
             notes,
-        };
+        }, computed);
     }
 
-    private static object Tick(string path, long tickId, string? bucket, int offset, int limit, CancellationToken cancellationToken)
+    private static ToolAnswer Tick(string path, long tickId, string? bucket, int offset, int limit, CancellationToken cancellationToken)
     {
         var info = SessionFile.ReadInfo(path);
         var tick = SessionFile.ReadFrames(path, tickId).FirstOrDefault() ?? throw new McpException(string.Create(
@@ -498,7 +529,17 @@ internal static class FrameTools
                 $"mentions. The objects counted by type include them all."));
         }
 
-        return new
+        var counted = bucket is null
+            ? $"Counted the tick's {EventJson.Count(total, "event", "events")} by provider and name"
+            : $"Kept the {EventJson.Count(matching, "event", "events")} of the tick's {EventJson.Count(total, "event", "events")} " +
+                $"in the {bucket} bucket, and counted them by provider and name";
+        var computed = string.Create(CultureInfo.InvariantCulture,
+            $"Found tick {tickId}, and the region of interest that ends with it, if one does. {counted} " +
+            $"({EventJson.Count(names.Count, "name", "names")}{MostListed(names.Count, TickNames)}), and the " +
+            $"{EventJson.Count(objects.Count, "object", "objects")} they mention by kind and type " +
+            $"({EventJson.Count(types.Count, "type", "types")}{MostListed(types.Count, TickTypes)}). Of those events, " +
+            $"{EventJson.Page(offset, page.Count)}, in order, each with at most {EventMentions} of the objects it mentions.");
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "tick",
@@ -528,8 +569,12 @@ internal static class FrameTools
             nextOffset = ToolArguments.NextOffset(offset, page.Count, matching),
             page,
             notes,
-        };
+        }, computed);
     }
+
+    // Says that only the first of a list's items are listed, for a computed text: ", the 30 with the most listed".
+    private static string MostListed(int count, int listed) =>
+        count > listed ? string.Create(CultureInfo.InvariantCulture, $", the {listed} with the most listed") : "";
 
     /// <summary>A region's ID: its StartSeq, by which its rows name it.</summary>
     internal static long RegionId(InterestingRow region) => region.RegionId ?? region.StartSeq;

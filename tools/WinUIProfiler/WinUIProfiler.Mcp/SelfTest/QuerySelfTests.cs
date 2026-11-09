@@ -3,16 +3,20 @@
 
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
+using WinUIProfiler.Mcp.Tools;
 using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
+using static WinUIProfiler.Mcp.SelfTest.ToolResults;
 
 namespace WinUIProfiler.Mcp.SelfTest;
 
 /// <summary>
 /// The SQL behind the answers: SessionFile reports each statement its reads run, with the values written in, and each
-/// statement, run as reported, returns the rows reported.
+/// statement, run as reported, returns the rows reported. Each tool result lists the statements its call ran, and says what
+/// the call computed from their rows.
 /// </summary>
 internal static class QuerySelfTests
 {
@@ -23,7 +27,49 @@ internal static class QuerySelfTests
         new("queries.observers", Observers),
         new("queries.reads", Reads),
         new("queries.filters", Filters),
+        new("queries.views", Views),
+        new("queries.isolation", Isolation),
     ];
+
+    /// <summary>
+    /// Checks a tool result's computed text and the statements it lists, and returns them. Each statement is listed once,
+    /// ends with a semicolon and isn't a check of the file's version or views. Run as listed on the files it ran on (the
+    /// result's session file, or each session file it lists that could be read, unless the statement names others), it
+    /// returns the rows listed.
+    /// </summary>
+    internal static IReadOnlyList<JsonElement> CheckQueries(JsonElement result, string what)
+    {
+        Expect.True(!string.IsNullOrWhiteSpace(result.Text("computed")), $"{what} says what it computed.");
+        var session = result.Property("session").Text("sessionPath");
+        List<string> given = session is not null ? [session]
+            : result.IsNull("sessions") ? []
+            : [.. result.Items("sessions").Where(row => row.IsNull("error")).Select(row => row.Text("path") ?? "")];
+        var queries = result.Items("queries");
+        var listed = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var query in queries)
+        {
+            var sql = query.Text("sql") ?? "";
+            Expect.True(listed.Add(sql), $"{what} lists each statement once: {sql}");
+            Expect.True(sql.EndsWith(';') && !sql.Contains('\r', StringComparison.Ordinal),
+                $"{what}: a statement ends with a semicolon, and its line breaks are \\n: {sql}");
+            Expect.True(!sql.Contains("PRAGMA", StringComparison.OrdinalIgnoreCase)
+                && !sql.Contains("sqlite_master", StringComparison.OrdinalIgnoreCase),
+                $"{what} doesn't list the checks of the file's version and views.");
+            var runs = query.IsNull("runs") ? 1 : query.Long("runs");
+            Expect.True(query.IsNull("runs") || runs > 1, $"{what} gives runs only for a statement that ran more than once: {sql}");
+            List<string> files = query.IsNull("files") ? given : [.. query.Strings("files").Select(file => file ?? "")];
+            Expect.True(files.Count > 0 && files.All(file => file.Length > 0), $"{what} names the files {sql} ran on.");
+
+            // Each file once, or the same rows each time.
+            var counts = files.Select(file => (long)Rerun(new SessionQuery(file, sql, 0)).Count).ToList();
+            var rows = counts.Count == runs ? counts.Sum()
+                : counts.Distinct().Count() == 1 ? runs * counts[0]
+                : throw new SelfTestFailedException($"{what}: the rows of {runs} runs of {sql} on {files.Count} files can't be told.");
+            Expect.Equal(rows, query.Long("rows"), $"{what}: the rows of {sql}, run as listed");
+        }
+
+        return queries;
+    }
 
     /// <summary>Runs a reported statement as it is, on a read-only connection of its own, and returns its rows.</summary>
     internal static IReadOnlyList<object?[]> Rerun(SessionQuery query)
@@ -346,6 +392,83 @@ internal static class QuerySelfTests
         }
 
         Expect.True(quoted[0].Sql.Contains("'%it''s%'", StringComparison.Ordinal), $"A quote is doubled: {quoted[0].Sql}");
+    }
+
+    // Each view of the tools that read a session file says what it computed, and lists the statements its reads ran.
+    private static void Views(SelfTestContext context)
+    {
+        var main = WriteMain(context);
+        var regions = Write(Path.Combine(context.TempDirectory, "regions.sqlite"), FrameToolSelfTests.RegionEvents);
+        var tick = SessionFile.ReadFrames(main)[0].FrameId;
+        var region = Run(() => FrameTools.Frames(sessionPath: regions, view: "regions")).Items("regions")[0].Long("regionId");
+        var root = SessionFile.ReadObjects(main).First(item => item.Name == "Root").ObjectId;
+        (string View, Func<Task<object>> Call)[] calls =
+        [
+            ("The frames summary", () => FrameTools.Frames(sessionPath: main)),
+            ("The slowest ticks", () => FrameTools.Frames(sessionPath: main, view: "slowest")),
+            ("The ticks with the most events", () => FrameTools.Frames(sessionPath: main, view: "slowest", orderBy: "events")),
+            ("The regions", () => FrameTools.Frames(sessionPath: regions, view: "regions")),
+            ("The regions by time", () => FrameTools.Frames(sessionPath: regions, view: "regions", orderBy: "time")),
+            ("The rows", () => FrameTools.Frames(sessionPath: regions, view: "rows")),
+            ("A region's rows by duration", () => FrameTools.Frames(sessionPath: regions, regionId: region, orderBy: "duration")),
+            ("The rows of a type", () => FrameTools.Frames(sessionPath: regions, type: "UpdateLayout")),
+            ("A tick", () => FrameTools.Frames(sessionPath: main, tickId: tick)),
+            ("A page of a tick's bucket", () => FrameTools.Frames(sessionPath: main, tickId: tick, bucket: "Xaml", offset: 1, limit: 2)),
+            ("The launch milestones", () => LaunchTools.Launch(sessionPath: main)),
+            ("The launch frames", () => LaunchTools.Launch(view: "frames", sessionPath: main)),
+            ("The object types", () => ObjectTools.Objects(sessionPath: main)),
+            ("The visuals' types", () => ObjectTools.Objects(sessionPath: main, kind: "Visual")),
+            ("The objects by events", () => ObjectTools.Objects(sessionPath: main, view: "list", orderBy: "events")),
+            ("The objects of a type and name", () => ObjectTools.Objects(sessionPath: main, type: "button", name: "ok")),
+            ("An object's history", () => ObjectTools.Objects(sessionPath: main, objectId: root)),
+            ("An address's history", () => ObjectTools.Objects(sessionPath: main, address: "0x2000")),
+            ("The session summary", () => SessionTools.Sessions(sessionPath: main)),
+        ];
+        foreach (var (view, call) in calls)
+        {
+            var queries = CheckQueries(Run(call), view);
+            Expect.True(queries.Count > 0, $"{view} lists the statements it ran.");
+            Expect.True(queries.All(query => query.IsNull("files")), $"{view} ran its statements only on the session file it read.");
+        }
+
+        // The tick view reads the session record, then the tick's events, whose read reads it again.
+        var first = Run(() => FrameTools.Frames(sessionPath: main, tickId: tick)).Items("queries")[0];
+        Expect.True(first.Text("sql")!.Contains("FROM SessionInfo", StringComparison.Ordinal),
+            $"The tick view first reads the session record: {first.Text("sql")}");
+        Expect.Equal(2L, first.Long("runs"), "Runs of the session record's statement, listed once");
+    }
+
+    // Calls that run at the same time each list only their own statements, and a call that fails leaves none to the next.
+    private static void Isolation(SelfTestContext context)
+    {
+        var main = WriteMain(context);
+        var other = WriteMain(context, "other.sqlite");
+        var tick = SessionFile.ReadFrames(main)[0].FrameId;
+        Func<Task<object>>[] calls =
+        [
+            () => FrameTools.Frames(sessionPath: main, tickId: tick),
+            () => ObjectTools.Objects(sessionPath: other),
+        ];
+        var alone = calls.Select(call => Queries(Run(call))).ToList();
+
+        // Session files' reads wait on each other's locks, so the calls of a round overlap.
+        for (var round = 0; round < 3; round++)
+        {
+            var results = Task.WhenAll(Enumerable.Range(0, 8).Select(index => calls[index % 2]())).GetAwaiter().GetResult();
+            for (var index = 0; index < results.Length; index++)
+            {
+                Expect.Equal(alone[index % 2], Queries(Json(results[index])),
+                    $"The statements of call {index} of round {round}, which ran with 7 others");
+            }
+        }
+
+        var summary = Queries(Run(() => FrameTools.Frames(sessionPath: main)));
+        Expect.Equal($"There's no tick 999 in {main}. The slowest, regions and rows views give tick IDs.",
+            Error(() => FrameTools.Frames(sessionPath: main, tickId: 999)), "The error for a tick that isn't there");
+        Expect.Equal(summary, Queries(Run(() => FrameTools.Frames(sessionPath: main))),
+            "The statements of the call after one that failed");
+
+        static string Queries(JsonElement result) => result.Property("queries").GetRawText();
     }
 
     private static bool Throws<T>(Action action)

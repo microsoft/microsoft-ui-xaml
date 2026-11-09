@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.ComponentModel;
+using System.Globalization;
 using ModelContextProtocol.Server;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Mcp.Sessions;
@@ -54,7 +55,7 @@ internal static class LaunchTools
                 : "No tick on the first UI thread (the thread of the session's first tick) is known to have drawn: a tick " +
                     "drew when the thread's next tick has a higher frame number.";
 
-    private static object Frames(string path)
+    private static ToolAnswer Frames(string path)
     {
         var info = SessionFile.ReadInfo(path);
         var launch = SessionFile.ReadLaunchSummary(path);
@@ -81,17 +82,28 @@ internal static class LaunchTools
             });
         }
 
-        return new
+        var launchFrames = EventJson.Count(launch.Count, "launch frame", "launch frames");
+        var computed = launch.Count == 0
+            ? "The session has no launch frames, so there are none to list."
+            : launchTicks is null
+                ? $"Listed the {launchFrames}, each with the time since the previous one. Their ticks aren't given: the " +
+                    $"{EventJson.Count(ticks.Count, "tick", "ticks")} read after them don't start with the same frames, so the " +
+                    "session changed between the reads."
+                : string.Create(CultureInfo.InvariantCulture,
+                    $"Matched the {launchFrames} to the first {launch.Count} ticks that drew and ended on the first UI thread " +
+                    $"(the thread of the first of the {EventJson.Count(ticks.Count, "tick", "ticks")}), by frame number, and " +
+                    $"gave each the time since the previous one.");
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "frames",
             measuredFrom = MeasuredFrom(launch),
             frames,
             notes,
-        };
+        }, computed);
     }
 
-    private static object Milestones(string path)
+    private static ToolAnswer Milestones(string path)
     {
         var info = SessionFile.ReadInfo(path);
         var launch = SessionFile.ReadLaunchSummary(path);
@@ -109,7 +121,24 @@ internal static class LaunchTools
             notes.Add(NoMilestones);
         }
 
-        return new
+        var recorded = new List<string>();
+        if (milestones.Any(item => item.Milestone == "ProcessCreated"))
+        {
+            recorded.Add("when the process was created");
+        }
+
+        if (milestones.Any(item => item.Milestone == "RecordingStarted"))
+        {
+            recorded.Add("when the recording started");
+        }
+
+        var computed = $"Took the first of the {EventJson.Count(ticks.Count, "tick", "ticks")} to start and the first of the " +
+            $"{EventJson.Count(launch.Count, "launch frame", "launch frames")}; then, from the " +
+            $"{EventJson.Count(rows.Count, "interesting row", "interesting rows")}, the first region, operation of each name, and " +
+            "CreateGraphicsDevice, UpdateLayout, Navigating, Navigated and FocusChange row, with how many of each there are" +
+            (recorded.Count == 0 ? "" : $"; added {string.Join(" and ", recorded)}, from the session record") +
+            $"; and sorted the {EventJson.Count(milestones.Count, "milestone", "milestones")} by time.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "milestones",
@@ -121,7 +150,7 @@ internal static class LaunchTools
             },
             milestones = milestones.OrderBy(item => item.Ms).ThenBy(item => item.Order).Select(item => item.Item).ToList(),
             notes,
-        };
+        }, computed);
     }
 
     /// <summary>

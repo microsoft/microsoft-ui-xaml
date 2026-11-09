@@ -18,11 +18,11 @@ The WinUI Profiler app (`tools/WinUIProfiler` in the microsoft-ui-xaml
 repository) records one WinUI 3 process into a session file. Its processors
 build tables from the process's XAML events: the ticks of each UI thread, the
 regions of interest and interesting rows, and the UI elements and composition
-visuals the events mention. The winui-profiler tools read only those tables
-and the session file's views over them, never the events' field values. They
-read the files where they are, without changing them, even while the app is
-still recording one. `record_trace` reads a recorded trace into a new session
-file first.
+visuals the events mention. The winui-profiler tools read those tables and
+the session file's views over them, and never return the events' field
+values. They read the files where they are, without changing them, even while
+the app is still recording one. `record_trace` reads a recorded trace into a
+new session file first.
 
 ## The tools
 
@@ -128,6 +128,48 @@ recording live does.
    result with `nextOffset` continues from `offset`.
 5. **Say what was read:** the file, the process and the time base, with the
    notes that limit the answer.
+6. **End with How I got this,** as the next section says.
+
+## How I got this
+
+End every answer with a section headed **How I got this**, which shows how
+the answer came from the session file. The tools don't take SQL: each view
+runs fixed statements, with the arguments' values written in, then sorts,
+groups, counts and pages their rows in code. Each result says how: `queries`
+lists the statements the call ran, each once, and `computed` says what the
+call did with their rows.
+
+1. Name the session file, and say that each statement runs on it as is,
+   read-only, with `sqlite3 -readonly <file>`. For `sessions` view `list`,
+   name the folder: its statement ran once on each file it lists that could
+   be read. The first time in a conversation that a statement you show reads
+   `InterestingRows`, `InterestingRowEvents` or `FrameList`, add that SQLite
+   3.54.0 and 3.54.1 can't run it ("VIEWs and/or subqueries nested too
+   deep"), but another version, such as 3.53, can.
+2. Then each call the answer used, in the order they were made: the tool, the
+   view and the arguments passed. Under it, each of its `queries` in order:
+   - its `sql`, copied exactly, in a code block marked `sql`;
+   - after the block, its `rows` (of all its runs), its `runs` when it ran
+     more than once, and its `files` when the result gives them.
+
+   Then the call's `computed`, copied exactly, after "Then:".
+3. Last, one or two sentences on how those results led to the answer.
+
+Rules:
+
+- Copy each `sql` and `computed` exactly as the tool returned them. Never
+  write, shorten, reformat or reconstruct SQL, and never show a statement no
+  tool returned. Don't add to a `computed`: what you conclude from the
+  results goes in the last step.
+- A call whose `queries` is empty ran no SQL; say so. A call that failed
+  returns only its error: give the error, and don't guess what it ran.
+- Show a statement once per answer. When a later call ran it again, say
+  which call showed it.
+- When an answer needed no new call, name the earlier calls it came from.
+- The statements read the file as it was. A session still being recorded can
+  return more rows when one is run again.
+- If the user asks not to see the section, leave it out until they ask for it
+  again.
 
 ## Objects
 

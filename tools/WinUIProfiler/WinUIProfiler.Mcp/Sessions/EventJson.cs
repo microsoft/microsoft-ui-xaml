@@ -54,4 +54,8 @@ internal static class EventJson
     /// <summary>A count and its noun, such as "1 event" or "1,234 events".</summary>
     internal static string Count(long count, string one, string many) =>
         string.Create(CultureInfo.InvariantCulture, $"{count:N0} {(count == 1 ? one : many)}");
+
+    /// <summary>The page of a list a view returned, as its computed text says it: "returned 20 from offset 40".</summary>
+    internal static string Page(int offset, int returned) =>
+        string.Create(CultureInfo.InvariantCulture, $"returned {returned:N0} from offset {offset:N0}");
 }

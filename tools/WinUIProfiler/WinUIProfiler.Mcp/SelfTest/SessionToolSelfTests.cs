@@ -77,11 +77,19 @@ internal static class SessionToolSelfTests
         Contains(sessions[3].Text("error"), "A damaged file's error", $"{garbage} couldn't be read as a session file:");
         Expect.True(sessions[3].IsNull("processId"), "A damaged file has no process.");
 
+        // The list reads the session record of each file that opens; the other two fail before a statement runs.
+        Expect.Equal("Listed the 4 session files in the folder, newest first, and read the session record of each; 2 files " +
+            "couldn't be read, so their rows have an error instead.", result.Text("computed"), "What the list view computed");
+        RecordsRead(result, "The list view");
+
         var two = Run(() => SessionTools.Sessions(view: " LIST ", folder: folder, limit: 2));
         Expect.Equal(4L, two.Long("total"), "Session files when two are described");
         Expect.Equal(2L, two.Long("returned"), "Session files described");
         Expect.Equal("Only the newest 2 of 4 session files are described; raise limit for more.",
             string.Join(" | ", two.Strings("notes")), "The notes");
+        Expect.Equal("Listed the 4 session files in the folder, newest first, and read the session record of the newest 2.",
+            two.Text("computed"), "What the list view of the newest two computed");
+        RecordsRead(two, "The list view of the newest two");
         Expect.Equal("limit must be from 1 to 500; it was 0.", Error(() => SessionTools.Sessions(folder: folder, limit: 0)), "limit 0");
         Expect.Equal("'files' isn't a view of sessions. Use one of: list, summary.",
             Error(() => SessionTools.Sessions(view: "files", folder: folder)), "An unknown view");
@@ -96,10 +104,26 @@ internal static class SessionToolSelfTests
         var emptyNotes = none.Strings("notes");
         Expect.Equal(1, emptyNotes.Count, "An empty folder's notes");
         Contains(emptyNotes[0], "An empty folder's note", $"There are no session files in {empty}.", "record_trace");
+        Expect.Equal("Found no session files in the folder, so read none.", none.Text("computed"),
+            "What the list view of an empty folder computed");
+        Expect.Equal(0, QuerySelfTests.CheckQueries(none, "The list view of an empty folder").Count,
+            "Statements the list view of an empty folder ran");
         Expect.Equal(0L, Run(() => SessionTools.Sessions(folder: Path.Combine(folder, "missing"))).Long("total"),
             "Session files in a missing folder");
         Expect.Equal($"{main} is a file, not a folder. Pass it as sessionPath to the summary view.",
             Error(() => SessionTools.Sessions(folder: main)), "A file as the folder");
+
+        // One statement, the session record's, run once on each file that opened. The list gives their paths, so the
+        // statement doesn't name them again.
+        void RecordsRead(JsonElement listed, string what)
+        {
+            var queries = QuerySelfTests.CheckQueries(listed, what);
+            Expect.Equal(1, queries.Count, $"Statements {what} ran");
+            Expect.True(queries[0].Text("sql")!.Contains("FROM SessionInfo", StringComparison.Ordinal),
+                $"{what} read the session records: {queries[0].Text("sql")}");
+            Expect.Equal(2L, queries[0].Long("runs"), $"Runs of the session record's statement in {what}");
+            Expect.True(queries[0].IsNull("files"), $"{what} doesn't name the files it lists again: {queries[0].GetRawText()}");
+        }
     }
 
     private static void Resolve(SelfTestContext context)
@@ -308,6 +332,20 @@ internal static class SessionToolSelfTests
             $"{started} holds a value that isn't in the form WinUI Profiler writes");
         Contains(Error(() => SessionTools.Sessions(sessionPath: process)), "The error for a process ID too large for one",
             $"{process} holds a value that isn't in the form WinUI Profiler writes");
+
+        // A file whose launch view can't be read still gets a summary. It lists the statements that ran, not the one that
+        // failed.
+        var views = Write(Path.Combine(context.TempDirectory, "views.sqlite"), MainEvents);
+        Update(views, "DROP VIEW LaunchSummary");
+        var summary = Run(() => SessionTools.Sessions(sessionPath: views));
+        HasNote(summary, "The file's frame views couldn't be read: ");
+        Expect.True(summary.Items("uiThreads").Count == 0 && summary.IsNull("firstFrame"),
+            "A summary without the frame views gives no UI threads or launch frames.");
+        Contains(summary.Text("computed"), "What a summary without the frame views computed", "couldn't all be read");
+        var ran = QuerySelfTests.CheckQueries(summary, "The summary of a file whose launch view is gone");
+        Expect.Equal(3, ran.Count, "Statements of the session record, the ticks and the interesting rows");
+        Expect.True(ran.All(query => !query.Text("sql")!.Contains("LaunchSummary", StringComparison.Ordinal)),
+            "The statement that failed isn't listed.");
     }
 
     private static string Damage(string path, string column, object value)
@@ -385,7 +423,7 @@ internal static class SessionToolSelfTests
     private static void SetCompleteFrom(string path, long seq) =>
         Expect.Equal(1, Update(path, "UPDATE SessionInfo SET CompleteFromSeq = $value", seq), "Session records marked as trimmed");
 
-    internal static int Update(string path, string sql, object value)
+    internal static int Update(string path, string sql, object? value = null)
     {
         using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
         {
@@ -396,7 +434,11 @@ internal static class SessionToolSelfTests
         connection.Open();
         using var command = connection.CreateCommand();
         command.CommandText = sql;
-        command.Parameters.AddWithValue("$value", value);
+        if (value is not null)
+        {
+            command.Parameters.AddWithValue("$value", value);
+        }
+
         return command.ExecuteNonQuery();
     }
 }

@@ -403,6 +403,19 @@ SELECT Seq, Ms, Name, Bucket, Fields FROM TickEvents WHERE TickId = :tick ORDER 
 about 0.15 s, and `FrameList` about 0.65 s. Files written before the views were
 added are not read; record them again.
 
+SQLite 3.54.0 and 3.54.1 can't read `InterestingRows`, `InterestingRowEvents`
+or `FrameList`: they stop with "VIEWs and/or subqueries nested too deep", a
+nesting limit 3.54.0 added. Read them with another version, such as 3.53,
+which the app, the CLI and the Copilot plugin bundle.
+
+The app, the CLI and the Copilot plugin read session files with `SessionFile`
+(`Storage\SessionFile.cs`). `SessionQueries.Observe` shows a caller each
+statement those reads run for it, once its rows are read: the file, the SQL
+with its parameters' values written in, so that it runs as is in the `sqlite3`
+shell, and how many rows it read. The statements that check a file's version
+and views when it's opened, and statements that fail, aren't shown. The plugin
+uses it to show the SQL behind each answer (see Copilot plugin below).
+
 ### UI elements
 
 While saving events, the writer also indexes the UI elements they mention
@@ -686,7 +699,7 @@ how the launch went, UI-thread ticks and slow ticks, regions of interest, and
 the UI elements and composition visuals the events mention. Its MCP server,
 `WinUIProfiler.Mcp`, reads session files with `SessionFile` and the views
 above, where they are and without changing them, even while the app is still
-recording one. It never reads the events' field values. It can also read a
+recording one. It never returns the events' field values. It can also read a
 recorded trace (`.etl`) into a session file, as **Open trace** does.
 
 To install it from a clone, run from this directory:
@@ -730,6 +743,23 @@ Two skills tell Copilot how to use the tools. Copilot reads
 summarizes a session, after reading a trace into one, or lists a folder's
 sessions. When no session file is given, the tools use the newest one in
 `%LOCALAPPDATA%\WinUIProfiler\Sessions`.
+
+Each tool's result also says how it got its answer. Copilot doesn't write SQL:
+each view runs fixed statements, then sorts, groups, counts and pages their
+rows in code. `queries` lists the statements the call ran, in the order they
+first ran and each once, with the arguments' values written in, so each runs
+as is with `sqlite3 -readonly` on a SQLite version that reads the session
+file's views (see Shared queries above). Each has `rows`, the rows it read in
+all its runs, and `runs`, when it ran more than once. The statements ran on
+the session file the result describes, or, for `sessions` view `list`, once
+on each file it lists that could be read; one that ran on another file would
+also have `files`, the files it ran on. `computed` says what the call did
+with the rows. The statements that check a file when it's opened, the writes
+that read a trace into a session file, and statements that fail aren't
+listed; a call that fails returns only its error. The skills end every answer
+with a **How I got this** section that shows each call with its `queries`
+and `computed`, copied as returned, so the answer can be checked by running
+the statements.
 
 The plugin answers only what a processor stores. It doesn't answer questions
 about the events' field values, GPU memory, CPU samples, call stacks, thread

@@ -239,12 +239,16 @@ internal static class SessionCatalog
         }
     }
 
-    /// <summary>Finds the session file a tool reads, then reads it off the calling thread.</summary>
-    internal static Task<object> RunAsync(string? sessionPath, Func<string, object> body, CancellationToken cancellationToken) =>
+    /// <summary>
+    /// Finds the session file a tool reads, then reads it off the calling thread. The result lists the SQL the read ran
+    /// (see <see cref="QueryTrail.Finish"/>).
+    /// </summary>
+    internal static Task<object> RunAsync(string? sessionPath, Func<string, ToolAnswer> body, CancellationToken cancellationToken) =>
         Task.Run(() =>
         {
+            using var trail = QueryTrail.Start();
             var path = Resolve(sessionPath);
-            return Read(path, () => body(path));
+            return (object)trail.Finish(Read(path, () => body(path)));
         }, cancellationToken);
 
     internal static bool IsTrace(SessionFileInfo info) => info.Coverage == SessionCoverage.Trace;

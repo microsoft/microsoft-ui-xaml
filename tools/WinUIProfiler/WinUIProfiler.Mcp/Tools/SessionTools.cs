@@ -70,27 +70,30 @@ internal static class SessionTools
 
         return await Task.Run(() =>
         {
+            using var trail = QueryTrail.Start();
             if (chosen == "list")
             {
-                return List(directory, count, cancellationToken);
+                return trail.Finish(List(directory, count, cancellationToken));
             }
 
             var path = SessionCatalog.Resolve(sessionPath, directory);
-            return SessionCatalog.Read(path, () => Summary(path));
+            return trail.Finish(SessionCatalog.Read(path, () => Summary(path)));
         }, cancellationToken).ConfigureAwait(false);
     }
 
-    private static object List(string directory, int limit, CancellationToken cancellationToken)
+    private static ToolAnswer List(string directory, int limit, CancellationToken cancellationToken)
     {
         var files = SessionCatalog.Files(directory);
         var sessions = new List<object>();
         var traces = false;
+        var unread = 0;
         foreach (var file in files.Take(limit))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var (row, trace) = DescribeFile(file);
+            var (row, trace, read) = DescribeFile(file);
             sessions.Add(row);
             traces |= trace;
+            unread += read ? 0 : 1;
         }
 
         var notes = new List<string>();
@@ -110,7 +113,15 @@ internal static class SessionTools
             notes.Add(ListTraceTimes);
         }
 
-        return new
+        var computed = files.Count == 0
+            ? "Found no session files in the folder, so read none."
+            : $"Listed the {EventJson.Count(files.Count, "session file", "session files")} in the folder, newest first, and " +
+                "read the session record of " + (sessions.Count < files.Count
+                    ? string.Create(CultureInfo.InvariantCulture, $"the newest {sessions.Count}")
+                    : files.Count == 1 ? "it" : "each") +
+                (unread == 0 ? "." : $"; {EventJson.Count(unread, "file", "files")} couldn't be read, so " +
+                    $"{(unread == 1 ? "its row has" : "their rows have")} an error instead.");
+        return new(new
         {
             view = "list",
             folder = directory,
@@ -118,10 +129,10 @@ internal static class SessionTools
             returned = sessions.Count,
             sessions,
             notes,
-        };
+        }, computed, [.. files.Take(sessions.Count).Select(file => file.Path)]);
     }
 
-    private static object Summary(string path)
+    private static ToolAnswer Summary(string path)
     {
         var info = SessionFile.ReadInfo(path);
         var (ticks, rows, launch, error) = SessionCatalog.ReadViews(path);
@@ -140,7 +151,16 @@ internal static class SessionTools
         }
 
         var first = launch.Count == 0 ? null : launch[0];
-        return new
+        const string Record = "Took the counts of stored events, ticks, UI elements and visuals from the session record. ";
+        var computed = error is null
+            ? Record + $"Grouped the {EventJson.Count(ticks.Count, "tick", "ticks")} read by UI thread, counting those that drew " +
+                "and the slow ones, with the first start, the first drawn end and the last end; counted the " +
+                $"{EventJson.Count(regions, "region", "regions")} and, by type, the other " +
+                $"{EventJson.Count(rows.Count - regions, "interesting row", "interesting rows")}; took the first of the " +
+                $"{EventJson.Count(launch.Count, "launch frame", "launch frames")}; and from those, said which analyses have data."
+            : Record + "The frame views couldn't all be read (see the notes), so the summary gives no UI threads, regions or " +
+                "launch frames, and the analyses that need them say why.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "summary",
@@ -177,7 +197,7 @@ internal static class SessionTools
             },
             analyses = SessionCatalog.Analyses(info, contents),
             notes,
-        };
+        }, computed);
     }
 
     [McpServerTool(Name = "record_trace", ReadOnly = false, Destructive = false, Idempotent = false, OpenWorld = false), Description(
@@ -212,6 +232,8 @@ internal static class SessionTools
         Func<IReadOnlyList<TraceProcess>, string, CancellationToken, Task<int?>>? choose,
         IProgress<ProgressNotificationValue>? progress, CancellationToken cancellationToken)
     {
+        // Started in this flow, so the reads of the Task.Runs below report to it.
+        using var trail = QueryTrail.Start();
         var trace = TracePath(etlPath);
         if (processId is { } requested)
         {
@@ -227,7 +249,7 @@ internal static class SessionTools
         if (processId is { } wanted && !reread &&
             await Task.Run(() => FindFinishedSession(directory, trace, wanted), cancellationToken).ConfigureAwait(false) is { } found)
         {
-            return Reused(found, trace);
+            return trail.Finish(Reused(found, trace, wanted));
         }
 
         var contents = await Task.Run(() => ListProcesses(trace, cancellationToken), cancellationToken).ConfigureAwait(false);
@@ -258,14 +280,15 @@ internal static class SessionTools
                 : null;
             if (picked is not { } pick || processes.FirstOrDefault(process => process.ProcessId == pick) is not { } match)
             {
-                return new
+                return trail.Finish(new(new
                 {
                     needsProcessId = true,
                     etlPath = trace,
                     message = message + " Call record_trace again with its processId.",
                     total = processes.Count,
                     processes = processes.Take(MaxListed).Select(DescribeProcess).ToList(),
-                };
+                }, $"Listed the trace's processes with ETW: {EventJson.Count(processes.Count, "process has", "processes have")} " +
+                    "XAML events, and none was chosen, so no session file was read and no SQL ran."));
             }
 
             chosen = match;
@@ -274,7 +297,7 @@ internal static class SessionTools
         if (processId is null && !reread &&
             await Task.Run(() => FindFinishedSession(directory, trace, chosen.ProcessId), cancellationToken).ConfigureAwait(false) is { } existing)
         {
-            return Reused(existing, trace);
+            return trail.Finish(Reused(existing, trace, chosen.ProcessId));
         }
 
         // Taken again after the read, so a trace that changed while it was read isn't recorded as read.
@@ -380,7 +403,16 @@ internal static class SessionTools
                 $"Reading stopped after {events} of {name} (PID {chosen.ProcessId}); {sessionPath} holds " +
                 $"{(read == 1 ? "it" : "them")}."),
         };
-        return new
+
+        // Without reread, a session file to reuse was looked for first, by FindFinishedSession: before the processes were
+        // listed when processId was given, and after one was chosen when it wasn't.
+        var computed = string.Create(CultureInfo.InvariantCulture,
+            $"Listed the trace's processes that have XAML events and read process {chosen.ProcessId}'s events from the " +
+            $"trace with ETW, into a new session file (those writes aren't listed); then read the new file's session record.") +
+            (reread ? "" : string.Create(CultureInfo.InvariantCulture,
+                $" Before reading the events, looked among the folder's closed session files named for process " +
+                $"{chosen.ProcessId} for one read from this unchanged trace to reuse, and found none."));
+        return trail.Finish(new(new
         {
             session = SessionCatalog.Header(sessionPath, info),
             reused = false,
@@ -394,7 +426,7 @@ internal static class SessionTools
             message = outcome,
             otherProcesses = processes.Where(process => process.ProcessId != chosen.ProcessId).Take(MaxListed).Select(DescribeProcess).ToList(),
             notes,
-        };
+        }, computed));
     }
 
     /// <summary>
@@ -460,7 +492,7 @@ internal static class SessionTools
         _ => $"{trace} couldn't be read: {error.Message}",
     };
 
-    private static (object Row, bool IsTrace) DescribeFile(SessionFileEntry file)
+    private static (object Row, bool IsTrace, bool Read) DescribeFile(SessionFileEntry file)
     {
         try
         {
@@ -485,7 +517,7 @@ internal static class SessionTools
                 lostByEtw = info.LostByEtw > 0 ? info.LostByEtw : null,
                 droppedByProfiler = info.DroppedByProfiler > 0 ? info.DroppedByProfiler : null,
                 etlPath = info.EtlPath,
-            }, SessionCatalog.IsTrace(info));
+            }, SessionCatalog.IsTrace(info), true);
         }
         catch (Exception error) when (SessionCatalog.ReadError(file.Path, error) is { } message)
         {
@@ -496,7 +528,7 @@ internal static class SessionTools
                 lastWrittenUtc = EventJson.Utc(file.LastWrittenUtc),
                 sizeMB = Megabytes(file.Bytes),
                 error = message,
-            }, false);
+            }, false, false);
         }
     }
 
@@ -513,10 +545,10 @@ internal static class SessionTools
         label = Label(process),
     };
 
-    private static object Reused(string sessionPath, string trace)
+    private static ToolAnswer Reused(string sessionPath, string trace, int processId)
     {
         var info = SessionCatalog.Read(sessionPath, () => SessionFile.ReadInfo(sessionPath));
-        return new
+        return new(new
         {
             session = SessionCatalog.Header(sessionPath, info),
             reused = true,
@@ -525,7 +557,10 @@ internal static class SessionTools
             message = $"{sessionPath} already holds this process's events from {trace}, read to the trace's end, and the " +
                 "trace hasn't changed since, so it was reused. Pass reread=true to read the trace again into a new session file.",
             notes = SessionCatalog.Notes(info),
-        };
+        }, string.Create(CultureInfo.InvariantCulture,
+            $"Read the session records of the folder's closed session files named for process {processId} and written since " +
+            $"the trace was, newest first, until one had been read from this trace to its end and the trace hadn't changed " +
+            $"since. Reused that file instead of reading the trace again, and read its session record."));
     }
 
     private static string TracePath(string etlPath)

@@ -16,7 +16,7 @@ internal static class FrameToolSelfTests
     /// A navigation in frame 1 opens a region of interest that ends with that tick, and a layout pass inside it is an
     /// interesting row; frame 3 is still open when the recording ends.
     /// </summary>
-    private static IReadOnlyList<FixtureEvent> RegionEvents { get; } =
+    internal static IReadOnlyList<FixtureEvent> RegionEvents { get; } =
     [
         FrameStart(1.0, 1),
         Tl(2.0, UiThread, XamlProvider.Xaml, "FrameNavigating"),

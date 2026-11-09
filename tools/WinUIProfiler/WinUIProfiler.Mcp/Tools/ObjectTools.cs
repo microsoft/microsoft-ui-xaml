@@ -112,7 +112,7 @@ internal static class ObjectTools
         }, cancellationToken);
     }
 
-    private static object Types(string path, ObjectKind? kind, int offset, int count)
+    private static ToolAnswer Types(string path, ObjectKind? kind, int offset, int count)
     {
         var info = SessionFile.ReadInfo(path);
         var objects = SessionFile.ReadObjects(path, kind);
@@ -129,7 +129,11 @@ internal static class ObjectTools
             objects = group.Objects,
             events = group.Events,
         }).ToList();
-        return new
+        var computed = $"Grouped the {EventJson.Count(objects.Count, "object", "objects")} by kind and type " +
+            $"({EventJson.Count(groups.Count, "type", "types")}), counting each type's objects and their events; sorted the " +
+            $"types by objects, then events, most first; {EventJson.Page(offset, page.Count)}; and for each kind, counted " +
+            "its objects, its types, and its objects without a type and with a name.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "types",
@@ -148,10 +152,10 @@ internal static class ObjectTools
             nextOffset = ToolArguments.NextOffset(offset, page.Count, groups.Count),
             types = page,
             notes = Notes(info, objects, kind),
-        };
+        }, computed);
     }
 
-    private static object List(string path, ObjectKind? kind, string? type, string? name, bool byEvents, int offset, int count)
+    private static ToolAnswer List(string path, ObjectKind? kind, string? type, string? name, bool byEvents, int offset, int count)
     {
         var info = SessionFile.ReadInfo(path);
         var objects = SessionFile.ReadObjects(path, kind);
@@ -172,7 +176,24 @@ internal static class ObjectTools
                 : $"No object has the type {type}. These types contain it: {string.Join(", ", similar)}.");
         }
 
-        return new
+        var filters = new List<string>();
+        if (type is not null)
+        {
+            filters.Add($"of the type {type} (its full or short name, ignoring case)");
+        }
+
+        if (name is not null)
+        {
+            filters.Add($"whose name contains \"{name}\", ignoring case");
+        }
+
+        var read = EventJson.Count(objects.Count, "object", "objects");
+        var computed = (filters.Count == 0
+                ? $"Took the {read}"
+                : $"Of the {read}, kept the {EventJson.Count(ordered.Count, "object", "objects")} {string.Join(" and ", filters)}") +
+            (byEvents ? ", sorted by events, most first, ties by first mention" : ", in the order they were first mentioned") +
+            $"; {EventJson.Page(offset, page.Count)}.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "list",
@@ -186,10 +207,10 @@ internal static class ObjectTools
             nextOffset = ToolArguments.NextOffset(offset, page.Count, ordered.Count),
             objects = page,
             notes,
-        };
+        }, computed);
     }
 
-    private static object History(string path, long? objectId, long? address, int offset, int count,
+    private static ToolAnswer History(string path, long? objectId, long? address, int offset, int count,
         CancellationToken cancellationToken)
     {
         var info = SessionFile.ReadInfo(path);
@@ -207,7 +228,7 @@ internal static class ObjectTools
         if (matches.Count > 1)
         {
             var objects = matches.Skip(offset).Take(count).Select(Row).ToList();
-            return new
+            return new(new
             {
                 session = SessionCatalog.Header(path, info),
                 view = "history",
@@ -221,7 +242,8 @@ internal static class ObjectTools
                 nextOffset = ToolArguments.NextOffset(offset, objects.Count, matches.Count),
                 objects,
                 notes = SessionCatalog.Notes(info),
-            };
+            }, $"Found {EventJson.Count(matches.Count, "object", "objects")} that had {what}, in the order they were first " +
+                $"mentioned, so read no history; {EventJson.Page(offset, objects.Count)}.");
         }
 
         var item = matches[0];
@@ -250,7 +272,10 @@ internal static class ObjectTools
 
             index++;
         }, cancellationToken);
-        return new
+        var computed = $"Found the object by {what}, and read its {EventJson.Count(total, "event", "events")}; counted them " +
+            $"by provider and name ({EventJson.Count(kinds.Count, "name", "names")}), most first, with when each was first " +
+            $"seen. Of the events, {EventJson.Page(offset, page.Count)}, in order, each with the fields that mention the object.";
+        return new(new
         {
             session = SessionCatalog.Header(path, info),
             view = "history",
@@ -270,7 +295,7 @@ internal static class ObjectTools
             nextOffset = ToolArguments.NextOffset(offset, page.Count, total),
             page,
             notes = SessionCatalog.Notes(info),
-        };
+        }, computed);
     }
 
     /// <summary>Whether an object's type is the given one, by its full name or its short name (after the last dot).</summary>
