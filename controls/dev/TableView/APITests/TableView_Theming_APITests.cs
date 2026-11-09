@@ -230,55 +230,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                // The system colours as the framework resolves them right now. Collected from the app,
-                // not from the dictionary under test, so this is a genuine cross-source comparison.
-                var systemColors = CollectSystemColors();
-                Verify.IsGreaterThan(systemColors.Count, 0,
-                    "SystemColor* resources must resolve from the application resources. Without them this test " +
-                    "cannot tell a system colour from a literal, so it fails rather than silently passing.");
+                // Outside HC, the framework's system brushes intentionally contain placeholder
+                // colors. Compare shared objects, not raw system colors from a different theme.
+                var systemBrushes = SystemColorNames.Select(name => name + "Brush")
+                    .Where(key => Application.Current.Resources.ContainsKey(key))
+                    .Select(key => Application.Current.Resources[key] as SolidColorBrush)
+                    .Where(brush => brush != null).ToList();
+                Verify.IsGreaterThan(systemBrushes.Count, 0,
+                    "Shared SystemColor* brushes must resolve from the application resources.");
 
-                var literalBrushes = new List<string>();
+                var unsharedBrushes = new List<string>();
                 int checkedBrushes = 0;
 
                 foreach (var key in CollectKeys(highContrast))
                 {
-                    // Only the canonical palette entries, which declare an explicit
-                    // Color="{ThemeResource SystemColor*}". SortIndicatorForeground is a StaticResource
-                    // alias to SystemColorWindowTextColorBrush; a StaticResource inside a theme
-                    // dictionary is resolved when that dictionary loads, so reading one off a detached
-                    // TabularControlsResources yields whichever sibling theme XAML happened to bind - an
-                    // artifact of the read, not the value a high-contrast user would see.
-                    if (!key.StartsWith("TabularSurface", StringComparison.Ordinal))
+                    // Only the canonical palette entries; metric and component-specific
+                    // resources are covered separately.
+                    if (!key.StartsWith("TabularSurface", StringComparison.Ordinal) ||
+                        !key.EndsWith("Brush", StringComparison.Ordinal))
                     {
                         continue;
                     }
 
-                    if (!(highContrast[key] is SolidColorBrush brush))
+                    var brush = highContrast[key] as SolidColorBrush;
+                    Verify.IsNotNull(brush, $"{key} must resolve to a SolidColorBrush.");
+                    if (brush == null)
                     {
                         continue;
                     }
 
                     checkedBrushes++;
 
-                    // Transparent is not a colour choice - it is the absence of one, and it is scheme
-                    // neutral, so it is never a high-contrast defect.
-                    if (brush.Color.A == 0)
+                    if (!systemBrushes.Any(shared => ReferenceEquals(shared, brush)))
                     {
-                        continue;
-                    }
-
-                    if (!systemColors.Contains(brush.Color))
-                    {
-                        literalBrushes.Add($"{key} (#{brush.Color.A:X2}{brush.Color.R:X2}{brush.Color.G:X2}{brush.Color.B:X2})");
+                        unsharedBrushes.Add(key);
                     }
                 }
 
                 Verify.IsGreaterThan(checkedBrushes, 0,
                     "The HighContrast dictionary must contain SolidColorBrush entries; finding none means it did not load.");
 
-                Verify.AreEqual(0, literalBrushes.Count,
-                    "Every high-contrast brush must trace to a SystemColor* value. Hardcoded: " +
-                    string.Join(", ", literalBrushes));
+                Verify.AreEqual(0, unsharedBrushes.Count,
+                    "Every high-contrast brush must reuse a shared SystemColor* brush. Unshared: " +
+                    string.Join(", ", unsharedBrushes));
             });
         }
 
@@ -314,9 +308,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "The default Dark outer border must use DividerStrokeColorDefault (#15FFFFFF).");
                 Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), lightBorder.Color,
                     "The default Light outer border must use DividerStrokeColorDefault (#0F000000).");
-                Verify.AreEqual(RequireApplicationColor("SystemColorWindowTextColor"), highContrastBorder.Color,
-                    "High Contrast must retain a visible system-color outer border.");
-                Verify.AreEqual(RequireApplicationColor("SystemColorGrayTextColor"), highContrast.Color,
+                Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorGrayTextColorBrush"), highContrastBorder),
+                    "High Contrast outer borders must match the body's system disabled color.");
+                Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorGrayTextColorBrush"), highContrast),
                     "High Contrast body gridlines must use the system disabled color.");
                 Verify.AreEqual(highContrast.Color, highContrastHeader.Color,
                     "High Contrast header lines must match the body's system disabled color.");
@@ -348,8 +342,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     if (theme == "HighContrast")
                     {
-                        Verify.AreEqual(RequireApplicationColor("SystemColorWindowTextColor"), brush.Color,
-                            "The borderless option must preserve the High Contrast window-text frame.");
+                        Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorGrayTextColorBrush"), brush),
+                            "The borderless option must preserve the High Contrast gray-text frame.");
                     }
                     else
                     {
@@ -366,6 +360,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(Control.BorderBrushProperty, (style.Setters[0] as Setter)?.Property);
                 }
             });
+        }
+
+        [TestMethod]
+        public void VerifyDisabledSelectionIndicatorReusesSharedBrushAcrossThemes()
+        {
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                host = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                    "<Border BorderBrush='{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}' />" +
+                    "<Border BorderBrush='{ThemeResource AccentFillColorDisabledBrush}' />" +
+                    "</Grid>");
+                LoadContent(host);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                RunOnUIThread.Execute(() => host.RequestedTheme = theme);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var indicator = ((Border)host.Children[0]).BorderBrush as SolidColorBrush;
+                    var shared = ((Border)host.Children[1]).BorderBrush as SolidColorBrush;
+                    Verify.IsNotNull(indicator);
+                    Verify.IsNotNull(shared);
+                    Verify.IsTrue(ReferenceEquals(shared, indicator),
+                        $"{theme}: disabled selection must reuse the shared accent-disabled brush.");
+                    Verify.AreEqual(RequireThemeColor(theme == ElementTheme.Dark ? "Default" : "Light",
+                        "AccentFillColorDisabled"), indicator.Color,
+                        $"{theme}: the shared brush must follow the requested theme.");
+                });
+            }
         }
 
         [TestMethod]
@@ -1634,6 +1663,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SolidColorBrush restingForeground = null;
                 Brush buttonBackground = null;
                 Brush appForeground = null;
+                Thickness restingBackgroundMargin = default;
                 double rowHeight = 0;
                 double cellWidth = 0;
                 double cellHeight = 0;
@@ -1662,7 +1692,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     var presenter = (ContentPresenter)row.FindVisualChildByName("PART_CellForegroundPresenter");
-                    restingBackground = (SolidColorBrush)((Border)row.FindVisualChildByName("PART_RootBorder")).Background;
+                    var background = (Border)row.FindVisualChildByName("PART_RootBorder");
+                    restingBackground = (SolidColorBrush)background.Background;
+                    restingBackgroundMargin = background.Margin;
                     restingForeground = (SolidColorBrush)presenter.Foreground;
                     adjustment = presenter.HighContrastAdjustment;
                     buttonBackground = appButton.Background;
@@ -1700,7 +1732,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         }
                         Verify.AreEqual(restingBackground.Color, ((SolidColorBrush)background.Background).Color,
                             "HC interaction must preserve the resting row background, without a Highlight fill.");
-                        Verify.AreEqual(new Thickness(0), background.Margin);
+                        Verify.AreEqual(restingBackgroundMargin, background.Margin,
+                            "HC interaction must preserve the resting row background inset.");
                         Verify.AreEqual(new Thickness(0), background.BorderThickness);
                         Verify.AreEqual(restingForeground.Color, ((SolidColorBrush)presenter.Foreground).Color,
                             "Outline-only states must not invert the inherited text.");
@@ -1806,13 +1839,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
                 var resources = new TabularControlsResources();
-                Verify.AreEqual(RequireApplicationColor("SystemColorButtonTextColor"),
-                    RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush").Color,
+                Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorButtonTextColorBrush"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush")),
                     "The HC section-header foreground must map to ButtonText.");
                 foreach (var key in new[] { "TabularSurfaceGroupHeaderBackgroundBrush", "TabularSurfaceGroupHeaderInteractionBorderBrush" })
                 {
-                    Verify.AreEqual(RequireApplicationColor("SystemColorButtonFaceColor"),
-                        RequireBrush(resources, "HighContrast", key).Color,
+                    Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorButtonFaceColorBrush"),
+                        RequireBrush(resources, "HighContrast", key)),
                         "The HC resting section background and interaction border must pair ButtonFace with ButtonText.");
                 }
             });
@@ -1877,29 +1910,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 EnsureTabularControlsResources();
                 var appResources = Application.Current.Resources;
-                var colors = new Dictionary<string, Color>
+                var brushes = new Dictionary<string, SolidColorBrush>
                 {
-                    ["SystemColorWindowColor"] = Color.FromArgb(255, 12, 24, 36),
-                    ["SystemColorButtonFaceColor"] = Color.FromArgb(255, 48, 60, 72),
-                    ["SystemColorButtonTextColor"] = Color.FromArgb(255, 224, 236, 248),
+                    ["SystemColorWindowColorBrush"] = new SolidColorBrush(Color.FromArgb(255, 12, 24, 36)),
+                    ["SystemColorButtonFaceColorBrush"] = new SolidColorBrush(Color.FromArgb(255, 48, 60, 72)),
+                    ["SystemColorButtonTextColorBrush"] = new SolidColorBrush(Color.FromArgb(255, 224, 236, 248)),
+                    ["SystemColorGrayTextColorBrush"] = new SolidColorBrush(Color.FromArgb(255, 120, 132, 144)),
                 };
-                var previous = colors.Keys.ToDictionary(key => key,
+                var previous = brushes.Keys.ToDictionary(key => key,
                     key => appResources.Keys.Contains(key) ? appResources[key] : null);
                 try
                 {
-                    foreach (var entry in colors)
+                    foreach (var entry in brushes)
                     {
                         appResources[entry.Key] = entry.Value;
                     }
                     var resources = new TabularControlsResources();
                     foreach (var key in new[] { "TabularSurfaceGroupHeaderBackgroundBrush", "TabularSurfaceGroupHeaderInteractionBorderBrush" })
                     {
-                        Verify.AreEqual(colors["SystemColorButtonFaceColor"],
-                            RequireBrush(resources, "HighContrast", key).Color,
-                            "ButtonFace must be used even when it differs from Window in a custom palette.");
+                        Verify.IsTrue(ReferenceEquals(brushes["SystemColorButtonFaceColorBrush"],
+                            RequireBrush(resources, "HighContrast", key)),
+                            "The shared ButtonFace brush must be used even when it differs from Window in a custom palette.");
                     }
-                    Verify.AreEqual(colors["SystemColorButtonTextColor"],
-                        RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush").Color);
+                    Verify.IsTrue(ReferenceEquals(brushes["SystemColorButtonTextColorBrush"],
+                        RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderForegroundBrush")));
+                    foreach (var key in new[] { "TabularSurfaceGridLineBrush", "TabularSurfaceHeaderSeparatorBrush",
+                        "TabularSurfaceGroupHeaderBorderBrush", "TabularSurfaceOuterBorderBrush",
+                        "TabularSurfaceBorderlessOuterBorderBrush" })
+                    {
+                        Verify.IsTrue(ReferenceEquals(brushes["SystemColorGrayTextColorBrush"],
+                            RequireBrush(resources, "HighContrast", key)),
+                            $"{key} must reuse the shared GrayText brush.");
+                    }
                 }
                 finally
                 {
@@ -2238,8 +2280,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 LoadContent(tableView);
 
                 var resources = new TabularControlsResources();
-                Verify.AreEqual(RequireApplicationColor("SystemColorButtonFaceColor"),
-                    RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderBackgroundBrush").Color,
+                Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorButtonFaceColorBrush"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderBackgroundBrush")),
                     "High Contrast section headers must pair ButtonFace with ButtonText.");
             });
 
@@ -4433,9 +4475,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     if (state == "SelectedDisabled")
                     {
                         Verify.AreEqual(
-                            RequireBrush(new TabularControlsResources(),
-                                row.ActualTheme == ElementTheme.Dark ? "Default" : "Light",
-                                "TabularSurfaceSelectionIndicatorDisabledBrush").Color,
+                            RequireThemeColor(row.ActualTheme == ElementTheme.Dark ? "Default" : "Light",
+                                "AccentFillColorDisabled"),
                             (outline.BorderBrush as SolidColorBrush)?.Color ?? default,
                             "Disabled selection must use the disabled outline brush.");
                     }
@@ -4459,12 +4500,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(RequireThemeColor(themeName, "SubtleFillColorSecondary"),
                         RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundSelectedDisabledBrush").Color,
                         $"{themeName}: disabled selection must retain the subtle selected fill.");
-                    Verify.AreEqual(RequireThemeColor(themeName, "AccentFillColorDisabled"),
-                        RequireBrush(resources, themeName, "TabularSurfaceSelectionIndicatorDisabledBrush").Color,
-                        $"{themeName}: disabled selection must use the theme-specific disabled accent fill as its stroke.");
                 }
-                Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"),
-                    RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundSelectedDisabledBrush").Color,
+                Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorWindowColorBrush"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundSelectedDisabledBrush")),
                     "HighContrast must preserve the window background behind gray disabled text.");
                 LoadContent(tableView);
             });
@@ -4502,14 +4540,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.IsNotNull(backplate);
                         Verify.IsNotNull(outline);
                         var selected = state.StartsWith("Selected", StringComparison.Ordinal);
-                        var contained = selected || state == "PointerOver" || state == "Pressed";
-                        var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
-                        var expectedBounds = contained ? outline : chrome;
-                        Verify.AreEqual(expectedBounds.ActualWidth, backplate.ActualWidth,
+                        Verify.AreEqual(outline.ActualWidth, backplate.ActualWidth,
                             $"{theme}/{testCase.Density}/{state}: backplate width must match its visual bounds.");
-                        Verify.AreEqual(expectedBounds.ActualHeight, backplate.ActualHeight,
+                        Verify.AreEqual(outline.ActualHeight, backplate.ActualHeight,
                             $"{theme}/{testCase.Density}/{state}: backplate height must match its visual bounds.");
-                        Verify.AreEqual(expectedBounds.TransformToVisual(row).TransformPoint(new Point()),
+                        Verify.AreEqual(outline.TransformToVisual(row).TransformPoint(new Point()),
                             backplate.TransformToVisual(row).TransformPoint(new Point()),
                             $"{theme}/{testCase.Density}/{state}: backplate must not extend outside its visual bounds.");
                         Verify.AreEqual(selected ? outline.BorderThickness : new Thickness(0), backplate.BorderThickness,
@@ -4530,11 +4565,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             RequireBrush(resources, themeName, backgroundKey).Color,
                             background.Color,
                             $"{theme}/{state} must use its backplate brush.");
-                        var outlineKey = state == "SelectedDisabled"
-                            ? "TabularSurfaceSelectionIndicatorDisabledBrush"
-                            : "TabularSurfaceSelectionIndicatorBrush";
                         Verify.AreEqual(
-                            RequireBrush(resources, themeName, outlineKey).Color,
+                            state == "SelectedDisabled" ? RequireThemeColor(themeName, "AccentFillColorDisabled") :
+                                RequireBrush(resources, themeName, "TabularSurfaceSelectionIndicatorBrush").Color,
                             border.Color,
                             $"{theme}/{state}: hover and press must preserve the selection outline; disabled has its own brush.");
                         if (state == "Disabled" || state == "SelectedDisabled")
@@ -7059,8 +7092,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundAlternatingBrush").Color,
                         $"{themeName}: banding must match Figma's Subtle/Tertiary token.");
                 }
-                Verify.AreEqual(RequireApplicationColor("SystemColorWindowColor"),
-                    RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundAlternatingBrush").Color,
+                Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorWindowColorBrush"),
+                    RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundAlternatingBrush")),
                     "High Contrast banding must preserve the window-text/window-background pairing.");
             });
         }
@@ -7381,7 +7414,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // SystemColor* resources are framework-provided and do not appear when enumerating
         // Application.Current.Resources.Keys, so they have to be asked for by name. This is the full
         // set the high-contrast palette draws on.
-        private static readonly string[] SystemColorNames = new[]
+        internal static readonly string[] SystemColorNames = new[]
         {
             "SystemColorWindowColor",
             "SystemColorWindowTextColor",
@@ -7426,6 +7459,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return colors;
+        }
+
+        internal static SolidColorBrush RequireApplicationBrush(string key)
+        {
+            if (!Application.Current.Resources.ContainsKey(key) ||
+                !(Application.Current.Resources[key] is SolidColorBrush brush))
+            {
+                Verify.Fail($"'{key}' must resolve to a SolidColorBrush from the application resources.");
+                return null;
+            }
+
+            return brush;
         }
 
         internal static Color RequireApplicationColor(string key)

@@ -309,7 +309,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
 | `BandedTableViewStyle` | Named style from `TabularControlsResources`: sets only `AlternatingRowBackground` to `TabularSurfaceRowBackgroundAlternatingBrush` (Subtle/Tertiary in Light/Dark, window background in High Contrast). Gridlines and header styling remain independent. |
-| Outer border / `BorderlessTableViewStyle` | The default 1px frame uses `TabularSurfaceOuterBorderBrush` (DividerStrokeColorDefault in Light/Dark, WindowText in High Contrast). The named borderless style sets only `BorderBrush` to `TabularSurfaceBorderlessOuterBorderBrush`, transparent in Light/Dark but still WindowText in High Contrast. Both retain the 1px layout inset; the opt-out composes with banding through a derived style. |
+| Outer border / `BorderlessTableViewStyle` | The default 1px frame uses `TabularSurfaceOuterBorderBrush` (DividerStrokeColorDefault in Light/Dark, GrayText in High Contrast). The named borderless style sets only `BorderBrush` to `TabularSurfaceBorderlessOuterBorderBrush`, transparent in Light/Dark but still GrayText in High Contrast. Both retain the 1px layout inset; the opt-out composes with banding through a derived style. |
 | `GridLinesVisibility` | Body gridlines, independent of header lines. |
 | Column-header gridlines | Dividers and bottom rule are always present, independent of body lines. Both use `TabularSurfaceHeaderSeparatorBrush`; the trailing column divider is suppressed at the viewport edge even with a hidden outer frame. |
 | `ShowGroupHeaderCount` | Defaults to true. False collapses the built-in section count and removes it from the default automation name, with no leftover content gap. Runtime updates and recycled headers follow the table setting. Custom templates and explicit automation names/labels remain app-owned. |
@@ -320,7 +320,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | `StrongTableViewGroupHeaderStyle` | Named style from `TabularControlsResources`: semibold section title/count text only. Apply through an implicit `TableViewGroupHeader` style scoped to the table. Omit it for regular text; foreground and count opacity are unchanged. Independent of column-header styling. |
 | Theme keys | Cell/header font resources default to 14; `TableViewHeaderFontWeight` defaults to Normal. Cell/header text-padding resources are literal `12,9,12,11` / `12,5,12,7` / `12,1,12,3`; section text uses the same vertical padding with zero horizontal edges. Only arranged-divider compensation is calculated, preserving total padding. Brushes use `TabularSurface*` keys. |
 
-Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
+Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. Disabled selection indicators reuse `AccentFillColorDisabledBrush` in Light/Dark; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
 Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the
 ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
@@ -354,10 +354,11 @@ without an extra top rule.
 
 | Key | Used for | Fluent | High Contrast |
 |---|---|---|---|
-| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorGrayTextColor` |
-| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorGrayTextColor` |
-| `TabularSurfaceGroupHeaderBorderBrush` | Section dividers | `DividerStrokeColorDefault` | `SystemColorGrayTextColor` |
-| `TabularSurfaceOuterBorderBrush` | Control border | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
+| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceGroupHeaderBorderBrush` | Section dividers | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceOuterBorderBrush` | Control border | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceBorderlessOuterBorderBrush` | Borderless-style control border | Transparent | `SystemColorGrayTextColorBrush` |
 
 A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container.
 
