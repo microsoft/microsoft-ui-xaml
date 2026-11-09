@@ -733,7 +733,7 @@ void TableViewCellAutomationPeer::ResetAutomationContentViewCache() noexcept
 {
     m_hasInteractiveAutomationContent.reset();
     m_automationContent = nullptr;
-    m_automationContentItem.Track(nullptr);
+    m_automationContentItem.Reset();
     m_automationContentPropertyChangedRevokers.clear();
 }
 

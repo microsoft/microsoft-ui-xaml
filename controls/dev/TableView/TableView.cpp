@@ -2721,6 +2721,27 @@ winrt::Style TableView::GetGroupHeaderStyle(winrt::TableViewGroupHeader const& h
         IsHighContrast(), false).try_as<winrt::Style>();
 }
 
+bool TableView::IsDefaultGroupHeaderContentTemplate(winrt::TableViewGroupHeader const& header)
+{
+    auto const property = winrt::ContentControl::ContentTemplateProperty();
+    if (header.ReadLocalValue(property) != winrt::DependencyProperty::UnsetValue())
+    {
+        return false;
+    }
+
+    auto const owner = winrt::get_self<TableViewGroupHeader>(header)->GetOwningTableView();
+    auto const ownerImpl = owner ? winrt::get_self<TableView>(owner) : nullptr;
+    auto style = ownerImpl ? ownerImpl->GetGroupHeaderStyle(header) : header.Style();
+    if (!style)
+    {
+        // Exclude the framework Style: a same-named root in an app template is not ours.
+        style = LookupElementResource(header, box_value(winrt::TypeName{
+            winrt::hstring_name_of<winrt::TableViewGroupHeader>(), winrt::TypeKind::Metadata }),
+            ownerImpl && ownerImpl->IsHighContrast(), false).try_as<winrt::Style>();
+    }
+    return !StyleSetsProperty(style, property);
+}
+
 winrt::Thickness TableView::GetDensityGroupHeaderPadding()
 {
     auto& metrics = GetTableViewResourceCache(this).density;
@@ -3097,9 +3118,27 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
 
 using TableViewDetails::GetColumnHeaderText;
 
+static void ValidateStyleBasedOnChain(winrt::Style const& style)
+{
+    auto slow = style;
+    auto fast = style;
+    while (fast && fast.BasedOn())
+    {
+        slow = slow.BasedOn();
+        fast = fast.BasedOn().BasedOn();
+        if (slow == fast)
+        {
+            // Let native validation originate the usual invalid-style error.
+            style.Seal();
+            return;
+        }
+    }
+}
+
 // Includes BasedOn styles.
 bool TableView::StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property)
 {
+    ValidateStyleBasedOnChain(style);
     for (auto current = style; current; current = current.BasedOn())
     {
         for (auto const& setterBase : current.Setters())
@@ -3116,6 +3155,7 @@ bool TableView::StyleSetsProperty(const winrt::Style& style, const winrt::Depend
 // The setter a sealed Style applies: the last one in the most-derived Style that has one, even null.
 static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const winrt::DependencyProperty& property)
 {
+    ValidateStyleBasedOnChain(style);
     for (auto current = style; current; current = current.BasedOn())
     {
         bool found = false;

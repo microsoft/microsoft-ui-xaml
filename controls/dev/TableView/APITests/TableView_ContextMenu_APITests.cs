@@ -879,11 +879,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
             MenuFlyout oldFlyout = null;
+            IExpandCollapseProvider retainedProvider = null;
             RunOnUIThread.Execute(() =>
             {
                 oldFlyout = (MenuFlyout)f.NameColumn.HeaderFlyout;
                 oldFlyout.Closing += (s, e) => e.Cancel = true;
-                oldFlyout.ShowAt(FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single());
+                var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                retainedProvider = (IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(button)
+                    .GetPattern(PatternInterface.ExpandCollapse);
+                oldFlyout.ShowAt(button);
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
@@ -895,6 +899,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsFalse(oldFlyout.IsOpen, "Replacement must close the old flyout despite a Closing veto.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, retainedProvider.ExpandCollapseState,
+                    "The reused native dropdown must not retain its detached menu's expanded state.");
                 var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
                 Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
                 button.Flyout.ShowAt(button);
@@ -971,6 +977,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void HeaderDropdownCancelsPendingOpenWhenReplacedOrReleased()
+        {
+            foreach (var release in new[] { false, true })
+            {
+                var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
+                MenuFlyout oldFlyout = null;
+                bool opened = false;
+                bool opening = false;
+                RunOnUIThread.Execute(() =>
+                {
+                    oldFlyout = (MenuFlyout)f.NameColumn.HeaderFlyout;
+                    oldFlyout.Opened += (s, e) => opened = true;
+                    oldFlyout.Closing += (s, e) => e.Cancel = true;
+                    oldFlyout.Opening += (s, e) =>
+                    {
+                        opening = true;
+                        Verify.IsFalse(oldFlyout.IsOpen, "The callback must run before the flyout reports open.");
+                        if (release)
+                        {
+                            f.Table.Columns.Remove(f.NameColumn);
+                        }
+                        else
+                        {
+                            f.NameColumn.HeaderFlyout = f.Recorder.Create("ReplacementOptions");
+                        }
+                    };
+                    var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                    oldFlyout.ShowAt(button);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(opening);
+                    Verify.IsFalse(opened, "A detached pending menu must never finish opening.");
+                    Verify.IsFalse(oldFlyout.IsOpen);
+                    if (!release)
+                    {
+                        var button = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                        Verify.AreEqual(f.NameColumn.HeaderFlyout, button.Flyout);
+                        button.Flyout.ShowAt(button);
+                    }
+                });
+                IdleSynchronizer.Wait();
+                if (!release)
+                {
+                    RunOnUIThread.Execute(() => Verify.IsTrue(f.NameColumn.HeaderFlyout.IsOpen,
+                        "Cancelling the stale open must not prevent the replacement from opening."));
+                }
+                CloseMenus(f);
+            }
+        }
+
+        [TestMethod]
         public void HeaderDropdownDoesNotCloseSharedFlyoutOwnedByAnotherHeader()
         {
             var f = LoadFixture(configure: x =>
@@ -984,7 +1043,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 button.Flyout.ShowAt(button);
             });
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => f.NameColumn.HeaderFlyout = null);
+            RunOnUIThread.Execute(() =>
+            {
+                var inactive = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, NameCol)).Single();
+                var active = FindVisualChildrenByType<DropDownButton>(HeaderOf(f, OfficeCol)).Single();
+                foreach (var button in new[] { inactive, active })
+                {
+                    var provider = (IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(button)
+                        .GetPattern(PatternInterface.ExpandCollapse);
+                    Verify.AreEqual(button == active ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                        provider.ExpandCollapseState, "Only the shared menu's actual target is expanded.");
+                }
+                f.NameColumn.HeaderFlyout = null;
+            });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() => Verify.IsTrue(f.OfficeColumn.HeaderFlyout.IsOpen,
                 "Detaching the same flyout from an inactive header must not dismiss its active owner."));

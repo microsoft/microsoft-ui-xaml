@@ -34,6 +34,20 @@ void DropDownButton::RegisterFlyoutEvents()
         m_flyoutOpenedRevoker = Flyout().Opened(winrt::auto_revoke, { this, &DropDownButton::OnFlyoutOpened });
         m_flyoutClosedRevoker = Flyout().Closed(winrt::auto_revoke, { this, &DropDownButton::OnFlyoutClosed });
     }
+    UpdateFlyoutState();
+}
+
+void DropDownButton::UpdateFlyoutState()
+{
+    auto const flyout = Flyout();
+    const bool isOpen = flyout && flyout.IsOpen() && flyout.Target() == *this;
+    if (m_isFlyoutOpen != isOpen)
+    {
+        m_isFlyoutOpen = isOpen;
+        SharedHelpers::RaiseAutomationPropertyChangedEvent(*this,
+            isOpen ? winrt::ExpandCollapseState::Collapsed : winrt::ExpandCollapseState::Expanded,
+            isOpen ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed);
+    }
 }
 
 bool DropDownButton::IsFlyoutOpen()
@@ -64,14 +78,12 @@ void DropDownButton::OnFlyoutPropertyChanged(const winrt::DependencyObject& send
 
 void DropDownButton::OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
-    m_isFlyoutOpen = true;
-    SharedHelpers::RaiseAutomationPropertyChangedEvent(*this, winrt::ExpandCollapseState::Collapsed, winrt::ExpandCollapseState::Expanded);
+    UpdateFlyoutState();
 }
 
 void DropDownButton::OnFlyoutClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
-    m_isFlyoutOpen = false;
-    SharedHelpers::RaiseAutomationPropertyChangedEvent(*this, winrt::ExpandCollapseState::Expanded, winrt::ExpandCollapseState::Collapsed);
+    UpdateFlyoutState();
 }
 
 winrt::AutomationPeer DropDownButton::OnCreateAutomationPeer()

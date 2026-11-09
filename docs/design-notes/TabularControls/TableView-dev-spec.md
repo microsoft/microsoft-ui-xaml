@@ -243,7 +243,8 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 
 **Failed begin cleanup.** `ResetPendingBeginEdit` is state-only and `noexcept`. The unwind guard
 logs header-flyout refresh failures separately from queued reshape-drain failures, so a failed
-refresh cannot escape cleanup or prevent the drain. Normal reset paths refresh headers explicitly.
+refresh cannot escape cleanup or prevent the drain. Cancelled and stale begins use the same guarded
+header refresh and reshape drain as completed edits.
 
 **Completed edit cleanup.** Once teardown closes the editor, a throwing header-flyout restoration
 still drains queued reshapes and resumes held live shaping before rethrowing the original error.
@@ -339,7 +340,9 @@ Do not substitute Window for ButtonFace: custom High Contrast schemes can give t
 
 The built-in text factory records font ownership on the element. An app FontSize change or
 binding relinquishes it; custom factory elements are unstamped. This also protects the saved
-editing display from density restamps.
+editing display from density restamps. Editor metrics apply only to the active editor, not app-created
+display TextBoxes. Reentrant density changes replay after the current restamp; changed font metrics
+invalidate both column and cell-panel width caches.
 
 Section-header bottom dividers use `TabularSurfaceGroupHeaderBorderBrush`, matching the body's
 gridline colors by default, and are visible for every body

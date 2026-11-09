@@ -195,7 +195,7 @@ void TableViewColumnHeader::ReleaseFlyoutInternal()
     {
         auto const flyout = button.Flyout();
         button.Flyout(nullptr);
-        if (flyout && flyout.IsOpen() && flyout.Target() == button)
+        if (flyout && flyout.Target() == button)
         {
             TableViewDetails::HideFlyoutWithoutClosingVeto(flyout);
         }
@@ -222,7 +222,7 @@ void TableViewColumnHeader::RefreshFlyoutInternal()
         button.Flyout(nullptr);
         m_isFlyoutOpen = false;
         winrt::VisualStateManager::GoToState(button, L"FlyoutClosed", false);
-        if (oldFlyout && oldFlyout.IsOpen() && oldFlyout.Target() == button)
+        if (oldFlyout && oldFlyout.Target() == button)
         {
             TableViewDetails::HideFlyoutWithoutClosingVeto(oldFlyout);
         }
@@ -238,17 +238,19 @@ void TableViewColumnHeader::RefreshFlyoutInternal()
         if (flyout)
         {
             m_flyoutOpenedRevoker = flyout.Opened(winrt::auto_revoke,
-                [weakThis = get_weak()](auto&& sender, auto&&)
+                [weakThis = get_weak()](auto&&, auto&&)
                 {
                     if (auto self = weakThis.get())
                     {
                         auto const button = self->m_flyoutButton.get();
-                        self->m_isFlyoutOpen = button && sender.template as<winrt::FlyoutBase>().Target() == button;
-                        if (self->m_isFlyoutOpen)
+                        auto const flyout = button ? button.Flyout() : nullptr;
+                        self->m_isFlyoutOpen = flyout && flyout.IsOpen() && flyout.Target() == button;
+                        if (button)
                         {
-                            winrt::VisualStateManager::GoToState(button, L"FlyoutOpen", false);
-                            self->UpdateVisualStates(true);
+                            winrt::VisualStateManager::GoToState(button,
+                                self->m_isFlyoutOpen ? L"FlyoutOpen" : L"FlyoutClosed", false);
                         }
+                        self->UpdateVisualStates(true);
                     }
                 });
             m_flyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
@@ -256,10 +258,12 @@ void TableViewColumnHeader::RefreshFlyoutInternal()
                 {
                     if (auto self = weakThis.get())
                     {
-                        self->m_isFlyoutOpen = false;
                         if (auto const button = self->m_flyoutButton.get())
                         {
-                            winrt::VisualStateManager::GoToState(button, L"FlyoutClosed", false);
+                            auto const flyout = button.Flyout();
+                            self->m_isFlyoutOpen = flyout && flyout.IsOpen() && flyout.Target() == button;
+                            winrt::VisualStateManager::GoToState(button,
+                                self->m_isFlyoutOpen ? L"FlyoutOpen" : L"FlyoutClosed", false);
                         }
                         self->UpdateVisualStates(true);
                     }
@@ -304,11 +308,23 @@ void TableViewColumnHeader::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         !isKeyDown(winrt::VirtualKey::Control) && !isKeyDown(winrt::VirtualKey::Shift) &&
         ((args.Key() == winrt::VirtualKey::F4 && !alt) || (args.Key() == winrt::VirtualKey::Down && alt)))
     {
-        if (auto const flyout = button.Flyout())
+        auto const owner = GetOwningTableView();
+        auto const column = Column();
+        if (button.Flyout())
         {
             button.Focus(winrt::FocusState::Keyboard);
-            flyout.ShowAt(button);
-            args.Handled(true);
+            // Focus runs app code, which can replace the menu, column, or template.
+            if (m_flyoutButton.get() == button && GetOwningTableView() == owner &&
+                Column() == column && owner && button.IsEnabled() &&
+                button.Visibility() == winrt::Visibility::Visible &&
+                !winrt::get_self<TableView>(owner)->AreContextMenusSuppressed())
+            {
+                if (auto const flyout = button.Flyout())
+                {
+                    flyout.ShowAt(button);
+                    args.Handled(true);
+                }
+            }
         }
     }
     __super::OnKeyDown(args);

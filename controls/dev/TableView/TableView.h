@@ -271,6 +271,7 @@ public:
     double GetDensityGroupHeaderMinHeight();
     winrt::Thickness GetDensityGroupHeaderPadding();
     winrt::Style GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header);
+    static bool IsDefaultGroupHeaderContentTemplate(winrt::TableViewGroupHeader const& header);
     static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property);
     double GetCellFontSize();
     winrt::Thickness GetDensityCellTextPadding();
@@ -899,6 +900,7 @@ private:
     bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
     // Beginning -> None without touching the row's visual or the item transaction.
     void ResetPendingBeginEdit() noexcept;
+    void RefreshHeaderFlyoutsAfterEdit(bool closed);
 
     void EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip);
 
@@ -1168,6 +1170,7 @@ private:
     {
         return axis == BulkExpansionAxis::Rows ? m_rowBulkExpansionGeneration : m_groupBulkExpansionGeneration;
     }
+    uint64_t m_groupHeaderCountGeneration{ 0 };
 
     void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree = false);
     void QueueGroupExpansionByIdentity(

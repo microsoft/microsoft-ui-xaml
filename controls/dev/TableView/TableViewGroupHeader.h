@@ -126,6 +126,7 @@ private:
     // The count in the default content template, cached per inspected ContentTemplateRoot.
     tracker_ref<winrt::TextBlock> m_defaultCount{ this };
     winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
+    tracker_ref<winrt::DataTemplate> m_inspectedContentTemplate{ this };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };

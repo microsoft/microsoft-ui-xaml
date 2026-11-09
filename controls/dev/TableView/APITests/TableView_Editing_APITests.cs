@@ -584,6 +584,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDensityPreservesAppDisplayTextBoxBindings()
+        {
+            TableView table = null;
+            AuthoredDisplayTextBoxColumn column = null;
+            TextBox display = null;
+            BindingExpression fontBinding = null;
+            BindingExpression paddingBinding = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var items = MakeEditableItems();
+                table = CreateTableViewShell(items, 500, 350);
+                column = new AuthoredDisplayTextBoxColumn
+                {
+                    Header = "Name",
+                    Width = new GridLength(200),
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                };
+                table.Columns.Add(column);
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                display = (TextBox)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0));
+                fontBinding = display.GetBindingExpression(Control.FontSizeProperty);
+                paddingBinding = display.GetBindingExpression(Control.PaddingProperty);
+                Verify.IsNotNull(fontBinding);
+                Verify.IsNotNull(paddingBinding);
+                Verify.AreEqual(23.0, display.FontSize);
+            });
+            foreach (var density in TableViewThemingTestHelpers.DensityCases)
+            {
+                RunOnUIThread.Execute(() => table.Density = density.Density);
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(table.IsEditing);
+                    Verify.AreEqual(23.0, display.FontSize, "A display TextBox is not the built-in editor.");
+                    Verify.AreEqual(column.Source.Padding, display.Padding);
+                    Verify.AreSame(fontBinding, display.GetBindingExpression(Control.FontSizeProperty));
+                    Verify.AreSame(paddingBinding, display.GetBindingExpression(Control.PaddingProperty));
+                });
+            }
+            RunOnUIThread.Execute(() => column.Source.FontSize = 29);
+            SettleLayout(table);
+            RunOnUIThread.Execute(() => Verify.AreEqual(29.0, display.FontSize, "The app's binding must remain live."));
+        }
+
+        [TestMethod]
+        public void VerifyDensityFontChangeDropsEditingAutoWidthCache()
+        {
+            foreach (var commit in new[] { false, true })
+            {
+                TableView table = null;
+                var items = MakeEditableItems();
+                double oldWidth = 0;
+                TextBox editor = null;
+                bool allowClose = false;
+                RunOnUIThread.Execute(() =>
+                {
+                    items[0].Name = "A deliberately long display value for Auto width";
+                    table = CreateEditableTable(items);
+                    table.IsReadOnly = false;
+                    table.IsTextScaleFactorEnabled = false;
+                    table.Resources["TableViewCellFontSize"] = 26.0;
+                    table.Resources["TableViewCellFontSizeExtraCompact"] = 12.0;
+                    table.Columns[0].Width = GridLength.Auto;
+                    table.CellEditEnding += (s, e) => e.Cancel = !allowClose;
+                    LoadContent(table);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    oldWidth = table.Columns[0].ActualWidth;
+                    Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), items[0].Name));
+                    editor = FindVisualChildrenByType<TextBox>(table).Single();
+                    table.Density = TableViewDensity.ExtraCompact;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(table.IsEditing);
+                    Verify.AreSame(editor, FindVisualChildrenByType<TextBox>(table).Single(),
+                        "Changing typography must not recycle the live editor.");
+                    Verify.AreEqual(12.0, editor.FontSize);
+                    allowClose = true;
+                    Verify.IsTrue(commit ? table.CommitEdit() : table.CancelEdit());
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(table.IsEditing);
+                    Verify.IsLessThan(table.Columns[0].ActualWidth, oldWidth - 20,
+                        "The smaller font must not inherit the open editor's old-font width maximum.");
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyDensityPreservesCustomTextColumnFontsAndCachedDisplay()
         {
             foreach (var mode in new[] { "OwnValue", "BaseValue", "BaseBinding" })
@@ -2700,6 +2799,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyCancelledBeginEditDrainsSortOptOutWhenHeaderRefreshThrows()
+        {
+            TableView table = null;
+            var items = MakeEditableItems();
+            DropDownButton button = null;
+            bool cancelBegin = true;
+            bool failRefresh = false;
+            int failures = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateEditableTable(items);
+                table.IsReadOnly = false;
+                table.Columns[0].HeaderFlyout = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Options" } } };
+                table.BeginningEdit += (s, e) =>
+                {
+                    if (cancelBegin)
+                    {
+                        e.Cancel = true;
+                        table.CanUserSortColumns = false;
+                        failRefresh = true;
+                    }
+                };
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(table.SortByColumn(table.Columns[0], SortDirection.Ascending));
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                button = FindVisualChildrenByType<DropDownButton>(table).Single(b => b.Flyout != null);
+                var token = button.RegisterPropertyChangedCallback(Button.FlyoutProperty, (s, e) =>
+                {
+                    if (failRefresh && button.Flyout != null)
+                    {
+                        failRefresh = false;
+                        failures++;
+                        throw new InvalidOperationException("Deliberate cancelled-begin header restoration failure.");
+                    }
+                });
+                try
+                {
+                    Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Rejected"));
+                }
+                finally
+                {
+                    button.UnregisterPropertyChangedCallback(Button.FlyoutProperty, token);
+                }
+                Verify.AreEqual(1, failures);
+                Verify.IsFalse(table.IsEditing);
+                Verify.AreEqual("Asha", items[0].Name);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, table.Columns[0].SortDirection,
+                    "The sort opt-out queued during BeginningEdit must drain despite restoration failure.");
+                cancelBegin = false;
+                table.CanUserSortColumns = true;
+                Verify.IsNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Recovered"));
+                Verify.IsFalse(table.IsEditing);
+            });
+        }
+
+        [TestMethod]
         public void VerifyCompletedEditDrainsReshapeWhenHeaderRefreshThrows()
         {
             foreach (var commit in new[] { true, false })
@@ -2878,6 +3044,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Recovered", replacement[0].Role, "The later edit must target the reshaped source.");
                 Verify.IsFalse(tableView.IsEditing);
             });
+        }
+    }
+
+    internal partial class AuthoredDisplayTextBoxColumn : TableViewTextColumn
+    {
+        public TextBox Source { get; } = new TextBox { FontSize = 23, Padding = new Thickness(20, 8, 20, 8) };
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            var text = new TextBox { IsReadOnly = true };
+            BindingOperations.SetBinding(text, TextBox.TextProperty, Binding);
+            BindingOperations.SetBinding(text, Control.FontSizeProperty,
+                new Binding { Source = Source, Path = new PropertyPath("FontSize"), Mode = BindingMode.OneWay });
+            BindingOperations.SetBinding(text, Control.PaddingProperty,
+                new Binding { Source = Source, Path = new PropertyPath("Padding"), Mode = BindingMode.OneWay });
+            return text;
         }
     }
 

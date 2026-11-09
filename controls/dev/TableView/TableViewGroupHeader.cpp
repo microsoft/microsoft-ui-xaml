@@ -107,6 +107,7 @@ void TableViewGroupHeader::SetOwningTableViewInternal(winrt::TableView const& ow
     // Weak: the TableView owns this container through the repeater, so a strong ref here would
     // be a cycle. Mirrors TableViewRow::SetOwningTableViewInternal.
     m_owningTableView = owner ? winrt::make_weak(owner) : nullptr;
+    m_inspectedContentRoot = nullptr;
     RefreshGridLines();
     RefreshDefaultCount();
 }
@@ -241,7 +242,8 @@ void TableViewGroupHeader::UpdateDefaultCountOpacity()
 
 void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
 {
-    if (root == m_inspectedContentRoot.get())
+    auto const contentTemplate = ContentTemplate();
+    if (root == m_inspectedContentRoot.get() && contentTemplate == m_inspectedContentTemplate.get())
     {
         return;
     }
@@ -253,10 +255,11 @@ void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
         m_defaultCount.set(nullptr);
     }
     m_inspectedContentRoot = root ? winrt::make_weak(root) : nullptr;
+    m_inspectedContentTemplate.set(contentTemplate);
 
-    // Only the built-in template is touched: an app template's same-named element keeps its Opacity.
     auto const rootElement = root.try_as<winrt::FrameworkElement>();
-    if (rootElement && rootElement.Name() == L"TableViewDefaultGroupHeaderContentRoot")
+    if (rootElement && rootElement.Name() == L"TableViewDefaultGroupHeaderContentRoot"
+        && TableView::IsDefaultGroupHeaderContentTemplate(*this))
     {
         m_defaultCount.set(rootElement.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>());
     }

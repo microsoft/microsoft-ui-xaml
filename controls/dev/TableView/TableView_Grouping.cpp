@@ -1301,11 +1301,17 @@ void TableView::OnShowGroupHeaderCountPropertyChanged(const winrt::DependencyPro
     }
     const bool previous = winrt::unbox_value<bool>(args.OldValue());
     const bool current = ShowGroupHeaderCount();
-    ForEachRealizedGroupHeader([previous, current](winrt::TableViewGroupHeader const& header, int32_t)
+    const auto generation = ++m_groupHeaderCountGeneration;
+    ForEachRealizedGroupHeader([this, previous, current, generation](winrt::TableViewGroupHeader const& header, int32_t)
     {
+        if (generation != m_groupHeaderCountGeneration)
+        {
+            return;
+        }
         winrt::get_self<TableViewGroupHeader>(header)->RefreshDefaultCount();
         header.InvalidateMeasure();
-        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged) &&
+        if (generation == m_groupHeaderCountGeneration &&
+            winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged) &&
             winrt::AutomationProperties::GetName(header).empty() &&
             !winrt::AutomationProperties::GetLabeledBy(header))
         {

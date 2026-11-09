@@ -726,6 +726,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifySelectedNullItemRemainsAccessibleAfterRealize()
+        {
+            TableView table = null;
+            var items = MakeNamedPeople(200);
+            items[150] = null;
+            items[180] = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateNamedPeopleTable(items);
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                table.Select(150);
+                table.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(table).TryGetElement(150));
+                var probe = new ProviderPeerProbe();
+                var peer = probe.ToPeer(RequireSelectionProvider(table).GetSelection()[0]);
+                var provider = (ISelectionItemProvider)peer.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsTrue(provider.IsSelected);
+                ((IVirtualizedItemProvider)peer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+                Verify.IsNotNull(GetRowsRepeater(table).TryGetElement(150));
+                var realized = probe.ToPeer(RequireSelectionProvider(table).GetSelection()[0]);
+                Verify.AreEqual(peer.GetName(), realized.GetName(), "Realization must not make null data unavailable.");
+                var realizedProvider = (ISelectionItemProvider)realized.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsTrue(realizedProvider.IsSelected);
+                realizedProvider.RemoveFromSelection();
+                Verify.AreEqual(-1, table.SelectedIndex);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies an empty selection drops the cached data-item peer, so a later selection of the same row gets a new one.")]
         public void VerifyGetSelectionDropsDataItemPeerOnEmptySelection()
         {

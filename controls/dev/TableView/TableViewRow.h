@@ -238,6 +238,7 @@ private:
 
     // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
     bool RebuildCells(bool updateExistingCellPeerItems = true);
+    bool RebuildCellsCore(bool updateExistingCellPeerItems);
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
@@ -308,6 +309,7 @@ private:
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };
+    bool m_densityRefreshPending{ false };
 
     bool m_rebuildCellsQueued{ false };
     double m_cellFontSize{ 0.0 };

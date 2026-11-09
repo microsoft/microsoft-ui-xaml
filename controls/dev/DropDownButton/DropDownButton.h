@@ -28,6 +28,7 @@ public:
 
 private:
     void RegisterFlyoutEvents();
+    void UpdateFlyoutState();
 
     void OnFlyoutPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args);
@@ -39,4 +40,3 @@ private:
     winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
     winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
 };
-

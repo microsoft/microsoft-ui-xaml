@@ -1987,43 +1987,148 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             const string CustomTemplateXaml =
                 @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
-                      <StackPanel Orientation=""Horizontal"">
+                      <StackPanel x:Name=""TableViewDefaultGroupHeaderContentRoot"" Orientation=""Horizontal"">
                           <TextBlock Text=""{Binding KeyText}"" />
-                          <TextBlock x:Name=""TableViewGroupHeaderItemCountText"" Text=""{Binding ItemCountText}"" Opacity=""0.25"" />
+                          <TextBlock x:Name=""TableViewGroupHeaderItemCountText"" Text=""{Binding ItemCountText}""
+                                     Visibility=""{Binding ElementName=TableViewDefaultGroupHeaderContentRoot, Path=Visibility}""
+                                     Opacity=""0.25"" />
                       </StackPanel>
                   </DataTemplate>";
-            RunOnUIThread.Execute(() =>
+            foreach (var useStyle in new[] { false, true })
             {
-                table = CreateGroupedThemingTable();
-                table.ShowGroupHeaderCount = false;
-                table.GroupHeaderTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(CustomTemplateXaml);
-                LoadContent(table);
-            });
-            IdleSynchronizer.Wait();
-            foreach (var show in new[] { false, true, false })
-            {
-                RunOnUIThread.Execute(() => table.ShowGroupHeaderCount = show);
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateGroupedThemingTable();
+                    table.ShowGroupHeaderCount = false;
+                    var template = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(CustomTemplateXaml);
+                    if (useStyle)
+                    {
+                        var baseStyle = new Style(typeof(TableViewGroupHeader));
+                        baseStyle.Setters.Add(new Setter(ContentControl.ContentTemplateProperty, template));
+                        table.Resources[typeof(TableViewGroupHeader)] =
+                            new Style(typeof(TableViewGroupHeader)) { BasedOn = baseStyle };
+                    }
+                    else
+                    {
+                        table.GroupHeaderTemplate = template;
+                    }
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                foreach (var show in new[] { false, true, false })
+                {
+                    RunOnUIThread.Execute(() => table.ShowGroupHeaderCount = show);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(table))
+                        {
+                            var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                            Verify.AreEqual(Visibility.Visible, count.Visibility, "Custom content remains app-owned.");
+                            Verify.IsNotNull(count.GetBindingExpression(UIElement.VisibilityProperty),
+                                "A copied default name does not transfer ownership of the app's binding.");
+                            Verify.AreEqual(0.25, count.Opacity, "Do not change a custom count's opacity.");
+                        }
+                    });
+                }
+                RunOnUIThread.Execute(() =>
+                {
+                    if (useStyle)
+                    {
+                        table.Resources.Remove(typeof(TableViewGroupHeader));
+                    }
+                    else
+                    {
+                        table.GroupHeaderTemplate = null;
+                    }
+                });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
                     foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(table))
                     {
                         var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
-                        Verify.AreEqual(Visibility.Visible, count.Visibility, "Custom content remains app-owned.");
-                        Verify.AreEqual(0.25, count.Opacity, "Do not change a custom count's opacity.");
+                        Verify.AreEqual(Visibility.Collapsed, count.Visibility, "Restoring the default template reapplies the option.");
                     }
                 });
             }
-            RunOnUIThread.Execute(() => table.GroupHeaderTemplate = null);
-            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderCountRefreshHonorsReentrantChanges()
+        {
+            TableView table = null;
+            TextBlock count = null;
+            long token = 0;
+            bool restored = false;
             RunOnUIThread.Execute(() =>
             {
-                foreach (var header in FindVisualChildrenByType<TableViewGroupHeader>(table))
+                table = CreateGroupedThemingTable();
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                var header = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
+                token = count.RegisterPropertyChangedCallback(UIElement.VisibilityProperty, (s, e) =>
                 {
-                    var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
-                    Verify.AreEqual(Visibility.Collapsed, count.Visibility, "Restoring the default template reapplies the option.");
+                    if (!restored && count.Visibility == Visibility.Collapsed)
+                    {
+                        restored = true;
+                        table.ShowGroupHeaderCount = true;
+                    }
+                });
+                try { table.ShowGroupHeaderCount = false; }
+                finally { count.UnregisterPropertyChangedCallback(UIElement.VisibilityProperty, token); }
+                Verify.IsTrue(restored);
+                Verify.IsTrue(table.ShowGroupHeaderCount);
+                foreach (var current in FindVisualChildrenByType<TableViewGroupHeader>(table))
+                {
+                    Verify.AreEqual(Visibility.Visible,
+                        ((TextBlock)current.FindVisualChildByName("TableViewGroupHeaderItemCountText")).Visibility);
+                    Verify.IsTrue(FrameworkElementAutomationPeer.CreatePeerForElement(current).GetName()
+                        .Contains(((TableViewGroupInfo)current.Content).ItemCountText));
                 }
             });
+        }
+
+        [TestMethod]
+        public void VerifyDensityRestampsAgainAfterReentrantFontChange()
+        {
+            TableView table = null;
+            TextBlock text = null;
+            bool changed = false;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                table.IsTextScaleFactorEnabled = false;
+                table.Resources["TableViewCellFontSize"] = 20.0;
+                table.Resources["TableViewCellFontSizeExtraCompact"] = 12.0;
+                table.Density = TableViewDensity.ExtraCompact;
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                text = RequireFirstCellTextBlock(table);
+                var token = text.RegisterPropertyChangedCallback(TextBlock.FontSizeProperty, (s, e) =>
+                {
+                    if (!changed && text.FontSize == 20.0)
+                    {
+                        changed = true;
+                        table.Density = TableViewDensity.ExtraCompact;
+                    }
+                });
+                try { table.Density = TableViewDensity.Standard; }
+                finally { text.UnregisterPropertyChangedCallback(TextBlock.FontSizeProperty, token); }
+                Verify.IsTrue(changed);
+                Verify.AreEqual(TableViewDensity.ExtraCompact, table.Density);
+                Verify.AreEqual(12.0, text.FontSize, "The replay must reread the final density's typography.");
+                Verify.AreEqual(24.0, GetRealizedRows(table).First().MinHeight,
+                    "The current row must not retain the interrupted pass's minimum height.");
+            });
+            SettleLayout(table);
         }
 
         [TestMethod]
@@ -2843,6 +2948,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(16.0, text.Padding.Left, "Preserve the authored cell-text padding.");
                 Verify.AreEqual(20.0, GetRowCell(row, 0).Padding.Left, "36px section text start minus 16px cell padding.");
                 Verify.AreEqual(0.0, GetRowCell(row, 1).Padding.Left);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderStyleCycleReportsNativeStyleError()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                // Keep headers unrealized so this tests our probes, not native live-style application.
+                table.Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                        xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                        <ItemsRepeater x:Name=""PART_RowsRepeater"" Visibility=""Collapsed"" />
+                      </ControlTemplate>");
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                var first = new Style(typeof(TableViewGroupHeader));
+                var second = new Style(typeof(TableViewGroupHeader)) { BasedOn = first };
+                first.BasedOn = second;
+                var expected = new Style(typeof(TableViewGroupHeader));
+                expected.BasedOn = new Style(typeof(TableViewGroupHeader)) { BasedOn = expected };
+                Exception nativeError = null;
+                try { expected.Seal(); }
+                catch (Exception ex) { nativeError = ex; }
+                Verify.IsNotNull(nativeError);
+                var repeater = GetRowsRepeater(table);
+                var selector = (DataTemplateSelector)repeater.ItemTemplate;
+                var groupItem = repeater.ItemsSourceView.GetAt(0);
+                try
+                {
+                    table.Resources[typeof(TableViewGroupHeader)] = first;
+                    Exception error = null;
+                    try { selector.SelectTemplate(groupItem); }
+                    catch (Exception ex) { error = ex; }
+                    Verify.IsNotNull(error, "A cyclic group style must fail instead of hanging during setter probes.");
+                    Verify.AreEqual(nativeError.HResult, error.HResult, "Preserve native invalid-style error semantics.");
+                }
+                finally
+                {
+                    table.Resources.Remove(typeof(TableViewGroupHeader));
+                    first.BasedOn = null;
+                    expected.BasedOn = null;
+                }
+                var valid = new Style(typeof(TableViewGroupHeader));
+                valid.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(16)));
+                for (int i = 0; i < 100; ++i)
+                {
+                    valid = new Style(typeof(TableViewGroupHeader)) { BasedOn = valid };
+                }
+                try
+                {
+                    table.Resources[typeof(TableViewGroupHeader)] = valid;
+                    Verify.IsNotNull(selector.SelectTemplate(groupItem),
+                        "A valid deep chain must not be rejected by an arbitrary depth limit.");
+                }
+                finally { table.Resources.Remove(typeof(TableViewGroupHeader)); }
             });
         }
 

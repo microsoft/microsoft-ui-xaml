@@ -1797,6 +1797,12 @@ void TableViewRow::UpdateExpanderGutterClip()
 
 void TableViewRow::RefreshDensity()
 {
+    if (m_isRebuildingCells)
+    {
+        m_densityRefreshPending = true;
+        InvalidateCellsCurrent();
+        return;
+    }
     // Re-read density metrics and restamp built-in cell typography and padding.
     RebuildCells();
 }
@@ -1954,14 +1960,6 @@ void TableViewRow::RaiseCellAutomationNamesChangedInternal(winrt::UIElement cons
 
 bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
-    RestoreCellContentTabStopsInternal();
-
-    auto host = m_cellsHost.get();
-    if (!host)
-    {
-        return false;
-    }
-
     // Re-entry guard. See OnDataContextChanged.
     if (m_isRebuildingCells)
     {
@@ -1973,6 +1971,24 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     // Synchronous RAII guard: captures this only until RebuildCells returns.
     auto rebuildGuard = wil::scope_exit([this]() { m_isRebuildingCells = false; });
     m_cellsRebuiltForDataContext = false;
+
+    bool rebuilt = false;
+    do
+    {
+        m_densityRefreshPending = false;
+        rebuilt = RebuildCellsCore(updateExistingCellPeerItems);
+    } while (m_densityRefreshPending);
+    return rebuilt;
+}
+
+bool TableViewRow::RebuildCellsCore(bool updateExistingCellPeerItems)
+{
+    RestoreCellContentTabStopsInternal();
+    auto const host = m_cellsHost.get();
+    if (!host)
+    {
+        return false;
+    }
 
     auto owner = GetOwningTableView();
     if (!owner)
@@ -2094,6 +2110,13 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     const double cellFontSize = ownerImpl->GetCellFontSize();
     const bool fontSizeChanged = m_cellFontSize != cellFontSize;
     m_cellFontSize = cellFontSize;
+    if (fontSizeChanged)
+    {
+        if (auto const panel = host.try_as<winrt::TableViewCellsPanel>())
+        {
+            winrt::get_self<TableViewCellsPanel>(panel)->InvalidateMeasuredWidths();
+        }
+    }
     if (canRestampCells)
     {
         const auto cellPadding = ownerImpl->GetDensityCellPadding();
@@ -2149,7 +2172,8 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
                     }
                 }
                 else if (auto editor = cellElement.try_as<winrt::TextBox>();
-                    editor && column.try_as<winrt::TableViewTextColumn>() && !column.CellEditingTemplate())
+                    editor && editor == m_editingElement.get() &&
+                    column.try_as<winrt::TableViewTextColumn>() && !column.CellEditingTemplate())
                 {
                     TableViewTextColumn::RefreshEditorMetrics(editor, owner);
                 }
@@ -2438,7 +2462,8 @@ void TableViewRow::RefreshCellVisualGeometry()
                         }
                     }
                     else if (auto const editor = TableViewCell::Child(wrapper).try_as<winrt::TextBox>();
-                        editor && wrapper.Tag().try_as<winrt::TableViewTextColumn>() &&
+                        editor && editor == m_editingElement.get() &&
+                        wrapper.Tag().try_as<winrt::TableViewTextColumn>() &&
                         !wrapper.Tag().as<winrt::TableViewTextColumn>().CellEditingTemplate())
                     {
                         TableViewTextColumn::RefreshEditorMetrics(editor, owner);
