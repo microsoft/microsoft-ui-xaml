@@ -15,7 +15,10 @@ using Facts = Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewVirtu
 
 namespace MUXControlsTestApp
 {
-    public sealed class TableViewVirtualizationItem : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public sealed partial class TableViewVirtualizationItem : INotifyPropertyChanged
     {
         private string _name;
         private int _quantity;

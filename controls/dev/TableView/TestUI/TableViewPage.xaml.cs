@@ -22,7 +22,10 @@ namespace MUXControlsTestApp
     // Data item for the TableView interaction test page. Raises INotifyPropertyChanged so committed
     // edits and source mutations are observable through the control, and exposes a nested value so
     // dotted bindings can be authored in compiled markup.
-    public sealed class TableViewTestPerson : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public sealed partial class TableViewTestPerson : INotifyPropertyChanged
     {
         private string _name;
         private int _age;

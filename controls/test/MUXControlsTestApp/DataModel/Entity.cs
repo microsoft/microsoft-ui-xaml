@@ -7,7 +7,10 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace MUXControlsTestApp.Samples.Model
 {
-    public class Entity : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class Entity : INotifyPropertyChanged
     {
         private BitmapImage _bitmapImage;
         private Uri _imageUri;
