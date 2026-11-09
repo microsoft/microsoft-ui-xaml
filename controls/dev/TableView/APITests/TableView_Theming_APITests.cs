@@ -2593,6 +2593,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 "Section titles match the cells' font size at every density.");
                             Verify.AreEqual(Microsoft.UI.Text.FontWeights.Normal, title.FontWeight,
                                 "Section titles use regular rather than semibold text.");
+                            var row = GetRealizedRows(tableView).First();
+                            var cellText = (TextBlock)GetCellContent(GetRowCell(row, 0));
+                            var titleBounds = title.TransformToVisual(root).TransformBounds(
+                                new Rect(0, 0, title.ActualWidth, title.ActualHeight));
+                            var cellBounds = cellText.TransformToVisual(root).TransformBounds(
+                                new Rect(0, 0, cellText.ActualWidth, cellText.ActualHeight));
+                            var titleStart = direction == FlowDirection.LeftToRight ? titleBounds.Left : titleBounds.Right;
+                            var cellStart = direction == FlowDirection.LeftToRight
+                                ? cellBounds.Left + cellText.Padding.Left : cellBounds.Right - cellText.Padding.Right;
+                            Verify.IsLessThanOrEqual(Math.Abs(titleStart - cellStart), 0.5 / tableView.XamlRoot.RasterizationScale,
+                                "Only the first cell's text start aligns with the section title, including in RTL.");
+                            Verify.AreEqual(GetAlignedContentPadding(row, testCase.TextPadding), cellText.Padding,
+                                "Section alignment preserves the authored display-text padding.");
+                            Verify.AreEqual(0.0, GetRowCell(row, 1).Padding.Left, "Other cells receive no section inset.");
                             var count = (TextBlock)header.FindVisualChildByName("TableViewGroupHeaderItemCountText");
                             Verify.IsNotNull(count, "Density and typography changes preserve item counts.");
                             Verify.AreEqual(testCase.FontSize, count.FontSize,
@@ -2603,6 +2617,171 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
             }
+        }
+
+        [TestMethod]
+        public void VerifySectionAlignmentClearsAndMovesWithFirstVisibleCell()
+        {
+            TableView table = null;
+            TableViewSource source = null;
+            Grid root = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateThemingTable();
+                table.IsTextScaleFactorEnabled = false;
+                foreach (var column in table.Columns)
+                {
+                    column.Width = new GridLength(200);
+                }
+                source = TableViewSource.From(MakeItems());
+                table.ItemsSource = source;
+                root = new Grid { FlowDirection = FlowDirection.LeftToRight };
+                root.Children.Add(table);
+                LoadContent(root);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            foreach (var density in DensityCases)
+            {
+                double TextStart(TextBlock text)
+                {
+                    var bounds = text.TransformToVisual(root).TransformBounds(
+                        new Rect(0, 0, text.ActualWidth, text.ActualHeight));
+                    return flow == FlowDirection.LeftToRight
+                        ? bounds.Left + text.Padding.Left : bounds.Right - text.Padding.Right;
+                }
+                TextBlock CellText(int index) => (TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), index));
+                TextBlock SectionTitle() => (TextBlock)FindVisualChildrenByType<TableViewGroupHeader>(table)
+                    .First().FindVisualChildByName("TableViewGroupHeaderKeyText");
+                double firstStart = 0;
+                double secondStart = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    table.RequestedTheme = theme;
+                    table.FlowDirection = flow;
+                    table.Density = density.Density;
+                    source.ClearGroupBy();
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    firstStart = TextStart(CellText(0));
+                    secondStart = TextStart(CellText(1));
+                    Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 0).Padding.Left);
+                    source.GroupBy(item => ((Person)item).Role);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    var context = $"{theme}, {flow}, {density.Density}";
+                    Verify.IsLessThanOrEqual(Math.Abs(TextStart(CellText(0)) - TextStart(SectionTitle())),
+                        0.5 / table.XamlRoot.RasterizationScale, $"Section first-cell alignment: {context}.");
+                    Verify.AreEqual(secondStart, TextStart(CellText(1)), $"Other column text must not move: {context}.");
+                    Verify.AreEqual(density.RowMinHeight, GetRealizedRows(table).First().ActualHeight);
+                    table.Columns[0].Visibility = Visibility.Collapsed;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = GetRealizedRows(table).First();
+                    Verify.AreEqual(0.0, GetRowCell(row, 0).Padding.Left, "The hidden cell must release the reservation.");
+                    Verify.IsLessThanOrEqual(Math.Abs(TextStart(CellText(1)) - TextStart(SectionTitle())),
+                        0.5 / table.XamlRoot.RasterizationScale, "The new first visible cell aligns with the section.");
+                    table.Columns[0].Visibility = Visibility.Visible;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 1).Padding.Left,
+                        "Restoring the first column clears the second column's reservation.");
+                    source.ClearGroupBy();
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(firstStart, TextStart(CellText(0)), "Removing sections restores the original first-cell alignment.");
+                    Verify.AreEqual(secondStart, TextStart(CellText(1)), "Other cells keep their original alignment.");
+                    Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 0).Padding.Left);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifySectionAlignmentFitsAutoColumnContent()
+        {
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            foreach (var density in DensityCases)
+            {
+                TableView table = null;
+                TableViewSource source = null;
+                double flatWidth = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateThemingTable();
+                    table.IsTextScaleFactorEnabled = false;
+                    table.FlowDirection = flow;
+                    table.Density = density.Density;
+                    table.Columns[0].Width = GridLength.Auto;
+                    table.Columns[1].Width = new GridLength(200);
+                    source = TableViewSource.From(new List<Person>
+                    {
+                        new Person { Name = "A section row with a long name", Role = "Design" }
+                    });
+                    table.ItemsSource = source;
+                    LoadContent(table);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    flatWidth = table.Columns[0].ActualWidth;
+                    source.GroupBy(item => ((Person)item).Role);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    var cell = GetRowCell(GetRealizedRows(table).Single(), 0);
+                    Verify.AreEqual(8.0, cell.Padding.Left);
+                    Verify.AreEqual(GridUnitType.Auto, table.Columns[0].Width.GridUnitType);
+                    Verify.IsGreaterThanOrEqual(table.Columns[0].ActualWidth,
+                        flatWidth + cell.Padding.Left - 0.5 / table.XamlRoot.RasterizationScale,
+                        $"Auto width includes the section inset without clipping content: {flow}, {density.Density}.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifySectionAlignmentUsesAuthoredMetricResources()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                table.Resources["TableViewGroupExpanderSize"] = 20.0;
+                table.Resources["TableViewGroupExpanderSpacing"] = 8.0;
+                table.Resources["TableViewGroupHeaderTextPadding"] = new Thickness(4, 9, 0, 11);
+                table.Resources["TableViewCellTextPadding"] = new Thickness(16, 9, 16, 11);
+                table.Density = TableViewDensity.Compact;
+                table.Density = TableViewDensity.Standard;
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                var root = table.XamlRoot.Content;
+                var title = (TextBlock)FindVisualChildrenByType<TableViewGroupHeader>(table)
+                    .First().FindVisualChildByName("TableViewGroupHeaderKeyText");
+                var row = GetRealizedRows(table).First();
+                var text = (TextBlock)GetCellContent(GetRowCell(row, 0));
+                var titleStart = title.TransformToVisual(root).TransformPoint(new Point()).X;
+                var cellStart = text.TransformToVisual(root).TransformPoint(new Point()).X + text.Padding.Left;
+                Verify.IsLessThanOrEqual(Math.Abs(titleStart - cellStart), 0.5 / table.XamlRoot.RasterizationScale,
+                    "Alignment must derive from the actual metric resources, not a hard-coded 8px inset.");
+                Verify.AreEqual(16.0, text.Padding.Left, "Preserve the authored cell-text padding.");
+                Verify.AreEqual(20.0, GetRowCell(row, 0).Padding.Left, "36px section text start minus 16px cell padding.");
+                Verify.AreEqual(0.0, GetRowCell(row, 1).Padding.Left);
+            });
         }
 
         [TestMethod]

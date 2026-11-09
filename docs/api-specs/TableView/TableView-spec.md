@@ -835,6 +835,11 @@ to match cell text vertically. The section host retains its separate 4px leading
 trailing padding and the chevron retains its symmetric density padding. App-owned section
 templates and explicit section `Padding` keep their authored alignment.
 
+With the built-in section and cell metrics, flat section rows reserve additional leading space
+in their first visible cell so its text aligns with the section title in LTR and RTL. The text's
+padding remains unchanged; other cells and unsectioned rows keep their original alignment.
+`ParentBy` rows retain their existing hierarchy indentation, including when grouped into sections.
+
 These are complete padding values, not inputs to an optical-offset calculation.
 There are no optical-offset resources or optical render transforms. Only cell/section
 divider compensation is calculated from arranged bounds; it preserves total padding

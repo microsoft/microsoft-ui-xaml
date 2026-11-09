@@ -1560,7 +1560,7 @@ double TableViewRow::HierarchyIndent()
     return baseIndent + (level - 1) * indentSize;
 }
 
-// Reserves chevron space via lead cell WRAPPER padding (column content may be any app element).
+// Reserves lead-cell wrapper space for hierarchy chevrons or flat section-row text alignment.
 // Separate so column-visibility changes can move it without re-running visual states.
 void TableViewRow::ApplyHierarchyIndentToCells()
 {
@@ -1576,15 +1576,19 @@ void TableViewRow::ApplyHierarchyIndentToCells(double indent)
     }
 
     const bool isHierarchical = Level() > 0;
+    auto const owner = GetOwningTableView();
+    auto const ownerImpl = owner ? winrt::get_self<TableView>(owner) : nullptr;
+    const bool alignSectionContent = !isHierarchical && ownerImpl && ownerImpl->IsTableViewSourceGrouped();
+    const double sectionContentOffset = alignSectionContent
+        ? ownerImpl->GetGroupHeaderContentOffset() + ownerImpl->GetDensityGroupHeaderPadding().Left +
+            ownerImpl->GetDensityGroupHeaderTextPadding().Left
+        : 0.0;
 
     // From the resource, not the element: gutter may not be measured yet.
     double expanderSize = c_defaultRowExpanderSize;
-    if (isHierarchical)
+    if (isHierarchical && ownerImpl)
     {
-        if (auto const owner = GetOwningTableView())
-        {
-            expanderSize = winrt::get_self<TableView>(owner)->GetRowExpanderSize();
-        }
+        expanderSize = ownerImpl->GetRowExpanderSize();
     }
 
     auto const children = host.Children();
@@ -1592,7 +1596,8 @@ void TableViewRow::ApplyHierarchyIndentToCells(double indent)
     for (uint32_t i = 0; i < children.Size(); ++i)
     {
         auto const wrapper = children.GetAt(i).try_as<winrt::Grid>();
-        if (!wrapper || !TableViewCellsPanel::ColumnForCell(wrapper))
+        auto const column = wrapper ? TableViewCellsPanel::ColumnForCell(wrapper) : nullptr;
+        if (!column)
         {
             continue;
         }
@@ -1603,7 +1608,14 @@ void TableViewRow::ApplyHierarchyIndentToCells(double indent)
             !leadAssigned && wrapper.Visibility() == winrt::Visibility::Visible;
         leadAssigned = leadAssigned || isLead;
 
-        const double reserved = (isLead && isHierarchical) ? indent + expanderSize : 0.0;
+        double reserved = (isLead && isHierarchical) ? indent + expanderSize : 0.0;
+        if (isLead && alignSectionContent)
+        {
+            const auto cellPadding = column.try_as<winrt::TableViewTextColumn>()
+                ? ownerImpl->GetDisplayCellPadding(m_contentVerticalOffset)
+                : ownerImpl->GetDensityCellPadding();
+            reserved = std::max(0.0, sectionContentOffset - Padding().Left - cellPadding.Left);
+        }
         auto padding = wrapper.Padding();
         if (padding.Left != reserved)
         {

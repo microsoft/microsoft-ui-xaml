@@ -1322,6 +1322,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies section-only alignment leaves ParentBy first-cell and chevron indentation unchanged at all three levels, with or without sections and in LTR/RTL.")]
+        public void VerifySectionAlignmentDoesNotChangeParentByIndentation()
+        {
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
+            var table = Place(source);
+            foreach (var grouped in new[] { false, true })
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    table.FlowDirection = flow;
+                    table.Density = density;
+                    if (grouped) { source.GroupBy(ByDept); }
+                    else { source.ClearGroupBy(); }
+                    table.ExpandAllRows();
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var name in new[] { "Ada", "Ben", "Dan" })
+                    {
+                        var row = FindTreeRow(table, name);
+                        var indent = (grouped ? 16.0 : 0.0) + (row.Level - 1) * 16.0;
+                        Verify.AreEqual(indent + 24.0, GetRowCell(row, 0).Padding.Left,
+                            $"ParentBy cell reservation stays unchanged: {name}, {grouped}, {flow}, {density}.");
+                        Verify.AreEqual(indent, GetChevron(table, name).Margin.Left,
+                            "ParentBy chevrons retain their existing indentation.");
+                    }
+                });
+            }
+        }
+
         #endregion
 
         #region Helpers
