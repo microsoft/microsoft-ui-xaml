@@ -48,7 +48,7 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 // Like Popup::Close, this keeps the binding attached; the binding sets IsOpen again on its next update.
 void TeachingTip::SetIsOpenKeepingBinding(bool isOpen)
 {
-    this->as<winrt::IUIElementPrivate>().SetValuePreservingBinding(s_IsOpenProperty, winrt::box_value(isOpen));
+    get_strong().as<winrt::IUIElementPrivate>().SetValuePreservingBinding(s_IsOpenProperty, winrt::box_value(isOpen));
 }
 
 void TeachingTip::OnApplyTemplate()

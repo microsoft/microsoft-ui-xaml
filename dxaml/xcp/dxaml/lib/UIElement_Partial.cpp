@@ -2989,7 +2989,7 @@ _Check_return_ HRESULT UIElement::SetValuePreservingBindingImpl(_In_ xaml::IDepe
 
     BOOLEAN isUnsetValue = FALSE;
     IFC_RETURN(DependencyPropertyFactory::IsUnsetValue(value, isUnsetValue));
-    if (property->IsReadOnly() || isUnsetValue || ctl::is<IExpressionBase>(value))
+    if (property->IsReadOnly() || isUnsetValue)
     {
         IFC_RETURN(E_INVALIDARG);
     }
