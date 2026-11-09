@@ -1079,6 +1079,108 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held group header element cannot act on the group its recycled header shows next, and the group's current element works (#12443).")]
+        public void VerifyHeldGroupHeaderElementCannotActOnAnotherGroup()
+        {
+            TableView tableView = null;
+            TableViewGroupHeader container = null;
+            AutomationPeer held = null;
+            IExpandCollapseProvider heldProvider = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                container = (TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0);
+                held = RowPeerOf(container);
+                Verify.AreNotSame(FrameworkElementAutomationPeer.FromElement(container), held, "UIA must be handed the group's element, not the header's own peer.");
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), $"Precondition: the held element is G0's header, saw '{held.GetName()}'.");
+                Verify.IsTrue(held.IsControlElement() && held.GetAutomationControlType() == AutomationControlType.Group, "The group's element must be a Group in the control view.");
+                heldProvider = (IExpandCollapseProvider)held.GetPattern(PatternInterface.ExpandCollapse);
+                GetBodyScroller(tableView).ChangeView(null, 100000.0, null, true);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetRowsRepeater(tableView).GetElementIndex(container) < 0 || (string)((TableViewGroupInfo)container.Content).Key != "G0",
+                    "Precondition: G0's header must have been recycled.");
+                VerifyElementNotAvailable(() => held.GetName(), "Name of a recycled group's element");
+                VerifyElementNotAvailable(() => heldProvider.Collapse(), "Collapse through a recycled group's element");
+                Verify.AreEqual(80, GetProjectedItems(tableView).OfType<Person>().Count(), "No group may have been collapsed.");
+                GetBodyScroller(tableView).ChangeView(null, 0.0, null, true);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var current = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0));
+                Verify.IsTrue(current.GetName().StartsWith("G0 "), $"The first header must show G0 again, saw '{current.GetName()}'.");
+                ((IExpandCollapseProvider)current.GetPattern(PatternInterface.ExpandCollapse)).Collapse();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var roles = GetProjectedItems(tableView).OfType<Person>().Select(p => p.Role).Distinct().ToList();
+                Verify.IsFalse(roles.Contains("G0"), "G0's current element must collapse G0.");
+                Verify.AreEqual(7, roles.Count, "Only G0 may be collapsed.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held group header element reports ElementNotAvailable, and still opens a provider, after its header was torn down and collected (#12443).")]
+        public void VerifyHeldGroupHeaderElementOutlivesItsHeader()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                held = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0));
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), "Precondition: the held element is G0's header.");
+                var template = tableView.Template;
+                tableView.Template = null;
+                tableView.UpdateLayout();
+                tableView.Template = template;
+            });
+            IdleSynchronizer.Wait();
+            for (var i = 0; i < 2; ++i)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(new ProviderPeerProbe().ToProvider(held), "The held element must still open a provider.");
+                VerifyElementNotAvailable(() => held.GetName(), "Name after the header was torn down");
+                VerifyElementNotAvailable(() => held.GetPattern(PatternInterface.ExpandCollapse), "GetPattern after the header was torn down");
+            });
+        }
+
+        private static TableView CreateManyGroupsTable()
+        {
+            var source = TableViewSource.From(Enumerable.Range(0, 80).Select(i => new Person { Name = $"P{i}", Role = $"G{i / 10}" }).ToList());
+            source.GroupBy(item => (object)((Person)item).Role);
+            var tableView = CreateTableViewShell(source, 600, 300);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            return tableView;
+        }
+
         private static AutomationPeer RowPeerOf(UIElement row)
         {
             var peer = FrameworkElementAutomationPeer.CreatePeerForElement(row);

@@ -868,7 +868,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
 
     if (auto const header = element.try_as<winrt::TableViewGroupHeader>())
     {
-        if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header))
+        if (auto const headerPeer = ElementItemPeer(header))
         {
             return ProviderFromPeer(headerPeer);
         }

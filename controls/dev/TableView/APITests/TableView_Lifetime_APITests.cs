@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -273,6 +275,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             AssertCollected(tracked);
 
             Verify.AreEqual(40, items.Count, "The items source must still be alive after the table was collected.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped TableView, its group headers and their group elements are collected after unload, once scrolling and a collapse have rebound the headers (#12443).")]
+        public void VerifyGroupHeaderPeersDoNotKeepTheTableAlive()
+        {
+            var items = Enumerable.Range(0, 80).Select(i => new Person { Name = $"Person {i}", Role = $"G{i / 10}" }).ToList();
+            TableViewSource source = null;
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(items);
+                source.GroupBy(item => (object)((Person)item).Role);
+                CreateAndLoadTable(source, tracked);
+            });
+            SettleAfterLoad();
+
+            foreach (var step in new object[] { "Collapse", "Expand", 100000.0, 0.0 })
+            {
+                RunOnUIThread.Execute(() => WalkAndDriveGroupHeaders(tracked, step));
+                SettleAfterLoad();
+            }
+
+            RunOnUIThread.Execute(() => Content = null);
+
+            AssertCollected(tracked);
+
+            Verify.IsTrue(tracked.Keys.Any(key => key.StartsWith("Group element")), "Precondition: group elements were tracked.");
+            Verify.AreEqual(80, items.Count, "The items must still be alive after the table was collected.");
+            GC.KeepAlive(source);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WalkAndDriveGroupHeaders(Dictionary<string, WeakReference> tracked, object step)
+        {
+            var tableView = (TableView)tracked["TableView"].Target;
+            AutomationPeer first = null;
+            foreach (var header in GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>())
+            {
+                var own = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                var peer = own.EventsSource ?? own;
+                peer.GetName();
+                first ??= peer;
+                tracked[$"Header {tracked.Count}"] = new WeakReference(header);
+                tracked[$"Group element {tracked.Count}"] = new WeakReference(peer);
+            }
+
+            if (step is double offset)
+            {
+                GetBodyScroller(tableView).ChangeView(null, offset, null, true);
+                return;
+            }
+            var provider = (IExpandCollapseProvider)first.GetPattern(PatternInterface.ExpandCollapse);
+            if ((string)step == "Collapse") { provider.Collapse(); } else { provider.Expand(); }
         }
 
         [TestMethod]

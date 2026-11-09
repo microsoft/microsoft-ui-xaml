@@ -1233,6 +1233,10 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     {
         header.DataContext(info);
     }
+    if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(header))
+    {
+        headerImpl->SyncGroupAutomationPeerInternal(headerPeer, !sameGroup);
+    }
 
     if (sameGroup && previousState != newState)
     {
@@ -1311,6 +1315,10 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
     header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
     winrt::get_self<TableViewGroupHeader>(header)->SetGroupEntryInternal(nullptr);
+    if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(header))
+    {
+        headerPeer.EventsSource(nullptr);
+    }
 }
 
 void TableView::UpdateGroupHeaderWidth(winrt::TableViewGroupHeader const& header)
