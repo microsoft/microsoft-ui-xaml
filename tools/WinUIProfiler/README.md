@@ -761,6 +761,20 @@ with a **How I got this** section that shows each call with its `queries`
 and `computed`, copied as returned, so the answer can be checked by running
 the statements.
 
+The server also appends each call's statements to a query log in
+`%LOCALAPPDATA%\WinUIProfiler\Mcp\logs`, a file named
+`queries-<yyyyMMdd-HHmmss>-<process ID>.sql` that each server creates at its
+first call. A call's part starts with comments that give the time, the tool
+and view, and the session file. Then come its statements, as `queries` lists
+them, each followed by comments with its rows and, unless it ran only on that
+file, the files it ran on; then a comment with what it computed. A call that
+fails isn't logged. So the log runs as a script, as with
+`sqlite3 -readonly <file> ".read <log>"`, when its calls read only that file,
+on a SQLite version that reads the file's views. Each result gives the log's
+path in `queryLog`, or why it couldn't be written in `queryLogError`; the call
+itself doesn't fail. Creating a log deletes the query logs there that haven't
+been written to for 30 days. The self-tests don't write to it.
+
 The plugin answers only what a processor stores. It doesn't answer questions
 about the events' field values, GPU memory, CPU samples, call stacks, thread
 waits or the XAML and composition trees; tools for them come with the

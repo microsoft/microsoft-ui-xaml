@@ -104,7 +104,7 @@ internal static class ObjectTools
             wantedAddress = addressText is null ? null : ToolArguments.Address(addressText);
         }
 
-        return SessionCatalog.RunAsync(sessionPath, path => chosen switch
+        return SessionCatalog.RunAsync("objects", sessionPath, path => chosen switch
         {
             "list" => List(path, chosenKind, typeText, nameText, byEvents, offset, count),
             "history" => History(path, objectId, wantedAddress, offset, count, cancellationToken),

@@ -9,6 +9,7 @@ using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using WinUIProfiler.Mcp.SelfTest;
+using WinUIProfiler.Mcp.Sessions;
 
 namespace WinUIProfiler.Mcp;
 
@@ -69,6 +70,7 @@ internal static class Program
 
     private static async Task RunServerAsync()
     {
+        QueryLog.Current = new QueryLog(QueryLog.DefaultFolder);
         var builder = Host.CreateEmptyApplicationBuilder(settings: null);
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
         AddServer(builder.Services).WithStdioServerTransport();

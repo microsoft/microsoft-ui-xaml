@@ -153,7 +153,9 @@ call did with their rows.
      more than once, and its `files` when the result gives them.
 
    Then the call's `computed`, copied exactly, after "Then:".
-3. Last, one or two sentences on how those results led to the answer.
+3. Last, one or two sentences on how those results led to the answer. Then
+   the query log the statements were also written to: the `queryLog` the
+   results give, or, when one gives `queryLogError` instead, that error.
 
 Rules:
 

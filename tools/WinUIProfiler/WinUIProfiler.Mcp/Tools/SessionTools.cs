@@ -70,7 +70,7 @@ internal static class SessionTools
 
         return await Task.Run(() =>
         {
-            using var trail = QueryTrail.Start();
+            using var trail = QueryTrail.Start("sessions");
             if (chosen == "list")
             {
                 return trail.Finish(List(directory, count, cancellationToken));
@@ -233,7 +233,7 @@ internal static class SessionTools
         IProgress<ProgressNotificationValue>? progress, CancellationToken cancellationToken)
     {
         // Started in this flow, so the reads of the Task.Runs below report to it.
-        using var trail = QueryTrail.Start();
+        using var trail = QueryTrail.Start("record_trace");
         var trace = TracePath(etlPath);
         if (processId is { } requested)
         {

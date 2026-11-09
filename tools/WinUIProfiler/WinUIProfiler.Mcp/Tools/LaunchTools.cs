@@ -36,7 +36,7 @@ internal static class LaunchTools
         CancellationToken cancellationToken = default)
     {
         var chosen = ToolArguments.View(view, Views, "launch");
-        return SessionCatalog.RunAsync(sessionPath, path => chosen == "frames" ? Frames(path) : Milestones(path), cancellationToken);
+        return SessionCatalog.RunAsync("launch", sessionPath, path => chosen == "frames" ? Frames(path) : Milestones(path), cancellationToken);
     }
 
     internal const string NoMilestones = "The session has none of the launch's milestones: no tick started on a UI " +
