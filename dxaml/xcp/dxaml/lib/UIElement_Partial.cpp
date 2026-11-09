@@ -2977,11 +2977,12 @@ HRESULT UIElement::ResumeNewDispatchIfAvailableImpl()
     return S_OK;
 }
 
-// Like SetValue, except that a binding on the property is kept (any expression: Binding, TemplateBinding, ...).
-// SetValue keeps only a TwoWay binding; this keeps every binding the same way: the value becomes the value the binding
-// currently provides (and a TwoWay binding passes it on to its source) until the binding next updates the property.
-// Controls use this to close themselves without clearing an app's OneWay IsOpen binding, which is what Popup::Close
-// does for Popup.IsOpen by setting only the effective value.
+// Like SetValue, except that a binding the property has in its framework-side value (a Binding, or a TemplateBinding
+// on a custom property) is kept. SetValue keeps only a TwoWay binding; this keeps any of them the same way: the new
+// value replaces the value the binding provides (and a TwoWay binding passes it on to its source) until the binding
+// next updates the property. Without such a binding it is SetValue (so e.g. a TemplateBinding that core stores for a
+// core property is still cleared). Controls use this to close themselves without clearing an app's OneWay IsOpen
+// binding, the way Popup::Close keeps a binding on Popup.IsOpen by setting only the effective value.
 _Check_return_ HRESULT UIElement::SetValuePreservingBindingImpl(_In_ xaml::IDependencyProperty* dp, _In_ IInspectable* value)
 {
     const CDependencyProperty* property = static_cast<DependencyPropertyHandle*>(dp)->GetDP();

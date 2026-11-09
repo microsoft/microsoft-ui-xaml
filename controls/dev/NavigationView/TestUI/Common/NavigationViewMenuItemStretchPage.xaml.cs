@@ -32,7 +32,7 @@ namespace MUXControlsTestApp
         {
             Popup popup = TeachingTipTestHooks.GetPopup(tip);
             Rect targetBounds = target.TransformToVisual(null).TransformBounds(new Rect(0, 0, target.ActualWidth, target.ActualHeight));
-            return $"IsPointerOver={target.IsPointerOver};IsOpen={tip.IsOpen};PopupOpen={popup != null && popup.IsOpen};" +
+            return $"IsPointerOver={target.IsPointerOver};IsOpen={tip.IsOpen};PopupOpen={popup != null && popup.IsOpen};Idle={TeachingTipTestHooks.GetIsIdle(tip)};" +
                 $"Placement={TeachingTipTestHooks.GetEffectivePlacement(tip)};PopupOffset=({popup?.HorizontalOffset},{popup?.VerticalOffset});" +
                 $"TargetIsLoaded={target.IsLoaded};TargetBounds={targetBounds};Closed=[{string.Join(",", closeReasons)}]";
         }

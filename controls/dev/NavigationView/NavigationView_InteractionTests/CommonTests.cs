@@ -1964,27 +1964,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             target.MovePointer();
             Wait.ForIdle();
 
-            // The tip opens on a later rendering tick and then plays an expand animation, so poll its state.
+            // The tip opens on a later rendering tick and then plays an expand animation, so poll until it has finished
+            // opening (a tip that is still opening rejects the close when the pointer leaves).
             // Invoke goes through UIA and does not move the pointer off the target.
-            string state = string.Empty;
-            for (int attempt = 0; attempt < 20; attempt++)
-            {
-                checkStateButton.Invoke();
-                Wait.ForIdle();
-                state = new TextBlock(FindElement.ById(stateId)).DocumentText;
-                if (state.Contains("PopupOpen=True"))
-                {
-                    break;
-                }
-                System.Threading.Thread.Sleep(100);
-            }
-
+            string state = PollTipState(stateId, checkStateButton, "PopupOpen=True;Idle=True");
             Log.Comment(stateId + ": " + state);
             Verify.IsTrue(state.Contains("IsPointerOver=True"), targetId + " should report IsPointerOver while hovered");
             Verify.IsTrue(state.Contains("PopupOpen=True"), "The TeachingTip targeting " + targetId + " should be open while its target is hovered");
 
             TestEnvironment.Application.CoreWindow.MovePointer(0, 0);
             Wait.ForIdle();
+            state = PollTipState(stateId, checkStateButton, "PopupOpen=False;Idle=True");
+            Log.Comment(stateId + " after the pointer left: " + state);
+            Verify.IsTrue(state.Contains("PopupOpen=False"), "The TeachingTip targeting " + targetId + " should close when the pointer leaves");
+        }
+
+        private static string PollTipState(string stateId, Button checkStateButton, string expected)
+        {
+            string state = string.Empty;
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                checkStateButton.Invoke();
+                Wait.ForIdle();
+                state = new TextBlock(FindElement.ById(stateId)).DocumentText;
+                if (state.Contains(expected))
+                {
+                    break;
+                }
+                System.Threading.Thread.Sleep(100);
+            }
+            return state;
         }
     }
 }
