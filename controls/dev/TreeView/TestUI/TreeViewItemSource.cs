@@ -8,7 +8,10 @@ using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
-    public class TreeViewItemSource : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class TreeViewItemSource : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public String Content { get; set; }

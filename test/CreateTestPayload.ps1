@@ -168,6 +168,18 @@ if ($Mode -eq "DevTestSuite" -or $Mode -eq "ScenarioTestSuite")
     Publish-Item "$binpath\TAEF\*" "$outpath"
     Publish-Item "$binpath\TAEF\NetFx4.5\*" "$outpath"
     Publish-Item "$binpath\TestDependencies\localDotNet\*" "$outpath\localDotNet"
+    if ($IsolateManagedTestProjections)
+    {
+        # TAEF probes the runtime directory before module-owned generated assemblies.
+        foreach ($assemblyName in "WinRT.Interop.dll", "WinRT.Projection.dll", "WinRT.Component.dll")
+        {
+            $sharedAssemblyPath = "$outpath\localDotNet\$assemblyName"
+            if (Test-Path -LiteralPath $sharedAssemblyPath)
+            {
+                Remove-Item -LiteralPath $sharedAssemblyPath -Force -ErrorAction Stop
+            }
+        }
+    }
     Publish-Item "$binpath\TestDependencies\localDotNet\WinRT.Runtime.dll" "$outpath\"
     Publish-Item "$binpath\TestDependencies\WinUITest.cer" "$outpath"
     Publish-Item "$binpath\TestDependencies\*.cer" "$outpath\Test"
@@ -312,6 +324,14 @@ if ($Mode -eq "ScenarioTestSuite")
 if ($IsolateManagedTestProjections -and ($Mode -eq "DevTestSuite" -or $Mode -eq "ScenarioTestSuite"))
 {
     $managedTestRoot = "$outpath\Test"
+    # The flat Test folder can retain the helper from the earlier CsWinRT 2.x build.
+    $muxTestInfraSource = "$binpath\Test\MUXTestInfra\MUXTestInfra.dll"
+    if (!(Test-Path -LiteralPath $muxTestInfraSource -PathType Leaf))
+    {
+        throw "CsWinRT 3.0 test helper not found at '$muxTestInfraSource'."
+    }
+    Copy-Item -LiteralPath $muxTestInfraSource -Destination "$managedTestRoot\MUXTestInfra.dll" -Force -ErrorAction Stop
+
     $managedTestFolders = @(Get-ChildItem -LiteralPath $managedTestRoot -Directory | Where-Object {
         @(Get-ChildItem -LiteralPath $_.FullName -File | Where-Object {
             $_.Name -like "Microsoft.UI.Xaml.Tests.Managed.*.dll" -or $_.Name -eq "MUXControls.Test.dll"
