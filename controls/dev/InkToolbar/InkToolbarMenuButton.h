@@ -54,6 +54,8 @@ public:
     bool IsL3Open();
     void OpenL3();
     void CloseL3();
+    // UIA Toggle: turn the menu button's tool on or off without opening the dropdown.
+    void ToggleFromAutomation(bool turnOn);
 
     // Persistent accessible identity for the button (e.g. "Measuring tools"); the peer prefixes it
     // before the selected tool so the button's purpose is announced, not just the current selection.

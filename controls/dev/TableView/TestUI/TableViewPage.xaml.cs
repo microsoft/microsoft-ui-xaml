@@ -359,7 +359,85 @@ namespace MUXControlsTestApp
                 editor.GetType().Name + "|" +
                 (string.IsNullOrEmpty(automationName) ? "-" : automationName) + "|" +
                 editor.Text + "|focus=" +
-                IsSelfOrDescendant(editor, FocusManager.GetFocusedElement(XamlRoot) as DependencyObject) + ";";
+                IsSelfOrDescendant(editor, FocusManager.GetFocusedElement(XamlRoot) as DependencyObject) + "|" +
+                ProbeEditorAlignment(editor) + ";";
+        }
+
+        // Text line bounds of the edited column's display cell, captured before the editor replaces it.
+        private Windows.Foundation.Rect? _displayLine;
+
+        private void CaptureDisplayLine(object item, TableViewColumn column)
+        {
+            _displayLine = null;
+            var header = FindBasicHeaderCell(column);
+            if (header == null)
+            {
+                return;
+            }
+
+            var columnBounds = BoundsInTable(header);
+            var display = FindDescendants<TextBlock>(BasicTableView).FirstOrDefault(t =>
+            {
+                var bounds = BoundsInTable(t);
+                double centre = bounds.Left + (bounds.Width / 2);
+                return ReferenceEquals(t.DataContext, item) && centre >= columnBounds.Left && centre <= columnBounds.Right;
+            });
+            if (display != null)
+            {
+                var line = display.ContentStart.GetCharacterRect(Microsoft.UI.Xaml.Documents.LogicalDirection.Forward);
+                line.Union(display.ContentEnd.GetCharacterRect(Microsoft.UI.Xaml.Documents.LogicalDirection.Backward));
+                _displayLine = display.TransformToVisual(BasicTableView).TransformBounds(line);
+            }
+        }
+
+        private Windows.Foundation.Rect BoundsInTable(FrameworkElement element) =>
+            element.TransformToVisual(BasicTableView).TransformBounds(new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+
+        // "align=dx:<start-edge delta>,dy:<top delta, or line-bottom delta when the line heights differ>,lines:<display>/<editor>".
+        private string ProbeEditorAlignment(TextBox editor)
+        {
+            if (_displayLine == null)
+            {
+                return "align=no-display-text";
+            }
+            // GetRectFromCharacterIndex throws for empty text.
+            if (string.IsNullOrEmpty(editor.Text))
+            {
+                return "align=empty-editor";
+            }
+
+            // Flush the SizeChanged padding pass.
+            editor.UpdateLayout();
+            var d = _displayLine.Value;
+            var contentElement = FindDescendants<ScrollViewer>(editor).FirstOrDefault(s => s.Name == "ContentElement");
+            if (!(contentElement?.Content is FrameworkElement textView))
+            {
+                return "align=no-text-view";
+            }
+            var e = textView.TransformToVisual(BasicTableView).TransformBounds(EditorLineRect(editor, textView));
+            // Both rects are in the table's own coordinates, which are mirrored under RTL, so Left is the line's start edge.
+            double dx = e.Left - d.Left;
+            double dy = Math.Abs(e.Height - d.Height) <= 0.5 ? e.Top - d.Top : e.Bottom - d.Bottom;
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "align=dx:{0:0.##},dy:{1:0.##},lines:{2:0.##}/{3:0.##}", dx, dy, d.Height, e.Height);
+        }
+
+        // The editor's text line in its text view's coordinates. GetRectFromCharacterIndex is relative to the text
+        // view and leaves out an RTL line's right alignment, so under RTL the line is placed against the text view's
+        // start (right) edge: the RTL check compares the text view's start edge, not the glyphs.
+        internal static Windows.Foundation.Rect EditorLineRect(TextBox editor, FrameworkElement textView)
+        {
+            var first = editor.GetRectFromCharacterIndex(0, false);
+            var last = editor.GetRectFromCharacterIndex(Math.Max(0, editor.Text.Length - 1), true);
+            double width = Math.Max(0, last.Right - first.Left);
+            double left = editor.FlowDirection == FlowDirection.RightToLeft ? textView.ActualWidth - width : first.Left;
+            return new Windows.Foundation.Rect(left, first.Top, width, first.Height);
+        }
+
+        private void OnToggleBasicFlowDirectionClick(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.FlowDirection = BasicTableView.FlowDirection == FlowDirection.RightToLeft
+                ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
         private static bool IsSelfOrDescendant(DependencyObject root, DependencyObject candidate)
@@ -380,6 +458,7 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
         {
             EditColumnReportTextBlock.Text += (args.Column?.Header?.ToString() ?? "null") + ";";
+            CaptureDisplayLine(args.Item, args.Column);
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, ProbeEditor);
         }
 

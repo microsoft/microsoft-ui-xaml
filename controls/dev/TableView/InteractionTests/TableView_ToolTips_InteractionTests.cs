@@ -612,7 +612,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //
         // Both layers are logged whether or not the tooltip is found: a null result has to be attributable to
         // "nothing opened" rather than to "the search looked in the wrong place".
-        private static UIObject FindOpenToolTip(string phase)
+        internal static UIObject FindOpenToolTip(string phase)
         {
             foreach (UIObject rootChild in UIObject.Root.Children)
             {

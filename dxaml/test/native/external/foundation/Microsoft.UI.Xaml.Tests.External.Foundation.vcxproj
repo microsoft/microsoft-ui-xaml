@@ -181,6 +181,7 @@
     <ClInclude Include="input\Pointer\PointerRegressionTests.h" />
     <ClInclude Include="input\Pointer\ReplayPointerUpdateTests.h" />
     <!--<ClInclude Include="printing\PrintingIntegrationTestSuite.h" />-->
+    <ClInclude Include="printing\PrintDocumentLifetimeTests.h" />
     <ClInclude Include="shell\BlockingAppFocusTests.h" />
     <ClInclude Include="shell\LockScreenTests.h" />
     <ClInclude Include="shell\StartMenuTests.h" />
@@ -327,6 +328,7 @@
     <ClCompile Include="input\Pointer\PointerReentrancyTests.cpp" />
     <ClCompile Include="input\Pointer\PointerRegressionTests.cpp" />
     <!--<ClCompile Include="printing\PrintingIntegrationTestSuite.cpp" />-->
+    <ClCompile Include="printing\PrintDocumentLifetimeTests.cpp" />
     <ClCompile Include="shell\BlockingAppFocusTests.cpp" />
     <ClCompile Include="shell\LockScreenTests.cpp" />
     <ClCompile Include="shell\StartMenuTests.cpp" />

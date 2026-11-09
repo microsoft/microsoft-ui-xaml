@@ -9,7 +9,7 @@
 #include <vector>
 
 class TableViewAutomationPeer :
-    public ReferenceTracker<TableViewAutomationPeer, winrt::implementation::TableViewAutomationPeerT>
+    public ReferenceTracker<TableViewAutomationPeer, winrt::implementation::TableViewAutomationPeerT, winrt::IScrollProvider>
 {
 public:
     TableViewAutomationPeer(winrt::TableView const& owner);
@@ -37,6 +37,16 @@ public:
     winrt::com_array<winrt::IRawElementProviderSimple> GetSelection();
     bool CanSelectMultiple();
     bool IsSelectionRequired();
+
+    // IScrollProvider — delegates to the body ScrollViewer's provider; see SetScrollPercent.
+    bool HorizontallyScrollable();
+    double HorizontalScrollPercent();
+    double HorizontalViewSize();
+    bool VerticallyScrollable();
+    double VerticalScrollPercent();
+    double VerticalViewSize();
+    void Scroll(winrt::ScrollAmount const& horizontalAmount, winrt::ScrollAmount const& verticalAmount);
+    void SetScrollPercent(double horizontalPercent, double verticalPercent);
 
     // IItemContainerProvider — lets AT clients enumerate beyond realized rows.
     winrt::IRawElementProviderSimple FindItemByProperty(
@@ -82,6 +92,11 @@ private:
     void RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType);
     com_ptr<TableView> GetImpl();
     winrt::AutomationPeer GetOrCreateSelectedItemPeer(TableView& table, winrt::IInspectable const& item, int32_t index, bool create);
+    winrt::IScrollProvider GetBodyScrollProvider();
+    winrt::IScrollProvider BodyScrollProvider();
+    bool IsLastRowAtBottom();
+
+    uint32_t m_scrollRequest{ 0 };
 
     std::vector<ColumnHeaderPeerCacheEntry> m_columnHeaderPeerCache;
     // Peers for unrealized selected rows, so repeated GetSelection calls return the same provider.
