@@ -282,8 +282,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Gridline values mirror Common_themeresources_any.xaml; the outer frame is invisible
-        // in Light/Dark and uses window text in High Contrast.
+        // Gridline and outer-frame values mirror Common_themeresources_any.xaml.
         [TestMethod]
         public void VerifyGridLineAndOuterBorderBrushDefaults()
         {
@@ -311,8 +310,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Dark TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#15FFFFFF).");
                 Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), light.Color,
                     "Light TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#0F000000).");
-                Verify.AreEqual((byte)0, darkBorder.Color.A, "The default Dark outer border must be transparent.");
-                Verify.AreEqual((byte)0, lightBorder.Color.A, "The default Light outer border must be transparent.");
+                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), darkBorder.Color,
+                    "The default Dark outer border must use DividerStrokeColorDefault (#15FFFFFF).");
+                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), lightBorder.Color,
+                    "The default Light outer border must use DividerStrokeColorDefault (#0F000000).");
                 Verify.AreEqual(RequireApplicationColor("SystemColorWindowTextColor"), highContrastBorder.Color,
                     "High Contrast must retain a visible system-color outer border.");
                 Verify.AreEqual(RequireApplicationColor("SystemColorGrayTextColor"), highContrast.Color,
@@ -331,54 +332,334 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyBorderlessOuterBorderPreservesHighContrast()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+                foreach (var theme in new[] { "Default", "Light", "HighContrast" })
+                {
+                    var brush = RequireBrush(resources, theme, "TabularSurfaceBorderlessOuterBorderBrush");
+                    if (brush == null)
+                    {
+                        continue;
+                    }
+
+                    if (theme == "HighContrast")
+                    {
+                        Verify.AreEqual(RequireApplicationColor("SystemColorWindowTextColor"), brush.Color,
+                            "The borderless option must preserve the High Contrast window-text frame.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual((byte)0, brush.Color.A,
+                            "The borderless option must hide the frame in Light/Dark.");
+                    }
+                }
+
+                var style = resources["BorderlessTableViewStyle"] as Style;
+                Verify.IsNotNull(style, "TabularControlsResources must expose the borderless style.");
+                if (style != null)
+                {
+                    Verify.AreEqual(1, style.Setters.Count, "The borderless style must change only BorderBrush.");
+                    Verify.AreEqual(Control.BorderBrushProperty, (style.Setters[0] as Setter)?.Property);
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyOuterBorderTransparencyPreservesLayoutAndCustomization()
         {
             TableView tableView = null;
             Rect headerBounds = default;
             SolidColorBrush customBrush = null;
+            Style borderlessStyle = null;
 
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
+                borderlessStyle = (Style)new TabularControlsResources()["BorderlessTableViewStyle"];
                 customBrush = new SolidColorBrush(Microsoft.UI.Colors.Red);
                 tableView = CreateThemingTable();
                 tableView.RequestedTheme = ElementTheme.Light;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
-
-            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
-            {
-                RunOnUIThread.Execute(() => tableView.RequestedTheme = theme);
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() =>
-                {
-                    Verify.AreEqual(theme, tableView.ActualTheme, "The table must follow the requested theme.");
-                    Verify.AreEqual((byte)0, (tableView.BorderBrush as SolidColorBrush)?.Color.A ?? byte.MaxValue,
-                        "The default outer border must stay transparent across Light/Dark changes.");
-                    var frame = VisualTreeHelper.GetChild(tableView, 0) as Border;
-                    Verify.IsNotNull(frame, "The default template must retain its outer Border.");
-                    Verify.AreEqual(new Thickness(1), frame.BorderThickness, "Keep the existing layout inset.");
-                    Verify.AreEqual(tableView.BorderBrush, frame.BorderBrush, "The frame must remain template-bound.");
-                });
-            }
-
             RunOnUIThread.Execute(() =>
             {
                 var header = GetHeaderCell(tableView, 0);
                 headerBounds = header.TransformToVisual(tableView).TransformBounds(
                     new Rect(0, 0, header.ActualWidth, header.ActualHeight));
+            });
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                RunOnUIThread.Execute(() => tableView.RequestedTheme = theme);
+                IdleSynchronizer.Wait();
+                foreach (var showBorder in new[] { true, false, true })
+                {
+                    RunOnUIThread.Execute(() => tableView.Style = showBorder ? null : borderlessStyle);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(theme, tableView.ActualTheme, "The table must follow the requested theme.");
+                        var expected = showBorder
+                            ? (theme == ElementTheme.Dark
+                                ? Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF)
+                                : Color.FromArgb(0x0F, 0x00, 0x00, 0x00))
+                            : Microsoft.UI.Colors.Transparent;
+                        var brush = tableView.BorderBrush as SolidColorBrush;
+                        Verify.IsNotNull(brush);
+                        if (showBorder)
+                        {
+                            Verify.AreEqual(expected, brush.Color, "The default outer frame must be visible.");
+                        }
+                        else
+                        {
+                            Verify.AreEqual((byte)0, brush.Color.A, "The borderless style must hide the frame.");
+                        }
+                        var frame = VisualTreeHelper.GetChild(tableView, 0) as Border;
+                        Verify.IsNotNull(frame, "The default template must retain its outer Border.");
+                        Verify.AreEqual(new Thickness(1), frame.BorderThickness, "Keep the existing layout inset.");
+                        Verify.AreEqual(tableView.BorderBrush, frame.BorderBrush, "The frame must remain template-bound.");
+                        var header = GetHeaderCell(tableView, 0);
+                        Verify.AreEqual(headerBounds, header.TransformToVisual(tableView).TransformBounds(
+                            new Rect(0, 0, header.ActualWidth, header.ActualHeight)),
+                            "Switching border styles or themes must not shift or resize header content.");
+                    });
+                }
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
                 tableView.BorderBrush = customBrush;
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
                 var frame = VisualTreeHelper.GetChild(tableView, 0) as Border;
-                Verify.AreEqual(customBrush, frame.BorderBrush, "A local BorderBrush must restore a visible border.");
+                Verify.AreEqual(customBrush, frame.BorderBrush, "A local BorderBrush must customize the visible border.");
                 var header = GetHeaderCell(tableView, 0);
                 Verify.AreEqual(headerBounds, header.TransformToVisual(tableView).TransformBounds(
                     new Rect(0, 0, header.ActualWidth, header.ActualHeight)),
                     "Restoring the border must not shift or resize header content.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyTerminalTrailingGridLinesStayHiddenWithBorderlessStyle()
+        {
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+                {
+                    TableView tableView = null;
+                    Style borderlessStyle = null;
+                    Rect terminalHeaderBounds = default;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        EnsureTabularControlsResources();
+                        borderlessStyle = (Style)new TabularControlsResources()["BorderlessTableViewStyle"];
+                        tableView = CreateThemingTable();
+                        tableView.FlowDirection = flow;
+                        tableView.RequestedTheme = theme;
+                        foreach (var column in tableView.Columns)
+                        {
+                            column.Width = new GridLength(1, GridUnitType.Star);
+                        }
+                        LoadContent(tableView);
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var header = GetHeaderCell(tableView, 1);
+                        terminalHeaderBounds = header.TransformToVisual(tableView).TransformBounds(
+                            new Rect(0, 0, header.ActualWidth, header.ActualHeight));
+                    });
+
+                    foreach (var showBorder in new[] { true, false, true, false })
+                    {
+                        RunOnUIThread.Execute(() => tableView.Style = showBorder ? null : borderlessStyle);
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var context = $"{flow}, {theme}, border visible={showBorder}";
+                            var header = GetHeaderCell(tableView, 1);
+                            Verify.AreEqual(Visibility.Collapsed,
+                                ((Border)header.FindVisualChildByName("PART_GridLine")).Visibility,
+                                $"The terminal header divider must stay hidden at the viewport edge ({context}).");
+                            Verify.AreEqual(Visibility.Visible,
+                                ((Border)GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine")).Visibility,
+                                $"The interior header divider must remain visible ({context}).");
+                            Verify.AreEqual(terminalHeaderBounds, header.TransformToVisual(tableView).TransformBounds(
+                                new Rect(0, 0, header.ActualWidth, header.ActualHeight)),
+                                $"The border toggle must preserve column geometry ({context}).");
+                            var rows = FindVisualChildrenByType<TableViewRow>(tableView).ToList();
+                            Verify.IsGreaterThan(rows.Count, 0, "The table must realize rows.");
+                            foreach (var row in rows)
+                            {
+                                Verify.IsNull(GetRowCell(row, 1).BorderBrush,
+                                    $"The terminal body divider must stay hidden at the viewport edge ({context}).");
+                                Verify.IsNotNull(GetRowCell(row, 0).BorderBrush,
+                                    $"The interior body divider must remain visible ({context}).");
+                            }
+                        });
+                    }
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        foreach (var column in tableView.Columns)
+                        {
+                            column.Width = new GridLength(80);
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(Visibility.Visible,
+                            ((Border)GetHeaderCell(tableView, 1).FindVisualChildByName("PART_GridLine")).Visibility,
+                            "A column ending before the viewport edge must retain its divider.");
+                        var rows = FindVisualChildrenByType<TableViewRow>(tableView).ToList();
+                        Verify.IsGreaterThan(rows.Count, 0, "The table must realize rows.");
+                        foreach (var row in rows)
+                        {
+                            Verify.IsNotNull(GetRowCell(row, 1).BorderBrush,
+                                "A body cell ending before the viewport edge must retain its divider.");
+                        }
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTerminalBottomGridLineTracksArrangedFrameAndBorderVisibility()
+        {
+            foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+            {
+                TableView table = null;
+                TableViewRow lastRow = null;
+                Rect rowBounds = default;
+                RunOnUIThread.Execute(() =>
+                {
+                    var items = Enumerable.Range(0, 40)
+                        .Select(i => new Person { Name = $"Person {i}", Role = "Engineer" }).ToList();
+                    table = CreateTableView(itemsSource: TableViewSource.From(items), height: 241.3333333333333);
+                    table.Density = density;
+                    table.RequestedTheme = ElementTheme.Light;
+                    table.HighContrastAdjustment = ElementHighContrastAdjustment.None;
+                    table.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                    table.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+                    table.GridLinesVisibility = TableViewGridLinesVisibility.All;
+                    table.Resources["TabularSurfaceGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                    table.Columns[0].Width = new GridLength(1, GridUnitType.Star);
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => GetBodyScroller(table).ChangeView(null, double.MaxValue, null, true));
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    lastRow = FindVisualChildrenByType<TableViewRow>(table)
+                        .Single(row => (row.DataContext as Person)?.Name == "Person 39");
+                    rowBounds = lastRow.TransformToVisual(table).TransformBounds(
+                        new Rect(0, 0, lastRow.ActualWidth, lastRow.ActualHeight));
+                    var inner = (FrameworkElement)table.FindVisualChildByName("PART_LayoutRoot");
+                    Verify.IsNotNull(inner, "The default template exposes its arranged inner frame.");
+                    var innerBounds = inner.TransformToVisual(table).TransformBounds(
+                        new Rect(0, 0, inner.ActualWidth, inner.ActualHeight));
+                    Verify.IsLessThanOrEqual(Math.Abs(innerBounds.Bottom - rowBounds.Bottom),
+                        1.03125 / table.XamlRoot.RasterizationScale,
+                        "Precondition: the final row must meet the frame within scroll rounding.");
+                    var separator = (Border)lastRow.FindVisualChildByName("PART_GridLineBorder");
+                    Verify.AreEqual(0.0, separator.BorderThickness.Bottom,
+                        $"{density}: only the outer frame should draw the terminal bottom edge.");
+                });
+
+                foreach (var gapPixels in new[] { 1.0, 3.0, 0.0 })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        lastRow.RenderTransform = new TranslateTransform
+                        {
+                            Y = -gapPixels / table.XamlRoot.RasterizationScale
+                        };
+                        table.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(gapPixels <= 1.0 ? 0.0 : 1.0,
+                            ((Border)lastRow.FindVisualChildByName("PART_GridLineBorder")).BorderThickness.Bottom,
+                            "Coalesce a scroll-rounding gap, but do not hide a distinct data boundary.");
+                    });
+                    if (gapPixels == 1.0)
+                    {
+                        var image = RenderElementPixels(table);
+                        var sawFrame = false;
+                        for (var y = Math.Max(0, image.Height - 15); y < image.Height; ++y)
+                        {
+                            var pixel = ReadRenderedPixel(image, image.Width / 2, y);
+                            Verify.AreNotEqual(Microsoft.UI.Colors.Red, pixel,
+                                "The terminal edge must not paint a second row-separator stroke.");
+                            sawFrame |= pixel == Microsoft.UI.Colors.Black;
+                        }
+                        Verify.IsTrue(sawFrame, "The remaining terminal stroke must be the outer frame.");
+                    }
+                }
+
+                foreach (var showBorder in new[] { false, true, false, true })
+                {
+                    RunOnUIThread.Execute(() => table.BorderBrush = new SolidColorBrush(
+                        showBorder ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.Transparent));
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var separator = (Border)lastRow.FindVisualChildByName("PART_GridLineBorder");
+                        Verify.AreEqual(showBorder ? 0.0 : 1.0, separator.BorderThickness.Bottom,
+                            "A transparent frame must not replace the row's own separator.");
+                        var bounds = lastRow.TransformToVisual(table).TransformBounds(
+                            new Rect(0, 0, lastRow.ActualWidth, lastRow.ActualHeight));
+                        Verify.AreEqual(rowBounds, bounds,
+                            "Coalescing the border must not resize or move the row.");
+                    });
+                }
+
+                RunOnUIThread.Execute(() => GetBodyScroller(table).ChangeView(null, 0, null, true));
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var firstRow = FindVisualChildrenByType<TableViewRow>(table)
+                        .Single(row => (row.DataContext as Person)?.Name == "Person 0");
+                    Verify.AreEqual(1.0,
+                        ((Border)firstRow.FindVisualChildByName("PART_GridLineBorder")).BorderThickness.Bottom,
+                        "Scrolling away must retain ordinary row separators.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTerminalBottomGridLinePreservesEmptySpace()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateThemingTable();
+                table.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var lastRow = FindVisualChildrenByType<TableViewRow>(table)
+                    .Single(row => (row.DataContext as Person)?.Name == "Mei");
+                var bounds = lastRow.TransformToVisual(table).TransformBounds(
+                    new Rect(0, 0, lastRow.ActualWidth, lastRow.ActualHeight));
+                Verify.IsGreaterThan(table.ActualHeight - bounds.Bottom, 10.0,
+                    "Precondition: there must be genuine empty space below the data.");
+                Verify.AreEqual(1.0,
+                    ((Border)lastRow.FindVisualChildByName("PART_GridLineBorder")).BorderThickness.Bottom,
+                    "The final data row keeps its separator when it does not meet the frame.");
             });
         }
 

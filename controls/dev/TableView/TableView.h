@@ -1043,6 +1043,7 @@ private:
     void RefreshGridLinesOnRealizedRows();
     void QueueTerminalGridLineRefresh(bool isGeometryRetry = false);
     void RefreshTerminalGridLines();
+    std::optional<winrt::Rect> GetInnerBorderBounds();
     std::optional<bool> ShouldSuppressTrailingGridLine();
     std::optional<bool> ShouldSuppressBottomGridLine(
         const winrt::FrameworkElement& element,

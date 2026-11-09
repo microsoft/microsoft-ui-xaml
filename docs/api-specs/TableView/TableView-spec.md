@@ -143,7 +143,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls only the body gridlines and defaults to `All`. Column-header dividers and the bottom rule are always present, independently of body gridlines. The trailing divider is suppressed where it would double the table's outer border.
+`GridLinesVisibility` controls only the body gridlines and defaults to `All`. Column-header dividers and the bottom rule are always present, independently of body gridlines. The trailing column divider is suppressed where it meets the viewport edge, even when the outer frame is hidden.
 
 Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. In High Contrast, body and column-header gridlines use `SystemColorGrayTextColor` (the system disabled color), while the outer border retains `SystemColorWindowTextColor`. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
 
@@ -229,10 +229,26 @@ Override the named `TabularSurface*` brush keys to customize colors. To restyle 
 beyond their brushes (typography, padding, the template), set `ColumnHeaderStyle`. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
 
-The outer border is transparent by default in Light/Dark and uses `SystemColorWindowTextColor` in
-High Contrast. Its `BorderThickness` remains 1, so changing themes or restoring a visible border does
-not shift content. Set `BorderBrush` or override `TabularSurfaceOuterBorderBrush` to customize it;
-no replacement template is needed.
+The outer border uses `DividerStrokeColorDefault` in Light/Dark and `SystemColorWindowTextColor` in
+High Contrast. To hide it in Light/Dark while preserving the High Contrast frame, use:
+
+```xml
+<tabular:TableView Style="{StaticResource BorderlessTableViewStyle}" />
+```
+
+`BorderlessTableViewStyle` sets only `BorderBrush` to
+`TabularSurfaceBorderlessOuterBorderBrush`: transparent in Light/Dark and window text in High
+Contrast. Its `BorderThickness` remains 1, so switching styles or themes does not shift content.
+To combine the opt-out with `BandedTableViewStyle`, derive from the banded style and set
+`BorderBrush` to `{ThemeResource TabularSurfaceBorderlessOuterBorderBrush}`.
+Set `BorderBrush` or override the named brushes to customize the frame; no replacement template
+or new control property is needed. A literal `BorderBrush="Transparent"` suppresses the frame in
+all themes, unlike the High Contrast-preserving borderless style.
+
+Where a row or section separator meets the visible outer frame, the frame supplies the single
+terminal stroke. Fractional display-scale rounding is accounted for without changing row heights
+or density padding. Rows ending above genuine empty space retain their separator, as do rows
+whose outer frame is hidden by the borderless style.
 
 Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
 independently to customize the disabled-selected indicator and disabled row text.
@@ -846,7 +862,7 @@ Template parts. All are optional; a missing part disables only its feature:
 |---|---|---|
 | `PART_Background` | `Border` | Decorative fill and independently overridable interaction outline, separate from content and resize hit targets. Rounded only at exposed top corners; all corners adjoining header gridlines remain square. |
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort indicator's width and its host's horizontal padding to the presenter's right `Margin`, reserving space even while unsorted so text trims before the icon without jumping when sorting changes. |
-| `PART_GridLine` | `Border` | Always-present vertical separator, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_GridLine` | `Border` | Always-present vertical separator, except the last column's where it meets the viewport edge, regardless of frame visibility; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort icon on a sortable column. Its margin follows header padding, with another 4px on each horizontal side: a 4px text gap and a 16px trailing inset with the default 12px header padding. The icon always follows `PART_ContentPresenter`'s `Foreground`: secondary text for regular headers, primary text for strong headers, and matching custom, disabled, or High Contrast foregrounds. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 | `PART_HeaderFlyoutButton` | `DropDownButton` | Optional trailing dropdown, visible only when the column has a `HeaderFlyout`. The default template reserves a separate 26px segment (`TableViewHeaderFlyoutButtonWidth`), outside the text/sort region and mirrored in RTL. The resize gripper retains priority at the shared column edge. |

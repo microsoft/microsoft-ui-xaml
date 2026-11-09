@@ -140,6 +140,10 @@
         <Setter Property="AlternatingRowBackground" Value="{ThemeResource TabularSurfaceRowBackgroundAlternatingBrush}" />
     </Style>
 
+    <Style x:Key="BorderlessTableViewStyle" TargetType="tabular:TableView">
+        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceBorderlessOuterBorderBrush}" />
+    </Style>
+
     <Style x:Key="StrongTableViewColumnHeaderStyle" TargetType="tabular:TableViewColumnHeader">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />

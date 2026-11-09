@@ -92,7 +92,8 @@
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#15FFFFFF" />                               <!-- DividerStrokeColorDefaultBrush -->
-            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="Transparent" />                         <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#15FFFFFF" />                           <!-- DividerStrokeColorDefaultBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceBorderlessOuterBorderBrush" Color="Transparent" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -151,7 +152,8 @@
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#0F000000" />                               <!-- DividerStrokeColorDefaultBrush (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="Transparent" />                         <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#0F000000" />                           <!-- DividerStrokeColorDefaultBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceBorderlessOuterBorderBrush" Color="Transparent" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -208,6 +210,7 @@
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceBorderlessOuterBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

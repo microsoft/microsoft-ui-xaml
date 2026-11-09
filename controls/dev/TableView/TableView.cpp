@@ -400,6 +400,16 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
+    bool HasVisibleBorderBrush(const winrt::Brush& brush)
+    {
+        if (!brush || brush.Opacity() <= 0.0)
+        {
+            return false;
+        }
+        const auto solid = brush.try_as<winrt::SolidColorBrush>();
+        return !solid || solid.Color().A != 0;
+    }
+
     double TerminalEdgeTolerance(const winrt::FrameworkElement& element) noexcept
     {
         double scale = 1.0;
@@ -604,6 +614,19 @@ TableView::TableView()
     Columns(columns);
 
     auto weakThis = get_weak();
+
+    for (auto const& property : { winrt::Control::BorderBrushProperty(), winrt::Control::BorderThicknessProperty() })
+    {
+        RegisterPropertyChangedCallback(property,
+            [weakThis](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->InvalidateArrange();
+                    strongThis->QueueTerminalGridLineRefresh();
+                }
+            });
+    }
 
     // Use bubbling KeyDown so focused editors can consume typing keys before row navigation.
     m_keyDownHandler = winrt::KeyEventHandler(
@@ -1302,6 +1325,12 @@ void TableView::OnBodyScrollerViewChanged(
         RefreshTerminalGridLines();
     }
 
+    if (!args.IsIntermediate())
+    {
+        InvalidateArrange();
+        QueueTerminalGridLineRefresh();
+    }
+
     auto headerScroller = m_headerScroller.get();
     if (!headerScroller)
     {
@@ -1610,12 +1639,34 @@ void TableView::QueueTerminalGridLineRefresh(bool isGeometryRetry)
         });
 }
 
+std::optional<winrt::Rect> TableView::GetInnerBorderBounds()
+{
+    if (auto layoutRoot = GetTemplateChild(L"PART_LayoutRoot").try_as<winrt::FrameworkElement>())
+    {
+        winrt::Rect bounds{};
+        if (TryGetBoundsRelativeTo(layoutRoot, *this, bounds))
+        {
+            return bounds;
+        }
+        return std::nullopt;
+    }
+
+    // Older/custom templates need not expose the arranged inner frame.
+    const auto border = BorderThickness();
+    return winrt::Rect{
+        static_cast<float>(border.Left),
+        static_cast<float>(border.Top),
+        static_cast<float>((std::max)(0.0, ActualWidth() - border.Left - border.Right)),
+        static_cast<float>((std::max)(0.0, ActualHeight() - border.Top - border.Bottom)) };
+}
+
 std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
 {
     const auto border = BorderThickness();
     // Both edges are read in the panel's logical coordinate space, which XAML mirrors wholesale
     // under RTL, so the logical trailing edge meets BorderThickness.Right in either direction.
     const double outerThickness = (std::max)(0.0, border.Right);
+    // A terminal column at the viewport edge is not an interior divider, even without a frame.
     if (outerThickness <= 0.0 || ActualWidth() <= 0.0)
     {
         return false;
@@ -1664,7 +1715,12 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
 
     // TransformToVisual reports the panel's logical coordinate space.
     const double candidateEdge = bounds.X + bounds.Width;
-    const double outerEdge = ActualWidth() - outerThickness;
+    const auto innerBounds = GetInnerBorderBounds();
+    if (!innerBounds)
+    {
+        return std::nullopt;
+    }
+    const double outerEdge = innerBounds->X + innerBounds->Width;
     return std::abs(candidateEdge - outerEdge) <= TerminalEdgeTolerance(*this);
 }
 
@@ -1678,7 +1734,7 @@ std::optional<bool> TableView::ShouldSuppressBottomGridLine(
     }
 
     const double bottomThickness = (std::max)(0.0, BorderThickness().Bottom);
-    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0)
+    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0 || !HasVisibleBorderBrush(BorderBrush()))
     {
         return false;
     }
@@ -1689,8 +1745,24 @@ std::optional<bool> TableView::ShouldSuppressBottomGridLine(
         return std::nullopt;
     }
 
-    const double innerBottom = ActualHeight() - bottomThickness;
-    return std::abs(bounds.Y + bounds.Height - innerBottom) <= TerminalEdgeTolerance(*this);
+    const auto innerBounds = GetInnerBorderBounds();
+    if (!innerBounds)
+    {
+        return std::nullopt;
+    }
+
+    double tolerance = TerminalEdgeTolerance(*this);
+    if (auto scroller = m_bodyScroller.get();
+        scroller && scroller.ScrollableHeight() > 0.0 &&
+        std::abs(scroller.VerticalOffset() - scroller.ScrollableHeight()) <= tolerance)
+    {
+        // At the scroll limit, viewport and content translations can round independently.
+        // Allow their combined pixel rounding, not arbitrary space below short content.
+        tolerance *= 2.0;
+    }
+
+    const double innerBottom = innerBounds->Y + innerBounds->Height;
+    return std::abs(bounds.Y + bounds.Height - innerBottom) <= tolerance;
 }
 
 void TableView::RefreshTerminalGridLines()
@@ -1726,14 +1798,18 @@ void TableView::RefreshTerminalGridLines()
     {
         // Select by geometry rather than by item index: once content overflows and scrolls, the
         // container meeting the inner bottom edge is not the last item.
-        const double innerBottom = ActualHeight() - (std::max)(0.0, BorderThickness().Bottom);
+        const auto innerBounds = GetInnerBorderBounds();
+        terminalGeometryUnavailable = !innerBounds.has_value();
+        const double innerBottom = innerBounds
+            ? innerBounds->Y + innerBounds->Height
+            : ActualHeight() - (std::max)(0.0, BorderThickness().Bottom);
         double closestDistance = std::numeric_limits<double>::infinity();
         const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
         for (int32_t i = 0; i < childCount; ++i)
         {
             const auto child =
                 winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>();
-            if (!child)
+            if (!child || repeater.GetElementIndex(child) < 0)
             {
                 continue;
             }
@@ -1801,12 +1877,14 @@ void TableView::RefreshTerminalGridLines()
             ? WantsHorizontalLines(GridLinesVisibility())
             : terminalGroupHeader && GridLinesVisibility() != winrt::TableViewGridLinesVisibility::None &&
                 terminalGroupHeader.BorderThickness().Bottom > 0.0;
+    const bool canSuppressBottom =
+        hasBottomGridLine && BorderThickness().Bottom > 0.0 && HasVisibleBorderBrush(BorderBrush());
     auto bottomResult = terminalElement
         ? ShouldSuppressBottomGridLine(terminalElement, hasBottomGridLine)
         : std::optional<bool>{ false };
     // A container that failed its transform could be the real edge container, so a negative
     // result is only trustworthy once every container was measurable.
-    if (terminalGeometryUnavailable && !bottomResult.value_or(false))
+    if (canSuppressBottom && terminalGeometryUnavailable && !bottomResult.value_or(false))
     {
         bottomResult = std::nullopt;
     }

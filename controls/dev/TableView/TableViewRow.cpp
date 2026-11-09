@@ -2519,7 +2519,7 @@ void TableViewRow::RefreshGridLines()
                     cellWrapper.BorderThickness(verticalThickness);
                 }
                 // Keep the separator's layout thickness stable and suppress only its brush when
-                // the terminal cell actually meets the outer border.
+                // the terminal cell actually meets the inner viewport edge.
                 auto const brush =
                     m_suppressTrailingGridLine &&
                     cellWrapper.Visibility() == winrt::Visibility::Visible &&
