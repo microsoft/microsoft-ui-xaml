@@ -153,7 +153,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(WindowResizeEndsAKSequence)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that Access Key sequence terminates on Window resize")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // crash due to window move
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AltKeyCodesDoNotFireAccessKeys)
