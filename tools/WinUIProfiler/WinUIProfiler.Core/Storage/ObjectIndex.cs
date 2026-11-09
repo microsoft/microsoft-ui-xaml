@@ -20,15 +20,17 @@ namespace WinUIProfiler.Engine.Storage;
 // type each time an object enters the tree: a different type at a known address means the memory was reused by a new
 // object, so a new element starts there. The new object's parent, peer and layout events can come before that, so
 // the old element's mentions since it (or its last child) left the tree move to the new one. Reuse by an object of the
-// same type can't be detected.
+// same type can't be detected. Template and render events can fill missing types, but their class names may differ
+// from DependencyObject_Enter's built-in type and do not establish pointer reuse.
 //
 // The fields that hold a visual (ParentVisualId, ChildVisualId, VisualId) only ever hold an IVisual pointer, so a visual
-// is known from its first mention. Its insertion (WucVisualChildInserted, WucVisualRootSet) reports its type and owner
-// comp node, and the owner's CompPeerLinked label becomes its name. An insertion with a different type or owner than the
-// visual's last means a new visual reused the pointer, so a new visual starts there. Visuals get their children before
-// they are inserted, so as with elements the old visual's mentions since it left the tree (removed, or its parent's
-// children cleared) move to the new one. Reuse by a visual of the same type and owner can't be detected. A hand-in or
-// hand-off visual that its element's re-created comp node inserts again also gets a new owner, so its history splits.
+// is known from its first mention. Current insertions (WucVisualChildInserted, WucVisualRootSet) report identities and type.
+// Older traces may omit the type or also report an owner comp node, whose CompPeerLinked label becomes the visual's name.
+// A different known type or owner means a new visual reused the pointer, so a new visual starts there. Visuals get their
+// children before they are inserted, so as with elements the old visual's mentions since it left the tree (removed, or
+// its parent's children cleared) move to the new one. Reuse without type/owner metadata, or with the same type and owner,
+// can't be detected. A hand-in or hand-off visual that its element's re-created comp node inserts again also gets a new
+// owner, so its history splits.
 internal sealed class ObjectIndex : IDisposable
 {
     // Mentions held in memory per address: a UI element is confirmed within a few, other objects never are. Later ones
@@ -45,7 +47,7 @@ internal sealed class ObjectIndex : IDisposable
         Visual
     }
 
-    // Where an event type mentions objects, and for DependencyObject_Enter where its type and name are.
+    // Where an event type mentions objects, and where it reports an element's type and name.
     private sealed record EventRoles((int Field, Role Role)[] Fields, int ObjectField, int TypeField, int NameField, bool LeavesTree,
         TreeRoles Tree);
 
@@ -63,6 +65,7 @@ internal sealed class ObjectIndex : IDisposable
         public long Address { get; } = address;
         public string? Type { get; set; } = type;
         public string? Name { get; set; } = name;
+        public bool HasEnterType { get; set; }
         public long LastSequence { get; set; }
         // When it last left the tree: an element's last ElementLeftTree that named it, as the element leaving or as a
         // leaving child's parent; a visual's removal since its last insertion. 0 if none.
@@ -81,6 +84,7 @@ internal sealed class ObjectIndex : IDisposable
     {
         public string? Type { get; set; }
         public string? Name { get; set; }
+        public bool HasEnterType { get; set; }
         public List<(long Sequence, int Field)> Mentions { get; } = new(2);
         // True once mentions past MaxHeldMentions went to HeldMentions.
         public bool Overflow { get; set; }
@@ -152,7 +156,7 @@ internal sealed class ObjectIndex : IDisposable
         if (roles.TypeField >= 0 && Address(fields[roles.ObjectField].Value) is var entered && entered != 0)
         {
             ObserveType(entered, fields[roles.TypeField].Value as string, roles.NameField >= 0 ? fields[roles.NameField].Value as string : null,
-                transaction);
+                profilerEvent.Name == "DependencyObject_Enter", transaction);
         }
 
         var tree = roles.Tree;
@@ -167,7 +171,7 @@ internal sealed class ObjectIndex : IDisposable
                     waiting.ForEach(visual => visual.AwaitingLabel = false);
                 }
             }
-            else if (fields[tree.Label].Value is string { Length: > 0 } label)
+            else if (tree.Label >= 0 && fields[tree.Label].Value is string { Length: > 0 } label)
             {
                 Link(compNode, label);
             }
@@ -175,8 +179,9 @@ internal sealed class ObjectIndex : IDisposable
 
         if (tree.Inserted >= 0 && Address(fields[tree.Inserted].Value) is var inserted && inserted != 0)
         {
-            ObserveInsertion(inserted, tree.Parent >= 0 ? Address(fields[tree.Parent].Value) : 0, fields[tree.Type].Value as string,
-                Address(fields[tree.Owner].Value), transaction);
+            ObserveInsertion(inserted, tree.Parent >= 0 ? Address(fields[tree.Parent].Value) : 0,
+                tree.Type >= 0 ? fields[tree.Type].Value as string : null,
+                tree.Owner >= 0 ? Address(fields[tree.Owner].Value) : 0, transaction);
         }
 
         foreach (var (field, role) in roles.Fields)
@@ -323,9 +328,15 @@ internal sealed class ObjectIndex : IDisposable
             fields.Add((Array.IndexOf(names, "ElementId"), Role.UIElement));
         }
 
-        // Only the start form of DependencyObject_Enter carries the type and name.
-        var entered = profilerEvent.Name == "DependencyObject_Enter" && Array.IndexOf(names, "Type") >= 0;
         int At(string name) => Array.IndexOf(names, name);
+        var (objectField, typeField, nameField) = profilerEvent.Name switch
+        {
+            "DependencyObject_Enter" => (At("ObjectPointer"), At("Type"), At("Name")),
+            "FrameworkElement_ApplyTemplate" or "Control_RefreshTemplateBindings" or "EventManager_RaiseLoadedEvent" =>
+                (At("ObjectPointer"), At("ClassName"), At("Name")),
+            "RenderWalk_RenderElement" => (At("ElementPointer"), At("ClassName"), -1),
+            _ => (-1, -1, -1)
+        };
         var tree = profilerEvent.Name switch
         {
             "WucVisualChildInserted" => new TreeRoles(Inserted: At("ChildVisualId"), Parent: At("ParentVisualId"), Type: At("VisualType"),
@@ -337,7 +348,7 @@ internal sealed class ObjectIndex : IDisposable
             "CompPeerUnlinked" => new TreeRoles(CompNode: At("CompNodeId"), Unlinks: true),
             _ => NoTreeRoles
         };
-        roles = new(fields.ToArray(), At("ObjectPointer"), entered ? At("Type") : -1, entered ? At("Name") : -1,
+        roles = new(fields.ToArray(), objectField, typeField, nameField,
             profilerEvent.Name == "ElementLeftTree", tree);
         rolesByType[typeId] = roles;
         return roles;
@@ -448,7 +459,7 @@ internal sealed class ObjectIndex : IDisposable
         }
     }
 
-    private void ObserveType(long address, string? type, string? name, SqliteTransaction transaction)
+    private void ObserveType(long address, string? type, string? name, bool fromEnter, SqliteTransaction transaction)
     {
         if (string.IsNullOrEmpty(type))
         {
@@ -459,11 +470,21 @@ internal sealed class ObjectIndex : IDisposable
         name = string.IsNullOrEmpty(name) ? null : name;
         if (elements.TryGetValue(address, out var element))
         {
-            if (element.Type is not null && element.Type != type)
+            if (!fromEnter && element.Type is not null)
+            {
+                if (element.Name is null && name is not null)
+                {
+                    element.Name = name;
+                    Update(element);
+                }
+                return;
+            }
+
+            if (fromEnter && element.HasEnterType && element.Type != type)
             {
                 // The memory was reused: the element's history ends when it left the tree and a new object starts.
                 elements.Remove(address);
-                StartHolding(address, type, name);
+                StartHolding(address, type, name, fromEnter);
                 if (element.LeftSequence > 0)
                 {
                     MoveToNewObject(element, transaction);
@@ -472,6 +493,7 @@ internal sealed class ObjectIndex : IDisposable
                 return;
             }
 
+            element.HasEnterType |= fromEnter;
             if (element.Type != type || name is not null && element.Name != name)
             {
                 element.Type = type;
@@ -482,19 +504,28 @@ internal sealed class ObjectIndex : IDisposable
             return;
         }
 
-        if (held.TryGetValue(address, out var entry) && (entry.Type is null || entry.Type == type))
+        if (held.TryGetValue(address, out var entry) && (!fromEnter || !entry.HasEnterType || entry.Type == type))
         {
-            entry.Type = type;
-            entry.Name = name ?? entry.Name;
+            if (fromEnter || entry.Type is null)
+            {
+                entry.Type = type;
+                entry.Name = name ?? entry.Name;
+                entry.HasEnterType |= fromEnter;
+            }
+            else if (entry.Name is null)
+            {
+                entry.Name = name;
+            }
+
             return;
         }
 
         // A first sighting, or a different type replacing an object that was never a UI element.
-        StartHolding(address, type, name);
+        StartHolding(address, type, name, fromEnter);
     }
 
     // Holds the mentions of a new object at the address; those held for the object there before are dropped.
-    private void StartHolding(long address, string type, string? name)
+    private void StartHolding(long address, string type, string? name, bool fromEnter)
     {
         if (held.TryGetValue(address, out var previous) && previous.Overflow)
         {
@@ -502,7 +533,7 @@ internal sealed class ObjectIndex : IDisposable
             deleteHeld.ExecuteNonQuery();
         }
 
-        held[address] = new Held { Type = type, Name = name };
+        held[address] = new Held { Type = type, Name = name, HasEnterType = fromEnter };
     }
 
     // Takes the stored mentions after the object last left the tree from it and records them again for the new object at
@@ -573,7 +604,10 @@ internal sealed class ObjectIndex : IDisposable
     private void Confirm(long address, long sequence, int field)
     {
         held.Remove(address, out var entry);
-        var element = new TrackedObject(++objectCount, ObjectKind.Element, address, entry?.Type, entry?.Name);
+        var element = new TrackedObject(++objectCount, ObjectKind.Element, address, entry?.Type, entry?.Name)
+        {
+            HasEnterType = entry?.HasEnterType == true
+        };
         elements[address] = element;
         if (entry is not null)
         {

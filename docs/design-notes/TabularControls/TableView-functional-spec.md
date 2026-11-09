@@ -51,7 +51,8 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 
 ### Row & hierarchy
 - Single + multi selection (Ctrl/Shift). — **PR3**
-- Per-row/cell context menu; checkbox selection (File-Explorer-specific). — **PR3** / surface
+- Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
+- Checkbox selection (File-Explorer-specific). — **PR3** / surface
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
 - Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
 - Opt-in live shaping (`TableViewSource.IsLiveShaping`): reshapes when an item's `PropertyChanged` moves a sort, filter, group or parent value. — **PR3**
@@ -98,7 +99,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 ### Editing
 - Opt-in cell editing (`IsReadOnly = false` on the control; per-column `IsReadOnly`). — **cell editing**
 - Editors supplied by the column: `TableViewTextColumn` produces a `TextBox`; `TableViewTemplateColumn` uses `CellEditingTemplate`. — **cell editing**
-- Gestures: double-click / double-tap and `F2` begin an edit; `Enter` commits; `Esc` cancels; moving focus off the cell commits. — **cell editing**
+- Gestures: double-click / double-tap and `F2` begin an edit; `Enter` commits; `Esc` cancels unless consumed by the editor or used to dismiss its own menu. Focus leaving the editor and its owned flyouts/popups attempts a commit after focus settles; focus within that editing interaction keeps the edit open. Commit is re-evaluated after an editor-owned flyout/popup closes, and validation or an edit-ending veto can keep the edit open. — **cell editing**
 - Programmatic API: `CommitEdit()` and `CancelEdit()` close the open cell edit and return `false` when it stays open (veto or failed validation); read-only `IsEditing` reports whether a cell editor is open. Editing **starts only from user gestures**: there is no public `BeginEdit` and no public current-cell surface (`CurrentItem` / `CurrentColumn` / `SetCurrentCell`) in this release. — **cell editing** · programmatic begin + current cell *deferred* (land together when a scenario such as a context menu or view-model command needs them)
 - Vetoable lifecycle events `BeginningEdit` and `CellEditEnding`. Both are synchronous: a handler sets `Cancel` before it returns, and there is no `GetDeferral()`. `CellEditEnding` reports the outcome through `EditAction` and is raised for every close, so there is no separate post-close event. — **cell editing** · `RowEditEnding`, `EditEnded` and async deferrals *deferred*
 - Rollback: the built-in text editor uses `UpdateSourceTrigger=Explicit`, so a cancelled edit never reaches the data item; application editing templates must buffer the same way. — **cell editing** · item-owned transactions (`ITableViewEditableItem`, the WinRT counterpart of `IEditableObject`) *deferred* with row editing
@@ -127,10 +128,56 @@ the source publishes, so the same engine serves an app that never touches `Table
 
 > Tooltips are **not** gated on text truncation. No WinUI control keys tooltips off `IsTextTrimmed`; the shipped pattern is to gate on a cheap content predicate (non-empty string) or an explicit opt-in.
 
+### Context menus
+
+- Opt-in column properties: `TableViewColumn.CellContextFlyout` and `HeaderContextFlyout` are nullable `FlyoutBase` dependency properties, read on each request. The cell flyout is shared across that column's data cells; it never applies to group headers. — **implemented**
+- Cell precedence: application flyout inside the cell content, column `CellContextFlyout`, application row-template/row flyout on the ancestor path, then inherited `TableView.ContextFlyout`. Header precedence: application flyout inside header content, column `HeaderContextFlyout`, then table fallback. Content search excludes nested items hosts' items and nested TableViews, and discovers text-control flyouts only when locally set rather than built-in or style-set.
+- Row-only requests resolve menus along the ancestor path from the cells host through the template root and row, then table fallback, in addition to native template routing; lookup does not descend into arbitrary cells and column menus do not apply. Group headers use their own/style `ContextFlyout`, then table fallback. Empty table space uses table fallback.
+- Data context: cell menu items inherit the requested row's item, not `SelectedItem` or the column object. Header menus do not automatically receive a row item or column object. Group-header menus inherit `TableViewGroupInfo`; a header reused for another group gets a fresh projection, preserving the original identity in already-open menus. Same-group metadata updates remain observable in place. Table fallback uses the table's data context. Explicit application binding sources retain precedence.
+- Input and placement: right-click and press-and-hold use pointer position; Shift+F10, Menu key, and UIA `ShowContextMenu` use the focused element or peer target. Column menus target the cell/header wrapper; content menus retain their owning element as target. A row-owned or table-fallback menu resolved for a non-pointer cell/header request uses the requested cell bounds for placement while keeping its owner as target.
+- Focus and selection: TableView-routed requests focus the target cell, row, or header without changing selection; a body-cell request also sets the current cell. This remains intentional when no menu resolves: focus follows interaction, not menu availability. Normal focus-driven bring-into-view behavior remains applicable to partially visible cells. An unhandled mouse/pen right-button press reaching a data row establishes cell focus/current-cell state before a native template menu opens, without handling the press or arming selection. This respects editing suppression, nested-table ownership, and child-handled presses, and preserves focus already inside the target cell. Other native template-menu input can still bypass the context-request focus move; touch/hold, keyboard, and UIA behavior are unchanged.
+- Editing: TableView suppresses its cell/header routing, native row/group-header-owned menus, and table fallback while editing or awaiting an edit-ending deferral, including after a vetoed commit. Native owner suppression cancels opening before visibility without replacing application property values; `Opening`/`Closing` may run, but a `Closing` veto cannot override this policy. Shared flyouts remain usable by unrelated targets. Editor-owned menus remain available and do not themselves commit the edit; cancelled `Closing` retains the subscription until actual closure, preserving later Escape handling.
+- Virtualization: unavailable pooled group-header peers reject `ShowContextMenu` with `ElementNotAvailable`. Open group menus retain their original group projection rather than retargeting when a header is recycled.
+- Full resolution, binding, and targeting: [API specification: Context menus](../../api-specs/TableView/TableView-spec.md#context-menus).
+
 ### Accessibility (UIA)
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
 - Narrator, keyboard navigation parity, sort announcements. — **PR2** nav · **PR3** sort
 
+### Keyboard focus and accessibility model
+
+The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
+header in the current column, else the first actionable one; the next `Tab` leaves the table.
+`Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
+in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
+header row. When no header is actionable or headers are hidden, the rows are the stop, entered in
+the same order; an empty table's `EmptyTemplate` content is the stop instead (its last control for
+`Shift+Tab`).
+
+Takes keyboard focus:
+
+- Actionable headers: sort (with a sort key), resize (while the column can actually be resized),
+  context menu, tooltip, or interactive content.
+- Rows.
+- Actionable cells: editable (a `CellEditingTemplate`, or a text column with a `Binding`, in an
+  editable table and column), interactive content (a control, an inline `Hyperlink`, or a nested
+  `TableView`), context menu, or tooltip.
+
+Nothing else: `Focus()` on an inactive header or cell does not move focus there, and UIA `SetFocus`
+fails with `UIA_E_INVALIDOPERATION`.
+
+Controls in a cell: `Enter` moves into them, `Esc` returns to the cell; `F2` edits.
+
+Screen readers still reach inactive headers and cells: they stay in the UIA grid (`GridItem`,
+`TableItem`, header association), so the row name, scan mode, and Narrator table navigation
+(`Ctrl+Alt+Arrow`) read them.
+
+Why: Windows guidance asks for one tab stop per collection and tab stops only for actionable items
+([Keyboard interactions](https://learn.microsoft.com/windows/apps/design/input/keyboard-interactions)),
+and APG lets header cells that don't sort or filter stay unfocusable
+([APG grid pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/)). Making inactive data cells
+unfocusable deliberately departs from APG's focusable-cell advice; screen readers reach them
+through table navigation instead.
 ### Reliability & servicing
 - Deterministic behavior, unit-test coverage (**PR4**), SFI/security compliance, post-adoption API stability.
 

@@ -261,9 +261,11 @@ Orders.Clear();
 
 ### Keyboard navigation & accessibility
 
-TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row; Left and Right move the cell cursor within the focused row. Home and End move to the first or last cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last cell in the table. Enter and Space on a column header sort that column.
+TableView supports cell focus on actionable cells. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row (the nearest actionable cell, else the row); Left and Right move the cell cursor among the actionable cells of the focused row. Home and End move to the first or last actionable cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last row of the table. Enter and Space on a column header sort that column.
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
+
+The keyboard focus model is described in the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model).
 
 ```xaml
 <tabular:TableView
@@ -413,7 +415,15 @@ Editing starts only from user input in this release. There is no programmatic wa
 | `F2` | Begins editing the current cell |
 | `Enter` | Commits and closes the editor |
 | `Esc` | Cancels and discards the editor |
-| Moving focus off the cell | Commits |
+| Moving focus outside the editor and its owned flyouts/popups | Attempts to commit after focus settles; validation or an edit-ending handler can keep the edit open |
+| Moving focus within the editor or into an editor-owned flyout/popup | Keeps editing; focus-loss commit is re-evaluated after the flyout/popup closes |
+
+An editor-owned flyout includes a `ContextFlyout` on the editor or one of its descendants,
+a text editor's `SelectionFlyout`, and picker or button flyouts opened by controls inside
+the editor. These remain part of the editing interaction even though their popup content
+is outside the editor's visual tree. An unrelated popup is not part of the editor and
+does not postpone focus-loss commit. Escape consumed by the editor, or used to dismiss
+its own menu, does not also cancel the cell edit.
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
 
@@ -602,7 +612,7 @@ Contract notes:
 
 ## TableViewGroupInfo class
 
-The read-only projection a `GroupHeaderTemplate` binds against. It implements `INotifyPropertyChanged` and is updated **in place** when a header is recycled, so a recycled header does not re-evaluate every binding in the template.
+The read-only projection a `GroupHeaderTemplate` binds against. It implements `INotifyPropertyChanged` and is updated **in place** while the header represents the same group. Recycling the header to another group creates a new projection, so a reference retained by an open context menu never changes group identity.
 
 | Property | Type | Description |
 |---|---|---|
@@ -651,7 +661,7 @@ The realized column header: a templated `ContentControl`, one per column in `PAR
 </tabular:TableView.ColumnHeaderStyle>
 ```
 
-The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
+The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A keyboard-focused header takes the `TableView`'s `CornerRadius` so its focus visual is rounded, unless the applied style sets `CornerRadius`. A style's `ContentTemplate`, or a `ContentTemplateSelector` that returns a template, also renders a string `Header`; the column's `HeaderTemplate`/`HeaderTemplateSelector` wins over it. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
 
 Template parts. All are optional; a missing part disables only its feature:
 
@@ -686,6 +696,8 @@ Base class for TableView columns.
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
 | `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
+| `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
+| `HeaderContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Context flyout for this column's header. Opens at the header cell; it does not receive a row data item. |
 | `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns. |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
@@ -758,6 +770,115 @@ header peer publishes the text itself rather than through
 `AutomationProperties.HelpText`, and it reads the value from the column rather than the
 tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
 mouse-only: pair it with `Header` text that carries the same information when it matters.
+
+### Context menus
+
+`CellContextFlyout` and `HeaderContextFlyout` are dependency properties on `TableViewColumn`.
+Both default to `null` and accept a `FlyoutBase`, including `MenuFlyout`. They are read
+for each request, so replacing or clearing one applies to the next request without
+rebuilding the cells.
+
+```xaml
+<tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}">
+    <tabular:TableViewTextColumn.CellContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="{Binding Name}" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.CellContextFlyout>
+    <tabular:TableViewTextColumn.HeaderContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="Column actions" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.HeaderContextFlyout>
+</tabular:TableViewTextColumn>
+```
+
+#### Resolution order
+
+The first applicable flyout wins; cell and header properties do not replace a flyout
+that application content already handles natively.
+
+| Request target | Resolution order |
+|---|---|
+| Data cell | Application `ContextFlyout` inside the cell content; column `CellContextFlyout`; application `ContextFlyout` on the ancestor path above the cell through the row (including row-template elements and the row's own `ContextFlyout`); inherited table `ContextFlyout`. |
+| Row outside a cell | Row/template menu reached by native routing or discovered on the ancestor path from the cells host through the template root and row; inherited table `ContextFlyout`. Column menus do not apply, and lookup never descends into arbitrary cells. |
+| Column header | Application `ContextFlyout` inside the header content; column `HeaderContextFlyout`; inherited table `ContextFlyout`. Cell and row menus do not apply. |
+| Group header | Its own application `ContextFlyout`, including one supplied by a group-header style; inherited table `ContextFlyout`. Column and data-row menus do not apply. |
+| Empty table area | Inherited table `ContextFlyout`. |
+
+When TableView searches cell/header content for a flyout, it searches visible elements
+depth-first in visual order, choosing an outer element before its descendants. A nested
+items host's own flyout is eligible, but its items are not searched; a nested TableView
+is excluded entirely. Text controls' built-in text menus are not candidates for this
+search. For a text control, only a `ContextFlyout` set locally on that element counts;
+a style-set text-control flyout is not discovered by this search. These search rules
+do not prevent a nested control from handling its own native context request.
+
+With no candidate, the request remains unhandled and can bubble to the table or another
+ancestor's `ContextFlyout`. `TableView.ContextFlyout` is inherited from `UIElement`;
+there is no separate TableView-specific row-menu property. Use `ContextFlyout` on
+`TableViewRow`, for example through a row style.
+
+#### Data context and targeting
+
+A column's `CellContextFlyout` instance is shared across its cells. Its menu items
+inherit the requested cell's row data item through the flyout target, not the column
+object or `SelectedItem`. Reopening that shared menu on another row supplies that row's
+item. Row and row-template menus likewise inherit the target element's data context.
+Application-set binding sources or local data contexts retain their normal XAML precedence.
+
+`HeaderContextFlyout` targets the column-header cell, not the `TableViewColumn` object,
+and does not automatically receive a row item or column object as its data context.
+A flyout owned by header-template content instead uses that content element as its
+target. A group-header menu inherits the header's `TableViewGroupInfo`; if the header is
+recycled for another group while that menu remains open, its retained projection keeps
+the original group's identity. The table-level fallback uses the table's data context
+rather than the requested row's item.
+
+Right-click and press-and-hold use the pointer location. Shift+F10, the Menu key, and
+UIA `ShowContextMenu` resolve against the focused element or the automation peer's
+target, without a pointer position. Column cell/header flyouts open at their cell/header
+wrapper. Content-owned flyouts keep their owning content element as `Target`. When
+TableView resolves a row-owned or table-fallback flyout for a cell request without a
+pointer position, it keeps the owner as `Target` but positions the menu using the
+requested cell's bounds, including a column-header cell. Pointer table fallback retains
+native bubbling and pointer placement.
+A row peer request targets the row rather than selecting an arbitrary cell.
+
+For requests handled by TableView, the requested body cell becomes current and receives
+cell-level focus; a row-only target receives row focus, and a header target receives
+header focus. This focus move is intentional even when no flyout resolves: the request
+is still interaction with that target. Normal focus-driven bring-into-view behavior
+applies, including for partially visible cells; absence of a menu does not preserve
+the previous focus or guarantee an unchanged scroll position. Selection is unchanged.
+For an unhandled right-button press reaching a data row, TableView establishes the
+target cell's focus and current-cell state before a native template-owned flyout can
+open. The press remains unhandled and does not arm row selection, so native menu
+ownership, targeting, and dismissal remain unchanged. This early focus path does not
+run while editing or for a press originating inside a nested TableView, and it does not
+override a child control that already handled the press. Focus already inside the target
+cell is preserved.
+
+This early path is specific to mouse/pen right-button presses. A template-owned flyout
+handled natively for other input can still bypass TableView's context-request focus
+move; this change does not redefine touch/hold, keyboard, or UIA behavior.
+
+While a cell is editing or awaiting an edit-ending deferral, TableView suppresses its
+cell/header menu routing, row/group-header-owned menus, and table-level fallback.
+This also covers native requests raised directly on a row or group header after a
+vetoed commit. Owner-flyout suppression cancels opening before the popup becomes visible;
+its `Opening` and `Closing` callbacks can still run, but cancelling `Closing` does not
+override editing suppression. Flyouts shared with unrelated controls are suppressed only
+when targeted at the editing table's row or group header.
+
+An editor's own text or application menu can still open; entering it is not a focus-loss
+commit, as described under [Editing cells](#editing-cells). Cancelling its `Closing` keeps
+the editor-flyout subscription active until actual closure, so a later menu-closing Escape
+does not also cancel the edit.
+
+An unavailable pooled group-header automation peer rejects `ShowContextMenu` with
+`ElementNotAvailable`, just as it rejects a row-coordinate query. It cannot open either
+its retained menu or the table fallback.
 
 ## TableViewTextColumn class
 
@@ -999,6 +1120,8 @@ Header `IsEnabled` reflects the owning table's effective state and disabled cont
 The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
 A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanResize` are both true. `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
 
+While `CanUserResizeColumns` is true, a Star column with `CanResize="False"` holds the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops holding that width when the width no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the room it held, crossing between the two states can move it by the difference. Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it is held at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. That hold lasts until something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or the viewport width), or until an `Auto` column grows so that it no longer fits beside the other columns. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
+
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
 `Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from its text columns' values, else from the item (a name the app gives the row, or template-column text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
@@ -1152,6 +1275,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Boolean IsReadOnly;
         Microsoft.UI.Xaml.DataTemplate CellEditingTemplate;
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout;
 
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
@@ -1165,6 +1290,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -1328,7 +1455,7 @@ Added here:
 - Vetoable events `BeginningEdit` and `CellEditEnding`. `CellEditEnding` is synchronous, so handlers must set `Cancel` before returning.
 - Rollback for a cancelled cell edit by using `UpdateSourceTrigger=Explicit`; the source is unchanged until commit, so cancelling discards the editor and re-displays the original value.
 - Validation via `INotifyDataErrorInfo`, scoped to the property the column edits. The edited property is derived from the column's `Binding` rather than authored separately, so it stays one concept with the base column's `SortMemberPath`.
-- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit on focus loss. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
+- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit when focus leaves the editor and its owned flyouts/popups. Focus-loss commit is re-evaluated after an editor-owned flyout/popup closes. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
 
 ### Editing is cell-scoped in this release
 

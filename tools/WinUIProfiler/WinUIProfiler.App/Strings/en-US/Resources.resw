@@ -249,8 +249,8 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected or while a recorded trace is read; the Frames and Objects tabs show them.</value></data>
-  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Frames and Objects tabs show its events.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events, and those of the marker configuration's providers, are saved to a session file while connected or while a recorded trace is read; the Launch, Frames and Objects tabs show them.</value></data>
+  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Launch, Frames and Objects tabs show its events.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
@@ -336,6 +336,51 @@
   <data name="PositionFilteredFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0} matching</value></data>
   <data name="EventDetails.AutomationProperties.Name" xml:space="preserve"><value>Fields of the selected event</value></data>
   <data name="ObjectLinksHeader.Text" xml:space="preserve"><value>Show the history of:</value></data>
+  <data name="LaunchTab.Header" xml:space="preserve"><value>Launch</value></data>
+  <data name="EditMarkers.Content" xml:space="preserve"><value>Edit markers</value></data>
+  <data name="EditMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Open your marker configuration, %LOCALAPPDATA%\WinUIProfiler\markers.json, which is created from the default the first time. Add your app's provider and milestones, save the file, and select Reload.</value></data>
+  <data name="ReloadMarkers.Content" xml:space="preserve"><value>Reload</value></data>
+  <data name="ReloadMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the marker configuration again and show its milestones. A provider it adds is recorded from the next connection or trace reading.</value></data>
+  <data name="MarkersFileFormat" xml:space="preserve"><value>Milestones from {0}</value></data>
+  <data name="MarkersDefault" xml:space="preserve"><value>Milestones from the default marker configuration. Select Edit markers to add your app's own.</value></data>
+  <data name="MarkersInvalidTitle" xml:space="preserve"><value>The marker configuration is not valid, so the default is used</value></data>
+  <data name="MarkersEditFailedTitle" xml:space="preserve"><value>Could not open the marker configuration</value></data>
+  <data name="LaunchReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
+  <data name="LaunchNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file in the Frames tab.</value></data>
+  <data name="MilestoneProcessFormat" xml:space="preserve"><value>{0} (PID {1})</value></data>
+  <data name="MilestonePidFormat" xml:space="preserve"><value>Process {0}</value></data>
+  <data name="LaunchFromCreationFormat" xml:space="preserve"><value>{0} | times are from the process's creation</value></data>
+  <data name="LaunchFromCreationLateFormat" xml:space="preserve"><value>{0} | times are from the process's creation | the recording started at {1:N1} ms</value></data>
+  <data name="LaunchFromRecordingStartFormat" xml:space="preserve"><value>{0} | times are from the start of the recording</value></data>
+  <data name="LaunchFromLauncherFormat" xml:space="preserve"><value>{0} | times are from "{1}", which its launcher reached before creating the process</value></data>
+  <data name="LaunchProcessLauncherFormat" xml:space="preserve"><value>{0}, launched by {1}</value></data>
+  <data name="LaunchNoteAttached" xml:space="preserve"><value>The profiler connected to the running process, so the first frame drawn and the milestones before the recording started are missing. Launch the app from the profiler to record all of its launch.</value></data>
+  <data name="LaunchNoteNoProcessStart" xml:space="preserve"><value>When the process was created is not known, so times are from the start of the recording. A trace has it when it has the kernel's process events.</value></data>
+  <data name="LaunchNoteTrimmed" xml:space="preserve"><value>The session file deleted its oldest events to stay within its size limit before they were read, so milestones among them may be missing or show a later event.</value></data>
+  <data name="MilestoneHeaderLabel.Text" xml:space="preserve"><value>Milestone</value></data>
+  <data name="MilestoneHeaderTime.Text" xml:space="preserve"><value>Time (ms)</value></data>
+  <data name="MilestoneHeaderSincePrevious.Text" xml:space="preserve"><value>Since previous (ms)</value></data>
+  <data name="MilestoneHeaderTimeline.Text" xml:space="preserve"><value>Timeline</value></data>
+  <data name="MilestoneHeaderEvent.Text" xml:space="preserve"><value>Event</value></data>
+  <data name="MilestoneHeaderThread.Text" xml:space="preserve"><value>Thread</value></data>
+  <data name="MilestoneHeaderCount.Text" xml:space="preserve"><value>Events</value></data>
+  <data name="MilestoneHeaderTime.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the milestone was reached, from the process's creation or its launcher's earliest milestone before it, or from the start of the recording when the creation is not known.</value></data>
+  <data name="MilestoneHeaderSincePrevious.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The time from the milestone before.</value></data>
+  <data name="MilestoneHeaderTimeline.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Each bar runs from the milestone before to this one, on a scale that ends at the last milestone.</value></data>
+  <data name="MilestoneHeaderEvent.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The provider and event that mark the milestone, and the field values the event needs. "(launcher)" marks an event of the process that launched the app.</value></data>
+  <data name="MilestoneHeaderCount.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How many events marked the milestone. Its time is the first one's, or for a launcher's milestone, the one nearest the process's creation.</value></data>
+  <data name="MilestoneList.AutomationProperties.Name" xml:space="preserve"><value>Launch milestones</value></data>
+  <data name="MilestoneSincePreviousFormat" xml:space="preserve"><value>+{0:N1}</value></data>
+  <data name="MilestoneBuiltInProcessCreated" xml:space="preserve"><value>Built in: the process's creation</value></data>
+  <data name="MilestoneBuiltInFirstFrame" xml:space="preserve"><value>Built in: the first drawn frame, as in the Frames tab</value></data>
+  <data name="MilestoneAccessibleFormat" xml:space="preserve"><value>{0} at {1:N1} ms</value></data>
+  <data name="MilestoneAccessibleSinceFormat" xml:space="preserve"><value>{0:N1} ms after the milestone before</value></data>
+  <data name="MilestoneAccessibleThreadFormat" xml:space="preserve"><value>Thread {0}</value></data>
+  <data name="MilestoneAccessibleCountFormat" xml:space="preserve"><value>The first of {0:N0} events</value></data>
+  <data name="MilestoneLabelFromFormat" xml:space="preserve"><value>Each {0}</value></data>
+  <data name="MilestoneNotReachedItemFormat" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="MilestoneLauncherEventFormat" xml:space="preserve"><value>{0} (launcher)</value></data>
+  <data name="MilestonesNotReachedFormat" xml:space="preserve"><value>Not reached: {0}. A provider added to the marker configuration is recorded from the next connection or trace reading.</value></data>
   <data name="ObjectsTab.Header" xml:space="preserve"><value>Objects</value></data>
   <data name="ObjectsFileFormat" xml:space="preserve"><value>{0} | {1:N0} elements | {2:N0} visuals</value></data>
   <data name="ObjectsFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} elements | {2:N0} visuals | older events were trimmed</value></data>

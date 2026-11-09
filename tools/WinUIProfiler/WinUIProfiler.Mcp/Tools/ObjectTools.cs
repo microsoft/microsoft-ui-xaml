@@ -252,7 +252,7 @@ internal static class ObjectTools
         long index = 0;
         var total = SessionFile.ReadTimeline(path, item.ObjectId, 0, -1, (profilerEvent, fields, frameNumber) =>
         {
-            var provider = EventJson.Provider(profilerEvent.Provider).Name;
+            var provider = profilerEvent.ProviderName;
             var key = (provider, profilerEvent.Name);
             kinds[key] = kinds.TryGetValue(key, out var seen)
                 ? (seen.Count + 1, seen.FirstMs)

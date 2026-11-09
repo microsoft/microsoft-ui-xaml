@@ -9,9 +9,12 @@ using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Mcp.SelfTest;
 
-/// <summary>An event a fixture writes, at a time in milliseconds after the recording started.</summary>
+/// <summary>
+/// An event a fixture writes, at a time in milliseconds after the recording started. Marker is the provider of a marker
+/// event (<see cref="XamlProvider.Marker"/>), and null for the others.
+/// </summary>
 internal sealed record FixtureEvent(double Milliseconds, int ThreadId, XamlProvider Provider, bool TraceLogging, string Name,
-    int Opcode, IReadOnlyList<EventField> Fields);
+    int Opcode, IReadOnlyList<EventField> Fields, MarkerProvider? Marker = null);
 
 /// <summary>
 /// Session files for the self-tests. The app's own SessionWriter writes them, so its indexes build the frames and objects
@@ -64,6 +67,10 @@ internal static class SessionFixtures
     /// <summary>An event a provider manifest describes.</summary>
     internal static FixtureEvent Manifest(double ms, int thread, XamlProvider provider, string name, int opcode,
         params EventField[] fields) => new(ms, thread, provider, false, name, opcode, fields);
+
+    /// <summary>A TraceLogging event of a marker provider, which the marker configuration names.</summary>
+    internal static FixtureEvent MarkerEvent(double ms, int thread, MarkerProvider provider, string name,
+        params EventField[] fields) => new(ms, thread, XamlProvider.Marker, true, name, 0, fields, provider);
 
     internal static FixtureEvent FrameStart(double ms, uint frame) =>
         Tl(ms, UiThread, XamlProvider.Xaml, "CoreServices_Frame", F("IsStart", true), F("FrameNumber", frame));
@@ -164,7 +171,7 @@ internal sealed class FixtureRecording : IDisposable
         {
             var qpc = startQpc + (long)Math.Round(item.Milliseconds * Stopwatch.Frequency / 1000.0);
             Writer.Process(++sequence, new ProfilerEvent(qpc, item.Milliseconds, SessionFixtures.ProcessId, item.ThreadId,
-                item.Provider, item.TraceLogging, item.Name, item.Opcode, item.Fields));
+                item.Provider, item.TraceLogging, item.Name, item.Opcode, item.Fields, item.Marker));
         }
     }
 

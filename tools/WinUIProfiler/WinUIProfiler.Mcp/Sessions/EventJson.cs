@@ -2,31 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Globalization;
-using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Mcp.Sessions;
 
-/// <summary>A provider whose events session files hold, with the name the tools show.</summary>
-internal sealed record ProviderInfo(XamlProvider Provider, string Name, Guid Guid);
-
-/// <summary>How the tools show providers, times, addresses and counts.</summary>
+/// <summary>How the tools show times, addresses and counts.</summary>
 internal static class EventJson
 {
-    /// <summary>The providers, in the order of <see cref="XamlProvider"/>.</summary>
-    internal static IReadOnlyList<ProviderInfo> Providers { get; } =
-    [
-        new(XamlProvider.Xaml, "Microsoft-Windows-XAML", XamlProviders.Xaml),
-        new(XamlProvider.XamlDiagnostics, "Microsoft-Windows-XAML-Diagnostics", XamlProviders.XamlDiagnostics),
-        new(XamlProvider.XamlProfiler, "Microsoft-Windows-XAML-Profiler", XamlProviders.XamlProfiler),
-        new(XamlProvider.MicrosoftUIXaml, "Microsoft.UI.Xaml", XamlProviders.MicrosoftUIXaml),
-        new(XamlProvider.MicrosoftUIXamlControls, "Microsoft.UI.Xaml.Controls", XamlProviders.MicrosoftUIXamlControls),
-        new(XamlProvider.DxgKrnl, "Microsoft-Windows-DxgKrnl", XamlProviders.DxgKrnl),
-        new(XamlProvider.Win32k, "Microsoft-Windows-Win32k", XamlProviders.Win32k),
-    ];
-
-    internal static ProviderInfo Provider(XamlProvider provider) =>
-        Providers.FirstOrDefault(info => info.Provider == provider) ?? new(provider, provider.ToString(), Guid.Empty);
-
     /// <summary>A value rounded half away from zero, so 91.25 shows as 91.3, as SQLite's ROUND shows it.</summary>
     internal static double Round(double value, int digits) => Math.Round(value, digits, MidpointRounding.AwayFromZero);
 

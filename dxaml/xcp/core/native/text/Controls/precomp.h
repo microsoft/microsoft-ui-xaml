@@ -11,9 +11,7 @@
 #define MCGEN_LEVEL_KEYWORD_ENABLED_DEF
 #include "MUX-ETWEvents.h"
 
-#ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
-#endif
 
 #include <microsoft.ui.xaml.h>
 #include <microsoft.ui.xaml.controls.controls.h>

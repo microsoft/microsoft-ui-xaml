@@ -387,7 +387,7 @@ internal static class SessionToolSelfTests
         const string Unknown = "holds a value this version of the WinUI Profiler plugin doesn't know";
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "newer")).FullName;
         var provider = Write(Path.Combine(folder, "provider.sqlite"), MainEvents);
-        Expect.True(Update(provider, "UPDATE EventTypes SET Provider = $value WHERE Name = 'DependencyObject_Enter'", "Marker") > 0,
+        Expect.True(Update(provider, "UPDATE EventTypes SET Provider = $value WHERE Name = 'DependencyObject_Enter'", "Gizmo") > 0,
             "Event types given a newer provider");
         var tick = Run(() => FrameTools.Frames(view: "slowest", sessionPath: provider)).Items("ticks")
             .First(item => item.Long("frameNumber") == 1).Long("tickId");

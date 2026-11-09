@@ -688,6 +688,9 @@ namespace MUXControlsTestApp
         private string _contextMenuItem = Facts.NoneValue;
         private string _contextMenuTarget = Facts.NoneValue;
         private string _contextMenuFocus = Facts.NoneValue;
+        private bool _cancelEditorMenuCloseOnce;
+        private bool _editorMenuOpen;
+        private int _editorMenuClosings;
 
         private void HookContextMenuTable()
         {
@@ -700,10 +703,18 @@ namespace MUXControlsTestApp
             ContextMenuTable.SelectionChanged += (s, args) => RefreshContextMenuReadout();
 
             // IsEditing flips after these events return, so refresh once they have.
-            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
+            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_cancelEditorMenuCloseOnce)
+                {
+                    ConfigureEditorMenuWithCancelledClose();
+                    _cancelEditorMenuCloseOnce = false;
+                }
+                RefreshContextMenuReadout();
+            });
             ContextMenuTable.CellEditEnding += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
 
-            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.TableMenu })
+            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.RowTemplateMenu, Facts.TableMenu })
             {
                 var menu = (FlyoutBase)ContextMenuTableHost.Resources[key];
                 menu.Opening += (s, args) => OnContextMenuOpening(key, (FlyoutBase)s);
@@ -717,8 +728,13 @@ namespace MUXControlsTestApp
             RefreshContextMenuReadout();
         }
 
-        // Records the menu, its target and the focused element at the moment the menu opens: TableView moves focus
-        // to the target before it shows the menu, and the menu takes focus right after.
+        private void OnContextMenuTemplateLoaded(object sender, RoutedEventArgs e)
+        {
+            // Application content must not masquerade as a cell wrapper by tagging another column.
+            ((FrameworkElement)sender).Tag = ContextMenuTable.Columns[Facts.ContextMenuNameColumn];
+        }
+
+        // TableView moves focus before Opening; the menu takes focus right after.
         private void OnContextMenuOpening(string key, FlyoutBase menu)
         {
             _contextMenuLast = key;
@@ -757,6 +773,7 @@ namespace MUXControlsTestApp
                 ContextMenuTable.ItemsSource = _contextMenuItems;
             }
             ContextMenuTable.FlowDirection = FlowDirection.LeftToRight;
+            SetRowTemplateMenu(null);
 
             _contextMenuLast = Facts.NoneValue;
             _contextMenuOpen = false;
@@ -764,7 +781,44 @@ namespace MUXControlsTestApp
             _contextMenuItem = Facts.NoneValue;
             _contextMenuTarget = Facts.NoneValue;
             _contextMenuFocus = Facts.NoneValue;
+            _cancelEditorMenuCloseOnce = false;
+            _editorMenuOpen = false;
+            _editorMenuClosings = 0;
             RefreshContextMenuReadout();
+        }
+
+        private void OnCancelEditorMenuCloseClick(object sender, RoutedEventArgs e) => _cancelEditorMenuCloseOnce = true;
+
+        private void ConfigureEditorMenuWithCancelledClose()
+        {
+            var editor = FindDescendant<TextBox>(ContextMenuTable);
+            if (editor == null)
+            {
+                throw new InvalidOperationException("The context-menu test requires an active text editor.");
+            }
+
+            var flyout = new CommandBarFlyout { AlwaysExpanded = true, AreOpenCloseAnimationsEnabled = false };
+            flyout.SecondaryCommands.Add(new AppBarButton { Label = "Keep editing" });
+            flyout.Opened += (s, args) =>
+            {
+                _editorMenuOpen = true;
+                RefreshContextMenuReadout();
+            };
+            flyout.Closing += (s, args) =>
+            {
+                _editorMenuClosings++;
+                if (_editorMenuClosings == 1)
+                {
+                    args.Cancel = true;
+                }
+                RefreshContextMenuReadout();
+            };
+            flyout.Closed += (s, args) =>
+            {
+                _editorMenuOpen = false;
+                RefreshContextMenuReadout();
+            };
+            editor.ContextFlyout = flyout;
         }
 
         // Groups ContextMenuTable by City; Reset ungroups it.
@@ -778,6 +832,23 @@ namespace MUXControlsTestApp
         private void OnMirrorContextMenuTableClick(object sender, RoutedEventArgs e)
         {
             ContextMenuTable.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        // Puts RowTemplateMenu on the template root of every realized row; Reset removes it.
+        private void OnAttachRowTemplateMenuClick(object sender, RoutedEventArgs e)
+        {
+            SetRowTemplateMenu((FlyoutBase)ContextMenuTableHost.Resources[Facts.RowTemplateMenu]);
+        }
+
+        private void SetRowTemplateMenu(FlyoutBase menu)
+        {
+            foreach (var row in FindDescendants<TableViewRow>(ContextMenuTable))
+            {
+                if (VisualTreeHelper.GetChildrenCount(row) > 0 && VisualTreeHelper.GetChild(row, 0) is UIElement templateRoot)
+                {
+                    templateRoot.ContextFlyout = menu;
+                }
+            }
         }
 
         private void RefreshContextMenuReadout()
@@ -795,6 +866,8 @@ namespace MUXControlsTestApp
                 Facts.ItemField + "=" + _contextMenuItem + ";" +
                 Facts.TargetField + "=" + _contextMenuTarget + ";" +
                 Facts.FocusField + "=" + _contextMenuFocus + ";" +
+                Facts.EditorMenuOpenField + "=" + _editorMenuOpen + ";" +
+                Facts.EditorMenuClosingsField + "=" + _editorMenuClosings + ";" +
                 Facts.EditingField + "=" + ContextMenuTable.IsEditing + ";" +
                 Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
 
@@ -1042,6 +1115,9 @@ namespace MUXControlsTestApp
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
         {
             BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;
+            RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
+            ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
+            ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the
@@ -1055,6 +1131,72 @@ namespace MUXControlsTestApp
             }
 
             BasicTableView.CanUserSortColumns = ((CheckBox)sender).IsChecked == true;
+        }
+
+        private void OnCanUserResizeColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserResizeColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserResizeColumns = BasicTableView.CanUserResizeColumns;
+            }
+        }
+
+        private void OnHideColumnHeadersToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? TableViewHeadersVisibility.None : TableViewHeadersVisibility.Column;
+            BasicTableView.HeadersVisibility = visibility;
+            ScrollingTableView.HeadersVisibility = visibility;
+            RtlTableView.HeadersVisibility = visibility;
+        }
+
+        private void OnEmptyBasicToggled(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.ItemsSource = ((CheckBox)sender).IsChecked == true ? new ObservableCollection<TableViewTestPerson>() : _basicItems;
+        }
+
+        // A menu makes RtlAge, beyond the viewport, the only actionable column of the read-only RTL
+        // table, and the hierarchy table becomes a wide read-only tree.
+        private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
+        {
+            bool on = ((CheckBox)sender).IsChecked == true;
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "Age" });
+            RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
+            RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
+            HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
+            HierarchyTable.IsReadOnly = on;
+            if (on && ScrollingTableView.Columns.Count == 4)
+            {
+                ScrollingTableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Link",
+                    Width = new GridLength(160),
+                    CellTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock VerticalAlignment='Center'><Hyperlink AutomationProperties.Name='" + Facts.CellHyperlink + "'>Open</Hyperlink></TextBlock>" +
+                        "</DataTemplate>"),
+                });
+            }
+            else if (!on && ScrollingTableView.Columns.Count > 4)
+            {
+                ScrollingTableView.Columns.RemoveAt(4);
+            }
+        }
+
+        // Read-only, ScrollCity is then the last actionable column, right after the frozen one, with
+        // wide trailing content.
+        private void OnScrollCityMenuToggled(object sender, RoutedEventArgs e)
+        {
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "City" });
+            ScrollingTableView.Columns[1].CellContextFlyout = ((CheckBox)sender).IsChecked == true ? menu : null;
+        }
+
+        // App code scrolling the body: no pointer or wheel input reaches the table.
+        private void OnScrollScrollingBodyClick(object sender, RoutedEventArgs e)
+        {
+            _scrollingBodyScroller?.ChangeView(_scrollingBodyScroller.HorizontalOffset + 120, null, null, true);
         }
 
         // Page switching without a Pivot: hosting the TableViews in a Pivot asserts in
@@ -1209,6 +1351,16 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
+        {
+            _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
+        }
+
+        private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.Select(3);
         }
 
         private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)

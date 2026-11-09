@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.Json;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Mcp.Sessions;
+using WinUIProfiler.Mcp.Tools;
+using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
 using static WinUIProfiler.Mcp.SelfTest.ToolResults;
 
 namespace WinUIProfiler.Mcp.SelfTest;
@@ -16,7 +19,7 @@ internal static class ValueSelfTests
     [
         new("values.format", _ => Format()),
         new("values.arguments", _ => Arguments()),
-        new("values.providers", _ => Providers()),
+        new("values.providers", Providers),
     ];
 
     private static void Format()
@@ -75,13 +78,32 @@ internal static class ValueSelfTests
         }
     }
 
-    private static void Providers()
+    /// <summary>
+    /// The tick and history views name a XAML provider by its ETW name, and a marker provider by the name its marker
+    /// configuration gives it, as the app does.
+    /// </summary>
+    private static void Providers(SelfTestContext context)
     {
-        Expect.Equal(Enum.GetValues<XamlProvider>().Length, EventJson.Providers.Count, "Every provider has a name");
-        Expect.True(EventJson.Providers.Select(info => info.Provider).SequenceEqual(Enum.GetValues<XamlProvider>()),
-            "The providers are in the order of XamlProvider.");
-        Expect.True(EventJson.Providers.All(info => info.Guid != Guid.Empty && info.Name.Length > 0),
-            "Every provider has its GUID and name.");
-        Expect.Equal("Microsoft-Windows-XAML-Profiler", EventJson.Provider(XamlProvider.XamlProfiler).Name, "A provider's name");
+        var marker = new MarkerProvider("Contoso-Startup", new Guid("6F3E1A52-0D8C-4C4B-9C1E-2B7A9E5D4F10"));
+        // The main fixture, with a marker event in frame 2, before the frame's end.
+        var path = Write(Path.Combine(context.TempDirectory, "markers.sqlite"),
+            [.. MainEvents.Take(14), MarkerEvent(19.0, UiThread, marker, "PageReady"), .. MainEvents.Skip(14)]);
+        var tickId = Run(() => FrameTools.Frames(sessionPath: path, view: "slowest")).Items("ticks")
+            .First(tick => tick.Long("frameNumber") == 2).Long("tickId");
+        var tick = Run(() => FrameTools.Frames(sessionPath: path, tickId: tickId));
+        static string Named(JsonElement item) => $"{item.Text("provider")}:{item.Text("name")}:{item.Text("bucket")}";
+        Expect.Equal("Contoso-Startup:PageReady:Other", Named(tick.Items("events").Single(item => item.Text("name") == "PageReady")),
+            "The marker event's name in the tick view");
+        Expect.Equal("Contoso-Startup:PageReady:Other", Named(tick.Items("page").Single(item => item.Text("name") == "PageReady")),
+            "The marker event in the tick view's page");
+        Expect.Equal("Microsoft-Windows-XAML:Layout/Start:Other",
+            Named(tick.Items("events").Single(item => item.Text("name") == "Layout/Start")), "A XAML event's name in the tick view");
+
+        var history = Run(() => ObjectTools.Objects(address: "0x1000", sessionPath: path));
+        Expect.Equal("Microsoft-Windows-XAML-Profiler:ElementEnteredTree,Microsoft-Windows-XAML:DependencyObject_Enter",
+            string.Join(",", history.Items("events").Select(item => $"{item.Text("provider")}:{item.Text("name")}")),
+            "The providers and names of Root's events");
+        Expect.Equal("Microsoft-Windows-XAML,Microsoft-Windows-XAML-Profiler,Microsoft-Windows-XAML-Profiler",
+            string.Join(",", history.Items("page").Select(item => item.Text("provider"))), "The providers of Root's events, in order");
     }
 }

@@ -12,7 +12,7 @@ namespace WinUIProfiler.Engine.Storage;
 public sealed record SessionQuery(string Path, string Sql, long Rows);
 
 // Shows a caller the statements SessionFile's reads run for it, so it can say what it read. Not the statements that check
-// a file's version and views each time SessionFile opens one, nor statements that fail.
+// a file's version, views and columns as SessionFile opens and reads it, nor statements that fail.
 public static class SessionQueries
 {
     private static readonly AsyncLocal<Observer?> Current = new();

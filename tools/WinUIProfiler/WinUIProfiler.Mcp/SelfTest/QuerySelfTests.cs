@@ -38,9 +38,9 @@ internal static class QuerySelfTests
 
     /// <summary>
     /// Checks a tool result's computed text and the statements it lists, and returns them. Each statement is listed once,
-    /// ends with a semicolon and isn't a check of the file's version or views. Run as listed on the files it ran on (the
-    /// result's session file, or each session file it lists that could be read, unless the statement names others), it
-    /// returns the rows listed.
+    /// ends with a semicolon and isn't a check of the file's version, views or columns. Run as listed on the files it ran
+    /// on (the result's session file, or each session file it lists that could be read, unless the statement names
+    /// others), it returns the rows listed.
     /// </summary>
     internal static IReadOnlyList<JsonElement> CheckQueries(JsonElement result, string what)
     {
@@ -59,7 +59,7 @@ internal static class QuerySelfTests
                 $"{what}: a statement ends with a semicolon, and its line breaks are \\n: {sql}");
             Expect.True(!sql.Contains("PRAGMA", StringComparison.OrdinalIgnoreCase)
                 && !sql.Contains("sqlite_master", StringComparison.OrdinalIgnoreCase),
-                $"{what} doesn't list the checks of the file's version and views.");
+                $"{what} doesn't list the checks of the file's version, views and columns.");
             var runs = query.IsNull("runs") ? 1 : query.Long("runs");
             Expect.True(query.IsNull("runs") || runs > 1, $"{what} gives runs only for a statement that ran more than once: {sql}");
             List<string> files = query.IsNull("files") ? given : [.. query.Strings("files").Select(file => file ?? "")];
@@ -309,6 +309,18 @@ internal static class QuerySelfTests
             ("CountFrameEvents", 1, () => SessionFile.CountFrameEvents(path, tick, null, null)),
             ("ReadSpanEvents", 3, () => SessionFile.ReadSpanEvents(path, UiThread, 1, 16, null, null, 0, -1, (_, _, _) => { })),
             ("CountSpanEvents", 1, () => SessionFile.CountSpanEvents(path, UiThread, 1, 16, "Other", "0x1000")),
+            ("OpenSnapshot", 1, () => SessionFile.OpenSnapshot(path).Dispose()),
+            ("Snapshot.ReadEvents", 4, () =>
+            {
+                using var snapshot = SessionFile.OpenSnapshot(path);
+                Expect.Equal<long?>(16, snapshot.ReadEvents([(XamlProviders.IdOf(XamlProvider.Xaml), "CoreServices_Frame")], null,
+                    _ => { }), "The last Seq a snapshot read");
+            }),
+            ("Snapshot.ReadFirstDrawnFrame", 2, () =>
+            {
+                using var snapshot = SessionFile.OpenSnapshot(path);
+                snapshot.ReadFirstDrawnFrame();
+            }),
         ];
         foreach (var (read, statements, run) in reads)
         {
@@ -323,7 +335,7 @@ internal static class QuerySelfTests
                 $"{read}'s statements name the file it read.");
             Expect.True(!seen.Any(query => query.Sql.Contains("PRAGMA", StringComparison.OrdinalIgnoreCase)
                 || query.Sql.Contains("sqlite_master", StringComparison.OrdinalIgnoreCase)),
-                $"{read} doesn't report the checks of the file's version and views.");
+                $"{read} doesn't report the checks of the file's version, views and columns.");
             RunAsReported(seen, read);
         }
 

@@ -452,7 +452,7 @@ internal static class FrameTools
                 return;
             }
 
-            var provider = EventJson.Provider(profilerEvent.Provider).Name;
+            var provider = profilerEvent.ProviderName;
             var key = (provider, profilerEvent.Name, eventBucket);
             kinds[key] = kinds.GetValueOrDefault(key) + 1;
             foreach (var mention in mentions)
