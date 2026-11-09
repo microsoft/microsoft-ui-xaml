@@ -294,6 +294,7 @@ namespace DirectUI
         bool m_hideInProgress{ false };
         bool m_hasPreparedContent{ false };
         bool m_prepareSmokeLayerAndPopup{ false };
+        bool m_isShowAsyncStarting{ false };
         double m_preShowStatusBarOpacity{ 0.0 };
 
         // Set once we've received the Popup.Opened event. If the async operation is
