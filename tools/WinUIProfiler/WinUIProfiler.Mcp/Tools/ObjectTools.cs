@@ -39,14 +39,16 @@ internal static class ObjectTools
     [McpServerTool(Name = "objects", ReadOnly = true, Idempotent = true, OpenWorld = false), Description(
         "Answers questions about the UI elements and Composition visuals a session's events mention, from what the WinUI " +
         "Profiler app's object processor stored (its Objects tab shows the same). An object lives in the file from the first " +
-        "to the last event that mentions it; its type is the nearest built-in type; a visual's name is its owner element's " +
-        "label. Views: \"types\" (the default): how many elements and visuals of each type, and how many events mention " +
-        "them, most objects first, with totals per kind. \"list\": the objects of one type (its full or short name, such as " +
-        "Button), or whose name contains some text, in the order they were first mentioned or most events first, each with " +
-        "its objectId, address, type, name, how many events mention it, and when it was first and last mentioned. " +
-        "\"history\": what happened to one object, by objectId or address: its events by provider and name, and a page of " +
-        "them in order, each with its time, thread, the fields that mention the object and the number of the frame it " +
-        "belongs to. Times are in ms (see the session's timeBase). Events' field values aren't shown.")]
+        "to the last event that mentions it. An element's type is the nearest built-in type DependencyObject_Enter gave or, " +
+        "failing that, the class a template, Loaded or render event named, which can be the app's own class, or a name " +
+        "without its namespace (render events). A visual's name is its owner element's label, which only older WinUI " +
+        "builds' visual events give. Views: \"types\" (the default): how many elements and visuals of each type, and how " +
+        "many events mention them, most objects first, with totals per kind. \"list\": the objects of one type (its full " +
+        "or short name, such as Button), or whose name contains some text, in the order they were first mentioned or most " +
+        "events first, each with its objectId, address, type, name, how many events mention it, and when it was first and " +
+        "last mentioned. \"history\": what happened to one object, by objectId or address: its events by provider and " +
+        "name, and a page of them in order, each with its time, thread, the fields that mention the object and the number " +
+        "of the frame it belongs to. Times are in ms (see the session's timeBase). Events' field values aren't shown.")]
     public static Task<object> Objects(
         [Description("\"types\", \"list\" or \"history\". Omit it for the types view, or for the history view when objectId " +
             "or address is given, or the list view when type or name is given.")]
@@ -57,8 +59,8 @@ internal static class ObjectTools
         [Description("The list view: only objects of this type, by its full name, such as Microsoft.UI.Xaml.Controls.Button, " +
             "or its short name, such as Button, ignoring case.")]
         string? type = null,
-        [Description("The list view: only objects whose name (an element's x:Name, or a visual's owner element's label) " +
-            "contains this text, ignoring case.")]
+        [Description("The list view: only objects whose name (an element's x:Name, or, in an older WinUI build's session, " +
+            "a visual's owner element's label) contains this text, ignoring case.")]
         string? name = null,
         [Description("The history view: the object, by the objectId the list view gives.")] long? objectId = null,
         [Description("The history view: the object, by its address, in hex with 0x as the tools show it, or as a decimal " +
@@ -334,7 +336,8 @@ internal static class ObjectTools
         (untyped == 1
             ? "1 object has no type: none of the events that mention it gave it."
             : $"{EventJson.Count(untyped, "object", "objects")} have no type: none of the events that mention them gave it.") +
-        " An element's type comes from DependencyObject_Enter, a visual's from its insertion.";
+        " An element's type comes from DependencyObject_Enter, else from a template, Loaded or render event's class name; " +
+        "a visual's from its insertion.";
 
     private static object Row(SessionObject item) => new
     {

@@ -184,11 +184,16 @@ Rules:
   short name, such as `Button`) or whose `name` contains some text, with
   `orderBy` `time` or `events`; view `history` gives one object's events, by
   `objectId` or by `address` (hex or decimal).
-- An element's type is the nearest built-in XAML type, so an app's own control
-  shows as its base class. A visual's name is its owner element's label. An
-  object lives from its first to its last mention. A freed object's address
-  can be reused; when two objects had an address, `history` lists them, a page
-  at a time, and asks for one's `objectId`.
+- An element's type is the nearest built-in XAML type `DependencyObject_Enter`
+  gave, so an app's own control shows as its base class. An element that event
+  didn't type gets the class a template, Loaded or render event named: maybe
+  the app's own class, or a name without its namespace, so one type can have
+  two rows, such as `TransitionRoot` and `Microsoft.UI.Xaml.TransitionRoot`
+  (`type` `TransitionRoot` lists both). A visual has a name, its owner
+  element's label, only in sessions of older WinUI builds. An object lives
+  from its first to its last mention. A freed object's address can be reused;
+  when two objects had an address, `history` lists them, a page at a time, and
+  asks for one's `objectId`.
 - An object that no event gave a type has none. Its row, in view `types` and
   in the `frames` tick view, has `typeUnknown`, and a note counts such objects.
   Don't call it a type of its own.

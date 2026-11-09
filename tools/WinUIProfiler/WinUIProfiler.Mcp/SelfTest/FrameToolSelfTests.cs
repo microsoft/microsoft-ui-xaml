@@ -238,7 +238,7 @@ internal static class FrameToolSelfTests
         Expect.True(result.Items("objects").Where(item => item.Text("type") is not null).All(item => item.IsNull("typeUnknown")),
             "A row of typed objects doesn't have typeUnknown.");
         HasNote(result, "1 object has no type: none of the events that mention it gave it. An element's type comes from " +
-            "DependencyObject_Enter, a visual's from its insertion.");
+            "DependencyObject_Enter, else from a template, Loaded or render event's class name; a visual's from its insertion.");
         var mentions = result.Items("page").SelectMany(item => item.Items("mentions")).Select(item => item.Text("name")).OfType<string>();
         Expect.True(mentions.Contains("OkButton"), "The tick's events mention OkButton.");
 
