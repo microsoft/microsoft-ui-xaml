@@ -1139,7 +1139,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicAccessKeysTests::WindowMoveEndsAKSequence()
+        void BasicAccessKeysTests::WindowMoveRepositionsKeyTips()
         {
             TestCleanupWrapper cleanup([]()
             {
@@ -1192,18 +1192,58 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
 
-            TestServices::WindowHelper->MoveDesktopWindow(before.left, before.top);
-            TestServices::WindowHelper->WaitForIdle();
-            VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
+            auto getKeyTipWindow = [&]()
+            {
+                HWND keyTipWindow = nullptr;
+                RunOnUIThread([&]()
+                {
+                    auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(button->XamlRoot);
+                    VERIFY_ARE_EQUAL(1u, popups->Size);
+                    auto popup = popups->GetAt(0);
+                    VERIFY_IS_TRUE(popup->IsOpen);
+                    auto border = safe_cast<xaml_controls::Border^>(popup->Child);
+                    auto textBlock = safe_cast<xaml_controls::TextBlock^>(border->Child);
+                    VERIFY_IS_TRUE(textBlock->Text->Equals(L"1"));
+                    keyTipWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+                });
+                VERIFY_IS_NOT_NULL(keyTipWindow);
+                VERIFY_IS_TRUE(::IsWindowVisible(keyTipWindow));
+                return keyTipWindow;
+            };
 
-            TestServices::WindowHelper->MoveDesktopWindow(before.left + 10, before.top);
-            RECT after = {};
-            VERIFY_IS_TRUE(::GetWindowRect(hwnd, &after));
-            VERIFY_ARE_EQUAL(before.left + 10, after.left);
-            VERIFY_ARE_EQUAL(before.top, after.top);
-            VERIFY_ARE_EQUAL(before.right - before.left, after.right - after.left);
-            VERIFY_ARE_EQUAL(before.bottom - before.top, after.bottom - after.top);
+            const auto keyTipWindow = getKeyTipWindow();
+            RECT keyTipBefore = {};
+            VERIFY_IS_TRUE(::GetWindowRect(keyTipWindow, &keyTipBefore));
+            VERIFY_IS_GREATER_THAN(keyTipBefore.right, keyTipBefore.left);
+            VERIFY_IS_GREATER_THAN(keyTipBefore.bottom, keyTipBefore.top);
 
+            auto verifyMove = [&](int deltaX, int deltaY)
+            {
+                TestServices::WindowHelper->MoveDesktopWindow(before.left + deltaX, before.top + deltaY);
+                TestServices::WindowHelper->WaitForIdle();
+                VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
+                VERIFY_ARE_EQUAL(keyTipWindow, getKeyTipWindow());
+
+                RECT after = {};
+                VERIFY_IS_TRUE(::GetWindowRect(hwnd, &after));
+                VERIFY_ARE_EQUAL(before.left + deltaX, after.left);
+                VERIFY_ARE_EQUAL(before.top + deltaY, after.top);
+                VERIFY_ARE_EQUAL(before.right - before.left, after.right - after.left);
+                VERIFY_ARE_EQUAL(before.bottom - before.top, after.bottom - after.top);
+
+                RECT keyTipAfter = {};
+                VERIFY_IS_TRUE(::GetWindowRect(keyTipWindow, &keyTipAfter));
+                VERIFY_ARE_EQUAL(keyTipBefore.left + deltaX, keyTipAfter.left);
+                VERIFY_ARE_EQUAL(keyTipBefore.top + deltaY, keyTipAfter.top);
+                VERIFY_ARE_EQUAL(keyTipBefore.right + deltaX, keyTipAfter.right);
+                VERIFY_ARE_EQUAL(keyTipBefore.bottom + deltaY, keyTipAfter.bottom);
+            };
+
+            verifyMove(0, 0);
+            verifyMove(10, 20);
+            verifyMove(0, 0);
+
+            TestServices::KeyboardHelper->Escape();
             accessKeyHiddenEvent->WaitForDefault();
         }
 

@@ -11,7 +11,6 @@
 #include <microsoft.ui.input.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
 #include <Microsoft.UI.Content.h>
-#include <Microsoft.UI.Windowing.h>
 #include "microsoft.ui.input.dragdrop.h"
 #include <InputHelpers.h>
 #include <optional>
@@ -283,7 +282,6 @@ private:
     void SubscribeToInputNonClientPointerSourceEvents();
     void UnsubscribeToInputEvents();
     void HandleContentIslandConnectionChange(bool isConnected);
-    _Check_return_ HRESULT UpdateAppWindow();
 
     typedef decltype(&CXamlIslandRoot::OnIslandNonClientPointerEntered) PointerHandlerFunction;
     wrl::ComPtr<wf::ITypedEventHandler<ixp::InputNonClientPointerSource*, ixp::NonClientPointerEventArgs*>> GetNonClientPointerEventHandler(PointerHandlerFunction pointerHandler, UINT msg, std::optional<bool> newContactState = std::optional<bool>());
@@ -333,7 +331,6 @@ private:
     wrl::ComPtr<ixp::IInputActivationListener> m_inputActivationListener;
     wrl::ComPtr<ixp::IDesktopChildSiteBridge> m_contentBridgeDW;
     wrl::ComPtr<ixp::IContentIslandEnvironment> m_topLevelHost;
-    wrl::ComPtr<ixp::IAppWindow> m_appWindow;
     wrl::ComPtr<ixp::IInputPreTranslateKeyboardSourceHandler> m_preTranslateHandler;
 
     EventRegistrationToken m_characterReceivedToken = {};
@@ -370,7 +367,6 @@ private:
     EventRegistrationToken m_topLevelHost_StateChanged = {};
     EventRegistrationToken m_topLevelHost_ThemeChanged = {};
     EventRegistrationToken m_topLevelHost_SettingChanged = {};
-    EventRegistrationToken m_appWindowChangedToken = {};
 
     xref_ptr<CContentRoot> m_contentRoot;
 
