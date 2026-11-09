@@ -61,7 +61,8 @@ public sealed record FrameListItem(long ListIndex, FrameListItemType ItemType, S
 // or from the start of the recording.
 public sealed record LaunchFrame(long FrameNumber, double Milliseconds, bool FromProcessStart);
 
-// Reads a session file written by SessionWriter, also while it is still being written.
+// Reads a session file written by SessionWriter, also while it is still being written. Each statement a read runs is
+// reported to SessionQueries once its rows are read.
 public static class SessionFile
 {
     public static SessionFileInfo ReadInfo(string path)
@@ -107,6 +108,7 @@ public static class SessionFile
                 (reader.GetInt64(7) - start) * 1000.0 / frequency));
         }
 
+        SessionQueries.Report(command, objects.Count);
         return objects;
     }
 
@@ -140,7 +142,9 @@ public static class SessionFile
         using var connection = Open(path);
         using var command = Command(connection, null, "SELECT COUNT(DISTINCT Seq) FROM ObjectEvents WHERE ObjectId = $id",
             ("$id", objectId));
-        return (long)command.ExecuteScalar()!;
+        var count = (long)command.ExecuteScalar()!;
+        SessionQueries.Report(command, 1);
+        return count;
     }
 
     // The UI element a tree snapshot node was when the snapshot was taken, from the WinRT object addresses the snapshot
@@ -162,8 +166,10 @@ public static class SessionFile
         using (var command = Command(connection, transaction, "SELECT TypeId, Name, FieldNames FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
+            long read = 0;
             while (reader.Read())
             {
+                read++;
                 var names = reader.GetString(2).Split(',');
                 foreach (var pair in pairs.Where(pair => pair.Event == reader.GetString(1)))
                 {
@@ -175,6 +181,8 @@ public static class SessionFile
                     }
                 }
             }
+
+            SessionQueries.Report(command, read);
         }
 
         if (shapes.Count == 0 || addresses.Count == 0)
@@ -196,8 +204,10 @@ public static class SessionFile
             """, ("$addresses", $"[{string.Join(",", addresses.Select(address => address.ToString(CultureInfo.InvariantCulture)))}]")))
         {
             using var reader = command.ExecuteReader();
+            long read = 0;
             while (reader.Read())
             {
+                read++;
                 if (reader.GetInt64(0) <= qpc)
                 {
                     before = reader.GetInt64(1);
@@ -208,6 +218,9 @@ public static class SessionFile
                     break;
                 }
             }
+
+            // The rows read, up to the first after the snapshot.
+            SessionQueries.Report(command, read);
         }
 
         if ((before ?? after) is not { } elementAddress)
@@ -241,14 +254,17 @@ public static class SessionFile
             """, ("$address", address), ("$kind", kind.ToString()));
         using var rows = objects.ExecuteReader();
         long? found = null;
+        long read = 0;
         while (rows.Read())
         {
+            read++;
             if (found is null || rows.GetInt64(1) <= qpc)
             {
                 found = rows.GetInt64(0);
             }
         }
 
+        SessionQueries.Report(objects, read);
         return found;
     }
 
@@ -271,6 +287,7 @@ public static class SessionFile
                 reader.GetInt64(10), reader.GetBoolean(11)));
         }
 
+        SessionQueries.Report(command, frames.Count);
         return frames;
     }
 
@@ -301,6 +318,7 @@ public static class SessionFile
             items.Add(new(reader.GetInt64(0), type, tick, row, NullableInt64(reader, 3), reader.GetBoolean(19), reader.GetBoolean(20)));
         }
 
+        SessionQueries.Report(command, items.Count);
         return items;
     }
 
@@ -324,6 +342,7 @@ public static class SessionFile
                 NullableInt64(reader, 9), NullableInt64(reader, 10)));
         }
 
+        SessionQueries.Report(command, rows.Count);
         return rows;
     }
 
@@ -339,6 +358,7 @@ public static class SessionFile
             frames.Add(new(reader.GetInt64(0), reader.GetDouble(1), reader.GetString(2) == "ProcessStart"));
         }
 
+        SessionQueries.Report(command, frames.Count);
         return frames;
     }
 
@@ -391,7 +411,9 @@ public static class SessionFile
         using var connection = Open(path);
         var (where, parameters) = EventsQuery(scope, bucket, filter);
         using var command = Command(connection, null, $"SELECT COUNT(*) {where}", parameters);
-        return (long)command.ExecuteScalar()!;
+        var count = (long)command.ExecuteScalar()!;
+        SessionQueries.Report(command, 1);
+        return count;
     }
 
     // A filter keeps the events whose name contains its text, case-insensitively. Text also matches string field values
@@ -432,8 +454,10 @@ public static class SessionFile
             "SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
+            long read = 0;
             while (reader.Read())
             {
+                read++;
                 var names = reader.GetString(4).Split(',', StringSplitOptions.RemoveEmptyEntries);
                 var fieldTypes = reader.GetString(5).Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(EventPayload.ParseType).ToArray();
@@ -445,6 +469,8 @@ public static class SessionFile
                 types[reader.GetInt64(0)] = (Enum.Parse<XamlProvider>(reader.GetString(1)), reader.GetBoolean(6), reader.GetString(2),
                     reader.GetInt32(3), names, fieldTypes);
             }
+
+            SessionQueries.Report(command, read);
         }
 
         long delivered = 0;
@@ -462,6 +488,8 @@ public static class SessionFile
                     reader);
                 delivered++;
             }
+
+            SessionQueries.Report(command, delivered);
         }
 
         return delivered;
@@ -543,15 +571,13 @@ public static class SessionFile
     private static (SessionFileInfo Info, long Frequency, long? StartQpc) ReadSession(SqliteConnection connection,
         SqliteTransaction? transaction)
     {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = """
+        using var command = Command(connection, transaction, """
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
                 (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects WHERE Kind = 'Element'),
                 (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, StartedQpc, (SELECT COUNT(*) FROM Objects WHERE Kind = 'Visual')
             FROM SessionInfo
-            """;
+            """);
         using var reader = command.ExecuteReader();
         if (!reader.Read())
         {
@@ -571,6 +597,9 @@ public static class SessionFile
             reader.GetInt64(14), reader.IsDBNull(8) ? null : reader.GetInt64(8), reader.IsDBNull(9) ? null : reader.GetInt32(9),
             reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(19),
             reader.GetInt64(16), processStart);
+
+        // The one row read; SessionInfo has no other.
+        SessionQueries.Report(command, 1);
         return (info, frequency, startQpc);
     }
 

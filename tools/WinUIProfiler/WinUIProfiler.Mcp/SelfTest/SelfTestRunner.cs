@@ -19,7 +19,7 @@ internal static class SelfTestRunner
             .Concat(ValueSelfTests.Tests)
             .Concat(SessionToolSelfTests.Tests)
             .Concat(FrameToolSelfTests.Tests).Concat(LaunchToolSelfTests.Tests).Concat(ObjectToolSelfTests.Tests)
-            .Concat(RecordTraceSelfTests.Tests);
+            .Concat(RecordTraceSelfTests.Tests).Concat(QuerySelfTests.Tests);
 
     public static int Run(string? filter, TextWriter output)
     {
