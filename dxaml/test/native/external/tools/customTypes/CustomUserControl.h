@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
+
+#include <atomic>
+
 namespace Tests { namespace Tools { namespace Shared {
 
     public enum class ThoughtProcess
@@ -18,9 +21,11 @@ public ref class CustomUserControl sealed : public Microsoft::UI::Xaml::Controls
 public:
     static void RegisterDependencyProperties();
     static void ClearDependencyProperties();
+    static unsigned int GetConstructionCount();
     CustomUserControl();
 
 private:
+    static std::atomic<unsigned int> m_constructionCount;
     static Microsoft::UI::Xaml::DependencyProperty^ m_CustomIntProperty;
     static Microsoft::UI::Xaml::DependencyProperty^ m_CustomDoubleProperty;
     static Microsoft::UI::Xaml::DependencyProperty^ m_CustomUnknownProperty;
@@ -150,4 +155,3 @@ public:
 };
 
 } } }
-
