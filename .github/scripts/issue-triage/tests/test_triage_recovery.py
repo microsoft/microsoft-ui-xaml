@@ -24,6 +24,69 @@ class AssessmentRecoveryTests(unittest.TestCase):
             output["items"][0].pop("missing_information_kind")
         return t.validate(output, evidence), evidence
 
+    def test_learned_conditional_routes_preserve_confidence_and_human_ownership(self):
+        cases = (
+            ("area-Lifetime", "controls-item-lifetime", "team-Controls",
+             "ItemCollection.Clear fails after its ItemsControl owner dies."),
+            ("area-Infrastructure", "controls-metadata-ordering", "team-Controls",
+             "Product builds reorder entries in controls/dev/dll/XamlMetadataProviderGenerated.h."),
+            ("area-Islands", "island-resize-presentation", "team-CompInput",
+             "Resizing DesktopWindowXamlSource content exposes a diagonal white region."),
+            ("area-MediaPlayerElement", "island-cast-command", "team-Controls",
+             "MediaTransportControls Cast opens CastingDevicePicker on a desktop island, then shutdown hangs."),
+            ("area-NugetPackage", "composition-interop-header-packaging", "team-CompInput",
+             "Microsoft.UI.Composition.Interop.h requires Microsoft.ui.composition.h, missing from the package."),
+        )
+        for area, rule, team, reason in cases:
+            for confidence, human_team in (("HIGH", None), ("MEDIUM", None),
+                                           ("HIGH", "team-Design")):
+                with self.subTest(area=area, confidence=confidence, human_team=human_team):
+                    client = FakeGitHub()
+                    client.catalog = self.client.catalog.copy()
+                    client.issue.update(title=reason, body=reason)
+                    if human_team:
+                        client.issue["labels"].append({"name": human_team})
+                    evidence = t.prepare(client, event(), self.mapping)
+                    result = t.validate(agent_output(
+                        evidence, area=area, area_confidence=confidence,
+                        routing_rule=rule, routing_reason=reason,
+                    ), evidence)
+                    plan = t.publish(client, result, evidence, self.mapping, write=False)
+                    if confidence == "HIGH" and not human_team:
+                        self.assertEqual(plan["add_labels"], sorted([area, team]))
+                        self.assertIn(rule, plan["comment"])
+                    else:
+                        self.assertNotIn(team, plan["add_labels"])
+                    self.assertEqual(client.writes, [])
+
+    def test_learned_lifetime_override_does_not_change_default_or_existing_area(self):
+        result, evidence = self.validate(
+            area="area-Lifetime", routing_rule="default",
+            routing_reason="A framework object survives generic reference-tracking teardown.",
+        )
+        self.assertIn("team-Reach", t.planned_labels(result, evidence, self.mapping))
+        self.assertNotIn("team-Controls", t.planned_labels(result, evidence, self.mapping))
+        evidence = copy.deepcopy(self.evidence)
+        evidence["existing_labels"].append("area-Binding")
+        result = t.validate(agent_output(
+            evidence, area="area-Lifetime", routing_rule="controls-item-lifetime",
+            routing_reason="Retained ItemCollection fails mutation after its owner dies.",
+        ), evidence)
+        labels = t.planned_labels(result, evidence, self.mapping)
+        self.assertNotIn("area-Lifetime", labels)
+        self.assertNotIn("team-Controls", labels)
+
+    def test_learned_rules_cannot_be_borrowed_or_selected_without_rationale(self):
+        for area in ("area-Lifetime", "area-Infrastructure", "area-Islands",
+                     "area-MediaPlayerElement", "area-NugetPackage"):
+            rule = self.mapping[area]["overrides"][0]["id"]
+            for selected_area, reason in ((area, "None"), ("area-TitleBar", "Unrelated operation.")):
+                with self.subTest(area=area, selected_area=selected_area), self.assertRaises(t.TriageError):
+                    t.validate(agent_output(
+                        self.evidence, area=selected_area,
+                        routing_rule=rule, routing_reason=reason,
+                    ), self.evidence)
+
     def contribution_guidance_result(self, evidence, **changes):
         assessment = {
             "area": "None", "area_confidence": "HIGH",

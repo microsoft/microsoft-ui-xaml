@@ -974,6 +974,11 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-Materials": ("compositor-resource", "team-CompInput"),
             "area-AppWindow": ("xaml-hosting", "team-Reach"),
             "area-TitleBar": ("pointer-handling", "team-CompInput"),
+            "area-Infrastructure": ("controls-metadata-ordering", "team-Controls"),
+            "area-Islands": ("island-resize-presentation", "team-CompInput"),
+            "area-Lifetime": ("controls-item-lifetime", "team-Controls"),
+            "area-MediaPlayerElement": ("island-cast-command", "team-Controls"),
+            "area-NugetPackage": ("composition-interop-header-packaging", "team-CompInput"),
         }
         self.assertEqual(
             {area for area, entry in mapping.items() if entry.get("overrides")}, set(expected)

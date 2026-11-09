@@ -251,6 +251,40 @@ creating or guessing a replacement.
 If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
 
+### Learning from human triage
+
+Reviewed human routing history informs the mapping's notes and conditional
+rules; this is maintained guidance, not online model training or an automatic
+feedback-to-label loop. An explicit human team replacement is stronger ownership
+evidence than an additional area, an unchanged bot suggestion, or a reporter's
+self-classification. Multiple retained areas can indicate collaboration rather
+than a correction. Edited canonical comments are current assessment snapshots;
+their creation timestamp alone does not establish the original prediction.
+Failed, cancelled, skipped, preview, and ineligible runs are not negative
+classification examples.
+
+The configured exceptions retain their area's default owner outside the narrow
+scenario: retained ItemsControl collection/generator contracts; product-build
+ordering of this repository's controls metadata header; a specific native
+Composition interop header missing from package distribution; a diagonal exposed
+region when resizing a desktop XAML island; and the built-in media Cast command
+causing shutdown failure on a desktop island. A type, filename, or generic visual
+symptom alone is not enough to satisfy an exception.
+
+Area guidance also distinguishes XAML generation/resource layout from generic
+project or package failures, SelectorBar visual states from generic pointer/theme
+issues, editing-surface selection carets from suggestion-list failures, and
+CommandBar overflow presentation from command execution. Diagnostic evidence of a
+failing ScrollPresenter operation takes precedence over a window-resize trigger.
+These are initial-investigation boundaries, not claims of verified root cause.
+Conflicting or unresolved human ownership stays a maintainer decision; do not
+change a default owner merely to fit a sparse example.
+
+Tests exercise supplied structured assessments and publication safeguards, not
+the hosted model's ability to recognize these scenarios or their counterexamples.
+Routing accuracy requires a separately approved model evaluation; no new
+confidence promotion, label replacement, or disposition automation is implied.
+
 ## Assessment reconciliation
 
 ### UWP app model
