@@ -4383,7 +4383,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::WindowHelper->WaitForIdle();
     }
 
-    void StyleIntegrationTests::StyleSetterValuesStayDeferredWhileShadowed()
+    void StyleIntegrationTests::StyleSetterValuesStayDeferredWhileOverridden()
     {
         TestCleanupWrapper cleanup;
 
@@ -4399,12 +4399,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
             control->Style = style;
             VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount(),
-                L"Notifying a shadowed setter must not construct its deferred value");
+                L"Notifying an overridden setter must not construct its deferred value");
             VERIFY_ARE_EQUAL(L"Local override", safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
 
             control->SetValue(CustomControl::AttachedTagProperty, L"Updated local override");
             VERIFY_ARE_EQUAL(0U, CustomObject::GetInstanceCount(),
-                L"Changing a local value must not construct the shadowed setter's deferred value");
+                L"Changing a local value must not construct the overridden setter's deferred value");
             VERIFY_ARE_EQUAL(L"Updated local override", safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data());
 
             control->ClearValue(CustomControl::AttachedTagProperty);
@@ -4427,7 +4427,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleIntegrationTests::TestStyleSetterFailure(bool shadowed, bool throwingConstructor)
+    void StyleIntegrationTests::TestStyleSetterFailure(bool overridden, bool throwingConstructor)
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;
@@ -4444,7 +4444,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 throwingConstructor ? L"DeferredCustomObjectStyle" : L"MissingResourceStyle"));
             auto control = ref new ContentControl();
 
-            if (shadowed)
+            if (overridden)
             {
                 control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
                 control->Style = style;
@@ -4500,7 +4500,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestStyleSetterFailure(false, false);
     }
 
-    void StyleIntegrationTests::ShadowedStyleSetterReportsMissingResourceWhenExposed()
+    void StyleIntegrationTests::OverriddenStyleSetterReportsMissingResourceWhenExposed()
     {
         TestStyleSetterFailure(true, false);
     }
@@ -4510,7 +4510,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestStyleSetterFailure(false, true);
     }
 
-    void StyleIntegrationTests::ShadowedStyleSetterReportsConstructorFailureWhenExposed()
+    void StyleIntegrationTests::OverriddenStyleSetterReportsConstructorFailureWhenExposed()
     {
         TestStyleSetterFailure(true, true);
     }
@@ -4550,7 +4550,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleIntegrationTests::StyleSetterFailureDoesNotSurviveShadowedReapplication()
+    void StyleIntegrationTests::StyleSetterFailureDoesNotSurviveOverriddenReapplication()
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;
@@ -4573,7 +4573,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             control->ClearValue(FrameworkElement::StyleProperty);
             control->Style = style;
             VERIFY_ARE_EQUAL(1U, CustomObject::GetConstructionAttemptCount(),
-                L"Reapplying a shadowed style must not retry the failed setter");
+                L"Reapplying a style with an overridden setter must not retry the failed setter");
             VERIFY_IS_TRUE(wcscmp(
                 safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data(), L"Local override") == 0);
 

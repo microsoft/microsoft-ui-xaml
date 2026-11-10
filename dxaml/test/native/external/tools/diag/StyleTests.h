@@ -47,7 +47,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(DeferredSetterValueCanBeInspectedAndEditedWhileShadowed)
+            BEGIN_TEST_METHOD(DeferredSetterValueCanBeInspectedAndEditedWhileOverridden)
                 TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()

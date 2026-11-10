@@ -186,7 +186,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
-        void StyleTests::DeferredSetterValueCanBeInspectedAndEditedWhileShadowed()
+        void StyleTests::DeferredSetterValueCanBeInspectedAndEditedWhileOverridden()
         {
             unsigned int constructionCount = 0;
             RunOnUIThread([&]
@@ -204,11 +204,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             RunOnUIThread([&]
             {
                 VERIFY_ARE_EQUAL(constructionCount, shared_types::CustomUserControl::GetConstructionCount(),
-                    L"Applying the style must leave the shadowed setter value deferred before inspection");
+                    L"Applying the style must leave the overridden setter value deferred before inspection");
                 VERIFY_IS_TRUE(wcscmp(safe_cast<Platform::String^>(button->Tag)->Data(), L"Local override") == 0);
             });
 
-            // Even though Tag is set locally to "Local override", we can go get its shadowed BaseValueSourceStyle value
+            // Even though Tag is set locally to "Local override", we can go get its overridden BaseValueSourceStyle value
             auto styleValue = GetPropertyChainValue(buttonHandle, L"Tag", BaseValueSourceStyle);
             auto valueHandle = ih_cast(styleValue.Value);
             RunOnUIThread([&]
@@ -217,7 +217,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 VERIFY_IS_NOT_NULL(value);
                 VERIFY_ARE_EQUAL(37, value->CustomInt);
                 VERIFY_ARE_EQUAL(constructionCount + 1, shared_types::CustomUserControl::GetConstructionCount(),
-                    L"Diagnostics must realize the shadowed value on demand");
+                    L"Diagnostics must realize the overridden value on demand");
                 // The setter value was realized, but the button's local Tag value must not have changed.
                 VERIFY_IS_TRUE(wcscmp(safe_cast<Platform::String^>(button->Tag)->Data(), L"Local override") == 0);
             });

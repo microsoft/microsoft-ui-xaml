@@ -33,7 +33,7 @@
         <Setter Property="Width" Value="37" />
     </Style>
     <Style x:Key="DuplicateDeferredCustomObjectStyle" TargetType="Control">
-        <Setter Property="local:CustomControl.AttachedTag" Value="Shadowed setter" />
+        <Setter Property="local:CustomControl.AttachedTag" Value="Overridden setter" />
         <Setter Property="local:CustomControl.AttachedTag">
             <Setter.Value>
                 <local:CustomObject />
