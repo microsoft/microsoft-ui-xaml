@@ -80,6 +80,8 @@ public:
 
     _Check_return_ HRESULT NotifySetterApplied(_In_ unsigned int setterIndex);
 
+    _Check_return_ HRESULT TakeDeferredValueError(_In_ unsigned int setterIndex);
+
     bool HasPropertySetter(_In_ const KnownPropertyIndex propertyId) const;
 
     _Check_return_ HRESULT GetPropertyValue(_In_ KnownPropertyIndex propertyId, _Outptr_opt_ CValue** ppValue)
@@ -88,11 +90,7 @@ public:
         return S_OK;
     }
 
-    _Check_return_ HRESULT GetPropertyValue(
-        _In_ KnownPropertyIndex propertyId,
-        _In_ bool getFromBasedOn,
-        _Outptr_opt_ CValue** ppValue,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+    _Check_return_ HRESULT GetPropertyValue(_In_ KnownPropertyIndex propertyId, _In_ bool getFromBasedOn, _Outptr_opt_ CValue** ppValue);
 
     _Check_return_ HRESULT NotifyThemeChanged(_In_ Theming::Theme theme, _In_ bool forceRefresh = false) const;
 
@@ -141,6 +139,7 @@ private:
     // Deferred loading state — only populated when created from XBF data.
     // When m_runtimeData is non-null, values may be deferred and m_realizedStates
     // tracks which entries in m_values have been realized.
+    // Unrealized entries are unset or hold a failing HRESULT as valueUnsigned.
     std::shared_ptr<StyleCustomRuntimeData> m_runtimeData;
     std::shared_ptr<CustomWriterRuntimeContext> m_runtimeContext;
     std::unique_ptr<CustomWriterRuntimeObjectCreator> m_spObjectCreator; // Destruct before m_spRuntimeContext, has raw pointer to it.

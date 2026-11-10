@@ -1202,8 +1202,7 @@ Cleanup:
 _Check_return_ HRESULT CControl::GetValueFromBuiltInStyle(
     _In_ const CDependencyProperty* dp,
     _Out_ CValue* pValue,
-    _Out_ bool* gotValue,
-    _Inout_opt_ HRESULT* deferredValueError)
+    _Out_ bool* gotValue)
 {
     *gotValue = false;
 
@@ -1212,8 +1211,7 @@ _Check_return_ HRESULT CControl::GetValueFromBuiltInStyle(
         IFC_RETURN(m_pBuiltInStyle->GetPropertyValue(
             dp->GetIndex(),
             pValue,
-            gotValue,
-            deferredValueError));
+            gotValue));
     }
 
     return S_OK;

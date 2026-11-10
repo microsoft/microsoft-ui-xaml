@@ -107,8 +107,7 @@ public:
     _Check_return_ HRESULT GetValueFromBuiltInStyle(
         _In_ const CDependencyProperty* dp,
         _Out_ CValue* pValue,
-        _Out_ bool* gotValue,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+        _Out_ bool* gotValue);
 
     bool IsFocusableForFocusEngagement() final
     {

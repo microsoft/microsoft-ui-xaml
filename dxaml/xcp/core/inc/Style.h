@@ -49,6 +49,8 @@ public:
 
     _Check_return_ HRESULT NotifySetterApplied(_In_ unsigned int setterIndex);
 
+    _Check_return_ HRESULT TakeDeferredValueError(_In_ unsigned int setterIndex);
+
     _Check_return_ HRESULT HasPropertySetter(_In_ const KnownPropertyIndex propIndex, _Out_ bool* hasProperty);
 
     // Default property getter. Will try to get the property from based on style if no setter on
@@ -56,15 +58,13 @@ public:
     _Check_return_ HRESULT GetPropertyValue(
         _In_ KnownPropertyIndex uPropertyId,
         _Out_ CValue *pValue,
-        _Out_ bool* gotValue,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+        _Out_ bool* gotValue);
 
     _Check_return_ HRESULT GetPropertyValue(
         _In_ KnownPropertyIndex uPropertyId,
         _In_ bool getFromBasedOn,
         _Out_ CValue *pValue,
-        _Out_ bool* gotValue,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+        _Out_ bool* gotValue);
 
     CStyle* GetBasedOnStyleNoRef() const
     {

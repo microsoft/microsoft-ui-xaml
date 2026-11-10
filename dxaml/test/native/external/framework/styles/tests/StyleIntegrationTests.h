@@ -353,11 +353,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that applying an effective setter reports a missing resource.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsBasedOnRealizationFailure)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verify that applying an effective setter reports a deferred realization failure from its BasedOn style.")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(ShadowedStyleSetterReportsMissingResourceWhenExposed)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that a shadowed setter reports a missing resource only when its local override is cleared.")
@@ -371,6 +366,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(ShadowedStyleSetterReportsConstructorFailureWhenExposed)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that a shadowed setter reports a constructor failure only when its local override is cleared.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsBasedOnRealizationFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a deferred realization failure from its BasedOn style.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DuplicateStyleSetterReportsRealizationFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that duplicate setters report the effective setter's realization failure.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StyleSetterFailureDoesNotSurviveShadowedReapplication)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a failed ClearValue does not poison a shadowed style reapplication or a later successful realization.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)

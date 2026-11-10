@@ -4434,8 +4434,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         RunOnUIThread([&]()
         {
+            CustomObject::ClearConstructionAttemptCount();
             CustomObject::SetThrowOnConstruction(throwingConstructor);
             auto reset = wil::scope_exit([] { CustomObject::SetThrowOnConstruction(false); });
+
             auto resources = ref new ResourceDictionary();
             resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
             auto style = safe_cast<Style^>(resources->Lookup(
@@ -4456,12 +4458,61 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_THROWS_WINRT(control->Style = style, Platform::Exception^,
                     L"Applying an effective setter must report its realization failure");
             }
+
+            auto appResources = Application::Current->Resources;
+            if (throwingConstructor)
+            {
+                VERIFY_ARE_EQUAL(1U, CustomObject::GetConstructionAttemptCount(),
+                    L"Reporting a realization failure must not retry the constructor");
+                CustomObject::SetThrowOnConstruction(false);
+            }
+            else
+            {
+                VERIFY_IS_FALSE(appResources->HasKey(L"MissingSetterResource"));
+                appResources->Insert(L"MissingSetterResource", L"Recovered resource");
+            }
+            auto removeResource = wil::scope_exit([&]
+            {
+                if (!throwingConstructor)
+                {
+                    appResources->Remove(L"MissingSetterResource");
+                }
+            });
+
+            auto retryControl = ref new ContentControl();
+            retryControl->Style = style;
+            auto recoveredValue = retryControl->GetValue(CustomControl::AttachedTagProperty);
+            if (throwingConstructor)
+            {
+                VERIFY_IS_NOT_NULL(safe_cast<CustomObject^>(recoveredValue));
+                VERIFY_ARE_EQUAL(2U, CustomObject::GetConstructionAttemptCount(),
+                    L"A later style application must be allowed to retry realization");
+            }
+            else
+            {
+                VERIFY_IS_TRUE(wcscmp(safe_cast<String^>(recoveredValue)->Data(), L"Recovered resource") == 0);
+            }
         });
     }
 
     void StyleIntegrationTests::EffectiveStyleSetterReportsMissingResource()
     {
         TestStyleSetterFailure(false, false);
+    }
+
+    void StyleIntegrationTests::ShadowedStyleSetterReportsMissingResourceWhenExposed()
+    {
+        TestStyleSetterFailure(true, false);
+    }
+
+    void StyleIntegrationTests::EffectiveStyleSetterReportsConstructorFailure()
+    {
+        TestStyleSetterFailure(false, true);
+    }
+
+    void StyleIntegrationTests::ShadowedStyleSetterReportsConstructorFailureWhenExposed()
+    {
+        TestStyleSetterFailure(true, true);
     }
 
     void StyleIntegrationTests::EffectiveStyleSetterReportsBasedOnRealizationFailure()
@@ -4480,19 +4531,57 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleIntegrationTests::ShadowedStyleSetterReportsMissingResourceWhenExposed()
+    void StyleIntegrationTests::DuplicateStyleSetterReportsRealizationFailure()
     {
-        TestStyleSetterFailure(true, false);
+        TestCleanupWrapper cleanup;
+        DisableErrorReportingScopeGuard disableErrors;
+
+        RunOnUIThread([]()
+        {
+            CustomObject::SetThrowOnConstruction(true);
+            auto reset = wil::scope_exit([] { CustomObject::SetThrowOnConstruction(false); });
+
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            auto style = safe_cast<Style^>(resources->Lookup(L"DuplicateDeferredCustomObjectStyle"));
+            auto control = ref new ContentControl();
+            VERIFY_THROWS_WINRT(control->Style = style, Platform::Exception^,
+                L"The effective setter's failure must be reported even when an earlier setter targets the same property");
+        });
     }
 
-    void StyleIntegrationTests::EffectiveStyleSetterReportsConstructorFailure()
+    void StyleIntegrationTests::StyleSetterFailureDoesNotSurviveShadowedReapplication()
     {
-        TestStyleSetterFailure(false, true);
-    }
+        TestCleanupWrapper cleanup;
+        DisableErrorReportingScopeGuard disableErrors;
 
-    void StyleIntegrationTests::ShadowedStyleSetterReportsConstructorFailureWhenExposed()
-    {
-        TestStyleSetterFailure(true, true);
+        RunOnUIThread([]()
+        {
+            CustomObject::ClearConstructionAttemptCount();
+            CustomObject::SetThrowOnConstruction(true);
+            auto reset = wil::scope_exit([] { CustomObject::SetThrowOnConstruction(false); });
+
+            auto resources = ref new ResourceDictionary();
+            resources->Source = ref new Uri(L"ms-appx:///DuplicateDefaultStyle.xaml");
+            auto style = safe_cast<Style^>(resources->Lookup(L"DeferredCustomObjectStyle"));
+            auto control = ref new ContentControl();
+            control->SetValue(CustomControl::AttachedTagProperty, L"Local override");
+            control->Style = style;
+            VERIFY_THROWS_WINRT(control->ClearValue(CustomControl::AttachedTagProperty), Platform::Exception^);
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetConstructionAttemptCount());
+
+            control->ClearValue(FrameworkElement::StyleProperty);
+            control->Style = style;
+            VERIFY_ARE_EQUAL(1U, CustomObject::GetConstructionAttemptCount(),
+                L"Reapplying a shadowed style must not retry the failed setter");
+            VERIFY_IS_TRUE(wcscmp(
+                safe_cast<String^>(control->GetValue(CustomControl::AttachedTagProperty))->Data(), L"Local override") == 0);
+
+            CustomObject::SetThrowOnConstruction(false);
+            control->ClearValue(CustomControl::AttachedTagProperty);
+            VERIFY_IS_NOT_NULL(safe_cast<CustomObject^>(control->GetValue(CustomControl::AttachedTagProperty)));
+            VERIFY_ARE_EQUAL(2U, CustomObject::GetConstructionAttemptCount());
+        });
     }
 
     void StyleIntegrationTests::VerifyImplicitStyleInvalidationInThemeDictionaries()

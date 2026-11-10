@@ -29,5 +29,15 @@
     <Style x:Key="MissingResourceStyle" TargetType="Control">
         <Setter Property="local:CustomControl.AttachedTag" Value="{StaticResource MissingSetterResource}" />
     </Style>
-    <Style x:Key="DerivedMissingResourceStyle" TargetType="Control" BasedOn="{StaticResource MissingResourceStyle}" />
+    <Style x:Key="DerivedMissingResourceStyle" TargetType="Control" BasedOn="{StaticResource MissingResourceStyle}">
+        <Setter Property="Width" Value="37" />
+    </Style>
+    <Style x:Key="DuplicateDeferredCustomObjectStyle" TargetType="Control">
+        <Setter Property="local:CustomControl.AttachedTag" Value="Shadowed setter" />
+        <Setter Property="local:CustomControl.AttachedTag">
+            <Setter.Value>
+                <local:CustomObject />
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

@@ -15,8 +15,11 @@ namespace Tests { namespace Native { namespace External { namespace Framework {
         static unsigned int GetInstanceCount();
         static void ClearInstanceCount();
         static void SetThrowOnConstruction(bool value);
+        static unsigned int GetConstructionAttemptCount();
+        static void ClearConstructionAttemptCount();
     private:
         static unsigned int InstanceCount;
         static bool ThrowOnConstruction;
+        static unsigned int ConstructionAttemptCount;
     };
 } } } }

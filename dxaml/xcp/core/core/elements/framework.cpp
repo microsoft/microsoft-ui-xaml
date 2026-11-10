@@ -849,10 +849,15 @@ CFrameworkElement::OnStyleChanged(
             IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
             const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
 
-            // Preserve ignored conversion/assignment errors, but surface deferred setter realization failures.
-            HRESULT deferredValueError = S_OK;
-            IGNOREHR(InvalidateProperty(pDP, baseValueSource, &deferredValueError));
-            IFC(deferredValueError);
+            // Discard older failures before invalidating.
+            IGNOREHR(pNewStyle->TakeDeferredValueError(i));
+
+            if (FAILED(InvalidateProperty(pDP, baseValueSource)))
+            {
+                // Note: This only reports a deferred realization failure from this setter on
+                // this style, not a failure from another setter/style or later value processing.
+                IFC(pNewStyle->TakeDeferredValueError(i));
+            }
 
             // Applying the value can create its peer. Notify afterward so the style can keep
             // that peer alive even when the value is subsequently overridden.
@@ -927,8 +932,7 @@ _Check_return_ HRESULT CFrameworkElement::UpdateFocusAncestorsTarget(_In_ bool s
 _Check_return_ HRESULT CFrameworkElement::GetValueFromStyle(
     _In_ const CDependencyProperty* dp,
     _Out_ CValue *pValue,
-    _Out_ bool* gotValue,
-    _Inout_opt_ HRESULT* deferredValueError)
+    _Out_ bool* gotValue)
 {
     CStyle* pActiveStyle = GetActiveStyle();
 
@@ -939,8 +943,7 @@ _Check_return_ HRESULT CFrameworkElement::GetValueFromStyle(
         IFC_RETURN(pActiveStyle->GetPropertyValue(
             dp->GetIndex(),
             pValue,
-            gotValue,
-            deferredValueError));
+            gotValue));
     }
 
     return S_OK;
@@ -957,8 +960,7 @@ _Check_return_ HRESULT CFrameworkElement::GetValueFromStyle(
 _Check_return_ HRESULT
 CFrameworkElement::InvalidateProperty(
     _In_ const CDependencyProperty* pDP,
-    _In_ BaseValueSource baseValueSource,
-    _Inout_opt_ HRESULT* deferredValueError)
+    _In_ BaseValueSource baseValueSource)
 {
     if (pDP->IsSparse())
     {
@@ -967,7 +969,7 @@ CFrameworkElement::InvalidateProperty(
         IFC_RETURN(SetParticipatesInManagedTreeDefault());
     }
 
-    IFC_RETURN(__super::InvalidateProperty(pDP, baseValueSource, deferredValueError));
+    IFC_RETURN(__super::InvalidateProperty(pDP, baseValueSource));
 
     return S_OK;
 }

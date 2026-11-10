@@ -552,12 +552,32 @@ bool OptimizedStyle::HasPropertySetter(_In_ const KnownPropertyIndex propertyId)
     return std::find(m_properties.begin(), m_properties.end(), propertyId) != m_properties.end();
 }
 
+// Returns and clears the setter's cached deferred realization error, or S_OK if none is recorded.
+_Check_return_ HRESULT OptimizedStyle::TakeDeferredValueError(_In_ unsigned int setterIndex)
+{
+    ASSERT(setterIndex < m_properties.size());
+
+    if (setterIndex >= m_basedOnBegin)
+    {
+        ASSERT(m_style->m_pBasedOn != nullptr);
+        setterIndex -= static_cast<unsigned int>(m_basedOnBegin);
+        return m_style->m_pBasedOn->TakeDeferredValueError(setterIndex);
+    }
+
+    if (m_runtimeData && !m_realizedStates[setterIndex] && m_values[setterIndex].GetType() == valueUnsigned)
+    {
+        const HRESULT hr = static_cast<HRESULT>(m_values[setterIndex].AsUnsigned());
+        ASSERT(FAILED(hr));
+        AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+        m_values[setterIndex].Unset();
+        return hr;
+    }
+
+    return S_OK;
+}
+
 // Get the value of a property in the style. Return null CValue if property is not found.
-_Check_return_ HRESULT OptimizedStyle::GetPropertyValue(
-    _In_ KnownPropertyIndex propertyId,
-    _In_ bool getFromBasedOn,
-    _Outptr_opt_ CValue** ppValue,
-    _Inout_opt_ HRESULT* deferredValueError)
+_Check_return_ HRESULT OptimizedStyle::GetPropertyValue(_In_ KnownPropertyIndex propertyId, _In_ bool getFromBasedOn, _Outptr_opt_ CValue** ppValue)
 {
     *ppValue = nullptr;
 
@@ -574,7 +594,7 @@ _Check_return_ HRESULT OptimizedStyle::GetPropertyValue(
     if (!found && m_style->m_pBasedOn && getFromBasedOn)
     {
         bool gotValue = false;
-        IFC_RETURN(m_style->m_pBasedOn->GetPropertyValue(propertyId, &m_latestFoundBasedOnValue, &gotValue, deferredValueError));
+        IFC_RETURN(m_style->m_pBasedOn->GetPropertyValue(propertyId, &m_latestFoundBasedOnValue, &gotValue));
 
         // If we found the property/value in the BasedOn style, just return it immediately,
         // because the found value is already resolved.
@@ -596,9 +616,10 @@ _Check_return_ HRESULT OptimizedStyle::GetPropertyValue(
     if (m_runtimeData && !m_realizedStates[foundIndex])
     {
         const HRESULT hr = EnsureValueRealized(foundIndex);
-        if (FAILED(hr) && deferredValueError)
+        if (FAILED(hr) && !m_realizedStates[foundIndex])
         {
-            *deferredValueError = hr;
+            AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+            m_values[foundIndex].SetUnsigned(static_cast<UINT32>(hr));
         }
         IFC_RETURN(hr);
     }

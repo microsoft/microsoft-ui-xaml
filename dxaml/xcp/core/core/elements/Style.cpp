@@ -336,10 +336,9 @@ _Check_return_ HRESULT CStyle::GetTargetTypeName(_Out_ xstring_ptr* pstrFullName
 _Check_return_ HRESULT CStyle::GetPropertyValue(
     _In_ KnownPropertyIndex uPropertyId,
     _Out_ CValue* pValue,
-    _Out_ bool* gotValue,
-    _Inout_opt_ HRESULT* deferredValueError)
+    _Out_ bool* gotValue)
 {
-    return GetPropertyValue(uPropertyId, true /*getFromBasedOn*/, pValue, gotValue, deferredValueError);
+    return GetPropertyValue(uPropertyId, true /*getFromBasedOn*/, pValue, gotValue);
 }
 
 // Get value of property in the style. Return null CValue if property is not found in the style.
@@ -348,8 +347,7 @@ _Check_return_ HRESULT CStyle::GetPropertyValue(
     _In_ KnownPropertyIndex uPropertyId,
     _In_ bool getFromBasedOn,
     _Out_ CValue* pValue,
-    _Out_ bool* gotValue,
-    _Inout_opt_ HRESULT* deferredValueError)
+    _Out_ bool* gotValue)
 {
     *gotValue = false;
 
@@ -361,7 +359,7 @@ _Check_return_ HRESULT CStyle::GetPropertyValue(
     {
         CValue* foundValue = nullptr;
 
-        IFC_RETURN(m_optimizedStyle->GetPropertyValue(uPropertyId, getFromBasedOn, &foundValue, deferredValueError));
+        IFC_RETURN(m_optimizedStyle->GetPropertyValue(uPropertyId, getFromBasedOn, &foundValue));
         if (foundValue == nullptr)
             return S_OK;
 
@@ -709,6 +707,11 @@ _Check_return_ HRESULT CStyle::NotifySetterApplied(_In_ unsigned int setterIndex
     }
 
     return S_OK;
+}
+
+_Check_return_ HRESULT CStyle::TakeDeferredValueError(_In_ unsigned int setterIndex)
+{
+    return m_optimizedStyle ? m_optimizedStyle->TakeDeferredValueError(setterIndex) : S_OK;
 }
 
 _Check_return_ HRESULT CStyle::NotifyMutableSetterValueChanged(_In_ CSetter* const sender)

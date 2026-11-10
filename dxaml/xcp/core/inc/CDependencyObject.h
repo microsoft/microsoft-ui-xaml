@@ -515,11 +515,7 @@ public:
 
     _Check_return_ HRESULT ClearValue(_In_ const CDependencyProperty* dp);
 
-    // Initialize deferredValueError to S_OK; only deferred style setter realization failures update it.
-    virtual _Check_return_ HRESULT InvalidateProperty(
-        _In_ const CDependencyProperty* dp,
-        _In_ BaseValueSource baseValueSource,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+    virtual _Check_return_ HRESULT InvalidateProperty(_In_ const CDependencyProperty* dp, _In_ BaseValueSource baseValueSource);
 
     void SetPropertyIsDefault(_In_ const CDependencyProperty* dp);
 
@@ -996,9 +992,7 @@ protected:
         return m_bitFields.fValueOfInheritedProperty;
     }
 
-    _Check_return_ HRESULT UpdateEffectiveValue(
-        _In_ const UpdateEffectiveValueParams& args,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+    _Check_return_ HRESULT UpdateEffectiveValue(_In_ const UpdateEffectiveValueParams& args);
 
     _Check_return_ HRESULT EvaluateEffectiveValue(
         _In_ const CDependencyProperty* dp,
@@ -1006,8 +1000,7 @@ protected:
         _In_ UINT32 valueOperation,
         _Out_ CValue* pEffectiveValue,
         _Out_ BaseValueSource* pBaseValueSource,
-        _Out_ bool* valueSetNeeded,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+        _Out_ bool* valueSetNeeded);
 
     _Check_return_ HRESULT EvaluateBaseValue(
         _In_ const CDependencyProperty* dp,
@@ -1015,8 +1008,7 @@ protected:
         _In_ UINT32 valueOperation,
         _Out_ CValue* pBaseValue,
         _Out_ BaseValueSource* pBaseValueSource,
-        _Out_ bool* valueSetNeeded,
-        _Inout_opt_ HRESULT* deferredValueError = nullptr);
+        _Out_ bool* valueSetNeeded);
 
     _Check_return_ HRESULT SetBaseValueSource(
         _In_ const CDependencyProperty* pDP,
