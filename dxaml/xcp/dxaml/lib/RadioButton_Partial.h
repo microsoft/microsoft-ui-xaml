@@ -17,6 +17,7 @@ namespace DirectUI
 
         // Prepares object's state
         _Check_return_ HRESULT Initialize() override;
+        IFACEMETHOD(ArrangeOverride)(_In_ wf::Size finalSize, _Out_ wf::Size* returnValue) override;
 
         _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
 

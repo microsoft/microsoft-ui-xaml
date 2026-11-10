@@ -49,6 +49,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the ActualWidth and ActualHeight of CheckBox.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(AlignsSelectionGlyphWithFirstLabelLine)
+            TEST_METHOD_PROPERTY(L"Description", L"CheckBox and RadioButton align the selection glyph with the first line of a text label.")
+        END_TEST_METHOD()
+
     };
 
 } } } } } }

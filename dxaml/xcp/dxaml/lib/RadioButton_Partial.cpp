@@ -33,6 +33,13 @@ RadioButton::Initialize()
     return S_OK;
 }
 
+IFACEMETHODIMP RadioButton::ArrangeOverride(wf::Size finalSize, _Out_ wf::Size* returnValue)
+{
+    IFC_RETURN(__super::ArrangeOverride(finalSize, returnValue));
+    IFC_RETURN(AlignTextLabelGlyph());
+    return S_OK;
+}
+
 // Disconnect framework peer and remove RadioButton from Group
 _Check_return_
 HRESULT
