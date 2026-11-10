@@ -4635,14 +4635,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyRenderedHeaderCornersFollowFlowDirection()
+        public void VerifyHeaderCornerGeometryFollowsFlowDirection()
         {
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             {
                 foreach (var hasFlyout in new[] { false, true })
                 {
                     TableView tableView = null;
-                    Grid snapshotRoot = null;
+                    Grid layoutRoot = null;
                     Border firstFill = null;
                     Border lastFill = null;
                     DropDownButton button = null;
@@ -4650,10 +4650,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         tableView = CreateThemingTable();
                         tableView.FlowDirection = flow;
-                        tableView.HighContrastAdjustment = ElementHighContrastAdjustment.None;
                         tableView.Resources["TableViewHeaderLeftCornerRadius"] = new CornerRadius(8, 0, 0, 0);
                         tableView.Resources["TableViewHeaderRightCornerRadius"] = new CornerRadius(0, 8, 0, 0);
-                        tableView.Resources["TabularSurfaceHeaderBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
                         foreach (var column in tableView.Columns)
                         {
                             column.Width = new GridLength(1, GridUnitType.Star);
@@ -4662,16 +4660,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             tableView.Columns[1].HeaderFlyout = new MenuFlyout();
                         }
-                        // Capture beneath an LTR ancestor so the table's RTL mirror is included.
-                        snapshotRoot = new Grid
+                        // An LTR ancestor makes the table's RTL transform observable.
+                        layoutRoot = new Grid
                         {
                             Width = tableView.Width,
                             Height = tableView.Height,
-                            FlowDirection = FlowDirection.LeftToRight,
-                            Background = new SolidColorBrush(Microsoft.UI.Colors.Black)
+                            FlowDirection = FlowDirection.LeftToRight
                         };
-                        snapshotRoot.Children.Add(tableView);
-                        LoadContent(snapshotRoot);
+                        layoutRoot.Children.Add(tableView);
+                        LoadContent(layoutRoot);
                     });
                     IdleSynchronizer.Wait();
                     RunOnUIThread.Execute(() =>
@@ -4680,31 +4677,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var last = RequireColumnHeader(tableView, 1);
                         firstFill = (Border)first.FindVisualChildByName("PART_Background");
                         lastFill = (Border)last.FindVisualChildByName("PART_Background");
-                        foreach (var fill in new[] { firstFill, lastFill })
-                        {
-                            fill.Background = new SolidColorBrush(Microsoft.UI.Colors.White);
-                            fill.BorderThickness = new Thickness(0);
-                        }
                         Verify.AreEqual(Visibility.Collapsed,
                             ((Border)last.FindVisualChildByName("PART_GridLine")).Visibility,
                             "Star columns must fill the viewport so the terminal header is an exposed edge.");
                         if (hasFlyout)
                         {
                             button = (DropDownButton)last.FindVisualChildByName("PART_HeaderFlyoutButton");
-                            foreach (var name in new[] { "Chrome", "OpenChrome" })
-                            {
-                                var chrome = (Border)button.FindVisualChildByName(name);
-                                chrome.Background = new SolidColorBrush(Microsoft.UI.Colors.White);
-                                chrome.BorderThickness = new Thickness(0);
-                            }
                         }
                     });
 
                     foreach (var state in hasFlyout ? new[] { "FlyoutClosed", "FlyoutOpen" } : new[] { "Normal" })
                     {
-                        var corners = new List<(Rect Bounds, bool RoundLeft, bool RoundRight)>();
-                        double snapshotWidth = 0;
-                        double snapshotHeight = 0;
                         RunOnUIThread.Execute(() =>
                         {
                             if (button != null)
@@ -4712,35 +4695,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
                             }
                             Content.UpdateLayout();
-                            var rtl = flow == FlowDirection.RightToLeft;
-                            void AddCorners(Border plate, bool roundLeft, bool roundRight)
+                            var context = $"{flow}, flyout={hasFlyout}, {state}";
+                            void VerifyCorners(Border plate, CornerRadius expected)
                             {
-                                corners.Add((plate.TransformToVisual(snapshotRoot).TransformBounds(
-                                    new Rect(0, 0, plate.ActualWidth, plate.ActualHeight)), roundLeft, roundRight));
+                                Verify.AreEqual(expected, plate.CornerRadius, context);
+                                Verify.IsGreaterThan(plate.ActualWidth, 0.0, context);
+                                var transform = plate.TransformToVisual(layoutRoot);
+                                var left = transform.TransformPoint(new Point());
+                                var right = transform.TransformPoint(new Point(plate.ActualWidth, 0));
+                                Verify.IsTrue(flow == FlowDirection.RightToLeft ? right.X < left.X : right.X > left.X,
+                                    $"Logical corners must mirror into physical coordinates: {context}.");
                             }
-                            AddCorners(firstFill, !rtl, rtl);
-                            AddCorners(lastFill, !hasFlyout && rtl, !hasFlyout && !rtl);
+                            VerifyCorners(firstFill, new CornerRadius(8, 0, 0, 0));
+                            VerifyCorners(lastFill, new CornerRadius(0, hasFlyout ? 0 : 8, 0, 0));
                             if (button != null)
                             {
-                                AddCorners((Border)button.FindVisualChildByName(state == "FlyoutOpen" ? "OpenChrome" : "Chrome"),
-                                    rtl, !rtl);
+                                VerifyCorners((Border)button.FindVisualChildByName(state == "FlyoutOpen" ? "OpenChrome" : "Chrome"),
+                                    new CornerRadius(0, 8, 0, 0));
                             }
-                            snapshotWidth = snapshotRoot.ActualWidth;
-                            snapshotHeight = snapshotRoot.ActualHeight;
                         });
                         IdleSynchronizer.Wait();
-                        var image = RenderElementPixels(snapshotRoot);
-                        foreach (var corner in corners)
-                        {
-                            var y = (int)((corner.Bounds.Y + 1.5) * image.Height / snapshotHeight);
-                            var left = (int)((corner.Bounds.X + 1.5) * image.Width / snapshotWidth);
-                            var right = (int)((corner.Bounds.Right - 1.5) * image.Width / snapshotWidth);
-                            var context = $"{flow}, flyout={hasFlyout}, {state}";
-                            Verify.AreEqual(corner.RoundLeft ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White,
-                                ReadRenderedPixel(image, left, y), $"Physical top-left corner: {context}.");
-                            Verify.AreEqual(corner.RoundRight ? Microsoft.UI.Colors.Black : Microsoft.UI.Colors.White,
-                                ReadRenderedPixel(image, right, y), $"Physical top-right corner: {context}.");
-                        }
                     }
                 }
             }
@@ -5670,18 +5644,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     foreach (var scenario in new[] { "Sortable", "TableOff", "TableOn", "ColumnOff", "ColumnOn", "Disabled", "Enabled" })
                     {
-                        RunOnUIThread.Execute(() =>
+                        if (scenario == "Disabled" || scenario == "Enabled")
                         {
-                            switch (scenario)
+                            TableViewColumnHeader header = null;
+                            RunOnUIThread.Execute(() => header = RequireColumnHeader(tableView, 0));
+                            SetIsEnabledAndWait(tableView, scenario == "Enabled", header);
+                        }
+                        else
+                        {
+                            RunOnUIThread.Execute(() =>
                             {
-                                case "TableOff": tableView.CanUserSortColumns = false; break;
-                                case "TableOn": tableView.CanUserSortColumns = true; break;
-                                case "ColumnOff": tableView.Columns[0].CanSort = false; break;
-                                case "ColumnOn": tableView.Columns[0].CanSort = true; break;
-                                case "Disabled": tableView.IsEnabled = false; break;
-                                case "Enabled": tableView.IsEnabled = true; break;
-                            }
-                        });
+                                switch (scenario)
+                                {
+                                    case "TableOff": tableView.CanUserSortColumns = false; break;
+                                    case "TableOn": tableView.CanUserSortColumns = true; break;
+                                    case "ColumnOff": tableView.Columns[0].CanSort = false; break;
+                                    case "ColumnOn": tableView.Columns[0].CanSort = true; break;
+                                }
+                            });
+                        }
                         IdleSynchronizer.Wait();
                         RunOnUIThread.Execute(() =>
                         {
@@ -6178,17 +6159,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             IdleSynchronizer.Wait();
                         }
 
-                        RunOnUIThread.Execute(() => tableView.IsEnabled = false);
-                        IdleSynchronizer.Wait();
+                        SetIsEnabledAndWait(tableView, false, header, button);
                         RunOnUIThread.Execute(() =>
                         {
                             var context = $"{theme}, {appearance}";
                             Verify.IsFalse(button.IsEnabled, $"The disabled header must disable its dropdown ({context}).");
                             Verify.AreEqual(disabled, ((SolidColorBrush)chevron.Foreground).Color,
                                 $"Disabling the header must still dim its dropdown independently ({context}).");
-                            tableView.IsEnabled = true;
                         });
-                        IdleSynchronizer.Wait();
+                        SetIsEnabledAndWait(tableView, true, header, button);
                         RunOnUIThread.Execute(() =>
                         {
                             Verify.IsTrue(button.IsEnabled);

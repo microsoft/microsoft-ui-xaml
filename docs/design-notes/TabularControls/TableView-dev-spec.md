@@ -322,6 +322,8 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. Disabled selection indicators reuse `AccentFillColorDisabledBrush` in Light/Dark; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
+The built-in section count uses `TabularSurfaceGroupHeaderCountOpacity` while enabled and opacity 1 while disabled, since its inherited disabled foreground already supplies the disabled appearance. This applies when loaded disabled and after template replacement, independently of count-visibility tracking. Custom content templates retain their own opacity.
+
 Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the
 ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
 sort help. Sorted headers retain their actual direction indicator. Pressed retains the existing

@@ -60,12 +60,6 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
     RefreshDensity();
     auto const desired = MeasureBand(availableSize);
 
-    // The base measure realizes the content template, so a header created disabled, or given a new
-    // content template while disabled, is handled here.
-    if (!IsEnabled() && ContentTemplateRoot() != m_inspectedContentRoot.get())
-    {
-        UpdateDefaultCountOpacity();
-    }
     RefreshDefaultCount();
     RefreshContentAlignment();
     return desired;
@@ -268,6 +262,11 @@ void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
 void TableViewGroupHeader::RefreshDefaultCount()
 {
     TrackDefaultCount(ContentTemplateRoot());
+    // Visibility tracking may have cached this root before its disabled opacity was applied.
+    if (!IsEnabled())
+    {
+        UpdateDefaultCountOpacity();
+    }
     if (auto const count = m_defaultCount.get())
     {
         auto const owner = GetOwningTableView();
