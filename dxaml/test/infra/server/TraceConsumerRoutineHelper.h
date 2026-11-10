@@ -41,6 +41,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             static std::mutex s_eventMutex;
             static TraceEventScope s_eventScope;
             static Event s_syncEvent;
+            static Event s_processTraceStartedEvent;
+            static HRESULT s_processTraceResult;
         };
     }
 } } } }

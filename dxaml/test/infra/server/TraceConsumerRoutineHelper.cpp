@@ -59,6 +59,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         // Process thread sync event
         Event TraceConsumerRoutineHelper::s_syncEvent(L"TraceConsumerRoutineSync");
+        // Set by the process task right before it calls ProcessTrace
+        Event TraceConsumerRoutineHelper::s_processTraceStartedEvent(L"TraceConsumerProcessTraceStarted");
+        HRESULT TraceConsumerRoutineHelper::s_processTraceResult = S_OK;
         void TraceConsumerRoutineHelper::EnableTracingByEventId(int eventId)
         {
             std::lock_guard<std::mutex> lock(s_eventMutex);
@@ -142,12 +145,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             LogThrow_IfFailed(s_consumer->OpenTrace());
 
-            // create task to process the event traces. ProcessTrace will block until CloseTrace is called
-            create_task([]
+            // create task to process the event traces. ProcessTrace will block until CloseTrace is called.
+            // Don't return until the task is about to call ProcessTrace: a short test can otherwise call Stop
+            // first, and ProcessTrace then fails on the closed handle with ERROR_INVALID_HANDLE. The task must
+            // not throw, because an unobserved task exception takes down the test host, so it records the
+            // result for Stop to report, uses the consumer it was created for, and always signals s_syncEvent.
+            s_processTraceResult = S_OK;
+            s_processTraceStartedEvent.Reset();
+            auto consumer = s_consumer.get();
+            create_task([consumer]
             {
-                LogThrow_IfFailed(s_consumer->ProcessTrace());
+                s_processTraceStartedEvent.Set();
+                s_processTraceResult = consumer->ProcessTrace();
                 s_syncEvent.Set();
             });
+            s_processTraceStartedEvent.WaitForDefault();
             // need to unregister event on close
         }
 
@@ -178,6 +190,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             s_syncEvent.WaitForDefault();
             // disable provide and clear callback
             s_consumer->DisableProvider(s_xamlProviderGuid);
+            LogThrow_IfFailed(s_processTraceResult);
         }
 
         void TraceConsumerRoutineHelper::VerifyEventTraced(int eventId, unsigned int count)
