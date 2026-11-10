@@ -2184,6 +2184,224 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an expanded top-level item is expanded again after the pane toggle button closes and reopens the pane while NavigationView gets unconstrained height from a StackPanel (#8291).")]
+        public void VerifyExpandedItemIsRestoredAfterPaneToggleInStackPanel()
+        {
+            // Negative control first: a fixed-height host does not show the bug.
+            VerifyExpandedItemIsRestoredAfterPaneToggle(useStackPanelHost: false);
+            VerifyExpandedItemIsRestoredAfterPaneToggle(useStackPanelHost: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that expanding and collapsing a top-level item after the pane toggle button closes and reopens the pane lays the menu out like before the toggle while NavigationView gets unconstrained height from a StackPanel (#8291).")]
+        public void VerifyExpandCollapseLayoutAfterPaneToggleInStackPanel()
+        {
+            // Negative control first: a fixed-height host does not show the bug.
+            VerifyExpandCollapseLayoutAfterPaneToggle(useStackPanelHost: false);
+            VerifyExpandCollapseLayoutAfterPaneToggle(useStackPanelHost: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that collapsing a top-level item gives its children's space back after an earlier expand/collapse cycle while the pane row is sized by its content: unconstrained height from a StackPanel, or a finite host with VerticalAlignment Top/Center (#8291). The test never calls UpdateLayout, so only the control's own invalidation can update the layout.")]
+        public void VerifyCollapsingItemGivesSpaceBackInStackPanelHost()
+        {
+            // Negative control first: a fixed-height host gives the space back on main too. The Top/Center cases are finite
+            // hosts where NavigationView is arranged at its content height, so the pane row is sized by the menu as in a StackPanel.
+            var hosts = new (string Name, bool UseStackPanelHost, VerticalAlignment? Alignment)[]
+            {
+                ("Fixed-height host", false, null),
+                ("StackPanel host", true, null),
+                ("Top-aligned in finite host", false, VerticalAlignment.Top),
+                ("Center-aligned in finite host", false, VerticalAlignment.Center),
+            };
+            foreach (var (host, useStackPanelHost, alignment) in hosts)
+            {
+                var navView = SetupHierarchicalNavigationViewFor8291(useStackPanelHost, out var parent, out _, out var create, alignment);
+
+                double collapsedCreateTop = 0;
+                double collapsedParentHeight = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    // Layout slot, not TransformToVisual: the item's implicit offset animation would show an in-between position.
+                    collapsedCreateTop = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(create).Y;
+                    collapsedParentHeight = parent.ActualHeight;
+                });
+
+                foreach (bool isExpanded in new[] { true, false, true, false })
+                {
+                    RunOnUIThread.Execute(() => parent.IsExpanded = isExpanded);
+                    IdleSynchronizer.Wait();
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(parent.IsExpanded, $"{host}: parent should be collapsed");
+                    Verify.AreEqual(collapsedParentHeight, parent.ActualHeight, $"{host}: collapsed parent should shrink back to its own row");
+                    Verify.AreEqual(collapsedCreateTop, Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(create).Y, $"{host}: next item should move back up");
+                });
+            }
+        }
+
+        // Repro from #8291: settings item hidden (with it the bug looks different) and no Height on NavigationView,
+        // so a StackPanel host measures it with infinite height. Left maps to the same Expanded/CompactInline layout
+        // as the issue's Auto mode in a wide window.
+        private NavigationView SetupHierarchicalNavigationViewFor8291(bool useStackPanelHost, out NavigationViewItem parent, out NavigationViewItem firstChild, out NavigationViewItem create, VerticalAlignment? alignmentInFiniteHost = null)
+        {
+            NavigationView navView = null;
+            NavigationViewItem parentLocal = null;
+            NavigationViewItem firstChildLocal = null;
+            NavigationViewItem createLocal = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    IsSettingsVisible = false,
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    Width = 1100.0
+                };
+                parentLocal = new NavigationViewItem { Content = "Pancakes", Icon = new SymbolIcon(Symbol.Setting) };
+                firstChildLocal = new NavigationViewItem { Content = "With Syrup", Icon = new SymbolIcon(Symbol.Setting) };
+                parentLocal.MenuItems.Add(firstChildLocal);
+                parentLocal.MenuItems.Add(new NavigationViewItem { Content = "Without Syrup", Icon = new SymbolIcon(Symbol.Setting) });
+                createLocal = new NavigationViewItem { Content = "Create", Icon = new SymbolIcon(Symbol.Stop) };
+                navView.MenuItems.Add(parentLocal);
+                navView.MenuItems.Add(createLocal);
+
+                if (alignmentInFiniteHost.HasValue)
+                {
+                    // Finite host, but NavigationView is arranged at its content height.
+                    navView.VerticalAlignment = alignmentInFiniteHost.Value;
+                    Content = new Grid { Height = 500.0, Children = { navView } };
+                }
+                else if (useStackPanelHost)
+                {
+                    var host = new StackPanel();
+                    host.Children.Add(navView);
+                    Content = host;
+                }
+                else
+                {
+                    navView.Height = 600.0;
+                    Content = navView;
+                }
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            parent = parentLocal;
+            firstChild = firstChildLocal;
+            create = createLocal;
+            return navView;
+        }
+
+        private static void InvokePaneToggleButton(NavigationView navView)
+        {
+            var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+            var invokeProvider = (IInvokeProvider)FrameworkElementAutomationPeer.CreatePeerForElement(toggleButton).GetPattern(PatternInterface.Invoke);
+            invokeProvider.Invoke();
+        }
+
+        private static double GetTopRelativeTo(FrameworkElement element, UIElement relativeTo)
+        {
+            return element.TransformToVisual(relativeTo).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+        }
+
+        // Steps 1-6 of #8291: expand, close the pane with the toggle button, reopen it.
+        private void ExpandAndTogglePaneFor8291(NavigationView navView, NavigationViewItem parent, string host)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                navView.SelectedItem = parent;
+                parent.IsExpanded = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(navView.IsPaneOpen, $"{host}: pane should start open");
+                InvokePaneToggleButton(navView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(navView.IsPaneOpen, $"{host}: toggle button should close the pane");
+                Verify.IsFalse(parent.IsExpanded, $"{host}: closing the pane collapses top-level items");
+                InvokePaneToggleButton(navView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(navView.IsPaneOpen, $"{host}: toggle button should reopen the pane");
+            });
+        }
+
+        private void VerifyExpandedItemIsRestoredAfterPaneToggle(bool useStackPanelHost)
+        {
+            string host = useStackPanelHost ? "StackPanel host" : "Fixed-height host";
+            Log.Comment(host);
+            var navView = SetupHierarchicalNavigationViewFor8291(useStackPanelHost, out var parent, out var firstChild, out var create);
+
+            ExpandAndTogglePaneFor8291(navView, parent, host);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(parent.IsExpanded, $"{host}: reopening the pane should restore the expanded state");
+                Verify.IsGreaterThan(firstChild.ActualHeight, 0.0, $"{host}: restored children should be laid out");
+                Verify.IsGreaterThan(GetTopRelativeTo(create, navView), GetTopRelativeTo(firstChild, navView), $"{host}: next item should be below the restored children");
+            });
+        }
+
+        private void VerifyExpandCollapseLayoutAfterPaneToggle(bool useStackPanelHost)
+        {
+            string host = useStackPanelHost ? "StackPanel host" : "Fixed-height host";
+            Log.Comment(host);
+            var navView = SetupHierarchicalNavigationViewFor8291(useStackPanelHost, out var parent, out var firstChild, out var create);
+
+            double collapsedCreateTop = 0;
+            double parentWidth = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                collapsedCreateTop = GetTopRelativeTo(create, navView);
+                parentWidth = ((FrameworkElement)VisualTreeUtils.FindVisualChildByName(parent, "NavigationViewItemPresenter")).ActualWidth;
+            });
+
+            ExpandAndTogglePaneFor8291(navView, parent, host);
+
+            // Steps 7-8: expand again, as clicking the chevron does.
+            RunOnUIThread.Execute(() =>
+            {
+                parent.IsExpanded = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var chevron = (UIElement)VisualTreeUtils.FindVisualChildByName(parent, "ExpandCollapseChevron");
+                Verify.IsNotNull(chevron, $"{host}: chevron should be loaded");
+                Verify.AreEqual(Visibility.Visible, chevron.Visibility, $"{host}: chevron should be visible after expanding");
+                Verify.AreEqual(parentWidth, ((FrameworkElement)VisualTreeUtils.FindVisualChildByName(parent, "NavigationViewItemPresenter")).ActualWidth,
+                    $"{host}: parent item should keep its width after expanding");
+                Verify.IsGreaterThan(GetTopRelativeTo(create, navView), GetTopRelativeTo(firstChild, navView), $"{host}: next item should be below the children");
+
+                // Steps 9-10: collapse again.
+                parent.IsExpanded = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(collapsedCreateTop, GetTopRelativeTo(create, navView), $"{host}: collapsing should give back the children's space");
+                var chevron = (UIElement)VisualTreeUtils.FindVisualChildByName(parent, "ExpandCollapseChevron");
+                Verify.AreEqual(Visibility.Visible, chevron.Visibility, $"{host}: chevron should be visible after collapsing");
+            });
+        }
+
         private static string GetPaneAndTopLevelItemState(NavigationViewItem item)
         {
             var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
