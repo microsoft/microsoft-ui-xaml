@@ -323,6 +323,8 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. Disabled selection indicators reuse `AccentFillColorDisabledBrush` in Light/Dark; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
+XAML resources are authoritative for visual metrics. `TableViewFallbackMetrics.h` centralizes native density, typography, hierarchy and header-size defaults used when resources are missing or unusable. A text column without an owning table uses the Medium fallback metrics for generated display text and editors. The High Contrast gridline fallback honors the system-color resource first and otherwise reads the current system GrayText color, never a fixed palette color.
+
 The built-in section count uses `TabularSurfaceGroupHeaderCountOpacity` while enabled and opacity 1 while disabled, since its inherited disabled foreground already supplies the disabled appearance. This applies when loaded disabled and after template replacement, independently of count-visibility tracking. Custom content templates retain their own opacity.
 
 Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the

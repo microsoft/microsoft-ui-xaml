@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewFocusHelpers.h"
+#include "TableViewFallbackMetrics.h"
 #include "TableViewColumnHeader.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
@@ -32,19 +33,7 @@ static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
-// Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
-// unusable.
-static constexpr double c_resizeGripperWidthFallback{ 8.0 };
-
-// Fallbacks mirroring the resources shipped in TableView.xaml.
-static constexpr double c_defaultRowIndentSize{ 16.0 };
-static constexpr double c_defaultRowExpanderSize{ 24.0 };
-static constexpr double c_defaultGroupExpanderSize{ 12.0 };
-static constexpr double c_defaultGroupExpanderSpacing{ 4.0 };
 static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
-// Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
-// missing or unusable.
-static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
 
 namespace
 {
@@ -501,36 +490,6 @@ namespace
         return false;
     }
 
-    double DensityRowMinHeightFallback(winrt::TableViewDensity density)
-    {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Large: return 40.0;
-        case winrt::TableViewDensity::Small: return 24.0;
-        default: return 32.0;
-        }
-    }
-
-    winrt::Thickness DensityCellPaddingFallback(winrt::TableViewDensity density)
-    {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Large: return winrt::ThicknessHelper::FromLengths(12, 10, 12, 10);
-        case winrt::TableViewDensity::Small: return winrt::ThicknessHelper::FromLengths(12, 2, 12, 2);
-        default: return winrt::ThicknessHelper::FromLengths(12, 6, 12, 6);
-        }
-    }
-
-    winrt::Thickness DensityTextPaddingFallback(winrt::TableViewDensity density)
-    {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Large: return { 12, 9, 12, 11 };
-        case winrt::TableViewDensity::Small: return { 12, 1, 12, 3 };
-        default: return { 12, 5, 12, 7 };
-        }
-    }
-
     // The stock style always supplies TabularSurfaceGridLineBrush; on a miss draw only in High Contrast.
     winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
     {
@@ -539,9 +498,10 @@ namespace
             return nullptr;
         }
 
+        const auto systemColor = ::GetSysColor(COLOR_GRAYTEXT);
         return winrt::SolidColorBrush(winrt::unbox_value_or<winrt::Color>(
             LookupElementResource(start, L"SystemColorGrayTextColor", true),
-            winrt::Colors::Gray()));
+            winrt::Color{ 255, GetRValue(systemColor), GetGValue(systemColor), GetBValue(systemColor) }));
     }
 
 }
@@ -2490,7 +2450,7 @@ double TableView::GetDensityRowMinHeight()
 
     std::wstring key{ L"TableViewRowMinHeight" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityRowMinHeightFallback(Density());
+    const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).rowMinHeight;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.rowMinHeight = winrt::unbox_value_or<double>(raw, fallback);
@@ -2513,7 +2473,7 @@ winrt::Thickness TableView::GetDensityCellPadding()
 
     std::wstring key{ L"TableViewCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.cellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -2536,7 +2496,7 @@ winrt::Thickness TableView::GetDensityHeaderCellPadding()
 
     std::wstring key{ L"TableViewHeaderCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.headerCellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -2557,7 +2517,7 @@ winrt::Thickness TableView::GetDensityCellTextPadding()
         std::wstring key{ L"TableViewCellTextPadding" };
         key += DensitySuffix(Density());
         metrics.cellTextPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), DensityTextPaddingFallback(Density()));
+            LookupElementResource(*this, key), TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding);
         metrics.hasCellTextPadding = true;
     }
     return metrics.cellTextPadding;
@@ -2571,7 +2531,7 @@ winrt::Thickness TableView::GetDensityHeaderTextPadding()
         std::wstring key{ L"TableViewHeaderTextPadding" };
         key += DensitySuffix(Density());
         metrics.headerTextPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), DensityTextPaddingFallback(Density()));
+            LookupElementResource(*this, key), TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding);
         metrics.hasHeaderTextPadding = true;
     }
     return metrics.headerTextPadding;
@@ -2584,7 +2544,7 @@ winrt::Thickness TableView::GetDensityGroupHeaderTextPadding()
     {
         std::wstring key{ L"TableViewGroupHeaderTextPadding" };
         key += DensitySuffix(Density());
-        auto fallback = DensityTextPaddingFallback(Density());
+        auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding;
         fallback.Left = fallback.Right = 0;
         metrics.groupHeaderTextPadding = winrt::unbox_value_or<winrt::Thickness>(
             LookupElementResource(*this, key), fallback);
@@ -2608,7 +2568,7 @@ double TableView::GetCellFontSize()
     }
 
     const bool isSmall = Density() == winrt::TableViewDensity::Small;
-    const double fallback = 14.0;
+    const double fallback = TableViewDetails::c_cellFontSizeFallback;
     if (auto raw = LookupElementResource(*this,
         isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"))
     {
@@ -2656,10 +2616,10 @@ double TableView::GetRowIndentSize()
         return cache.hierarchy.rowIndentSize;
     }
 
-    double resolved = c_defaultRowIndentSize;
+    double resolved = TableViewDetails::c_defaultRowIndentSize;
     if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
     {
-        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowIndentSize);
+        const double value = winrt::unbox_value_or<double>(raw, TableViewDetails::c_defaultRowIndentSize);
         // Negative or non-finite indent would pull content under the chevron; fall back.
         if (std::isfinite(value) && value >= 0.0)
         {
@@ -2680,10 +2640,10 @@ double TableView::GetRowExpanderSize()
         return cache.hierarchy.rowExpanderSize;
     }
 
-    double resolved = c_defaultRowExpanderSize;
+    double resolved = TableViewDetails::c_defaultRowExpanderSize;
     if (auto raw = LookupElementResource(*this, L"TableViewRowExpanderSize"))
     {
-        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowExpanderSize);
+        const double value = winrt::unbox_value_or<double>(raw, TableViewDetails::c_defaultRowExpanderSize);
         if (std::isfinite(value) && value >= 0.0)
         {
             resolved = value;
@@ -2702,7 +2662,7 @@ double TableView::GetDensityGroupHeaderMinHeight()
     {
         std::wstring key{ L"TableViewGroupHeaderMinHeight" };
         key += DensitySuffix(Density());
-        const auto fallback = DensityRowMinHeightFallback(Density());
+        const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).rowMinHeight;
         metrics.groupHeaderMinHeight = winrt::unbox_value_or<double>(LookupElementResource(*this, key), fallback);
         metrics.hasGroupHeaderMinHeight = true;
     }
@@ -2749,9 +2709,8 @@ winrt::Thickness TableView::GetDensityGroupHeaderPadding()
     {
         std::wstring key{ L"TableViewGroupHeaderPadding" };
         key += DensitySuffix(Density());
-        const auto vertical = DensityCellPaddingFallback(Density()).Top;
         metrics.groupHeaderPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), { 4.0, vertical, 12.0, vertical });
+            LookupElementResource(*this, key), TableViewDetails::GetDensityFallbackMetrics(Density()).groupHeaderPadding);
         metrics.hasGroupHeaderPadding = true;
     }
     return metrics.groupHeaderPadding;
@@ -2779,8 +2738,8 @@ double TableView::GetGroupHeaderContentOffset()
         };
 
         cache.hierarchy.groupHeaderContentOffset =
-            lookup(L"TableViewGroupExpanderSize", c_defaultGroupExpanderSize) +
-            lookup(L"TableViewGroupExpanderSpacing", c_defaultGroupExpanderSpacing);
+            lookup(L"TableViewGroupExpanderSize", TableViewDetails::c_defaultGroupExpanderSize) +
+            lookup(L"TableViewGroupExpanderSpacing", TableViewDetails::c_defaultGroupExpanderSpacing);
         cache.hierarchy.hasGroupHeaderContentOffset = true;
     }
 
@@ -2799,9 +2758,9 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
         const bool isSmall = density == winrt::TableViewDensity::Small;
         return std::pair{
             winrt::unbox_value_or<double>(LookupElementResource(*this,
-                isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"), 14.0),
+                isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"), TableViewDetails::c_cellFontSizeFallback),
             winrt::unbox_value_or<double>(LookupElementResource(*this,
-                isSmall ? L"TableViewHeaderFontSizeSmall" : L"TableViewHeaderFontSize"), 14.0) };
+                isSmall ? L"TableViewHeaderFontSizeSmall" : L"TableViewHeaderFontSize"), TableViewDetails::c_headerFontSizeFallback) };
     };
     const bool fontSizesChanged =
         resolveFontSizes(winrt::unbox_value<winrt::TableViewDensity>(args.OldValue())) != resolveFontSizes(Density());
@@ -3567,21 +3526,21 @@ void TableView::RebuildHeadersCore()
     const winrt::Thickness cachedHeaderTextPadding = GetDensityHeaderTextPadding();
     const bool isSmall = Density() == winrt::TableViewDensity::Small;
     const double smallHeaderFontSize = isSmall
-        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeSmall"), 14.0)
-        : 14.0;
+        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeSmall"), TableViewDetails::c_headerFontSizeFallback)
+        : TableViewDetails::c_headerFontSizeFallback;
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
     double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
-        LookupElementResource(*this, s_ResizeGripperWidthKey), c_resizeGripperWidthFallback);
+        LookupElementResource(*this, s_ResizeGripperWidthKey), TableViewDetails::c_resizeGripperWidthFallback);
     if (!std::isfinite(cachedResizeGripperWidth) || cachedResizeGripperWidth <= 0.0)
     {
-        cachedResizeGripperWidth = c_resizeGripperWidthFallback;
+        cachedResizeGripperWidth = TableViewDetails::c_resizeGripperWidthFallback;
     }
     double cachedSortIndicatorWidth = winrt::unbox_value_or<double>(
-        LookupElementResource(*this, s_SortIndicatorSizeKey), c_sortIndicatorSizeFallback);
+        LookupElementResource(*this, s_SortIndicatorSizeKey), TableViewDetails::c_sortIndicatorSizeFallback);
     if (!std::isfinite(cachedSortIndicatorWidth) || cachedSortIndicatorWidth <= 0.0)
     {
-        cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
+        cachedSortIndicatorWidth = TableViewDetails::c_sortIndicatorSizeFallback;
     }
     const bool canUserSortColumns = CanUserSortColumns();
     auto const tableHeaderStyle = CompatibleHeaderStyle(ColumnHeaderStyle());

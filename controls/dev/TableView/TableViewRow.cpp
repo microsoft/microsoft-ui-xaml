@@ -6,6 +6,7 @@
 #include "TableViewRow.h"
 #include "TableViewToolTipHelpers.h"
 #include "TableViewFocusHelpers.h"
+#include "TableViewFallbackMetrics.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewTextColumn.h"
@@ -23,12 +24,6 @@
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 static constexpr std::wstring_view s_RowExpanderGutterPartName{ L"PART_RowExpanderGutter"sv };
-
-// Used only when there is no owner to ask; mirrors the TableViewRowExpanderSize resource.
-static constexpr double c_defaultRowExpanderSize{ 24.0 };
-
-// Mirrors the TableViewRowIndentSize resource. Used only when there is no owner to ask.
-static constexpr double c_defaultRowIndentSize{ 16.0 };
 
 namespace
 {
@@ -1541,7 +1536,7 @@ double TableViewRow::HierarchyIndent()
         return 0.0;
     }
 
-    double indentSize = c_defaultRowIndentSize;
+    double indentSize = TableViewDetails::c_defaultRowIndentSize;
     double baseIndent = 0.0;
     if (auto const owner = GetOwningTableView())
     {
@@ -1585,7 +1580,7 @@ void TableViewRow::ApplyHierarchyIndentToCells(double indent)
         : 0.0;
 
     // From the resource, not the element: gutter may not be measured yet.
-    double expanderSize = c_defaultRowExpanderSize;
+    double expanderSize = TableViewDetails::c_defaultRowExpanderSize;
     if (isHierarchical && ownerImpl)
     {
         expanderSize = ownerImpl->GetRowExpanderSize();

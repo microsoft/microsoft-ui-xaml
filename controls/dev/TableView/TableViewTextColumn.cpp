@@ -8,6 +8,7 @@
 #include "TableViewAutomationHelpers.h"
 #include "TableViewRow.h"
 #include "TableViewFocusHelpers.h"
+#include "TableViewFallbackMetrics.h"
 #include "SharedHelpers.h"
 
 #include <winrt/Windows.UI.Xaml.Interop.h>
@@ -51,7 +52,7 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     // Cell content is left-aligned and vertically centered within the row (standard grid look).
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
     // FontWeight stays unset so a TableView/app value inherits.
-    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0;
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback;
     textBlock.FontSize(fontSize);
     textBlock.SetValue(GeneratedFontSizeProperty(), winrt::box_value(fontSize));
     textBlock.RegisterPropertyChangedCallback(winrt::TextBlock::FontSizeProperty(),
@@ -70,7 +71,7 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     }
     else
     {
-        textBlock.Padding(winrt::Thickness{ 12, 9, 12, 11 });
+        textBlock.Padding(TableViewDetails::GetDensityFallbackMetrics().textPadding);
     }
     textBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
 
@@ -106,14 +107,14 @@ void TableViewTextColumn::RefreshGeneratedFontSize(winrt::TextBlock const& text,
 
 void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner)
 {
-    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0;
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback;
     if (editor.FontSize() != fontSize)
     {
         editor.FontSize(fontSize);
     }
     auto padding = owner
         ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding()
-        : winrt::ThicknessHelper::FromLengths(12, 9, 12, 11);
+        : TableViewDetails::GetDensityFallbackMetrics().textPadding;
     for (auto parent = winrt::VisualTreeHelper::GetParent(editor); parent;
         parent = winrt::VisualTreeHelper::GetParent(parent))
     {
@@ -130,7 +131,9 @@ void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, win
         std::max(0.0, padding.Top - border.Top),
         std::max(0.0, padding.Right - border.Right),
         std::max(0.0, padding.Bottom - border.Bottom));
-    const auto minHeight = owner ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight() : 32.0;
+    const auto minHeight = owner
+        ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight()
+        : TableViewDetails::GetDensityFallbackMetrics().rowMinHeight;
     const auto contentElement = SharedHelpers::FindInVisualTreeByName(editor, L"ContentElement");
     const auto scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
     const auto textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
@@ -185,7 +188,7 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     // Match the display cell's metrics so swapping the TextBlock for the TextBox does not shift the
     // text or resize the row as the edit opens.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
-    textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
+    textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback);
     // The TextBox template adds BorderThickness outside Padding; display text has no border.
     // Re-evaluate when the inherited theme resolves the editor's style after attachment.
     const auto weakOwner = owner ? winrt::make_weak(owner) : winrt::weak_ref<winrt::TableView>{};

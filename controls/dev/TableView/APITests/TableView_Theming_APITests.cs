@@ -2752,6 +2752,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 13.3 Density
 
         [TestMethod]
+        public void VerifyDetachedTextColumnUsesMediumDensityMetrics()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+                foreach (var density in DensityCases)
+                {
+                    var column = new TableViewTextColumn();
+                    var detachedText = (TextBlock)column.GenerateElement(null);
+                    Verify.AreEqual(new Thickness(12, 5, 12, 7), detachedText.Padding,
+                        "A column without an owner must use Medium text padding.");
+                    Verify.AreEqual(14.0, detachedText.FontSize);
+
+                    var table = new TableView { RequestedTheme = theme, Density = density.Density };
+                    table.Columns.Add(column);
+                    var ownedText = (TextBlock)column.GenerateElement(null);
+                    Verify.AreEqual(density.TextPadding, ownedText.Padding,
+                        $"An attached column must use its owner's {density.Density} metrics in {theme}.");
+                    Verify.AreEqual(density.FontSize, ownedText.FontSize);
+
+                    table.Columns.Remove(column);
+                    detachedText = (TextBlock)column.GenerateElement(null);
+                    Verify.AreEqual(new Thickness(12, 5, 12, 7), detachedText.Padding,
+                        "Removing a column must restore Medium defaults, not its previous owner's density.");
+                    Verify.AreEqual(14.0, detachedText.FontSize);
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyDensityTextColumnFallbackMetrics()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+                foreach (var density in DensityCases)
+                {
+                    var table = new TableView { RequestedTheme = theme, Density = density.Density };
+                    table.Resources["TableViewCellTextPadding" + density.ResourceSuffix] = "Not a Thickness";
+                    table.Resources[density.Density == TableViewDensity.Small
+                        ? "TableViewCellFontSizeSmall" : "TableViewCellFontSize"] = "Not a Double";
+                    var column = new TableViewTextColumn();
+                    table.Columns.Add(column);
+
+                    var text = (TextBlock)column.GenerateElement(null);
+                    Verify.AreEqual(density.TextPadding, text.Padding,
+                        $"An unusable resource must fall back to {density.Density} text padding in {theme}.");
+                    Verify.AreEqual(density.FontSize, text.FontSize,
+                        "An unusable font resource must use the native cell-font fallback.");
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyDensityStylesUpdateRealizedLayoutAndFollowTheme()
         {
             TableView table = null;
@@ -4387,7 +4443,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // The only test that can tell the difference between the resource and the C++ fallback constant:
         // every other density test passes identically either way, because the two agree
-        // (TableView.cpp DensityRowMinHeightFallback mirrors TableView_themeresources.xaml).
+        // (TableViewFallbackMetrics.h mirrors TableView_themeresources.xaml).
         //
         // Also guards the cache - override before load, since the resolved value is cached per instance.
         [TestMethod]
