@@ -1176,19 +1176,19 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
     return terminated;
 }
 
-void TableView::QueueCoalescedEditReshape(std::function<void()> operation)
+void TableView::QueueCoalescedEditReshape(TableViewTip::Operation operation, std::function<void()> apply)
 {
-    if (operation)
+    if (apply)
     {
-        m_pendingEditReshapes.push_back(std::move(operation));
+        m_pendingEditReshapes.push_back({ operation, std::move(apply) });
     }
 }
 
-void TableView::QueueReshapeAfterEditCloses(std::function<void()> operation)
+void TableView::QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply)
 {
-    if (operation)
+    if (apply)
     {
-        m_reshapesAfterEditCloses.push_back(std::move(operation));
+        m_reshapesAfterEditCloses.push_back({ operation, std::move(apply) });
     }
 }
 
@@ -1221,6 +1221,7 @@ void TableView::QueueDeferredEditReshapeDrain()
                     catch (...)
                     {
                         TVDiag::LogRetailF(L"[TableView] A reshape deferred past a forced edit close threw while draining.");
+                        strongThis->NoteDeferredEditReshapeFault();
                     }
                 }
             }
@@ -1242,8 +1243,17 @@ void TableView::FlushDeferredEditReshapes()
         {
             // The rest is re-posted; the newer request must not fail for an older one.
             TVDiag::LogRetailF(L"[TableView] A deferred edit reshape threw while flushing ahead of a newer one.");
+            NoteDeferredEditReshapeFault();
         }
     }
+}
+
+void TableView::NoteDeferredEditReshapeFault() noexcept
+{
+    auto const fault = TableViewTip::CurrentFault();
+    auto const stage = m_failedEditReshapeOperation == TableViewTip::Operation::Sort ?
+        TableViewTip::Stage::Sort : TableViewTip::Stage::Expansion;
+    NoteRecoveredAppFault(m_failedEditReshapeOperation, stage, fault.appFault, fault.error);
 }
 
 void TableView::DrainCoalescedEditReshape()
@@ -1290,14 +1300,15 @@ void TableView::DrainCoalescedEditReshape()
     {
         auto operation = std::move(m_pendingEditReshapes.front());
         m_pendingEditReshapes.pop_front();
-        if (operation)
+        if (operation.apply)
         {
             try
             {
-                operation();
+                operation.apply();
             }
             catch (...)
             {
+                m_failedEditReshapeOperation = operation.operation;
                 // Already popped, so re-posting the rest terminates.
                 QueueDeferredEditReshapeDrain();
                 throw;

@@ -26,7 +26,8 @@ bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
 long? ExpectedCreationTimeFileTime = null,
     string? SessionDirectory = null,
-    IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null);
+    IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null,
+    PrivateRuntimeLaunch? PrivateRuntime = null);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -135,6 +136,31 @@ public sealed class TargetConnection : IAsyncDisposable
         {
             throw new ArgumentException("Select another running process using its positive PID.");
         }
+
+        if (options.PrivateRuntime is { } runtime)
+        {
+            if (options.Kind == TargetLaunchKind.Attach)
+            {
+                throw new ArgumentException("Private WinUI DLLs can be loaded only into an app the profiler launches.");
+            }
+
+            if (!string.IsNullOrEmpty(options.WorkingDirectory))
+            {
+                throw new ArgumentException("An app launched with private WinUI DLLs starts in its own folder.");
+            }
+
+            if (options.Kind == TargetLaunchKind.Packaged && !string.IsNullOrWhiteSpace(options.Arguments))
+            {
+                throw new ArgumentException("A packaged app launched with private WinUI DLLs is activated without arguments.");
+            }
+
+            if ((options.Kind == TargetLaunchKind.Unpackaged && !Path.IsPathFullyQualified(options.Target)) ||
+                !new[] { runtime.RuntimeDirectory, runtime.SourceDirectory, runtime.LaunchDirectory, runtime.LauncherDirectory }
+                    .All(path => !string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path)))
+            {
+                throw new ArgumentException("The target and the private WinUI folders must be full paths.");
+            }
+        }
     }
 
     public static async Task<TargetConnection> ConnectAsync(TargetConnectionOptions options,
@@ -182,13 +208,16 @@ public sealed class TargetConnection : IAsyncDisposable
             PrepareEtw(launchExecutables, markers);
         }
 
-        target = options.Kind switch
-        {
-            TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
-            TargetLaunchKind.Packaged => TargetLauncher.LaunchPackaged(options.Target, options.Arguments),
-            TargetLaunchKind.Attach => Process.GetProcessById(int.Parse(options.Target, CultureInfo.InvariantCulture)),
-            _ => throw new ArgumentOutOfRangeException(nameof(options))
-        };
+        target = options.PrivateRuntime is { } privateRuntime
+            ? await NativeLauncher.LaunchAsync(options.Kind, options.Target, options.Arguments, privateRuntime, token)
+                .ConfigureAwait(false)
+            : options.Kind switch
+            {
+                TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
+                TargetLaunchKind.Packaged => TargetLauncher.LaunchPackaged(options.Target, options.Arguments),
+                TargetLaunchKind.Attach => Process.GetProcessById(int.Parse(options.Target, CultureInfo.InvariantCulture)),
+                _ => throw new ArgumentOutOfRangeException(nameof(options))
+            };
         Scope = new(Guid.NewGuid(), Identify(target));
         if (options.ExpectedCreationTimeFileTime is { } selected && selected != Scope.Process.CreationTimeFileTime)
         {
@@ -226,6 +255,11 @@ public sealed class TargetConnection : IAsyncDisposable
                 await Task.Delay(100, token).ConfigureAwait(false);
             }
         }
+        if (options.PrivateRuntime is { } loadedRuntime)
+        {
+            NativeLauncher.VerifyModules(target, loadedRuntime);
+        }
+
         RuntimePath = runtime;
         var resolved = InjectorResolver.Resolve(Scope.Process, new(payloads.Helper, payloads.Tap, runtime, udk), true);
         var pipe = TapClient.CreatePipeName();
@@ -233,7 +267,20 @@ public sealed class TargetConnection : IAsyncDisposable
         using var current = Process.GetCurrentProcess();
         var bootstrap = InjectorResolver.CreateBootstrap(pipe, Scope, Identify(current), nonce);
         Report("Injecting TAP", $"PID {target.Id}; endpoint {options.EndpointNumber}.");
-        await InjectAsync(resolved.Payloads, options.EndpointNumber, bootstrap, token).ConfigureAwait(false);
+        // InitializeXamlDiagnosticsEx drops the request and returns ERROR_NOT_FOUND when the target's UI thread doesn't
+        // take it within about a second, as in a busy startup. Retry with the same bootstrap until the deadline, unless
+        // the TAP's pipe shows that the target took a request after all.
+        while (!await InjectAsync(resolved.Payloads, options.EndpointNumber, bootstrap, token).ConfigureAwait(false) &&
+            !TapClient.PipeExists(pipe))
+        {
+            if (target.HasExited)
+            {
+                throw new IOException("The target exited before the TAP was injected.");
+            }
+
+            Report("Injecting TAP", $"PID {target.Id}; endpoint {options.EndpointNumber}; the target's UI thread is busy, retrying.");
+            await Task.Delay(250, token).ConfigureAwait(false);
+        }
         Report("Authenticating pipe", "Verifying target identity, session and nonce.");
         tap = await TapClient.ConnectAsync(pipe, Scope, nonce, TimeSpan.FromSeconds(10), token).ConfigureAwait(false);
         Report("Verifying hello", "Sending hello and waiting for the native TAP hello reply.");
@@ -640,7 +687,8 @@ History);
         }
     }
 
-    private static async Task InjectAsync(InjectorPayloads payloads, ushort endpoint, string bootstrap, CancellationToken token)
+    // False when the target's UI thread didn't take the request (HRESULT_FROM_WIN32(ERROR_NOT_FOUND)).
+    private static async Task<bool> InjectAsync(InjectorPayloads payloads, ushort endpoint, string bootstrap, CancellationToken token)
     {
         var start = new ProcessStartInfo(payloads.Helper)
         {
@@ -674,6 +722,11 @@ History);
             }
             var text = await output.ConfigureAwait(false);
             var error = await errors.ConfigureAwait(false);
+            if (helper.ExitCode == unchecked((int)0x80070490))
+            {
+                return false;
+            }
+
             if (helper.ExitCode != 0)
             {
                 throw new IOException($"TAP injection failed (0x{unchecked((uint)helper.ExitCode):X8}). {error}");
@@ -686,6 +739,8 @@ History);
             {
                 throw new InvalidDataException("Injector returned an invalid acceptance result.");
             }
+
+            return true;
         }
         finally
         {

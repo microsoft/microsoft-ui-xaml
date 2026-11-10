@@ -184,6 +184,11 @@ winrt::TableViewSource TableView::ShapingSourceInternal() const
     return m_activeSource.get();
 }
 
+bool TableView::IsColumnUserSortableInternal(const winrt::TableViewColumn& column)
+{
+    return column && CanUserSortColumns() && CanSortColumn(column);
+}
+
 bool TableView::IsSortClearStillValid() const
 {
     return !m_sortedColumns.empty();
@@ -291,7 +296,7 @@ bool TableView::SortByColumnInternal(
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, column, direction, measureTip, requireCanSort]()
+            QueueCoalescedEditReshape(TableViewTip::Operation::Sort, [this, column, direction, measureTip, requireCanSort]()
             {
                 SortByColumnInternal(column, direction, measureTip, requireCanSort);
             });
@@ -375,7 +380,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, column]()
+            QueueCoalescedEditReshape(TableViewTip::Operation::Sort, [this, column]()
             {
                 ToggleSortDirection(column);
             });
@@ -462,7 +467,7 @@ bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, measureTip, explicitClear]()
+            QueueCoalescedEditReshape(TableViewTip::Operation::Sort, [this, measureTip, explicitClear]()
             {
                 ClearSortInternal(measureTip, explicitClear);
             });

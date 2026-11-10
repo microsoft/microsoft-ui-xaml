@@ -1,5 +1,8 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:Microsoft.UI.Xaml.Controls" xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <!-- These styles are merged into generic.xaml (NavigationView's template) and also into themeresources.xaml and
+       themeresources_perf2026.xaml, so app XAML using these keys gets them from XamlControlsResources instead of the
+       older copies in the framework's generic.xaml. See NavigationView.vcxitems. -->
   <Style x:Key="NavigationBackButtonNormalStyle" TargetType="Button">
     <Setter Property="Background" Value="{ThemeResource NavigationViewBackButtonBackground}" />
     <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />

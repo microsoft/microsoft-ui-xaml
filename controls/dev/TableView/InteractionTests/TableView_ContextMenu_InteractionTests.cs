@@ -80,21 +80,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a ContextFlyout set inside a cell template wins over the row's menu.")]
+        [TestProperty("Description", "Verifies a template context menu focuses its actual cell despite an app Tag naming another column, preserves selection, and restores cell focus on dismissal.")]
         public void RightClickOnTemplateCellOpensTemplateMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject table = SelectContextMenuHostAndGetTable();
                 if (table == null) { return; }
+                UIObject selectedRow = GetRow(table, 3);
+                if (selectedRow == null) { Verify.Fail("Precondition: row 3 must be realized."); return; }
+                SelectRow(selectedRow);
+                if (!DrillIntoRow(ContextMenuTable, 3)) { return; }
+                Verify.AreEqual(ContextMenuName(3), ReadContextMenuField(SelectedField),
+                    "Precondition: a different row must be selected.");
 
                 RightClickRow(table, 1, ContextMenuColumnCentreX(ContextMenuCityColumn));
 
-                // Focus is not asserted: input on template content raises ContextRequested at that content, and the
-                // framework shows the content's own ContextFlyout during the route, before the TableView sees the
-                // request, so the TableView's focus move does not run.
-                VerifyMenuOpened(TemplateMenu, ContextMenuName(1), expectedFocus: null);
+                VerifyMenuOpened(TemplateMenu, ContextMenuName(1), CellFocus(1, ContextMenuCityColumn));
+                Verify.AreEqual("Grid", ReadContextMenuField(TargetField),
+                    "The native template menu must keep its content element as Target.");
+                Verify.AreEqual(ContextMenuName(3), ReadContextMenuField(SelectedField),
+                    "Right-clicking a different row must not change selection.");
                 CloseMenu();
+
+                ElementCache.Clear();
+                VerifyFocusedCell(ContextMenuTable, 1, ContextMenuCityColumn,
+                    "Escape must restore focus to the requested cell, not the previously focused row.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                VerifyFocusedCell(ContextMenuTable, 2, ContextMenuCityColumn,
+                    "Navigation must continue from the requested row and column, not the previous target or application Tag.");
             }
         }
 
@@ -201,6 +216,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "In a read-only table a cell whose only action is a context menu still takes keyboard focus, and Shift+F10 opens its menu.")]
+        public void ShiftF10OnReadOnlyCellWithOnlyAMenuOpensCellMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
+
+                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+
+                VerifyMenuOpened(CellMenu, ContextMenuName(4), CellFocus(4, ContextMenuNameColumn));
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Shift+F10 on a focused row (not a cell) opens the row's menu, not a column's cell menu.")]
         public void ShiftF10OnRowOpensRowMenu()
         {
@@ -212,6 +244,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
 
                 VerifyMenuOpened(RowMenu, ContextMenuName(3), RowFocus(3));
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+F10 on a focused row opens a ContextFlyout on the row's template root before the row's own menu.")]
+        public void ShiftF10OnRowOpensRowTemplateMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!InvokeHostButton(AttachRowTemplateMenuButton)) { return; }
+                if (FocusRowAt(ContextMenuTable, 3) == null) { return; }
+
+                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+
+                VerifyMenuOpened(RowTemplateMenu, ContextMenuName(3), RowFocus(3));
                 CloseMenu();
             }
         }
@@ -359,6 +408,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #endregion
 
         #region Editing
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape preserves the edit after a cancelled CommandBarFlyout Closing and a later actual close without animations.")]
+        public void CancelledEditorMenuClosingKeepsLaterEscapeFromCancellingEdit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!InvokeHostButton(CancelEditorMenuCloseButton)) { return; }
+                if (!BeginEditOnNameCell(3)) { return; }
+
+                RightClickRow(table, 3, ContextMenuNameTextX);
+                Verify.AreEqual("True", WaitForContextMenuField(EditorMenuOpenField, "True"),
+                    "Precondition: the animation-free editor CommandBarFlyout must open.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Verify.AreEqual("1", WaitForContextMenuField(EditorMenuClosingsField, "1"),
+                    "The first Escape must attempt to close the editor menu.");
+                Verify.AreEqual("True", ReadContextMenuField(EditorMenuOpenField),
+                    "Cancelling Closing must leave the menu open.");
+                VerifyStillEditing("A cancelled Closing must preserve the edit.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Verify.AreEqual("2", WaitForContextMenuField(EditorMenuClosingsField, "2"),
+                    "The second Escape must attempt to close the same menu.");
+                Verify.AreEqual("False", WaitForContextMenuField(EditorMenuOpenField, "False"),
+                    "The second Closing must close the menu.");
+                VerifyStillEditing("The later menu-closing Escape must not also cancel the edit.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
+                    "A separate Escape in the editor must still cancel the edit.");
+            }
+        }
 
         [TestMethod]
         [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu, and that the editor's own menu neither ends the edit while open nor when Escape closes it.")]
