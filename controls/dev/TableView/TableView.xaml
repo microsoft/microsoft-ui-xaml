@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
-    <Thickness x:Key="TableViewHeaderCellPadding">12,10,12,10</Thickness>
+    <Thickness x:Key="TableViewHeaderCellPadding">12,6,12,6</Thickness>
     <!-- Abuts the inner native focus stroke; vertical focus extends 1px outside the row. -->
     <Thickness x:Key="TableViewSelectionIndicatorMargin">3,2,3,2</Thickness>
     <Thickness x:Key="TableViewGroupHeaderInteractionMargin">0,2,0,2</Thickness>
@@ -17,6 +17,7 @@
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
          the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
+        <Setter Property="Density" Value="Medium" />
         <!-- The control is ONE tab stop, not a stop of its own: IsTabStop="False" keeps focus off the
              table element, and TabNavigation="Once" makes the header row and the body a single stop.
              TableView redirects Tab and Shift+Tab entry to the header row (or the body when no

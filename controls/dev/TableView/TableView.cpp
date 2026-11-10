@@ -505,9 +505,9 @@ namespace
     {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return 32.0;
-        case winrt::TableViewDensity::ExtraCompact: return 24.0;
-        default: return 40.0; // Standard
+        case winrt::TableViewDensity::Large: return 40.0;
+        case winrt::TableViewDensity::Small: return 24.0;
+        default: return 32.0;
         }
     }
 
@@ -515,9 +515,9 @@ namespace
     {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(12, 6, 12, 6);
-        case winrt::TableViewDensity::ExtraCompact: return winrt::ThicknessHelper::FromLengths(12, 2, 12, 2);
-        default: return winrt::ThicknessHelper::FromLengths(12, 10, 12, 10); // Standard
+        case winrt::TableViewDensity::Large: return winrt::ThicknessHelper::FromLengths(12, 10, 12, 10);
+        case winrt::TableViewDensity::Small: return winrt::ThicknessHelper::FromLengths(12, 2, 12, 2);
+        default: return winrt::ThicknessHelper::FromLengths(12, 6, 12, 6);
         }
     }
 
@@ -525,9 +525,9 @@ namespace
     {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return { 12, 5, 12, 7 };
-        case winrt::TableViewDensity::ExtraCompact: return { 12, 1, 12, 3 };
-        default: return { 12, 9, 12, 11 };
+        case winrt::TableViewDensity::Large: return { 12, 9, 12, 11 };
+        case winrt::TableViewDensity::Small: return { 12, 1, 12, 3 };
+        default: return { 12, 5, 12, 7 };
         }
     }
 
@@ -2456,8 +2456,8 @@ static std::wstring_view DensitySuffix(winrt::TableViewDensity density)
 {
     switch (density)
     {
-    case winrt::TableViewDensity::Compact: return L"Compact"sv;
-    case winrt::TableViewDensity::ExtraCompact: return L"ExtraCompact"sv;
+    case winrt::TableViewDensity::Large: return L"Large"sv;
+    case winrt::TableViewDensity::Small: return L"Small"sv;
     default: return L""sv;
     }
 }
@@ -2497,7 +2497,7 @@ double TableView::GetDensityRowMinHeight()
         cache.density.hasRowMinHeight = true;
         return cache.density.rowMinHeight;
     }
-    // Resource-miss fallback mirrors Fluent density defaults so Standard stays taller than Compact.
+    // Resource-miss fallback mirrors Fluent density defaults so Large stays taller than Medium.
     cache.density.rowMinHeight = fallback;
     cache.density.hasRowMinHeight = true;
     return cache.density.rowMinHeight;
@@ -2520,7 +2520,7 @@ winrt::Thickness TableView::GetDensityCellPadding()
         cache.density.hasCellPadding = true;
         return cache.density.cellPadding;
     }
-    // Resource-miss fallback mirrors density padding presets; Standard keeps the legacy padding.
+    // Resource-miss fallback mirrors density padding presets.
     cache.density.cellPadding = fallback;
     cache.density.hasCellPadding = true;
     return cache.density.cellPadding;
@@ -2607,10 +2607,10 @@ double TableView::GetCellFontSize()
         return cache.font.cellFontSize;
     }
 
-    const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
+    const bool isSmall = Density() == winrt::TableViewDensity::Small;
     const double fallback = 14.0;
     if (auto raw = LookupElementResource(*this,
-        extraCompact ? L"TableViewCellFontSizeExtraCompact" : L"TableViewCellFontSize"))
+        isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"))
     {
         cache.font.cellFontSize = winrt::unbox_value_or<double>(raw, fallback);
         cache.font.hasCellFontSize = true;
@@ -2796,12 +2796,12 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
 
     auto const resolveFontSizes = [this](winrt::TableViewDensity density)
     {
-        const bool extraCompact = density == winrt::TableViewDensity::ExtraCompact;
+        const bool isSmall = density == winrt::TableViewDensity::Small;
         return std::pair{
             winrt::unbox_value_or<double>(LookupElementResource(*this,
-                extraCompact ? L"TableViewCellFontSizeExtraCompact" : L"TableViewCellFontSize"), 14.0),
+                isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"), 14.0),
             winrt::unbox_value_or<double>(LookupElementResource(*this,
-                extraCompact ? L"TableViewHeaderFontSizeExtraCompact" : L"TableViewHeaderFontSize"), 14.0) };
+                isSmall ? L"TableViewHeaderFontSizeSmall" : L"TableViewHeaderFontSize"), 14.0) };
     };
     const bool fontSizesChanged =
         resolveFontSizes(winrt::unbox_value<winrt::TableViewDensity>(args.OldValue())) != resolveFontSizes(Density());
@@ -3565,9 +3565,9 @@ void TableView::RebuildHeadersCore()
     const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const winrt::Thickness cachedHeaderTextPadding = GetDensityHeaderTextPadding();
-    const bool extraCompact = Density() == winrt::TableViewDensity::ExtraCompact;
-    const double extraCompactHeaderFontSize = extraCompact
-        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeExtraCompact"), 14.0)
+    const bool isSmall = Density() == winrt::TableViewDensity::Small;
+    const double smallHeaderFontSize = isSmall
+        ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeSmall"), 14.0)
         : 14.0;
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
@@ -3646,9 +3646,9 @@ void TableView::RebuildHeadersCore()
             {
                 header.Padding(cachedHeaderCellPadding);
             }
-            if (extraCompact && !styleSetsFontSize)
+            if (isSmall && !styleSetsFontSize)
             {
-                header.FontSize(extraCompactHeaderFontSize);
+                header.FontSize(smallHeaderFontSize);
             }
 
             header.Tag(column);

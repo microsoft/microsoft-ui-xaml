@@ -10,11 +10,11 @@
 
     <controls:SamplePresenter
         Header="Density"
-        Description="TableView.Density sets the minimum row, column-header and group-header heights and the built-in padding to ExtraCompact, Compact or Standard. Template content, such as the 28 px avatar and the Department and Status chips, can make rows taller than the preset minimum. The cells here are read-only visuals."
+        Description="TableView.Density sets the minimum row, column-header and group-header heights and the built-in padding to Small, Medium or Large. Medium is the default. SmallTableViewStyle and LargeTableViewStyle select the same presets. Template content, such as the 28 px avatar and the Department and Status chips, can make rows taller than the preset minimum. The cells here are read-only visuals."
         Snippet="Density"
         StretchExample="True"
-        TryIt="Choose ExtraCompact, Compact, then Standard and compare the rows and column headers. Switch Shaping to Grouped and change the density again to compare the group headers too. Then select a row and move it to the next group."
-        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for ExtraCompact, Compact and Standard. Custom template content can make rows taller. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
+        TryIt="Choose Small, Medium, then Large and compare the rows and column headers. Switch Shaping to Grouped and change the density again to compare the group headers too. Then select a row and move it to the next group."
+        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for Small, Medium and Large. Custom template content can make rows taller. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -24,7 +24,7 @@
                 AutomationProperties.AutomationId="DensityTable"
                 AutomationProperties.Name="People density"
                 ItemsSource="{x:Bind Source}"
-                Density="Standard"
+                Style="{StaticResource DefaultTableViewStyle}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
@@ -48,12 +48,12 @@
                         x:Name="DensitySelector"
                         AutomationProperties.AutomationId="DensitySelector"
                         Header="Density"
-                        SelectedIndex="2"
+                        SelectedIndex="1"
                         SelectionChanged="OnDensityChanged"
                         HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="ExtraCompact" Tag="ExtraCompact"/>
-                        <ComboBoxItem Content="Compact" Tag="Compact"/>
-                        <ComboBoxItem Content="Standard (default)" Tag="Standard"/>
+                        <ComboBoxItem Content="Small (24px)" Tag="Small"/>
+                        <ComboBoxItem Content="Medium (32px, default)" Tag="Medium"/>
+                        <ComboBoxItem Content="Large (40px)" Tag="Large"/>
                     </ComboBox>
                     <!-- /snippet -->
                 </controls:RailSection>
@@ -111,7 +111,7 @@
                 </controls:RailSection>
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Density">
-                    <TextBlock x:Name="DensityText" AutomationProperties.AutomationId="DensityText" controls:StatusPanel.Label="Density" Text="Standard"/>
+                    <TextBlock x:Name="DensityText" AutomationProperties.AutomationId="DensityText" controls:StatusPanel.Label="Density" Text="Medium"/>
                 </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>

@@ -3,7 +3,7 @@ InitializeComponent();
 
 FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 FileTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-FileTable.Density = TableViewDensity.Compact;
+FileTable.Density = TableViewDensity.Medium;
 // handledEventsToo: the table consumes Enter for its own row navigation.
 FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
 

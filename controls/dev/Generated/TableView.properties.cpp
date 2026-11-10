@@ -106,7 +106,7 @@ void TableViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TableViewDensity>(),
                 winrt::name_of<winrt::TableView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::TableViewDensity>::BoxValueIfNecessary(winrt::TableViewDensity::Standard),
+                ValueHelper<winrt::TableViewDensity>::BoxValueIfNecessary(winrt::TableViewDensity::Medium),
                 winrt::PropertyChangedCallback(&OnDensityPropertyChanged));
     }
     if (!s_EmptyTemplateProperty)

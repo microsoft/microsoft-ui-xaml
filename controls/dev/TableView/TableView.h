@@ -264,7 +264,7 @@ public:
     void OnShowGroupHeaderCountPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // Density resources fall back to Standard defaults; rows and columns call these via get_self.
+    // Density resources fall back to the selected preset; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();

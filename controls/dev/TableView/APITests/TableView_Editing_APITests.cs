@@ -673,7 +673,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.IsReadOnly = false;
                     table.IsTextScaleFactorEnabled = false;
                     table.Resources["TableViewCellFontSize"] = 26.0;
-                    table.Resources["TableViewCellFontSizeExtraCompact"] = 12.0;
+                    table.Resources["TableViewCellFontSizeSmall"] = 12.0;
                     table.Columns[0].Width = GridLength.Auto;
                     table.CellEditEnding += (s, e) => e.Cancel = !allowClose;
                     LoadContent(table);
@@ -684,7 +684,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     oldWidth = table.Columns[0].ActualWidth;
                     Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), items[0].Name));
                     editor = FindVisualChildrenByType<TextBox>(table).Single();
-                    table.Density = TableViewDensity.ExtraCompact;
+                    table.Density = TableViewDensity.Small;
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -723,9 +723,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.IsReadOnly = false;
                     table.IsTextScaleFactorEnabled = false;
                     table.Resources["TableViewCellFontSize"] = 17.0;
-                    table.Resources["TableViewCellFontSizeExtraCompact"] = 13.0;
-                    table.Density = TableViewDensity.ExtraCompact;
-                    table.Density = TableViewDensity.Standard;
+                    table.Resources["TableViewCellFontSizeSmall"] = 13.0;
+                    table.Density = TableViewDensity.Small;
+                    table.Density = TableViewDensity.Large;
                     column = new AuthoredFontTextColumn(mode)
                     {
                         Header = "Name",
@@ -743,7 +743,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     display = (TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0));
                     fontBinding = display.GetBindingExpression(TextBlock.FontSizeProperty);
                     Verify.AreEqual(mode == "BaseBinding" ? 17.0 : 24.0, display.FontSize, mode);
-                    table.Density = TableViewDensity.ExtraCompact;
+                    table.Density = TableViewDensity.Small;
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -752,7 +752,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"A custom factory's font must survive density restamping: {mode}.");
                     Verify.AreEqual(13.0, ((TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 1))).FontSize,
                         "Control-owned text must still follow the density font resource.");
-                    table.Density = TableViewDensity.Standard;
+                    table.Density = TableViewDensity.Large;
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -760,7 +760,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Pending"),
                         "The vetoed commit leaves an editor open.");
                     Verify.IsTrue(table.IsEditing);
-                    table.Density = TableViewDensity.ExtraCompact;
+                    table.Density = TableViewDensity.Small;
                     if (mode == "BaseBinding")
                     {
                         column.FontSource.FontSize = 26;
@@ -1570,11 +1570,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 first = CreateEditableTable(items);
                 first.ItemsSource = shared;
                 first.IsReadOnly = false;
+                second = CreateEditableTable(items);
+                second.ItemsSource = shared;
                 host = new StackPanel();
                 host.Children.Add(first);
+                host.Children.Add(second);
                 LoadContent(host);
             });
             SettleLayout(first);
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(second.IsLoaded, "Precondition: the waiter must be loaded before the owner unloads.");
+                Verify.AreEqual(0, GetRowsRepeater(second).ItemsSourceView?.Count ?? 0,
+                    "Precondition: the second table must be waiting for the shared source.");
+            });
 
             RunOnUIThread.Execute(() =>
                 Verify.IsTrue(first.SortByColumn(first.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts."));
@@ -1595,9 +1606,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 CaptureSetValue(GetValueProvider(first, items[0], columnIndex: 1), "Pilot");
                 Verify.IsTrue(first.IsEditing, "Precondition: the edit stays open.");
                 host.Children.Remove(first);
-                second = CreateEditableTable(items);
-                second.ItemsSource = shared;
-                host.Children.Add(second);
             });
             SettleLayout(second);
 
@@ -3154,7 +3162,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
                 {
-                    foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+                    foreach (var density in new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small })
                     {
                         var m = OpenEditorAndMeasure(density, flowDirection, "Asha", layout.Rounding, layout.GridLines);
                         VerifyLinesMatch($"{density}/{flowDirection}/{layout.GridLines}/rounding={layout.Rounding}", m.DisplayLine, m.EditorLine);
@@ -3164,10 +3172,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a fallback-font glyph at Compact density neither grows the editor past the cell nor grows the row.")]
-        public void VerifyFallbackGlyphKeepsCompactEditorAndRowHeight()
+        [TestProperty("Description", "Verifies a fallback-font glyph at Medium density neither grows the editor past the cell nor grows the row.")]
+        public void VerifyFallbackGlyphKeepsMediumEditorAndRowHeight()
         {
-            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha \U0001F600");
+            var m = OpenEditorAndMeasure(TableViewDensity.Medium, FlowDirection.LeftToRight, "Asha \U0001F600");
             Log.Comment($"Fallback glyph: dy(top)={m.EditorLine.Top - m.DisplayLine.Top} dy(bottom)={m.EditorLine.Bottom - m.DisplayLine.Bottom}; " +
                 $"cell {m.CellHeightBefore} -> editor {m.EditorHeight}; row {m.RowHeightBefore} -> {m.RowHeightAfter}");
 
@@ -3181,9 +3189,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyEditorRecentresAfterFallbackGlyphIsRemoved()
         {
             // Myanmar Text's line is taller than Segoe UI's, so the editor grows its text view for it first.
-            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha",
+            var m = OpenEditorAndMeasure(TableViewDensity.Medium, FlowDirection.LeftToRight, "Asha",
                 editorTexts: new[] { "Asha \u1019\u103C\u1014\u103A\u1019\u102C", "Asha" });
-            VerifyLinesMatch("Compact, fallback glyph removed", m.DisplayLine, m.EditorLine);
+            VerifyLinesMatch("Medium, fallback glyph removed", m.DisplayLine, m.EditorLine);
         }
 
         private sealed class EditorMeasurement

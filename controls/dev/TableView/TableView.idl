@@ -41,9 +41,9 @@ enum TableViewGridLinesVisibility
 [webhosthidden]
 enum TableViewDensity
 {
-    Compact = 0,
-    Standard = 1,
-    ExtraCompact = 3,
+    Medium = 0,
+    Large = 1,
+    Small = 3,
 };
 
 [MUX_PREVIEW]
@@ -364,7 +364,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     Microsoft.UI.Xaml.Style ColumnHeaderStyle { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::TableViewDensity::Standard")]
+    [MUX_DEFAULT_VALUE("winrt::TableViewDensity::Medium")]
     TableViewDensity Density { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

@@ -147,11 +147,11 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. In High Contrast, body and column-header gridlines use `SystemColorGrayTextColor` (the system disabled color), while the outer border retains `SystemColorWindowTextColor`. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
 
-`Standard`, `Compact`, and `ExtraCompact` have 40/32/24px minimum row, column-header, and
+`Large`, `Medium`, and `Small` have 40/32/24px minimum row, column-header, and
 section-header heights. Larger text or custom content can grow them. Built-in text is 14px
-at every density; app metric overrides and column-header font styles take precedence.
-`TableViewCellFontSizeExtraCompact` and `TableViewHeaderFontSizeExtraCompact` customize the
-ExtraCompact fonts. Density restamps preserve custom text-column fonts and bindings,
+at every density; Medium is the default. App metric overrides and column-header font styles take precedence.
+`TableViewCellFontSizeSmall` and `TableViewHeaderFontSizeSmall` customize the
+Small fonts. Density restamps preserve custom text-column fonts and bindings,
 including the display element saved during editing.
 
 Cell/header control padding is `12,10,12,10`, `12,6,12,6`, or `12,2,12,2`.
@@ -161,12 +161,28 @@ and 4px gap put the title 20px from the leading edge.
 Gridlines are overlays within the row slot. Selection and native focus have separate chrome;
 neither changes content layout. Built-in editors account for their border thickness.
 
+`TabularControlsResources` exposes `DefaultTableViewStyle` (Medium), `SmallTableViewStyle`,
+and `LargeTableViewStyle`. These styles select only `Density`, retaining the shared default
+template and its theme behavior. A local or bound `Density` value overrides the style setter;
+clearing it restores the style-selected value. Set `Density` directly to combine sizing
+with `BandedTableViewStyle` or `BorderlessTableViewStyle`, or use a derived style:
+
+```xaml
+<Style x:Key="SmallBandedTableViewStyle" TargetType="tabular:TableView"
+       BasedOn="{StaticResource BandedTableViewStyle}">
+    <Setter Property="Density" Value="Small" />
+</Style>
+```
+
+Unsuffixed metric resources represent Medium; `Large` and `Small` suffixes select
+the other sizes, for example `TableViewRowMinHeightLarge` and `TableViewCellTextPaddingSmall`.
+
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
     GridLinesVisibility="Horizontal"
-    Density="Compact"
+    Density="Medium"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
     <tabular:TableView.Columns>
@@ -182,7 +198,7 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 
 PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-PeopleTable.Density = TableViewDensity.Compact;
+PeopleTable.Density = TableViewDensity.Medium;
 ```
 
 ### Banded rows
@@ -545,7 +561,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
     GridLinesVisibility="All"
-    Density="Standard"
+    Density="Medium"
     IsReadOnly="True">
     <tabular:TableView.Columns>
         <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
@@ -563,7 +579,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
-| `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
+| `Density` | `TableViewDensity` | `Medium` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
@@ -792,14 +808,14 @@ takes precedence. Styles targeting types other than `TableViewColumnHeader` or i
 
 Generated plain-string header labels and `TableViewTextColumn` display labels use
 asymmetric padding authored directly in `TableViewHeaderTextPadding` and
-`TableViewCellTextPadding`, with `Compact` / `ExtraCompact` suffixed variants.
+`TableViewCellTextPadding`, with `Large` / `Small` suffixed variants.
 Light, Default/Dark and High Contrast all define the same values:
 
 | Density | Header/display-cell text padding (left, top, right, bottom) | Section text-presenter padding |
 |---|---|---|
-| Standard | `12,9,12,11` | `0,9,0,11` |
-| Compact | `12,5,12,7` | `0,5,0,7` |
-| ExtraCompact | `12,1,12,3` | `0,1,0,3` |
+| Large | `12,9,12,11` | `0,9,0,11` |
+| Medium | `12,5,12,7` | `0,5,0,7` |
+| Small | `12,1,12,3` | `0,1,0,3` |
 
 Section titles and counts use `TableViewGroupHeaderTextPadding` and its density variants
 to match cell text vertically. The section host retains its separate 4px leading / 12px
@@ -1270,13 +1286,18 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisi
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Compact` | 0 | 32px minimum row/header height. |
-| `Standard` | 1 | 40px minimum row/header height; default. |
-| `ExtraCompact` | 3 | 24px minimum row/header height. |
+| `Medium` | 0 | 32px minimum row/header height; default. |
+| `Large` | 1 | 40px minimum row/header height. |
+| `Small` | 3 | 24px minimum row/header height. |
 
 The preview `Comfortable` preset (value 2, 48px) has been removed. Migrate callers to
 one of these presets or override the metric resources for custom spacing. Value 2
 is intentionally not reused.
+
+The renamed preview presets preserve their numeric values: `Compact` becomes `Medium` (0),
+`Standard` becomes `Large` (1), and `ExtraCompact` becomes `Small` (3). Update markup,
+code, and density-suffixed resource overrides to the new names. The default changes
+from the previous 40px Standard preset to 32px Medium.
 
 ### TableViewSelectionMode
 
@@ -1407,9 +1428,9 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     [MUX_PREVIEW, webhosthidden]
     enum TableViewDensity
     {
-        Compact = 0,
-        Standard = 1,
-        ExtraCompact = 3,
+        Medium = 0,
+        Large = 1,
+        Small = 3,
     };
 
     [MUX_PREVIEW, webhosthidden]

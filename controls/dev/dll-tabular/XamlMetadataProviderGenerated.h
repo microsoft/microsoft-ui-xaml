@@ -322,9 +322,9 @@ Entry c_typeEntries[] =
                 /* Arg 2 - CreateFromString func */ 
                 (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
                 {
-                    if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
-                    if (fromString == L"Standard") return box_value(winrt::TableViewDensity::Standard);
-                    if (fromString == L"ExtraCompact") return box_value(winrt::TableViewDensity::ExtraCompact);
+                    if (fromString == L"Medium") return box_value(winrt::TableViewDensity::Medium);
+                    if (fromString == L"Large") return box_value(winrt::TableViewDensity::Large);
+                    if (fromString == L"Small") return box_value(winrt::TableViewDensity::Small);
                     throw winrt::hresult_invalid_argument();
                 });
 

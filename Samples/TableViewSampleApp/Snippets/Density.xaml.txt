@@ -3,7 +3,7 @@
     x:Name="PeopleTable"
     AutomationProperties.Name="People density"
     ItemsSource="{x:Bind Source}"
-    Density="Standard"
+    Style="{StaticResource DefaultTableViewStyle}"
     SelectionMode="Single">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>

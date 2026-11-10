@@ -128,7 +128,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(tableView.AlternatingRowBackground);
                 Verify.IsNull(tableView.EmptyTemplate);
                 Verify.IsNull(tableView.GroupHeaderTemplate);
-                Verify.AreEqual(TableViewDensity.Standard, tableView.Density);
+                Verify.AreEqual(TableViewDensity.Medium, tableView.Density);
                 Verify.IsTrue(tableView.IsReadOnly);
                 Verify.IsFalse(tableView.IsEditing);
                 Verify.AreEqual(TableViewSelectionMode.Single, tableView.SelectionMode);
@@ -324,7 +324,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     CreateTextTemplate("Group A"), CreateTextTemplate("Group B"),
                     () => tableView.GroupHeaderTemplate, value => tableView.GroupHeaderTemplate = (DataTemplate)value);
                 VerifySettableDependencyProperty(tableView, TableView.DensityProperty, "TableView.Density",
-                    TableViewDensity.Compact, TableViewDensity.ExtraCompact,
+                    TableViewDensity.Medium, TableViewDensity.Small,
                     () => tableView.Density, value => tableView.Density = (TableViewDensity)value);
                 VerifySettableDependencyProperty(tableView, TableView.IsReadOnlyProperty, "TableView.IsReadOnly",
                     false, true,

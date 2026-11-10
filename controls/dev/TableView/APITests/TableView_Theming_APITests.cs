@@ -95,7 +95,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsNotNull(groupHeader.Template, "TableViewGroupHeader must resolve its default ControlTemplate.");
 
-                Verify.AreEqual(new Thickness(4, 10, 12, 10), groupHeader.Padding,
+                Verify.AreEqual(new Thickness(4, 6, 12, 6), groupHeader.Padding,
                     "TableViewGroupHeader's default style must take Padding from TableViewGroupHeaderPadding.");
             });
         }
@@ -205,7 +205,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // for whichever one failed to merge.
                 Verify.IsTrue(defaultKeys.Any(key => key.StartsWith("TabularSurface", StringComparison.Ordinal)),
                     "The brush palette from TabularSurfaces_themeresources.xaml must be part of TabularControlsResources.");
-                Verify.IsTrue(defaultKeys.Contains("TableViewRowMinHeightCompact"),
+                Verify.IsTrue(defaultKeys.Contains("TableViewRowMinHeight"),
                     "The metric tokens from TableView_themeresources.xaml must be part of TabularControlsResources.");
             });
         }
@@ -564,7 +564,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyTerminalBottomGridLineTracksArrangedFrameAndBorderVisibility()
         {
-            foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+            foreach (var density in new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small })
             {
                 TableView table = null;
                 TableViewRow lastRow = null;
@@ -2147,8 +2147,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 table = CreateGroupedThemingTable();
                 table.IsTextScaleFactorEnabled = false;
                 table.Resources["TableViewCellFontSize"] = 20.0;
-                table.Resources["TableViewCellFontSizeExtraCompact"] = 12.0;
-                table.Density = TableViewDensity.ExtraCompact;
+                table.Resources["TableViewCellFontSizeSmall"] = 12.0;
+                table.Density = TableViewDensity.Small;
                 LoadContent(table);
             });
             SettleLayout(table);
@@ -2160,13 +2160,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     if (!changed && text.FontSize == 20.0)
                     {
                         changed = true;
-                        table.Density = TableViewDensity.ExtraCompact;
+                        table.Density = TableViewDensity.Small;
                     }
                 });
-                try { table.Density = TableViewDensity.Standard; }
+                try { table.Density = TableViewDensity.Large; }
                 finally { text.UnregisterPropertyChangedCallback(TextBlock.FontSizeProperty, token); }
                 Verify.IsTrue(changed);
-                Verify.AreEqual(TableViewDensity.ExtraCompact, table.Density);
+                Verify.AreEqual(TableViewDensity.Small, table.Density);
                 Verify.AreEqual(12.0, text.FontSize, "The replay must reread the final density's typography.");
                 Verify.AreEqual(24.0, GetRealizedRows(table).First().MinHeight,
                     "The current row must not retain the interrupted pass's minimum height.");
@@ -2752,6 +2752,142 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 13.3 Density
 
         [TestMethod]
+        public void VerifyDensityStylesUpdateRealizedLayoutAndFollowTheme()
+        {
+            TableView table = null;
+            TableViewRow realizedRow = null;
+            TabularControlsResources resources = null;
+            RunOnUIThread.Execute(() =>
+            {
+                resources = new TabularControlsResources();
+                table = CreateGroupedThemingTable();
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                realizedRow = FindVisualChildrenByType<TableViewRow>(table).First();
+                Verify.AreEqual(TableViewDensity.Medium, table.Density);
+                Verify.AreEqual(32.0, realizedRow.MinHeight);
+                Verify.AreEqual(0, (int)TableViewDensity.Medium);
+                Verify.AreEqual(1, (int)TableViewDensity.Large);
+                Verify.AreEqual(3, (int)TableViewDensity.Small);
+            });
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                foreach (var density in new[] { DensityCases[2], DensityCases[1], DensityCases[0] })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        table.RequestedTheme = theme;
+                        var key = density.Density == TableViewDensity.Medium
+                            ? "DefaultTableViewStyle" : density.Density + "TableViewStyle";
+                        var style = (Style)resources[key];
+                        Verify.AreEqual(typeof(TableView), style.TargetType);
+                        Verify.AreEqual(1, style.Setters.Count, "Density styles must only select a density.");
+                        var setter = (Setter)style.Setters[0];
+                        Verify.AreEqual(TableView.DensityProperty, setter.Property);
+                        table.Style = style;
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(density.Density, table.Density);
+                        Verify.AreEqual(DependencyProperty.UnsetValue, table.ReadLocalValue(TableView.DensityProperty),
+                            "A density style must not create a local Density value.");
+                        Verify.IsNotNull(table.Template, "Density styles must preserve the default template.");
+                        var row = FindVisualChildrenByType<TableViewRow>(table).First();
+                        Verify.AreSame(realizedRow, row, "Changing size styles must update the existing row.");
+                        Verify.AreEqual(density.RowMinHeight, row.MinHeight);
+                        Verify.AreEqual(density.RowMinHeight, RequireColumnHeader(table, 0).MinHeight);
+                        Verify.AreEqual(density.CellPadding, RequireColumnHeader(table, 0).Padding);
+                        var groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                        Verify.AreEqual(density.RowMinHeight, groupHeader.MinHeight);
+                        Verify.AreEqual(new Thickness(4, density.CellPadding.Top, 12, density.CellPadding.Bottom),
+                            groupHeader.Padding);
+                        Verify.AreEqual(GetAlignedContentPadding(row, density.TextPadding),
+                            RequireFirstCellTextBlock(table).Padding);
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensityStylePrecedenceAndComposition()
+        {
+            TableView table = null;
+            FrameworkElement source = null;
+            Style smallStyle = null;
+            Style largeStyle = null;
+            Style smallBandedStyle = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var resources = new TabularControlsResources();
+                smallStyle = (Style)resources["SmallTableViewStyle"];
+                largeStyle = (Style)resources["LargeTableViewStyle"];
+                smallBandedStyle = new Style(typeof(TableView))
+                {
+                    BasedOn = (Style)resources["BandedTableViewStyle"]
+                };
+                smallBandedStyle.Setters.Add(new Setter(TableView.DensityProperty, TableViewDensity.Small));
+                source = new Grid { Tag = TableViewDensity.Small };
+                table = CreateThemingTable();
+                table.Style = smallStyle;
+                table.Density = TableViewDensity.Large;
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(TableViewDensity.Large, table.Density, "A local value must override the size style.");
+                Verify.AreEqual(40.0, FindVisualChildrenByType<TableViewRow>(table).First().MinHeight);
+                table.Style = largeStyle;
+                table.ClearValue(TableView.DensityProperty);
+                Verify.AreEqual(TableViewDensity.Large, table.Density);
+                table.Style = smallStyle;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(TableViewDensity.Small, table.Density, "Clearing a local value restores style selection.");
+                Verify.AreEqual(24.0, FindVisualChildrenByType<TableViewRow>(table).First().MinHeight);
+                table.SetBinding(TableView.DensityProperty, new Binding
+                {
+                    Source = source,
+                    Path = new PropertyPath("Tag"),
+                    Mode = BindingMode.OneWay
+                });
+                source.Tag = TableViewDensity.Medium;
+                table.Style = largeStyle;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(TableViewDensity.Medium, table.Density, "A binding must override the size style.");
+                Verify.AreEqual(32.0, FindVisualChildrenByType<TableViewRow>(table).First().MinHeight);
+                source.Tag = TableViewDensity.Large;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(TableViewDensity.Large, table.Density, "Bound density changes must update realized rows.");
+                Verify.AreEqual(40.0, FindVisualChildrenByType<TableViewRow>(table).First().MinHeight);
+                table.ClearValue(TableView.DensityProperty);
+                table.Style = smallBandedStyle;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(TableViewDensity.Small, table.Density);
+                Verify.AreEqual(24.0, FindVisualChildrenByType<TableViewRow>(table).First().MinHeight);
+                Verify.IsNotNull(table.AlternatingRowBackground, "Density must compose with appearance styles.");
+                Verify.IsNotNull(GetProjectedRow(table, 1).Background, "Banding must still reach realized rows.");
+                Verify.IsNotNull(table.Template);
+            });
+        }
+
+        [TestMethod]
         public void VerifyGroupHeaderDensityGeometryAndTypography()
         {
             TableView tableView = null;
@@ -2970,10 +3106,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 table = CreateGroupedThemingTable();
                 table.Resources["TableViewGroupExpanderSize"] = 20.0;
                 table.Resources["TableViewGroupExpanderSpacing"] = 8.0;
-                table.Resources["TableViewGroupHeaderTextPadding"] = new Thickness(4, 9, 0, 11);
-                table.Resources["TableViewCellTextPadding"] = new Thickness(16, 9, 16, 11);
-                table.Density = TableViewDensity.Compact;
-                table.Density = TableViewDensity.Standard;
+                table.Resources["TableViewGroupHeaderTextPaddingLarge"] = new Thickness(4, 9, 0, 11);
+                table.Resources["TableViewCellTextPaddingLarge"] = new Thickness(16, 9, 16, 11);
+                table.Density = TableViewDensity.Medium;
+                table.Density = TableViewDensity.Large;
                 LoadContent(table);
             });
             SettleLayout(table);
@@ -3080,7 +3216,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(new Thickness(16, 8, 16, 8), header.Padding, "A BasedOn Style's Padding wins over density.");
                     header.MinHeight = 72;
                     header.Padding = new Thickness(20, 12, 20, 12);
-                    tableView.Density = TableViewDensity.Standard;
+                    tableView.Density = TableViewDensity.Large;
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
@@ -4216,8 +4352,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateThemingTable();
-                Verify.AreEqual(TableViewDensity.Standard, tableView.Density,
-                    "This test starts from the Standard default.");
+                Verify.AreEqual(TableViewDensity.Medium, tableView.Density,
+                    "This test starts from the Medium default.");
 
                 LoadContent(tableView);
             });
@@ -4228,7 +4364,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 realizedRow = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
                 Verify.IsNotNull(realizedRow);
-                Verify.AreEqual(40.0, realizedRow.MinHeight, "The row should start at the Standard metric.");
+                Verify.AreEqual(32.0, realizedRow.MinHeight, "The row should start at the Medium metric.");
             });
 
             foreach (var testCase in new[] { DensityCases[0], DensityCases[2], DensityCases[1] })
@@ -4263,10 +4399,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                SetApplicationResource("TableViewRowMinHeightCompact", overriddenMinHeight);
+                SetApplicationResource("TableViewRowMinHeight", overriddenMinHeight);
 
                 tableView = CreateThemingTable();
-                tableView.Density = TableViewDensity.Compact;
+                tableView.Density = TableViewDensity.Medium;
 
                 LoadContent(tableView);
             });
@@ -4285,14 +4421,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Verify.AreEqual(overriddenMinHeight, row.MinHeight,
-                        "An app-scope TableViewRowMinHeightCompact override must win. A value of 32 here means the metric came " +
+                        "An app-scope TableViewRowMinHeight override must win. A value of 32 here means the metric came " +
                         "from the C++ fallback constant and the resource key is decorative.");
                 });
             }
             finally
             {
                 // Application.Resources is UI-thread affine; a finally block runs on the test thread.
-                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewRowMinHeightCompact"));
+                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewRowMinHeight"));
             }
         }
 
@@ -4306,7 +4442,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var dictionary = (ResourceDictionary)resources.ThemeDictionaries[theme];
                     foreach (var key in new[] { "TableViewCellFontSize", "TableViewHeaderFontSize",
-                        "TableViewCellFontSizeExtraCompact", "TableViewHeaderFontSizeExtraCompact" })
+                        "TableViewCellFontSizeSmall", "TableViewHeaderFontSizeSmall" })
                     {
                         Verify.AreEqual(14.0, dictionary[key], $"{theme}: all built-in density presets must ship at 14px.");
                     }
@@ -4350,9 +4486,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateThemingTable();
-                tableView.Resources["TableViewCellFontSizeExtraCompact"] = 13.0;
-                tableView.Resources["TableViewHeaderFontSizeExtraCompact"] = 15.0;
-                tableView.Density = TableViewDensity.ExtraCompact;
+                tableView.Resources["TableViewCellFontSizeSmall"] = 13.0;
+                tableView.Resources["TableViewHeaderFontSizeSmall"] = 15.0;
+                tableView.Density = TableViewDensity.Small;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -4401,7 +4537,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var style = new Style(typeof(TableViewColumnHeader));
                 style.Setters.Add(new Setter(Control.FontSizeProperty, 18.0));
                 tableView.Resources[typeof(TableViewColumnHeader)] = style;
-                tableView.Density = TableViewDensity.ExtraCompact;
+                tableView.Density = TableViewDensity.Small;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -4495,9 +4631,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             foreach (var testCase in new[]
             {
-                (Theme: ElementTheme.Light, Density: TableViewDensity.Standard),
-                (Theme: ElementTheme.Dark, Density: TableViewDensity.Compact),
-                (Theme: ElementTheme.Light, Density: TableViewDensity.ExtraCompact)
+                (Theme: ElementTheme.Light, Density: TableViewDensity.Large),
+                (Theme: ElementTheme.Dark, Density: TableViewDensity.Medium),
+                (Theme: ElementTheme.Light, Density: TableViewDensity.Small)
             })
             {
                 var theme = testCase.Theme;
@@ -4979,7 +5115,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle must win over ColumnHeaderStyle.");
                 Verify.AreEqual((ushort)400, GetHeaderPresenter(tableView, 1).FontWeight.Weight,
                     "A column style without a FontWeight setter keeps the default Normal weight.");
-                Verify.AreEqual(40.0, second.MinHeight, "Without a style MinHeight the header follows the density row height.");
+                Verify.AreEqual(32.0, second.MinHeight, "Without a style MinHeight the header follows the density row height.");
 
                 tableView.ColumnHeaderStyle = null;
             });
@@ -5032,7 +5168,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             global::System.Threading.Volatile.Write(ref loaded, true);
 
-            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Medium);
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
@@ -5043,7 +5179,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var second = RequireColumnHeader(tableView, 1);
                 Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle's BasedOn Background must win over ColumnHeaderStyle.");
-                Verify.AreEqual(32.0, second.MinHeight, "Without a style MinHeight the header follows the Compact row height.");
+                Verify.AreEqual(32.0, second.MinHeight, "Without a style MinHeight the header follows the Medium row height.");
             });
         }
 
@@ -5065,7 +5201,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() => tableView.ColumnHeaderStyle = new Style(typeof(TableViewColumnHeader)));
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Medium);
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
@@ -5183,7 +5319,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
             IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Medium);
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
@@ -5556,7 +5692,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 FocusManager.GettingFocus += handler;
                 try
                 {
-                    tableView.Density = TableViewDensity.Compact;
+                    tableView.Density = TableViewDensity.Medium;
                 }
                 finally
                 {
@@ -6560,7 +6696,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifySortIndicatorGeometryAndHeaderPlacement()
         {
-            foreach (var density in new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact })
+            foreach (var density in new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small })
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             {
                 TableView tableView = null;
@@ -7290,16 +7426,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             internal Thickness CellPadding;
             internal Thickness TextPadding;
             internal double FontSize;
-            internal string ResourceSuffix => Density == TableViewDensity.Standard ? "" : Density.ToString();
+            internal string ResourceSuffix => Density == TableViewDensity.Medium ? "" : Density.ToString();
         }
 
         // The literal presets from TableView_themeresources.xaml, not from the code constants. They
         // agree today; VerifyDensityResourceOverrideWins is what proves the resource is the real source.
         internal static readonly DensityCase[] DensityCases = new[]
         {
-            new DensityCase { Density = TableViewDensity.Compact, RowMinHeight = 32.0, CellPadding = new Thickness(12, 6, 12, 6), TextPadding = new Thickness(12, 5, 12, 7), FontSize = 14.0 },
-            new DensityCase { Density = TableViewDensity.Standard, RowMinHeight = 40.0, CellPadding = new Thickness(12, 10, 12, 10), TextPadding = new Thickness(12, 9, 12, 11), FontSize = 14.0 },
-            new DensityCase { Density = TableViewDensity.ExtraCompact, RowMinHeight = 24.0, CellPadding = new Thickness(12, 2, 12, 2), TextPadding = new Thickness(12, 1, 12, 3), FontSize = 14.0 },
+            new DensityCase { Density = TableViewDensity.Medium, RowMinHeight = 32.0, CellPadding = new Thickness(12, 6, 12, 6), TextPadding = new Thickness(12, 5, 12, 7), FontSize = 14.0 },
+            new DensityCase { Density = TableViewDensity.Large, RowMinHeight = 40.0, CellPadding = new Thickness(12, 10, 12, 10), TextPadding = new Thickness(12, 9, 12, 11), FontSize = 14.0 },
+            new DensityCase { Density = TableViewDensity.Small, RowMinHeight = 24.0, CellPadding = new Thickness(12, 2, 12, 2), TextPadding = new Thickness(12, 1, 12, 3), FontSize = 14.0 },
         };
 
         internal static TableView CreateThemingTable()

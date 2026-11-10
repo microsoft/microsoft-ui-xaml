@@ -130,7 +130,7 @@ void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, win
         std::max(0.0, padding.Top - border.Top),
         std::max(0.0, padding.Right - border.Right),
         std::max(0.0, padding.Bottom - border.Bottom));
-    const auto minHeight = owner ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight() : 40.0;
+    const auto minHeight = owner ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight() : 32.0;
     const auto contentElement = SharedHelpers::FindInVisualTreeByName(editor, L"ContentElement");
     const auto scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
     const auto textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;

@@ -1105,7 +1105,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var f = LoadFixture(configure: x => x.NameColumn.HeaderFlyout = x.Recorder.Create("HeaderOptions"));
             foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
-            foreach (var density in new[] { TableViewDensity.ExtraCompact, TableViewDensity.Compact, TableViewDensity.Standard })
+            foreach (var density in new[] { TableViewDensity.Small, TableViewDensity.Medium, TableViewDensity.Large })
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             {
                 RunOnUIThread.Execute(() =>

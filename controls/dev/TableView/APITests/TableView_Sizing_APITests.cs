@@ -361,27 +361,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         new[] { headerDominates ? "Al" : VeryLongText });
                     tableView.IsTextScaleFactorEnabled = false;
                     tableView.Resources[headerDominates
-                        ? "TableViewHeaderFontSizeExtraCompact"
-                        : "TableViewCellFontSizeExtraCompact"] = 12.0;
+                        ? "TableViewHeaderFontSizeSmall"
+                        : "TableViewCellFontSizeSmall"] = 12.0;
                     LoadContent(tableView);
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
                     standardWidth = tableView.Columns[0].ActualWidth;
-                    tableView.Density = TableViewDensity.ExtraCompact;
+                    tableView.Density = TableViewDensity.Small;
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.IsLessThan(tableView.Columns[0].ActualWidth, standardWidth,
                         "Smaller text must release stale Auto width maxima for both headers and cells.");
-                    tableView.Density = TableViewDensity.Standard;
+                    tableView.Density = TableViewDensity.Large;
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                     Verify.AreEqual(standardWidth, tableView.Columns[0].ActualWidth,
-                        "Returning to Standard must restore the larger text's Auto width."));
+                        "Returning to Large must restore the larger text's Auto width."));
             }
         }
 
@@ -492,7 +492,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDensityWithoutFontChangeKeepsGrownAutoWidth()
         {
-            var densities = new[] { TableViewDensity.Standard, TableViewDensity.Compact, TableViewDensity.ExtraCompact };
+            var densities = new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small };
             foreach (var initialDensity in densities)
             {
                 foreach (var density in densities.Where(value => value != initialDensity))

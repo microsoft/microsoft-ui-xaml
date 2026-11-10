@@ -1998,8 +1998,8 @@ bool TableViewRow::RebuildCellsCore(bool updateExistingCellPeerItems)
         return false;
     }
 
-    // Density: apply the owning TableView's row min-height (Fluent Standard = 40,
-    // Compact = 32, ExtraCompact = 24; resolved from the TableViewRowMinHeight* resources).
+    // Density: apply the owning TableView's row min-height (Fluent Large = 40,
+    // Medium = 32, Small = 24; resolved from the TableViewRowMinHeight* resources).
     const auto ownerImpl = winrt::get_self<TableView>(owner);
     const auto rowMinHeight = ownerImpl->GetDensityRowMinHeight();
     if (MinHeight() != rowMinHeight)

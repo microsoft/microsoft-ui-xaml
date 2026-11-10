@@ -40,7 +40,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
         ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-        ProcessTable.Density = TableViewDensity.Compact;
+        ProcessTable.Density = TableViewDensity.Medium;
         // Metrics open descending, as in Task Manager: the busiest process comes first.
         foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
         {
