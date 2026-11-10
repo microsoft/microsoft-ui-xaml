@@ -540,22 +540,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var navViewBackButton = (Button)VisualTreeUtils.FindVisualChildByName((NavigationView)root.FindName("navView"), "NavigationViewBackButton");
+                var navView = (NavigationView)root.FindName("navView");
+                var navViewBackButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "NavigationViewBackButton");
                 var navViewGlyph = GetBackButtonGlyph(navViewBackButton);
+                // Compare the visible backplate: NavigationView's back button box also covers the corner around it (#5306).
+                var navViewBackplate = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navViewBackButton, "RootGrid");
 
                 foreach (var name in new[] { "normalButton", "smallButton" })
                 {
                     var button = (Button)root.FindName(name);
                     var glyph = GetBackButtonGlyph(button);
-                    Log.Comment($"{name}: glyph {glyph.GetType().Name} {glyph.ActualWidth}x{glyph.ActualHeight}, button {button.ActualWidth}x{button.ActualHeight}, Margin {button.Margin}");
+                    var backplate = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(button, "RootGrid");
+                    Log.Comment($"{name}: glyph {glyph.GetType().Name} {glyph.ActualWidth}x{glyph.ActualHeight}, button {button.ActualWidth}x{button.ActualHeight}, backplate {backplate.ActualWidth}x{backplate.ActualHeight}, Margin {button.Margin}");
                     Verify.IsTrue(glyph is AnimatedIcon, name + " draws the animated back icon even with custom Content, actual: " + glyph.GetType().Name);
                     Verify.IsNull(VisualTreeUtils.FindVisualChildByType<FontIcon>(button), name + " has no FontIcon showing the custom Content glyph");
                     Verify.AreEqual(navViewGlyph.ActualWidth, glyph.ActualWidth, name + " glyph width matches NavigationView's back button");
                     Verify.AreEqual(navViewGlyph.ActualHeight, glyph.ActualHeight, name + " glyph height matches NavigationView's back button");
-                    Verify.AreEqual(navViewBackButton.ActualHeight, button.ActualHeight, name + " height matches NavigationView's back button");
+                    Verify.AreEqual(navViewBackplate.ActualWidth, backplate.ActualWidth, name + " backplate width matches NavigationView's back button");
+                    Verify.AreEqual(navViewBackplate.ActualHeight, backplate.ActualHeight, name + " backplate height matches NavigationView's back button");
                 }
 
-                Verify.AreEqual(navViewBackButton.Margin, ((Button)root.FindName("normalButton")).Margin, "Normal style Margin matches NavigationView's back button (Left mode)");
+                // NavigationView's back button draws its backplate where the Normal style's margin puts it (Left mode).
+                var normalStyleMargin = ((Button)root.FindName("normalButton")).Margin;
+                Verify.AreEqual(new Thickness(4, 2, 4, 2), normalStyleMargin, "Normal style Margin");
+                var buttonHolderGrid = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "ButtonHolderGrid");
+                var backplateOffset = navViewBackplate.TransformToVisual(buttonHolderGrid).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+                Verify.AreEqual(normalStyleMargin.Left, backplateOffset.X, "NavigationView's back button backplate X matches the Normal style's left margin");
+                Verify.AreEqual(normalStyleMargin.Top, backplateOffset.Y, "NavigationView's back button backplate Y matches the Normal style's top margin");
                 Verify.AreEqual(new Thickness(4, 2, 0, 2), ((Button)root.FindName("smallButton")).Margin, "Small style Margin");
             });
         }
@@ -600,6 +611,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var defaultBackButton = (Button)VisualTreeUtils.FindVisualChildByName(defaultNavView, "NavigationViewBackButton");
                 Verify.IsNotNull(defaultBackButton, "Default template back button");
                 Verify.IsTrue(GetBackButtonGlyph(defaultBackButton) is AnimatedIcon, "Default template back button draws an AnimatedIcon");
+                // The default template's close button uses NavigationBackButtonNormalStyle as is; its back button adds
+                // template-local geometry so that its hit target reaches the corner (#5306).
+                var defaultCloseButton = (Button)VisualTreeUtils.FindVisualChildByName(defaultNavView, "NavigationViewCloseButton");
+                Verify.IsNotNull(defaultCloseButton, "Default template close button");
 
                 foreach (var partName in new[] { "NavigationViewBackButton", "NavigationViewCloseButton" })
                 {
@@ -607,7 +622,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(button, "App template " + partName);
                     var glyph = GetBackButtonGlyph(button);
                     Verify.IsTrue(glyph is AnimatedIcon, "App template " + partName + " draws its glyph with an AnimatedIcon, actual: " + glyph.GetType().Name);
-                    Verify.AreEqual(defaultBackButton.Margin, button.Margin, "App template " + partName + " Margin matches the default template");
+                    Verify.AreEqual(defaultCloseButton.Margin, button.Margin, "App template " + partName + " Margin matches the default template's NavigationBackButtonNormalStyle");
                     Verify.AreEqual(defaultBackButton.CornerRadius, button.CornerRadius, "App template " + partName + " CornerRadius matches the default template");
                 }
             });
