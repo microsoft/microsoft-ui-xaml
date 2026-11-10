@@ -1178,7 +1178,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual(-1, currentItemIndex, "Verifying CurrentItemIndex is initially -1");
 
                     Log.Comment("Clicking on ItemsView to select first item.");
-                    InputHelper.LeftClick(firstItemContainer);
+                    ClickInsideItemContainer(firstItemContainer);
                     Wait.ForIdle();
 
                     LogScrollViewInfo(itemsViewUIObject, expectedVerticalOffset: null, getScrollViewView: false);
@@ -1186,7 +1186,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual(0, currentItemIndex, "Verifying CurrentItemIndex is 0");
 
                     Log.Comment("Clicking on ItemsView to focus item again.");
-                    InputHelper.LeftClick(firstItemContainer);
+                    ClickInsideItemContainer(firstItemContainer);
                     Wait.ForIdle();
 
                     Log.Comment("Pressing End key");
@@ -1294,28 +1294,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             double expectedWidth,
             double minimumHeight)
         {
-            const int maxAttempts = 10;
+            // The extent may not be final after the first layout pass, so poll for a bounded amount of time
+            // rather than a fixed number of attempts that can elapse almost instantly when the app is already idle.
+            TimeSpan timeout = TimeSpan.FromSeconds(5);
+            TimeSpan pollInterval = TimeSpan.FromMilliseconds(100);
+            var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+            int attempt = 0;
             double extentWidth = 0.0;
             double extentHeight = 0.0;
 
-            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            while (true)
             {
+                attempt++;
                 getExtentWidthButton.InvokeAndWait();
                 getExtentHeightButton.InvokeAndWait();
 
                 extentWidth = double.Parse(extentWidthTextBox.Value);
                 extentHeight = double.Parse(extentHeightTextBox.Value);
-                Log.Comment("Extent attempt {0}: Width={1}, Height={2}", attempt, extentWidth, extentHeight);
+                Log.Comment("Extent attempt {0} at {1}ms: Width={2}, Height={3}", attempt, stopwatch.ElapsedMilliseconds, extentWidth, extentHeight);
 
-                if (extentWidth == expectedWidth && extentHeight > minimumHeight)
+                if ((extentWidth == expectedWidth && extentHeight > minimumHeight) || stopwatch.Elapsed >= timeout)
                 {
                     return (extentWidth, extentHeight);
                 }
 
+                global::System.Threading.Thread.Sleep(pollInterval);
                 Wait.ForIdle();
             }
-
-            return (extentWidth, extentHeight);
         }
 
         [TestMethod]
@@ -1384,17 +1389,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(scrollPresenter, "Verifying that PART_ScrollPresenter was found");
                 Verify.IsTrue(scrollPresenter.Children.Count >= 4, "Verifying that at least 4 item containers were realized");
 
+                // The ObservableCollection starts with ranks 0-24. Removing index 0 three times leaves ranks 3-24, and the
+                // page names each inserted item after the current count (22, 23, 24) while inserting it at index 0.
+                // Checking the displayed descriptions validates the realized data independently of the repeater's own indexes.
+                string[] expectedDescriptionPrefixes = new[] { "24 - ", "23 - ", "22 - ", "3 - " };
+
                 for (int index = 0; index < 4; index++)
                 {
                     UIObject itemContainer = scrollPresenter.Children[index];
                     Verify.AreEqual("ItemContainer", itemContainer.Name, "Verifying that the target is an ItemContainer");
 
-                    Rectangle itemBounds = itemContainer.BoundingRectangle;
-                    Log.Comment("Clicking on ItemsView item {0} to select it. Bounds={1}", index, itemBounds);
-                    InputHelper.LeftClick(
-                        itemContainer,
-                        Math.Min(20.0, itemBounds.Width / 2.0),
-                        Math.Min(20.0, itemBounds.Height / 2.0));
+                    UIObject descriptionTextBlock = itemContainer.Descendants.Find(UICondition.CreateFromClassName("TextBlock"));
+                    Log.Comment("ItemsView item {0} description: '{1}'", index, descriptionTextBlock.Name);
+                    Verify.IsTrue(
+                        descriptionTextBlock.Name.StartsWith(expectedDescriptionPrefixes[index], StringComparison.Ordinal),
+                        string.Format("Verifying that ItemsView item {0} displays the item with description prefix '{1}'", index, expectedDescriptionPrefixes[index]));
+
+                    Log.Comment("Clicking on ItemsView item {0} to select it.", index);
+                    ClickInsideItemContainer(itemContainer);
                     Wait.ForIdle();
                     int currentItemIndex = GetCurrentItemIndex();
                     Verify.AreEqual(index, currentItemIndex, "Verifying CurrentItemIndex is " + index);
@@ -1404,6 +1416,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Output-debug-string-level "None" is automatically restored when landing back on the ScrollView test page.
             }
+        }
+
+        // Clicks near the top-left corner of the container instead of relying on the OS-dependent automation default click point.
+        private static void ClickInsideItemContainer(UIObject itemContainer)
+        {
+            Rectangle itemBounds = itemContainer.BoundingRectangle;
+            Log.Comment("ItemContainer bounds: X={0}, Y={1}, Width={2}, Height={3}", itemBounds.X, itemBounds.Y, itemBounds.Width, itemBounds.Height);
+            InputHelper.LeftClick(
+                itemContainer,
+                Math.Min(20.0, itemBounds.Width / 2.0),
+                Math.Min(20.0, itemBounds.Height / 2.0));
         }
 
         private void InvokeButtonAndWaitForStatus(Button button, Edit statusTextBox, string expectedStatus)
