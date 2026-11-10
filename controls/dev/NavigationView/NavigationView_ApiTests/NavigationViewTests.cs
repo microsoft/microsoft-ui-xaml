@@ -4377,6 +4377,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var appStyle = (Style)XamlReader.Load(@"
                     <Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='Button'>
                         <Setter Property='Background' Value='Red' />
+                        <Setter Property='Height' Value='36' />
+                        <Setter Property='Margin' Value='4,2,0,2' />
                         <Setter Property='Template'>
                             <Setter.Value>
                                 <ControlTemplate TargetType='Button'>
