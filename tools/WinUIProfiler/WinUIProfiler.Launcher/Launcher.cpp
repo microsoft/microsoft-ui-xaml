@@ -6,6 +6,7 @@
 #include <wrl/client.h>
 #include <format>
 #include <map>
+#include <memory>
 
 using Microsoft::WRL::ComPtr;
 
@@ -27,17 +28,14 @@ namespace
         wchar_t package[profiler::MaxPathCharacters];
     };
 
-    struct MappingView
+    struct UnmapView
     {
-        DebugContext* data = nullptr;
-        ~MappingView()
+        void operator()(DebugContext* view) const noexcept
         {
-            if (data)
-            {
-                UnmapViewOfFile(data);
-            }
+            UnmapViewOfFile(view);
         }
     };
+    using MappingView = std::unique_ptr<DebugContext, UnmapView>;
 
     struct PackageLaunchState
     {
@@ -192,18 +190,18 @@ namespace
         }
         MappingView context{ static_cast<DebugContext*>(MapViewOfFile(mapping.get(),
             FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(DebugContext))) };
-        if (!context.data)
+        if (!context)
         {
             const DWORD error = GetLastError();
             const DWORD resumed = ResumeDebugThread(pid, tid);
             OutputDebugStringW(L"WinUI profiler: failed to map startup callback configuration.\n");
             return resumed ? resumed : error;
         }
-        if (context.data->size != sizeof(DebugContext) || context.data->version != profiler::ProtocolVersion ||
-            !wmemchr(context.data->executable, 0, profiler::MaxPathCharacters) ||
-            !wmemchr(context.data->dll, 0, profiler::MaxPathCharacters) ||
-            !wmemchr(context.data->result, 0, profiler::MaxPathCharacters) ||
-            !wmemchr(context.data->package, 0, profiler::MaxPathCharacters))
+        if (context->size != sizeof(DebugContext) || context->version != profiler::ProtocolVersion ||
+            !wmemchr(context->executable, 0, profiler::MaxPathCharacters) ||
+            !wmemchr(context->dll, 0, profiler::MaxPathCharacters) ||
+            !wmemchr(context->result, 0, profiler::MaxPathCharacters) ||
+            !wmemchr(context->package, 0, profiler::MaxPathCharacters))
         {
             const DWORD resumed = ResumeDebugThread(pid, tid);
             OutputDebugStringW(L"WinUI profiler: invalid startup callback configuration.\n");
@@ -233,7 +231,7 @@ namespace
         {
             error = GetLastError();
         }
-        else if (CompareFileTime(&created, &context.data->notBefore) < 0 || session != context.data->sessionId)
+        else if (CompareFileTime(&created, &context->notBefore) < 0 || session != context->sessionId)
         {
             error = ERROR_INVALID_DATA;
         }
@@ -244,7 +242,7 @@ namespace
         else
         {
             actual.resize(length);
-            if (!profiler::EqualPath(actual, context.data->executable))
+            if (!profiler::EqualPath(actual, context->executable))
             {
                 error = ERROR_BAD_EXE_FORMAT;
             }
@@ -264,19 +262,19 @@ namespace
                 else
                 {
                     package.resize(packageLength - 1);
-                    if (package != context.data->package)
+                    if (package != context->package)
                     {
                         error = ERROR_INVALID_DATA;
                     }
                 }
             }
-            if (!error && InterlockedCompareExchange(&context.data->claimedPid, static_cast<LONG>(pid), 0) != 0)
+            if (!error && InterlockedCompareExchange(&context->claimedPid, static_cast<LONG>(pid), 0) != 0)
             {
                 error = ERROR_ALREADY_EXISTS;
             }
             if (!error)
             {
-                const auto dll = profiler::ImportPath(context.data->dll);
+                const auto dll = profiler::ImportPath(context->dll);
                 LPCSTR libraries[] = { dll.c_str() };
                 if (dll.empty() || !DetourUpdateProcessWithDll(process.get(), libraries, 1))
                 {
@@ -290,11 +288,11 @@ namespace
         {
             error = GetLastError();
         }
-        if (!SaveResult(context.data->result, pid, created, error, L"package_debugger") && !error)
+        if (!SaveResult(context->result, pid, created, error, L"package_debugger") && !error)
         {
             error = GetLastError();
         }
-        InterlockedCompareExchange(&context.data->error, static_cast<LONG>(error), ERROR_IO_PENDING);
+        InterlockedCompareExchange(&context->error, static_cast<LONG>(error), ERROR_IO_PENDING);
         return error;
     }
 
@@ -423,26 +421,29 @@ namespace
                 const auto contextName = eventName + L".Context";
                 packageState.mapping.reset(CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,
                     0, sizeof(DebugContext), contextName.c_str()));
-                context.data = packageState.mapping ? static_cast<DebugContext*>(MapViewOfFile(packageState.mapping.get(),
-                    FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(DebugContext))) : nullptr;
-                if (!context.data)
+                if (packageState.mapping)
+                {
+                    context.reset(static_cast<DebugContext*>(MapViewOfFile(packageState.mapping.get(),
+                        FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(DebugContext))));
+                }
+                if (!context)
                 {
                     hr = HRESULT_FROM_WIN32(GetLastError());
                 }
                 else
                 {
-                    context.data->size = sizeof(DebugContext);
-                    context.data->version = profiler::ProtocolVersion;
-                    context.data->error = ERROR_IO_PENDING;
-                    GetSystemTimeAsFileTime(&context.data->notBefore);
-                    if (!ProcessIdToSessionId(GetCurrentProcessId(), &context.data->sessionId))
+                    context->size = sizeof(DebugContext);
+                    context->version = profiler::ProtocolVersion;
+                    context->error = ERROR_IO_PENDING;
+                    GetSystemTimeAsFileTime(&context->notBefore);
+                    if (!ProcessIdToSessionId(GetCurrentProcessId(), &context->sessionId))
                     {
                         hr = HRESULT_FROM_WIN32(GetLastError());
                     }
-                    wcscpy_s(context.data->executable, exe.c_str());
-                    wcscpy_s(context.data->dll, dll.c_str());
-                    wcscpy_s(context.data->result, debuggerResult.c_str());
-                    wcscpy_s(context.data->package, package.c_str());
+                    wcscpy_s(context->executable, exe.c_str());
+                    wcscpy_s(context->dll, dll.c_str());
+                    wcscpy_s(context->result, debuggerResult.c_str());
+                    wcscpy_s(context->package, package.c_str());
                 }
                 // Package debugging limits its command line; keep per-run paths in the owned mapping.
                 const auto command = profiler::Quote(profiler::ShortPath(profiler::ModulePath(nullptr))) +
@@ -472,15 +473,15 @@ namespace
                 {
                     error = static_cast<DWORD>(hr);
                 }
-                if (context.data)
+                if (context)
                 {
-                    if (!pid && context.data->claimedPid > 0)
+                    if (!pid && context->claimedPid > 0)
                     {
-                        pid = static_cast<DWORD>(context.data->claimedPid);
+                        pid = static_cast<DWORD>(context->claimedPid);
                     }
-                    if (context.data->error != ERROR_SUCCESS && context.data->error != ERROR_IO_PENDING && !error)
+                    if (context->error != ERROR_SUCCESS && context->error != ERROR_IO_PENDING && !error)
                     {
-                        error = static_cast<DWORD>(context.data->error);
+                        error = static_cast<DWORD>(context->error);
                         stage = L"package_debugger";
                     }
                 }
@@ -528,10 +529,10 @@ namespace
                 error = result == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError();
             }
         }
-        if (packageState.context.data && !error && packageState.context.data->error != ERROR_SUCCESS &&
-            packageState.context.data->error != ERROR_IO_PENDING)
+        if (packageState.context && !error && packageState.context->error != ERROR_SUCCESS &&
+            packageState.context->error != ERROR_IO_PENDING)
         {
-            error = static_cast<DWORD>(packageState.context.data->error);
+            error = static_cast<DWORD>(packageState.context->error);
             stage = L"package_debugger";
         }
         // Activation may return before the debugger callback runs (notably under WOW64).

@@ -35,6 +35,8 @@ namespace profiler
         return result;
     }
 
+    // A value as a JSON string for the result files and the redirect log, which are read as UTF-8. std::format
+    // inserts values unescaped, and the log records paths, which have backslashes and can be non-ASCII.
     inline std::string Json(std::wstring_view value)
     {
         const auto text = Utf8(value);
