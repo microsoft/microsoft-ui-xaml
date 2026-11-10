@@ -18,6 +18,7 @@ foreach ($architecture in @('x64', 'ARM64')) {
         & $msbuild (Join-Path $root "$project\$project.vcxproj") /t:Build "/p:Configuration=$Configuration" "/p:Platform=$architecture" /nologo /v:quiet
         if ($LASTEXITCODE -ne 0) { throw "Building $project for $architecture failed." }
     }
+    $null = & (Join-Path $PSScriptRoot 'Build-Launcher.ps1') -Architecture $architecture
 }
 & $msbuild (Join-Path $root 'WinUIProfiler.Native\WinUIProfiler.Native.vcxproj') /t:Build `
     "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:quiet
@@ -52,7 +53,27 @@ $entries = foreach ($architecture in @('x64', 'ARM64')) {
 }
 $manifest = [ordered]@{ SchemaVersion = 1; Payloads = @($entries) } | ConvertTo-Json -Depth 4
 [IO.File]::WriteAllText((Join-Path $payloadDirectory 'manifest.json'), $manifest, [Text.UTF8Encoding]::new($false))
-$native = Join-Path $root "WinUIProfiler.Native\bin\$Platform\$Configuration\WinUIProfiler.Native.dll"
+$launcherDirectory = Join-Path $output 'NativeLauncher'
+$launchers = foreach ($architecture in @('x64', 'ARM64')) {
+    $directory = Join-Path $launcherDirectory $architecture
+    $null = New-Item -ItemType Directory -Path $directory -Force
+    foreach ($file in @('ProfilerLauncher.exe', 'ProfilerRedirect.dll', 'DETOURS-LICENSE.md')) {
+        $source = Join-Path $root "artifacts\launcher\win-$($architecture.ToLowerInvariant())\$file"
+        $destination = Join-Path $directory $file
+        Copy-Item -LiteralPath $source -Destination $destination
+        if ((Get-FileHash -LiteralPath $source).Hash -ne (Get-FileHash -LiteralPath $destination).Hash) {
+            throw "Deployment hash mismatch: $destination"
+        }
+    }
+    [ordered]@{
+        Architecture = $architecture
+        LauncherSHA256 = (Get-FileHash -LiteralPath (Join-Path $directory 'ProfilerLauncher.exe')).Hash
+        RedirectSHA256 = (Get-FileHash -LiteralPath (Join-Path $directory 'ProfilerRedirect.dll')).Hash
+    }
+}
+$manifest = [ordered]@{ SchemaVersion = 1; Launchers = @($launchers) } | ConvertTo-Json -Depth 4
+[IO.File]::WriteAllText((Join-Path $launcherDirectory 'manifest.json'), $manifest, [Text.UTF8Encoding]::new($false))
+$native =  Join-Path $root "WinUIProfiler.Native\bin\$Platform\$Configuration\WinUIProfiler.Native.dll"
 Copy-Item -LiteralPath $native -Destination (Join-Path $output 'WinUIProfiler.Native.dll')
 foreach ($file in @('WinUIProfiler.App.exe', 'Microsoft.UI.Xaml.dll', 'WinUIProfiler.Native.dll')) {
     if (!(Test-Path -LiteralPath (Join-Path $output $file) -PathType Leaf)) { throw "Required executable payload missing: $file" }
