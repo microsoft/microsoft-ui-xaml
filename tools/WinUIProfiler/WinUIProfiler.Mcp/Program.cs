@@ -8,8 +8,6 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using WinUIProfiler.Mcp.SelfTest;
-using WinUIProfiler.Mcp.Sessions;
 
 namespace WinUIProfiler.Mcp;
 
@@ -50,10 +48,8 @@ internal static class Program
                 }
 
                 return 0;
-            case "--selftest" when args.Length <= 2:
-                return SelfTestRunner.Run(args.Length == 2 ? args[1] : null, output);
             default:
-                Console.Error.WriteLine("Usage: WinUIProfiler.Mcp [--version | --listtools | --selftest [filter]]");
+                Console.Error.WriteLine("Usage: WinUIProfiler.Mcp [--version | --listtools]");
                 Console.Error.WriteLine("Without arguments, runs the MCP server over standard input and output.");
                 return 2;
         }
@@ -70,7 +66,6 @@ internal static class Program
 
     private static async Task RunServerAsync()
     {
-        QueryLog.Current = new QueryLog(QueryLog.DefaultFolder);
         var builder = Host.CreateEmptyApplicationBuilder(settings: null);
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
         AddServer(builder.Services).WithStdioServerTransport();

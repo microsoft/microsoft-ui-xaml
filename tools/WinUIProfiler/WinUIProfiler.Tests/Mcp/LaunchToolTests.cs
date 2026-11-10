@@ -4,15 +4,15 @@
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>The launch tool's views on the fixtures.</summary>
-internal static class LaunchToolSelfTests
+internal static class LaunchToolTests
 {
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("launch.frames", Frames),
         new("launch.milestones", Milestones),
@@ -21,7 +21,7 @@ internal static class LaunchToolSelfTests
         new("launch.arguments", Arguments),
     ];
 
-    private static void Frames(SelfTestContext context)
+    private static void Frames(McpTestContext context)
     {
         var main = WriteMain(context);
         var result = Run(() => LaunchTools.Launch(view: "frames", sessionPath: main));
@@ -41,7 +41,7 @@ internal static class LaunchToolSelfTests
         Expect.True(!frames[0].IsNull("tickId"), "Frame 1's tick is given.");
     }
 
-    private static void Milestones(SelfTestContext context)
+    private static void Milestones(McpTestContext context)
     {
         var main = WriteMain(context);
         var result = Run(() => LaunchTools.Launch(sessionPath: main));
@@ -62,7 +62,7 @@ internal static class LaunchToolSelfTests
         ExpectSummaryAgrees(main, "A session that drew");
     }
 
-    private static void Undrawn(SelfTestContext context)
+    private static void Undrawn(McpTestContext context)
     {
         // The recording ends after one tick, so no tick is known to have drawn: a tick drew when the thread's next tick
         // has a higher frame number. A navigation in it opens a region of interest with a layout pass inside.
@@ -91,9 +91,9 @@ internal static class LaunchToolSelfTests
 
         var summary = Run(() => SessionTools.Sessions(sessionPath: path));
         Expect.True(summary.IsNull("firstFrame"), "The summary has no first frame.");
-        Expect.True(SessionToolSelfTests.Analysis(summary, "launch").Bool("available"),
+        Expect.True(SessionToolTests.Analysis(summary, "launch").Bool("available"),
             "The summary offers the milestones of a launch that never drew.");
-        var launchFrames = SessionToolSelfTests.Analysis(summary, "launchFrames");
+        var launchFrames = SessionToolTests.Analysis(summary, "launchFrames");
         Expect.True(!launchFrames.Bool("available"), "The summary has no launch frames.");
         Contains(launchFrames.Text("why"), "Why there are no launch frames", "is known to have drawn");
         ExpectSummaryAgrees(path, "A launch that never drew");
@@ -107,13 +107,13 @@ internal static class LaunchToolSelfTests
     {
         var observed = Run(() => LaunchTools.Launch(sessionPath: path)).Items("milestones")
             .Any(item => item.Text("milestone") is not ("ProcessCreated" or "RecordingStarted"));
-        var available = SessionToolSelfTests.Analysis(Run(() => SessionTools.Sessions(sessionPath: path)), "launch")
+        var available = SessionToolTests.Analysis(Run(() => SessionTools.Sessions(sessionPath: path)), "launch")
             .Bool("available");
         Expect.Equal(observed, available, $"{what}: the summary's launch analysis is available when the milestones view " +
             "finds a milestone");
     }
 
-    private static void Coverage(SelfTestContext context)
+    private static void Coverage(McpTestContext context)
     {
         var etl = Path.Combine(context.TempDirectory, "fixture.etl");
         var trace = Write(Path.Combine(context.TempDirectory, "trace.sqlite"), MainEvents, coverage: SessionCoverage.Trace,
@@ -179,7 +179,7 @@ internal static class LaunchToolSelfTests
         ExpectSummaryAgrees(empty, "An empty session");
     }
 
-    private static void Arguments(SelfTestContext context)
+    private static void Arguments(McpTestContext context)
     {
         var main = WriteMain(context);
         Contains(Error(() => LaunchTools.Launch(view: "phases", sessionPath: main)), "An unknown view", "'phases'", "milestones",

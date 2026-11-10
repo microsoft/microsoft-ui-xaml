@@ -5,17 +5,17 @@ using System.Text.Json;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Mcp.Sessions;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>How the tools show times, addresses and providers, and how they check their arguments.</summary>
-internal static class ValueSelfTests
+internal static class ValueTests
 {
     private static readonly string[] Views = ["first", "second view", "third"];
 
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("values.format", _ => Format()),
         new("values.arguments", _ => Arguments()),
@@ -82,7 +82,7 @@ internal static class ValueSelfTests
     /// The tick and history views name a XAML provider by its ETW name, and a marker provider by the name its marker
     /// configuration gives it, as the app does.
     /// </summary>
-    private static void Providers(SelfTestContext context)
+    private static void Providers(McpTestContext context)
     {
         var marker = new MarkerProvider("Contoso-Startup", new Guid("6F3E1A52-0D8C-4C4B-9C1E-2B7A9E5D4F10"));
         // The main fixture, with a marker event in frame 2, before the frame's end.

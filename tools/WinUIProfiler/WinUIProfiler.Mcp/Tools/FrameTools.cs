@@ -131,7 +131,7 @@ internal static class FrameTools
             "rows" => ToolArguments.Choice(orderBy, RowOrders, "orderBy for the rows view") ?? RowOrders[0],
             _ => null,
         };
-        return SessionCatalog.RunAsync("frames", sessionPath, path => chosen switch
+        return SessionCatalog.RunAsync(sessionPath, path => chosen switch
         {
             "slowest" => Slowest(path, order!, offset, count),
             "regions" => Regions(path, order!, offset, count),

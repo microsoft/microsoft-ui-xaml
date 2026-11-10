@@ -95,6 +95,7 @@ and verify that migrated performance regions distinguish Start/Stop without
 also matching legacy manifest events. Snapshot checks cover allocator deltas,
 named graphics resources, untracked versus observed lifetimes, four-group
 classification, missing captures and full-range 64-bit graphics comparisons.
+They also run the Copilot plugin server's checks (see Copilot plugin below).
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -1095,20 +1096,6 @@ answer with a **How I got this** section that shows each call with its
 `queries` and `computed`, copied as returned, so the answer can be checked by
 running the statements.
 
-The server also appends each call's statements to a query log in
-`%LOCALAPPDATA%\WinUIProfiler\Mcp\logs`, a file named
-`queries-<yyyyMMdd-HHmmss>-<process ID>.sql` that each server creates at its
-first call. A call's part starts with comments that give the time, the tool
-and view, and the session file. Then come its statements, as `queries` lists
-them, each followed by comments with its rows and, unless it ran only on that
-file, the files it ran on; then a comment with what it computed. A call that
-fails isn't logged. So the log runs as a script, as with
-`sqlite3 -readonly <file> ".read <log>"`, when its calls read only that file,
-on a SQLite version that reads the file's views. Each result gives the log's
-path in `queryLog`, or why it couldn't be written in `queryLogError`; the call
-itself doesn't fail. Creating a log deletes the query logs there that haven't
-been written to for 30 days. The self-tests don't write to it.
-
 The plugin answers only what a processor stores. It doesn't answer questions
 about the events' field values, GPU memory, CPU samples, call stacks, thread
 waits or the XAML and composition trees; tools for them come with the
@@ -1117,19 +1104,17 @@ processors that store them. Its `launch` milestones are its own, from
 doesn't give the marker configuration's milestones, such as an app's own
 markers, or the launcher's.
 
-Run the server's checks from this directory:
+The server's checks run with the other checks in WinUIProfiler.Tests (see
+Build and run above). They write their session files with the app's
+`SessionWriter`, so the processors build the tables the tools read, and also
+check the plugin's manifests and skills. The `record_trace` checks that read
+a real trace end to end are skipped unless `WINUIPROFILER_TEST_ETL` has the
+full path of a trace with XAML events. To list the server's tools:
 
 ```powershell
 dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
-$mcp = '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe'
-& $mcp --listtools          # the tools' names
-& $mcp --selftest           # all the self-tests
-& $mcp --selftest frames    # the self-tests whose names contain "frames"
+& '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe' --listtools
 ```
-
-The self-tests write their session files with the app's `SessionWriter`, so
-the processors build the tables the tools read, and also check the plugin's
-manifests and skills.
 
 ## Limitations
 

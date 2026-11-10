@@ -56,9 +56,8 @@ with a section headed **How I got this**, as the winui-profiler-analysis skill
 describes: the session file, or a list's folder, then each call made, with
 its tool, view and arguments, each of its `queries` (its `sql` copied exactly
 in a code block marked `sql`, then its `rows`), and its `computed`, also
-copied exactly; then the `queryLog`, or the `queryLogError`, the results
-give. A call that failed returns only its error. Never write or change SQL or
-a `computed`.
+copied exactly. A call that failed returns only its error. Never write or
+change SQL or a `computed`.
 
 Then stop. Don't call other tools until the user asks a question. Answer
 questions with the winui-profiler-analysis skill, passing this session's

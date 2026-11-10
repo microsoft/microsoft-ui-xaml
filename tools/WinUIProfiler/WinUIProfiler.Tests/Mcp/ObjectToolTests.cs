@@ -4,13 +4,13 @@
 using System.Globalization;
 using System.Text.Json;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>The objects tool's types, list and history views on the fixtures.</summary>
-internal static class ObjectToolSelfTests
+internal static class ObjectToolTests
 {
     private const string TextBlockType = "Microsoft.UI.Xaml.Controls.TextBlock";
     private const string BorderType = "Microsoft.UI.Xaml.Controls.Border";
@@ -18,7 +18,7 @@ internal static class ObjectToolSelfTests
     // OkButton's address as the tools show it, with other case and spaces, and in decimal.
     private static readonly string[] OkButtonAddresses = ["0x2000", " 0X2000 ", "8192"];
 
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("objects.types", Types),
         new("objects.list", List),
@@ -27,7 +27,7 @@ internal static class ObjectToolSelfTests
         new("objects.arguments", Arguments),
     ];
 
-    private static void Types(SelfTestContext context)
+    private static void Types(McpTestContext context)
     {
         var main = WriteMain(context);
         var result = Run(() => ObjectTools.Objects(sessionPath: main));
@@ -62,7 +62,7 @@ internal static class ObjectToolSelfTests
         HasNote(none, ObjectTools.NoObjects);
     }
 
-    private static void List(SelfTestContext context)
+    private static void List(McpTestContext context)
     {
         var main = WriteMain(context);
         var result = Run(() => ObjectTools.Objects(sessionPath: main, view: "list"));
@@ -95,7 +95,7 @@ internal static class ObjectToolSelfTests
         Expect.Equal(2L, page.Long("nextOffset"), "The next page");
     }
 
-    private static void History(SelfTestContext context)
+    private static void History(McpTestContext context)
     {
         var main = WriteMain(context);
         foreach (var address in OkButtonAddresses)
@@ -124,7 +124,7 @@ internal static class ObjectToolSelfTests
             Error(() => ObjectTools.Objects(sessionPath: main, address: "0x9999")), "An unknown address");
     }
 
-    private static void Reuse(SelfTestContext context)
+    private static void Reuse(McpTestContext context)
     {
         // A TextBlock leaves the tree and is freed; a Border then enters at the same address.
         var path = Write(Path.Combine(context.TempDirectory, "reuse.sqlite"),
@@ -150,7 +150,7 @@ internal static class ObjectToolSelfTests
         Expect.True(both.IsNull("nextOffset"), "One page holds both objects.");
 
         // It read the session record, then the objects at the address, a read that reads the session record again.
-        var ran = QuerySelfTests.CheckQueries(both, "The history view of an address two objects had");
+        var ran = QueryTests.CheckQueries(both, "The history view of an address two objects had");
         Expect.Equal(2, ran.Count, "Statements the history view of an address two objects had ran");
         Expect.Equal(2L, ran[0].Long("runs"), "Runs of the session record's statement");
 
@@ -172,7 +172,7 @@ internal static class ObjectToolSelfTests
             string.Join(",", border.Items("page").Select(Mention)), "The Border's events");
     }
 
-    private static void Arguments(SelfTestContext context)
+    private static void Arguments(McpTestContext context)
     {
         var main = WriteMain(context);
         Expect.Equal("'x' isn't a valid kind. Use one of: Element, Visual.",

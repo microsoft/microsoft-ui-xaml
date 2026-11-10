@@ -3,38 +3,31 @@
 
 using System.Diagnostics;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
-/// <summary>A named self-test.</summary>
-internal sealed record SelfTestCase(string Name, Action<SelfTestContext> Run);
+/// <summary>A named test of the MCP server.</summary>
+internal sealed record McpTestCase(string Name, Action<McpTestContext> Run);
 
 /// <summary>
-/// Runs the self-tests whose names contain a filter. Prints one PASS, FAIL or SKIP line per test and a
-/// summary, and returns 0 when no test failed.
+/// Runs the MCP server's tests. Prints one PASS, FAIL or SKIP line per test and a summary, and returns 0 when no test
+/// failed.
 /// </summary>
-internal static class SelfTestRunner
+internal static class McpTestRunner
 {
-    private static IEnumerable<SelfTestCase> AllTests =>
-        ServerSelfTests.Tests
-            .Concat(ValueSelfTests.Tests)
-            .Concat(SessionToolSelfTests.Tests)
-            .Concat(FrameToolSelfTests.Tests).Concat(LaunchToolSelfTests.Tests).Concat(ObjectToolSelfTests.Tests)
-            .Concat(RecordTraceSelfTests.Tests).Concat(QuerySelfTests.Tests);
+    private static IEnumerable<McpTestCase> AllTests =>
+        ServerTests.Tests
+            .Concat(ValueTests.Tests)
+            .Concat(SessionToolTests.Tests)
+            .Concat(FrameToolTests.Tests).Concat(LaunchToolTests.Tests).Concat(ObjectToolTests.Tests)
+            .Concat(RecordTraceTests.Tests).Concat(QueryTests.Tests);
 
-    public static int Run(string? filter, TextWriter output)
+    public static int Run(TextWriter output)
     {
         var tests = AllTests.ToList();
         var duplicate = tests.GroupBy(test => test.Name, StringComparer.OrdinalIgnoreCase).FirstOrDefault(group => group.Count() > 1);
         if (duplicate is not null)
         {
-            output.WriteLine($"FAIL two self-tests are named '{duplicate.Key}'.");
-            return 1;
-        }
-
-        tests = [.. tests.Where(test => string.IsNullOrEmpty(filter) || test.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))];
-        if (tests.Count == 0)
-        {
-            output.WriteLine($"No self-test name contains '{filter}'.");
+            output.WriteLine($"FAIL two tests are named '{duplicate.Key}'.");
             return 1;
         }
 
@@ -44,17 +37,17 @@ internal static class SelfTestRunner
             var stopwatch = Stopwatch.StartNew();
             string? failure = null;
             string? skipReason = null;
-            using (var context = new SelfTestContext())
+            using (var context = new McpTestContext())
             {
                 try
                 {
                     test.Run(context);
                 }
-                catch (SelfTestSkippedException exception)
+                catch (McpTestSkippedException exception)
                 {
                     skipReason = exception.Message;
                 }
-                catch (SelfTestFailedException exception)
+                catch (McpTestFailedException exception)
                 {
                     failure = exception.Message;
                 }
@@ -87,13 +80,13 @@ internal static class SelfTestRunner
 }
 
 /// <summary>Per-test state: a temporary folder that's deleted when the test ends.</summary>
-internal sealed class SelfTestContext : IDisposable
+internal sealed class McpTestContext : IDisposable
 {
     private string? directory;
 
     /// <summary>An empty folder for this test's files, created on first use.</summary>
     public string TempDirectory => directory ??= Directory.CreateDirectory(
-        Path.Combine(Path.GetTempPath(), "WinUIProfiler.Mcp.SelfTest", Guid.NewGuid().ToString("N"))).FullName;
+        Path.Combine(Path.GetTempPath(), "WinUIProfiler.Tests.Mcp", Guid.NewGuid().ToString("N"))).FullName;
 
     public void Dispose()
     {
@@ -121,7 +114,7 @@ internal static class Expect
     {
         if (!condition)
         {
-            throw new SelfTestFailedException(message);
+            throw new McpTestFailedException(message);
         }
     }
 
@@ -129,12 +122,12 @@ internal static class Expect
     {
         if (!EqualityComparer<T>.Default.Equals(expected, actual))
         {
-            throw new SelfTestFailedException($"{what}: expected {Format(expected)}, got {Format(actual)}.");
+            throw new McpTestFailedException($"{what}: expected {Format(expected)}, got {Format(actual)}.");
         }
     }
 
     /// <summary>Ends the test as skipped. Declared to return an exception so callers can write <c>?? throw Expect.Skip(...)</c>.</summary>
-    public static Exception Skip(string reason) => throw new SelfTestSkippedException(reason);
+    public static Exception Skip(string reason) => throw new McpTestSkippedException(reason);
 
     private static string Format<T>(T value) => value switch
     {
@@ -144,6 +137,6 @@ internal static class Expect
     };
 }
 
-internal sealed class SelfTestFailedException(string message) : Exception(message);
+internal sealed class McpTestFailedException(string message) : Exception(message);
 
-internal sealed class SelfTestSkippedException(string message) : Exception(message);
+internal sealed class McpTestSkippedException(string message) : Exception(message);

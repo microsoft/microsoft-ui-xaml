@@ -11,28 +11,28 @@ using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Mcp.Sessions;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>
 /// record_trace's argument checks, and its reuse of a session file it already read from the same, unchanged trace with the
 /// same marker providers.
 /// </summary>
-internal static class RecordTraceSelfTests
+internal static class RecordTraceTests
 {
     private const string SessionName = "20261104-120000-FixtureApp-4242.sqlite";
 
     private const string FakeTraceText = "This is not a trace.";
 
     // The full path of a real trace to read end to end; without it, record_trace.real is skipped.
-    private const string TraceVariable = "WINUIPROFILER_SELFTEST_ETL";
+    private const string TraceVariable = "WINUIPROFILER_TEST_ETL";
 
     private static readonly MarkerProviderSettings Contoso =
         new(new MarkerProvider("Contoso-Startup", new Guid("6F3E1A52-0D8C-4C4B-9C1E-2B7A9E5D4F10")));
 
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("record_trace.errors", Errors),
         new("record_trace.reuse", Reuse),
@@ -40,7 +40,7 @@ internal static class RecordTraceSelfTests
         new("record_trace.cancel", Cancel),
     ];
 
-    private static void Errors(SelfTestContext context)
+    private static void Errors(McpTestContext context)
     {
         var folder = Path.GetFullPath(context.TempDirectory);
         var trace = FakeTrace(folder);
@@ -65,7 +65,7 @@ internal static class RecordTraceSelfTests
             trace);
     }
 
-    private static void Reuse(SelfTestContext context)
+    private static void Reuse(McpTestContext context)
     {
         var folder = Path.GetFullPath(context.TempDirectory);
         var trace = FakeTrace(folder);
@@ -136,7 +136,7 @@ internal static class RecordTraceSelfTests
         var damaged = Directory.CreateDirectory(Path.Combine(folder, "damaged")).FullName;
         var good = WriteTraceSession(damaged, "20261104-110000-FixtureApp-4242.sqlite", trace);
         var bad = WriteTraceSession(damaged, SessionName, trace);
-        Expect.Equal(1, SessionToolSelfTests.Update(bad, "UPDATE SessionInfo SET StartedUtc = $value", "not a date"),
+        Expect.Equal(1, SessionToolTests.Update(bad, "UPDATE SessionInfo SET StartedUtc = $value", "not a date"),
             "Session records given a start time that isn't a time");
         Expect.True(!File.Exists(bad + "-wal"), "The damaged session file has no write-ahead log.");
         File.SetLastWriteTimeUtc(good, DateTime.UtcNow.AddSeconds(-20));
@@ -213,7 +213,7 @@ internal static class RecordTraceSelfTests
     }
 
     /// <summary>Reads a real trace into a session file, then reuses that file, then reads the trace again.</summary>
-    private static void Real(SelfTestContext context)
+    private static void Real(McpTestContext context)
     {
         var trace = RealTrace();
         var sessions = Path.Combine(context.TempDirectory, "sessions");
@@ -221,7 +221,7 @@ internal static class RecordTraceSelfTests
         var first = Run(() => Record(trace, null, sessions));
         if (!first.IsNull("needsProcessId"))
         {
-            Expect.Equal(0, QuerySelfTests.CheckQueries(first, "Listing a trace's processes").Count,
+            Expect.Equal(0, QueryTests.CheckQueries(first, "Listing a trace's processes").Count,
                 "Statements run to list a trace's processes");
             int? listed = (int)first.Items("processes")[0].Long("processId");
             first = Run(() => Record(trace, listed, sessions));
@@ -273,7 +273,7 @@ internal static class RecordTraceSelfTests
     /// </summary>
     private static long SessionRecordRuns(JsonElement result, string what)
     {
-        var queries = QuerySelfTests.CheckQueries(result, what);
+        var queries = QueryTests.CheckQueries(result, what);
         Expect.Equal(1, queries.Count, $"Statements {what} ran");
         Expect.True(queries[0].Text("sql")!.Contains("FROM SessionInfo", StringComparison.Ordinal) && queries[0].IsNull("files"),
             $"{what} read only the session record of the file it returned: {queries[0]}");
@@ -301,11 +301,11 @@ internal static class RecordTraceSelfTests
     }
 
     /// <summary>A call cancelled while it reads a real trace deletes the session file it was writing.</summary>
-    private static void Cancel(SelfTestContext context)
+    private static void Cancel(McpTestContext context)
     {
         var trace = RealTrace();
         var processId = OfflineEtlSource.ListProcesses(trace).Processes.MaxBy(process => process.Events)?.ProcessId
-            ?? throw new SelfTestFailedException($"No process in {trace} has XAML events.");
+            ?? throw new McpTestFailedException($"No process in {trace} has XAML events.");
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "cancelled")).FullName;
         using var cancellation = new CancellationTokenSource();
         var progress = new CancelOnReport(cancellation);
@@ -393,7 +393,7 @@ internal static class RecordTraceSelfTests
         var path = Write(Path.Combine(folder, fileName), MainEvents, endReason, coverage, etlPath: etlPath ?? trace);
         if (keep)
         {
-            var version = TraceVersion.Read(trace) ?? throw new SelfTestFailedException($"{trace} couldn't be read.");
+            var version = TraceVersion.Read(trace) ?? throw new McpTestFailedException($"{trace} couldn't be read.");
             version.Keep(path, SessionFile.ReadInfo(path), etlPath ?? trace, TraceMarkers.Default);
         }
 

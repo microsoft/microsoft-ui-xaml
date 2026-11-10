@@ -7,18 +7,18 @@ using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Mcp.Sessions;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>Finding session files, and what the sessions tool's list and summary views say about them.</summary>
-internal static class SessionToolSelfTests
+internal static class SessionToolTests
 {
-    private const string Variable = "WINUIPROFILER_MCP_SELFTEST";
+    private const string Variable = "WINUIPROFILER_MCP_TEST";
     private const string NotReadToEnd = "wasn't read to its end";
 
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("sessions.list", List),
         new("sessions.resolve", Resolve),
@@ -31,7 +31,7 @@ internal static class SessionToolSelfTests
         new("sessions.newer", Newer),
     ];
 
-    private static void List(SelfTestContext context)
+    private static void List(McpTestContext context)
     {
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "list")).FullName;
         var now = DateTime.UtcNow;
@@ -107,7 +107,7 @@ internal static class SessionToolSelfTests
         Contains(emptyNotes[0], "An empty folder's note", $"There are no session files in {empty}.", "record_trace");
         Expect.Equal("Found no session files in the folder, so read none.", none.Text("computed"),
             "What the list view of an empty folder computed");
-        Expect.Equal(0, QuerySelfTests.CheckQueries(none, "The list view of an empty folder").Count,
+        Expect.Equal(0, QueryTests.CheckQueries(none, "The list view of an empty folder").Count,
             "Statements the list view of an empty folder ran");
         Expect.Equal(0L, Run(() => SessionTools.Sessions(folder: Path.Combine(folder, "missing"))).Long("total"),
             "Session files in a missing folder");
@@ -118,7 +118,7 @@ internal static class SessionToolSelfTests
         // statement doesn't name them again.
         void RecordsRead(JsonElement listed, string what)
         {
-            var queries = QuerySelfTests.CheckQueries(listed, what);
+            var queries = QueryTests.CheckQueries(listed, what);
             Expect.Equal(1, queries.Count, $"Statements {what} ran");
             Expect.True(queries[0].Text("sql")!.Contains("FROM SessionInfo", StringComparison.Ordinal),
                 $"{what} read the session records: {queries[0].Text("sql")}");
@@ -127,7 +127,7 @@ internal static class SessionToolSelfTests
         }
     }
 
-    private static void Resolve(SelfTestContext context)
+    private static void Resolve(McpTestContext context)
     {
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "resolve")).FullName;
         var older = Write(Path.Combine(folder, "a.sqlite"), MainEvents);
@@ -170,7 +170,7 @@ internal static class SessionToolSelfTests
         Contains(Error(() => SessionCatalog.Resolve(null, empty)), "An empty folder", $"There are no session files in {empty}.");
     }
 
-    private static void Summary(SelfTestContext context)
+    private static void Summary(McpTestContext context)
     {
         var main = WriteMain(context);
         var summary = Run(() => SessionTools.Sessions(sessionPath: main));
@@ -240,7 +240,7 @@ internal static class SessionToolSelfTests
         Expect.Equal(FrameTools.NoTicks, noLaunchFrames.Text("why"), "Why an empty session has no launch frames");
     }
 
-    private static void Notes(SelfTestContext context)
+    private static void Notes(McpTestContext context)
     {
         var lossy = Write(Path.Combine(context.TempDirectory, "lossy.sqlite"), MainEvents, lostByEtw: 3, droppedByProfiler: 2);
         var lossyNotes = Run(() => SessionTools.Sessions(sessionPath: lossy));
@@ -286,7 +286,7 @@ internal static class SessionToolSelfTests
     }
 
     // A session file read from a trace is stamped with when it was read, so both views say so, and only for traces.
-    private static void Times(SelfTestContext context)
+    private static void Times(McpTestContext context)
     {
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "times")).FullName;
         var live = Write(Path.Combine(folder, "live.sqlite"), MainEvents);
@@ -313,7 +313,7 @@ internal static class SessionToolSelfTests
 
     // Session records with values WinUI Profiler doesn't write: the list view still lists each file, with its error, and
     // the summary view says what's wrong.
-    private static void Damaged(SelfTestContext context)
+    private static void Damaged(McpTestContext context)
     {
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "damaged")).FullName;
         var coverage = Damage(Path.Combine(folder, "coverage.sqlite"), "Coverage", "Hologram");
@@ -343,7 +343,7 @@ internal static class SessionToolSelfTests
         Expect.True(summary.Items("uiThreads").Count == 0 && summary.IsNull("firstFrame"),
             "A summary without the frame views gives no UI threads or launch frames.");
         Contains(summary.Text("computed"), "What a summary without the frame views computed", "couldn't all be read");
-        var ran = QuerySelfTests.CheckQueries(summary, "The summary of a file whose launch view is gone");
+        var ran = QueryTests.CheckQueries(summary, "The summary of a file whose launch view is gone");
         Expect.Equal(3, ran.Count, "Statements of the session record, the ticks and the interesting rows");
         Expect.True(ran.All(query => !query.Text("sql")!.Contains("LaunchSummary", StringComparison.Ordinal)),
             "The statement that failed isn't listed.");
@@ -356,7 +356,7 @@ internal static class SessionToolSelfTests
         return path;
     }
 
-    private static void Recording(SelfTestContext context)
+    private static void Recording(McpTestContext context)
     {
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "recording")).FullName;
         var path = Path.Combine(folder, "live.sqlite");
@@ -383,7 +383,7 @@ internal static class SessionToolSelfTests
 
     // The newest session file, which the tools read when no session is named. A file's write-ahead log counts only when it
     // holds writes: reading a file left in WAL mode creates an empty one beside it, which must not make that file the newest.
-    private static void Newest(SelfTestContext context)
+    private static void Newest(McpTestContext context)
     {
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "newest")).FullName;
         var stale = Write(Path.Combine(folder, "stale.sqlite"), MainEvents);
@@ -434,7 +434,7 @@ internal static class SessionToolSelfTests
 
     // A newer version can store a provider or object kind this version doesn't have. The tools that read it say so, and
     // the list view still lists the file.
-    private static void Newer(SelfTestContext context)
+    private static void Newer(McpTestContext context)
     {
         const string Unknown = "holds a value this version of the WinUI Profiler plugin doesn't know";
         var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "newer")).FullName;
@@ -469,7 +469,7 @@ internal static class SessionToolSelfTests
     internal static JsonElement Analysis(JsonElement summary, string name) =>
         summary.Items("analyses").FirstOrDefault(item => item.Text("name") == name) is { ValueKind: JsonValueKind.Object } analysis
             ? analysis
-            : throw new SelfTestFailedException($"The summary lists the {name} analysis.");
+            : throw new McpTestFailedException($"The summary lists the {name} analysis.");
 
     /// <summary>Marks a session file as trimmed, as SessionWriter does when it deletes the oldest events.</summary>
     private static void SetCompleteFrom(string path, long seq) =>

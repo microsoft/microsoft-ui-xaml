@@ -4,25 +4,24 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Mcp.Sessions;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>
 /// The SQL behind the answers: SessionFile reports each statement its reads run, with the values written in, and each
 /// statement, run as reported, returns the rows reported. Each tool result lists the statements its call ran, and says what
 /// the call computed from their rows.
 /// </summary>
-internal static class QuerySelfTests
+internal static class QueryTests
 {
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("queries.values", _ => Values()),
         new("queries.parameters", _ => Parameters()),
@@ -31,9 +30,6 @@ internal static class QuerySelfTests
         new("queries.filters", Filters),
         new("queries.views", Views),
         new("queries.isolation", Isolation),
-        new("queries.log", Log),
-        new("queries.log.cleanup", LogCleanup),
-        new("queries.log.error", LogError),
     ];
 
     /// <summary>
@@ -69,7 +65,7 @@ internal static class QuerySelfTests
             var counts = files.Select(file => (long)Rerun(new SessionQuery(file, sql, 0)).Count).ToList();
             var rows = counts.Count == runs ? counts.Sum()
                 : counts.Distinct().Count() == 1 ? runs * counts[0]
-                : throw new SelfTestFailedException($"{what}: the rows of {runs} runs of {sql} on {files.Count} files can't be told.");
+                : throw new McpTestFailedException($"{what}: the rows of {runs} runs of {sql} on {files.Count} files can't be told.");
             Expect.Equal(rows, query.Long("rows"), $"{what}: the rows of {sql}, run as listed");
         }
 
@@ -193,7 +189,7 @@ internal static class QuerySelfTests
         }
     }
 
-    private static void Observers(SelfTestContext context)
+    private static void Observers(McpTestContext context)
     {
         var first = WriteMain(context, "first.sqlite");
         var second = WriteMain(context, "second.sqlite");
@@ -277,7 +273,7 @@ internal static class QuerySelfTests
     }
 
     // Every read of SessionFile reports each statement it runs, and each returns the rows reported when it's run as is.
-    private static void Reads(SelfTestContext context)
+    private static void Reads(McpTestContext context)
     {
         var path = WriteMain(context);
         var root = SessionFile.ReadObjects(path).First(item => item.Name == "Root");
@@ -363,7 +359,7 @@ internal static class QuerySelfTests
     }
 
     // Filters' text and numbers, written into the statements, keep the events they keep when bound.
-    private static void Filters(SelfTestContext context)
+    private static void Filters(McpTestContext context)
     {
         var path = Write(Path.Combine(context.TempDirectory, "filters.sqlite"),
         [
@@ -412,10 +408,10 @@ internal static class QuerySelfTests
     }
 
     // Each view of the tools that read a session file says what it computed, and lists the statements its reads ran.
-    private static void Views(SelfTestContext context)
+    private static void Views(McpTestContext context)
     {
         var main = WriteMain(context);
-        var regions = Write(Path.Combine(context.TempDirectory, "regions.sqlite"), FrameToolSelfTests.RegionEvents);
+        var regions = Write(Path.Combine(context.TempDirectory, "regions.sqlite"), FrameToolTests.RegionEvents);
         var tick = SessionFile.ReadFrames(main)[0].FrameId;
         var region = Run(() => FrameTools.Frames(sessionPath: regions, view: "regions")).Items("regions")[0].Long("regionId");
         var root = SessionFile.ReadObjects(main).First(item => item.Name == "Root").ObjectId;
@@ -456,7 +452,7 @@ internal static class QuerySelfTests
     }
 
     // Calls that run at the same time each list only their own statements, and a call that fails leaves none to the next.
-    private static void Isolation(SelfTestContext context)
+    private static void Isolation(McpTestContext context)
     {
         var main = WriteMain(context);
         var other = WriteMain(context, "other.sqlite");
@@ -486,185 +482,6 @@ internal static class QuerySelfTests
             "The statements of the call after one that failed");
 
         static string Queries(JsonElement result) => result.Property("queries").GetRawText();
-    }
-
-    // The query log: each call's statements, as its result lists them, appended whole to one file that runs as a script.
-    private static void Log(SelfTestContext context)
-    {
-        var time = new DateTimeOffset(2025, 1, 2, 3, 4, 5, 678, TimeSpan.FromHours(5.5));
-        Expect.Equal(
-            "-- 2025-01-02 03:04:05.678 +05:30  frames, view tick\n-- File: C:\\s.sqlite\n\n" +
-            "SELECT 1\nFROM t;\n-- 1,234 rows, in 2 runs\n\n" +
-            "SELECT 2;\n-- 1 row\n-- On: C:\\a.sqlite\n-- On: C:\\b.sqlite\n\n" +
-            "-- Then: Counted them, by name and type.\n\n",
-            QueryLog.Format(time, "frames", "tick", @"C:\s.sqlite",
-                [new("SELECT 1\nFROM t;", 1234, 2, null), new("SELECT 2;", 1, 1, [@"C:\a.sqlite", @"C:\b.sqlite"])],
-                "Counted them,\nby name\r\nand type."),
-            "A call's part of the log");
-        Expect.Equal(
-            "-- 2025-01-02 03:04:05.678 +05:30  record_trace\n\n-- No SQL ran.\n\n-- Then: Listed the processes.\n\n",
-            QueryLog.Format(time, "record_trace", null, null, [], "Listed the processes."),
-            "The log of a call that ran no SQL");
-
-        var main = WriteMain(context);
-        var tick = SessionFile.ReadFrames(main)[0].FrameId;
-        var unlogged = Run(() => FrameTools.Frames(sessionPath: main, tickId: tick));
-        Expect.True(unlogged.IsNull("queryLog") && unlogged.IsNull("queryLogError"), "Without a query log, a result names none.");
-
-        var folder = Path.Combine(context.TempDirectory, "logs");
-        var log = new QueryLog(folder);
-        var results = WithLog(log, () => new[]
-        {
-            Run(() => FrameTools.Frames(sessionPath: main, tickId: tick)),
-            Run(() => LaunchTools.Launch(sessionPath: main)),
-            Run(() => ObjectTools.Objects(sessionPath: main)),
-            Run(() => SessionTools.Sessions(view: "list", folder: context.TempDirectory)),
-        });
-        var path = results[0].Text("queryLog")!;
-        foreach (var result in results)
-        {
-            Expect.Equal(path, result.Text("queryLog"), $"The log of the call of {result.Text("view")}");
-        }
-
-        Expect.Equal(path, Directory.GetFiles(folder).Single(), "The log, the only file in its folder");
-        Expect.True(Regex.IsMatch(Path.GetFileName(path), $@"^queries-\d{{8}}-\d{{6}}-{Environment.ProcessId}\.sql$"),
-            $"The log's name has the time it was created and the process ID: {path}");
-
-        var text = File.ReadAllText(path);
-        Expect.True(Regex.IsMatch(text, $@"\A-- \d{{4}}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{{3}} [+-]\d\d:\d\d  frames, view tick\n" +
-            $@"-- File: {Regex.Escape(main)}\n\n"), $"The log starts with the first call's tool, view and file:\n{text}");
-        var at = 0;
-        foreach (var (result, header) in results.Zip(new[]
-            { "  frames, view tick\n", "  launch, view milestones\n", "  objects, view types\n", "  sessions, view list\n" }))
-        {
-            at = After(text, header, at);
-            foreach (var query in result.Items("queries"))
-            {
-                at = After(text, query.Text("sql") + "\n-- ", at);
-            }
-
-            at = After(text, $"-- Then: {result.Text("computed")}\n", at);
-        }
-
-        // The list gives the path of the file it lists, so its statement doesn't name it. The log, which lists no
-        // sessions, does.
-        var record = results[3].Items("queries").Single();
-        Expect.True(record.IsNull("files"), $"The list's statement doesn't name the file the list gives: {record.GetRawText()}");
-        var list = text[text.IndexOf("  sessions, view list\n", StringComparison.Ordinal)..];
-        Expect.True(list.Contains($"{record.Text("sql")}\n-- 1 row\n-- On: {main}\n\n", StringComparison.OrdinalIgnoreCase),
-            $"The log names the file the list's statement ran on:\n{list}");
-
-        // Every call read only main: the folder listed holds no other session file.
-        var listed = results.SelectMany(result => result.Items("queries")).ToList();
-        using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder
-        {
-            DataSource = main,
-            Mode = SqliteOpenMode.ReadOnly,
-            Pooling = false,
-        }.ToString()))
-        {
-            connection.Open();
-            using var command = connection.CreateCommand();
-            command.CommandText = text;
-            using var reader = command.ExecuteReader();
-            var index = 0;
-            do
-            {
-                Expect.True(index < listed.Count, $"The log, run as a script, runs only the {listed.Count} statements listed.");
-                var rows = 0L;
-                while (reader.Read())
-                {
-                    rows++;
-                }
-
-                var runs = listed[index].IsNull("runs") ? 1 : listed[index].Long("runs");
-                Expect.Equal(listed[index].Long("rows"), rows * runs, $"The rows of the log's statement {index}, run as a script");
-                index++;
-            }
-            while (reader.NextResult());
-            Expect.Equal(listed.Count, index, "The statements the log runs as a script");
-        }
-
-        // Calls at once append their parts whole, one after another.
-        var together = WithLog(log, () => Task.WhenAll(
-            Enumerable.Range(0, 8).Select(_ => FrameTools.Frames(sessionPath: main, tickId: tick))).GetAwaiter().GetResult());
-        foreach (var result in together)
-        {
-            Expect.Equal(path, Json(result).Text("queryLog"), "The log of a call that ran with 7 others");
-        }
-
-        var all = File.ReadAllText(path);
-        Expect.True(all.StartsWith(text, StringComparison.Ordinal), "Later calls append to the log.");
-        var added = Regex.Replace(all[text.Length..], @"^-- \d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3} [+-]\d\d:\d\d  ", "-- (time)  ",
-            RegexOptions.Multiline);
-        Expect.Equal(string.Concat(Enumerable.Repeat(added[..(added.Length / 8)], 8)), added,
-            "The parts of 8 calls of the same view at once, each whole");
-
-        static int After(string text, string part, int start)
-        {
-            var found = text.IndexOf(part, start, StringComparison.Ordinal);
-            Expect.True(found >= 0, $"The log has, after offset {start}: {part}");
-            return found + part.Length;
-        }
-    }
-
-    // Creating a log deletes the folder's query logs not written to for 30 days, and nothing else.
-    private static void LogCleanup(SelfTestContext context)
-    {
-        var main = WriteMain(context);
-        var folder = Directory.CreateDirectory(Path.Combine(context.TempDirectory, "logs")).FullName;
-        var expired = Old("queries-20250101-000000-1.sql", 31);
-        var kept = new[]
-        {
-            Old("queries-20250101-000000-2.sql", 29),
-            Old("publish-0123456789abcdef-20250101-000000.log", 31),
-            Old("notes.sql", 31),
-        };
-        var result = WithLog(new QueryLog(folder), () => Run(() => FrameTools.Frames(sessionPath: main)));
-        Expect.True(!File.Exists(expired), "A query log not written to for 31 days is deleted.");
-        foreach (var file in kept)
-        {
-            Expect.True(File.Exists(file), $"{Path.GetFileName(file)} is kept.");
-        }
-
-        Expect.True(File.Exists(result.Text("queryLog")), "The new log is written.");
-
-        string Old(string name, int days)
-        {
-            var file = Path.Combine(folder, name);
-            File.WriteAllText(file, "-- old\n");
-            File.SetLastWriteTimeUtc(file, DateTime.UtcNow.AddDays(-days));
-            return file;
-        }
-    }
-
-    // A log that can't be written doesn't fail the call: its result says why instead.
-    private static void LogError(SelfTestContext context)
-    {
-        var main = WriteMain(context);
-        var blocked = Path.Combine(context.TempDirectory, "logs");
-        File.WriteAllText(blocked, "A file where the log's folder would be.");
-        var result = WithLog(new QueryLog(blocked), () => Run(() => FrameTools.Frames(sessionPath: main)));
-        Expect.True(result.IsNull("queryLog"), "A log that couldn't be written isn't named.");
-        var error = result.Text("queryLogError");
-        var expected = $"The SQL couldn't be written to the query log in {blocked}: ";
-        Expect.True(error?.StartsWith(expected, StringComparison.Ordinal) == true && error.Length > expected.Length,
-            $"The error of a log that couldn't be written says where and why: {error}");
-        Expect.True(CheckQueries(result, "A call whose log couldn't be written").Count > 0, "It still lists its statements.");
-    }
-
-    private static T WithLog<T>(QueryLog log, Func<T> calls)
-    {
-        var before = QueryLog.Current;
-        QueryLog.Current = log;
-        try
-        {
-            return calls();
-        }
-        finally
-        {
-            QueryLog.Current = before;
-        }
     }
 
     private static bool Throws<T>(Action action)

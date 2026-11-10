@@ -4,14 +4,15 @@
 using System.Text.Json;
 using ModelContextProtocol;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>Runs tools as the server does, and reads their results as a client sees them: serialized to JSON.</summary>
 internal static class ToolResults
 {
     internal static JsonElement Run(Func<Task<object>> call) => Json(call().GetAwaiter().GetResult());
 
-    internal static JsonElement Json(object result) => JsonSerializer.SerializeToElement(result, Program.ToolSerializerOptions);
+    internal static JsonElement Json(object result) =>
+        JsonSerializer.SerializeToElement(result, WinUIProfiler.Mcp.Program.ToolSerializerOptions);
 
     /// <summary>The message a tool call gives the client when it fails.</summary>
     internal static string Error(Func<Task<object>> call) => Error(() => { call().GetAwaiter().GetResult(); });
@@ -27,7 +28,7 @@ internal static class ToolResults
             return error.Message;
         }
 
-        throw new SelfTestFailedException("The call failed with a message for the client.");
+        throw new McpTestFailedException("The call failed with a message for the client.");
     }
 
     /// <summary>A property of an object, or an undefined element when it's missing, as a null property may be.</summary>

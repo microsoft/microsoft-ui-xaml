@@ -7,7 +7,7 @@ using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>
 /// An event a fixture writes, at a time in milliseconds after the recording started. Marker is the provider of a marker
@@ -17,7 +17,7 @@ internal sealed record FixtureEvent(double Milliseconds, int ThreadId, XamlProvi
     int Opcode, IReadOnlyList<EventField> Fields, MarkerProvider? Marker = null);
 
 /// <summary>
-/// Session files for the self-tests. The app's own SessionWriter writes them, so its indexes build the frames and objects
+/// Session files for the tests. The app's own SessionWriter writes them, so its indexes build the frames and objects
 /// as they do while the app records.
 /// </summary>
 internal static class SessionFixtures
@@ -120,7 +120,7 @@ internal static class SessionFixtures
     }
 
     /// <summary>The main fixture's session file, in a test's folder.</summary>
-    internal static string WriteMain(SelfTestContext context, string name = "main.sqlite") =>
+    internal static string WriteMain(McpTestContext context, string name = "main.sqlite") =>
         Write(Path.Combine(context.TempDirectory, name), MainEvents);
 
     /// <summary>An SQLite file that isn't a session file: another user_version, and a table of its own.</summary>

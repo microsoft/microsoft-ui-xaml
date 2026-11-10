@@ -4,13 +4,13 @@
 using System.Globalization;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Mcp.Tools;
-using static WinUIProfiler.Mcp.SelfTest.SessionFixtures;
-using static WinUIProfiler.Mcp.SelfTest.ToolResults;
+using static WinUIProfiler.Tests.Mcp.SessionFixtures;
+using static WinUIProfiler.Tests.Mcp.ToolResults;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>The frames tool's views on the fixtures.</summary>
-internal static class FrameToolSelfTests
+internal static class FrameToolTests
 {
     /// <summary>
     /// A navigation in frame 1 opens a region of interest that ends with that tick, and a layout pass inside it is an
@@ -48,7 +48,7 @@ internal static class FrameToolSelfTests
     private static IReadOnlyList<FixtureEvent> ClearedEvents { get; } =
         [.. ClearedTick(1, 1.0, 0xE000, 25), .. ClearedTick(2, 3.0, 0xE100, 9)];
 
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("frames.summary", Summary),
         new("frames.slowest", Slowest),
@@ -127,7 +127,7 @@ internal static class FrameToolSelfTests
         return events;
     }
 
-    private static void Summary(SelfTestContext context)
+    private static void Summary(McpTestContext context)
     {
         var main = WriteMain(context);
         var result = Run(() => FrameTools.Frames(sessionPath: main));
@@ -158,7 +158,7 @@ internal static class FrameToolSelfTests
         HasNote(none, FrameTools.NoTicks);
     }
 
-    private static void Slowest(SelfTestContext context)
+    private static void Slowest(McpTestContext context)
     {
         var main = WriteMain(context);
         var result = Run(() => FrameTools.Frames(sessionPath: main, view: "slowest"));
@@ -187,7 +187,7 @@ internal static class FrameToolSelfTests
             "2 ticks hadn't ended when the recording stopped, so their durations aren't known.");
     }
 
-    private static void Regions(SelfTestContext context)
+    private static void Regions(McpTestContext context)
     {
         var path = Write(Path.Combine(context.TempDirectory, "regions.sqlite"), RegionEvents);
         var summary = Run(() => FrameTools.Frames(sessionPath: path));
@@ -214,7 +214,7 @@ internal static class FrameToolSelfTests
             Error(() => FrameTools.Frames(sessionPath: path, regionId: 99)), "An unknown region");
     }
 
-    private static void Tick(SelfTestContext context)
+    private static void Tick(McpTestContext context)
     {
         var main = WriteMain(context);
         var first = Run(() => FrameTools.Frames(sessionPath: main, view: "slowest")).Items("ticks")
@@ -259,7 +259,7 @@ internal static class FrameToolSelfTests
             Error(() => FrameTools.Frames(sessionPath: main, tickId: 999)), "An unknown tick");
     }
 
-    private static void TickCaps(SelfTestContext context)
+    private static void TickCaps(McpTestContext context)
     {
         var path = Write(Path.Combine(context.TempDirectory, "busy.sqlite"), BusyTickEvents);
         var busy = Run(() => FrameTools.Frames(sessionPath: path, view: "slowest")).Items("ticks")
@@ -324,7 +324,7 @@ internal static class FrameToolSelfTests
         LacksNote(at, "types with the most objects");
     }
 
-    private static void TickMentions(SelfTestContext context)
+    private static void TickMentions(McpTestContext context)
     {
         var path = Write(Path.Combine(context.TempDirectory, "cleared.sqlite"), ClearedEvents);
         var ticks = Run(() => FrameTools.Frames(sessionPath: path, view: "slowest")).Items("ticks")
@@ -356,7 +356,7 @@ internal static class FrameToolSelfTests
         LacksNote(at, "more than 10 objects");
     }
 
-    private static void Arguments(SelfTestContext context)
+    private static void Arguments(McpTestContext context)
     {
         var main = WriteMain(context);
         Expect.Equal("The tick view needs tickId. The slowest, regions and rows views give tick IDs.",

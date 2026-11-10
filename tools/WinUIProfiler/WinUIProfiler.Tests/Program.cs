@@ -785,6 +785,9 @@ foreach (var json in invalidOwners)
 
 Console.WriteLine("Passed: launcher results are read, and invalid or inconsistent results are rejected.");
 
+Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
+Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
+
 static void Expect(bool condition, string message)
 {
     if (!condition)

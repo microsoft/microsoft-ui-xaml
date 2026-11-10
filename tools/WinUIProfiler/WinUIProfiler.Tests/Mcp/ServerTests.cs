@@ -3,11 +3,12 @@
 
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using WinUIProfiler.Mcp;
 
-namespace WinUIProfiler.Mcp.SelfTest;
+namespace WinUIProfiler.Tests.Mcp;
 
 /// <summary>Checks the server's version, the plugin manifests, the tool descriptions and the skills.</summary>
-internal static partial class ServerSelfTests
+internal static partial class ServerTests
 {
     private const string ScriptPrefix = "${PLUGIN_ROOT}/";
     private const string SkillsFolder = "skills/";
@@ -18,7 +19,7 @@ internal static partial class ServerSelfTests
     // The command in the README's and the skills' code blocks that writes the providers a trace is recorded with.
     private const string ProvidersCommand = "Set-Content providers.txt";
 
-    public static IEnumerable<SelfTestCase> Tests =>
+    public static IEnumerable<McpTestCase> Tests =>
     [
         new("server.version", _ => Version()),
         new("server.plugin-manifest", _ => PluginManifest()),
@@ -38,7 +39,7 @@ internal static partial class ServerSelfTests
     private static void PluginManifest()
     {
         var root = FindPluginRoot()
-            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the server's folder.");
+            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the tests' folder.");
 
         using var plugin = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "plugin.json")));
         var manifest = plugin.RootElement;
@@ -62,7 +63,7 @@ internal static partial class ServerSelfTests
     private static void Tools()
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var tool in Program.ListTools().Select(tool => tool.ProtocolTool))
+        foreach (var tool in WinUIProfiler.Mcp.Program.ListTools().Select(tool => tool.ProtocolTool))
         {
             Expect.True(names.Add(tool.Name), $"Only one tool is named '{tool.Name}'.");
             Expect.True(
@@ -89,7 +90,7 @@ internal static partial class ServerSelfTests
     private static void Skills()
     {
         var root = FindPluginRoot()
-            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the server's folder.");
+            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the tests' folder.");
 
         using (var plugin = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "plugin.json"))))
         {
@@ -119,7 +120,7 @@ internal static partial class ServerSelfTests
                 $"{where} has a description of 1 to {MaxSkillDescriptionLength} characters; it has {description.Length}.");
         }
 
-        var tools = Program.ListTools().Select(tool => tool.ProtocolTool.Name).ToHashSet(StringComparer.Ordinal);
+        var tools = WinUIProfiler.Mcp.Program.ListTools().Select(tool => tool.ProtocolTool.Name).ToHashSet(StringComparer.Ordinal);
         foreach (var file in Directory.GetFiles(skills, "*.md", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
         {
             var where = Path.GetRelativePath(root, file).Replace('\\', '/');
@@ -170,7 +171,7 @@ internal static partial class ServerSelfTests
     private static void Providers()
     {
         var root = FindPluginRoot()
-            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the server's folder.");
+            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the tests' folder.");
 
         var readme = Path.Combine(root, "README.md");
         var expected = File.Exists(readme) ? RecipeProviders(readme) : null;
@@ -271,7 +272,7 @@ internal static partial class ServerSelfTests
             }
         }
 
-        throw new SelfTestFailedException($"{where} ends its front matter with a '---' line.");
+        throw new McpTestFailedException($"{where} ends its front matter with a '---' line.");
     }
 
     [GeneratedRegex("^[a-z0-9]+(-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]
@@ -292,7 +293,7 @@ internal static partial class ServerSelfTests
 
     /// <summary>
     /// Finds the plugin folder: the one Copilot CLI names in PLUGIN_ROOT, or the first folder above
-    /// the current folder or the server's folder that holds this server's plugin.json.
+    /// the current folder or the tests' folder that holds the server's plugin.json.
     /// </summary>
     internal static string? FindPluginRoot()
     {
