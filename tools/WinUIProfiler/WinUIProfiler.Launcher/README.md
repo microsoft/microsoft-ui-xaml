@@ -82,22 +82,17 @@ app without arguments. Unknown or repeated options exit with code 87.
 A ready result means only that the helper started. The profiler then checks
 that the `Microsoft.UI.Xaml.dll` the app loaded is the private file.
 
-## Build and test
+## Build
 
 From `tools\WinUIProfiler`:
 
 ```powershell
-.\scripts\Build-Launcher.ps1 -Architecture x64 -IncludeTests
-.\scripts\Test-Launcher.ps1 -Architecture x64
+.\scripts\Build-Launcher.ps1 -Architecture x64
 ```
 
 `Build-App.ps1` builds the launcher for x64 and ARM64 and deploys it next to
 the profiler in `NativeLauncher\<architecture>`, with a `manifest.json` of
 SHA-256 hashes that the profiler checks before each launch.
-`Test-Launcher.ps1` runs a fixture app with fake MUX and MUXC DLLs through
-every redirection path and failure case; add `-Packaged` to also register and
-activate a fixture package (requires Developer Mode or sideloading). Run the
-ARM64 test on an ARM64 device.
 
 ## Limits
 

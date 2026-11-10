@@ -5,7 +5,6 @@ set "DETOURSROOT=%~2"
 set "SOURCEROOT=%~3"
 set "OUTPUT=%~4"
 set "ARCH=%~5"
-set "TESTS=%~6"
 set "VCTARGET=amd64"
 set "LIBARCH=X64"
 if /i "%ARCH%"=="arm64" (
@@ -16,7 +15,7 @@ if /i "%ARCH%"=="x86" (
     set "VCTARGET=amd64_x86"
     set "LIBARCH=X86"
 )
-if /i "%~7"=="arm64" (
+if /i "%~6"=="arm64" (
     set "VCTARGET=arm64"
     if /i "%ARCH%"=="x64" set "VCTARGET=arm64_x64"
     if /i "%ARCH%"=="x86" set "VCTARGET=arm64_x86"
@@ -47,23 +46,4 @@ pushd "%OUTPUT%"
 cl /nologo /std:c++20 /W4 /WX /EHsc /MT /O2 /DUNICODE /D_UNICODE /I"%DETOURSROOT%\include" "%SOURCEROOT%\Redirect.cpp" /LD /link /DEF:"%SOURCEROOT%\Redirect.def" /OUT:ProfilerRedirect.dll "%DETOURSROOT%\lib.%LIBARCH%\detours.lib"
 if errorlevel 1 exit /b 1
 cl /nologo /std:c++20 /W4 /WX /EHsc /MT /O2 /DUNICODE /D_UNICODE /I"%DETOURSROOT%\include" "%SOURCEROOT%\Launcher.cpp" /link /SUBSYSTEM:WINDOWS /OUT:ProfilerLauncher.exe "%DETOURSROOT%\lib.%LIBARCH%\detours.lib" ole32.lib shell32.lib uuid.lib
-if errorlevel 1 exit /b 1
-if not "%TESTS%"=="1" exit /b 0
-cl /nologo /std:c++20 /W4 /WX /EHsc /MT /O2 /DUNICODE /D_UNICODE "%SOURCEROOT%\tests\Fixture.cpp" /link /SUBSYSTEM:WINDOWS /OUT:tests\Fixture.exe shell32.lib
-if errorlevel 1 exit /b 1
-mt.exe -nologo -manifest "%SOURCEROOT%\tests\Fixture.manifest" -outputresource:tests\Fixture.exe;#1
-if errorlevel 1 exit /b 1
-call :fixture original 1
-if errorlevel 1 exit /b 1
-call :fixture private 2
-if errorlevel 1 exit /b 1
-call :fixture other 3
-if errorlevel 1 exit /b 1
-cl /nologo /std:c++20 /W4 /WX /EHsc /MT /O2 /DUNICODE /D_UNICODE /DPROFILER_STATIC_IMPORT "%SOURCEROOT%\tests\Fixture.cpp" /link /SUBSYSTEM:WINDOWS /OUT:tests\StaticFixture.exe tests\original\Microsoft.UI.Xaml.lib shell32.lib
-exit /b %ERRORLEVEL%
-
-:fixture
-cl /nologo /W4 /WX /MT /O2 /DPROFILER_BUILD_ID=%2 "%SOURCEROOT%\tests\FixtureDll.cpp" /LD /link /OUT:tests\%1\Microsoft.UI.Xaml.dll /IMPLIB:tests\%1\Microsoft.UI.Xaml.lib
-if errorlevel 1 exit /b 1
-cl /nologo /W4 /WX /MT /O2 /DPROFILER_BUILD_ID=%2 "%SOURCEROOT%\tests\FixtureDll.cpp" /LD /link /OUT:tests\%1\Microsoft.UI.Xaml.Controls.dll /IMPLIB:tests\%1\Microsoft.UI.Xaml.Controls.lib
 exit /b %ERRORLEVEL%

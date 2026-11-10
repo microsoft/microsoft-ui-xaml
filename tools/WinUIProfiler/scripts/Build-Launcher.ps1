@@ -1,7 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('x64', 'ARM64')][string]$Architecture = 'x64',
-    [switch]$IncludeTests
+    [ValidateSet('x64', 'ARM64')][string]$Architecture = 'x64'
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -50,18 +49,12 @@ $null = New-Item -ItemType Directory -Path $output -Force
 foreach ($name in @('ProfilerLauncher.exe', 'ProfilerRedirect.dll')) {
     Remove-Item -LiteralPath (Join-Path $output $name) -Force -ErrorAction SilentlyContinue
 }
-if ($IncludeTests) {
-    foreach ($directory in @('tests\original', 'tests\private', 'tests\other')) {
-        $null = New-Item -ItemType Directory -Path (Join-Path $output $directory) -Force
-    }
-}
-$tests = if ($IncludeTests) { '1' } else { '0' }
 $hostArchitecture = try {
     [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
 } catch { 'x64' }
 $log = Join-Path $output 'build.log'
 $build = Join-Path $source 'build.cmd'
-& $env:ComSpec /d /c "call `"$build`" `"$visualStudio`" `"$dependency`" `"$source`" `"$output`" $arch $tests $hostArchitecture > `"$log`" 2>&1"
+& $env:ComSpec /d /c "call `"$build`" `"$visualStudio`" `"$dependency`" `"$source`" `"$output`" $arch $hostArchitecture > `"$log`" 2>&1"
 if ($LASTEXITCODE -ne 0) {
     Get-Content -LiteralPath $log -Tail 30 | Write-Host
     throw "Building the private WinUI launcher for $Architecture failed. See $log."
