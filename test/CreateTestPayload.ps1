@@ -287,9 +287,10 @@ if ($Mode -eq "ScenarioTestSuite")
                 $target = Join-Path $_.DirectoryName ("WinUIGallery$($_.Extension)")
                 if ($_.FullName -ne $target) { Move-Item -Path $_.FullName -Destination $target -Force }
             }
-
-        Publish-Item "$binpath\Test\WinUIGalleryTestData.xml" "$outpath\Test\"
     }
+
+    # TAEF resolves table data during discovery, even when Gallery tests are filtered out.
+    Publish-Item "$binpath\Test\WinUIGalleryTestData.xml" "$outpath\Test\" -IfExists
 
     if ($IsolateManagedTestProjections)
     {
