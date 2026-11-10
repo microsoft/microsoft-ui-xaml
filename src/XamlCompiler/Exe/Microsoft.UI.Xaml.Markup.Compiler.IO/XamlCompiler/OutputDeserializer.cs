@@ -63,6 +63,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.IO
 
         #region Task Input Properties
         public string JsonFilePath { get; set; }
+        public int CompilerExitCode { get; set; }
         #endregion
 
         public override bool Execute()
@@ -81,6 +82,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.IO
                 {
                     CompilerOutputs outputs = JsonSerializer.Deserialize<CompilerOutputs>(jsonFileStream);
                     ExtractWrapperResults(outputs);
+                    if (CompilerExitCode != 0 && !Log.HasLoggedErrors)
+                    {
+                        Log.LogError($"The XAML compiler exited with code {CompilerExitCode} without reporting an error.");
+                    }
                     return !Log.HasLoggedErrors;
                 }
             }

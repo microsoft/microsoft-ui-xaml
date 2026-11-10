@@ -500,9 +500,13 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <!-- JSON carries compiler diagnostics; incidental console text must not become MSBuild errors. -->
+        <Delete Condition="'$(UseXamlCompilerExecutable)' == 'true'" Files="$(XamlCompilerExeOutputJson)" />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"'>
+            <Output TaskParameter="ExitCode" PropertyName="_XamlCompilerExitCode" />
+        </Exec>
 
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
+        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)" CompilerExitCode="$(_XamlCompilerExitCode)">
             <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
 
             <!--
@@ -630,9 +634,12 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
                 DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Delete Condition="'$(UseXamlCompilerExecutable)' == 'true'" Files="$(XamlCompilerExeOutputJson)" />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"'>
+            <Output TaskParameter="ExitCode" PropertyName="_XamlCompilerExitCode" />
+        </Exec>
 
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
+        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)" CompilerExitCode="$(_XamlCompilerExitCode)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
 
             <!--
@@ -817,9 +824,12 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
             DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Delete Condition="'$(UseXamlCompilerExecutable)' == 'true'" Files="$(XamlCompilerExeOutputJson)" />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"'>
+            <Output TaskParameter="ExitCode" PropertyName="_XamlCompilerExitCode" />
+        </Exec>
 
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
+        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)" CompilerExitCode="$(_XamlCompilerExitCode)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
             <Output Condition="'$(ManagedAssembly)'=='false' " ItemName="XamlGFiles" TaskParameter="GeneratedCodeFiles" />
 
@@ -917,10 +927,13 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
             GenXbfPath="$(GenXbfPath)"/>
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Delete Condition="'$(UseXamlCompilerExecutable)' == 'true'" Files="$(XamlCompilerExeOutputJson)" />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" Command='$(_XamlCompilerCommand) "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"'>
+            <Output TaskParameter="ExitCode" PropertyName="_XamlCompilerExitCode" />
+        </Exec>
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
-                     JsonFilePath="$(XamlCompilerExeOutputJson)">
+                     JsonFilePath="$(XamlCompilerExeOutputJson)" CompilerExitCode="$(_XamlCompilerExitCode)">
         </OutputDeserializer>
     </Target>
 

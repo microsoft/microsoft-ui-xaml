@@ -30,6 +30,7 @@
     <Reference Include="System" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0">
@@ -43,6 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="..\..\Targets\Microsoft.UI.Xaml.Markup.Compiler.interop.targets">
+      <Link>Microsoft.UI.Xaml.Markup.Compiler.interop.targets</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <!-- The codegen-to-masters mapping CodegenTests reads. Staged next to the test assembly so the
          codegen tests also work from a test payload, where there is no enlistment to read it from. -->
     <None Include="CodegenTargets.txt">
@@ -53,6 +58,7 @@
     <Compile Include="XbfGeneratorTests.cs" />
     <Compile Include="CodegenTests.cs" />
     <Compile Include="ConditionalsTests.cs" />
+    <Compile Include="ExecutableCompilerTests.cs" />
     <Compile Include="BindPathParserTests.cs" />
     <Compile Include="CodeCoverage.cs" />
     <Compile Include="CodeGeneratorProjectContext.cs" />
