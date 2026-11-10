@@ -375,6 +375,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::IScrollAnchorProvider IScrollAnchorProvider;
     typedef ABI::Microsoft::UI::Xaml::Controls::IScrollViewerPrivate IScrollViewerPrivate;
     typedef ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation ISemanticZoomInformation;
+    typedef ABI::Microsoft::UI::Xaml::Controls::ISplitViewPrivate ISplitViewPrivate;
     typedef ABI::Microsoft::UI::Xaml::Controls::IIsTextTrimmedChangedEventArgs IIsTextTrimmedChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner ISubMenuOwner;
     typedef ABI::Microsoft::UI::Xaml::Controls::ITelemetryCollectionPriv ITelemetryCollectionPriv;

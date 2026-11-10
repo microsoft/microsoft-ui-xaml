@@ -49,9 +49,15 @@ namespace DirectUI
 
     public:
         _Check_return_ HRESULT OnBackButtonPressedImpl(_Out_ BOOLEAN* pReturnValue);
+        using PaneFocusOperationCompletedCallbackType = PaneOpenedEventSourceType::HandlerType;
+        _Check_return_ HRESULT get_PaneFocusOperationCompletedCallbackImpl(
+            _Outptr_result_maybenull_ PaneFocusOperationCompletedCallbackType** callback);
+        _Check_return_ HRESULT put_PaneFocusOperationCompletedCallbackImpl(
+            _In_opt_ PaneFocusOperationCompletedCallbackType* callback);
 
     private:
         _Check_return_ HRESULT OnIsPaneOpenChanged(bool isOpen);
+        _Check_return_ HRESULT RunPaneFocusOperation(bool isOpen);
         _Check_return_ HRESULT OnDisplayModeChanged();
 
         _Check_return_ HRESULT OnLoaded(_In_ IInspectable* pSender, _In_ xaml::IRoutedEventArgs* pArgs);
@@ -114,6 +120,7 @@ namespace DirectUI
         TrackerPtr<xaml::IFrameworkElement> m_tpPaneRoot;
         TrackerPtr<xaml::IFrameworkElement> m_tpContentRoot;
         TrackerPtr<xaml::IVisualStateGroup> m_tpDisplayModeStates;
+        TrackerPtr<PaneFocusOperationCompletedCallbackType> m_paneFocusOperationCompletedCallback;
 
         bool m_isPaneOpeningOrClosing{ false };
     };

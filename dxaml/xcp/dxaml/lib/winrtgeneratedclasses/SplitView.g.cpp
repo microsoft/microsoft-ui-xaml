@@ -38,6 +38,10 @@ HRESULT DirectUI::SplitViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitViewPrivate)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISplitViewPrivate*>(this);
+    }
     else
     {
         RRETURN(DirectUI::Control::QueryInterfaceImpl(iid, ppObject));
@@ -119,6 +123,26 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::put_PaneBackground(_In_opt_ ABI::Mi
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_PaneBackground, pValue));
+}
+IFACEMETHODIMP DirectUI::SplitViewGenerated::get_PaneFocusOperationCompletedCallback(_Outptr_result_maybenull_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<SplitView*>(this)->get_PaneFocusOperationCompletedCallbackImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_PaneFocusOperationCompletedCallback(_In_opt_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>* pValue)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<SplitView*>(this)->put_PaneFocusOperationCompletedCallbackImpl(pValue));
+Cleanup:
+    RRETURN(hr);
 }
 IFACEMETHODIMP DirectUI::SplitViewGenerated::get_PanePlacement(_Out_ ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement* pValue)
 {
