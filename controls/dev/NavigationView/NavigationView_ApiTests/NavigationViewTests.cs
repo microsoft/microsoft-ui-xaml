@@ -556,17 +556,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNull(VisualTreeUtils.FindVisualChildByType<FontIcon>(button), name + " has no FontIcon showing the custom Content glyph");
                     Verify.AreEqual(navViewGlyph.ActualWidth, glyph.ActualWidth, name + " glyph width matches NavigationView's back button");
                     Verify.AreEqual(navViewGlyph.ActualHeight, glyph.ActualHeight, name + " glyph height matches NavigationView's back button");
-                    Verify.AreEqual(navViewBackplate.ActualWidth, backplate.ActualWidth, name + " backplate width matches NavigationView's back button");
-                    Verify.AreEqual(navViewBackplate.ActualHeight, backplate.ActualHeight, name + " backplate height matches NavigationView's back button");
+                    VerifyLength(navViewBackplate.ActualWidth, backplate.ActualWidth, name + " backplate width matches NavigationView's back button");
+                    VerifyLength(navViewBackplate.ActualHeight, backplate.ActualHeight, name + " backplate height matches NavigationView's back button");
                 }
 
                 // NavigationView's back button draws its backplate where the Normal style's margin puts it (Left mode).
                 var normalStyleMargin = ((Button)root.FindName("normalButton")).Margin;
                 Verify.AreEqual(new Thickness(4, 2, 4, 2), normalStyleMargin, "Normal style Margin");
                 var buttonHolderGrid = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "ButtonHolderGrid");
-                var backplateOffset = navViewBackplate.TransformToVisual(buttonHolderGrid).TransformPoint(new global::Windows.Foundation.Point(0, 0));
-                Verify.AreEqual(normalStyleMargin.Left, backplateOffset.X, "NavigationView's back button backplate X matches the Normal style's left margin");
-                Verify.AreEqual(normalStyleMargin.Top, backplateOffset.Y, "NavigationView's back button backplate Y matches the Normal style's top margin");
+                VerifyElementOffset(buttonHolderGrid, navViewBackplate, normalStyleMargin.Left, normalStyleMargin.Top, "NavigationView's back button backplate in ButtonHolderGrid (Normal style margin)");
                 Verify.AreEqual(new Thickness(4, 2, 0, 2), ((Button)root.FindName("smallButton")).Margin, "Small style Margin");
             });
         }
@@ -4289,6 +4287,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var smallStyleButton = new Button() { Style = smallStyle };
                 panel.Children.Add(normalStyleButton);
                 panel.Children.Add(smallStyleButton);
+                // App buttons get these styles from XamlControlsResources (#12559); sizes they set must still size the backplate.
+                var customizedButtons = new[] {
+                    new Button() { Style = normalStyle, MinWidth = 48.0 },
+                    new Button() { Style = normalStyle, Padding = new Thickness(8.0) },
+                    new Button() { Style = normalStyle, Width = double.NaN, HorizontalAlignment = HorizontalAlignment.Stretch },
+                    new Button() { Style = smallStyle, Height = 48.0, MinWidth = 64.0 } };
+                foreach (var button in customizedButtons)
+                {
+                    panel.Children.Add(button);
+                }
                 navView.IsPaneOpen = true;
                 Content.UpdateLayout();
 
@@ -4303,6 +4311,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     VerifyElementOffset(button, backplate, 0.0, 0.0, "Backplate");
                     VerifyLength(40.0, backplate.ActualWidth, "Backplate width");
                     VerifyLength(36.0, backplate.ActualHeight, "Backplate height");
+                }
+
+                foreach (var button in customizedButtons)
+                {
+                    Log.Comment($"Button MinWidth {button.MinWidth}, Width {button.Width}, Padding {button.Padding}: {button.ActualWidth}x{button.ActualHeight}");
+                    var backplate = VisualTreeUtils.FindVisualChildByName(button, "RootGrid") as FrameworkElement;
+                    Verify.AreEqual(backplate, VisualTreeHelper.GetChild(button, 0), "The backplate is the template root");
+                    VerifyElementOffset(button, backplate, 0.0, 0.0, "Backplate");
+                    VerifyLength(button.ActualWidth, backplate.ActualWidth, "Backplate fills the button's width");
+                    VerifyLength(button.ActualHeight, backplate.ActualHeight, "Backplate fills the button's height");
                 }
             });
         }
@@ -4325,6 +4343,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var appStyle = new Style(typeof(Button)) { BasedOn = stockSmallStyle };
                 appStyle.Setters.Add(new Setter(Control.BackgroundProperty, new SolidColorBrush(Colors.Red)));
+                var navView = new NavigationView()
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Visible,
+                    IsBackEnabled = true,
+                    Width = 400.0,
+                    Height = 300.0
+                };
+                navView.Resources["NavigationBackButtonSmallStyle"] = appStyle;
+                Content = navView;
+                Content.UpdateLayout();
+
+                var backButton = (VisualTreeHelper.GetChild(navView, 0) as Grid).FindName("NavigationViewBackButton") as Button;
+                Verify.AreEqual(appStyle, backButton.Style, "Back button Style");
+                var backplate = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
+                Verify.AreEqual(Colors.Red, (backplate.Background as SolidColorBrush).Color, "App setter applied");
+                VerifyElementOffset(navView, backplate, 4.0, 6.0, "Back button backplate");
+                VerifyLength(40.0, backplate.ActualWidth, "Back button backplate width");
+                VerifyLength(36.0, backplate.ActualHeight, "Back button backplate height");
+                Verify.IsTrue(IsHitWithin(navView, backButton, 0.5, 0.5), "The corner reaches the back button");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBackButtonHitTargetWithAppSmallStyleTemplate()
+        {
+            // Apps copied the back button styles, template included, into their resources to get the WinUI look (#9536).
+            // NavigationView's back button keeps its own template, so such a NavigationBackButtonSmallStyle override still
+            // gets the stock backplate position and the corner hit target in LeftMinimal (#5306); its other setters apply.
+            RunOnUIThread.Execute(() =>
+            {
+                var appStyle = (Style)XamlReader.Load(@"
+                    <Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='Button'>
+                        <Setter Property='Background' Value='Red' />
+                        <Setter Property='Template'>
+                            <Setter.Value>
+                                <ControlTemplate TargetType='Button'>
+                                    <Grid x:Name='RootGrid' Background='{TemplateBinding Background}' CornerRadius='{TemplateBinding CornerRadius}'>
+                                        <TextBlock x:Name='Content' Text='{TemplateBinding Content}' HorizontalAlignment='Center' VerticalAlignment='Center' />
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>");
                 var navView = new NavigationView()
                 {
                     PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
