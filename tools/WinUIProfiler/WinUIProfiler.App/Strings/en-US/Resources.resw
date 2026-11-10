@@ -94,22 +94,32 @@
   <data name="SnapshotDiffError.Title" xml:space="preserve"><value>Snapshot comparison failed</value></data>
   <data name="SnapshotDiffChangesOnly.Content" xml:space="preserve"><value>Show only changed subtrees</value></data>
   <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No differences in comparable tree, property, or memory values.</value></data>
-  <data name="SnapshotResourceHeading.Header" xml:space="preserve"><value>XAML resources</value></data>
+  <data name="SnapshotResourceHeading.Header" xml:space="preserve"><value>Resource allocations</value></data>
   <data name="SnapshotResourceStatus.AutomationProperties.Name" xml:space="preserve"><value>Resource snapshot availability</value></data>
-  <data name="SnapshotResourceScope.Text" xml:space="preserve"><value>Sampled before tree enumeration. Allocator counters cover enabled profiling, not the whole process heap; allocation/free pairs across profiling transitions can be unbalanced. Allocations before profiling starts are not counted. All-zero graphics resource slots are not measurements.</value></data>
-  <data name="SnapshotResourceMetric.Text" xml:space="preserve"><value>Metric</value></data>
-  <data name="SnapshotResourceBefore.Text" xml:space="preserve"><value>Before</value></data>
+  <data name="SnapshotResourceScope.Text" xml:space="preserve"><value>Sampled before tree enumeration, not scoped to the displayed nodes. Graphics totals accumulate across enabled profiling periods; earlier creations are not counted. All-zero graphics slots are omitted, not proof that no resources exist.</value></data>
+  <data name="SnapshotResourceGraphicsEmpty" xml:space="preserve"><value>No populated graphics counters were recorded. Tracking may be unsupported or disabled, or no creations were observed.</value></data>
+  <data name="SnapshotResourceAllocationsHeading" xml:space="preserve"><value>Allocation statistics</value></data>
+  <data name="SnapshotResourceAllocationsScope" xml:space="preserve"><value>Allocator totals cover DBG accounting or enabled profiling, not the process heap. Profiling transitions can leave allocation/free pairs unbalanced. Managed-runtime GC tracking is independent and may be unavailable.</value></data>
+  <data name="SnapshotResourceCompositionHeading" xml:space="preserve"><value>Composition objects</value></data>
+  <data name="SnapshotResourceCompositionScope" xml:space="preserve"><value>Creation counts only; destruction and live counts are not tracked.</value></data>
+  <data name="SnapshotResourceD2DHeading" xml:space="preserve"><value>D2D objects</value></data>
+  <data name="SnapshotResourceD2DScope" xml:space="preserve"><value>Creation counts only; destruction and live counts are not tracked.</value></data>
+  <data name="SnapshotResourceWrappersHeading" xml:space="preserve"><value>WinUI wrappers</value></data>
+  <data name="SnapshotResourceWrappersScope" xml:space="preserve"><value>Observed WinUI wrapper lifetimes, not the lifetime of underlying graphics objects or GPU memory.</value></data>
+  <data name="SnapshotResourceType" xml:space="preserve"><value>Resource type</value></data>
+  <data name="SnapshotResourceUnknownFormat" xml:space="preserve"><value>Graphics slot {0}</value></data>
+  <data name="SnapshotResourceUnknownScope.Text" xml:space="preserve"><value>Unrecognized graphics slots are shown separately with raw counters. Their category and lifetime support are unknown.</value></data>
+  <data name="SnapshotResourceMetric" xml:space="preserve"><value>Metric</value></data>
+  <data name="SnapshotResourceBefore" xml:space="preserve"><value>Before</value></data>
   <data name="SnapshotResourceAfter" xml:space="preserve"><value>After</value></data>
-  <data name="SnapshotResourceDelta.Text" xml:space="preserve"><value>Delta (After - Before)</value></data>
-  <data name="SnapshotResourceValues.AutomationProperties.Name" xml:space="preserve"><value>Captured XAML resource values</value></data>
+  <data name="SnapshotResourceDelta" xml:space="preserve"><value>Delta (After - Before)</value></data>
   <data name="SnapshotResourceValue" xml:space="preserve"><value>Value</value></data>
   <data name="SnapshotResourceUnavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="SnapshotResourceNotRecorded" xml:space="preserve"><value>Resources were not recorded in this older snapshot.</value></data>
   <data name="SnapshotResourceAvailable" xml:space="preserve"><value>Resource snapshot available.</value></data>
-  <data name="SnapshotResourceUnsupported" xml:space="preserve"><value>IXamlDiagnostics3 is unavailable in this target ({0}).</value></data>
+  <data name="SnapshotResourceUnsupported" xml:space="preserve"><value>IXamlDiagnosticsPrivate resource snapshots are unavailable in this target ({0}).</value></data>
   <data name="SnapshotResourceFailed" xml:space="preserve"><value>GetResourceSnapShot failed ({0}).</value></data>
   <data name="SnapshotResourceStatusFormat" xml:space="preserve"><value>Before: {0} After: {1}</value></data>
-  <data name="SnapshotResourceGraphicsFormat" xml:space="preserve"><value>Graphics slot {0}: {1}</value></data>
   <data name="SnapshotResourceBytesFormat" xml:space="preserve"><value>{0} (bytes)</value></data>
   <data name="SnapshotResourceAllocCount" xml:space="preserve"><value>Cumulative allocation calls</value></data>
   <data name="SnapshotResourceAllocSize" xml:space="preserve"><value>Cumulative requested allocation size</value></data>
@@ -239,8 +249,8 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected or while a recorded trace is read; the Frames and Objects tabs show them.</value></data>
-  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Frames and Objects tabs show its events.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events, and those of the marker configuration's providers, are saved to a session file while connected or while a recorded trace is read; the Launch, Frames and Objects tabs show them.</value></data>
+  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Launch, Frames and Objects tabs show its events.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
@@ -253,6 +263,7 @@
   <data name="TargetSettings.AutomationProperties.Name" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSettingsHeader" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSummaryFormat" xml:space="preserve"><value>Target: {0} {1}</value></data>
+  <data name="TargetSummaryPrivateFormat" xml:space="preserve"><value>Target: {0} {1} | private WinUI from {2}</value></data>
   <data name="TraceSummaryFormat" xml:space="preserve"><value>Trace: {0}</value></data>
   <data name="TraceSummaryProcessFormat" xml:space="preserve"><value>Trace: {0} | PID {1}</value></data>
   <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
@@ -260,35 +271,64 @@
   <data name="OpenSessionFile.Content" xml:space="preserve"><value>Open session file...</value></data>
   <data name="FramesReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
   <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file.</value></data>
-  <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} frames</value></data>
-  <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} frames | older events were trimmed</value></data>
+  <data name="FramesFileFormat" xml:space="preserve"><value>{0} | {1:N0} ticks</value></data>
+  <data name="FramesFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} ticks | older events were trimmed</value></data>
   <data name="LaunchItemFormat" xml:space="preserve"><value>frame {0:N0} at {1:N1} ms</value></data>
   <data name="LaunchFromProcessFormat" xml:space="preserve"><value>Drawn frames after the process started: {0}</value></data>
   <data name="LaunchFromRecordingFormat" xml:space="preserve"><value>Drawn frames after the recording started: {0}</value></data>
+  <data name="FramesShowLabel.Text" xml:space="preserve"><value>Show</value></data>
+  <data name="FramesShow.AutomationProperties.Name" xml:space="preserve"><value>Show</value></data>
+  <data name="FramesShowAll.Content" xml:space="preserve"><value>All ticks</value></data>
+  <data name="FramesShowInteresting.Content" xml:space="preserve"><value>Regions of interest</value></data>
+  <data name="FramesShowInteresting.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The regions of interest, with the tick each one ends with. A region starts at a navigation, XAML initialization, a flyout, menu or content dialog, or a window focus change. It ends at the end of the thread's next tick.</value></data>
+  <data name="FramesShowSlow.Content" xml:space="preserve"><value>Slow ticks (over 16.7 ms)</value></data>
+  <data name="LegendRegion.Text" xml:space="preserve"><value>Region of interest</value></data>
+  <data name="LegendRegionTick.Text" xml:space="preserve"><value>Tick in a region</value></data>
+  <data name="LegendNonTick.Text" xml:space="preserve"><value>Interesting, not a tick</value></data>
+  <data name="LegendSlow.Text" xml:space="preserve"><value>Over 16.7 ms</value></data>
   <data name="FramesHeaderNumber.Text" xml:space="preserve"><value>Frame</value></data>
-  <data name="FramesHeaderDrawnAt.Text" xml:space="preserve"><value>Drawn at (ms)</value></data>
-  <data name="FramesHeaderDraw.Text" xml:space="preserve"><value>Draw (ms)</value></data>
+  <data name="FramesHeaderStart.Text" xml:space="preserve"><value>Start (ms)</value></data>
+  <data name="FramesHeaderTick.Text" xml:space="preserve"><value>Tick (ms)</value></data>
+  <data name="FramesHeaderDrew.Text" xml:space="preserve"><value>Drew</value></data>
   <data name="FramesHeaderXaml.Text" xml:space="preserve"><value>XAML</value></data>
   <data name="FramesHeaderComposition.Text" xml:space="preserve"><value>Composition</value></data>
   <data name="FramesHeaderOther.Text" xml:space="preserve"><value>Other</value></data>
-  <data name="FrameList.AutomationProperties.Name" xml:space="preserve"><value>Frames</value></data>
-  <data name="FramesHeaderNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame number on the UI thread. * marks the latest frame, which may still be in progress.</value></data>
-  <data name="FramesHeaderDrawnAt.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the frame was drawn, from the start of the recording.</value></data>
-  <data name="FramesHeaderDraw.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How long the drawing tick took. A warning icon marks more than 16.7 ms.</value></data>
+  <data name="FrameList.AutomationProperties.Name" xml:space="preserve"><value>Ticks</value></data>
+  <data name="FramesHeaderNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Each row is one tick of a UI thread, with its frame number. The number goes up after a tick that draws, so the ticks before it that drew nothing have the same number. A tick's events include the events since the thread's previous tick.</value></data>
+  <data name="FramesHeaderStart.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the tick started, from the start of the recording. A dash marks a tick that started before the recording.</value></data>
+  <data name="FramesHeaderTick.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How long the tick took. A warning icon marks more than 16.7 ms.</value></data>
+  <data name="FramesHeaderDrew.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>A check mark shows that the tick drew a frame. The thread's latest tick has none until its next tick starts.</value></data>
   <data name="FramesHeaderXaml.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about XAML objects: the tree, templates, visual states and loading.</value></data>
   <data name="FramesHeaderComposition.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Events about composition nodes, visuals and surfaces.</value></data>
   <data name="FramesHeaderOther.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Everything else: layout, rendering and scheduling.</value></data>
-  <data name="SelectFramePrompt" xml:space="preserve"><value>Select a frame to see its events.</value></data>
+  <data name="SelectFramePrompt" xml:space="preserve"><value>Select a tick, a region or an interesting row to see its events.</value></data>
   <data name="SelectEventPrompt" xml:space="preserve"><value>Select an event to see its fields.</value></data>
-  <data name="FrameTitleFormat" xml:space="preserve"><value>Frame {0:N0} | thread {1} | {2} tick(s), the first at {3:N1} ms | drawn at {4:N1} ms | {5:N1} ms in ticks</value></data>
+  <data name="FrameTitleFormat" xml:space="preserve"><value>Frame {0:N0} | thread {1} | {2} ms to {3} ms | tick {4} ms | {5}</value></data>
+  <data name="TickDrew" xml:space="preserve"><value>drew a frame</value></data>
+  <data name="TickDidNotDraw" xml:space="preserve"><value>drew nothing</value></data>
+  <data name="TickLatest" xml:space="preserve"><value>the thread's latest tick</value></data>
+  <data name="RegionTextFormat" xml:space="preserve"><value>{0} · {1:N1}–{2:N1} ms · {3:N1} ms</value></data>
+  <data name="InterestingTextFormat" xml:space="preserve"><value>{0} · thread {1} · {2:N1}–{3:N1} ms · {4:N1} ms</value></data>
+  <data name="RegionRowsHeader.Text" xml:space="preserve"><value>Interesting rows in this region</value></data>
+  <data name="InterestingHeaderStart.Text" xml:space="preserve"><value>Start (ms)</value></data>
+  <data name="InterestingHeaderStart.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the row started, from the start of the recording.</value></data>
+  <data name="InterestingHeaderDuration.Text" xml:space="preserve"><value>Duration (ms)</value></data>
+  <data name="InterestingHeaderDuration.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Wall-clock time from start to stop.</value></data>
+  <data name="InterestingHeaderFrame.Text" xml:space="preserve"><value>Frame</value></data>
+  <data name="InterestingHeaderFrame.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The frame number of a tick.</value></data>
+  <data name="InterestingHeaderType.Text" xml:space="preserve"><value>Type</value></data>
+  <data name="InterestingHeaderType.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The kind of row: Frame (one tick), UpdateLayout, an operation's name, Frame::Navigating, Frame::Navigated or Hwnd Focus.</value></data>
+  <data name="InterestingEmpty" xml:space="preserve"><value>No regions of interest. A region starts at a navigation, XAML initialization, a flyout, menu or content dialog, or a window focus change.</value></data>
+  <data name="SlowEmpty" xml:space="preserve"><value>No tick took more than 16.7 ms.</value></data>
+  <data name="InterestingTitleFormat" xml:space="preserve"><value>{0} | thread {1} | {2:N1} ms to {3:N1} ms | {4:N1} ms</value></data>
   <data name="Buckets.AutomationProperties.Name" xml:space="preserve"><value>Event group</value></data>
   <data name="BucketAll.Text" xml:space="preserve"><value>All</value></data>
   <data name="BucketXaml.Text" xml:space="preserve"><value>XAML</value></data>
   <data name="BucketComposition.Text" xml:space="preserve"><value>Composition</value></data>
   <data name="BucketOther.Text" xml:space="preserve"><value>Other</value></data>
   <data name="FilterBox.PlaceholderText" xml:space="preserve"><value>Filter by name, text, or value (42 or 0x1A2B)</value></data>
-  <data name="FilterBox.AutomationProperties.Name" xml:space="preserve"><value>Filter the frame's events</value></data>
-  <data name="EventList.AutomationProperties.Name" xml:space="preserve"><value>Events of the selected frame</value></data>
+  <data name="FilterBox.AutomationProperties.Name" xml:space="preserve"><value>Filter the selected row's events</value></data>
+  <data name="EventList.AutomationProperties.Name" xml:space="preserve"><value>Events of the selected row</value></data>
   <data name="PreviousEvents.Content" xml:space="preserve"><value>Previous</value></data>
   <data name="NextEvents.Content" xml:space="preserve"><value>Next</value></data>
   <data name="PositionNoEvents" xml:space="preserve"><value>No events</value></data>
@@ -297,6 +337,51 @@
   <data name="PositionFilteredFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0} matching</value></data>
   <data name="EventDetails.AutomationProperties.Name" xml:space="preserve"><value>Fields of the selected event</value></data>
   <data name="ObjectLinksHeader.Text" xml:space="preserve"><value>Show the history of:</value></data>
+  <data name="LaunchTab.Header" xml:space="preserve"><value>Launch</value></data>
+  <data name="EditMarkers.Content" xml:space="preserve"><value>Edit markers</value></data>
+  <data name="EditMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Open your marker configuration, %LOCALAPPDATA%\WinUIProfiler\markers.json, which is created from the default the first time. Add your app's provider and milestones, save the file, and select Reload.</value></data>
+  <data name="ReloadMarkers.Content" xml:space="preserve"><value>Reload</value></data>
+  <data name="ReloadMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the marker configuration again and show its milestones. A provider it adds is recorded from the next connection or trace reading.</value></data>
+  <data name="MarkersFileFormat" xml:space="preserve"><value>Milestones from {0}</value></data>
+  <data name="MarkersDefault" xml:space="preserve"><value>Milestones from the default marker configuration. Select Edit markers to add your app's own.</value></data>
+  <data name="MarkersInvalidTitle" xml:space="preserve"><value>The marker configuration is not valid, so the default is used</value></data>
+  <data name="MarkersEditFailedTitle" xml:space="preserve"><value>Could not open the marker configuration</value></data>
+  <data name="LaunchReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
+  <data name="LaunchNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file in the Frames tab.</value></data>
+  <data name="MilestoneProcessFormat" xml:space="preserve"><value>{0} (PID {1})</value></data>
+  <data name="MilestonePidFormat" xml:space="preserve"><value>Process {0}</value></data>
+  <data name="LaunchFromCreationFormat" xml:space="preserve"><value>{0} | times are from the process's creation</value></data>
+  <data name="LaunchFromCreationLateFormat" xml:space="preserve"><value>{0} | times are from the process's creation | the recording started at {1:N1} ms</value></data>
+  <data name="LaunchFromRecordingStartFormat" xml:space="preserve"><value>{0} | times are from the start of the recording</value></data>
+  <data name="LaunchFromLauncherFormat" xml:space="preserve"><value>{0} | times are from "{1}", which its launcher reached before creating the process</value></data>
+  <data name="LaunchProcessLauncherFormat" xml:space="preserve"><value>{0}, launched by {1}</value></data>
+  <data name="LaunchNoteAttached" xml:space="preserve"><value>The profiler connected to the running process, so the first frame drawn and the milestones before the recording started are missing. Launch the app from the profiler to record all of its launch.</value></data>
+  <data name="LaunchNoteNoProcessStart" xml:space="preserve"><value>When the process was created is not known, so times are from the start of the recording. A trace has it when it has the kernel's process events.</value></data>
+  <data name="LaunchNoteTrimmed" xml:space="preserve"><value>The session file deleted its oldest events to stay within its size limit before they were read, so milestones among them may be missing or show a later event.</value></data>
+  <data name="MilestoneHeaderLabel.Text" xml:space="preserve"><value>Milestone</value></data>
+  <data name="MilestoneHeaderTime.Text" xml:space="preserve"><value>Time (ms)</value></data>
+  <data name="MilestoneHeaderSincePrevious.Text" xml:space="preserve"><value>Since previous (ms)</value></data>
+  <data name="MilestoneHeaderTimeline.Text" xml:space="preserve"><value>Timeline</value></data>
+  <data name="MilestoneHeaderEvent.Text" xml:space="preserve"><value>Event</value></data>
+  <data name="MilestoneHeaderThread.Text" xml:space="preserve"><value>Thread</value></data>
+  <data name="MilestoneHeaderCount.Text" xml:space="preserve"><value>Events</value></data>
+  <data name="MilestoneHeaderTime.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the milestone was reached, from the process's creation or its launcher's earliest milestone before it, or from the start of the recording when the creation is not known.</value></data>
+  <data name="MilestoneHeaderSincePrevious.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The time from the milestone before.</value></data>
+  <data name="MilestoneHeaderTimeline.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Each bar runs from the milestone before to this one, on a scale that ends at the last milestone.</value></data>
+  <data name="MilestoneHeaderEvent.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The provider and event that mark the milestone, and the field values the event needs. "(launcher)" marks an event of the process that launched the app.</value></data>
+  <data name="MilestoneHeaderCount.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How many events marked the milestone. Its time is the first one's, or for a launcher's milestone, the one nearest the process's creation.</value></data>
+  <data name="MilestoneList.AutomationProperties.Name" xml:space="preserve"><value>Launch milestones</value></data>
+  <data name="MilestoneSincePreviousFormat" xml:space="preserve"><value>+{0:N1}</value></data>
+  <data name="MilestoneBuiltInProcessCreated" xml:space="preserve"><value>Built in: the process's creation</value></data>
+  <data name="MilestoneBuiltInFirstFrame" xml:space="preserve"><value>Built in: the first drawn frame, as in the Frames tab</value></data>
+  <data name="MilestoneAccessibleFormat" xml:space="preserve"><value>{0} at {1:N1} ms</value></data>
+  <data name="MilestoneAccessibleSinceFormat" xml:space="preserve"><value>{0:N1} ms after the milestone before</value></data>
+  <data name="MilestoneAccessibleThreadFormat" xml:space="preserve"><value>Thread {0}</value></data>
+  <data name="MilestoneAccessibleCountFormat" xml:space="preserve"><value>The first of {0:N0} events</value></data>
+  <data name="MilestoneLabelFromFormat" xml:space="preserve"><value>Each {0}</value></data>
+  <data name="MilestoneNotReachedItemFormat" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="MilestoneLauncherEventFormat" xml:space="preserve"><value>{0} (launcher)</value></data>
+  <data name="MilestonesNotReachedFormat" xml:space="preserve"><value>Not reached: {0}. A provider added to the marker configuration is recorded from the next connection or trace reading.</value></data>
   <data name="ObjectsTab.Header" xml:space="preserve"><value>Objects</value></data>
   <data name="ObjectsFileFormat" xml:space="preserve"><value>{0} | {1:N0} elements | {2:N0} visuals</value></data>
   <data name="ObjectsFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} elements | {2:N0} visuals | older events were trimmed</value></data>

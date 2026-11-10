@@ -512,10 +512,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Indexed in projection order, not visual-child order.
+        // Indexed in projection order, not visual-child order, over the realized headers only, so a
+        // fixture large enough to virtualize can still reach its realized headers.
         internal static TableViewGroupHeader GetGroupHeader(TableView tableView, int index)
         {
-            var headers = GetProjectedElements(tableView).OfType<TableViewGroupHeader>().ToList();
+            var headers = GetProjectedElements(tableView, requireAllRealized: false).OfType<TableViewGroupHeader>().ToList();
             if (headers.Count <= index)
             {
                 Verify.Fail($"The test needs a projected group header at index {index}; saw {headers.Count}.");

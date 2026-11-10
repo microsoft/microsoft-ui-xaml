@@ -61,7 +61,7 @@ static bool IsAllocationStatsTrackingEnabled() noexcept
 #if DBG
     return true;
 #else
-    return XamlProfilerTracing::IsAllocationProfilingEnabled();
+    return XamlProfilerTracing::IsProfilerEnabled();
 #endif
 }
 

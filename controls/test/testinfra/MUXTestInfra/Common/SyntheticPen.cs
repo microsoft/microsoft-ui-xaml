@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using WEX.Logging.Interop;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 {
@@ -110,6 +111,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle();
         }
 
+        // Best effort: never throws, so a failure inside the test isn't masked by cleanup.
         public void Dispose()
         {
             if (device != IntPtr.Zero)
@@ -118,11 +120,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 {
                     Release();
                 }
-                finally
+                catch (Exception e)
                 {
-                    DestroySyntheticPointerDevice(device);
-                    device = IntPtr.Zero;
+                    pressed = false;
+                    Log.Comment($"Releasing the synthetic pen during cleanup failed: {e.Message}");
                 }
+                DestroySyntheticPointerDevice(device);
+                device = IntPtr.Zero;
             }
         }
 

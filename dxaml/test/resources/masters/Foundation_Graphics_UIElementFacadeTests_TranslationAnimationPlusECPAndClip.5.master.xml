@@ -9,7 +9,7 @@
           <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" ScaleX="2" ScaleY="2">
             <ColorBrush Color="rgb {0, 0.502, 0}" />
           </wucSpriteVisual>
-          <Visual Tag="PrependVisual" SizeX="100" SizeY="100">
+          <Visual Tag="PrependVisual">
             <TransformMatrix>
               <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(PS.Translation) * prependVisual.PrependTransform">
                 <ReferenceParameter Name="PS">

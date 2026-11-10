@@ -6,7 +6,7 @@ using WinUIProfiler.Engine.Events;
 namespace WinUIProfiler.Engine.Processing;
 
 // Counts events by provider; the app shows the totals while connected. XamlEvents counts the XAML providers' events
-// except Microsoft-Windows-XAML-Profiler's, which ProfilerEvents counts.
+// except Microsoft-Windows-XAML-Profiler's, which ProfilerEvents counts. Window focus events are not counted.
 public sealed class EventCounter : IEventProcessor
 {
     private long xamlEvents;

@@ -249,19 +249,21 @@ CSetter::OnSetterPropertyChanged(_In_ const PropertyChangedParams& args)
             ? static_cast<CDependencyPropertyProxy*>(args.m_pNewValue->AsObject())->GetDP()->GetIndex()
             : KnownPropertyIndex::UnknownType_UnknownProperty;
 
-    auto& subscribers = EnsureSetterValueChangedNoficationSubscribersStorage();
-    for(auto& subscriber : subscribers)
+    if (auto* subscribers = GetSetterValueChangedNoficationSubscribersStorage())
     {
-        auto style = subscriber.lock();
-        if (style)
+        for (auto& subscriber : *subscribers)
         {
-            if (oldProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
+            auto style = subscriber.lock();
+            if (style)
             {
-                GetContext()->NotifyMutableStyleValueChangedListeners(style, oldProperty);
-            }
-            if (newProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
-            {
-                GetContext()->NotifyMutableStyleValueChangedListeners(style, newProperty);
+                if (oldProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
+                {
+                    GetContext()->NotifyMutableStyleValueChangedListeners(style, oldProperty);
+                }
+                if (newProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
+                {
+                    GetContext()->NotifyMutableStyleValueChangedListeners(style, newProperty);
+                }
             }
         }
     }
@@ -292,22 +294,24 @@ CSetter::OnSetterTargetChanged(_In_ const PropertyChangedParams& args)
         ? static_cast<CTargetPropertyPath*>(args.m_pNewValue->AsObject())
         : nullptr;
 
-    auto& subscribers = EnsureSetterValueChangedNoficationSubscribersStorage();
-    for(auto& subscriber : subscribers)
+    if (auto* subscribers = GetSetterValueChangedNoficationSubscribersStorage())
     {
-        auto style = subscriber.lock();
-        if (style)
+        for (auto& subscriber : *subscribers)
         {
-            const auto oldProperty = resolveTargetHelper(oldTarget, style->m_targetTypeIndex);
-            if (oldProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
+            auto style = subscriber.lock();
+            if (style)
             {
-                GetContext()->NotifyMutableStyleValueChangedListeners(style, oldProperty);
-            }
+                const auto oldProperty = resolveTargetHelper(oldTarget, style->m_targetTypeIndex);
+                if (oldProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
+                {
+                    GetContext()->NotifyMutableStyleValueChangedListeners(style, oldProperty);
+                }
 
-            const auto newProperty = resolveTargetHelper(newTarget, style->m_targetTypeIndex);
-            if (newProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
-            {
-                GetContext()->NotifyMutableStyleValueChangedListeners(style, newProperty);
+                const auto newProperty = resolveTargetHelper(newTarget, style->m_targetTypeIndex);
+                if (newProperty != KnownPropertyIndex::UnknownType_UnknownProperty)
+                {
+                    GetContext()->NotifyMutableStyleValueChangedListeners(style, newProperty);
+                }
             }
         }
     }
@@ -330,13 +334,15 @@ CSetter::OnSetterValueChanged(_In_ const PropertyChangedParams& args)
         }
     }
 
-    auto& subscribers = EnsureSetterValueChangedNoficationSubscribersStorage();
-    for(auto& subscriber : subscribers)
+    if (auto* subscribers = GetSetterValueChangedNoficationSubscribersStorage())
     {
-        auto style = subscriber.lock();
-        if (style)
+        for (auto& subscriber : *subscribers)
         {
-            IFC_RETURN(style->NotifyMutableSetterValueChanged(this));
+            auto style = subscriber.lock();
+            if (style)
+            {
+                IFC_RETURN(style->NotifyMutableSetterValueChanged(this));
+            }
         }
     }
 
@@ -367,4 +373,3 @@ bool CSetter::IsStyleSetter() const
 {
     return (!m_target || m_target->IsForStyleSetter());
 }
-
