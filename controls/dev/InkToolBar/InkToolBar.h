@@ -185,9 +185,8 @@ private:
     winrt::Visibility m_lastVisibility = winrt::Visibility::Collapsed;
     bool m_configuredStencilButtonIntoToggleMode = false;
 
-    // Lift adaptation: the stencil button's Ruler/Protractor DPs are never assigned (the OS stencils
-    // are ink-thread-affine, driven via the InkPresenter proxy), so SetStencilVisibility records the
-    // on-canvas stencil state here for the button/state read-backs.
+    // Lift adaptation: UWP read stencil state back from InkPresenterInternal::GetStencils, which the lift
+    // cannot reach, so SetStencilVisibility records the on-canvas stencil state here for the read-backs.
     bool m_rulerVisible = false;
     bool m_protractorVisible = false;
 
