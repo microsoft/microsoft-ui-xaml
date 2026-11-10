@@ -186,8 +186,48 @@
               <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="{ThemeResource NavigationViewButtonHolderGridMargin}">
                 <!-- The back button's hit target reaches the corner (Fitts's law, #5306): Margin cancels ButtonHolderGrid's top margin,
                      and Padding keeps the visible backplate (Width x NavigationBackButtonHeight) where the 4,2 style margin put it.
-                     MinWidth keeps the old 4 + Width + 4 layout slot; the clickable area ends at the backplate's right edge. -->
+                     MinWidth keeps the old 4 + Width + 4 layout slot; the clickable area ends at the backplate's right edge.
+                     The template is local so that NavigationBackButtonNormalStyle/SmallStyle, which app buttons also use, keep theirs. -->
                 <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonWidth}" Height="Auto" MinHeight="{ThemeResource NavigationBackButtonHeight}" Margin="0,-4,0,2" Padding="4,6,0,0" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
+                  <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                      <!-- Same as the NavigationBackButtonNormalStyle template, inside a transparent root that makes the left/top Padding around the backplate (RootGrid) clickable; it ends at the backplate. -->
+                      <Grid x:Name="HitTargetGrid" Background="Transparent" HorizontalAlignment="Left">
+                        <VisualStateManager.VisualStateGroups>
+                          <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="PointerOver">
+                              <VisualState.Setters>
+                                <Setter Target="RootGrid.Background" Value="{ThemeResource NavigationViewButtonBackgroundPointerOver}" />
+                                <Setter Target="Content.Foreground" Value="{ThemeResource NavigationViewButtonForegroundPointerOver}" />
+                                <Setter Target="Content.(controls:AnimatedIcon.State)" Value="PointerOver" />
+                              </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                              <VisualState.Setters>
+                                <Setter Target="RootGrid.Background" Value="{ThemeResource NavigationViewButtonBackgroundPressed}" />
+                                <Setter Target="Content.Foreground" Value="{ThemeResource NavigationViewButtonForegroundPressed}" />
+                                <Setter Target="Content.(controls:AnimatedIcon.State)" Value="Pressed" />
+                              </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                              <VisualState.Setters>
+                                <Setter Target="Content.Foreground" Value="{ThemeResource NavigationViewButtonForegroundDisabled}" />
+                              </VisualState.Setters>
+                            </VisualState>
+                          </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid x:Name="RootGrid" Width="{TemplateBinding Width}" Margin="{TemplateBinding Padding}" MinHeight="{TemplateBinding MinHeight}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True">
+                          <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" controls:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals">
+                            <animatedvisuals:AnimatedBackVisualSource />
+                            <controls:AnimatedIcon.FallbackIconSource>
+                              <controls:FontIconSource FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}" FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}" Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" MirroredWhenRightToLeft="True" />
+                            </controls:AnimatedIcon.FallbackIconSource>
+                          </controls:AnimatedIcon>
+                        </Grid>
+                      </Grid>
+                    </ControlTemplate>
+                  </Button.Template>
                   <ToolTipService.ToolTip>
                     <ToolTip x:Name="NavigationViewBackButtonToolTip" />
                   </ToolTipService.ToolTip>
