@@ -785,6 +785,30 @@ foreach (var json in invalidOwners)
 
 Console.WriteLine("Passed: launcher results are read, and invalid or inconsistent results are rejected.");
 
+if (OperatingSystem.IsWindows())
+{
+    // A launch's launcher is the process that created the target, which ProcessParent finds.
+    using var child = System.Diagnostics.Process.Start(
+        new System.Diagnostics.ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"))
+        {
+            RedirectStandardInput = true,
+            CreateNoWindow = true,
+            UseShellExecute = false
+        })!;
+    try
+    {
+        using var current = System.Diagnostics.Process.GetCurrentProcess();
+        Expect(ProcessParent.Find(child) == (Environment.ProcessId, current.ProcessName),
+            "A process's parent must be the process that created it, named while it runs.");
+    }
+    finally
+    {
+        child.Kill(entireProcessTree: true);
+    }
+
+    Console.WriteLine("Passed: a process's parent is the process that created it.");
+}
+
 static void Expect(bool condition, string message)
 {
     if (!condition)

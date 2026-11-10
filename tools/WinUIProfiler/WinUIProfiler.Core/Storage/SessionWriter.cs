@@ -24,9 +24,8 @@ public enum SessionCoverage
 // Where a session's events come from. For a recorded trace, pass the trace's QpcFrequency
 // (OfflineEtlSource.ReadQpcFrequency): a null one is derived from the events once they span a second, and until then
 // readers time events with this machine's frequency. A null StartQpc makes the target's first event time zero.
-// LauncherProcessId is the process that launched the target, when known, as the profiler for a launch from the app,
-// though Windows may create a packaged app's process: the events of another process the session receives are that
-// process's (MarkerProviderSettings.Launcher).
+// LauncherProcessId is the process that created the target, when known, such as the profiler for a launch from the app:
+// the events of another process the session receives are that process's (MarkerProviderSettings.Launcher).
 public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? ProcessCreatedUtc, long? QpcFrequency,
     long? StartQpc, SessionCoverage Coverage, string? EtlPath = null, int? LauncherProcessId = null, string? LauncherName = null);
 

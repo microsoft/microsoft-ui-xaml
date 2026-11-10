@@ -205,7 +205,7 @@ public sealed class TargetConnection : IAsyncDisposable
         var markers = options.MarkerProviders ?? [];
         if (launchExecutables.Count > 0)
         {
-            PrepareEtw(launchExecutables, markers);
+            PrepareEtw(launchExecutables, GetLauncherExecutables(options), markers);
         }
 
         target = options.PrivateRuntime is { } privateRuntime
@@ -323,13 +323,20 @@ History);
         }
     }
 
-    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<MarkerProviderSettings> markers)
+    // The executables, other than the profiler's, of a process that can create the launched one, so ETW has its launcher
+    // events. With private WinUI DLLs, ProfilerLauncher.exe activates a packaged app through a COM surrogate,
+    // dllhost.exe, which creates the app's process.
+    private static IReadOnlyList<string> GetLauncherExecutables(TargetConnectionOptions options) =>
+        options is { PrivateRuntime: not null, Kind: TargetLaunchKind.Packaged } ? ["dllhost.exe"] : [];
+
+    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<string> launcherExecutables,
+        IReadOnlyList<MarkerProviderSettings> markers)
     {
         try
         {
             etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
             etwListeningSinceQpc = Stopwatch.GetTimestamp();
-            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, markers);
+            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, launcherExecutables, markers);
         }
         catch (Exception error)
         {
@@ -347,6 +354,7 @@ History);
 
         var counter = new EventCounter();
         EventPipeline? events = null;
+        (int ProcessId, string? Name)? launcher = null;
         try
         {
             if (etw is not null)
@@ -364,9 +372,18 @@ History);
                         ? $"Launched {process.ProcessName}, expected {string.Join(", ", launchExecutables)}; ETW starts now."
                         : "The activated application was already running; ETW starts now.");
                 }
+                else
+                {
+                    // The launcher is the process that created the target, which is not always the profiler.
+                    launcher = ProcessParent.Find(process);
+                    if (launcher is null)
+                    {
+                        Trace.TraceWarning("The process that created the target is unknown, so the launch has no launcher events.");
+                    }
+                }
             }
 
-            recorder = CreateRecorder(sessionDirectory, process, creationTimeFileTime);
+            recorder = CreateRecorder(sessionDirectory, process, creationTimeFileTime, launcher);
             events = new EventPipeline(recorder is null ? [counter] : [counter, recorder]);
             if (etw is null)
             {
@@ -375,8 +392,8 @@ History);
             }
             else
             {
-                // The profiler launched the process, so its launcher providers' events are the launch's too.
-                etw.StartReading(process.Id, etwFromProcessStart ? Environment.ProcessId : null, events.Post);
+                // The launcher's events from the launcher providers are the launch's too.
+                etw.StartReading(process.Id, launcher?.ProcessId, events.Post);
             }
 
             pipeline = events;
@@ -394,9 +411,10 @@ History);
         }
     }
 
-    // One file per connection; time zero of the recording is when ETW started listening. For a launch, the profiler is the
-    // launcher.
-    private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
+    // One file per connection; time zero of the recording is when ETW started listening. For a launch, launcher is the
+    // process that created the target.
+    private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime,
+        (int ProcessId, string? Name)? launcher)
     {
         if (directory is null)
         {
@@ -410,8 +428,8 @@ History);
                 creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null, Stopwatch.Frequency,
                 etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
                 etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
-                LauncherProcessId: etwFromProcessStart ? Environment.ProcessId : null,
-                LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null));
+                LauncherProcessId: launcher?.ProcessId,
+                LauncherName: launcher?.Name));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

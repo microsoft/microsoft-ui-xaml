@@ -277,8 +277,8 @@ public sealed class LaunchTimelineReader
     }
 
     // Whether the launcher's event at milliseconds, a start event or not, can be part of the launch of the process it
-    // created at launched: within LauncherWindow of the creation, and not a start event after it, such as the profiler's
-    // ShellExecuteExW/Start when Edit markers opens the configuration.
+    // created at launched: within LauncherWindow of the creation, and not a start event after it, such as the launcher's
+    // ShellExecuteExW/Start when it opens another file.
     private static bool PartOfLaunch(double milliseconds, bool start, double launched) =>
         Math.Abs(milliseconds - launched) <= LauncherWindow && !(start && milliseconds > launched);
 

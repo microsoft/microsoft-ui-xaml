@@ -22,19 +22,27 @@
   ],
 
   // A milestone is built in ("builtin": ProcessCreated or FirstFrameDrawn), or the first "event" from a "provider" (one
-  // above, or a XAML provider such as Microsoft.UI.Xaml) whose fields have the values in "where", if given. "label" names
-  // it; with "labelFrom" instead, the first event with each value of that field is a milestone named by the value.
-  // "process" (an executable name, with or without .exe) shows the milestone for that app only. "from": "launcher" takes
-  // the event from the process that launched the app instead: of its events within 10 seconds of the app's creation
-  // that are part of the launch, the one nearest the creation (see "Launcher milestones" in the README). The timeline's
-  // times are from the earliest launcher milestone before the creation, or else from the creation.
+  // above, or a XAML provider such as Microsoft.UI.Xaml or Microsoft-Windows-XAML) whose fields have the values in
+  // "where", if given. "label" names it; with "labelFrom" instead, the first event with each value of that field is a
+  // milestone named by the value. "process" (an executable name, with or without .exe) shows the milestone for that app
+  // only. "from": "launcher" takes the event from the process that launched the app instead: of its events within 10
+  // seconds of the app's creation that are part of the launch, the one nearest the creation (see "Launcher milestones"
+  // in the README). The timeline's times are from the earliest launcher milestone before the creation, or else from the
+  // creation.
   "milestones": [
-    // The shell's event for a user's click that launched the app (not written for a launch by UI Automation).
+    // The shell's event for a user's click that launched the app (not written for a launch from the profiler or by UI
+    // Automation).
     { "provider": "Microsoft.Windows.AppLifeCycle.UI", "event": "AppLaunch_UserClick", "label": "User click", "from": "launcher" },
     // A packaged desktop app's activation.
     { "provider": "Microsoft.Windows.ApplicationModel.DesktopAppx", "event": "TryActivateDesktopAppXApplication/Start", "label": "Activation requested", "from": "launcher" },
     { "provider": "Microsoft.Windows.ShellExecute", "event": "ShellExecuteExW/Start", "label": "ShellExecute", "from": "launcher" },
     { "builtin": "ProcessCreated", "label": "Process created" },
+    // WinUI's startup in the app. No event marks an app's WinMain; the nearest is XAML init, when WinUI starts
+    // initializing on the app's UI thread.
+    { "provider": "Microsoft-Windows-XAML", "event": "InitializeCore/Start", "label": "XAML init" },
+    { "provider": "Microsoft-Windows-XAML", "event": "CreateWindow/Start", "label": "Window creation" },
+    { "provider": "Microsoft-Windows-XAML", "event": "PutRootVisual/Start", "label": "Root visual set" },
+    { "provider": "Microsoft-Windows-XAML", "event": "RaiseAllLoadedEvents/Stop", "label": "Loaded events" },
     // WinUI's event at the end of the first UI thread frame, whether or not it drew.
     { "provider": "Microsoft.UI.Xaml", "event": "FirstUiThreadFrameEnd", "label": "First UI thread frame" },
     { "builtin": "FirstFrameDrawn", "label": "First frame drawn" },

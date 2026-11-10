@@ -339,7 +339,7 @@
   <data name="ObjectLinksHeader.Text" xml:space="preserve"><value>Show the history of:</value></data>
   <data name="LaunchTab.Header" xml:space="preserve"><value>Launch</value></data>
   <data name="EditMarkers.Content" xml:space="preserve"><value>Edit markers</value></data>
-  <data name="EditMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Open your marker configuration, %LOCALAPPDATA%\WinUIProfiler\markers.json, which is created from the default the first time. Add your app's provider and milestones, save the file, and select Reload.</value></data>
+  <data name="EditMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Open your marker configuration, %LOCALAPPDATA%\WinUIProfiler\markers.json, in Notepad. It is created from the default the first time. Add your app's provider and milestones, save the file, and select Reload.</value></data>
   <data name="ReloadMarkers.Content" xml:space="preserve"><value>Reload</value></data>
   <data name="ReloadMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the marker configuration again and show its milestones. A provider it adds is recorded from the next connection or trace reading.</value></data>
   <data name="MarkersFileFormat" xml:space="preserve"><value>Milestones from {0}</value></data>
