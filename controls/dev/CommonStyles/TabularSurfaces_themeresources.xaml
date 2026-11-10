@@ -10,10 +10,37 @@
         Header*        - column-header surfaces
         GridLine*      - row/column separator brushes
 
-    Light/Dark surface literals mirror Common_themeresources_any.xaml; inline
-    comments identify their Fluent equivalents. Disabled selection indicators
-    and High Contrast reuse shared framework brushes. Consumers use ThemeResource
-    to select the active theme's tokens.
+    IMPORTANT — why neutral colors use literal SolidColorBrush per theme instead of <StaticResource>
+    aliases to TextFillColor*Brush / SubtleFillColor*Brush / etc.:
+
+    The aliased pattern (`<StaticResource ResourceKey="TextFillColorPrimaryBrush" />`)
+    works ONLY when this file is consumed via the dll's master themeresources.xaml
+    (produced by BatchMergeXaml + bundled in Microsoft.UI.Xaml.Controls.dll). In that
+    context every alias resolves against the same compiled XBF blob.
+
+    Consuming apps merge this file directly via
+       <ResourceDictionary Source="ms-appx:///TabularSurfaces_themeresources.xaml" />
+    because XamlControlsResources does NOT deploy the dll's master themeresources to
+    the consumer's package. When merged that way, the StaticResource aliases must
+    cross-reference into ANOTHER merged dictionary (XamlControlsResources's theme
+    dicts) at runtime — which the XAML resolver does NOT do reliably for keys nested
+    inside ThemeDictionaries blocks of a sibling MergedDictionary. The result was
+    silent fallbacks (Light-theme black brushes used in Dark theme → dark-on-dark
+    body cells + header text, hard to read).
+
+    Fix is to inline the WinUI Fluent color values per theme so the brushes are
+    self-contained. The hex values mirror controls/dev/CommonStyles/Common_themeresources_any.xaml
+    exactly so the visual identity stays in sync with the rest of WinUI. If the
+    Fluent design system tweaks a token, refresh the corresponding hex here.
+    Inline comments identify the corresponding WinUI brush for each literal color.
+
+    The disabled selection indicator references AccentFillColorDisabledBrush so
+    WinUI owns its disabled appearance. This is a neutral brush, not an accent-ramp color.
+    HighContrast entries alias the shared SystemColor*Brush resources instead of
+    allocating another SolidColorBrush for each surface. These aliases and the disabled
+    selection alias cross dictionary boundaries, so the historical lookup caveat above
+    requires verification in Light, Dark, HighContrast, and during live theme switching.
+    Reading an inactive theme dictionary is not a runtime theme test.
 -->
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
     <ResourceDictionary.ThemeDictionaries>

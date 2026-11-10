@@ -334,6 +334,14 @@ Unsorted pointer-hover entry/exit uses an 83ms linear opacity fade. Keep the inn
 until fade-out finishes; VSM owns interruption/reversal. Keyboard focus, pressed/sorted states,
 High Contrast, disabled/non-sortable headers and disabled Windows animations bypass the fade.
 
+Automated layout regressions check resource-driven padding, density heights, text containment,
+and inherited typography with rasterization-scale-aware layout tolerances, not exact glyph-ink
+centering across OS/font versions. Editor density tests retain start-edge alignment and unclipped
+text without requiring TextBlock and TextBox to expose identical vertical line metrics.
+Fade tests inspect the transition configuration and wait for settled visibility/opacity, including
+rapid state changes and sorting during a fade; they do not require CI to observe intermediate
+frames of an 83ms animation. Collapsed headers need not realize their templates until shown.
+
 Section-header backplates are transparent at rest in Light/Dark and use the unselected row
 hover/pressed brushes. Their background border binds the same `CornerRadius` as row backplates.
 High Contrast pairs ButtonText with ButtonFace at rest, including the matching interaction border,

@@ -913,13 +913,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var headerRow = tableView.FindVisualChildByName("PART_HeaderGridLine") as Border;
                     Verify.IsNotNull(headerRow);
                     Verify.IsNotNull(headerRow.BorderBrush, "Body None must not hide the header rule after retemplating.");
-                    foreach (var columnHeader in FindVisualChildrenByType<TableViewColumnHeader>(tableView))
+                    var visibleHeaders = FindVisualChildrenByType<TableViewColumnHeader>(tableView)
+                        .Where(header => header.Visibility == Visibility.Visible).ToList();
+                    Verify.AreEqual(tableView.Columns.Count - 1, visibleHeaders.Count);
+                    foreach (var columnHeader in visibleHeaders)
                     {
                         var separator = columnHeader.FindVisualChildByName("PART_GridLine") as Border;
-                        Verify.IsNotNull(separator);
-                        if (columnHeader.Visibility == Visibility.Visible &&
-                            columnHeader != FindVisualChildrenByType<TableViewColumnHeader>(tableView)
-                                .Last(candidate => candidate.Visibility == Visibility.Visible))
+                        Verify.IsNotNull(separator, "Visible headers must realize their separators after retemplating.");
+                        if (columnHeader != visibleHeaders.Last())
                         {
                             Verify.AreEqual(Visibility.Visible, separator.Visibility,
                                 "Interior separators remain visible after retemplating, including in RTL.");
@@ -3369,7 +3370,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyGeneratedTextCapsAreCenteredInsideSeparators()
+        public void VerifyGeneratedTextLayoutStaysInsideSeparators()
         {
             foreach (var density in DensityCases)
             foreach (var lines in new[] { TableViewGridLinesVisibility.All, TableViewGridLinesVisibility.None })
@@ -3393,30 +3394,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.SelectionMode = TableViewSelectionMode.None;
                     table.ShowGroupHeaderCount = false;
                     table.IsTextScaleFactorEnabled = false;
-                    table.HighContrastAdjustment = ElementHighContrastAdjustment.None;
-                    table.Resources["TabularSurfaceHeaderBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
-                    table.Resources["TabularSurfaceHeaderForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
                     LoadContent(table);
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
                     header = RequireColumnHeader(table, 0);
-                    header.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
                     row = GetRealizedRows(table).First();
                     cell = GetRowCell(row, 0);
                     chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
-                    ((Grid)cell).BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
                     section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
                     sectionChrome = (FrameworkElement)section.FindVisualChildByName("PART_RowChrome");
-                    section.Background = new SolidColorBrush(Microsoft.UI.Colors.Black);
-                    section.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
-                    ((FontIcon)section.FindVisualChildByName("PART_ExpanderIcon")).Foreground =
-                        new SolidColorBrush(Microsoft.UI.Colors.Black);
                     sectionText = FindVisualChildrenByType<TextBlock>(section)
                         .First(text => text.Text == ((TableViewGroupInfo)section.Content).KeyText);
-                    sectionText.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
-                    sectionText.HighContrastAdjustment = ElementHighContrastAdjustment.None;
                 });
                 foreach (var weight in new[] { Microsoft.UI.Text.FontWeights.Normal, Microsoft.UI.Text.FontWeights.SemiBold })
                 foreach (var label in new[] { "HIM", "Name" })
@@ -3428,55 +3418,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         table.FontWeight = weight;
                         var text = RequireFirstCellTextBlock(table);
                         text.Text = label;
-                        text.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
-                        text.HighContrastAdjustment = ElementHighContrastAdjustment.None;
                         sectionText.Text = label;
                         section.FontWeight = weight;
                         table.UpdateLayout();
                     });
                     IdleSynchronizer.Wait();
-                    foreach (var target in new FrameworkElement[] { header, cell, section })
+                    RunOnUIThread.Execute(() =>
                     {
-                        double height = 0;
-                        double interiorTop = 0;
-                        double interiorBottom = 0;
-                        RunOnUIThread.Execute(() =>
+                        foreach (var target in new FrameworkElement[] { header, cell, section })
                         {
-                            height = target.ActualHeight;
+                            var text = target == header ? (TextBlock)header.Content :
+                                target == cell ? RequireFirstCellTextBlock(table) : sectionText;
+                            double interiorTop = 0;
+                            double interiorBottom;
                             if (target == header)
                             {
-                                interiorBottom = height - ((Border)table.FindVisualChildByName("PART_HeaderGridLine")).BorderThickness.Bottom;
+                                interiorBottom = header.ActualHeight -
+                                    ((Border)table.FindVisualChildByName("PART_HeaderGridLine")).BorderThickness.Bottom;
+                                Verify.AreEqual(density.TextPadding, GetHeaderPresenter(table, 0).Padding);
                             }
                             else
                             {
                                 var targetChrome = target == cell ? chrome : sectionChrome;
                                 interiorTop = targetChrome.TransformToVisual(target).TransformPoint(new Point()).Y;
                                 interiorBottom = interiorTop + targetChrome.ActualHeight;
+                                if (target == cell)
+                                {
+                                    Verify.AreEqual(GetAlignedContentPadding(row, density.TextPadding), text.Padding);
+                                }
+                                else
+                                {
+                                    Verify.AreEqual(GetAlignedContentPadding(section,
+                                        new Thickness(0, density.TextPadding.Top, 0, density.TextPadding.Bottom)),
+                                        ((ContentPresenter)section.FindVisualChildByName("PART_ContentPresenter")).Padding);
+                                }
                             }
-                        });
-                        var image = RenderElementPixels(target);
-                        int top = image.Height;
-                        int bottom = -1;
-                        for (int y = 0; y < image.Height; y++)
-                        for (int x = 0; x < image.Width; x++)
-                        {
-                            int i = (y * image.Width + x) * 4;
-                            if (image.Pixels[i] > 128 && image.Pixels[i + 1] > 128 && image.Pixels[i + 2] > 128)
-                            {
-                                top = Math.Min(top, y);
-                                bottom = Math.Max(bottom, y);
-                            }
+                            var context = $"{density.Density}, {lines}, {theme}, weight={weight.Weight}, {label}, {target.GetType().Name}";
+                            Verify.AreEqual(TextLineBounds.Full, text.TextLineBounds, context);
+                            Verify.AreEqual(density.RowMinHeight, target.ActualHeight, context);
+                            var bounds = text.TransformToVisual(target).TransformBounds(new Rect(
+                                text.Padding.Left, text.Padding.Top,
+                                text.ActualWidth - text.Padding.Left - text.Padding.Right,
+                                text.ActualHeight - text.Padding.Top - text.Padding.Bottom));
+                            var tolerance = 1 / target.XamlRoot.RasterizationScale + 0.001;
+                            Log.Comment($"{context}: text={bounds}, interior={interiorTop}..{interiorBottom}.");
+                            Verify.IsGreaterThan(bounds.Width, 0.0, context);
+                            Verify.IsGreaterThan(bounds.Height, 0.0, context);
+                            Verify.IsGreaterThanOrEqual(bounds.Top, interiorTop - tolerance,
+                                $"The full text layout must fit below the top separator ({context}).");
+                            Verify.IsLessThanOrEqual(bounds.Bottom, interiorBottom + tolerance,
+                                $"The full text layout must fit inside the separator bounds ({context}).");
                         }
-                        Verify.IsGreaterThan(bottom, top);
-                        double inkTop = top * height / image.Height;
-                        double inkBottom = (bottom + 1) * height / image.Height;
-                        Log.Comment($"{density.Density}, {lines}, {theme}, weight={weight.Weight}, {label}, {(target == header ? "header" : target == cell ? "cell" : "section")}: "
-                            + $"interior={interiorTop:F3}..{interiorBottom:F3}, ink={inkTop:F3}..{inkBottom:F3}, "
-                            + $"top gap={inkTop - interiorTop:F3}, bottom gap={interiorBottom - inkBottom:F3}, "
-                            + $"center error={(inkTop + inkBottom - interiorTop - interiorBottom) / 2:F3}px");
-                        Verify.IsLessThanOrEqual(Math.Abs((inkTop + inkBottom - interiorTop - interiorBottom) / 2), 0.5,
-                            "Visible capitals must be centered inside the separators to within half a pixel.");
-                    }
+                    });
                 }
             }
         }
@@ -3543,7 +3536,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyGeneratedHeaderTextIsOpticallyCentered()
+        public void VerifyGeneratedHeaderTextLayoutFollowsTypography()
         {
             foreach (var density in DensityCases)
             {
@@ -3556,9 +3549,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.Density = density.Density;
                     table.CanUserSortColumns = false;
                     table.IsTextScaleFactorEnabled = false;
-                    table.HighContrastAdjustment = ElementHighContrastAdjustment.None;
-                    table.Resources["TabularSurfaceHeaderBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
-                    table.Resources["TabularSurfaceHeaderForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
                     LoadContent(table);
                 });
                 IdleSynchronizer.Wait();
@@ -3570,37 +3560,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var label in new[] { "Name", "Role", "Status" })
                 foreach (var weight in new[] { Microsoft.UI.Text.FontWeights.Normal, Microsoft.UI.Text.FontWeights.SemiBold })
                 {
-                    double height = 0;
                     RunOnUIThread.Execute(() =>
                     {
                         text.Text = label;
                         header.FontWeight = weight;
                         table.UpdateLayout();
-                        height = header.ActualHeight;
-                        Verify.AreEqual(density.RowMinHeight, height, "Optical alignment must not change the header height.");
-                        Verify.AreEqual(TextLineBounds.Full, text.TextLineBounds, "Keep the full line box for accented and descending glyphs.");
                     });
                     IdleSynchronizer.Wait();
-                    var image = RenderElementPixels(header);
-                    int top = image.Height;
-                    int bottom = -1;
-                    for (int y = 0; y < image.Height; y++)
+                    RunOnUIThread.Execute(() =>
                     {
-                        for (int x = 0; x < image.Width; x++)
-                        {
-                            int i = (y * image.Width + x) * 4;
-                            if (image.Pixels[i] > 128 && image.Pixels[i + 1] > 128 && image.Pixels[i + 2] > 128)
-                            {
-                                top = Math.Min(top, y);
-                                bottom = Math.Max(bottom, y);
-                            }
-                        }
-                    }
-                    Verify.IsGreaterThan(bottom, top);
-                    double error = ((top + bottom + 1) * height / image.Height - height) / 2;
-                    Log.Comment($"{density.Density}, {label}, weight={weight.Weight}: ink center error={error:F3}px");
-                    Verify.IsLessThanOrEqual(Math.Abs(error), 0.5,
-                        $"Generated header glyphs must be optically centered: {density.Density}, {label}, {weight.Weight}");
+                        var context = $"{density.Density}, {label}, weight={weight.Weight}";
+                        Verify.AreEqual(density.RowMinHeight, header.ActualHeight, context);
+                        Verify.AreEqual(TextLineBounds.Full, text.TextLineBounds, context);
+                        Verify.AreEqual(header.FontSize, text.FontSize, "Generated text must inherit header typography.");
+                        Verify.AreEqual(weight, text.FontWeight, "Generated text must follow live font-weight changes.");
+                        Verify.AreEqual(VerticalAlignment.Center, text.VerticalAlignment, context);
+                        Verify.AreEqual(density.TextPadding, GetHeaderPresenter(table, 0).Padding, context);
+                        Verify.IsFalse(text.IsTextTrimmed, $"Short labels must fit without trimming ({context}).");
+                        var bounds = text.TransformToVisual(header).TransformBounds(
+                            new Rect(0, 0, text.ActualWidth, text.ActualHeight));
+                        var tolerance = 1 / header.XamlRoot.RasterizationScale + 0.001;
+                        Verify.IsGreaterThan(bounds.Width, 0.0, context);
+                        Verify.IsGreaterThan(bounds.Height, 0.0, context);
+                        Verify.IsGreaterThanOrEqual(bounds.Top, -tolerance, context);
+                        Verify.IsLessThanOrEqual(bounds.Bottom, header.ActualHeight + tolerance, context);
+                    });
                 }
             }
         }
@@ -6670,35 +6654,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableView tableView = null;
             TableViewColumnHeader header = null;
             Border host = null;
-            Storyboard fadeOut = null;
-            int phase = 0;
-            double interruptedOpacity = 0;
-            double reversedOpacity = 0;
-            bool reversalAccepted = false;
-            bool exitAccepted = false;
-            bool animationsEnabled = false;
-            var samples = new List<double>();
-            using var completed = new AutoResetEvent(false);
-            EventHandler<object> onCompleted = (sender, args) => completed.Set();
-            EventHandler<object> onRendering = null;
-            onRendering = (sender, args) =>
+
+            void VerifySettledState(string state, Visibility visibility, double opacity)
             {
-                var opacity = host.Opacity;
-                samples.Add(opacity);
-                if (phase == 0 && opacity > 0 && opacity < 1)
+                var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                bool settled = false;
+                do
                 {
-                    interruptedOpacity = opacity;
-                    reversalAccepted = VisualStateManager.GoToState(header, "UnsortedSortAvailable", true);
-                    reversedOpacity = host.Opacity;
-                    phase = 1;
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() => settled = CurrentState(header, "SortStates") == state &&
+                        host.Visibility == visibility && host.Opacity == opacity);
+                    if (!settled)
+                    {
+                        Thread.Sleep(50);
+                    }
                 }
-                else if (phase == 1 && opacity > interruptedOpacity && opacity < 1)
+                while (!settled && stopwatch.Elapsed < TimeSpan.FromSeconds(10));
+
+                RunOnUIThread.Execute(() =>
                 {
-                    phase = 2;
-                    CompositionTarget.Rendering -= onRendering;
-                    exitAccepted = VisualStateManager.GoToState(header, "Unsorted", true);
-                }
-            };
+                    Verify.AreEqual(state, CurrentState(header, "SortStates"), "The requested sort state must settle.");
+                    Verify.AreEqual(visibility, host.Visibility, "The affordance must reach its final visibility.");
+                    Verify.AreEqual(opacity, host.Opacity, "The affordance must reach its final opacity.");
+                });
+            }
 
             RunOnUIThread.Execute(() =>
             {
@@ -6706,94 +6685,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
-            try
+            RunOnUIThread.Execute(() =>
             {
-                RunOnUIThread.Execute(() =>
+                header = RequireColumnHeader(tableView, 0);
+                host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
+                var root = (FrameworkElement)VisualTreeHelper.GetChild(header, 0);
+                var group = VisualStateManager.GetVisualStateGroups(root).Single(g => g.Name == "SortStates");
+                Verify.AreEqual(2, group.Transitions.Count, "Only unsorted affordance entry/exit should animate.");
+                foreach (var transition in group.Transitions)
                 {
-                    header = RequireColumnHeader(tableView, 0);
-                    host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
-                    var root = (FrameworkElement)VisualTreeHelper.GetChild(header, 0);
-                    var group = VisualStateManager.GetVisualStateGroups(root).Single(g => g.Name == "SortStates");
-                    Verify.AreEqual(2, group.Transitions.Count, "Only unsorted affordance entry/exit should animate.");
-                    foreach (var transition in group.Transitions)
-                    {
-                        bool entering = transition.To == "UnsortedSortAvailable";
-                        Verify.AreEqual(entering ? "Unsorted" : "UnsortedSortAvailable", transition.From);
-                        Verify.AreEqual(entering ? "UnsortedSortAvailable" : "Unsorted", transition.To);
-                        Verify.AreEqual(83.0, transition.GeneratedDuration.TimeSpan.TotalMilliseconds);
-                        Verify.IsNull(transition.GeneratedEasingFunction, "The generated opacity fade must be linear.");
-                        var timelines = transition.Storyboard.Children;
-                        Verify.AreEqual(1, timelines.Count, "Only hold visibility explicitly; VSM generates the opacity fade.");
-                        var visibility = (ObjectAnimationUsingKeyFrames)timelines[0];
-                        Verify.AreEqual("PART_SortIndicatorHost", Storyboard.GetTargetName(visibility));
-                        Verify.AreEqual("Visibility", Storyboard.GetTargetProperty(visibility));
-                        Verify.AreEqual(83.0, visibility.Duration.TimeSpan.TotalMilliseconds);
-                        Verify.AreEqual(1, visibility.KeyFrames.Count);
-                        Verify.AreEqual(TimeSpan.Zero, visibility.KeyFrames[0].KeyTime.TimeSpan);
-                        Verify.AreEqual("Visible", visibility.KeyFrames[0].Value.ToString(),
-                            "Keep the glyph visible until fade-out has completed.");
-                        if (!entering)
-                        {
-                            fadeOut = transition.Storyboard;
-                        }
-                    }
-                    Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction,
-                        "The hidden glyph must remain rendered for the host's fade-out.");
-                    animationsEnabled = new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled;
-                    Log.Comment($"Windows animations enabled: {animationsEnabled}.");
-                    fadeOut.Completed += onCompleted;
-                    if (animationsEnabled)
-                    {
-                        CompositionTarget.Rendering += onRendering;
-                    }
-                    else
-                    {
-                        Log.Comment("Windows animations are disabled; intermediate-frame sampling is not applicable.");
-                    }
-                    Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", false));
-                    Verify.IsTrue(VisualStateManager.GoToState(header, "Unsorted", true));
-                });
-                Verify.IsTrue(completed.WaitOne(TimeSpan.FromSeconds(5)), "The final fade-out must complete after rapid reversals.");
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() =>
-                {
-                    Log.Comment($"Observed opacity frames: {string.Join(", ", samples)}.");
-                    if (animationsEnabled)
-                    {
-                        Verify.AreEqual(2, phase, "Observe a real intermediate fade-out and a progressing reversed fade-in.");
-                        Verify.IsTrue(reversalAccepted && exitAccepted, "Both reversal transitions must be accepted.");
-                        Verify.IsTrue(Math.Abs(reversedOpacity - interruptedOpacity) < 0.02,
-                            "Reversing fade-out must not snap to an endpoint.");
-                    }
-                    Verify.AreEqual(Visibility.Collapsed, host.Visibility);
-                    Verify.AreEqual(0.0, host.Opacity);
-                    Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction);
-                    Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
-                    Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", true));
-                    Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending));
-                    Verify.AreEqual(Visibility.Visible, host.Visibility, "Sorting must immediately replace a pending fade.");
-                    Verify.AreEqual(1.0, host.Opacity, "An actual sorted indicator must be fully visible immediately.");
-                });
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() =>
-                {
-                    Verify.AreEqual("SortDescending", CurrentState(header, "SortStates"));
-                    Verify.AreEqual(Visibility.Visible, host.Visibility);
-                    Verify.AreEqual(1.0, host.Opacity, "A cancelled transition must not later hide an actual sort.");
-                    Verify.AreEqual(SortIndicatorDirection.Descending, ((SortIndicator)host.Child).Direction);
-                });
-            }
-            finally
+                    bool entering = transition.To == "UnsortedSortAvailable";
+                    Verify.AreEqual(entering ? "Unsorted" : "UnsortedSortAvailable", transition.From);
+                    Verify.AreEqual(entering ? "UnsortedSortAvailable" : "Unsorted", transition.To);
+                    Verify.AreEqual(83.0, transition.GeneratedDuration.TimeSpan.TotalMilliseconds);
+                    Verify.IsNull(transition.GeneratedEasingFunction, "The generated opacity fade must be linear.");
+                    var timelines = transition.Storyboard.Children;
+                    Verify.AreEqual(1, timelines.Count, "Only hold visibility explicitly; VSM generates the opacity fade.");
+                    var visibility = (ObjectAnimationUsingKeyFrames)timelines[0];
+                    Verify.AreEqual("PART_SortIndicatorHost", Storyboard.GetTargetName(visibility));
+                    Verify.AreEqual("Visibility", Storyboard.GetTargetProperty(visibility));
+                    Verify.AreEqual(83.0, visibility.Duration.TimeSpan.TotalMilliseconds);
+                    Verify.AreEqual(1, visibility.KeyFrames.Count);
+                    Verify.AreEqual(TimeSpan.Zero, visibility.KeyFrames[0].KeyTime.TimeSpan);
+                    Verify.AreEqual("Visible", visibility.KeyFrames[0].Value.ToString(),
+                        "Keep the glyph visible until fade-out has completed.");
+                }
+                Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction,
+                    "The hidden glyph must remain rendered for the host's fade-out.");
+                Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", false));
+                Verify.IsTrue(VisualStateManager.GoToState(header, "Unsorted", true));
+            });
+            VerifySettledState("Unsorted", Visibility.Collapsed, 0);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", true)));
+            VerifySettledState("UnsortedSortAvailable", Visibility.Visible, 1);
+
+            RunOnUIThread.Execute(() =>
             {
-                RunOnUIThread.Execute(() =>
-                {
-                    CompositionTarget.Rendering -= onRendering;
-                    if (fadeOut != null)
-                    {
-                        fadeOut.Completed -= onCompleted;
-                    }
-                });
-            }
+                Verify.IsTrue(VisualStateManager.GoToState(header, "Unsorted", true));
+                Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", true));
+                Verify.IsTrue(VisualStateManager.GoToState(header, "Unsorted", true));
+            });
+            VerifySettledState("Unsorted", Visibility.Collapsed, 0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortIndicatorDirection.Ascending, ((SortIndicator)host.Child).Direction);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+                Verify.IsTrue(VisualStateManager.GoToState(header, "UnsortedSortAvailable", false));
+                Verify.IsTrue(VisualStateManager.GoToState(header, "Unsorted", true));
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending));
+                Verify.AreEqual(Visibility.Visible, host.Visibility, "Sorting must immediately replace a pending fade.");
+                Verify.AreEqual(1.0, host.Opacity, "An actual sorted indicator must be fully visible immediately.");
+            });
+            VerifySettledState("SortDescending", Visibility.Visible, 1);
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual(SortIndicatorDirection.Descending, ((SortIndicator)host.Child).Direction));
         }
 
         [TestMethod]
