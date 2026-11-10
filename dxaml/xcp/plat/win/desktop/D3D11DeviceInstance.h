@@ -17,6 +17,7 @@ struct ID2D1DeviceContext;
 struct ID2D1SolidColorBrush;
 struct ID3D10Multithread;
 struct IDXGIDevice2;
+struct IDXGIFactory7;
 class SystemMemoryBits;
 class CD2DFactory;
 class CD3D11Device;
@@ -114,6 +115,10 @@ public:
     // Can only be called once. After this, the caller is responsible for calling UnregisterDeviceRemoved.
     _Check_return_ HRESULT TakeDeviceRemovedEvent(_Out_ HANDLE* event, _Out_ DWORD* cookie);
 
+    _Check_return_ HRESULT RegisterAdaptersChangedEvent(_In_ HANDLE event);
+    void UnregisterAdaptersChangedEvent(_In_ HANDLE event);
+    _Check_return_ HRESULT CheckForAdapterChange();
+
     _Check_return_ HRESULT GetTextureMemoryUsage(
         _Out_ UINT32 *puTextureMemoryUsage,
         _Out_ UINT32 *puTextureMemoryUsageNPOT
@@ -177,6 +182,7 @@ private:
     _Check_return_ HRESULT InitializeState();
 
     _Check_return_ HRESULT EnsureDXGIAdapters();
+    _Check_return_ HRESULT UpdateAdaptersChangedRegistrations(_In_ IDXGIFactory1* dxgiFactory);
     _Check_return_ HRESULT CheckForStaleD3DDevice();
     _Check_return_ HRESULT CreateGraphicsDeviceFromAdapter(_In_ IDXGIAdapter1* adapter, bool isWarpAdapter, bool isVideo, bool isDebugDevice);
 
@@ -238,6 +244,14 @@ private:
     Microsoft::WRL::ComPtr<IDXGIFactory1> m_dxgiFactory;
     Microsoft::WRL::ComPtr<IDXGIAdapter1> m_hardwareAdapter;
     Microsoft::WRL::ComPtr<IDXGIAdapter1> m_warpAdapter;
+
+    struct AdaptersChangedRegistration
+    {
+        HANDLE event;
+        Microsoft::WRL::ComPtr<IDXGIFactory7> factory;
+        DWORD cookie = 0;
+    };
+    std::vector<AdaptersChangedRegistration> m_adaptersChangedRegistrations;
 
     bool m_wasLostDeviceReleased {false};
     bool m_testHook_IsDeviceLost {false};
