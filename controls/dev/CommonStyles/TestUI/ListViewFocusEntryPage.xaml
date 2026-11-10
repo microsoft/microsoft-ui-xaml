@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp">
     <StackPanel Spacing="8">
-        <TextBlock Text="Reset, select and position item 11, then Tab or Shift+Tab into the list. An item that is already fully visible must not move."
+        <TextBlock Text="Reset, select and position item 11, then Tab or Shift+Tab into the list. Focus must target the selected item without scrolling another item first. The usual focus padding still applies."
                    TextWrapping="Wrap" MaxWidth="1000" HorizontalAlignment="Left" />
         <StackPanel Orientation="Horizontal" Spacing="16">
             <CheckBox x:Name="VerticalScrolling" Content="Vertical scrolling" />
@@ -21,6 +21,8 @@
                 <ComboBoxItem>Before</ComboBoxItem>
                 <ComboBoxItem>After</ComboBoxItem>
                 <ComboBoxItem>Partial</ComboBoxItem>
+                <ComboBoxItem>Leading with padding</ComboBoxItem>
+                <ComboBoxItem>Trailing with padding</ComboBoxItem>
             </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="8">

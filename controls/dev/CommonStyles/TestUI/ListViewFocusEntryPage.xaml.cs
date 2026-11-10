@@ -128,6 +128,8 @@ namespace MUXControlsTestApp
                 position == 1 ? 11 * itemSize - viewportSize :
                 position == 2 ? 0 :
                 position == 3 ? 15 * itemSize :
+                position == 5 ? 10 * itemSize - 20 :
+                position == 6 ? 11 * itemSize - viewportSize + 20 :
                 10.5 * itemSize;
 
             FocusEntryList.SelectedIndex = 10;

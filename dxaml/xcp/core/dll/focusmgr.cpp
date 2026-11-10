@@ -1978,7 +1978,6 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
         {
             success = true;
             focusCancelled = true;
-            m_bringIntoViewWithoutPaddingTarget.reset();
 
             goto Cleanup;
         }
@@ -2138,13 +2137,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
 
     // Notify the focus changing on InputManager to ensure the focused element visible with
     // Input Host Manager
-    {
-        // A GettingFocus handler may have asked for the final focus target to be brought into view without padding.
-        m_isBringingIntoViewWithoutPadding = m_bringIntoViewWithoutPaddingTarget && m_bringIntoViewWithoutPaddingTarget.get() == m_pFocusedElement;
-        m_bringIntoViewWithoutPaddingTarget.reset();
-        auto resetBringIntoViewWithoutPadding = wil::scope_exit([this]() { m_isBringingIntoViewWithoutPadding = false; });
-        IFC(NotifyFocusChanged(shouldBringIntoView, animateIfBringIntoView));
-    }
+    IFC(NotifyFocusChanged(shouldBringIntoView, animateIfBringIntoView));
 
     IFC(m_contentRoot.GetAKExport().UpdateScope());
 

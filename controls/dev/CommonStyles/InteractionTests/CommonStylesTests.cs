@@ -389,9 +389,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return true;
         }
 
-        // Keyboard focus entering a ListView (Tab, Shift+Tab) must not move an item that is already fully visible.
+        // A padded selected item must be the initial Tab target, not its partly visible neighbor.
         [TestMethod]
-        public void ListViewFocusEntryKeepsVisibleSelectedItemInPlace()
+        public void ListViewTabEntryTargetsSelectedItemWithoutScrollingNeighbor()
+        {
+            foreach (bool neverFocused in new[] { false, true })
+            foreach (bool vertical in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            foreach (string position in new[] { "Leading with padding", "Trailing with padding" })
+            {
+                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+            }
+        }
+
+        [TestMethod]
+        public void ListViewTabEntryPreservesFocusPadding()
         {
             foreach (bool neverFocused in new[] { false, true })
             foreach (bool vertical in new[] { false, true })
@@ -501,16 +513,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 int itemSize = vertical ? 100 : 200;
                 int viewportSize = 3 * itemSize;
-                bool itemVisible = position == "Leading" || position == "Trailing";
+                bool alreadyPadded = position == "Leading with padding" || position == "Trailing with padding";
                 double initialOffset =
+                    position == "Leading with padding" ? 10 * itemSize - 20 :
+                    position == "Trailing with padding" ? 11 * itemSize - viewportSize + 20 :
                     position == "Leading" ? 10 * itemSize :
                     position == "Trailing" ? 11 * itemSize - viewportSize :
                     position == "Before" ? 0 :
                     position == "After" ? 15 * itemSize :
                     10.5 * itemSize;
                 double expectedOffset =
-                    itemVisible ? initialOffset :
-                    position == "Before" ? 11 * itemSize - viewportSize + 20 :
+                    alreadyPadded ? initialOffset :
+                    position == "Before" || position == "Trailing" ? 11 * itemSize - viewportSize + 20 :
                     10 * itemSize - 20;
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
                     IsFocusEntryOffsetNear(initialOffset) && GetFocusEntryText("FocusEntryChanges") == "0");
@@ -530,10 +544,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("10", GetFocusEntryText("FocusEntryFocusedIndex"), "Focus entering the list must go to the selected item.");
                 Verify.IsTrue(IsFocusEntryOffsetNear(expectedOffset),
                     $"Expected offset {expectedOffset} after focus entered the list; {diagnostics}.");
-                if (itemVisible)
+                if (alreadyPadded)
                 {
                     Verify.AreEqual("0", GetFocusEntryText("FocusEntryChanges"),
-                        $"Focus entering the list must not move an item that is already fully visible; {diagnostics}.");
+                        $"Tab entry must not scroll a neighboring item when the selected item already has focus padding; {diagnostics}.");
                 }
             }
         }
