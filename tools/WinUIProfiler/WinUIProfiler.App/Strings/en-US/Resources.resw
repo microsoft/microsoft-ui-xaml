@@ -215,14 +215,6 @@
   <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
   <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>
   <data name="RecordingDetailsFormat" xml:space="preserve"><value>{0}&#10;Limit {1:N0} MB: the oldest events are removed to stay within it.</value></data>
-  <data name="StartupRecordingAutomation" xml:space="preserve"><value>Startup process recordings</value></data>
-  <data name="StartupRecordingsFormat" xml:space="preserve"><value>Startup group: {0} processes | UI PID {1} displayed</value></data>
-  <data name="StartupRecordingDetailsFormat" xml:space="preserve"><value>PID {0} ({1}) | {2:N0} events&#10;{3}&#10;{4}</value></data>
-  <data name="StartupUiProcess" xml:space="preserve"><value>UI, default</value></data>
-  <data name="StartupActivationProcess" xml:space="preserve"><value>activation</value></data>
-  <data name="StartupChildProcess" xml:space="preserve"><value>startup child</value></data>
-  <data name="StartupRecordingUnavailable" xml:space="preserve"><value>No session file was recorded.</value></data>
-  <data name="StartupXamlUnavailable" xml:space="preserve"><value>No XAML events observed in this process; UI metrics are not attributed to it.</value></data>
   <data name="ModeAutomation" xml:space="preserve"><value>Launch, attach, or trace mode</value></data>
   <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
   <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>

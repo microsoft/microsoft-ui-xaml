@@ -97,8 +97,6 @@ public sealed class TargetConnection : IAsyncDisposable
     // The session file the events are saved to; null when this connection does not record. Kept after cleanup.
     public RecordingStatus? Recording => recordings?.Primary.Recording;
     public string? RecordingError => recordings?.RecordingError ?? startupCatalogError;
-    public NativeLaunchResult? StartupProcesses => nativeLaunch?.Result;
-    public IReadOnlyList<ProcessRecordingStatus> StartupRecordings => nativeLaunch is null ? [] : recordings?.Processes ?? [];
     private TargetConnection(IProgress<ConnectionProgress>? progress) => this.progress = progress;
 
     public static void ValidateOptions(TargetConnectionOptions options)

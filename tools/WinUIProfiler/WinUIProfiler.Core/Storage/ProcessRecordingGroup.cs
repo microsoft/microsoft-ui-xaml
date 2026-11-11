@@ -4,7 +4,7 @@ using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.Engine.Storage;
 
-public sealed record ProcessRecordingStatus(SessionStart Source, bool IsPrimary, RecordingStatus? Recording,
+internal sealed record ProcessRecordingStatus(SessionStart Source, bool IsPrimary, RecordingStatus? Recording,
     long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, long DroppedEvents, string? Error);
 
 // Each writer indexes process-local addresses and frames. Never feed another target process into that writer,

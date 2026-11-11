@@ -406,8 +406,9 @@ The app reads ETW with one real-time session per connection
   handles prevent PID reuse during recording, and the consumer rejects events
   predating each instance. Unrelated same-image processes are excluded.
   TAP, live process metrics and the default displayed recording stay attached
-  to the selected UI child. The startup-recording summary lists the other
-  session paths and identifies processes with no observed XAML telemetry.
+  to the selected UI child; the connection UI is unchanged. `recordings.json`
+  and the capture script list the other session paths and identify processes
+  with no observed XAML telemetry.
 - **Attach:** the session filters on the process ID from the start and reads
   from the time of connection.
 

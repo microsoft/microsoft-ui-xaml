@@ -202,8 +202,7 @@ public sealed partial class MainWindow : Window
             (ConnectionStatus, "StatusAutomation"),
             (ConnectionIdentity, "IdentityAutomation"),
             (EtwSummary, "EtwAutomation"),
-            (RecordingSummary, "RecordingAutomation"),
-            (StartupRecordingSummary, "StartupRecordingAutomation")
+            (RecordingSummary, "RecordingAutomation")
         })
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
@@ -408,21 +407,6 @@ public sealed partial class MainWindow : Window
                         Path.GetFileName(recording.Path), recording.StoredEvents, recording.FileBytes / 1024.0 / 1024,
                         recording.LimitBytes / 1024 / 1024, recording.CompleteFromSeconds ?? 0),
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
-            }
-
-            var startupRecordings = model.StartupRecordings;
-            StartupRecordingSummary.Visibility = startupRecordings.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-            if (startupRecordings.Count > 1)
-            {
-                var primary = startupRecordings.Single(item => item.IsPrimary);
-                var details = startupRecordings.Select(item => Format("StartupRecordingDetailsFormat", item.Source.ProcessId,
-                    Text(item.IsPrimary ? "StartupUiProcess" :
-                        item.Source.ProcessId == model.StartupProcesses?.ActivationProcessId ? "StartupActivationProcess" : "StartupChildProcess"),
-                    item.Recording?.StoredEvents ?? 0, item.Error ?? item.Recording?.Path ?? Text("StartupRecordingUnavailable"),
-                    item.XamlEvents + item.ProfilerEvents == 0 ? Text("StartupXamlUnavailable") : ""));
-                SetLine(StartupRecordingSummary,
-                    Format("StartupRecordingsFormat", startupRecordings.Count, primary.Source.ProcessId),
-                    string.Join(Environment.NewLine, details));
             }
 
             // A trace's session file grows while it is read, so the tabs follow it as they follow a connection's.
