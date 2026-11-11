@@ -310,6 +310,37 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CacheManager::ResetGroupCacheI
     return S_OK;
 }
 
+_Check_return_ HRESULT ModernCollectionBasePanel::CacheManager::IsGroupCountInSyncWithCollectionView(_Out_ bool* pIsInSync)
+{
+    ctl::ComPtr<IGeneratorHost> strongHost;
+    ctl::ComPtr<ICollectionView> collectionView;
+    ctl::ComPtr<wfc::IObservableVector<IInspectable*>> collectionGroups;
+
+    *pIsInSync = false;
+
+    IFC_RETURN(m_wrHost.As(&strongHost));
+    if (strongHost)
+    {
+        IFC_RETURN(strongHost->get_CollectionView(&collectionView));
+    }
+    if (collectionView)
+    {
+        IFC_RETURN(collectionView->get_CollectionGroups(&collectionGroups));
+    }
+    if (collectionGroups)
+    {
+        ctl::ComPtr<wfc::IVector<IInspectable*>> collectionGroupsAsV;
+        UINT size = 0;
+
+        IFC_RETURN(collectionGroups.As<wfc::IVector<IInspectable*>>(&collectionGroupsAsV));
+        IFC_RETURN(collectionGroupsAsV->get_Size(&size));
+
+        *pIsInSync = static_cast<INT32>(size) == GetTotalGroupCount();
+    }
+
+    return S_OK;
+}
+
 
 // we expect this method to be only called for one event at a time
 // Instead of going hardcore and redoing the whole cache, just take the change and update the cache

@@ -725,6 +725,62 @@ Cleanup:
     RRETURN(hr);
 }
 
+// Releases the pin that a group header scroll holds on its header.
+// Recycling skips pinned headers, so a header that a reset or a cancelled scroll left unmapped would
+// otherwise stay linked to its group and in the visual tree forever.
+_Check_return_ HRESULT ModernCollectionBasePanel::ReleaseStoredFocusedHeader()
+{
+    ctl::ComPtr<IUIElement> spHeader;
+    INT groupIndex = -1;
+
+    IFC_RETURN(m_containerManager.GetFocusedHeaderContainer(&groupIndex, &spHeader));
+    IFC_RETURN(m_containerManager.ResetFocusedHeaderContainer(TRUE));
+
+    if (!spHeader || m_containerManager.GetIsHeaderPinned(spHeader))
+    {
+        return S_OK;
+    }
+
+    // A realized header is still in use.
+    for (INT32 validHeaderIndex = 0; validHeaderIndex < m_containerManager.GetValidHeaderCount(); ++validHeaderIndex)
+    {
+        ctl::ComPtr<IUIElement> spValidHeader;
+        IFC_RETURN(m_containerManager.GetHeaderAtValidIndex(validHeaderIndex, &spValidHeader));
+        if (spValidHeader.Get() == spHeader.Get())
+        {
+            return S_OK;
+        }
+    }
+
+    BOOLEAN hasFocus = FALSE;
+    auto spHeaderAsFE = spHeader.AsOrNull<xaml::IFrameworkElement>();
+    if (spHeaderAsFE)
+    {
+        IFC_RETURN(spHeaderAsFE.Cast<FrameworkElement>()->HasFocus(&hasFocus));
+    }
+    if (hasFocus)
+    {
+        return S_OK;
+    }
+
+    // A header that was already recycled is not linked to a group anymore.
+    if (!GetVirtualizationInformationFromElement(spHeader)->GetItem())
+    {
+        return S_OK;
+    }
+
+    const bool isQueued = std::any_of(
+        m_recycleHeaderQueue.begin(),
+        m_recycleHeaderQueue.end(),
+        [&spHeader](ctl::WeakRefPtr& queued) { return queued.AsOrNull<IUIElement>().Get() == spHeader.Get(); });
+    if (isQueued)
+    {
+        return S_OK;
+    }
+
+    return RecycleHeaderImpl(spHeader.Get());
+}
+
 // Call UnlinkContainerFromItem and ClearContainerForItem on the given container. If the item isn't
 // its own container, return the container to the recycle queue.
 // For pinned items, this is a no-op.
@@ -1174,9 +1230,12 @@ ModernCollectionBasePanel::NotifyOfItemsChangingImpl(
             }
             IFC(hr);
 
-            // A custom ICollectionView can raise a Reset whose index is not a group index.
+            // A custom ICollectionView can raise a Reset whose index is not a group index, or change its groups
+            // without a group notification so that the cached groups, and this index, are stale.
             // Resetting a group that does not exist would leave stale containers, so reset everything.
-            if (nIndex < static_cast<UINT>(m_cacheManager.GetTotalGroupCount()))
+            bool isGroupCountInSync = false;
+            IFC(m_cacheManager.IsGroupCountInSyncWithCollectionView(&isGroupCountInSync));
+            if (isGroupCountInSync && nIndex < static_cast<UINT>(m_cacheManager.GetTotalGroupCount()))
             {
                 IFC(OnGroupReset(nIndex));
             }

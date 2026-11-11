@@ -2171,23 +2171,29 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollGroupHeaderIntoView(
                 auto strongCache = m_cacheManager.CacheStrongRefs(&hr);
                 IFC_RETURN(hr);
 
-                // if nothing is focused, and index is connected, set that as focused container
-                // if not connected, create a container
-                ctl::ComPtr<IUIElement> spContainer;
-                index = static_cast<UINT>(m_cacheManager.DataIndexToLayoutIndex(xaml_controls::ElementType_GroupHeader, index));
-                index = static_cast<UINT>(m_cacheManager.LayoutIndexToDataIndex(xaml_controls::ElementType_GroupHeader, index));
-                if (m_containerManager.IsGroupHeaderRealized(index))
+                // The groups can stop being displayable between the caller's check and here, for example
+                // when flushing the pending command or a recycle callback hides the empty groups.
+                // A header cannot be generated for a group that is not displayed.
+                if (m_cacheManager.GetTotalLayoutGroupCount() > 0)
                 {
-                    IFC_RETURN(m_containerManager.GetHeaderAtGroupIndex(index, &spContainer));
-                }
-                else
-                {
-                    IFC_RETURN(m_icg2->GenerateHeaderAtGroupIndex(index, &spContainer));
-                    IFC_RETURN(m_containerManager.PlaceInGarbageRegionIfNotInChildren(spContainer));
-                }
+                    // if nothing is focused, and index is connected, set that as focused container
+                    // if not connected, create a container
+                    ctl::ComPtr<IUIElement> spContainer;
+                    index = static_cast<UINT>(m_cacheManager.DataIndexToLayoutIndex(xaml_controls::ElementType_GroupHeader, index));
+                    index = static_cast<UINT>(m_cacheManager.LayoutIndexToDataIndex(xaml_controls::ElementType_GroupHeader, index));
+                    if (m_containerManager.IsGroupHeaderRealized(index))
+                    {
+                        IFC_RETURN(m_containerManager.GetHeaderAtGroupIndex(index, &spContainer));
+                    }
+                    else
+                    {
+                        IFC_RETURN(m_icg2->GenerateHeaderAtGroupIndex(index, &spContainer));
+                        IFC_RETURN(m_containerManager.PlaceInGarbageRegionIfNotInChildren(spContainer));
+                    }
 
-                IFC_RETURN(m_containerManager.SetFocusedHeaderContainer(index, spContainer));
-                m_containerManager.m_wasLastScrollIntoViewForHeader = true;
+                    IFC_RETURN(m_containerManager.SetFocusedHeaderContainer(index, spContainer));
+                    m_containerManager.m_wasLastScrollIntoViewForHeader = true;
+                }
             }
 
             if (m_containerManager.m_isScrollIntoViewInProgress)
@@ -2204,7 +2210,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollGroupHeaderIntoView(
                 m_containerManager.m_isScrollIntoViewInProgress = true;
                 IFC_RETURN(DoScrollGroupHeaderIntoView(index, alignment, offset, FALSE /*animate*/, pNewVisibleWindow));
                 // Reset the stored focused header once it is in view.
-                IFC_RETURN(m_containerManager.ResetFocusedHeaderContainer(TRUE));
+                IFC_RETURN(ReleaseStoredFocusedHeader());
                 m_containerManager.m_isScrollIntoViewInProgress = false;
                 return S_OK;
             };
