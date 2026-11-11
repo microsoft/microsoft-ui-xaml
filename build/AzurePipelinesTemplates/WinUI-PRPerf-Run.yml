@@ -1,0 +1,914 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+parameters:
+- name: pullRequestId
+  type: string
+  default: ''
+- name: repositoryId
+  type: string
+  default: ''
+- name: sourceCommit
+  type: string
+  default: ''
+- name: targetCommit
+  type: string
+  default: ''
+- name: sourceBuildId
+  type: string
+  default: ''
+- name: targetBuildId
+  type: string
+  default: ''
+- name: requestIdentity
+  type: string
+  default: ''
+- name: useFixtures
+  type: boolean
+# Launching a real app and tracing it needs appx deployment, a trace session and a
+# decoder to all work on a lab agent. Until that is proven, the working comparison must
+# not be able to be disturbed by it, so it stays off unless it is asked for.
+- name: runXamlTrace
+  type: boolean
+  default: false
+# The payload comes from the scenario test stage, which only runs on a full validation
+# run, so on an ordinary pull request run there is nothing to download. It is named
+# explicitly rather than guessed: build 157958208 published no payload artifact at all,
+# and a wrong name would look like a working configuration that silently measures nothing.
+- name: xamlTracePayloadArtifact
+  type: string
+  default: ''
+# An app already on the agent needs no payload at all. The operating system performance
+# gates measure app life cycle exactly this way: their table installs an appx for some
+# apps and names the inbox version for others. Candidates are tried in order, because a
+# lab image is not guaranteed to carry any particular app.
+- name: xamlTraceApp
+  type: string
+  default: 'Microsoft.WindowsCalculator_8wekyb3d8bbwe!App;windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel;Microsoft.Windows.Photos_8wekyb3d8bbwe!App'
+- name: publishProvider
+  type: string
+  default: github
+  values:
+  - github
+  - ado
+  - none
+# Set when the stage is embedded in an existing pipeline so it starts only once
+# the build that produced the binaries has finished.
+- name: dependsOn
+  type: string
+  default: ''
+# Keeps a perf failure from failing the run it is embedded in. Performance
+# results are informational and must never block a pull request.
+- name: continueOnError
+  type: boolean
+  default: false
+# Requires the 'run-perf' pull request label before any measurement work runs.
+# Without this gate every pull request would queue the single dedicated perf
+# agent, which cannot keep up with the repository's pull request volume.
+- name: gateOnLabel
+  type: boolean
+  default: false
+# Name of the dedicated, single-agent perf pool. Left empty the job runs on the
+# standard pool, which is what the repository needs until real measurement is
+# wired: the perf queue is not authorized for the pull request pipeline, so
+# naming it leaves the whole stage pending on a permission prompt and no result
+# is ever reported.
+- name: perfPoolName
+  type: string
+  default: ''
+# ImageOverride demand for the pool above. Every other test job in this pipeline
+# pins its image; without one the agent is handed an arbitrary image and whether
+# the tracing tools exist becomes a coin flip, so a run cannot be reproduced.
+- name: perfPoolDemands
+  type: string
+  default: ''
+
+stages:
+- stage: RunPRPerf
+  displayName: Run PR performance comparison
+  ${{ if ne(parameters.dependsOn, '') }}:
+    dependsOn: ${{ parameters.dependsOn }}
+  # A stage with no dependsOn inherits the preceding stage, which would queue this
+  # informational comparison behind the entire pipeline. An empty list makes it a
+  # true leaf that starts immediately.
+  ${{ else }}:
+    dependsOn: []
+  jobs:
+  - ${{ if eq(parameters.gateOnLabel, true) }}:
+    - job: GatePRPerf
+      displayName: Check for the run-perf label
+      pool:
+        type: windows
+      variables:
+        ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+        prPerfSourcesDirectory: $(Agent.BuildDirectory)\s\microsoft-ui-xaml
+      steps:
+      - checkout: self
+        fetchDepth: 1
+        fetchTags: false
+        path: s\microsoft-ui-xaml
+
+      - task: PowerShell@2
+        displayName: Report where the perf scripts were checked out
+        condition: always()
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "BUILD_SOURCESDIRECTORY=$env:BUILD_SOURCESDIRECTORY"
+            Write-Host "AGENT_BUILDDIRECTORY=$env:AGENT_BUILDDIRECTORY"
+            Write-Host "prPerfSourcesDirectory=$(prPerfSourcesDirectory)"
+            foreach ($candidate in @($env:BUILD_SOURCESDIRECTORY, '$(prPerfSourcesDirectory)')) {
+              if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+              $module = Join-Path $candidate 'build\PRPerf\PRPerfGitHub.psm1'
+              $found = Test-Path -LiteralPath $module
+              Write-Host ("exists('{0}') = {1}" -f $module, $found)
+            }
+            if (Test-Path -LiteralPath $env:AGENT_BUILDDIRECTORY) {
+              Get-ChildItem -LiteralPath $env:AGENT_BUILDDIRECTORY -Depth 1 -ErrorAction SilentlyContinue |
+                Select-Object -First 40 -ExpandProperty FullName |
+                ForEach-Object { Write-Host "  $_" }
+            }
+
+      - task: PowerShell@2
+        name: gate
+        displayName: Check for the run-perf label
+        env:
+          GITHUB_PRPERF_TOKEN: $(GitHubPRPerfToken)
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+
+            # A perf run is opt-in, so anything other than a confirmed label is
+            # treated as "do not run" rather than surfacing an error on a pull
+            # request whose author never asked for perf coverage. The module
+            # import is inside the guard as well: an informational stage must
+            # never turn red just because it could not locate its own scripts.
+            $shouldRun = $false
+            $tokenSupplied = -not [string]::IsNullOrWhiteSpace($env:GITHUB_PRPERF_TOKEN)
+            # An unlinked variable group and a token GitHub rejects both end in
+            # "skipping", but only one of them is fixed by authorizing a token.
+            Write-Host "GitHubPRPerfToken supplied: $tokenSupplied"
+            try {
+              Import-Module (Join-Path '$(prPerfSourcesDirectory)' 'build\PRPerf\PRPerfGitHub.psm1') -Force
+              $context = Get-PRPerfContextFromPipeline
+              $uri = "https://api.github.com/repos/$($context.Owner)/$($context.Repository)/pulls/$($context.PullRequestNumber)"
+
+              $pullRequest = Get-GitHubPRPerfPullRequest -Uri $uri -Token $env:GITHUB_PRPERF_TOKEN
+              $shouldRun = Test-GitHubPRPerfRequested -PullRequest $pullRequest
+            } catch {
+              # Invoke-RestMethod surfaces only "(403) Forbidden" in the exception
+              # message; the response body and headers carry the actual cause.
+              $detail = $_.Exception.Message
+              $response = $_.Exception.Response
+              if ($null -ne $response) {
+                $body = ''
+                $responseHeaders = @{}
+                try {
+                  $stream = $response.GetResponseStream()
+                  $body = (New-Object System.IO.StreamReader($stream)).ReadToEnd()
+                } catch { }
+                try {
+                  foreach ($name in $response.Headers.AllKeys) { $responseHeaders[$name] = $response.Headers[$name] }
+                } catch { }
+                try {
+                  $detail = Format-GitHubPRPerfErrorDetail -StatusCode ([int]$response.StatusCode) -Body $body -ResponseHeaders $responseHeaders
+                } catch { }
+              }
+              Write-Host "##vso[task.logissue type=warning]Could not read pull request labels, skipping the performance comparison. $detail"
+              $shouldRun = $false
+            }
+
+            if ($shouldRun) {
+              Write-Host "The run-perf label is present; queuing the performance comparison."
+            } else {
+              Write-Host "The run-perf label is absent; skipping the performance comparison."
+            }
+
+            Write-Host "##vso[task.setvariable variable=shouldRun;isOutput=true]$($shouldRun.ToString().ToLowerInvariant())"
+
+  - job: RunPRPerf
+    displayName: Run PR performance comparison
+    ${{ if eq(parameters.continueOnError, true) }}:
+      continueOnError: true
+    ${{ if eq(parameters.gateOnLabel, true) }}:
+      dependsOn: GatePRPerf
+      condition: eq(dependencies.GatePRPerf.outputs['gate.shouldRun'], 'true')
+    pool:
+      type: windows
+      ${{ if ne(parameters.perfPoolName, '') }}:
+        isCustom: true
+        name: ${{ parameters.perfPoolName }}
+      ${{ if ne(parameters.perfPoolDemands, '') }}:
+        demands: ${{ parameters.perfPoolDemands }}
+    variables:
+      ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+      prPerfSourcesDirectory: $(Agent.BuildDirectory)\s\microsoft-ui-xaml
+      comparisonDirectory: $(Build.ArtifactStagingDirectory)\PRPerf
+      # Selection is stated explicitly here rather than inferred inside the converter: a run set
+      # emits every scenario carrying the selected tag, and comparing an unintended one would be
+      # worse than comparing none. Matches the scenario registered in perf\profiles\scenarios.json.
+      perfScenarioPattern: ^Lifecycle-MinApp\.Cpp\.MUX$
+      targetArtifactRoot: $(Pipeline.Workspace)\target
+      trialArtifactRoot: $(Pipeline.Workspace)\trial
+      artifactUrl: $(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)&view=artifacts&type=publishedArtifacts
+      pipelineUrl: $(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
+      # These describe what was actually measured, which is not always what was requested:
+      # the local scenario compares against whichever earlier build of this PR still has a
+      # drop, and reporting the requested commit instead would misstate the comparison.
+      # ADO leaves an undefined $(macro) as literal text, so both need a default here.
+      perfThresholdPath: $(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds.json
+      effectiveTargetCommit: ${{ parameters.targetCommit }}
+      effectiveTargetBuildId: ${{ parameters.targetBuildId }}
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      fetchTags: false
+      path: s\microsoft-ui-xaml
+
+    - task: PowerShell@2
+      displayName: Report measurement tooling availability
+      continueOnError: true
+      inputs:
+        targetType: inline
+        script: |
+          # Diagnostic only. The harness shells out to WPR/xperf and a fixed Python
+          # install, and ETW tracing plus .appx deployment both need elevation. Which
+          # of those an agent image actually carries is the open question that decides
+          # whether real measurement can run here at all, so report it rather than
+          # discovering it as a silent no-op mid-run.
+          #
+          # tracerpt/wpaexporter decide whether an ETW trace can be decoded on the agent,
+          # which is what a real app-launch scenario would need. Probing them now answers
+          # that for free instead of costing a separate hour-long run later.
+          $ErrorActionPreference = 'Continue'
+          foreach ($tool in @('xperf.exe', 'wpr.exe', 'python.exe', 'tracerpt.exe', 'wpaexporter.exe', 'dotnet.exe')) {
+            $found = @(Get-Command $tool -ErrorAction SilentlyContinue | Select-Object -First 1)
+            Write-Host ('{0,-12} = {1}' -f $tool, $(if ($found.Count -gt 0) { $found[0].Source } else { '<not found>' }))
+          }
+          Write-Host ('c:\python311\python.exe = {0}' -f (Test-Path 'c:\python311\python.exe'))
+          $identity = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+          Write-Host ('elevated     = {0}' -f $identity.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+          Write-Host ('whoami       = {0}' -f $identity.Identity.Name)
+          Write-Host ('os build     = {0}' -f [Environment]::OSVersion.Version)
+
+    - task: PowerShell@2
+      displayName: Tag PR performance run
+      continueOnError: true
+      inputs:
+        targetType: inline
+        script: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "##vso[build.addbuildtag]PRPerf"
+          Write-Host "##vso[build.addbuildtag]PRPerf-PR-${{ parameters.pullRequestId }}"
+          # requestIdentity is empty for comment-triggered runs, and Substring would throw
+          # there. A missing tag is cosmetic; throwing here skips every step that is not
+          # condition: always(), which previously masked a much worse defect underneath.
+          $requestIdentity = '${{ parameters.requestIdentity }}'
+          if ($requestIdentity.Length -ge 16) {
+            Write-Host "##vso[build.addbuildtag]PRPerf-Request-$($requestIdentity.Substring(0, 16))"
+          }
+
+    - ${{ if eq(parameters.useFixtures, true) }}:
+      - task: PowerShell@2
+        displayName: Copy PR perf fixtures
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+            New-Item -ItemType Directory -Path '$(comparisonDirectory)' -Force | Out-Null
+            Copy-Item -LiteralPath '$(prPerfSourcesDirectory)\build\PRPerf\fixtures\target-pass.json' -Destination '$(comparisonDirectory)\target-results.json'
+            Copy-Item -LiteralPath '$(prPerfSourcesDirectory)\build\PRPerf\fixtures\trial-pass.json' -Destination '$(comparisonDirectory)\pr-results.json'
+
+    # Real measurement against the legacy harness needs a drop_amd64fre artifact that
+    # nothing publishes, a baseline build that is never looked up, and xperf plus a fixed
+    # Python install, neither of which exists on the lab image. This path instead measures
+    # the drop this build actually produced, using only what the agent actually has.
+    - ${{ if and(ne(parameters.useFixtures, true), eq(parameters.targetBuildId, '')) }}:
+      - task: DownloadPipelineArtifact@2
+        displayName: Download this build's binaries
+        continueOnError: true
+        inputs:
+          buildType: current
+          artifactName: drop_amd64chk
+          targetPath: $(trialArtifactRoot)\drop_amd64chk
+
+      - task: PowerShell@2
+        displayName: Report what the drop contains
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            # The selector throws when it finds no candidate, but a throw on a tree that
+            # no longer exists once the agent is gone is not diagnosable. Record the shape
+            # of the drop in the same run that measures it.
+            $ErrorActionPreference = 'Continue'
+            $root = '$(trialArtifactRoot)'
+            if (-not (Test-Path -LiteralPath $root)) {
+              Write-Host "The drop was not downloaded to '$root'."
+              return
+            }
+            $binaries = @(Get-ChildItem -LiteralPath $root -Filter '*.dll' -File -Recurse -ErrorAction SilentlyContinue)
+            Write-Host ("drop root      = {0}" -f $root)
+            Write-Host ("total .dll     = {0}" -f $binaries.Count)
+            Write-Host 'WinUI binaries:'
+            $winui = @($binaries | Where-Object { $_.Name -like 'Microsoft.UI.Xaml*' } | Sort-Object FullName)
+            if ($winui.Count -eq 0) {
+              Write-Host '  <none>'
+              Write-Host 'Largest binaries present instead:'
+              $binaries | Sort-Object Length -Descending | Select-Object -First 15 |
+                ForEach-Object { Write-Host ("  {0,10:N0}  {1}" -f $_.Length, $_.FullName.Substring($root.Length)) }
+            } else {
+              $winui | ForEach-Object { Write-Host ("  {0,10:N0}  {1}" -f $_.Length, $_.FullName.Substring($root.Length)) }
+            }
+
+      - task: PowerShell@2
+        displayName: Find a build to compare this pull request against
+        continueOnError: true
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Find-PRPerfBaselineBuild.ps1
+          arguments: >-
+            -CollectionUri "$(System.CollectionUri)"
+            -Project "$(System.TeamProject)"
+            -DefinitionId "$(System.DefinitionId)"
+            -SourceBranch "$(Build.SourceBranch)"
+            -CurrentBuildId "$(Build.BuildId)"
+            -ArtifactName "drop_amd64chk"
+            -AccessToken "$(System.AccessToken)"
+            -PullRequestNumber "$(System.PullRequest.PullRequestNumber)"
+            -FallbackPullRequestNumber "${{ parameters.pullRequestId }}"
+            -GitHubToken "$(GitHubPRPerfToken)"
+
+      - task: DownloadPipelineArtifact@2
+        displayName: Download the baseline build's binaries
+        continueOnError: true
+        condition: and(succeeded(), ne(variables['perfBaselineBuildId'], ''))
+        inputs:
+          buildType: specific
+          project: $(System.TeamProjectId)
+          buildVersionToDownload: specific
+          pipelineId: $(perfBaselineBuildId)
+          artifactName: drop_amd64chk
+          targetPath: $(targetArtifactRoot)\drop_amd64chk
+
+      - task: PowerShell@2
+        displayName: Measure the PR and baseline binaries
+        continueOnError: true
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Invoke-PRPerfLocalComparison.ps1
+          arguments: >-
+            -TrialRoot "$(trialArtifactRoot)"
+            -TargetRoot "$(targetArtifactRoot)"
+            -TrialCommit "${{ parameters.sourceCommit }}"
+            -TrialBuildId "$(Build.BuildId)"
+            -BaselineCommit "$(perfBaselineCommit)"
+            -BaselineBuildId "$(perfBaselineBuildId)"
+            -AgentName "$(Agent.Name)"
+            -OutputDirectory "$(comparisonDirectory)"
+            -ThresholdPath "$(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds-local.json"
+
+      - ${{ if and(eq(parameters.runXamlTrace, true), ne(parameters.xamlTracePayloadArtifact, '')) }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download the app payload to trace
+          continueOnError: true
+          inputs:
+            buildType: current
+            artifactName: ${{ parameters.xamlTracePayloadArtifact }}
+            targetPath: $(Agent.TempDirectory)\prperf-payload
+
+      - ${{ if eq(parameters.runXamlTrace, true) }}:
+        - task: PowerShell@2
+          displayName: Measure XAML startup regions from an app launch
+          continueOnError: true
+          inputs:
+            # Windows PowerShell, because deploying an appx package is not something
+            # PowerShell 7 does without reaching back into it anyway.
+            pwsh: false
+            targetType: filePath
+            filePath: $(prPerfSourcesDirectory)\build\PRPerf\Measure-PRPerfXamlTrace.ps1
+            arguments: >-
+              -AppUserModelId "${{ parameters.xamlTraceApp }}"
+              -PayloadRoot "$(Agent.TempDirectory)\prperf-payload"
+              -SampleCount 2
+              -WarmupCount 1
+              -OutputPath "$(comparisonDirectory)\xaml-regions.json"
+
+    - ${{ if and(ne(parameters.useFixtures, true), ne(parameters.targetBuildId, '')) }}:
+      - task: DownloadPipelineArtifact@2
+        displayName: Download target build artifacts
+        continueOnError: true
+        inputs:
+          buildType: specific
+          project: $(System.TeamProjectId)
+          buildVersionToDownload: specific
+          pipelineId: ${{ parameters.targetBuildId }}
+          artifactName: drop_amd64fre
+          targetPath: $(targetArtifactRoot)\drop_amd64fre
+
+      - task: DownloadPipelineArtifact@2
+        displayName: Download trial build artifacts
+        continueOnError: true
+        inputs:
+          buildType: specific
+          project: $(System.TeamProjectId)
+          buildVersionToDownload: specific
+          pipelineId: ${{ parameters.sourceBuildId }}
+          artifactName: drop_amd64fre
+          targetPath: $(trialArtifactRoot)\drop_amd64fre
+
+      - task: PowerShell@2
+        displayName: Validate paired PR perf artifacts
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+            $summaryJson = & '$(prPerfSourcesDirectory)\build\PRPerf\Assert-PRPerfArtifacts.ps1' `
+              -TargetRoot '$(targetArtifactRoot)' `
+              -TrialRoot '$(trialArtifactRoot)' `
+              -ExpectedArtifactName 'drop_amd64fre'
+            $summary = $summaryJson | ConvertFrom-Json
+            Write-Host "##vso[task.setvariable variable=targetPerfArtifactsDir]$(Split-Path -Parent $summary.targetAppsRoot)"
+            Write-Host "##vso[task.setvariable variable=trialPerfArtifactsDir]$(Split-Path -Parent $summary.trialAppsRoot)"
+
+      - task: PowerShell@2
+        displayName: Run target PR performance scenarios
+        continueOnError: true
+        env:
+          PerfArtifactsDir: $(targetPerfArtifactsDir)
+          USEREXPERIMENTSPATH: ${{ parameters.requestIdentity }}
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\perf\scripts\pipeline-run.ps1
+          arguments: >-
+            "pr-smoke/cpu-pr"
+            "PRPerf\${{ parameters.requestIdentity }}\target"
+          workingDirectory: $(prPerfSourcesDirectory)\perf\scripts
+
+      - task: PowerShell@2
+        displayName: Convert target raw performance results
+        continueOnError: true
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
+          arguments: >-
+            -InputCsv "$(Build.ArtifactStagingDirectory)\current"
+            -Commit "${{ parameters.targetCommit }}"
+            -BuildId "${{ parameters.targetBuildId }}"
+            -AgentName "$(Agent.Name)"
+            -ScenarioPattern "$(perfScenarioPattern)"
+            -OutputPath "$(comparisonDirectory)\target-results.json"
+
+      - task: PowerShell@2
+        displayName: Preserve target PR performance diagnostics
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+            $sourceRoot = [IO.Path]::GetFullPath('$(Build.ArtifactStagingDirectory)\current').TrimEnd('\')
+            $destinationRoot = '$(comparisonDirectory)\target-diagnostics'
+            New-Item -ItemType Directory -Path $destinationRoot -Force | Out-Null
+
+            $selectedRawFiles = @(
+              Get-ChildItem -LiteralPath $sourceRoot -Filter '*.raw.csv' -File -Recurse |
+                Where-Object {
+                  $firstLine = Get-Content -LiteralPath $_.FullName -TotalCount 1
+                  if ([string]::IsNullOrWhiteSpace($firstLine)) {
+                    return $false
+                  }
+                  $headers = @($firstLine.TrimStart([char]0xFEFF).Split(',') | ForEach-Object { $_.Trim() })
+                  if ($headers -cnotcontains 'scenario' -or
+                      $headers -cnotcontains 'metric' -or
+                      $headers -cnotcontains 'interval') {
+                    return $false
+                  }
+                  @(
+                    Import-Csv -LiteralPath $_.FullName |
+                      Where-Object {
+                        $_.scenario -cmatch '$(perfScenarioPattern)' -and
+                        $_.metric -ceq 'CPU/WallTime' -and
+                        -not [string]::IsNullOrWhiteSpace($_.interval) -and
+                        $_.interval -cne 'Total'
+                      }
+                  ).Count -gt 0
+                }
+            )
+            if ($selectedRawFiles.Count -eq 0) {
+              throw "No selected raw CSV files were found under '$sourceRoot'."
+            }
+
+            $optionalDiagnostics = @(
+              Get-ChildItem -LiteralPath $sourceRoot -Filter 'shift.agg.csv' -File -Recurse
+              Get-ChildItem -LiteralPath $sourceRoot -Filter '*.stat.csv' -File -Recurse
+            )
+            if (@($optionalDiagnostics | Where-Object Name -eq 'shift.agg.csv').Count -eq 0) {
+              Write-Host "No optional shift.agg diagnostics were found under '$sourceRoot'."
+            }
+            if (@($optionalDiagnostics | Where-Object Name -like '*.stat.csv').Count -eq 0) {
+              Write-Host "No optional stat diagnostics were found under '$sourceRoot'."
+            }
+
+            foreach ($file in @($selectedRawFiles) + @($optionalDiagnostics)) {
+              $relativePath = $file.FullName.Substring($sourceRoot.Length).TrimStart('\')
+              $destination = Join-Path $destinationRoot $relativePath
+              New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+              Copy-Item -LiteralPath $file.FullName -Destination $destination -Force
+            }
+
+      - task: PowerShell@2
+        displayName: Clear target raw performance results
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+            Remove-Item -LiteralPath '$(Build.ArtifactStagingDirectory)\current' -Recurse -Force -ErrorAction SilentlyContinue
+
+      - task: PowerShell@2
+        displayName: Run trial PR performance scenarios
+        continueOnError: true
+        env:
+          PerfArtifactsDir: $(trialPerfArtifactsDir)
+          USEREXPERIMENTSPATH: ${{ parameters.requestIdentity }}
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\perf\scripts\pipeline-run.ps1
+          arguments: >-
+            "pr-smoke/cpu-pr"
+            "PRPerf\${{ parameters.requestIdentity }}\trial"
+          workingDirectory: $(prPerfSourcesDirectory)\perf\scripts
+
+      - task: PowerShell@2
+        displayName: Convert trial raw performance results
+        continueOnError: true
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
+          arguments: >-
+            -InputCsv "$(Build.ArtifactStagingDirectory)\current"
+            -Commit "${{ parameters.sourceCommit }}"
+            -BuildId "${{ parameters.sourceBuildId }}"
+            -AgentName "$(Agent.Name)"
+            -ScenarioPattern "$(perfScenarioPattern)"
+            -OutputPath "$(comparisonDirectory)\pr-results.json"
+
+      - task: PowerShell@2
+        displayName: Preserve trial PR performance diagnostics
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+            $sourceRoot = [IO.Path]::GetFullPath('$(Build.ArtifactStagingDirectory)\current').TrimEnd('\')
+            $destinationRoot = '$(comparisonDirectory)\trial-diagnostics'
+            New-Item -ItemType Directory -Path $destinationRoot -Force | Out-Null
+
+            $selectedRawFiles = @(
+              Get-ChildItem -LiteralPath $sourceRoot -Filter '*.raw.csv' -File -Recurse |
+                Where-Object {
+                  $firstLine = Get-Content -LiteralPath $_.FullName -TotalCount 1
+                  if ([string]::IsNullOrWhiteSpace($firstLine)) {
+                    return $false
+                  }
+                  $headers = @($firstLine.TrimStart([char]0xFEFF).Split(',') | ForEach-Object { $_.Trim() })
+                  if ($headers -cnotcontains 'scenario' -or
+                      $headers -cnotcontains 'metric' -or
+                      $headers -cnotcontains 'interval') {
+                    return $false
+                  }
+                  @(
+                    Import-Csv -LiteralPath $_.FullName |
+                      Where-Object {
+                        $_.scenario -cmatch '$(perfScenarioPattern)' -and
+                        $_.metric -ceq 'CPU/WallTime' -and
+                        -not [string]::IsNullOrWhiteSpace($_.interval) -and
+                        $_.interval -cne 'Total'
+                      }
+                  ).Count -gt 0
+                }
+            )
+            if ($selectedRawFiles.Count -eq 0) {
+              throw "No selected raw CSV files were found under '$sourceRoot'."
+            }
+
+            $optionalDiagnostics = @(
+              Get-ChildItem -LiteralPath $sourceRoot -Filter 'shift.agg.csv' -File -Recurse
+              Get-ChildItem -LiteralPath $sourceRoot -Filter '*.stat.csv' -File -Recurse
+            )
+            if (@($optionalDiagnostics | Where-Object Name -eq 'shift.agg.csv').Count -eq 0) {
+              Write-Host "No optional shift.agg diagnostics were found under '$sourceRoot'."
+            }
+            if (@($optionalDiagnostics | Where-Object Name -like '*.stat.csv').Count -eq 0) {
+              Write-Host "No optional stat diagnostics were found under '$sourceRoot'."
+            }
+
+            foreach ($file in @($selectedRawFiles) + @($optionalDiagnostics)) {
+              $relativePath = $file.FullName.Substring($sourceRoot.Length).TrimStart('\')
+              $destination = Join-Path $destinationRoot $relativePath
+              New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+              Copy-Item -LiteralPath $file.FullName -Destination $destination -Force
+            }
+
+    - task: PowerShell@2
+      displayName: Compare PR performance results
+      continueOnError: true
+      condition: always()
+      inputs:
+        targetType: filePath
+        filePath: $(prPerfSourcesDirectory)\build\PRPerf\Compare-PRPerfResults.ps1
+        arguments: >-
+          -TargetPath "$(comparisonDirectory)\target-results.json"
+          -TrialPath "$(comparisonDirectory)\pr-results.json"
+          -ThresholdPath "$(perfThresholdPath)"
+          -OutputDirectory "$(comparisonDirectory)"
+          -ArtifactUrl "$(artifactUrl)"
+          -PipelineUrl "$(pipelineUrl)"
+          -SourceCommit "${{ parameters.sourceCommit }}"
+          -TargetCommit "$(effectiveTargetCommit)"
+          -SourceBuildId "${{ parameters.sourceBuildId }}"
+          -TargetBuildId "$(effectiveTargetBuildId)"
+          -BaselineKind "$(perfBaselineKind)"
+          -RequestIdentity "${{ parameters.requestIdentity }}"
+
+    - task: PowerShell@2
+      displayName: Create fallback PR perf comparison artifact
+      continueOnError: true
+      condition: always()
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        targetType: inline
+        script: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module '$(prPerfSourcesDirectory)\build\PRPerf\PRPerfRequest.psm1' -Force
+          $comparisonJson = '$(comparisonDirectory)\comparison.json'
+          $comparisonMarkdown = '$(comparisonDirectory)\comparison.md'
+          if ((Test-Path -LiteralPath $comparisonJson -PathType Leaf) -and
+              (Test-Path -LiteralPath $comparisonMarkdown -PathType Leaf)) {
+            return
+          }
+
+          function Get-FirstErrorMessage {
+            param([object[]] $Records)
+
+            foreach ($record in $Records) {
+              foreach ($issue in @($record.issues)) {
+                if ([string]$issue.type -ieq 'error' -and -not [string]::IsNullOrWhiteSpace([string]$issue.message)) {
+                  return [string]$issue.message
+                }
+              }
+            }
+            return $null
+          }
+
+          function Get-ParentRecord {
+            param($Record, [hashtable] $RecordsById)
+
+            $parentIdProperty = $Record.PSObject.Properties['parentId']
+            if ($null -eq $parentIdProperty -or [string]::IsNullOrWhiteSpace([string]$parentIdProperty.Value)) {
+              return $null
+            }
+            return $RecordsById[[string]$parentIdProperty.Value]
+          }
+
+          function Get-AncestorName {
+            param($Record, [hashtable] $RecordsById, [string] $Type)
+
+            $current = $Record
+            while ($null -ne $current) {
+              if ([string]$current.type -ieq $Type) {
+                return [string]$current.name
+              }
+              $current = Get-ParentRecord -Record $current -RecordsById $RecordsById
+            }
+            return $null
+          }
+
+          function Select-FailedTimelineRecord {
+            param([object[]] $Records)
+
+            $failedRecords = @(
+              $Records | Where-Object {
+                [string]$_.result -ieq 'failed' -and
+                [string]$_.name -cne 'Create fallback PR perf comparison artifact'
+              }
+            )
+            foreach ($type in @('Task', 'Job', 'Stage')) {
+              $typedRecords = @($failedRecords | Where-Object { [string]$_.type -ieq $type })
+              $withIssues = @($typedRecords | Where-Object { -not [string]::IsNullOrWhiteSpace((Get-FirstErrorMessage -Records @($_))) })
+              if ($withIssues.Count -gt 0) { return $withIssues[0] }
+              if ($typedRecords.Count -gt 0) { return $typedRecords[0] }
+            }
+            return $null
+          }
+
+          New-Item -ItemType Directory -Path '$(comparisonDirectory)' -Force | Out-Null
+          $failureMessage = 'PR performance run did not produce comparison artifacts. See the pipeline log for the failed stage, job, or task.'
+          $failure = [pscustomobject]@{
+            stageName = '$(System.StageName)'
+            jobName = '$(System.JobName)'
+            taskName = 'Unknown failed task'
+            sourceCommit = '${{ parameters.sourceCommit }}'
+            targetCommit = '${{ parameters.targetCommit }}'
+            sourceBuildId = '${{ parameters.sourceBuildId }}'
+            targetBuildId = '${{ parameters.targetBuildId }}'
+            requestIdentity = '${{ parameters.requestIdentity }}'
+            failureMessage = $failureMessage
+            logUrl = '$(pipelineUrl)'
+          }
+
+          try {
+            $headers = New-PRPerfAuthorizationHeaders -AccessToken $env:SYSTEM_ACCESSTOKEN
+            $timelineUrl = '$(System.CollectionUri)$(System.TeamProject)/_apis/build/builds/$(Build.BuildId)/timeline?api-version=7.1'
+            $timeline = Invoke-RestMethod -Method Get -Uri $timelineUrl -Headers $headers
+            $records = @($timeline.records)
+            $recordsById = @{}
+            foreach ($record in $records) {
+              if (-not [string]::IsNullOrWhiteSpace([string]$record.id)) {
+                $recordsById[[string]$record.id] = $record
+              }
+            }
+
+            $failedRecord = Select-FailedTimelineRecord -Records $records
+            if ($null -ne $failedRecord) {
+              $realMessage = Get-FirstErrorMessage -Records @($failedRecord)
+              if ([string]::IsNullOrWhiteSpace($realMessage)) {
+                $realMessage = Get-FirstErrorMessage -Records $records
+              }
+              if ([string]::IsNullOrWhiteSpace($realMessage)) {
+                $realMessage = "PR performance run failed in '$($failedRecord.name)' before comparison artifacts were produced."
+              }
+
+              $logUrl = '$(pipelineUrl)'
+              if ($null -ne $failedRecord.PSObject.Properties['log'] -and
+                  $null -ne $failedRecord.log -and
+                  -not [string]::IsNullOrWhiteSpace([string]$failedRecord.log.url)) {
+                $logUrl = [string]$failedRecord.log.url
+              }
+
+              $stageName = Get-AncestorName -Record $failedRecord -RecordsById $recordsById -Type 'Stage'
+              $jobName = Get-AncestorName -Record $failedRecord -RecordsById $recordsById -Type 'Job'
+              $taskName = if ([string]$failedRecord.type -ieq 'Task') { [string]$failedRecord.name } else { '' }
+              if ([string]::IsNullOrWhiteSpace($stageName)) { $stageName = '$(System.StageName)' }
+              if ([string]::IsNullOrWhiteSpace($jobName)) { $jobName = '$(System.JobName)' }
+              if ([string]::IsNullOrWhiteSpace($taskName)) { $taskName = [string]$failedRecord.name }
+
+              $failure = [pscustomobject]@{
+                stageName = $stageName
+                jobName = $jobName
+                taskName = $taskName
+                sourceCommit = '${{ parameters.sourceCommit }}'
+                targetCommit = '${{ parameters.targetCommit }}'
+                sourceBuildId = '${{ parameters.sourceBuildId }}'
+                targetBuildId = '${{ parameters.targetBuildId }}'
+                requestIdentity = '${{ parameters.requestIdentity }}'
+                failureMessage = $realMessage
+                logUrl = $logUrl
+              }
+            }
+          } catch {
+            $failure.failureMessage = "$failureMessage Timeline lookup failed: $($_.Exception.Message)"
+          }
+
+          $comparison = [pscustomobject]@{
+            schemaVersion = 1
+            benchmarkConfigVersion = 'pr-smoke-v1'
+            target = [pscustomobject]@{
+              commit = '${{ parameters.targetCommit }}'
+              buildId = '${{ parameters.targetBuildId }}'
+            }
+            trial = [pscustomobject]@{
+              commit = '${{ parameters.sourceCommit }}'
+              buildId = '${{ parameters.sourceBuildId }}'
+            }
+            overallState = 'Inconclusive'
+            issues = @(
+              "$($failure.failureMessage) Target commit: ${{ parameters.targetCommit }}. Source commit: ${{ parameters.sourceCommit }}. Log: $($failure.logUrl)"
+            )
+            failure = $failure
+            scenarios = @()
+          }
+          $comparison |
+            ConvertTo-Json -Depth 12 |
+            Set-Content -LiteralPath $comparisonJson -Encoding UTF8
+          @(
+            '<!-- winui-pr-perf-result -->'
+            '## Performance result inconclusive'
+            ''
+            'PR performance run did not produce comparison artifacts.'
+            ''
+            $failure.failureMessage
+            ''
+            "Failed stage/job/task: $($failure.stageName) / $($failure.jobName) / $($failure.taskName)"
+            ''
+            "Target: ``${{ parameters.targetCommit }}`` (build ${{ parameters.targetBuildId }})"
+            "PR: ``${{ parameters.sourceCommit }}`` (build ${{ parameters.sourceBuildId }})"
+            ''
+            "Request identity: ``${{ parameters.requestIdentity }}``"
+            ''
+            "[Artifacts]($(artifactUrl)) | [Pipeline run]($($failure.logUrl))"
+          ) -join "`n" | Set-Content -LiteralPath $comparisonMarkdown -Encoding UTF8
+
+    - task: PowerShell@2
+      displayName: Verify PR perf comparison artifact contents
+      continueOnError: true
+      condition: always()
+      inputs:
+        targetType: inline
+        script: |
+          $ErrorActionPreference = 'Stop'
+          Get-Item -LiteralPath '$(comparisonDirectory)\comparison.json' | Out-Null
+          Get-Item -LiteralPath '$(comparisonDirectory)\comparison.md' | Out-Null
+
+    # There is deliberately no publish task here. OneBranch rejects explicit
+    # publish steps and uploads ob_outputDirectory automatically at the end of
+    # the job, and comparisonDirectory sits inside it.
+    # See https://aka.ms/obpipelines/artifacts
+
+    - ${{ if eq(parameters.publishProvider, 'ado') }}:
+      - task: PowerShell@2
+        displayName: Publish PR perf result (Azure DevOps)
+        continueOnError: true
+        condition: always()
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Publish-PRPerfResult.ps1
+          arguments: >-
+            -CollectionUri "$(System.CollectionUri)"
+            -Project "$(System.TeamProject)"
+            -RepositoryId "${{ parameters.repositoryId }}"
+            -PullRequestId ${{ parameters.pullRequestId }}
+            -ComparisonPath "$(comparisonDirectory)\comparison.json"
+            -ArtifactUrl "$(artifactUrl)"
+            -PipelineUrl "$(pipelineUrl)"
+            -AccessToken "$(System.AccessToken)"
+            -ExpectedSourceCommit "${{ parameters.sourceCommit }}"
+
+    - ${{ if eq(parameters.publishProvider, 'github') }}:
+      - task: PowerShell@2
+        displayName: Publish PR perf result (GitHub)
+        continueOnError: true
+        condition: always()
+        env:
+          GITHUB_PRPERF_TOKEN: $(GitHubPRPerfToken)
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+
+            $token = $env:GITHUB_PRPERF_TOKEN
+            if ([string]::IsNullOrWhiteSpace($token)) {
+              throw "GitHubPRPerfToken is not set. Define it as a secret pipeline variable so results can be posted to the GitHub pull request."
+            }
+
+            Import-Module '$(prPerfSourcesDirectory)\build\PRPerf\PRPerfGitHub.psm1' -Force
+
+            # Prefer explicitly supplied parameters; otherwise derive the pull
+            # request context from the Azure Pipelines GitHub PR variables, which
+            # is what happens for a `/azp run WinUI-PRPerf` comment trigger.
+            $context = Get-PRPerfContextFromPipeline
+
+            # An unexpanded macro (for example on a manual, non-pull-request run) arrives as
+            # literal '$(System.PullRequest.PullRequestNumber)', which is not blank, so test
+            # for an actual number rather than for emptiness before falling back.
+            $pullRequestNumber = '${{ parameters.pullRequestId }}'
+            if ($pullRequestNumber -notmatch '^\d+$') {
+              $pullRequestNumber = $context.PullRequestNumber
+            }
+            if ("$pullRequestNumber" -notmatch '^\d+$') {
+              throw "No pull request number is available (got '$pullRequestNumber'), so the perf result cannot be posted."
+            }
+
+            $expectedSourceCommit = '${{ parameters.sourceCommit }}'
+            if ($expectedSourceCommit -notmatch '^[0-9a-fA-F]{40}$') {
+              $expectedSourceCommit = $context.SourceCommit
+            }
+
+            $arguments = @{
+              Owner              = $context.Owner
+              Repository         = $context.Repository
+              PullRequestNumber  = [int] $pullRequestNumber
+              ComparisonPath     = '$(comparisonDirectory)\comparison.json'
+              ArtifactUrl        = '$(artifactUrl)'
+              PipelineUrl        = '$(pipelineUrl)'
+              Token              = $token
+              XamlRegionsPath    = '$(comparisonDirectory)\xaml-regions.json'
+            }
+
+            if ($expectedSourceCommit -match '^[0-9a-fA-F]{40}$') {
+              $arguments['ExpectedSourceCommit'] = $expectedSourceCommit
+            }
+
+            & '$(prPerfSourcesDirectory)\build\PRPerf\Publish-PRPerfResultGitHub.ps1' @arguments
+
+
+
