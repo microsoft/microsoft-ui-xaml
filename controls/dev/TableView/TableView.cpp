@@ -1331,6 +1331,7 @@ void TableView::StartHeaderScrollAnimation()
         headerHost.StartAnimation(animation);
         m_headerScrollAnimation = animation;
         m_headerScrollOffset = offset;
+        m_bodyManipulationProperties = bodyProperties;
     }
     catch (...)
     {
@@ -1363,6 +1364,7 @@ void TableView::StopHeaderScrollAnimation()
     }
     m_headerScrollAnimation = nullptr;
     m_headerScrollOffset = nullptr;
+    m_bodyManipulationProperties = nullptr;
 }
 
 winrt::AutomationPeer TableView::OnCreateAutomationPeer()

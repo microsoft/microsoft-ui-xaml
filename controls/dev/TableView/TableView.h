@@ -1278,9 +1278,10 @@ private:
     // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
     std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
-    // PART_HeaderHost's Translation expression and the PART_HeaderScroller offset it reads.
+    // PART_HeaderHost's Translation expression and the property sets it reads; the expression doesn't keep them alive.
     winrt::ExpressionAnimation m_headerScrollAnimation{ nullptr };
     winrt::CompositionPropertySet m_headerScrollOffset{ nullptr };
+    winrt::CompositionPropertySet m_bodyManipulationProperties{ nullptr };
 
     winrt::event_token m_rowElementPreparedToken{};
     winrt::event_token m_rowElementClearingToken{};
