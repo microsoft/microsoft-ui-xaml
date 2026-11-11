@@ -110,6 +110,7 @@ bool NavigationViewTrace::s_IsVerboseDebugOutputEnabled{ false };
 NavigationView::~NavigationView()
 {
     UnhookEventsAndClearFields(true);
+    m_navigationViewItemsFactory->ResetForOwnerDestruction();
 }
 
 // IUIElement / IUIElementOverridesHelper
@@ -4406,7 +4407,7 @@ void NavigationView::UpdateNavigationViewItemsFactory()
     {
         newItemTemplate = MenuItemTemplateSelector();
     }
-    m_navigationViewItemsFactory->UserElementFactory(newItemTemplate);
+    m_navigationViewItemsFactory->UserElementFactory(newItemTemplate, this);
 }
 
 void NavigationView::SyncItemTemplates()

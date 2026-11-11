@@ -7,27 +7,62 @@
 #include "NavigationViewItem.h"
 #include "ItemTemplateWrapper.h"
 
-void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable const& newValue)
+void NavigationViewItemsFactory::UserElementFactory(
+    winrt::IInspectable const& newValue,
+    const ITrackerHandleManager* owner)
 {
+    if (m_isTerminated)
+    {
+        return;
+    }
+
+    winrt::IElementFactory newItemTemplateWrapper{ nullptr };
     if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
     {
-        m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+        auto itemTemplateWrapper = winrt::make_self<ItemTemplateWrapper>(dataTemplate);
+        itemTemplateWrapper->EnableTracking(owner);
+        newItemTemplateWrapper = itemTemplateWrapper.as<winrt::IElementFactory>();
     }
     else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
     {
-        m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(selector);
+        auto itemTemplateWrapper = winrt::make_self<ItemTemplateWrapper>(selector);
+        itemTemplateWrapper->EnableTracking(owner);
+        newItemTemplateWrapper = itemTemplateWrapper.as<winrt::IElementFactory>();
     }
     else if (auto customElementFactory = newValue.try_as<winrt::IElementFactory>())
     {
-        m_itemTemplateWrapper = customElementFactory;
+        newItemTemplateWrapper = customElementFactory;
     }
 
+    ResetItemTemplateWrapper();
+    m_itemTemplateWrapper = newItemTemplateWrapper;
     navigationViewItemPool = std::vector<winrt::NavigationViewItem>();
 }
 
 void NavigationViewItemsFactory::SettingsItem(winrt::NavigationViewItemBase const& settingsItem)
 {
-    m_settingsItem = settingsItem;
+    if (!m_isTerminated)
+    {
+        m_settingsItem = settingsItem;
+    }
+}
+
+void NavigationViewItemsFactory::ResetForOwnerDestruction() noexcept
+{
+    m_isTerminated = true;
+    ResetItemTemplateWrapper();
+    m_settingsItem = nullptr;
+    navigationViewItemPool.clear();
+}
+
+void NavigationViewItemsFactory::ResetItemTemplateWrapper() noexcept
+{
+    if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
+    {
+        itemTemplateWrapper->ResetTracking();
+    }
+
+    m_itemTemplateWrapper = nullptr;
 }
 
 
@@ -35,7 +70,13 @@ void NavigationViewItemsFactory::SettingsItem(winrt::NavigationViewItemBase cons
 // If the resolved element is not derived from NavigationViewItemBase, wrap in a NavigationViewItem before returning.
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
 {
-    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, settingsItem = m_settingsItem, args]() {
+    auto const itemTemplateWrapper = m_itemTemplateWrapper;
+    auto const settingsItem = m_settingsItem;
+    auto const wrapper = itemTemplateWrapper.try_as<ItemTemplateWrapper>();
+    auto const contentTemplate = wrapper ? wrapper->Template() : nullptr;
+    auto const contentTemplateSelector = wrapper ? wrapper->TemplateSelector() : nullptr;
+
+    auto const newContent = [itemTemplateWrapper, settingsItem, args]() {
         // Do not template SettingsItem
         if (settingsItem && settingsItem == args.Data())
         {
@@ -69,19 +110,19 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
     nviImpl->CreatedByNavigationViewItemsFactory(true);
 
     // If a user provided item template exists, just pass the template and data down to the ContentPresenter of the NavigationViewItem
-    if (m_itemTemplateWrapper)
+    if (itemTemplateWrapper)
     {
-        if (auto itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
+        if (wrapper)
         {
             // Recycle newContent
             auto const tempArgs = winrt::ElementFactoryRecycleArgs();
             tempArgs.Element(newContent.try_as<winrt::UIElement>());
-            m_itemTemplateWrapper.RecycleElement(tempArgs);
+            itemTemplateWrapper.RecycleElement(tempArgs);
 
 
             nviImpl->Content(args.Data());
-            nviImpl->ContentTemplate(itemTemplateWrapper->Template());
-            nviImpl->ContentTemplateSelector(itemTemplateWrapper->TemplateSelector());
+            nviImpl->ContentTemplate(contentTemplate);
+            nviImpl->ContentTemplateSelector(contentTemplateSelector);
             return *nviImpl;
         }
     }
@@ -92,6 +133,9 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
 
 void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycleArgs const& args)
 {
+    auto const itemTemplateWrapper = m_itemTemplateWrapper;
+    auto const settingsItem = m_settingsItem;
+
     if (auto element = args.Element())
     {
         if (auto nvi = element.try_as<winrt::NavigationViewItem>())
@@ -105,12 +149,15 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
                 UnlinkElementFromParent(args);
                 args.Element(nullptr);
 
-                // Retain the NVI that we created for future re-use
-                navigationViewItemPool.push_back(nvi);
+                if (!m_isTerminated)
+                {
+                    // Retain the NVI that we created for future re-use
+                    navigationViewItemPool.push_back(nvi);
+                }
 
                 // Retrieve the proper element that requires recycling for a user defined item template
                 // and update the args correspondingly
-                if (m_itemTemplateWrapper)
+                if (itemTemplateWrapper)
                 {
                     // TODO: Retrieve the element and add to the args
                 }
@@ -118,12 +165,12 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
         }
 
         // Do not recycle SettingsItem
-        bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
+        bool isSettingsItem = settingsItem && settingsItem == args.Element();
         
         UnlinkElementFromParent(args);
-        if (m_itemTemplateWrapper && !isSettingsItem)
+        if (itemTemplateWrapper && !isSettingsItem && !m_isTerminated)
         {
-            m_itemTemplateWrapper.RecycleElement(args);
+            itemTemplateWrapper.RecycleElement(args);
         }
     }
 }

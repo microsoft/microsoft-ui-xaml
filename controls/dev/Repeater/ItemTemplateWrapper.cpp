@@ -18,17 +18,34 @@ ItemTemplateWrapper::ItemTemplateWrapper(winrt::DataTemplateSelector const& data
 
 void ItemTemplateWrapper::EnableTracking(const ITrackerHandleManager* owner)
 {
-    if (owner && m_dataTemplate)
+    if (!owner || m_isTrackingReset || m_trackedDataTemplate)
     {
-        m_trackedDataTemplate.emplace(owner, m_dataTemplate);
-        m_dataTemplate = nullptr;  // Release the raw ref; tracker_ref now owns it
-        m_isTracking = true;
+        return;
     }
+
+    m_trackedDataTemplate.emplace(owner, m_dataTemplate);
+    m_trackedDataTemplateSelector.emplace(owner, m_dataTemplateSelector);
+    m_dataTemplate = nullptr;
+    m_dataTemplateSelector = nullptr;
+}
+
+void ItemTemplateWrapper::ResetTracking() noexcept
+{
+    m_isTrackingReset = true;
+    m_trackedDataTemplateSelector.reset();
+    m_trackedDataTemplate.reset();
+    m_dataTemplateSelector = nullptr;
+    m_dataTemplate = nullptr;
 }
 
 winrt::DataTemplate ItemTemplateWrapper::GetDataTemplate() const
 {
-    return m_isTracking ? m_trackedDataTemplate->get() : m_dataTemplate;
+    return m_trackedDataTemplate ? m_trackedDataTemplate->safe_get() : m_dataTemplate;
+}
+
+winrt::DataTemplateSelector ItemTemplateWrapper::GetDataTemplateSelector() const
+{
+    return m_trackedDataTemplateSelector ? m_trackedDataTemplateSelector->safe_get() : m_dataTemplateSelector;
 }
 
 winrt::DataTemplate ItemTemplateWrapper::Template()
@@ -38,7 +55,12 @@ winrt::DataTemplate ItemTemplateWrapper::Template()
 
 void ItemTemplateWrapper::Template(winrt::DataTemplate const& value)
 {
-    if (m_isTracking)
+    if (m_isTrackingReset)
+    {
+        return;
+    }
+
+    if (m_trackedDataTemplate)
     {
         m_trackedDataTemplate->set(value);
     }
@@ -50,29 +72,46 @@ void ItemTemplateWrapper::Template(winrt::DataTemplate const& value)
 
 winrt::DataTemplateSelector ItemTemplateWrapper::TemplateSelector()
 {
-    return m_dataTemplateSelector;
+    return GetDataTemplateSelector();
 }
 
 void ItemTemplateWrapper::TemplateSelector(winrt::DataTemplateSelector const& value)
 {
-    m_dataTemplateSelector = value;
+    if (m_isTrackingReset)
+    {
+        return;
+    }
+
+    if (m_trackedDataTemplateSelector)
+    {
+        m_trackedDataTemplateSelector->set(value);
+    }
+    else
+    {
+        m_dataTemplateSelector = value;
+    }
 }
 
 #pragma region IElementFactory
 
 winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs const& args)
 {
-    auto dataTemplate = GetDataTemplate();
-    auto selectedTemplate = dataTemplate ? dataTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
+    auto const dataTemplate = GetDataTemplate();
+    auto const dataTemplateSelector = GetDataTemplateSelector();
+    auto selectedTemplate =
+        dataTemplate ? dataTemplate :
+        dataTemplateSelector ? dataTemplateSelector.SelectTemplate(args.Data()) :
+        nullptr;
+
     // Check if selected template we got is valid
-    if (selectedTemplate == nullptr)
+    if (!selectedTemplate && dataTemplateSelector)
     {
         // Null template, use other SelectTemplate method
         try
         {
-            selectedTemplate = m_dataTemplateSelector.SelectTemplate(args.Data(), nullptr);
+            selectedTemplate = dataTemplateSelector.SelectTemplate(args.Data(), nullptr);
         }
-        catch (winrt::hresult_error e)
+        catch (winrt::hresult_error const& e)
         {
             // The default implementation of SelectTemplate(IInspectable item, ILayout container) throws invalid arg for null container
             // To not force everbody to provide an implementation of that, catch that here
@@ -82,12 +121,14 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
             }
         }
 
-        if (selectedTemplate == nullptr)
-        {
-            // Still nullptr, fail with a reasonable message now.
-            throw winrt::hresult_invalid_argument(L"Null encountered as data template. That is not a valid value for a data template, and can not be used.");
-        }
     }
+
+    if (!selectedTemplate)
+    {
+        // Still nullptr, fail with a reasonable message now.
+        throw winrt::hresult_invalid_argument(L"Null encountered as data template. That is not a valid value for a data template, and can not be used.");
+    }
+
     winrt::RecyclePool recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     winrt::UIElement element = nullptr;
 
@@ -120,7 +161,7 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
 void ItemTemplateWrapper::RecycleElement(winrt::ElementFactoryRecycleArgs const& args)
 {
     auto element = args.Element();
-    auto dataTemplate = GetDataTemplate();
+    auto const dataTemplate = GetDataTemplate();
     winrt::DataTemplate selectedTemplate = dataTemplate ?
         dataTemplate :
         RecyclePool::GetOriginTemplate(element);
