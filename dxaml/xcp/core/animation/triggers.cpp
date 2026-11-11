@@ -12,13 +12,18 @@
 #include <OptimizedStyle.h>
 #include <VisualStateSetterHelper.h>
 #include <DOPointerCast.h>
+#include <unordered_set>
 
 using namespace DirectUI;
 
 namespace
 {
+    // A setter that toggles a property tested by its own condition can oscillate. Stop after this many
+    // consecutive evaluation passes instead of looping forever.
+    constexpr int MaxEvaluationPasses = 8;
+
     // Compares a property's current value with a condition's expected value. Supports the value kinds
-    // that conditional styling needs in practice: booleans, enums and numbers.
+    // that conditional styling needs in practice: booleans, enums, numbers and strings.
     bool ValuesMatch(_In_ const CValue& actual, _In_ const CValue& expected)
     {
         if (actual.IsNull() || expected.IsNull())
@@ -34,6 +39,11 @@ namespace
         if (expected.IsEnum())
         {
             return actual.IsEnum() && actual.AsEnum() == expected.AsEnum();
+        }
+
+        if (expected.GetType() == valueString)
+        {
+            return actual.GetType() == valueString && actual.AsString().Equals(expected.AsString());
         }
 
         const auto toDouble = [](const CValue& value, double* result)
@@ -57,9 +67,11 @@ namespace
 // Evaluates the Trigger and MultiTrigger objects of one TriggerCollection while it is in the live tree.
 //
 // The conditions are tested against the templated parent of the element that owns the collection (or the
-// element itself when it is not part of a template). When the set of active setters changes, the winner for
-// every target property is recomputed from scratch: the last active setter in declaration order wins, and
-// when it deactivates the next one (or the original value) shows through again.
+// element itself when it is not part of a template). A property change on that element only matters when
+// it flips whether a rule is active; the active state of every rule is cached so that unrelated changes
+// cost a hash lookup. When a rule flips, the winner for every target property is recomputed: the last
+// active setter in declaration order wins, and when it deactivates the next one (or the original value)
+// shows through again.
 //
 // Values are applied with the same mechanism as VisualState setters, so they take precedence over local
 // values and styles, and they can conflict with VisualStates or animations that set the same property.
@@ -78,6 +90,9 @@ public:
     _Check_return_ HRESULT Activate()
     {
         Deactivate();
+        m_rules.clear();
+        m_watchedProperties.clear();
+        m_hasUnresolvedSetters = false;
 
         // The collection is parented to its owning element as a non-public (property) parent.
         CDependencyObject* host = m_owner->GetParentInternal(false /* publicParentOnly */);
@@ -139,6 +154,7 @@ public:
         }
         m_applied.clear();
         m_rules.clear();
+        m_watchedProperties.clear();
     }
 
 private:
@@ -161,6 +177,7 @@ private:
     {
         std::vector<ConditionData> conditions;
         std::vector<SetterData> setters;
+        bool active = false;
     };
 
     struct Applied
@@ -169,6 +186,14 @@ private:
         const CDependencyProperty* property = nullptr;
         const SetterData* setter = nullptr;
     };
+
+    // Reports a trigger that cannot be evaluated. Both values are shown in the message
+    // "Invalid attribute value %0 for property %1."
+    HRESULT OriginateInvalidCondition(_In_ xephemeral_string_ptr* parameters)
+    {
+        IGNOREHR(m_owner->SetAndOriginateError(E_INVALIDARG, RuntimeError, AG_E_PARSER_INVALID_ATTR_VALUE, 2, parameters));
+        return E_INVALIDARG;
+    }
 
     _Check_return_ HRESULT ResolveCondition(
         _In_ CDependencyObject* source,
@@ -187,13 +212,31 @@ private:
             IFC_RETURN(MetadataAPI::TryGetDependencyPropertyByName(
                 MetadataAPI::GetClassInfoByIndex(source->GetTypeIndex()), name, &property));
         }
-        IFCEXPECT_RETURN(property != nullptr);
+
+        if (!property)
+        {
+            xephemeral_string_ptr parameters[2] = { xephemeral_string_ptr(), xephemeral_string_ptr(L"Property", 8) };
+            name.Demote(&parameters[0]);
+            return OriginateInvalidCondition(parameters);
+        }
 
         // Convert the XAML text (for example "True" or "SameGroup") to the property's type.
         CValue expected;
-        IFC_RETURN(expected.CopyConverted(expectedValue));
         bool createdObject = false;
-        IFC_RETURN(OptimizedStyle::ResolveValue(source->GetContext(), property, expected, &createdObject));
+        HRESULT hr = expected.CopyConverted(expectedValue);
+        if (SUCCEEDED(hr))
+        {
+            hr = OptimizedStyle::ResolveValue(source->GetContext(), property, expected, &createdObject);
+        }
+
+        if (FAILED(hr))
+        {
+            xstring_ptr valueText = expectedValue.AsString();
+            xephemeral_string_ptr parameters[2];
+            valueText.Demote(&parameters[0]);
+            name.Demote(&parameters[1]);
+            return OriginateInvalidCondition(parameters);
+        }
 
         condition->property = property;
         condition->expected = std::move(expected);
@@ -256,6 +299,10 @@ private:
 
             // A rule without conditions would always apply; it is not valid.
             IFCEXPECT_RETURN(!rule.conditions.empty());
+            for (const auto& condition : rule.conditions)
+            {
+                m_watchedProperties.insert(static_cast<uint32_t>(condition.property->GetIndex()));
+            }
             m_rules.push_back(std::move(rule));
         }
         return S_OK;
@@ -304,22 +351,29 @@ private:
 
     _Check_return_ HRESULT OnSourcePropertyChanged(_In_ const CDependencyProperty* property)
     {
-        if (!m_active)
+        if (!m_active || m_watchedProperties.find(static_cast<uint32_t>(property->GetIndex())) == m_watchedProperties.end())
         {
             return S_OK;
         }
 
+        auto source = m_source.lock();
+        if (!source)
+        {
+            return S_OK;
+        }
+
+        // Only a rule that flips between active and inactive changes what is applied. Setters that could
+        // not be resolved yet are retried, because their targets may have been created since.
+        bool needsEvaluation = m_hasUnresolvedSetters;
         for (const auto& rule : m_rules)
         {
-            for (const auto& condition : rule.conditions)
+            if (!needsEvaluation && RuleIsActive(source.get(), rule) != rule.active)
             {
-                if (condition.property->GetIndex() == property->GetIndex())
-                {
-                    return Evaluate();
-                }
+                needsEvaluation = true;
             }
         }
-        return S_OK;
+
+        return needsEvaluation ? Evaluate() : S_OK;
     }
 
     _Check_return_ HRESULT Evaluate()
@@ -338,12 +392,14 @@ private:
         m_evaluating = true;
         auto done = wil::scope_exit([this] { m_evaluating = false; });
 
+        int pass = 0;
         do
         {
             m_reevaluate = false;
             IFC_RETURN(EvaluateOnce());
-        } while (m_reevaluate);
+        } while (m_reevaluate && ++pass < MaxEvaluationPasses);
 
+        m_reevaluate = false;
         return S_OK;
     }
 
@@ -359,9 +415,13 @@ private:
 
         // The last active setter for each target property wins.
         std::vector<Applied> winners;
+        m_hasUnresolvedSetters = false;
         for (auto& rule : m_rules)
         {
-            if (!RuleIsActive(source.get(), rule))
+            // The cached state is updated before anything is applied, so that a change caused by applying
+            // a value is seen as a flip.
+            rule.active = RuleIsActive(source.get(), rule);
+            if (!rule.active)
             {
                 continue;
             }
@@ -370,6 +430,7 @@ private:
             {
                 if (!data.resolved)
                 {
+                    m_hasUnresolvedSetters = true;
                     continue;
                 }
 
@@ -437,10 +498,12 @@ private:
     xref::weakref_ptr<CDependencyObject> m_source;
     std::vector<Rule> m_rules;
     std::vector<Applied> m_applied;
+    std::unordered_set<uint32_t> m_watchedProperties;
     Microsoft::WRL::ComPtr<IUnknown> m_handlerToken;
     bool m_active = false;
     bool m_evaluating = false;
     bool m_reevaluate = false;
+    bool m_hasUnresolvedSetters = false;
 };
 
 // Defined here, where TriggerEvaluator is a complete type.

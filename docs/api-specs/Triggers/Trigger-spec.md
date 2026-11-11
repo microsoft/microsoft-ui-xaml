@@ -32,15 +32,20 @@ on the root element of a control template to style that control.
   against that element.
 - `Property` is a property name: `IsSelected`, or an attached property qualified by its owner,
   such as `RowContext.PreviousRelation`. `Value` is converted to the property's type, so
-  `True`, `SameGroup` and `100` work for a Boolean, an enum and a number.
+  `True`, `SameGroup`, `100` and `fr-FR` work for a Boolean, an enum, a number and a string.
+  A property name that does not exist, or a value that cannot be converted, fails when the
+  element enters the tree, with the message "Invalid attribute value ... for property ...".
 
 Evaluation rules:
 
-- Triggers are active while their element is in the live tree and are re-evaluated when any
-  property they test changes.
+- Triggers are active while their element is in the live tree and are re-evaluated when a
+  property they test changes in a way that turns a trigger on or off. Changes to other
+  properties of the element are ignored.
 - Several triggers can apply at once. For each target property the **last declared active
   setter wins**. When it deactivates, the previous active setter (or the original value)
   shows through again. A `MultiTrigger` has no extra priority.
+- A setter that changes a property tested by its own trigger is re-evaluated a bounded number
+  of times (8 passes), so it cannot hang the UI thread.
 - When the element leaves the tree, all values applied by its triggers are removed.
 
 # Examples
@@ -126,9 +131,11 @@ namespace Microsoft.UI.Xaml
   uses `FrameworkElement.Triggers` on the template root to avoid parser and XAML compiler
   changes. `ControlTemplate.Triggers` and `Style.Triggers` remain to be done.
 - **Property types.** `Property` is a string resolved at run time, not a `DependencyProperty`
-  checked against the template's `TargetType`. Conditions on string-valued properties are not
-  compared yet.
-- **No OR.** All conditions of a `MultiTrigger` must hold. Expressing "same group or other
-  group" takes one trigger per combination.
+  checked against the template's `TargetType`. Boolean, enum, number and string-typed properties
+  can be tested; other kinds (for example object-typed properties such as `Tag`) are untested.
+- **No OR.** All conditions of a `MultiTrigger` must hold, as in WPF. Expressing "same group or
+  other group" takes one trigger per combination.
+- **Conditions on template parts.** WPF's `Condition.SourceName` (testing a named element inside
+  the template) is not supported; conditions always test the templated control.
 - **Lifetime.** Conditions are tested only while the element is in the live tree.
 - Whether `StateTrigger` and `AdaptiveTrigger` should share the condition evaluation.

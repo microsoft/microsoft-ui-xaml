@@ -230,6 +230,117 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             });
         }
 
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void ConditionHoldingBeforeLoadIsApplied()
+        {
+            var button = LoadIntoWindow<Button>(
+                "<Button " + Namespaces + " IsEnabled='False'>" +
+                "  <Button.Template>" +
+                "    <ControlTemplate TargetType='Button'>" +
+                "      <Grid>" +
+                "        <Grid.Triggers>" +
+                "          <Trigger Property='IsEnabled' Value='False'>" +
+                "            <Setter Target='Part.Opacity' Value='0.5' />" +
+                "          </Trigger>" +
+                "        </Grid.Triggers>" +
+                "        <Border x:Name='Part' />" +
+                "      </Grid>" +
+                "    </ControlTemplate>" +
+                "  </Button.Template>" +
+                "</Button>");
+
+            UIExecutor.Execute(() =>
+            {
+                var part = FindByName(button, "Part");
+                Verify.AreEqual(0.5, part.Opacity, "The condition held when the template was created.");
+
+                button.IsEnabled = true;
+                Verify.AreEqual(1.0, part.Opacity, "The original value shows through.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void StringConditionMatches()
+        {
+            var root = LoadIntoWindow<Grid>(
+                "<Grid " + Namespaces + ">" +
+                "  <Grid.Triggers>" +
+                "    <Trigger Property='Language' Value='fr-FR'>" +
+                "      <Setter Target='Part.Opacity' Value='0.5' />" +
+                "    </Trigger>" +
+                "  </Grid.Triggers>" +
+                "  <Border x:Name='Part' />" +
+                "</Grid>");
+            var part = PartAt(root);
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1.0, part.Opacity);
+
+                root.Language = "fr-FR";
+                Verify.AreEqual(0.5, part.Opacity, "The string condition holds.");
+
+                root.Language = "de-DE";
+                Verify.AreEqual(1.0, part.Opacity, "A different string does not match.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void ChangesToUnrelatedPropertiesKeepAppliedValues()
+        {
+            var root = LoadIntoWindow<Grid>(
+                "<Grid " + Namespaces + ">" +
+                "  <Grid.Triggers>" +
+                "    <Trigger Property='IsHitTestVisible' Value='False'>" +
+                "      <Setter Target='Part.Opacity' Value='0.25' />" +
+                "    </Trigger>" +
+                "  </Grid.Triggers>" +
+                "  <Border x:Name='Part' />" +
+                "</Grid>");
+            var part = PartAt(root);
+
+            UIExecutor.Execute(() =>
+            {
+                root.IsHitTestVisible = false;
+                Verify.AreEqual(0.25, part.Opacity);
+
+                for (int i = 0; i < 50; i++)
+                {
+                    root.Width = 100 + i;
+                    root.Tag = i;
+                }
+                Verify.AreEqual(0.25, part.Opacity, "Unrelated changes do not disturb the applied value.");
+
+                root.IsHitTestVisible = true;
+                Verify.AreEqual(1.0, part.Opacity, "The condition still reacts to its own property.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SetterThatBreaksItsOwnConditionDoesNotHang()
+        {
+            var root = LoadIntoWindow<Grid>(
+                "<Grid " + Namespaces + " x:Name='Root' Width='100'>" +
+                "  <Grid.Triggers>" +
+                "    <Trigger Property='Width' Value='100'>" +
+                "      <Setter Target='Root.Width' Value='50' />" +
+                "    </Trigger>" +
+                "  </Grid.Triggers>" +
+                "</Grid>");
+
+            // Reaching the end of the test is the check: the evaluation passes are bounded.
+            UIExecutor.Execute(() =>
+            {
+                root.Width = 80;
+                root.Width = 100;
+                Verify.IsTrue(root.Width == 50 || root.Width == 100);
+            });
+        }
+
         private static FrameworkElement FindByName(DependencyObject parent, string name)
         {
             int count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
