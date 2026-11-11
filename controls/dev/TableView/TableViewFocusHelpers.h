@@ -26,6 +26,33 @@ namespace TableViewDetails
         }
     }
 
+    inline double RoundLayoutValue(winrt::FrameworkElement const& element, double value)
+    {
+        const auto layoutValue = static_cast<float>(value);
+        if (element.UseLayoutRounding())
+        {
+            if (auto const root = element.XamlRoot())
+            {
+                const auto scale = root.RasterizationScale();
+                return static_cast<float>(std::floor(layoutValue * scale + 0.5) / scale);
+            }
+        }
+        return layoutValue;
+    }
+
+    inline winrt::Thickness GetRowChromeSeparatorInsets(winrt::FrameworkElement const& chrome)
+    {
+        if (!chrome)
+        {
+            return {};
+        }
+        auto const margin = chrome.Margin();
+        const auto top = RoundLayoutValue(chrome, margin.Top);
+        // FrameworkElement rounds the total margin and the near-edge offset separately.
+        const auto height = RoundLayoutValue(chrome, static_cast<float>(margin.Top) + static_cast<float>(margin.Bottom));
+        return { 0.0, top, 0.0, height - top };
+    }
+
     // One step up that crosses popup boundaries. A popup's content (a ComboBox dropdown, a flyout)
     // is not a visual descendant of the element that owns it, so a plain VisualTreeHelper walk from
     // a dropdown item never reaches the editor that opened it.

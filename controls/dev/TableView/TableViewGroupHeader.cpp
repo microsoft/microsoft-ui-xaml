@@ -23,7 +23,7 @@ TableViewGroupHeader::TableViewGroupHeader()
                 header->RefreshContentAlignment();
             }
         });
-    m_headerSizeChangedRevoker = SizeChanged(winrt::auto_revoke,
+    RegisterPropertyChangedCallback(winrt::UIElement::UseLayoutRoundingProperty(),
         [weakThis = get_weak()](auto const&, auto const&)
         {
             if (auto header = weakThis.get())
@@ -65,7 +65,6 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
     {
         UpdateDefaultCountOpacity();
     }
-    RefreshContentAlignment();
     return desired;
 }
 
@@ -161,6 +160,7 @@ void TableViewGroupHeader::RefreshDensity()
         update(winrt::Control::PaddingProperty(), ownerImpl->GetDensityGroupHeaderPadding(), m_densityPadding, m_styleSetsPadding);
         update(winrt::Control::FontSizeProperty(), ownerImpl->GetCellFontSize(), m_densityFontSize, m_styleSetsFontSize);
     }
+    RefreshContentAlignment();
 }
 
 void TableViewGroupHeader::OnApplyTemplate()
@@ -174,18 +174,6 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_contentHost.set(GetTemplateChild(L"PART_ContentHost").try_as<winrt::Border>());
     m_contentPresenter.set(GetTemplateChild(L"PART_ContentPresenter").try_as<winrt::ContentPresenter>());
     m_expanderGutter.set(GetTemplateChild(L"PART_ExpanderGutter").try_as<winrt::Border>());
-    m_chromeSizeChangedRevoker.revoke();
-    if (auto const chrome = m_rowChrome.get())
-    {
-        m_chromeSizeChangedRevoker = chrome.SizeChanged(winrt::auto_revoke,
-            [weakThis = get_weak()](auto const&, auto const&)
-            {
-                if (auto header = weakThis.get())
-                {
-                    header->RefreshContentAlignment();
-                }
-            });
-    }
 
     // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
     // a cell is editing.
@@ -259,6 +247,7 @@ void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
     {
         m_defaultCount.set(rootElement.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>());
     }
+    RefreshContentAlignment();
 }
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
@@ -287,19 +276,15 @@ void TableViewGroupHeader::RefreshGridLines()
         }
         TableViewDetails::SetRowChromeSeparatorInsets(m_rowChrome.get(), thickness);
     }
+    RefreshContentAlignment();
 }
 
 void TableViewGroupHeader::RefreshContentAlignment()
 {
     if (auto const content = m_contentHost.get())
     {
-        auto const chrome = m_rowChrome.get();
-        const bool hasBounds = chrome && chrome == GetTemplateChild(L"PART_RowChrome")
-            && chrome.ActualHeight() > 0.0 && ActualHeight() > 0.0;
-        const double offset = hasBounds
-            ? chrome.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y
-                + (chrome.ActualHeight() - ActualHeight()) / 2.0
-            : 0.0;
+        auto const insets = TableViewDetails::GetRowChromeSeparatorInsets(m_rowChrome.get());
+        const double offset = (insets.Top - insets.Bottom) / 2.0;
         const auto controlPadding = Padding();
         const auto padding = TableViewDetails::OffsetContentPadding(controlPadding, offset);
         if (!m_contentPresenter.get() || !m_expanderGutter.get())

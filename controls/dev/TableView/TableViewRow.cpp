@@ -139,7 +139,15 @@ TableViewRow::TableViewRow()
                 row->RefreshGridLines();
             }
         });
-    m_rowSizeChangedRevoker = SizeChanged(winrt::auto_revoke,
+    RegisterPropertyChangedCallback(winrt::UIElement::UseLayoutRoundingProperty(),
+        [weakRow](auto const&, auto const&)
+        {
+            if (auto row = weakRow.get())
+            {
+                row->RefreshCellVisualGeometry();
+            }
+        });
+    RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(),
         [weakRow](auto const&, auto const&)
         {
             if (auto row = weakRow.get())
@@ -219,6 +227,7 @@ TableViewRow::TableViewRow()
         {
             if (auto strongRow = weakRow.get())
             {
+                strongRow->RefreshCellVisualGeometry();
                 strongRow->RefreshVisualState();
             }
         });
@@ -250,22 +259,11 @@ void TableViewRow::OnApplyTemplate()
 
     ResetCellAutomationNames();
     auto const host = GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>();
+    m_cellVisualGeometry.reset();
     m_cellsHost.set(host);
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
-    m_chromeSizeChangedRevoker.revoke();
     auto const chrome = GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>();
     m_rowChrome.set(chrome);
-    if (chrome)
-    {
-        m_chromeSizeChangedRevoker = chrome.SizeChanged(winrt::auto_revoke,
-            [weakRow = get_weak()](auto const&, auto const&)
-            {
-                if (auto row = weakRow.get())
-                {
-                    row->RefreshCellVisualGeometry();
-                }
-            });
-    }
     m_rowExpanderGutter.set(GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>());
 
     // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription.
@@ -1691,7 +1689,6 @@ bool TableViewRow::IsWithinExpanderGutter(const winrt::IInspectable& source) con
 
 void TableViewRow::OnCellsArrangedInternal(double leadLeft, double leadWidth, double height)
 {
-    RefreshCellVisualGeometry();
     if (m_cellsArranged && leadLeft == m_leadCellLeft && leadWidth == m_leadCellWidth && height == m_cellsArrangedHeight)
     {
         return;
@@ -2223,6 +2220,7 @@ bool TableViewRow::RebuildCellsCore(bool updateExistingCellPeerItems)
 
     ResetCellAutomationNames();
     host.Children().Clear();
+    m_cellVisualGeometry.reset();
 
     int32_t visibleColumnIndex = 0;
     for (auto const& column : columns)
@@ -2411,13 +2409,19 @@ void TableViewRow::RefreshCellVisualGeometry()
     }
 
     auto const chrome = m_rowChrome.get();
-    const bool hasChromeBounds = chrome && chrome == GetTemplateChild(L"PART_RowChrome")
-        && chrome.ActualHeight() > 0.0 && ActualHeight() > 0.0;
-    const double chromeTop = hasChromeBounds
-        ? chrome.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y : 0.0;
-    const double chromeBottom = hasChromeBounds ? chromeTop + chrome.ActualHeight() : 0.0;
-    m_contentVerticalOffset = hasChromeBounds
-        ? (chromeTop + chromeBottom - ActualHeight()) / 2.0 : 0.0;
+    auto const insets = TableViewDetails::GetRowChromeSeparatorInsets(chrome);
+    m_contentVerticalOffset = (insets.Top - insets.Bottom) / 2.0;
+    auto margin = FocusVisualMargin();
+    if (chrome)
+    {
+        const auto rowPadding = Padding();
+        const auto paddingTop = TableViewDetails::RoundLayoutValue(*this, rowPadding.Top);
+        // Border deflates by unrounded padding before the child's remaining height is rounded.
+        const auto paddingHeight = -TableViewDetails::RoundLayoutValue(*this,
+            -(static_cast<float>(rowPadding.Top) + static_cast<float>(rowPadding.Bottom)));
+        margin.Top += insets.Top - paddingTop;
+        margin.Bottom += insets.Bottom - (paddingHeight - paddingTop);
+    }
     auto const owner = GetOwningTableView();
     auto const padding = owner
         ? TableViewDetails::OffsetContentPadding(
@@ -2426,19 +2430,19 @@ void TableViewRow::RefreshCellVisualGeometry()
     auto const displayPadding = owner
         ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding(m_contentVerticalOffset)
         : winrt::Thickness{};
+    if (m_cellVisualGeometry &&
+        m_cellVisualGeometry->focusMargin == margin &&
+        m_cellVisualGeometry->padding == padding &&
+        m_cellVisualGeometry->displayPadding == displayPadding)
+    {
+        return;
+    }
+    m_cellVisualGeometry = CellVisualGeometry{ margin, padding, displayPadding };
 
     for (auto const& child : host.Children())
     {
         if (auto const cell = child.try_as<winrt::FrameworkElement>())
         {
-            auto margin = FocusVisualMargin();
-            if (hasChromeBounds && cell.ActualHeight() > 0.0)
-            {
-                const double cellTop = cell.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f }).Y;
-                // Use arranged bounds so row and cell focus agree after fractional-DPI rounding.
-                margin.Top += chromeTop - cellTop;
-                margin.Bottom += cellTop + cell.ActualHeight() - chromeBottom;
-            }
             if (cell.FocusVisualMargin() != margin)
             {
                 cell.FocusVisualMargin(margin);
@@ -2514,6 +2518,7 @@ void TableViewRow::RefreshGridLines()
         }
         TableViewDetails::SetRowChromeSeparatorInsets(m_rowChrome.get(), thickness);
     }
+    RefreshCellVisualGeometry();
     auto host = m_cellsHost.get();
     if (!host)
     {

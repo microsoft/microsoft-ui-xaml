@@ -759,13 +759,19 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
     SampleInstanceTelemetry();
 
+    auto xamlRoot = XamlRoot();
+    if (xamlRoot)
+    {
+        m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { get_weak(), &TableView::OnXamlRootChanged });
+        OnXamlRootChanged(xamlRoot, nullptr);
+    }
+
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
     {
         return; // already created for this hosting session
     }
 
-    auto xamlRoot = XamlRoot();
     if (!xamlRoot)
     {
         return;
@@ -807,6 +813,24 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     {
         // Best-effort; IsHighContrast falls back to a one-shot AccessibilitySettings read.
     }
+}
+
+void TableView::OnXamlRootChanged(const winrt::XamlRoot& sender, const winrt::XamlRootChangedEventArgs& /*args*/)
+{
+    const auto scale = sender.RasterizationScale();
+    if (m_layoutRasterizationScale == scale)
+    {
+        return;
+    }
+    m_layoutRasterizationScale = scale;
+    ForEachRealizedRow([](winrt::TableViewRow const& row)
+    {
+        winrt::get_self<TableViewRow>(row)->RefreshGridLines();
+    });
+    ForEachRealizedGroupHeader([](winrt::TableViewGroupHeader const& header, int32_t)
+    {
+        winrt::get_self<TableViewGroupHeader>(header)->RefreshGridLines();
+    });
 }
 
 void TableView::OnThemeSettingsChanged(
@@ -4119,6 +4143,8 @@ void TableView::OnTableViewUnloaded()
         return;
     }
 
+    m_xamlRootChangedRevoker.revoke();
+    m_layoutRasterizationScale = 0.0;
     CancelColumnResizeDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTipInitializationUnloadedBeforeRender();

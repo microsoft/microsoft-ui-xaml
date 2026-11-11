@@ -120,8 +120,6 @@ private:
     tracker_ref<winrt::Border> m_contentHost{ this };
     tracker_ref<winrt::ContentPresenter> m_contentPresenter{ this };
     tracker_ref<winrt::Border> m_expanderGutter{ this };
-    winrt::FrameworkElement::SizeChanged_revoker m_chromeSizeChangedRevoker{};
-    winrt::FrameworkElement::SizeChanged_revoker m_headerSizeChangedRevoker{};
     // The count in the default content template, cached per inspected ContentTemplateRoot.
     tracker_ref<winrt::TextBlock> m_defaultCount{ this };
     winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };

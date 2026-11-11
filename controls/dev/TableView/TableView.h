@@ -1044,6 +1044,7 @@ private:
     // ThemeSettings must be created once a XamlRoot/WindowId is available (Loaded); its Changed handler
     // refreshes HC-dependent resources directly on the UI thread (Changed is raised there).
     void OnTableViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnXamlRootChanged(const winrt::XamlRoot& sender, const winrt::XamlRootChangedEventArgs& args);
     void OnThemeSettingsChanged(const winrt::Microsoft::UI::System::ThemeSettings& sender, const winrt::IInspectable& args);
 
     void UpdateHeaderVisibility();
@@ -1456,6 +1457,8 @@ private:
     // Only touched on the UI thread now, so no atomic is required.
     bool m_isHighContrast{ false };
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    double m_layoutRasterizationScale{ 0.0 };
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();

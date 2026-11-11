@@ -249,12 +249,17 @@ private:
     void UpdateVisualState(bool useTransitions);
     void RefreshCellVisualGeometry();
     double m_contentVerticalOffset{ 0.0 };
+    struct CellVisualGeometry
+    {
+        winrt::Thickness focusMargin;
+        winrt::Thickness padding;
+        winrt::Thickness displayPadding;
+    };
+    std::optional<CellVisualGeometry> m_cellVisualGeometry;
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
-    winrt::FrameworkElement::SizeChanged_revoker m_chromeSizeChangedRevoker{};
-    winrt::FrameworkElement::SizeChanged_revoker m_rowSizeChangedRevoker{};
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.

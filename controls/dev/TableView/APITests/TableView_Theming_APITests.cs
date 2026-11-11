@@ -3387,6 +3387,145 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifySeparatorGeometryUpdatesBeforeArrange()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                table.UseLayoutRounding = false;
+                table.IsTextScaleFactorEnabled = false;
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(table).First();
+                var section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                var style = new Style(typeof(TableViewRow));
+                style.Setters.Add(new Setter(Control.BorderThicknessProperty, new Thickness(0, 0, 0, 2)));
+                row.Style = style;
+                section.BorderThickness = new Thickness(0, 0, 0, 2);
+
+                Verify.AreEqual(OffsetContentPadding(DensityCases[0].TextPadding, -1),
+                    RequireFirstCellTextBlock(table).Padding,
+                    "A separator change must update cell padding without waiting for another arrange.");
+                var expectedMargin = row.FocusVisualMargin;
+                expectedMargin.Bottom += 2;
+                Verify.AreEqual(expectedMargin, GetRowCell(row, 0).FocusVisualMargin,
+                    "Prepared cells must immediately inherit the separator-adjusted focus margin.");
+                Verify.AreEqual(OffsetContentPadding(new Thickness(0, 5, 0, 7), -1),
+                    ((ContentPresenter)section.FindVisualChildByName("PART_ContentPresenter")).Padding,
+                    "Section alignment must not depend on a SizeChanged notification.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifySeparatorGeometrySurvivesRoundingAndResize()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                table.IsTextScaleFactorEnabled = false;
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var rounding in new[] { true, false })
+            foreach (var separator in new[] { new Thickness(0, 0.6, 0, 0.6), new Thickness(0, 0.2, 0, 1.1) })
+            foreach (var rowPadding in new[] { new Thickness(0), new Thickness(0, 0.6, 0, 0.6), new Thickness(0, 0.6, 0, 0.9) })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    table.UseLayoutRounding = rounding;
+                    var row = GetRealizedRows(table).First();
+                    var style = new Style(typeof(TableViewRow));
+                    style.Setters.Add(new Setter(Control.BorderThicknessProperty, separator));
+                    style.Setters.Add(new Setter(Control.PaddingProperty, rowPadding));
+                    row.Style = style;
+                    FindVisualChildrenByType<TableViewGroupHeader>(table).First().BorderThickness = separator;
+                });
+                SettleLayout(table);
+
+                foreach (var width in new[] { 180.0, 240.0, 180.0 })
+                {
+                    RunOnUIThread.Execute(() => table.Columns[0].Width = new GridLength(width));
+                    SettleLayout(table);
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var row = GetRealizedRows(table).First();
+                        var cell = GetRowCell(row, 0);
+                        var chrome = (FrameworkElement)row.FindVisualChildByName("PART_RowChrome");
+                        var bounds = chrome.TransformToVisual(cell).TransformBounds(
+                            new Rect(0, 0, chrome.ActualWidth, chrome.ActualHeight));
+                        var expectedMargin = row.FocusVisualMargin;
+                        expectedMargin.Top += bounds.Top;
+                        expectedMargin.Bottom += cell.ActualHeight - bounds.Bottom;
+                        VerifyThicknessNear(expectedMargin, cell.FocusVisualMargin,
+                            "Cell focus must match the arranged chrome, including combined-margin rounding.");
+                        VerifyThicknessNear(GetAlignedContentPadding(row, DensityCases[0].TextPadding),
+                            RequireFirstCellTextBlock(table).Padding,
+                            "Column resizing must preserve the separator-adjusted text padding.");
+                        var section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                        VerifyThicknessNear(GetAlignedContentPadding(section, new Thickness(0, 5, 0, 7)),
+                            ((ContentPresenter)section.FindVisualChildByName("PART_ContentPresenter")).Padding,
+                            "Section and row alignment must use the same rounding convention.");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifySeparatorGeometryClearsWhenRetemplatingWithoutChrome()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateGroupedThemingTable();
+                table.IsTextScaleFactorEnabled = false;
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(table).First();
+                row.Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                        xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                        xmlns:controls=""using:Microsoft.UI.Xaml.Controls.Tabular"" TargetType=""controls:TableViewRow"">
+                        <Grid>
+                            <controls:TableViewCellsPanel x:Name=""PART_CellsHost"" />
+                            <Border x:Name=""PART_GridLineBorder"" />
+                        </Grid>
+                      </ControlTemplate>");
+                row.ApplyTemplate();
+                var section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                section.Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                        xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                        xmlns:controls=""using:Microsoft.UI.Xaml.Controls.Tabular"" TargetType=""controls:TableViewGroupHeader"">
+                        <Border x:Name=""PART_ContentHost"">
+                            <ContentPresenter Content=""{TemplateBinding Content}""
+                                ContentTemplate=""{TemplateBinding ContentTemplate}"" />
+                        </Border>
+                      </ControlTemplate>");
+                section.ApplyTemplate();
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(table).First();
+                Verify.AreEqual(row.FocusVisualMargin, GetRowCell(row, 0).FocusVisualMargin);
+                Verify.AreEqual(DensityCases[0].TextPadding, RequireFirstCellTextBlock(table).Padding,
+                    "A template without chrome must not retain the old template's content offset.");
+                var section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                Verify.AreEqual(section.Padding, ((Border)section.FindVisualChildByName("PART_ContentHost")).Padding,
+                    "A template without optional presenter/gutter parts must retain the full control padding.");
+            });
+        }
+
+        [TestMethod]
         public void VerifyGeneratedTextLayoutStaysInsideSeparators()
         {
             foreach (var density in DensityCases)
@@ -6974,6 +7113,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsNotNull(pixels);
             Verify.IsTrue(width > 0 && height > 0 && pixels.Length == width * height * 4);
             return (width, height, pixels);
+        }
+
+        internal static void VerifyThicknessNear(Thickness expected, Thickness actual, string message)
+        {
+            Verify.IsLessThanOrEqual(Math.Abs(expected.Left - actual.Left), 0.001, message);
+            Verify.IsLessThanOrEqual(Math.Abs(expected.Top - actual.Top), 0.001, message);
+            Verify.IsLessThanOrEqual(Math.Abs(expected.Right - actual.Right), 0.001, message);
+            Verify.IsLessThanOrEqual(Math.Abs(expected.Bottom - actual.Bottom), 0.001, message);
         }
 
         internal static Thickness GetAlignedContentPadding(FrameworkElement row, Thickness padding)
