@@ -318,7 +318,7 @@ class ValidationTests(TriageFixture):
         result = self.result(area="None", area_confidence="NONE")
         self.assertEqual(t.planned_labels(result, self.evidence, MAPPING), [])
 
-    def test_out_of_set_self_newer_non_integer_and_medium_duplicates_are_rejected(self):
+    def test_out_of_set_self_newer_non_integer_and_low_confidence_duplicates_are_rejected(self):
         for value in (True, "1", 999, 100, 101):
             with self.subTest(value=value), self.assertRaises(t.TriageError):
                 self.result(duplicate_candidates_json=json.dumps([
@@ -384,7 +384,7 @@ class RoutingTests(TriageFixture):
                 result = self.result(area=area, area_confidence=confidence)
                 self.assertEqual(t.planned_labels(result, self.evidence, MAPPING), [])
 
-    def test_unexplained_high_area_is_deferred_without_discarding_other_triage(self):
+    def test_unexplained_high_routes_the_area_at_medium_but_defers_the_team(self):
         result = self.result(
             routing_reason="None", reproduction="INSUFFICIENT",
             missing_information="Please provide concrete steps.",
@@ -610,7 +610,7 @@ class ConditionalRoutingTests(TriageFixture):
         self.assertEqual(self.client.writes, [])
         self.assertEqual(len(self.client.comments), 1)
 
-    def test_low_confidence_publication_stays_idempotent(self):
+    def test_low_ownership_confidence_publication_stays_idempotent(self):
         self.mapping["area-Expander"]["confidence"] = "low"
         self.client.issue["labels"] = [{"name": "bug"}]
         evidence = t.prepare(self.client, event(), self.mapping)

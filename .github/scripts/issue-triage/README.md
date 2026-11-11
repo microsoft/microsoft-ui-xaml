@@ -43,10 +43,10 @@ still rebuilds live evidence independently.
 | --- | --- |
 | Winning primary area at MEDIUM or HIGH confidence, no existing area label | Add one existing `area-*` label, subject to existing human-team compatibility. LOW/NONE confidence does not add an area. |
 | Newly selected area with a configured owner, no existing team label | Derive and add its `team-*` label only at HIGH confidence using the selected configured routing rule. MEDIUM adds the area but leaves team routing for review. |
-| Existing area with a configured owner, no existing team label | Retain the existing default/conditional team-routing policy. |
+| Existing area with a configured owner, no existing team label | An unconditional default can supply the team independently of model confidence. Areas with conditional rules require a matching HIGH-confidence area assessment. |
 | Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
 | Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
-| Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
+| HIGH-confidence area assessment clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. MEDIUM may add the area, not the conditional team. |
 | No area fits, but evidence clearly meets a configured team-only rule | Add its configured team at HIGH routing confidence without an area; retain `needs-triage`. |
 | LOW-confidence area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
 | Newly selected MEDIUM-confidence area | Apply the area, keep or add `needs-triage`, and do not infer a new team from that suggestion. |
@@ -256,6 +256,9 @@ publisher fails visibly if a configured team has been removed rather than
 creating or guessing a replacement.
 If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
+Existing-label policy does not distinguish who applied the label: an
+unconditional area added at MEDIUM on an earlier run can supply its default team
+on a later run. This does not promote the model's area confidence.
 
 ### Learning from human triage
 
@@ -582,6 +585,13 @@ Commit the Markdown source, compiled `.lock.yml`, and `.github/aw/actions-lock.j
 together. Do not hand-edit the generated workflow. The focused CI workflow runs
 the tests and checks that the pinned compiler reproduces the committed lockfile.
 Product binaries do not need rebuilding for these automation-only changes.
+
+Runtime contract tests cover confidence guidance in the prompt source and
+compiled safe-output tool schema alongside deterministic publisher behavior.
+Routing tests supply structured assessments; they do not evaluate hosted-model
+classification accuracy. No separate routing eval/golden suite is configured
+here. Generated usage paths named `evals` or `graders` are framework artifact
+collection, not additional routing expectations.
 
 `find_duplicates.py` implements deterministic retrieval and ranking.
 `triage.py prepare EVENT_PATH CONTEXT_PATH` builds model input.

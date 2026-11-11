@@ -155,7 +155,7 @@ safe-outputs:
           required: true
           type: string
         area_confidence:
-          description: Confidence in the primary area or a configured team-only rule; only HIGH can add routing labels.
+          description: Confidence in the primary area or a configured team-only rule; MEDIUM/HIGH can add an area, but new-area and team-only team assignments require HIGH. LOW/NONE do not add an area.
           required: true
           type: choice
           options: [HIGH, MEDIUM, LOW, NONE]
@@ -499,8 +499,9 @@ Call `publish_triage_summary` with:
 - `summary`: one or two factual sentences, at most 700 characters.
 - `area` and `area_confidence`: the classification above.
 - `routing_rule`: `default` or the exact configured override ID for that area.
-- `routing_reason`: at most 400 characters; conditional rules require evidence,
-  while default routing may use a concise explanation or `None`.
+- `routing_reason`: supporting report evidence, at most 400 characters, required
+  for every HIGH area suggestion or conditional rule. Only non-HIGH default
+  routing may use `None`.
 - `issue_kind`: BUG, FEATURE, or OTHER, assessed from the report's content.
 - `impact`, `workaround`, and `priority_reason`: the
   evidence-based assessment above; the publisher, not the model, derives P0/P1/P2.

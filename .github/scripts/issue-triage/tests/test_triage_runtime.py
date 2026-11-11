@@ -12,7 +12,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import triage as t
 from find_duplicates import MAX_CANDIDATES
-from test_triage import FakeGitHub, MAPPING, REPO, event
+from test_triage import FakeGitHub, MAPPING, REPO, agent_output, event
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -297,6 +297,53 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertNotIn("team-Core", self.source)
         self.assertNotIn("team-parent-map.json", self.source)
         self.assertIn("Never emit a team name.", self.source)
+
+    def test_confidence_policy_agrees_in_source_compiled_tools_and_publication(self):
+        metadata, _ = json.JSONDecoder().raw_decode(
+            self.lock.split("GH_AW_TOOLS_META_JSON: |\n", 1)[1].lstrip()
+        )
+        tool = next(item for item in metadata["dynamic_tools"]
+                    if item["name"] == "publish_triage_summary")
+        encoded_config = re.search(r'(?m)^\s+GH_AW_SAFE_OUTPUTS_CONFIG: (".*")$', self.lock)[1]
+        inputs = json.loads(json.loads(encoded_config))["publish-triage-summary"]["inputs"]
+        confidence = tool["inputSchema"]["properties"]["area_confidence"]
+        description = re.search(
+            r"(?m)^        area_confidence:\n          description: (.+)$", self.source
+        )[1]
+        self.assertEqual(confidence["description"], description)
+        self.assertEqual(inputs["area_confidence"]["description"], description)
+        self.assertEqual(confidence["enum"], inputs["area_confidence"]["options"])
+        for policy in (
+            "MEDIUM/HIGH can add an area",
+            "new-area and team-only team assignments require HIGH",
+            "LOW/NONE do not add an area",
+        ):
+            self.assertIn(policy, description)
+        reason = tool["inputSchema"]["properties"]["routing_reason"]["description"]
+        self.assertEqual(reason, inputs["routing_reason"]["description"])
+        self.assertIn("None is allowed only for non-HIGH default routing", reason)
+        output = self.source.split("## Output\n", 1)[1]
+        self.assertIn("Only non-HIGH default\n  routing may use `None`.", output)
+
+        expected = {
+            "HIGH": ["area-Expander", "team-Controls"],
+            "MEDIUM": ["area-Expander", "needs-triage"],
+            "LOW": ["needs-triage"],
+            "NONE": ["needs-triage"],
+        }
+        self.assertEqual(set(confidence["enum"]), set(expected))
+        for value in confidence["enum"]:
+            with self.subTest(confidence=value):
+                client = FakeGitHub()
+                client.issue["labels"] = [{"name": "bug"}]
+                evidence = t.prepare(client, event(), MAPPING)
+                result = t.validate(agent_output(
+                    evidence, area="None" if value == "NONE" else "area-Expander",
+                    area_confidence=value,
+                ), evidence)
+                plan = t.publish(client, result, evidence, MAPPING, write=False)
+                self.assertEqual(plan["add_labels"], expected[value])
+                self.assertEqual(client.writes, [])
 
     def test_reporter_diagnosis_supports_provisional_routing_without_claiming_verification(self):
         routing = self.source.split("## Routing\n", 1)[1].split("## Reproduction", 1)[0]
