@@ -6284,8 +6284,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var geometry = glyph.Data as PathGeometry;
                         Verify.IsNotNull(geometry, $"The direction must supply vector geometry ({context}).");
                         Verify.AreEqual(4, geometry.Figures.Count, $"Keep the arrow and three sort lines ({context}).");
-                        Verify.AreEqual(direction == SortDirection.Ascending ? 14.5 : 1.5,
-                            geometry.Figures[0].StartPoint.Y, $"Use the corresponding exported SVG ({context}).");
+                        var glyphTransform = glyph.TransformToVisual(indicator);
+                        var expectedPoints = direction == SortDirection.Ascending
+                            ? new[] { new Point(13, 14.5), new Point(2.5, 13), new Point(4.5, 10), new Point(6, 6.5) }
+                            : new[] { new Point(13, 1.5), new Point(2.5, 3), new Point(4.5, 6), new Point(6, 9.5) };
+                        for (var i = 0; i < expectedPoints.Length; i++)
+                        {
+                            var actualPoint = glyphTransform.TransformPoint(geometry.Figures[i].StartPoint);
+                            var expectedX = flow == FlowDirection.LeftToRight ? expectedPoints[i].X : 16 - expectedPoints[i].X;
+                            Verify.IsLessThan(Math.Abs(actualPoint.X - expectedX), 0.01,
+                                $"Preserve figure {i}'s horizontal position ({context}).");
+                            Verify.IsLessThan(Math.Abs(actualPoint.Y - expectedPoints[i].Y), 0.01,
+                                $"Preserve figure {i}'s direction and vertical position ({context}).");
+                        }
 
                         var bounds = indicator.TransformToVisual(header).TransformBounds(
                             new Rect(0, 0, indicator.ActualWidth, indicator.ActualHeight));
@@ -6325,6 +6336,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 IdleSynchronizer.Wait();
                 VerifyPlacement(true, SortDirection.Descending);
+
+                RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
+                IdleSynchronizer.Wait();
+                VerifyPlacement(true, SortDirection.Ascending);
 
                 RunOnUIThread.Execute(() => tableView.ClearSort());
                 IdleSynchronizer.Wait();
