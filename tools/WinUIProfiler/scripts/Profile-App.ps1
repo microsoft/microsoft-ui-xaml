@@ -9,6 +9,9 @@ launches the app through the Detours launcher (WinUIProfiler.Launcher), so the a
 profiles it from process start. When the profiler is closed, the script closes the app if it is still running,
 deletes the staged DLLs and returns.
 
+Before it builds the profiler, it runs Install-Prerequisites.ps1, which checks the build tools and offers to install
+the missing ones.
+
 The script asks for administrator rights, which live ETW and the runtime links need. The app still runs without
 them. Exit codes: 0 when the app was launched with the private DLLs and the staging was removed, 4 when the UAC
 prompt was declined, 1 otherwise.
@@ -147,6 +150,7 @@ function Get-ProfilerExecutable([string] $Root, [string] $Platform, [bool] $Rebu
     }
     if ($Rebuild -or -not $executable -or -not (Test-Path -LiteralPath $executable -PathType Leaf) -or
         -not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $executable) 'NativeLauncher\manifest.json') -PathType Leaf)) {
+        & (Join-Path $PSScriptRoot 'Install-Prerequisites.ps1') | Out-Host
         Write-Host "Building WinUI Profiler (Release, $Platform) with Build-App.ps1."
         & (Join-Path $PSScriptRoot 'Build-App.ps1') -Configuration Release -Platform $Platform | Out-Host
         $executable = Join-Path (Get-Content -LiteralPath $outputFile -Raw).Trim() 'WinUIProfiler.App.exe'
