@@ -21,6 +21,7 @@
 #include <StyleCustomRuntimeData.h>
 #include <CustomWriterRuntimeContext.h>
 #include <CustomWriterRuntimeObjectCreator.h>
+#include <XamlBinaryFormatSubReader2.h>
 #include <XamlOptimizedNodeList.h>
 #include <EnumDefs.h>
 #include <MarkupExtension.h>
@@ -194,6 +195,39 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
     if (!OptionalChangeState::IsOptimizeApplyStylesEnabled())
     {
         IFC_RETURN(EnsureAllValuesRealized());
+    }
+    else
+    {
+        for (size_t index = 0; index < m_basedOnBegin; index++)
+        {
+            if (!m_realizedStates[index] && m_runtimeData->SetterHasObjectValue(m_dataIndices[index]))
+            {
+                //
+                // Normally we want to defer evaluating a Setter's value until it's actually needed. This Setter on
+                // this Style might be overridden by another Style or a local value, so evaluating it early might
+                // just be a waste of time. There is a problem with x:Binds, however. An x:Bind might have generated
+                // code that depends on the object that's the value of this Setter (or objects nested inside the value
+                // of this Setter). Normally that object wouldn't be created until the Style is applied, but x:Binds
+                // can be evaluated earlier during Loading. Deferring the Setter evaluation would cause an AV when we
+                // evaluate the x:Bind.
+                //
+                // As a workaround, scan this setter value's XBF for a SetConnectionId command. SetConnectionId
+                // commands are used to identify the current instance in the parser for x:Bind, or for other things
+                // like names or event handler hookups. We don't have enough information to tell what scenario the
+                // connection id is for, so we assume it might be for an x:Bind and realize it early.
+                //
+                bool hasConnectionId = false;
+                IFC_RETURN(m_runtimeContext->GetReader()->HasConnectionId(
+                    m_runtimeData->GetSetterValueToken(m_dataIndices[index]).GetIndex(),
+                    &hasConnectionId));
+
+                if (hasConnectionId)
+                {
+                    // Connect these objects before Loading can initialize compiled bindings.
+                    IFC_RETURN(EnsureValueRealized(index));
+                }
+            }
+        }
     }
 
     return S_OK;

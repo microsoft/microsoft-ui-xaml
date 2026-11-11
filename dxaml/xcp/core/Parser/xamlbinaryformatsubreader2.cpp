@@ -45,6 +45,17 @@ _Check_return_ HRESULT XamlBinaryFormatSubReader2::TryReadHRESULT(
     return S_OK;
 }
 
+_Check_return_ HRESULT XamlBinaryFormatSubReader2::HasConnectionId(
+    _In_ unsigned int nodeIndex,
+    _Out_ bool* hasConnectionId) const
+{
+    UNREFERENCED_PARAMETER(nodeIndex);
+
+    // TODO: Inspect the object scope at nodeIndex for SetConnectionId nodes.
+    *hasConnectionId = false;
+    return S_OK;
+}
+
 bool XamlBinaryFormatSubReader2::TryRead(ObjectWriterNode& currentXamlNode)
 {
     ObjectWriterNodeType nodeType;

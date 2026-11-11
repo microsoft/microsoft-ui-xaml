@@ -540,4 +540,130 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
+    void StyleWithXBindTests::NestedSetterValueConnectionIdRealizedBeforeLoading()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='ContextFlyout'>"
+                L"          <Setter.Value>"
+                L"            <MenuFlyout x:Name='flyout'>"
+                L"              <MenuFlyoutItem x:Name='flyoutItem' x:ConnectionId='1' Text='Remove' />"
+                L"            </MenuFlyout>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            // Leave the control unhosted: no Loading event or item-container style application has occurred.
+            VERIFY_IS_NOT_NULL(root->FindName(Platform::StringReference(L"flyoutItem")),
+                L"The nested binding target should be created during style initialization");
+        });
+    }
+
+    void StyleWithXBindTests::SetterValueRootConnectionIdRealizedBeforeLoading()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='ContextFlyout'>"
+                L"          <Setter.Value>"
+                L"            <MenuFlyout x:Name='flyout' x:ConnectionId='1'>"
+                L"              <MenuFlyoutItem Text='Remove' />"
+                L"            </MenuFlyout>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            VERIFY_IS_NOT_NULL(root->FindName(Platform::StringReference(L"flyout")),
+                L"The binding target at the setter value's root should be created during style initialization");
+        });
+    }
+
+    void StyleWithXBindTests::SetterValueWithoutConnectionIdRemainsDeferred()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='Tag'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:Name='deferredBrush' Color='Blue' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='ContextFlyout'>"
+                L"          <Setter.Value>"
+                L"            <MenuFlyout>"
+                L"              <MenuFlyoutItem x:Name='flyoutItem' x:ConnectionId='1' Text='Remove' />"
+                L"            </MenuFlyout>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='Background'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:Name='sandwichedBrush' Color='Red' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='Foreground'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:ConnectionId='2' Color='Green' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"deferredBrush")),
+                L"A connection ID in a following setter value must not realize this brush");
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"sandwichedBrush")),
+                L"Connection IDs in preceding and following setter values must not realize this brush");
+
+            auto listView = safe_cast<ListView^>(root->Content);
+            auto setters = listView->ItemContainerStyle->Setters;
+            auto setter = safe_cast<Setter^>(setters->GetAt(0));
+            auto brush = safe_cast<SolidColorBrush^>(setter->Value);
+            VERIFY_IS_NOT_NULL(brush);
+            VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+
+            auto sandwichedSetter = safe_cast<Setter^>(setters->GetAt(2));
+            auto sandwichedBrush = safe_cast<SolidColorBrush^>(sandwichedSetter->Value);
+            VERIFY_IS_NOT_NULL(sandwichedBrush);
+            VERIFY_ARE_EQUAL(Colors::Red, sandwichedBrush->Color);
+        });
+    }
+
 } } } } } }

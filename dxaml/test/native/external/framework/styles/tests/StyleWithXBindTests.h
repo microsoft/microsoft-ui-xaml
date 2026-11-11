@@ -74,6 +74,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
 #pragma endregion
 
+#pragma region Deferred setter values
+        BEGIN_TEST_METHOD(NestedSetterValueConnectionIdRealizedBeforeLoading)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that an object nested in a deferred setter value with a connection ID is realized before Loading")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(SetterValueRootConnectionIdRealizedBeforeLoading)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a deferred setter value with a connection ID on its root is realized before Loading")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(SetterValueWithoutConnectionIdRemainsDeferred)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that setter values without connection IDs stay deferred next to and between connection-bearing setter values")
+        END_TEST_METHOD()
+#pragma endregion
+
     private:
         void XBindInBaseStyle_Simulated_Helper(bool faultIn);
         void BasicXBind_Simulated_Helper(bool faultIn);
