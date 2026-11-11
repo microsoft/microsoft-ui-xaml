@@ -2,14 +2,13 @@
 name: winui-profiler-analysis
 description: >-
   Answers questions about a WinUI 3 app's performance from a WinUI Profiler
-  session file (.sqlite) or a recorded ETW trace (.etl), with the
-  winui-profiler tools, which read what the WinUI Profiler app's processors
-  stored: how the launch went, UI-thread ticks and slow ticks, regions of
-  interest (navigations, flyouts and dialogs opening, focus changes), and the
-  UI elements and composition visuals the events mention. Use it when someone
-  asks why a WinUI app is slow to start or draws slowly, what a tick did, what
-  happened around a navigation, what happened to an element, or what a session
-  or trace holds.
+  session file (.sqlite), with the winui-profiler tools, which read what the
+  WinUI Profiler app's processors stored: how the launch went, UI-thread ticks
+  and slow ticks, regions of interest (navigations, flyouts and dialogs
+  opening, focus changes), and the UI elements and composition visuals the
+  events mention. Use it when someone asks why a WinUI app is slow to start or
+  draws slowly, what a tick did, what happened around a navigation, what
+  happened to an element, or what a session holds.
 ---
 
 # WinUI Profiler sessions
@@ -21,8 +20,8 @@ regions of interest and interesting rows, and the UI elements and composition
 visuals the events mention. The winui-profiler tools read those tables and
 the session file's views over them, and never return the events' field
 values. They read the files where they are, without changing them, even while
-the app is still recording one. `record_trace` reads a recorded trace into a
-new session file first.
+the app is still recording one. They don't read traces (.etl): a trace is read
+into a session file first, as [Getting a session](#getting-a-session) says.
 
 ## The tools
 
@@ -31,7 +30,6 @@ Each tool has views; `view` picks one, and the first is the default.
 | Tool | Views |
 | --- | --- |
 | `sessions` | `list`: the session files; `summary`: what one holds |
-| `record_trace` | Reads a recorded trace (.etl) into a session file |
 | `launch` | `milestones`: how the launch went; `frames`: the first frames drawn |
 | `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` |
 | `objects` | `types`, `list`, `history` |
@@ -41,7 +39,7 @@ Each tool has views; `view` picks one, and the first is the default.
 | Question | Call |
 | --- | --- |
 | Which sessions are there? | `sessions`, view `list` |
-| What does this session or trace hold? | `sessions`, view `summary` |
+| What does this session hold? | `sessions`, view `summary` |
 | How long does the session run? | `sessions`, view `summary`: `uiThreads` |
 | How did the launch go? | `launch`, view `milestones` |
 | How soon did the first frames draw? | `launch`, view `frames` |
@@ -80,12 +78,11 @@ More answers come as the app gets processors for them.
   WinUI Profiler, or membership in the local Performance Log Users group.
   Sessions are saved in `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
   `<date>-<time>-<process>-<pid>.sqlite`.
-- **Read a recorded trace (.etl).** Call `record_trace` with the trace's full
-  path, or open the trace in the app (connection mode **Recorded trace
-  (.etl)**, then **Open trace**), or use the WinUI Profiler CLI's `record`
-  command. Reading a trace needs no elevation. `record_trace` saves the session
-  file in the sessions folder unless it's given another `folder`, as the app
-  does; the CLI's `record` writes it where its `--out` option says.
+- **Read a recorded trace (.etl) into one.** Open the trace in the app
+  (connection mode **Recorded trace (.etl)**, then **Open trace**), or use the
+  WinUI Profiler CLI's `record` command. Reading a trace needs no elevation.
+  The app saves the session file in the sessions folder; the CLI's `record`
+  writes it where its `--out` option says.
 
 ### Recording a trace
 
@@ -116,10 +113,8 @@ recording live does.
 1. **Pick the session.**
    - A `.sqlite` file: pass it as `sessionPath` to every tool. A file name
      alone means a file in the sessions folder.
-   - A `.etl` file: call `record_trace` with its full path. When the trace has
-     several XAML processes, the tool asks which one, or returns
-     `needsProcessId` with the list; then ask the user and call it again with
-     `processId`. Use the returned `session.sessionPath` from then on.
+   - A `.etl` file: the tools don't read traces. Ask the user to read it into
+     a session file first, as [Getting a session](#getting-a-session) says.
    - Nothing named: the tools read the newest session file. Say which file
      that is; `sessions` with view `list` shows the others.
 2. **Call `sessions` with view `summary` first.** Its `analyses` say which

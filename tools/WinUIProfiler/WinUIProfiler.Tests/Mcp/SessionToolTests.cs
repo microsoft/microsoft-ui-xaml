@@ -104,7 +104,8 @@ internal static class SessionToolTests
         Expect.Equal(0L, none.Long("total"), "Session files in an empty folder");
         var emptyNotes = none.Strings("notes");
         Expect.Equal(1, emptyNotes.Count, "An empty folder's notes");
-        Contains(emptyNotes[0], "An empty folder's note", $"There are no session files in {empty}.", "record_trace");
+        Contains(emptyNotes[0], "An empty folder's note", $"There are no session files in {empty}.",
+            "the WinUI Profiler CLI's record command");
         Expect.Equal("Found no session files in the folder, so read none.", none.Text("computed"),
             "What the list view of an empty folder computed");
         Expect.Equal(0, QueryTests.CheckQueries(none, "The list view of an empty folder").Count,
@@ -159,7 +160,7 @@ internal static class SessionToolTests
         var trace = Path.Combine(folder, "app.etl");
         File.WriteAllText(trace, "Not a trace.");
         Contains(Error(() => SessionCatalog.Resolve(trace, folder)), "A trace", $"{trace} is a trace, not a session file.",
-            "record_trace");
+            "the WinUI Profiler CLI's record command");
         Contains(Error(() => SessionCatalog.Resolve("app.etl", folder)), "A trace by name", "is a trace, not a session file.");
         var subfolder = Directory.CreateDirectory(Path.Combine(folder, "sub")).FullName;
         Expect.Equal($"{subfolder} is a folder. The sessions tool's list view lists the session files in a folder.",

@@ -31,7 +31,7 @@ internal static class SessionCatalog
 {
     internal const string Extension = ".sqlite";
 
-    // The end reason of a session file whose trace was read to its end, as the app, record_trace and the CLI write it.
+    // The end reason of a session file whose trace was read to its end, as the app and the CLI write it.
     internal const string EndOfTrace = "End of trace";
 
     internal const string SessionPathDescription =
@@ -40,7 +40,7 @@ internal static class SessionCatalog
 
     internal const string NoEndReason = "none (still recording, or the recording stopped unexpectedly)";
 
-    /// <summary>Where the WinUI Profiler app and record_trace write session files.</summary>
+    /// <summary>Where the WinUI Profiler app writes session files.</summary>
     internal static string DefaultFolder { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUIProfiler", "Sessions");
 
@@ -142,7 +142,7 @@ internal static class SessionCatalog
         {
             return Files(directory).FirstOrDefault()?.Path ?? throw new McpException(
                 $"There are no session files in {directory}. Record one with the WinUI Profiler app, or read a trace (.etl) " +
-                "into one with record_trace.");
+                "into one with the app or the WinUI Profiler CLI's record command.");
         }
 
         string path;
@@ -170,8 +170,9 @@ internal static class SessionCatalog
         {
             if (string.Equals(Path.GetExtension(path), ".etl", StringComparison.OrdinalIgnoreCase))
             {
-                throw new McpException($"{path} is a trace, not a session file. Read it into a session file with record_trace, " +
-                    "then pass the session file it returns.");
+                throw new McpException($"{path} is a trace, not a session file. Read it into a session file with the WinUI " +
+                    "Profiler app (Recorded trace (.etl), then Open trace) or the WinUI Profiler CLI's record command, then pass " +
+                    "that session file.");
             }
 
             return path;
@@ -317,7 +318,7 @@ internal static class SessionCatalog
                 "Results cover the events stored so far.");
         }
 
-        // Reading stopped or failed partway, in the app or here.
+        // Reading stopped or failed partway, in the app or the CLI.
         if (IsTrace(info) && info.EndReason is { } reason && reason != EndOfTrace)
         {
             notes.Add($"The trace wasn't read to its end (the session's end reason is \"{reason}\"); results cover only " +

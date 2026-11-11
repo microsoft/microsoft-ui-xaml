@@ -1,7 +1,7 @@
 {
   "name": "winui-profiler",
   "version": "0.1.0",
-  "description": "Answers questions about WinUI Profiler sessions (the .sqlite files the WinUI Profiler app and CLI record) from what the app's processors stored: launch milestones and first frames, UI-thread ticks and slow ticks, regions of interest, and the UI elements and visuals the events mention. It can also read a recorded trace (.etl) into a session.",
+  "description": "Answers questions about WinUI Profiler sessions (the .sqlite files the WinUI Profiler app and CLI record) from what the app's processors stored: launch milestones and first frames, UI-thread ticks and slow ticks, regions of interest, and the UI elements and visuals the events mention.",
   "author": {
     "name": "Microsoft"
   },
