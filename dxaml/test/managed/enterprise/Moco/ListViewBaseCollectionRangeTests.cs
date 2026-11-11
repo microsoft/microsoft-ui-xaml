@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -249,6 +250,94 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
+        public void CollectionRangeAmbiguousIndexOfPreservesSourceEquality()
+        {
+            WithCollectionMoveChange(false, () => UIExecutor.Execute(VerifyRangeEqualSurvivors));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionRangeAmbiguousIndexOfPreservesSourceEqualityWithMoveNotifications()
+        {
+            WithCollectionMoveChange(true, () => UIExecutor.Execute(VerifyRangeEqualSurvivors));
+        }
+
+        private static void VerifyRangeEqualSurvivors()
+        {
+            foreach (bool useNaN in new[] { false, true })
+            {
+                foreach (bool replace in new[] { false, true })
+                {
+                    Log.Comment("Equal survivor: NaN={0}, Replace={1}", useNaN, replace);
+                    var items = new RangeCollection<object>(useNaN
+                        ? new object[] { 1.0, double.NaN, 3.0, double.NaN, 5.0 }
+                        : new object[] { new NamedItem("A"), new NamedItem("B"), new NamedItem("C"), new NamedItem("B"), new NamedItem("D") });
+                    var view = new CollectionViewSource { Source = items }.View;
+                    Verify.IsTrue(view.MoveCurrentToPosition(1));
+                    object equalProbe = useNaN ? (object)double.NaN : new NamedItem("B");
+                    int notifications = 0;
+                    VectorChangedEventHandler<object> onChanged = (sender, args) =>
+                    {
+                        Verify.AreEqual((replace ? 3 : 2) - notifications, view.IndexOf(equalProbe),
+                            "IndexOf must find the first equal item visible in this notification.");
+                        notifications++;
+                    };
+                    view.VectorChanged += onChanged;
+                    try
+                    {
+                        if (replace)
+                        {
+                            // The source's first equal match is a replacement that is not visible yet.
+                            items.ReplaceRange(1, 2, useNaN ? (object)6.0 : new NamedItem("X"),
+                                useNaN ? (object)double.NaN : new NamedItem("B"));
+                        }
+                        else
+                        {
+                            // The old payload's first equal match has already been removed.
+                            items.RemoveRange(1, 2);
+                        }
+                    }
+                    finally
+                    {
+                        view.VectorChanged -= onChanged;
+                    }
+
+                    Verify.AreEqual(2, notifications);
+                    int expectedPosition = replace ? 3 : 1;
+                    Verify.AreEqual(expectedPosition, view.CurrentPosition,
+                        "Currency must follow the equal surviving item, not fall back to row zero.");
+                    Verify.AreEqual(items[expectedPosition], view.CurrentItem);
+                }
+
+                var pendingItems = new RangeCollection<object>(useNaN
+                    ? new object[] { 1.0, double.NaN, double.NaN, 3.0, 5.0 }
+                    : new object[] { new NamedItem("A"), new NamedItem("B"), new NamedItem("B"), new NamedItem("C"), new NamedItem("D") });
+                var pendingView = new CollectionViewSource { Source = pendingItems }.View;
+                object pendingProbe = useNaN ? (object)double.NaN : new NamedItem("B");
+                int removed = 0;
+                VectorChangedEventHandler<object> onRemoved = (sender, args) =>
+                {
+                    Verify.AreEqual(removed == 0 ? 1 : -1, pendingView.IndexOf(pendingProbe),
+                        "IndexOf must find an equal pending old item only while it is still visible.");
+                    removed++;
+                };
+                pendingView.VectorChanged += onRemoved;
+                try
+                {
+                    pendingItems.RemoveRange(1, 3);
+                    Verify.AreEqual(3, removed);
+                }
+                finally
+                {
+                    pendingView.VectorChanged -= onRemoved;
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
         public void CollectionRangeChangeAfterGroupResetKeepsGroupedCount()
         {
             WithCollectionMoveChange(false, () => UIExecutor.Execute(() =>
@@ -290,6 +379,128 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     observer.VerifyComplete(source.Cast<string>().ToList());
                 }
             }));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
+        public void CollectionRangePayloadFailurePreservesRecoveryReset()
+        {
+            WithCollectionMoveChange(false, () => UIExecutor.Execute(VerifyRangePayloadFailureRecovery));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionRangePayloadFailurePreservesRecoveryResetWithMoveNotifications()
+        {
+            WithCollectionMoveChange(true, () => UIExecutor.Execute(VerifyRangePayloadFailureRecovery));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
+        public void CollectionRangePayloadFailureWithoutNestedChangeResets()
+        {
+            WithCollectionMoveChange(false, () => UIExecutor.Execute(VerifyRangePayloadFailureWithoutNestedChange));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionRangePayloadFailureWithoutNestedChangeResetsWithMoveNotifications()
+        {
+            WithCollectionMoveChange(true, () => UIExecutor.Execute(VerifyRangePayloadFailureWithoutNestedChange));
+        }
+
+        private static void VerifyRangePayloadFailureWithoutNestedChange()
+        {
+            const int payloadHResult = unchecked((int)0x8004A50B);
+            const string payloadMessage = "Range payload Count failure without a nested change";
+            var source = new NestedChangeSource("A", "B", "C");
+            var view = new CollectionViewSource { Source = source }.View;
+            view.MoveCurrentToPosition(-1);
+            Verify.AreEqual(3, view.Count);
+
+            // The source changed but its notification could not be translated, so the view
+            // must be told to reload instead of keeping the old rows.
+            var expected = new[] { new RangeNotification(CollectionChange.Reset, 0, "A", "X", "Y", "B", "C") };
+            using (var observer = new RangeNotificationObserver(view, expected))
+            {
+                Exception failure = null;
+                try
+                {
+                    source.InsertRange(1, new CountCallbackList("X", "Y"), () => throw new COMException(payloadMessage, payloadHResult));
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+                Verify.IsNotNull(failure, "The original payload failure must reach the caller.");
+                Verify.AreEqual(payloadHResult, failure.HResult);
+                Verify.IsTrue(failure.Message.Contains(payloadMessage));
+                observer.VerifyComplete(source.Cast<string>().ToList());
+            }
+        }
+
+        private static void VerifyRangePayloadFailureRecovery()
+        {
+            foreach (bool failReset in new[] { false, true })
+            {
+                const int payloadHResult = unchecked((int)0x8004A509);
+                const string payloadMessage = "Range payload Count failure after Reset";
+                var source = new NestedChangeSource("A", "B", "C");
+                var view = new CollectionViewSource { Source = source }.View;
+                view.MoveCurrentToPosition(-1);
+                Verify.AreEqual(3, view.Count);
+                var expected = new[] { new RangeNotification(CollectionChange.Reset, 0, "P", "Q", "R", "S", "T") };
+                using (var observer = new RangeNotificationObserver(view, expected))
+                {
+                    VectorChangedEventHandler<object> onReset = (sender, args) =>
+                    {
+                        if (failReset && args.CollectionChange == CollectionChange.Reset)
+                        {
+                            throw new COMException("Recovery Reset failure", unchecked((int)0x8004A50A));
+                        }
+                    };
+                    view.VectorChanged += onReset;
+                    try
+                    {
+                        Exception failure = null;
+                        try
+                        {
+                            source.InsertRange(1, new CountCallbackList("X", "Y"), () =>
+                            {
+                                source.ResetTo("P", "Q", "R", "S", "T");
+                                throw new COMException(payloadMessage, payloadHResult);
+                            });
+                        }
+                        catch (Exception exception)
+                        {
+                            failure = exception;
+                        }
+                        Verify.IsNotNull(failure, "The original payload failure must reach the caller.");
+                        Verify.AreEqual(payloadHResult, failure.HResult);
+                        Verify.IsTrue(failure.Message.Contains(payloadMessage));
+                        observer.VerifyComplete(source.Cast<string>().ToList());
+                    }
+                    finally
+                    {
+                        view.VectorChanged -= onReset;
+                    }
+                }
+
+                var nextChange = new[]
+                {
+                    new RangeNotification(CollectionChange.ItemInserted, 1, "P", "U", "Q", "R", "S", "T"),
+                    new RangeNotification(CollectionChange.ItemInserted, 2, "P", "U", "V", "Q", "R", "S", "T")
+                };
+                using (var observer = new RangeNotificationObserver(view, nextChange))
+                {
+                    source.InsertRange(1, new CountCallbackList("U", "V"), null);
+                    observer.VerifyComplete(source.Cast<string>().ToList());
+                }
+            }
         }
 
         private static void VerifyRangeChangePreservesSelection(

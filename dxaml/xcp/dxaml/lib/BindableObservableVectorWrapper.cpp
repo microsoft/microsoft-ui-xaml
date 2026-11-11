@@ -164,6 +164,44 @@ IFACEMETHODIMP BindableObservableVectorWrapper::IndexOf(
         case Components::CollectionRangeChangeView::IndexOfResult::Ambiguous:
             break;
         }
+
+        for (unsigned current = 0; current < GetProjectedSize(); ++current)
+        {
+            const auto location = m_rangeView->GetLocation(current);
+            // An equal item cannot precede the first match in its own collection.
+            if (location.isOldItem
+                    ? (!oldItemFound || location.index < oldItemIndex)
+                    : (!sourceFound || location.index < sourceIndex))
+            {
+                continue;
+            }
+
+            ctl::ComPtr<IInspectable> item;
+            unsigned firstIndex = 0;
+            boolean itemFound = false;
+            IFC_RETURN(GetProjectedItem(current, &item));
+            IFC_RETURN(CheckProjectedSourceUnchanged());
+
+            // Equal items have the same first match in their originating collection.
+            // This preserves that collection's equality even when its first match is hidden.
+            if (location.isOldItem)
+            {
+                IFC_RETURN(m_rangeOldItems->IndexOf(item.Get(), &firstIndex, &itemFound));
+            }
+            else
+            {
+                IFC_RETURN(BindableVectorWrapper::IndexOf(item.Get(), &firstIndex, &itemFound));
+            }
+            IFC_RETURN(CheckProjectedSourceUnchanged());
+            if (itemFound && firstIndex == (location.isOldItem ? oldItemIndex : sourceIndex))
+            {
+                *index = current;
+                *found = true;
+                break;
+            }
+        }
+
+        return S_OK;
     }
 
     for (unsigned current = 0; current < GetProjectedSize(); ++current)
@@ -568,6 +606,7 @@ BindableObservableVectorWrapper::ProcessCollectionItemsChange(
     // ItemsSource and release the owner's adapter.
     const ctl::ComPtr<wfc::IVector<IInspectable *>> keepAlive(this);
 
+    HRESULT hr = S_OK;
     INT index = 0;
     UINT oldCount = 0;
     UINT newCount = 0;
@@ -579,38 +618,37 @@ BindableObservableVectorWrapper::ProcessCollectionItemsChange(
         // That app code can also change the source. The nested change is not forwarded;
         // this change is reconciled with a Reset instead, as for Move.
         m_preparingProjection = true;
-        auto endPreparation = wil::scope_exit([this]()
+        auto endPreparation = wil::scope_exit([this, &sourceChanged]()
         {
             m_preparingProjection = false;
+            sourceChanged = m_sourceChangedDuringProjection;
             m_sourceChangedDuringProjection = false;
         });
 
         if (action == wxaml_interop::NotifyCollectionChangedAction_Remove)
         {
-            IFC_RETURN(pArgs->get_OldStartingIndex(&index));
+            IFC(pArgs->get_OldStartingIndex(&index));
         }
         else
         {
-            IFC_RETURN(pArgs->get_NewStartingIndex(&index));
+            IFC(pArgs->get_NewStartingIndex(&index));
         }
         if (action != wxaml_interop::NotifyCollectionChangedAction_Add)
         {
-            IFC_RETURN(pArgs->get_OldItems(&oldItems));
+            IFC(pArgs->get_OldItems(&oldItems));
             if (oldItems)
             {
-                IFC_RETURN(oldItems->get_Size(&oldCount));
+                IFC(oldItems->get_Size(&oldCount));
             }
         }
         if (action != wxaml_interop::NotifyCollectionChangedAction_Remove)
         {
-            IFC_RETURN(pArgs->get_NewItems(&newItems));
+            IFC(pArgs->get_NewItems(&newItems));
             if (newItems)
             {
-                IFC_RETURN(newItems->get_Size(&newCount));
+                IFC(newItems->get_Size(&newCount));
             }
         }
-
-        sourceChanged = m_sourceChangedDuringProjection;
     }
 
     if (sourceChanged)
@@ -646,6 +684,22 @@ BindableObservableVectorWrapper::ProcessCollectionItemsChange(
     // A multi-item change is expanded into one notification per item, because each vector
     // notification describes exactly one item.
     return ProcessCollectionRangeChange(index, oldItems.Get(), oldCount, newItems.Get(), newCount);
+
+Cleanup:
+    // Only failures reach here. The change was not forwarded, so the view must be reconciled
+    // whether or not the source also changed while the payload was read.
+    // Reset is best effort; keep the payload failure and its error info.
+    {
+        ErrorInfo errorInfo;
+        const bool restoreErrorInfo = SUCCEEDED(errorInfo.GetFromThread());
+        IGNOREHR(RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
+        if (restoreErrorInfo)
+        {
+            IGNOREHR(errorInfo.SetOnThread());
+        }
+    }
+
+    RRETURN(hr);
 }
 
 _Check_return_
