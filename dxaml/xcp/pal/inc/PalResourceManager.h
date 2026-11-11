@@ -12,14 +12,6 @@
 
 typedef std::vector<std::pair<xstring_ptr, xstring_ptr>> PropertyBag;
 
-namespace PALResources
-{
-    enum class RawStreamType
-    {
-        IStream,
-    };
-}
-
 enum class ResourceInvalidationReason
 {
     Any,
@@ -110,21 +102,6 @@ struct IPALResource : public IObject
     //
     //-----------------------------------------------------------------------------
     virtual _Check_return_ HRESULT TryGetFilePath(_Out_ xstring_ptr* pstrFilePath) = 0;
-
-    //-----------------------------------------------------------------------------
-    //
-    // Gets a "raw" (platform-specific) stream associated with this resource, if any.
-    // Not all resource types are able to supply a stream.
-    //
-    // If this resource can't supply a stream, this function succeeds and
-    // sets the out parameter to null.
-    //
-    // The caller requests a specific type of stream by passing in a well-known stream
-    // type name. If this implementation doesn't recognize the stream type name, this
-    // function succeeds and sets the out parameter to null.
-    //
-    //-----------------------------------------------------------------------------
-    virtual _Check_return_ HRESULT TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream) = 0;
 
     //-----------------------------------------------------------------------------
     //
