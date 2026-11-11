@@ -916,6 +916,7 @@ std::wstring_view c_knownNamespacePrefixes[] =
 #include "TableViewRow.properties.h"
 #include "TableViewTemplateColumn.properties.h"
 #include "TableViewToolTipHelpers.h"
+#include "TableViewTextColumn.h"
 
 namespace {
 
@@ -929,6 +930,7 @@ void ClearTypeProperties()
     TableViewRowProperties::ClearProperties();
     TableViewTemplateColumnProperties::ClearProperties();
     TableViewDetails::ClearCellToolTipProperties();
+    TableViewTextColumn::ClearProperties();
 }
 
 }

@@ -17,6 +17,8 @@ public:
 
     TableViewTextColumn();
 
+    static void ClearProperties();
+
     // Setter lets XAML pass the Binding object through without evaluating it.
     winrt::Microsoft::UI::Xaml::Data::Binding Binding();
     void Binding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);

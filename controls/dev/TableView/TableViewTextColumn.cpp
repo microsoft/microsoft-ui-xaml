@@ -9,19 +9,34 @@
 #include "TableViewRow.h"
 #include "TableViewFocusHelpers.h"
 #include "TableViewFallbackMetrics.h"
+#include "GlobalDependencyProperty.h"
 #include "SharedHelpers.h"
 
 #include <winrt/Windows.UI.Xaml.Interop.h>
 
 namespace
 {
+    GlobalDependencyProperty s_generatedFontSizeProperty{ nullptr };
+
     winrt::DependencyProperty GeneratedFontSizeProperty()
     {
-        static auto const property = winrt::DependencyProperty::RegisterAttached(
-            L"TableViewGeneratedFontSize", winrt::xaml_typename<double>(),
-            winrt::xaml_typename<winrt::TableViewTextColumn>(), winrt::PropertyMetadata{ winrt::box_value(0.0) });
-        return property;
+        if (!s_generatedFontSizeProperty)
+        {
+            s_generatedFontSizeProperty = InitializeDependencyProperty(
+                L"TableViewGeneratedFontSize",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::TableViewTextColumn>(),
+                true /* isAttached */,
+                winrt::box_value(0.0),
+                nullptr /* propertyChangedCallback */);
+        }
+        return s_generatedFontSizeProperty;
     }
+}
+
+void TableViewTextColumn::ClearProperties()
+{
+    s_generatedFontSizeProperty = nullptr;
 }
 
 TableViewTextColumn::TableViewTextColumn()

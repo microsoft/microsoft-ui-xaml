@@ -211,6 +211,7 @@ struct Entry
     {
         // A non-generated file defines its own ClearProperties method that we'll need to manually include.
         WriteLine("#include \"TableViewToolTipHelpers.h\"");
+        WriteLine("#include \"TableViewTextColumn.h\"");
     }
 
     // The Tabular controls DLL hosts only TableView + its primitives; the MUXC-only helpers
@@ -236,6 +237,7 @@ namespace {
         {
             // A non-generated file defines its own ClearProperties method that we'll need to manually call.
             WriteLine("TableViewDetails::ClearCellToolTipProperties();");
+            WriteLine("TableViewTextColumn::ClearProperties();");
         }
     });
     WriteLine("");
