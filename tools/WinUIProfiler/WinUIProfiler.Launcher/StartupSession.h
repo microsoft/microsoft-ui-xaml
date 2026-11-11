@@ -267,7 +267,7 @@ namespace profiler
             !ProcessIdToSessionId(GetProcessId(process), &session) ||
             !GetProcessTimes(process, &created, &exited, &kernel, &user)) return false;
         path.resize(length);
-        if (!EqualPath(path, data.executable) || session != data.sessionId ||
+        if (!SameFile(path, data.executable) || session != data.sessionId ||
             CompareFileTime(&created, &data.notBefore) < 0) return false;
         UINT32 packageLength = 0;
         LONG status = GetPackageFullName(process, &packageLength, nullptr);

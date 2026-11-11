@@ -131,7 +131,57 @@ internal static class StartupIntegration
             finally { CloseOwned(options.LaunchDirectory, fixture); }
         }
 
+        await VerifyJunctionAsync(fixture, runtime, root);
         await VerifyEtwAsync(fixture, runtime, root);
+    }
+
+    // Windows reports a process's image path with junctions resolved, so the launcher and the helper in each startup
+    // process must still recognize a launch through a junction as the requested executable.
+    private static async Task VerifyJunctionAsync(string fixture, PrivateRuntimeLaunch runtime, string root)
+    {
+        var directory = Directory.CreateDirectory(Path.Combine(root, "junction")).FullName;
+        var link = Path.Combine(directory, "fixture");
+        var mklink = new ProcessStartInfo("cmd.exe") { UseShellExecute = false, RedirectStandardOutput = true };
+        foreach (var argument in new[] { "/d", "/c", "mklink", "/J", link, Path.GetDirectoryName(fixture)! })
+        {
+            mklink.ArgumentList.Add(argument);
+        }
+        using (var process = Process.Start(mklink)!)
+        {
+            await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            Check(process.ExitCode == 0, "junction: could not create the fixture junction");
+        }
+        var target = Path.Combine(link, "Fixture.exe");
+        // The fixture loads its original DLLs from beside its own path, which is the junction path.
+        var options = runtime with
+        {
+            SourceDirectory = Path.Combine(link, "original"),
+            LaunchDirectory = Path.Combine(directory, "launch")
+        };
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(40));
+        NativeLaunchSession? launch = null;
+        try
+        {
+            var resultPath = Path.Combine(directory, "fixture.json");
+            launch = await NativeLauncher.LaunchAsync(TargetLaunchKind.Unpackaged, target,
+                $"{NativeLaunchProtocol.Quote(resultPath)} handoff", options, timeout.Token);
+            Check(launch.Result.Processes.Count == 2 && launch.Result.ActivationProcessId != launch.Result.ProcessId,
+                "junction: the child launched through the junction was not selected");
+            using var result = await ReadJsonAsync(resultPath, timeout.Token);
+            Check(result.RootElement.GetProperty("mux").GetInt32() == 2 &&
+                result.RootElement.GetProperty("muxc").GetInt32() == 2 &&
+                result.RootElement.GetProperty("pid").GetInt32() == launch.Result.ProcessId,
+                "junction: the UI child did not load both private DLLs");
+            NativeLauncher.VerifyModules(launch.Process, options);
+            Console.WriteLine("Passed native startup: junction");
+        }
+        finally
+        {
+            CloseOwned(options.LaunchDirectory, target);
+            launch?.Dispose();
+            Directory.Delete(link);
+        }
     }
 
     private static async Task VerifyEtwAsync(string fixture, PrivateRuntimeLaunch runtime, string root)

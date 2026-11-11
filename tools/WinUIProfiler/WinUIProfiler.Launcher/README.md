@@ -34,7 +34,9 @@ built under `artifacts\launcher`.
 - **Startup children:** while startup is active, the helper intercepts
   `CreateProcessW/A` and `CreateProcessAsUserW/A`. It inserts the helper before
   resuming a child only when the executable, package, user and Windows session
-  match. A Detours payload supplies the configuration even with a custom
+  match. The executable is matched by file identity, so a path through a
+  junction or symbolic link matches the resolved path Windows reports. A
+  Detours payload supplies the configuration even with a custom
   environment. Caller-requested suspension is preserved. The bounded registry
   includes the activation process and up to seven same-app descendants.
 
@@ -135,8 +137,8 @@ native and real-ETW regressions. It builds only test-owned fixture executables
 and fake runtime DLLs, never installed applications. The cases cover custom
 environments, caller suspension, both API encodings, restricted-token launches,
 transitive children, ambiguity, the eight-process bound, unrelated executables,
-late-child exclusion, early events from an exited parent, and continued child
-collection after the provider filter changes.
+launches through a junction, late-child exclusion, early events from an exited
+parent, and continued child collection after the provider filter changes.
 The selection-race case uses a test-only launcher barrier to complete a child
 creation after the parent's leaf snapshot; production launchers omit the barrier.
 The test prints its evidence directory.

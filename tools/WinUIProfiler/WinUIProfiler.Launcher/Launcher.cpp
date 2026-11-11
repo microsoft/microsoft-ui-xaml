@@ -203,7 +203,7 @@ namespace
         else
         {
             actual.resize(length);
-            if (!profiler::EqualPath(actual, context.data->executable) || !profiler::SameProcessUser(process.get()))
+            if (!profiler::SameFile(actual, context.data->executable) || !profiler::SameProcessUser(process.get()))
             {
                 error = ERROR_BAD_EXE_FORMAT;
             }
