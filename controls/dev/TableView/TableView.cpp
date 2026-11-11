@@ -383,12 +383,6 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
-    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
-    {
-        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
-            visibility == winrt::TableViewGridLinesVisibility::All;
-    }
-
     bool HasVisibleBorderBrush(const winrt::Brush& brush)
     {
         if (!brush || brush.Opacity() <= 0.0)
@@ -2438,6 +2432,24 @@ static std::wstring_view DensitySuffix(winrt::TableViewDensity density)
     }
 }
 
+template <typename T>
+static T GetDensityResource(
+    TableView& owner,
+    std::wstring_view baseKey,
+    bool& hasValue,
+    T& value,
+    T const& fallback)
+{
+    if (!hasValue)
+    {
+        std::wstring key{ baseKey };
+        key += DensitySuffix(owner.Density());
+        value = winrt::unbox_value_or<T>(LookupElementResource(owner, key), fallback);
+        hasValue = true;
+    }
+    return value;
+}
+
 bool TableView::IsHighContrast()
 {
     // ActualTheme cannot report HC. Prefer the cached ThemeSettings value (kept fresh by Changed);
@@ -2458,115 +2470,46 @@ bool TableView::IsHighContrast()
 
 double TableView::GetDensityRowMinHeight()
 {
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.density.hasRowMinHeight)
-    {
-        return cache.density.rowMinHeight;
-    }
-
-    std::wstring key{ L"TableViewRowMinHeight" };
-    key += DensitySuffix(Density());
-    const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).rowMinHeight;
-    if (auto raw = LookupElementResource(*this, key))
-    {
-        cache.density.rowMinHeight = winrt::unbox_value_or<double>(raw, fallback);
-        cache.density.hasRowMinHeight = true;
-        return cache.density.rowMinHeight;
-    }
-    // Resource-miss fallback mirrors Fluent density defaults so Large stays taller than Medium.
-    cache.density.rowMinHeight = fallback;
-    cache.density.hasRowMinHeight = true;
-    return cache.density.rowMinHeight;
+    auto& metrics = GetTableViewResourceCache(this).density;
+    return GetDensityResource(*this, L"TableViewRowMinHeight", metrics.hasRowMinHeight, metrics.rowMinHeight,
+        TableViewDetails::GetDensityFallbackMetrics(Density()).rowMinHeight);
 }
 
 winrt::Thickness TableView::GetDensityCellPadding()
 {
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.density.hasCellPadding)
-    {
-        return cache.density.cellPadding;
-    }
-
-    std::wstring key{ L"TableViewCellPadding" };
-    key += DensitySuffix(Density());
-    const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).cellPadding;
-    if (auto raw = LookupElementResource(*this, key))
-    {
-        cache.density.cellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
-        cache.density.hasCellPadding = true;
-        return cache.density.cellPadding;
-    }
-    // Resource-miss fallback mirrors density padding presets.
-    cache.density.cellPadding = fallback;
-    cache.density.hasCellPadding = true;
-    return cache.density.cellPadding;
+    auto& metrics = GetTableViewResourceCache(this).density;
+    return GetDensityResource(*this, L"TableViewCellPadding", metrics.hasCellPadding, metrics.cellPadding,
+        TableViewDetails::GetDensityFallbackMetrics(Density()).cellPadding);
 }
 
 winrt::Thickness TableView::GetDensityHeaderCellPadding()
 {
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.density.hasHeaderCellPadding)
-    {
-        return cache.density.headerCellPadding;
-    }
-
-    std::wstring key{ L"TableViewHeaderCellPadding" };
-    key += DensitySuffix(Density());
-    const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).cellPadding;
-    if (auto raw = LookupElementResource(*this, key))
-    {
-        cache.density.headerCellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
-        cache.density.hasHeaderCellPadding = true;
-        return cache.density.headerCellPadding;
-    }
-    // Resource-miss fallback mirrors cell-padding density presets.
-    cache.density.headerCellPadding = fallback;
-    cache.density.hasHeaderCellPadding = true;
-    return cache.density.headerCellPadding;
+    auto& metrics = GetTableViewResourceCache(this).density;
+    return GetDensityResource(*this, L"TableViewHeaderCellPadding", metrics.hasHeaderCellPadding, metrics.headerCellPadding,
+        TableViewDetails::GetDensityFallbackMetrics(Density()).cellPadding);
 }
 
 winrt::Thickness TableView::GetDensityCellTextPadding()
 {
     auto& metrics = GetTableViewResourceCache(this).density;
-    if (!metrics.hasCellTextPadding)
-    {
-        std::wstring key{ L"TableViewCellTextPadding" };
-        key += DensitySuffix(Density());
-        metrics.cellTextPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding);
-        metrics.hasCellTextPadding = true;
-    }
-    return metrics.cellTextPadding;
+    return GetDensityResource(*this, L"TableViewCellTextPadding", metrics.hasCellTextPadding, metrics.cellTextPadding,
+        TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding);
 }
 
 winrt::Thickness TableView::GetDensityHeaderTextPadding()
 {
     auto& metrics = GetTableViewResourceCache(this).density;
-    if (!metrics.hasHeaderTextPadding)
-    {
-        std::wstring key{ L"TableViewHeaderTextPadding" };
-        key += DensitySuffix(Density());
-        metrics.headerTextPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding);
-        metrics.hasHeaderTextPadding = true;
-    }
-    return metrics.headerTextPadding;
+    return GetDensityResource(*this, L"TableViewHeaderTextPadding", metrics.hasHeaderTextPadding, metrics.headerTextPadding,
+        TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding);
 }
 
 winrt::Thickness TableView::GetDensityGroupHeaderTextPadding()
 {
     auto& metrics = GetTableViewResourceCache(this).density;
-    if (!metrics.hasGroupHeaderTextPadding)
-    {
-        std::wstring key{ L"TableViewGroupHeaderTextPadding" };
-        key += DensitySuffix(Density());
-        auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding;
-        fallback.Left = fallback.Right = 0;
-        metrics.groupHeaderTextPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), fallback);
-        metrics.hasGroupHeaderTextPadding = true;
-    }
-    return metrics.groupHeaderTextPadding;
+    auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).textPadding;
+    fallback.Left = fallback.Right = 0;
+    return GetDensityResource(*this, L"TableViewGroupHeaderTextPadding", metrics.hasGroupHeaderTextPadding,
+        metrics.groupHeaderTextPadding, fallback);
 }
 
 winrt::Thickness TableView::GetDisplayCellPadding(double contentVerticalOffset)
@@ -2674,15 +2617,8 @@ double TableView::GetRowExpanderSize()
 double TableView::GetDensityGroupHeaderMinHeight()
 {
     auto& metrics = GetTableViewResourceCache(this).density;
-    if (!metrics.hasGroupHeaderMinHeight)
-    {
-        std::wstring key{ L"TableViewGroupHeaderMinHeight" };
-        key += DensitySuffix(Density());
-        const auto fallback = TableViewDetails::GetDensityFallbackMetrics(Density()).rowMinHeight;
-        metrics.groupHeaderMinHeight = winrt::unbox_value_or<double>(LookupElementResource(*this, key), fallback);
-        metrics.hasGroupHeaderMinHeight = true;
-    }
-    return metrics.groupHeaderMinHeight;
+    return GetDensityResource(*this, L"TableViewGroupHeaderMinHeight", metrics.hasGroupHeaderMinHeight,
+        metrics.groupHeaderMinHeight, TableViewDetails::GetDensityFallbackMetrics(Density()).rowMinHeight);
 }
 
 winrt::Style TableView::GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header)
@@ -2721,15 +2657,8 @@ bool TableView::IsDefaultGroupHeaderContentTemplate(winrt::TableViewGroupHeader 
 winrt::Thickness TableView::GetDensityGroupHeaderPadding()
 {
     auto& metrics = GetTableViewResourceCache(this).density;
-    if (!metrics.hasGroupHeaderPadding)
-    {
-        std::wstring key{ L"TableViewGroupHeaderPadding" };
-        key += DensitySuffix(Density());
-        metrics.groupHeaderPadding = winrt::unbox_value_or<winrt::Thickness>(
-            LookupElementResource(*this, key), TableViewDetails::GetDensityFallbackMetrics(Density()).groupHeaderPadding);
-        metrics.hasGroupHeaderPadding = true;
-    }
-    return metrics.groupHeaderPadding;
+    return GetDensityResource(*this, L"TableViewGroupHeaderPadding", metrics.hasGroupHeaderPadding, metrics.groupHeaderPadding,
+        TableViewDetails::GetDensityFallbackMetrics(Density()).groupHeaderPadding);
 }
 
 // Grouped root-row indent: the group header's expander gutter plus TableViewGroupExpanderSpacing.
