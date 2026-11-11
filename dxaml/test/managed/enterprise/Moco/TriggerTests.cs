@@ -341,6 +341,123 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             });
         }
 
+        // The Precedence tests record how trigger setters interact with other value sources today.
+        // They log what they observe so the behavior can be quoted; they do not assert a contract.
+        private static string Op(FrameworkElement element) => element.Opacity.ToString("0.###");
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void PrecedenceAgainstLocalValue()
+        {
+            var root = LoadIntoWindow<Grid>(
+                "<Grid " + Namespaces + ">" +
+                "  <Grid.Triggers>" +
+                "    <Trigger Property='IsHitTestVisible' Value='False'>" +
+                "      <Setter Target='Part.Opacity' Value='0.25' />" +
+                "    </Trigger>" +
+                "  </Grid.Triggers>" +
+                "  <Border x:Name='Part' Opacity='0.9' />" +
+                "</Grid>");
+            var part = PartAt(root);
+
+            UIExecutor.Execute(() =>
+            {
+                Log.Comment("Local value 0.9, trigger inactive: " + Op(part));
+                root.IsHitTestVisible = false;
+                Log.Comment("Trigger active (setter 0.25): " + Op(part));
+                part.Opacity = 0.8;
+                Log.Comment("App sets local 0.8 while trigger active: " + Op(part));
+                root.IsHitTestVisible = true;
+                Log.Comment("Trigger inactive again: " + Op(part));
+            });
+        }
+
+        private const string TriggerAndVisualStateTemplate =
+            "<ContentControl " + Namespaces + " Width='100'>" +
+            "  <ContentControl.Template>" +
+            "    <ControlTemplate TargetType='ContentControl'>" +
+            "      <Grid>" +
+            "        <Grid.Triggers>" +
+            "          <Trigger Property='Width' Value='100'>" +
+            "            <Setter Target='Part.Opacity' Value='0.25' />" +
+            "          </Trigger>" +
+            "        </Grid.Triggers>" +
+            "        <Border x:Name='Part' />" +
+            "        <VisualStateManager.VisualStateGroups>" +
+            "          <VisualStateGroup x:Name='TestStates'>" +
+            "            <VisualState x:Name='Normal' />" +
+            "            <VisualState x:Name='Dim'>" +
+            "              <VisualState.Setters><Setter Target='Part.Opacity' Value='0.5' /></VisualState.Setters>" +
+            "            </VisualState>" +
+            "            <VisualState x:Name='Animated'>" +
+            "              <Storyboard>" +
+            "                <DoubleAnimation Storyboard.TargetName='Part' Storyboard.TargetProperty='Opacity'" +
+            "                                 To='0.6' Duration='0:0:0.01' FillBehavior='HoldEnd' />" +
+            "              </Storyboard>" +
+            "            </VisualState>" +
+            "          </VisualStateGroup>" +
+            "        </VisualStateManager.VisualStateGroups>" +
+            "      </Grid>" +
+            "    </ControlTemplate>" +
+            "  </ContentControl.Template>" +
+            "</ContentControl>";
+
+        private static void GoToState(ContentControl control, string state)
+        {
+            UIExecutor.Execute(() => VisualStateManager.GoToState(control, state, false));
+            TestServices.WindowHelper.WaitForIdle();
+            global::System.Threading.Thread.Sleep(300);
+            TestServices.WindowHelper.WaitForIdle();
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void PrecedenceAgainstVisualStateSetter()
+        {
+            var control = LoadIntoWindow<ContentControl>(TriggerAndVisualStateTemplate);
+            FrameworkElement part = null;
+            UIExecutor.Execute(() => part = FindByName(control, "Part"));
+
+            UIExecutor.Execute(() => Log.Comment("Trigger active (0.25), no visual state: " + Op(part)));
+
+            Log.Comment("--- Order 1: trigger active first, then the visual state ---");
+            GoToState(control, "Dim");
+            UIExecutor.Execute(() => Log.Comment("Visual state Dim (0.5) entered while trigger active: " + Op(part)));
+            GoToState(control, "Normal");
+            UIExecutor.Execute(() => Log.Comment("Back to Normal (Dim leaves): " + Op(part)));
+
+            Log.Comment("--- Order 2: visual state active first, then the trigger turns on and off ---");
+            UIExecutor.Execute(() => control.Width = 80);
+            UIExecutor.Execute(() => Log.Comment("Trigger inactive, no visual state: " + Op(part)));
+            GoToState(control, "Dim");
+            UIExecutor.Execute(() => Log.Comment("Visual state Dim active, trigger inactive: " + Op(part)));
+            UIExecutor.Execute(() => control.Width = 100);
+            UIExecutor.Execute(() => Log.Comment("Trigger turns on while Dim is active: " + Op(part)));
+            UIExecutor.Execute(() => control.Width = 80);
+            UIExecutor.Execute(() => Log.Comment("Trigger turns off while Dim is still active: " + Op(part)));
+            GoToState(control, "Normal");
+            UIExecutor.Execute(() => Log.Comment("Dim leaves: " + Op(part)));
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void PrecedenceAgainstVisualStateStoryboard()
+        {
+            var control = LoadIntoWindow<ContentControl>(TriggerAndVisualStateTemplate);
+            FrameworkElement part = null;
+            UIExecutor.Execute(() => part = FindByName(control, "Part"));
+
+            UIExecutor.Execute(() => Log.Comment("Trigger active (0.25), no visual state: " + Op(part)));
+            GoToState(control, "Animated");
+            UIExecutor.Execute(() => Log.Comment("Storyboard state (0.6) entered while trigger active: " + Op(part)));
+            UIExecutor.Execute(() => control.Width = 80);
+            UIExecutor.Execute(() => Log.Comment("Trigger turns off while storyboard state is active: " + Op(part)));
+            UIExecutor.Execute(() => control.Width = 100);
+            UIExecutor.Execute(() => Log.Comment("Trigger turns on again while storyboard state is active: " + Op(part)));
+            GoToState(control, "Normal");
+            UIExecutor.Execute(() => Log.Comment("Storyboard state leaves: " + Op(part)));
+        }
+
         private static FrameworkElement FindByName(DependencyObject parent, string name)
         {
             int count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
