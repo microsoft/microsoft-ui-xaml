@@ -173,6 +173,9 @@ extends:
         parameters:
           pipelineKind: PR
 
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunSystemCompositionEngineTests-Stage.yml
+
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:

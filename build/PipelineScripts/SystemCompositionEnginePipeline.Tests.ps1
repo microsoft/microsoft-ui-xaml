@@ -682,5 +682,26 @@ Add-Content -LiteralPath (Join-Path $PSScriptRoot 'core-invoked.txt') -Value 'in
                 'eq\(parameters\.MUXFinalRelease,\s*false\)').Count |
                 Should Be 2
         }
+
+        It 'includes system composition validation in full non-final GitHub PR runs' {
+            $pipelinePath = Join-Path `
+                (Split-Path -Parent $PSScriptRoot) `
+                'WinUI-GitHub-PR.yml'
+            $pipelineContent = Get-Content -LiteralPath $pipelinePath -Raw
+            $expectedStagePattern = (
+                '\-\s+\$\{\{\s*if\s+and\(' +
+                'eq\(parameters\.runFullValidation,\s*true\),\s*' +
+                'eq\(parameters\.MUXFinalRelease,\s*false\)\)\s*\}\}:\s*' +
+                '\r?\n\s*-\s+template:\s+' +
+                'AzurePipelinesTemplates\\' +
+                'WinUI-RunSystemCompositionEngineTests-Stage\.yml'
+            )
+
+            [regex]::Matches(
+                $pipelineContent,
+                'WinUI-RunSystemCompositionEngineTests-Stage\.yml').Count |
+                Should Be 1
+            $pipelineContent | Should Match $expectedStagePattern
+        }
     }
 }
