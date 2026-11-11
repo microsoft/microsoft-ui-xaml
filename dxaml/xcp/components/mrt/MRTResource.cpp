@@ -234,19 +234,28 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
         // in place from the memory-mapped PRI instead of marshalling a full copy across the ABI
         // (as get_ValueAsBytes does). The IMemoryBuffer and its IMemoryBufferReference are held as
         // members so the projected bytes stay valid (and the mapping stays pinned) for the lifetime
-        // of this resource, matching the non-owning CBufferMemory created in Load().
+        // of this resource, matching the non-owning CResourceMemory created in Load().
         wrl::ComPtr<mwar::IResourceCandidate2> resourceCandidate2;
         IFC_RETURN(m_pResourceCandidate.As(&resourceCandidate2));
 
-        IFC_RETURN(resourceCandidate2->ValueAsMemoryBuffer(&m_spEmbeddedDataMemoryBuffer));
-        IFC_RETURN(m_spEmbeddedDataMemoryBuffer->CreateReference(&m_spEmbeddedDataBufferReference));
+        wrl::ComPtr<wf::IMemoryBuffer> memoryBuffer;
+        IFC_RETURN(resourceCandidate2->ValueAsMemoryBuffer(&memoryBuffer));
+        wrl::ComPtr<wf::IMemoryBufferReference> bufferReference;
+        IFC_RETURN(memoryBuffer->CreateReference(&bufferReference));
 
         wrl::ComPtr<wf_::IMemoryBufferByteAccess> bufferByteAccess;
-        IFC_RETURN(m_spEmbeddedDataBufferReference.As(&bufferByteAccess));
+        IFC_RETURN(bufferReference.As(&bufferByteAccess));
 
         // The returned buffer is a read-only (PAGE_READONLY) view; it is only read here and by the
         // non-owning PAL memory wrapper. Never write through m_embeddedDataBuffer.
-        IFC_RETURN(bufferByteAccess->GetBuffer(&m_embeddedDataBuffer, &m_embeddedDataBufferSize));
+        BYTE* buffer = nullptr;
+        std::uint32_t bufferSize = 0;
+        IFC_RETURN(bufferByteAccess->GetBuffer(&buffer, &bufferSize));
+
+        m_embeddedDataBuffer = buffer;
+        m_embeddedDataBufferSize = bufferSize;
+        m_spEmbeddedDataMemoryBuffer = std::move(memoryBuffer);
+        m_spEmbeddedDataBufferReference = std::move(bufferReference);
     }
 
     return S_OK;
