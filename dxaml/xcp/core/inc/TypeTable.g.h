@@ -33,7 +33,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount];
 extern const IID c_aTypeUUIDs[KnownTypeCount];
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[944];
+extern const MetaDataTypeName c_aTypeNames[948];
 
 // Properties.
 extern const MetaDataProperty c_aProperties[KnownPropertyCount];
@@ -52,15 +52,15 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
 
 // Object properties.
 // Filtered list of dependency object or CValue object backed storage that should be walked on a type.
-extern const MetaDataObjectProperty c_aObjectProperties[221];
+extern const MetaDataObjectProperty c_aObjectProperties[226];
 
 // Render properties.
 // Filtered list of visual tree properties that have dependency object backed storage and that should be walked during render.
-extern const MetaDataObjectProperty c_aRenderProperties[209];
+extern const MetaDataObjectProperty c_aRenderProperties[212];
 
 // Enter/Leave properties.
 // Filtered list of dependency object backed storage or InvokeImpl properties that should be walked on a type.
-extern const MetaDataEnterProperty c_aEnterProperties[222];
+extern const MetaDataEnterProperty c_aEnterProperties[225];
 
 // Maps a type name length to an index into c_aTypeNames and a count of the number of elements to scan in that array.
 UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex);

@@ -1001,6 +1001,11 @@ namespace Parser
         SplitMenuFlyoutItem = 983,
         RowContext = 984,
         NeighborRelation = 985,
+        Condition = 986,
+        PresentationFrameworkCollectionOfCondition = 987,
+        MultiTrigger = 988,
+        Trigger = 989,
+        ConditionCollection = 990,
     };
 
     enum class StableXbfPropertyIndex: UINT16
@@ -3485,6 +3490,14 @@ namespace Parser
         RowContext_IsPreviousSelected = 2477,
         RowContext_NextRelation = 2478,
         RowContext_PreviousRelation = 2479,
+        Condition_Property = 2480,
+        Condition_Value = 2481,
+        MultiTrigger_Conditions = 2482,
+        MultiTrigger_Setters = 2483,
+        Trigger_Property = 2484,
+        Trigger_Setters = 2485,
+        Trigger_Value = 2486,
+        ConditionCollection_ContentProperty = 2487,
     };
 
     enum class StableEventIndex: UINT16
@@ -3831,7 +3844,7 @@ namespace Parser
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
     };
 
-    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::NeighborRelation) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::RowContext_PreviousRelation) + 1;
+    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::ConditionCollection) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::ConditionCollection_ContentProperty) + 1;
     static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
 }

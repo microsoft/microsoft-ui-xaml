@@ -142,6 +142,136 @@ public:
 
 //------------------------------------------------------------------------
 //
+//  Class:  CConditionCollection
+//
+//  Synopsis:
+//      Object created for <ConditionCollection> tag
+//
+//------------------------------------------------------------------------
+
+class CConditionCollection final : public CDOCollection
+{
+private:
+    CConditionCollection(_In_ CCoreServices *pCore)
+        : CDOCollection(pCore)
+    {}
+
+public:
+// Creation method
+    DECLARE_CREATE(CConditionCollection);
+
+// CDependencyObject overrides
+    KnownTypeIndex GetTypeIndex() const override
+    {
+        return DependencyObjectTraits<CConditionCollection>::Index;
+    }
+
+// CCollection overrides
+    bool ShouldEnsureNameResolution() override { return true; }
+};
+
+//------------------------------------------------------------------------
+//
+//  Class:  CCondition
+//
+//  Synopsis:
+//      Object created for <Condition> tag. A property name and the value it must equal.
+//
+//------------------------------------------------------------------------
+
+class CCondition final : public CDependencyObject
+{
+private:
+    CCondition(_In_ CCoreServices *pCore)
+        : CDependencyObject(pCore)
+    {}
+
+public:
+// Creation method
+    DECLARE_CREATE(CCondition);
+
+// CDependencyObject overrides
+    KnownTypeIndex GetTypeIndex() const override
+    {
+        return DependencyObjectTraits<CCondition>::Index;
+    }
+
+//  fields
+    xstring_ptr m_strProperty;
+    CValue m_vValue;
+};
+
+class CSetterBaseCollection;
+
+//------------------------------------------------------------------------
+//
+//  Class:  CTrigger
+//
+//  Synopsis:
+//      Object created for <Trigger> tag. Applies its setters while one property has a given value.
+//
+//------------------------------------------------------------------------
+
+class CTrigger final : public CTriggerBase
+{
+private:
+    CTrigger(_In_ CCoreServices *pCore)
+        : CTriggerBase(pCore)
+    {}
+
+   ~CTrigger() override;
+
+public:
+// Creation method
+    DECLARE_CREATE(CTrigger);
+
+// CDependencyObject overrides
+    KnownTypeIndex GetTypeIndex() const override
+    {
+        return DependencyObjectTraits<CTrigger>::Index;
+    }
+
+//  fields
+    xstring_ptr m_strProperty;
+    CValue m_vValue;
+    CSetterBaseCollection *m_pSetters = nullptr;
+};
+
+//------------------------------------------------------------------------
+//
+//  Class:  CMultiTrigger
+//
+//  Synopsis:
+//      Object created for <MultiTrigger> tag. Applies its setters while all of its conditions hold.
+//
+//------------------------------------------------------------------------
+
+class CMultiTrigger final : public CTriggerBase
+{
+private:
+    CMultiTrigger(_In_ CCoreServices *pCore)
+        : CTriggerBase(pCore)
+    {}
+
+   ~CMultiTrigger() override;
+
+public:
+// Creation method
+    DECLARE_CREATE(CMultiTrigger);
+
+// CDependencyObject overrides
+    KnownTypeIndex GetTypeIndex() const override
+    {
+        return DependencyObjectTraits<CMultiTrigger>::Index;
+    }
+
+//  fields
+    CConditionCollection *m_pConditions = nullptr;
+    CSetterBaseCollection *m_pSetters = nullptr;
+};
+
+//------------------------------------------------------------------------
+//
 //  Class:  CTriggerAction
 //
 //  Synopsis:

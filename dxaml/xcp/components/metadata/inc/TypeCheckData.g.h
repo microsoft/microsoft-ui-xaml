@@ -238,6 +238,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 140737488355331, 140737488355331 },
     // Microsoft.UI.Xaml.Controls.CommandingContextChangedEventArgs
     { 0, 0 },
+    // Microsoft.UI.Xaml.Condition
+    { 140737488355331, 140737488355331 },
     // Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation
     { 140737488355331, 140737488355331 },
     // Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationService
@@ -595,89 +597,91 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Input.XamlUICommand
     { 255, 135 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 3335 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 11527 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 14599 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 13831 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 13319 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 9735 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 14343 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 13575 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 13063 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 9479 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 14087 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 263 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 10503 },
+    { 32767, 10759 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 11271 },
+    { 32767, 15879 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 15623 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 6919 },
+    { 32767, 7175 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 1287 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 1031 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 13831 },
+    { 32767, 14087 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 11527 },
+    { 32767, 11783 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 15367 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 14855 },
+    { 32767, 15623 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 15111 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 12039 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 3591 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 4359 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 9223 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 2311 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 13319 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 8967 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 8711 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 4615 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 4871 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 2567 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 3847 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 9991 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 7687 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 6407 },
+    { 32767, 15367 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 12295 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 12807 },
+    { 32767, 3847 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 12551 },
+    { 32767, 4615 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 10759 },
+    { 32767, 9479 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 2823 },
+    { 32767, 2311 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 13575 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 9223 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 8967 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 4871 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 5127 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 7431 },
+    { 32767, 2567 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 9735 },
+    { 32767, 4103 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 10247 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 7943 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 6663 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 12551 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 13063 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 12807 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 11015 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 2823 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 5383 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 7687 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 9991 },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
+    { 32767, 8711 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 8455 },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
-    { 32767, 8199 },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection
     { 32767, 775 },
     // Microsoft.UI.Xaml.AdaptiveTrigger
@@ -701,7 +705,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Media.Imaging.BitmapSource
     { 32767, 1835 },
     // Microsoft.UI.Xaml.Documents.Block
-    { 32767, 7983 },
+    { 32767, 8239 },
     // Microsoft.UI.Xaml.Media.Animation.BounceEase
     { 140737488355351, 140737488355351 },
     // Microsoft.UI.Xaml.BringIntoViewRequestedEventArgs
@@ -735,7 +739,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.CustomResource
     { 140737488355359, 140737488355359 },
     // Microsoft.UI.Xaml.DataTemplate
-    { 32767, 3391 },
+    { 32767, 3647 },
     // Microsoft.UI.Xaml.Media.Animation.DiscreteColorKeyFrame
     { 140737488355395, 140737488355395 },
     // Microsoft.UI.Xaml.Media.Animation.DiscreteDoubleKeyFrame
@@ -765,9 +769,9 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.DropCompletedEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Duration
-    { 32767, 10323 },
+    { 32767, 10579 },
     // Microsoft.UI.Xaml.Media.Animation.DynamicTimeline
-    { 32767, 4151 },
+    { 32767, 4407 },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame
     { 140737488355395, 140737488355395 },
     // Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame
@@ -807,7 +811,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Input.GettingFocusEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Media.GradientBrush
-    { 32767, 7271 },
+    { 32767, 7527 },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemTemplateSettings
     { 140737488355435, 140737488355435 },
     // Microsoft.UI.Xaml.Data.GroupedDataCollectionView
@@ -815,21 +819,21 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Input.HoldingRoutedEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Internal.HWCompLeafNode
-    { 32767, 5491 },
-    // Microsoft.UI.Xaml.Internal.HWCompTreeNode
     { 32767, 5747 },
+    // Microsoft.UI.Xaml.Internal.HWCompTreeNode
+    { 32767, 6003 },
     // Microsoft.UI.Xaml.Automation.Peers.HyperlinkAutomationPeer
     { 140737488355379, 140737488355379 },
     // Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Documents.Inline
-    { 32767, 6191 },
+    { 32767, 6447 },
     // Microsoft.UI.Xaml.Media.Animation.InputPaneThemeTransition
     { 140737488355343, 140737488355343 },
     // Microsoft.UI.Xaml.Internal.InternalTransform
     { 140737488355447, 140737488355447 },
     // Microsoft.UI.Xaml.Automation.Peers.ItemAutomationPeer
-    { 32767, 11059 },
+    { 32767, 11315 },
     // Microsoft.UI.Xaml.Controls.ItemClickEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.Controls.ItemsPanelTemplate
@@ -872,6 +876,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 140737488355423, 140737488355423 },
     // Microsoft.UI.Xaml.Media.Animation.MenuPopupThemeTransition
     { 140737488355343, 140737488355343 },
+    // Microsoft.UI.Xaml.MultiTrigger
+    { 140737488355419, 140737488355419 },
     // Microsoft.UI.Xaml.Input.NoFocusCandidateFoundEventArgs
     { 0, 0 },
     // Microsoft.UI.Xaml.NullExtension
@@ -883,7 +889,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Media.Animation.PaneThemeTransition
     { 140737488355343, 140737488355343 },
     // Microsoft.UI.Xaml.Media.Animation.ParallelTimeline
-    { 32767, 11831 },
+    { 32767, 12087 },
     // Microsoft.UI.Xaml.Media.PathGeometry
     { 140737488355415, 140737488355415 },
     // Microsoft.UI.Xaml.Controls.PathIconSource
@@ -963,7 +969,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.StaticResource
     { 140737488355359, 140737488355359 },
     // Microsoft.UI.Xaml.Media.Imaging.SurfaceImageSource
-    { 32767, 14635 },
+    { 32767, 14891 },
     // Microsoft.UI.Xaml.Media.Imaging.SvgImageSource
     { 140737488355371, 140737488355371 },
     // Microsoft.UI.Xaml.Internal.SwapChainElement
@@ -983,23 +989,25 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Media.ThemeShadow
     { 140737488355471, 140737488355471 },
     // Microsoft.UI.Xaml.Media.TileBrush
-    { 32767, 5991 },
+    { 32767, 6247 },
     // Microsoft.UI.Xaml.Media.Transform
     { 32767, 3191 },
+    // Microsoft.UI.Xaml.Trigger
+    { 140737488355419, 140737488355419 },
     // Microsoft.UI.Xaml.Data.VectorCollectionView
-    { 32767, 6767 },
+    { 32767, 7023 },
     // Microsoft.UI.Xaml.Data.VectorViewCollectionView
     { 140737488355439, 140737488355439 },
     // Microsoft.UI.Xaml.Media.XamlCompositionBrushBase
     { 140737488355431, 140737488355431 },
     // Microsoft.UI.Xaml.Collections.ObservablePresentationFrameworkCollection
-    { 32767, 16135 },
+    { 32767, 16391 },
     // Microsoft.UI.Xaml.Collections.ObservablePresentationFrameworkCollection
     { 1048575, 426247 },
     // Microsoft.UI.Xaml.Collections.ObservablePresentationFrameworkCollection
-    { 32767, 16391 },
+    { 32767, 16647 },
     // Microsoft.UI.Xaml.Collections.ObservablePresentationFrameworkCollection
-    { 32767, 15879 },
+    { 32767, 16135 },
     // Microsoft.UI.Xaml.Automation.Peers.AppBarAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Automation.Peers.AppBarLightDismissAutomationPeer
@@ -1038,6 +1046,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.CompositeTransform
     { 140737488358519, 140737488358519 },
+    // Microsoft.UI.Xaml.ConditionCollection
+    { 140737488358663, 140737488358663 },
     // Microsoft.UI.Xaml.ConnectedAnimationRoot
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Controls.ContentPresenter
@@ -1047,41 +1057,41 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Automation.Peers.DatePickerAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Internal.DisplayMemberTemplate
-    { 140737488358719, 140737488358719 },
+    { 140737488358975, 140737488358975 },
     // Microsoft.UI.Xaml.Media.DoubleCollection
-    { 140737488358919, 140737488358919 },
-    // Microsoft.UI.Xaml.Media.Animation.DoubleKeyFrameCollection
     { 140737488359175, 140737488359175 },
+    // Microsoft.UI.Xaml.Media.Animation.DoubleKeyFrameCollection
+    { 140737488359431, 140737488359431 },
     // Microsoft.UI.Xaml.Media.Animation.DragItemThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.DragOverThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.DrillInThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.DrillOutThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.DropTargetItemThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Automation.Peers.FaceplateContentPresenterAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.Animation.FadeInThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.FadeOutThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Automation.Peers.FlipViewItemAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.FloatCollection
-    { 140737488359687, 140737488359687 },
+    { 140737488359943, 140737488359943 },
     // Microsoft.UI.Xaml.Automation.Peers.FlyoutPresenterAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.FullWindowMediaRootAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.GeometryCollection
-    { 140737488359943, 140737488359943 },
+    { 140737488360199, 140737488360199 },
     // Microsoft.UI.Xaml.Documents.Glyphs
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Media.GradientStopCollection
-    { 140737488360199, 140737488360199 },
+    { 140737488360455, 140737488360455 },
     // Microsoft.UI.Xaml.Automation.Peers.GroupItemAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Automation.Peers.HubAutomationPeer
@@ -1089,15 +1099,15 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Automation.Peers.HubSectionAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Controls.HubSectionCollection
-    { 140737488360455, 140737488360455 },
+    { 140737488360711, 140737488360711 },
     // Microsoft.UI.Xaml.Internal.HWCompMediaNode
-    { 140737488360819, 140737488360819 },
+    { 140737488361075, 140737488361075 },
     // Microsoft.UI.Xaml.Internal.HWCompRenderDataNode
-    { 140737488360819, 140737488360819 },
+    { 140737488361075, 140737488361075 },
     // Microsoft.UI.Xaml.Internal.HWCompSwapChainNode
-    { 140737488360819, 140737488360819 },
+    { 140737488361075, 140737488361075 },
     // Microsoft.UI.Xaml.Internal.HWRedirectedCompTreeNodeWinRT
-    { 1048575, 562803 },
+    { 1048575, 563059 },
     // Microsoft.UI.Xaml.Controls.IconElement
     { 1048575, 133219 },
     // Microsoft.UI.Xaml.Controls.Image
@@ -1105,25 +1115,25 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Automation.Peers.ImageAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.ImageBrush
-    { 140737488361319, 140737488361319 },
+    { 140737488361575, 140737488361575 },
     // Microsoft.UI.Xaml.Documents.InlineUIContainer
-    { 140737488361519, 140737488361519 },
+    { 140737488361775, 140737488361775 },
     // Microsoft.UI.Xaml.Input.InputScopeNameCollection
-    { 140737488361735, 140737488361735 },
+    { 140737488361991, 140737488361991 },
     // Microsoft.UI.Xaml.Automation.Peers.ItemsControlAutomationPeer
     { 1048575, 590387 },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Data.IterableCollectionView
-    { 140737488362095, 140737488362095 },
+    { 140737488362351, 140737488362351 },
     // Microsoft.UI.Xaml.Input.KeyboardAcceleratorCollection
-    { 140737488362247, 140737488362247 },
+    { 140737488362503, 140737488362503 },
     // Microsoft.UI.Xaml.Automation.Peers.LandmarkTargetAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.LinearGradientBrush
-    { 140737488362599, 140737488362599 },
+    { 140737488362855, 140737488362855 },
     // Microsoft.UI.Xaml.Documents.LineBreak
-    { 140737488361519, 140737488361519 },
+    { 140737488361775, 140737488361775 },
     // Microsoft.UI.Xaml.Automation.Peers.ListBoxItemAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewBaseHeaderItemAutomationPeer
@@ -1147,43 +1157,43 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Automation.Peers.MenuFlyoutItemAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutItemBaseCollection
-    { 140737488362759, 140737488362759 },
+    { 140737488363015, 140737488363015 },
     // Microsoft.UI.Xaml.Automation.Peers.MenuFlyoutSubItemAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Automation.Peers.NamedContainerAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrameCollection
-    { 140737488363015, 140737488363015 },
+    { 140737488363271, 140737488363271 },
     // Microsoft.UI.Xaml.Controls.Panel
     { 1048575, 297059 },
     // Microsoft.UI.Xaml.Documents.Paragraph
-    { 140737488363311, 140737488363311 },
+    { 140737488363567, 140737488363567 },
     // Microsoft.UI.Xaml.Internal.ParametricCurveCollection
-    { 140737488363527, 140737488363527 },
-    // Microsoft.UI.Xaml.Internal.ParametricCurveSegmentCollection
     { 140737488363783, 140737488363783 },
+    // Microsoft.UI.Xaml.Internal.ParametricCurveSegmentCollection
+    { 140737488364039, 140737488364039 },
     // Microsoft.UI.Xaml.Automation.Peers.PasswordBoxAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.PathFigureCollection
-    { 140737488364039, 140737488364039 },
-    // Microsoft.UI.Xaml.Media.PathSegmentCollection
     { 140737488364295, 140737488364295 },
-    // Microsoft.UI.Xaml.Media.PointCollection
+    // Microsoft.UI.Xaml.Media.PathSegmentCollection
     { 140737488364551, 140737488364551 },
-    // Microsoft.UI.Xaml.Input.PointerCollection
+    // Microsoft.UI.Xaml.Media.PointCollection
     { 140737488364807, 140737488364807 },
-    // Microsoft.UI.Xaml.Media.Animation.PointerDownThemeAnimation
-    { 140737488359479, 140737488359479 },
-    // Microsoft.UI.Xaml.Internal.PointerKeyFrameCollection
+    // Microsoft.UI.Xaml.Input.PointerCollection
     { 140737488365063, 140737488365063 },
-    // Microsoft.UI.Xaml.Media.Animation.PointerUpThemeAnimation
-    { 140737488359479, 140737488359479 },
-    // Microsoft.UI.Xaml.Media.Animation.PointKeyFrameCollection
+    // Microsoft.UI.Xaml.Media.Animation.PointerDownThemeAnimation
+    { 140737488359735, 140737488359735 },
+    // Microsoft.UI.Xaml.Internal.PointerKeyFrameCollection
     { 140737488365319, 140737488365319 },
+    // Microsoft.UI.Xaml.Media.Animation.PointerUpThemeAnimation
+    { 140737488359735, 140737488359735 },
+    // Microsoft.UI.Xaml.Media.Animation.PointKeyFrameCollection
+    { 140737488365575, 140737488365575 },
     // Microsoft.UI.Xaml.Media.Animation.PopInThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.PopOutThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Automation.Peers.PopupAutomationPeer
@@ -1193,13 +1203,13 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Automation.Peers.RangeBaseAutomationPeer
     { 1048575, 623155 },
     // Microsoft.UI.Xaml.Media.Animation.RepeatBehavior
-    { 140737488365651, 140737488365651 },
+    { 140737488365907, 140737488365907 },
     // Microsoft.UI.Xaml.Media.Animation.RepositionThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.ResourceDictionary
     { 1048575, 327943 },
     // Microsoft.UI.Xaml.Internal.ResourceDictionaryCollection
-    { 140737488365831, 140737488365831 },
+    { 140737488366087, 140737488366087 },
     // Microsoft.UI.Xaml.Automation.Peers.RichEditBoxAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Controls.RichTextBlock
@@ -1213,45 +1223,45 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Media.RotateTransform
     { 140737488358519, 140737488358519 },
     // Microsoft.UI.Xaml.Controls.RowDefinitionCollection
-    { 140737488366087, 140737488366087 },
+    { 140737488366343, 140737488366343 },
     // Microsoft.UI.Xaml.Documents.Run
-    { 140737488361519, 140737488361519 },
+    { 140737488361775, 140737488361775 },
     // Microsoft.UI.Xaml.Media.ScaleTransform
     { 140737488358519, 140737488358519 },
     // Microsoft.UI.Xaml.Automation.Peers.ScrollViewerAutomationPeer
     { 1048575, 229939 },
     // Microsoft.UI.Xaml.Automation.Peers.SelectorItemAutomationPeer
-    { 1048575, 371507 },
+    { 1048575, 371763 },
     // Microsoft.UI.Xaml.Automation.Peers.SemanticZoomAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.SetterBaseCollection
-    { 1048575, 109575 },
+    { 1048575, 109831 },
     // Microsoft.UI.Xaml.Shapes.Shape
     { 1048575, 460899 },
     // Microsoft.UI.Xaml.Media.SkewTransform
     { 140737488358519, 140737488358519 },
     // Microsoft.UI.Xaml.Documents.Span
-    { 1048575, 170031 },
+    { 1048575, 170287 },
     // Microsoft.UI.Xaml.Media.Animation.SplitCloseThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Automation.Peers.SplitViewLightDismissAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Automation.Peers.SplitViewPaneAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Internal.StateTriggerCollection
-    { 140737488366855, 140737488366855 },
+    { 140737488367111, 140737488367111 },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard
-    { 140737488367159, 140737488367159 },
+    { 140737488367415, 140737488367415 },
     // Microsoft.UI.Xaml.Internal.StoryboardCollection
-    { 140737488367367, 140737488367367 },
+    { 140737488367623, 140737488367623 },
     // Microsoft.UI.Xaml.Media.Animation.SwipeBackThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Media.Animation.SwipeHintThemeAnimation
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Controls.TextBlock
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Automation.Peers.TextBlockAutomationPeer
@@ -1263,17 +1273,17 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Internal.TextBoxView
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Documents.TextElementCollection
-    { 1048575, 45063 },
+    { 1048575, 45319 },
     // Microsoft.UI.Xaml.Documents.TextHighlighterCollection
-    { 140737488367879, 140737488367879 },
-    // Microsoft.UI.Xaml.Documents.TextRangeCollection
     { 140737488368135, 140737488368135 },
+    // Microsoft.UI.Xaml.Documents.TextRangeCollection
+    { 140737488368391, 140737488368391 },
     // Microsoft.UI.Xaml.Media.Animation.ThemeAnimationBase
-    { 140737488359479, 140737488359479 },
+    { 140737488359735, 140737488359735 },
     // Microsoft.UI.Xaml.Automation.Peers.ThumbAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.Animation.TimelineCollection
-    { 140737488368391, 140737488368391 },
+    { 140737488368647, 140737488368647 },
     // Microsoft.UI.Xaml.Automation.Peers.TimePickerAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Automation.Peers.ToggleMenuFlyoutItemAutomationPeer
@@ -1283,47 +1293,47 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Automation.Peers.ToolTipAutomationPeer
     { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.TransformCollection
-    { 140737488368647, 140737488368647 },
+    { 140737488368903, 140737488368903 },
     // Microsoft.UI.Xaml.Media.TransformGroup
     { 140737488358519, 140737488358519 },
     // Microsoft.UI.Xaml.Media.Animation.TransitionCollection
-    { 140737488368903, 140737488368903 },
+    { 140737488369159, 140737488369159 },
     // Microsoft.UI.Xaml.Media.TranslateTransform
     { 140737488358519, 140737488358519 },
     // Microsoft.UI.Xaml.TriggerActionCollection
-    { 140737488369159, 140737488369159 },
-    // Microsoft.UI.Xaml.TriggerCollection
     { 140737488369415, 140737488369415 },
+    // Microsoft.UI.Xaml.TriggerCollection
+    { 140737488369671, 140737488369671 },
     // Microsoft.UI.Xaml.Controls.UIElementCollection
-    { 140737488369671, 140737488369671 },
+    { 140737488369927, 140737488369927 },
     // Microsoft.UI.Xaml.UIElementWeakCollection
-    { 140737488369671, 140737488369671 },
+    { 140737488369927, 140737488369927 },
     // Microsoft.UI.Xaml.Controls.Viewbox
     { 140737488357475, 140737488357475 },
     // Microsoft.UI.Xaml.Media.Imaging.VirtualSurfaceImageSource
-    { 140737488369963, 140737488369963 },
+    { 140737488370219, 140737488370219 },
     // Microsoft.UI.Xaml.Internal.VisualStateCollection
-    { 140737488370183, 140737488370183 },
-    // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection
     { 140737488370439, 140737488370439 },
-    // Microsoft.UI.Xaml.Internal.VisualTransitionCollection
+    // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection
     { 140737488370695, 140737488370695 },
+    // Microsoft.UI.Xaml.Internal.VisualTransitionCollection
+    { 140737488370951, 140737488370951 },
     // Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap
     { 140737488357163, 140737488357163 },
     // Microsoft.UI.Xaml.Media.XamlLightCollection
-    { 140737488370951, 140737488370951 },
+    { 140737488371207, 140737488371207 },
     // Microsoft.UI.Xaml.Documents.TextElementCollection
-    { 33554431, 14725127 },
+    { 33554431, 14725383 },
     // Microsoft.UI.Xaml.Documents.TextElementCollection
-    { 33554431, 6336519 },
+    { 33554431, 6336775 },
     // Microsoft.UI.Xaml.Controls.AppBarSeparator
     { 140737488423011, 140737488423011 },
     // Microsoft.UI.Xaml.BasedOnSetterCollection
-    { 140737488464903, 140737488464903 },
+    { 140737488465159, 140737488465159 },
     // Microsoft.UI.Xaml.Controls.BitmapIcon
     { 140737488488547, 140737488488547 },
     // Microsoft.UI.Xaml.Documents.Bold
-    { 140737488525359, 140737488525359 },
+    { 140737488525615, 140737488525615 },
     // Microsoft.UI.Xaml.Automation.Peers.ButtonAutomationPeer
     { 33554431, 2294323 },
     // Microsoft.UI.Xaml.Controls.CalendarDatePicker
@@ -1345,9 +1355,9 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.ColorPaletteResources
     { 140737488683271, 140737488683271 },
     // Microsoft.UI.Xaml.Automation.Peers.ComboBoxItemDataAutomationPeer
-    { 140737488726835, 140737488726835 },
+    { 140737488727091, 140737488727091 },
     // Microsoft.UI.Xaml.Controls.CommandBarElementCollection
-    { 140737488371207, 140737488371207 },
+    { 140737488371463, 140737488371463 },
     // Microsoft.UI.Xaml.Controls.CommandingContainer
     { 140737488750691, 140737488750691 },
     // Microsoft.UI.Xaml.Controls.ContentControl
@@ -1359,7 +1369,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Shapes.Ellipse
     { 140737488816227, 140737488816227 },
     // Microsoft.UI.Xaml.Automation.Peers.FlipViewItemDataAutomationPeer
-    { 140737488726835, 140737488726835 },
+    { 140737488727091, 140737488727091 },
     // Microsoft.UI.Xaml.Controls.FontIcon
     { 140737488488547, 140737488488547 },
     // Microsoft.UI.Xaml.FullWindowMediaRoot
@@ -1375,25 +1385,25 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.HubSection
     { 140737488423011, 140737488423011 },
     // Microsoft.UI.Xaml.Internal.HWWindowedPopupCompTreeNodeWinRT
-    { 140737488918131, 140737488918131 },
+    { 140737488918387, 140737488918387 },
     // Microsoft.UI.Xaml.Documents.Hyperlink
-    { 140737488525359, 140737488525359 },
+    { 140737488525615, 140737488525615 },
     // Microsoft.UI.Xaml.Automation.Peers.HyperlinkButtonAutomationPeer
     { 140737488552499, 140737488552499 },
     // Microsoft.UI.Xaml.Controls.IconSourceElement
     { 140737488488547, 140737488488547 },
     // Microsoft.UI.Xaml.Documents.Italic
-    { 140737488525359, 140737488525359 },
+    { 140737488525615, 140737488525615 },
     // Microsoft.UI.Xaml.Controls.ItemCollection
-    { 140737488371463, 140737488371463 },
+    { 140737488371719, 140737488371719 },
     // Microsoft.UI.Xaml.Controls.ItemsControl
     { 33554431, 5310563 },
     // Microsoft.UI.Xaml.Shapes.Line
     { 140737488816227, 140737488816227 },
     // Microsoft.UI.Xaml.Automation.Peers.ListBoxItemDataAutomationPeer
-    { 140737488726835, 140737488726835 },
+    { 140737488727091, 140737488727091 },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewBaseItemDataAutomationPeer
-    { 33554431, 12954419 },
+    { 33554431, 12954675 },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewBaseItemPresenter
     { 33554431, 14026851 },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewHeaderItemAutomationPeer
@@ -1465,11 +1475,11 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.ToggleSwitch
     { 140737488423011, 140737488423011 },
     // Microsoft.UI.Xaml.Documents.Underline
-    { 140737488525359, 140737488525359 },
+    { 140737488525615, 140737488525615 },
     // Microsoft.UI.Xaml.Controls.UserControl
     { 33554431, 16844899 },
     // Microsoft.UI.Xaml.Internal.ValidationErrorsCollection
-    { 140737488371719, 140737488371719 },
+    { 140737488371975, 140737488371975 },
     // Microsoft.UI.Xaml.Controls.VariableSizedWrapGrid
     { 140737488652387, 140737488652387 },
     // Microsoft.UI.Xaml.Controls.VirtualizingPanel
@@ -1491,7 +1501,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.AutoSuggestBox
     { 140737493665891, 140737493665891 },
     // Microsoft.UI.Xaml.Documents.BlockCollection
-    { 140737494691847, 140737494691847 },
+    { 140737494692103, 140737494692103 },
     // Microsoft.UI.Xaml.Controls.Primitives.ButtonBase
     { 536870911, 34670691 },
     // Microsoft.UI.Xaml.Controls.Primitives.CalendarPanel
@@ -1519,13 +1529,13 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.Frame
     { 140737489471587, 140737489471587 },
     // Microsoft.UI.Xaml.Automation.Peers.GridViewItemDataAutomationPeer
-    { 140737501309747, 140737501309747 },
+    { 140737501310003, 140737501310003 },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter
     { 140737502382179, 140737502382179 },
     // Microsoft.UI.Xaml.Controls.GroupItem
     { 140737489471587, 140737489471587 },
     // Microsoft.UI.Xaml.Documents.InlineCollection
-    { 140737503080455, 140737503080455 },
+    { 140737503080711, 140737503080711 },
     // Microsoft.UI.Xaml.Controls.ItemsStackPanel
     { 140737495992419, 140737495992419 },
     // Microsoft.UI.Xaml.Controls.ItemsWrapGrid
@@ -1537,7 +1547,7 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Controls.ListViewBaseHeaderItem
     { 536870911, 202442851 },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewItemDataAutomationPeer
-    { 140737501309747, 140737501309747 },
+    { 140737501310003, 140737501310003 },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter
     { 140737502382179, 140737502382179 },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutItem

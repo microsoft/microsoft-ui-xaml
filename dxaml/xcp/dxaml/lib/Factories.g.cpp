@@ -21,7 +21,9 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_Setter();
     _Check_return_ IActivationFactory* CreateActivationFactory_Window();
     _Check_return_ IActivationFactory* CreateActivationFactory_PanelEx();
+    _Check_return_ IActivationFactory* CreateActivationFactory_Trigger();
     _Check_return_ IActivationFactory* CreateActivationFactory_XamlRoot();
+    _Check_return_ IActivationFactory* CreateActivationFactory_Condition();
     _Check_return_ IActivationFactory* CreateActivationFactory_UIElement();
     _Check_return_ IActivationFactory* CreateActivationFactory_RectHelper();
     _Check_return_ IActivationFactory* CreateActivationFactory_SetterBase();
@@ -37,6 +39,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_Path();
     _Check_return_ IActivationFactory* CreateActivationFactory_DataTemplate();
     _Check_return_ IActivationFactory* CreateActivationFactory_EventTrigger();
+    _Check_return_ IActivationFactory* CreateActivationFactory_MultiTrigger();
     _Check_return_ IActivationFactory* CreateActivationFactory_PropertyPath();
     _Check_return_ IActivationFactory* CreateActivationFactory_StateTrigger();
     _Check_return_ IActivationFactory* CreateActivationFactory_WindowChrome();
@@ -140,6 +143,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_GroupItem();
     _Check_return_ IActivationFactory* CreateActivationFactory_SplitView();
     _Check_return_ IActivationFactory* CreateActivationFactory_TextBlock();
+    _Check_return_ IActivationFactory* CreateActivationFactory_ConditionCollection();
     _Check_return_ IActivationFactory* CreateActivationFactory_FrameworkViewSource();
     _Check_return_ IActivationFactory* CreateActivationFactory_BezierSegment();
     _Check_return_ IActivationFactory* CreateActivationFactory_GeometryGroup();
@@ -679,7 +683,9 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Setter"), &DirectUI::CreateActivationFactory_Setter)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Window"), &DirectUI::CreateActivationFactory_Window)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.PanelEx"), &DirectUI::CreateActivationFactory_PanelEx)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Trigger"), &DirectUI::CreateActivationFactory_Trigger)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.XamlRoot"), &DirectUI::CreateActivationFactory_XamlRoot)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Condition"), &DirectUI::CreateActivationFactory_Condition)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.UIElement"), &DirectUI::CreateActivationFactory_UIElement)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.RectHelper"), &DirectUI::CreateActivationFactory_RectHelper)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.SetterBase"), &DirectUI::CreateActivationFactory_SetterBase)
@@ -695,6 +701,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Shapes.Path"), &DirectUI::CreateActivationFactory_Path)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DataTemplate"), &DirectUI::CreateActivationFactory_DataTemplate)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.EventTrigger"), &DirectUI::CreateActivationFactory_EventTrigger)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.MultiTrigger"), &DirectUI::CreateActivationFactory_MultiTrigger)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.PropertyPath"), &DirectUI::CreateActivationFactory_PropertyPath)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.StateTrigger"), &DirectUI::CreateActivationFactory_StateTrigger)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowChrome"), &DirectUI::CreateActivationFactory_WindowChrome)
@@ -798,6 +805,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.GroupItem"), &DirectUI::CreateActivationFactory_GroupItem)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.SplitView"), &DirectUI::CreateActivationFactory_SplitView)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.TextBlock"), &DirectUI::CreateActivationFactory_TextBlock)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ConditionCollection"), &DirectUI::CreateActivationFactory_ConditionCollection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.FrameworkViewSource"), &DirectUI::CreateActivationFactory_FrameworkViewSource)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.BezierSegment"), &DirectUI::CreateActivationFactory_BezierSegment)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.GeometryGroup"), &DirectUI::CreateActivationFactory_GeometryGroup)

@@ -20,6 +20,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs IBringIntoViewRequestedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IBrushTransition IBrushTransition;
     typedef ABI::Microsoft::UI::Xaml::IColorPaletteResources IColorPaletteResources;
+    typedef ABI::Microsoft::UI::Xaml::ICondition ICondition;
     typedef ABI::Microsoft::UI::Xaml::IDataContextChangedEventArgs IDataContextChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IDataTemplate IDataTemplate;
     typedef ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi IDataTemplateFeature_ExperimentalApi;
@@ -76,6 +77,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IXamlServiceProvider IXamlServiceProvider;
     typedef ABI::Microsoft::UI::Xaml::ILaunchActivatedEventArgs ILaunchActivatedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IMediaFailedRoutedEventArgs IMediaFailedRoutedEventArgs;
+    typedef ABI::Microsoft::UI::Xaml::IMultiTrigger IMultiTrigger;
     typedef ABI::Microsoft::UI::Xaml::IPanelEx IPanelEx;
     typedef ABI::Microsoft::UI::Xaml::IPointHelper IPointHelper;
     typedef ABI::Microsoft::UI::Xaml::IPropertyMetadata IPropertyMetadata;
@@ -96,6 +98,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IStateTriggerBaseProtected IStateTriggerBaseProtected;
     typedef ABI::Microsoft::UI::Xaml::IStyle IStyle;
     typedef ABI::Microsoft::UI::Xaml::ITargetPropertyPath ITargetPropertyPath;
+    typedef ABI::Microsoft::UI::Xaml::ITrigger ITrigger;
     typedef ABI::Microsoft::UI::Xaml::ITriggerAction ITriggerAction;
     typedef ABI::Microsoft::UI::Xaml::ITriggerBase ITriggerBase;
     typedef ABI::Microsoft::UI::Xaml::IUIElement IUIElement;

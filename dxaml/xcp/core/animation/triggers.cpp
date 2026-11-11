@@ -54,6 +54,17 @@ CEventTrigger::~CEventTrigger()
     ReleaseInterface(m_pTriggerActions);
 }
 
+CTrigger::~CTrigger()
+{
+    ReleaseInterface(m_pSetters);
+}
+
+CMultiTrigger::~CMultiTrigger()
+{
+    ReleaseInterface(m_pConditions);
+    ReleaseInterface(m_pSetters);
+}
+
 // Override to base SetValue to do value validation for some properties.
 _Check_return_ HRESULT CEventTrigger::SetValue(_In_ const SetValueParams& args)
 {

@@ -798,6 +798,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::EventArgs, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
     },
+    // Microsoft.UI.Xaml.Condition
+    {
+        KnownTypeIndex::Condition, // Index name
+        KnownTypeIndex::DependencyObject, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
     // Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation
     {
         KnownTypeIndex::ConnectedAnimation, // Index name
@@ -1866,6 +1872,18 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::DependencyObject, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
     },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.Condition]
+    {
+        KnownTypeIndex::PresentationFrameworkCollectionOfCondition, // Index name
+        KnownTypeIndex::PresentationFrameworkCollection, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
+    },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
+    {
+        KnownTypeIndex::PresentationFrameworkCollectionOfSetterBase, // Index name
+        KnownTypeIndex::PresentationFrameworkCollection, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
+    },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.UIElement]
     {
         KnownTypeIndex::PresentationFrameworkCollectionOfUIElement, // Index name
@@ -1905,12 +1923,6 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.ResourceDictionary]
     {
         KnownTypeIndex::PresentationFrameworkCollectionOfResourceDictionary, // Index name
-        KnownTypeIndex::PresentationFrameworkCollection, // Base index name
-        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
-    },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
-    {
-        KnownTypeIndex::PresentationFrameworkCollectionOfSetterBase, // Index name
         KnownTypeIndex::PresentationFrameworkCollection, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
     },
@@ -2700,6 +2712,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::Transition, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::RequiresPeerActivation)), // Type flags
     },
+    // Microsoft.UI.Xaml.MultiTrigger
+    {
+        KnownTypeIndex::MultiTrigger, // Index name
+        KnownTypeIndex::TriggerBase, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
     // Microsoft.UI.Xaml.Input.NoFocusCandidateFoundEventArgs
     {
         KnownTypeIndex::NoFocusCandidateFoundEventArgs, // Index name
@@ -3042,6 +3060,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::GeneralTransform, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter)), // Type flags
     },
+    // Microsoft.UI.Xaml.Trigger
+    {
+        KnownTypeIndex::Trigger, // Index name
+        KnownTypeIndex::TriggerBase, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
     // Microsoft.UI.Xaml.Data.VectorCollectionView
     {
         KnownTypeIndex::VectorCollectionView, // Index name
@@ -3197,6 +3221,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::CompositeTransform, // Index name
         KnownTypeIndex::Transform, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
+    // Microsoft.UI.Xaml.ConditionCollection
+    {
+        KnownTypeIndex::ConditionCollection, // Index name
+        KnownTypeIndex::PresentationFrameworkCollectionOfCondition, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
     },
     // Microsoft.UI.Xaml.ConnectedAnimationRoot
     {
@@ -6791,6 +6821,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.CommandingContextChangedEventArgs"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Controls, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Condition
+    {
+        XSTRING_PTR_STORAGE(L"Condition"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Condition"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation
     {
         XSTRING_PTR_STORAGE(L"ConnectedAnimation"), // Name
@@ -7859,6 +7895,18 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Input.XamlUICommand"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Input, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.Condition]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Collections, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Collections, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.UIElement]
     {
         { /* empty string */ }, // Name
@@ -7896,12 +7944,6 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         KnownNamespaceIndex::Microsoft_UI_Xaml_Collections, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.ResourceDictionary]
-    {
-        { /* empty string */ }, // Name
-        { /* empty string */ }, // Full name
-        KnownNamespaceIndex::Microsoft_UI_Xaml_Collections, // Declaring namespace index
-    },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
     {
         { /* empty string */ }, // Name
         { /* empty string */ }, // Full name
@@ -8693,6 +8735,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.MenuPopupThemeTransition"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Animation, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.MultiTrigger
+    {
+        XSTRING_PTR_STORAGE(L"MultiTrigger"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.MultiTrigger"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Input.NoFocusCandidateFoundEventArgs
     {
         XSTRING_PTR_STORAGE(L"NoFocusCandidateFoundEventArgs"), // Name
@@ -9035,6 +9083,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Transform"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Media, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Trigger
+    {
+        XSTRING_PTR_STORAGE(L"Trigger"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Trigger"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Data.VectorCollectionView
     {
         XSTRING_PTR_STORAGE(L"VectorCollectionView"), // Name
@@ -9190,6 +9244,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"CompositeTransform"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.CompositeTransform"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Media, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.ConditionCollection
+    {
+        XSTRING_PTR_STORAGE(L"ConditionCollection"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ConditionCollection"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.ConnectedAnimationRoot
     {
@@ -13117,6 +13177,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property = UnknownObject.UnknownProperty
         0, // Property slot count
     },
+    // Microsoft.UI.Xaml.Condition
+    {
+        KnownPropertyIndex::Condition_Property, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        3, // First object property = Microsoft.UI.Xaml.Condition.Value
+        10, // Property slot count
+    },
     // Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation
     {
         KnownPropertyIndex::DependencyObject_Column, // First property
@@ -13384,7 +13453,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
-        3, // First object property = Microsoft.UI.Xaml.Internal.ExternalObjectReference.NativeValue
+        4, // First object property = Microsoft.UI.Xaml.Internal.ExternalObjectReference.NativeValue
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase
@@ -13456,7 +13525,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::FrameworkTemplate_Template, // Content property
         3, // First enter property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         3, // First render property = Microsoft.UI.Xaml.FrameworkTemplate.Template
-        4, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
+        5, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.GeneralTransform
@@ -13474,7 +13543,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         4, // First enter property = Microsoft.UI.Xaml.Media.Geometry.Transform
         4, // First render property = Microsoft.UI.Xaml.Media.Geometry.Transform
-        5, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
+        6, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Printing.GetPreviewPageEventArgs
@@ -13591,7 +13660,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         5, // First enter property = Microsoft.UI.Xaml.Input.InputScope.Names
         5, // First render property = Microsoft.UI.Xaml.Input.InputScope.Names
-        6, // First object property = Microsoft.UI.Xaml.Input.InputScope.Names
+        7, // First object property = Microsoft.UI.Xaml.Input.InputScope.Names
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.InputScopeName
@@ -13717,7 +13786,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
-        7, // First object property = Microsoft.UI.Xaml.Input.KeyboardAccelerator.ScopeOwner
+        8, // First object property = Microsoft.UI.Xaml.Input.KeyboardAccelerator.ScopeOwner
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs
@@ -13924,7 +13993,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
-        8, // First object property = Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.Value
+        9, // First object property = Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.Value
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Navigation.PageStackEntry
@@ -13951,7 +14020,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         8, // First enter property = Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments
         6, // First render property = Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments
-        9, // First object property = Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments
+        10, // First object property = Microsoft.UI.Xaml.Internal.ParametricCurve.CurveSegments
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveSegment
@@ -13978,7 +14047,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::PathFigure_Segments, // Content property
         9, // First enter property = Microsoft.UI.Xaml.Media.PathFigure.Segments
         7, // First render property = Microsoft.UI.Xaml.Media.PathFigure.Segments
-        10, // First object property = Microsoft.UI.Xaml.Media.PathFigure.Segments
+        11, // First object property = Microsoft.UI.Xaml.Media.PathFigure.Segments
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.PathSegment
@@ -14176,7 +14245,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         10, // First enter property = Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves
         8, // First render property = Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves
-        11, // First object property = Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves
+        12, // First object property = Microsoft.UI.Xaml.Internal.SecondaryContentRelationship.Curves
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.SectionsInViewChangedEventArgs
@@ -14284,7 +14353,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::Style_Setters, // Content property
         11, // First enter property = Microsoft.UI.Xaml.Style.Setters
         9, // First render property = Microsoft.UI.Xaml.Style.Setters
-        12, // First object property = Microsoft.UI.Xaml.Style.BasedOn
+        13, // First object property = Microsoft.UI.Xaml.Style.BasedOn
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Imaging.SvgImageSourceFailedEventArgs
@@ -14428,7 +14497,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         12, // First enter property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         10, // First render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
-        14, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         26, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighterBase
@@ -14500,7 +14569,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         14, // First enter property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
         12, // First render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
-        16, // First object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
         16, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.TimePickerSelectedValueChangedEventArgs
@@ -14563,7 +14632,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget
@@ -14572,7 +14641,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         16, // First enter property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform
         14, // First render property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform
-        18, // First object property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform
+        19, // First object property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.ClipTransform
         14, // Property slot count
     },
     // Microsoft.UI.Xaml.TriggerAction
@@ -14626,7 +14695,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::VisualState_Storyboard, // Content property
         19, // First enter property = Microsoft.UI.Xaml.VisualState.__DeferredSetters
         16, // First render property = Microsoft.UI.Xaml.VisualState.__DeferredSetters
-        20, // First object property = Microsoft.UI.Xaml.VisualState.__DeferredSetters
+        21, // First object property = Microsoft.UI.Xaml.VisualState.__DeferredSetters
         13, // Property slot count
     },
     // Microsoft.UI.Xaml.VisualStateChangedEventArgs
@@ -14644,7 +14713,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::VisualStateGroup_States, // Content property
         23, // First enter property = Microsoft.UI.Xaml.VisualStateGroup.States
         20, // First render property = Microsoft.UI.Xaml.VisualStateGroup.States
-        24, // First object property = Microsoft.UI.Xaml.VisualStateGroup.States
+        25, // First object property = Microsoft.UI.Xaml.VisualStateGroup.States
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.VisualStateManager
@@ -14662,7 +14731,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::VisualTransition_Storyboard, // Content property
         25, // First enter property = Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction
         22, // First render property = Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction
-        26, // First object property = Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction
+        27, // First object property = Microsoft.UI.Xaml.VisualTransition.GeneratedEasingFunction
         13, // Property slot count
     },
     // Microsoft.UI.Xaml.Window
@@ -14719,6 +14788,24 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property = UnknownObject.UnknownProperty
         14, // Property slot count
     },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.Condition]
+    {
+        KnownPropertyIndex::PresentationFrameworkCollection_Count, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        9, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
+    {
+        KnownPropertyIndex::PresentationFrameworkCollection_Count, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        9, // Property slot count
+    },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.UIElement]
     {
         KnownPropertyIndex::PresentationFrameworkCollection_Count, // First property
@@ -14774,15 +14861,6 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.ResourceDictionary]
-    {
-        KnownPropertyIndex::PresentationFrameworkCollection_Count, // First property
-        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        0, // First enter property = UnknownObject.UnknownProperty
-        0, // First render property = UnknownObject.UnknownProperty
-        0, // First object property = UnknownObject.UnknownProperty
-        9, // Property slot count
-    },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
     {
         KnownPropertyIndex::PresentationFrameworkCollection_Count, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
@@ -15121,7 +15199,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.ArcSegment
@@ -15148,7 +15226,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::BeginStoryboard_Storyboard, // Content property
         28, // First enter property = Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard
         24, // First render property = Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard
-        28, // First object property = Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard
+        29, // First object property = Microsoft.UI.Xaml.Media.Animation.BeginStoryboard.Storyboard
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.BezierSegment
@@ -15202,7 +15280,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         12, // First enter property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         10, // First render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
-        14, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         31, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.BounceEase
@@ -15265,7 +15343,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         29, // First enter property = Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction
         25, // First render property = Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction
-        29, // First object property = Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction
+        30, // First object property = Microsoft.UI.Xaml.Media.Animation.ColorAnimation.EasingFunction
         21, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames
@@ -15274,7 +15352,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::ColorAnimationUsingKeyFrames_KeyFrames, // Content property
         30, // First enter property = Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames
         26, // First render property = Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames
-        30, // First object property = Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames
+        31, // First object property = Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Media3D.CompositeTransform3D
@@ -15292,7 +15370,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.ContentThemeTransition
@@ -15301,7 +15379,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ContextMenuEventArgs
@@ -15328,7 +15406,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::FrameworkTemplate_Template, // Content property
         3, // First enter property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         3, // First render property = Microsoft.UI.Xaml.FrameworkTemplate.Template
-        4, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
+        5, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.CubicEase
@@ -15355,7 +15433,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::FrameworkTemplate_Template, // Content property
         3, // First enter property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         3, // First render property = Microsoft.UI.Xaml.FrameworkTemplate.Template
-        4, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
+        5, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DiscreteColorKeyFrame
@@ -15382,7 +15460,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
-        8, // First object property = Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.Value
+        9, // First object property = Microsoft.UI.Xaml.Media.Animation.ObjectKeyFrame.Value
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DiscretePointKeyFrame
@@ -15400,7 +15478,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         31, // First enter property = Microsoft.UI.Xaml.DispatcherTimer.Interval
         27, // First render property = Microsoft.UI.Xaml.DispatcherTimer.Interval
-        31, // First object property = Microsoft.UI.Xaml.DispatcherTimer.Interval
+        32, // First object property = Microsoft.UI.Xaml.DispatcherTimer.Interval
         17, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
@@ -15409,7 +15487,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         32, // First enter property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction
         28, // First render property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction
-        32, // First object property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction
+        33, // First object property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction
         21, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames
@@ -15418,7 +15496,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::DoubleAnimationUsingKeyFrames_KeyFrames, // Content property
         33, // First enter property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames
         29, // First render property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames
-        33, // First object property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames
+        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs
@@ -15499,7 +15577,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         17, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame
@@ -15508,7 +15586,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         35, // First enter property = Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction
         31, // First render property = Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction
-        35, // First object property = Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction
+        36, // First object property = Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame
@@ -15517,7 +15595,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         36, // First enter property = Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction
         32, // First render property = Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction
-        36, // First object property = Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction
+        37, // First object property = Microsoft.UI.Xaml.Media.Animation.EasingDoubleKeyFrame.EasingFunction
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame
@@ -15526,7 +15604,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         37, // First enter property = Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction
         33, // First render property = Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction
-        37, // First object property = Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction
+        38, // First object property = Microsoft.UI.Xaml.Media.Animation.EasingPointKeyFrame.EasingFunction
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.EdgeUIThemeTransition
@@ -15535,7 +15613,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.ElasticEase
@@ -15553,7 +15631,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         4, // First enter property = Microsoft.UI.Xaml.Media.Geometry.Transform
         4, // First render property = Microsoft.UI.Xaml.Media.Geometry.Transform
-        5, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
+        6, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
         13, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.EntranceThemeTransition
@@ -15562,7 +15640,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.EventTrigger
@@ -15571,7 +15649,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::EventTrigger_Actions, // Content property
         38, // First enter property = Microsoft.UI.Xaml.EventTrigger.Actions
         34, // First render property = Microsoft.UI.Xaml.EventTrigger.Actions
-        38, // First object property = Microsoft.UI.Xaml.EventTrigger.Actions
+        39, // First object property = Microsoft.UI.Xaml.EventTrigger.Actions
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.ExceptionRoutedEventArgs
@@ -15661,7 +15739,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::GeometryGroup_Children, // Content property
         43, // First enter property = Microsoft.UI.Xaml.Media.GeometryGroup.Children
         35, // First render property = Microsoft.UI.Xaml.Media.GeometryGroup.Children
-        39, // First object property = Microsoft.UI.Xaml.Media.GeometryGroup.Children
+        40, // First object property = Microsoft.UI.Xaml.Media.GeometryGroup.Children
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.GettingFocusEventArgs
@@ -15679,7 +15757,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::GradientBrush_GradientStops, // Content property
         44, // First enter property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
         36, // First render property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
-        40, // First object property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
+        41, // First object property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
         15, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemTemplateSettings
@@ -15751,7 +15829,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         12, // First enter property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         10, // First render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
-        14, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         26, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.InputPaneThemeTransition
@@ -15760,7 +15838,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.InternalTransform
@@ -15796,7 +15874,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::FrameworkTemplate_Template, // Content property
         3, // First enter property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         3, // First render property = Microsoft.UI.Xaml.FrameworkTemplate.Template
-        4, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
+        5, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.KeyRoutedEventArgs
@@ -15859,7 +15937,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         4, // First enter property = Microsoft.UI.Xaml.Media.Geometry.Transform
         4, // First render property = Microsoft.UI.Xaml.Media.Geometry.Transform
-        5, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
+        6, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.LineSegment
@@ -15940,7 +16018,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Content property
         45, // First enter property = Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix
         37, // First render property = Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix
-        41, // First object property = Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix
+        42, // First object property = Microsoft.UI.Xaml.Media.Matrix3DProjection.ProjectionMatrix
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.MediaSwapChainElement
@@ -15967,8 +16045,17 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         12, // Property slot count
+    },
+    // Microsoft.UI.Xaml.MultiTrigger
+    {
+        KnownPropertyIndex::MultiTrigger_Conditions, // First property
+        KnownPropertyIndex::MultiTrigger_Setters, // Content property
+        46, // First enter property = Microsoft.UI.Xaml.MultiTrigger.Conditions
+        38, // First render property = Microsoft.UI.Xaml.MultiTrigger.Conditions
+        43, // First object property = Microsoft.UI.Xaml.MultiTrigger.Conditions
+        10, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.NoFocusCandidateFoundEventArgs
     {
@@ -15992,16 +16079,16 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_EnableDependentAnimation, // First property
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_KeyFrames, // Content property
-        46, // First enter property = Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
-        38, // First render property = Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
-        42, // First object property = Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
+        48, // First enter property = Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
+        40, // First render property = Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
+        45, // First object property = Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.PanelEx
     {
         KnownPropertyIndex::PanelEx_ActualHeight, // First property
         KnownPropertyIndex::PanelEx_Children, // Content property
-        47, // First enter property = Microsoft.UI.Xaml.PanelEx.Height
+        49, // First enter property = Microsoft.UI.Xaml.PanelEx.Height
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
         107, // Property slot count
@@ -16012,7 +16099,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.ParallelTimeline
@@ -16021,16 +16108,16 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         14, // First enter property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
         12, // First render property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
-        16, // First object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
         16, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.PathGeometry
     {
         KnownPropertyIndex::PathGeometry_Figures, // First property
         KnownPropertyIndex::PathGeometry_Figures, // Content property
-        49, // First enter property = Microsoft.UI.Xaml.Media.PathGeometry.Figures
-        39, // First render property = Microsoft.UI.Xaml.Media.PathGeometry.Figures
-        43, // First object property = Microsoft.UI.Xaml.Media.PathGeometry.Figures
+        51, // First enter property = Microsoft.UI.Xaml.Media.PathGeometry.Figures
+        41, // First render property = Microsoft.UI.Xaml.Media.PathGeometry.Figures
+        46, // First object property = Microsoft.UI.Xaml.Media.PathGeometry.Figures
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.PathIconSource
@@ -16057,7 +16144,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.PlaneProjection
@@ -16073,27 +16160,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::PointAnimation_By, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        50, // First enter property = Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
-        40, // First render property = Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
-        44, // First object property = Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
+        52, // First enter property = Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
+        42, // First render property = Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
+        47, // First object property = Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction
         21, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames
     {
         KnownPropertyIndex::PointAnimationUsingKeyFrames_EnableDependentAnimation, // First property
         KnownPropertyIndex::PointAnimationUsingKeyFrames_KeyFrames, // Content property
-        51, // First enter property = Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
-        41, // First render property = Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
-        45, // First object property = Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
+        53, // First enter property = Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
+        43, // First render property = Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
+        48, // First object property = Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames
     {
         KnownPropertyIndex::PointerAnimationUsingKeyFrames_KeyFrames, // First property
         KnownPropertyIndex::PointerAnimationUsingKeyFrames_KeyFrames, // Content property
-        52, // First enter property = Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
-        42, // First render property = Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
-        46, // First object property = Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
+        54, // First enter property = Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
+        44, // First render property = Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
+        49, // First object property = Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.PointerRoutedEventArgs
@@ -16109,27 +16196,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::PolyBezierSegment_Points, // First property
         KnownPropertyIndex::PolyBezierSegment_Points, // Content property
-        53, // First enter property = Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
-        43, // First render property = Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
-        47, // First object property = Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
+        55, // First enter property = Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
+        45, // First render property = Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
+        50, // First object property = Microsoft.UI.Xaml.Media.PolyBezierSegment.Points
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.PolyLineSegment
     {
         KnownPropertyIndex::PolyLineSegment_Points, // First property
         KnownPropertyIndex::PolyLineSegment_Points, // Content property
-        54, // First enter property = Microsoft.UI.Xaml.Media.PolyLineSegment.Points
-        44, // First render property = Microsoft.UI.Xaml.Media.PolyLineSegment.Points
-        48, // First object property = Microsoft.UI.Xaml.Media.PolyLineSegment.Points
+        56, // First enter property = Microsoft.UI.Xaml.Media.PolyLineSegment.Points
+        46, // First render property = Microsoft.UI.Xaml.Media.PolyLineSegment.Points
+        51, // First object property = Microsoft.UI.Xaml.Media.PolyLineSegment.Points
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment
     {
         KnownPropertyIndex::PolyQuadraticBezierSegment_Points, // First property
         KnownPropertyIndex::PolyQuadraticBezierSegment_Points, // Content property
-        55, // First enter property = Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
-        45, // First render property = Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
-        49, // First object property = Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
+        57, // First enter property = Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
+        47, // First render property = Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
+        52, // First object property = Microsoft.UI.Xaml.Media.PolyQuadraticBezierSegment.Points
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.PopupThemeTransition
@@ -16138,7 +16225,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.PowerEase
@@ -16210,7 +16297,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         4, // First enter property = Microsoft.UI.Xaml.Media.Geometry.Transform
         4, // First render property = Microsoft.UI.Xaml.Media.Geometry.Transform
-        5, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
+        6, // First object property = Microsoft.UI.Xaml.Media.Geometry.Transform
         13, // Property slot count
     },
     // Microsoft.UI.Xaml.Data.RelativeSource
@@ -16237,7 +16324,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.RepositionThemeTransition
@@ -16246,7 +16333,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         15, // First enter property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         13, // First render property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
-        17, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
+        18, // First object property = Microsoft.UI.Xaml.Media.Animation.Transition.GeneratedStaggerFunction
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs
@@ -16280,9 +16367,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Setter_Property, // First property
         KnownPropertyIndex::Setter_Value, // Content property
-        56, // First enter property = Microsoft.UI.Xaml.Setter.Property
-        46, // First render property = Microsoft.UI.Xaml.Setter.Property
-        50, // First object property = Microsoft.UI.Xaml.Setter.Property
+        58, // First enter property = Microsoft.UI.Xaml.Setter.Property
+        48, // First render property = Microsoft.UI.Xaml.Setter.Property
+        53, // First object property = Microsoft.UI.Xaml.Setter.Property
         12, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.SineEase
@@ -16325,27 +16412,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::SplineColorKeyFrame_KeySpline, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        58, // First enter property = Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
-        48, // First render property = Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
-        53, // First object property = Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
+        60, // First enter property = Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
+        50, // First render property = Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
+        56, // First object property = Microsoft.UI.Xaml.Media.Animation.SplineColorKeyFrame.KeySpline
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame
     {
         KnownPropertyIndex::SplineDoubleKeyFrame_KeySpline, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        59, // First enter property = Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
-        49, // First render property = Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
-        54, // First object property = Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
+        61, // First enter property = Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
+        51, // First render property = Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
+        57, // First object property = Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame.KeySpline
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame
     {
         KnownPropertyIndex::SplinePointKeyFrame_KeySpline, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        60, // First enter property = Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
-        50, // First render property = Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
-        55, // First object property = Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
+        62, // First enter property = Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
+        52, // First render property = Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
+        58, // First object property = Microsoft.UI.Xaml.Media.Animation.SplinePointKeyFrame.KeySpline
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.StandardUICommand
@@ -16424,9 +16511,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::TemplateBinding_Property, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        61, // First enter property = Microsoft.UI.Xaml.Data.TemplateBinding.Property
-        51, // First render property = Microsoft.UI.Xaml.Data.TemplateBinding.Property
-        56, // First object property = Microsoft.UI.Xaml.Data.TemplateBinding.Property
+        63, // First enter property = Microsoft.UI.Xaml.Data.TemplateBinding.Property
+        53, // First render property = Microsoft.UI.Xaml.Data.TemplateBinding.Property
+        59, // First object property = Microsoft.UI.Xaml.Data.TemplateBinding.Property
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.TextChangedEventArgs
@@ -16442,9 +16529,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::TextHighlighter_Background, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        62, // First enter property = Microsoft.UI.Xaml.Documents.TextHighlighter.Background
-        52, // First render property = Microsoft.UI.Xaml.Documents.TextHighlighter.Background
-        57, // First object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Background
+        64, // First enter property = Microsoft.UI.Xaml.Documents.TextHighlighter.Background
+        54, // First render property = Microsoft.UI.Xaml.Documents.TextHighlighter.Background
+        60, // First object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Background
         11, // Property slot count
     },
     // Microsoft.UI.Xaml.ThemeResource
@@ -16482,6 +16569,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
         8, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Trigger
+    {
+        KnownPropertyIndex::Trigger_Property, // First property
+        KnownPropertyIndex::Trigger_Setters, // Content property
+        66, // First enter property = Microsoft.UI.Xaml.Trigger.Setters
+        56, // First render property = Microsoft.UI.Xaml.Trigger.Setters
+        63, // First object property = Microsoft.UI.Xaml.Trigger.Setters
+        11, // Property slot count
     },
     // Microsoft.UI.Xaml.Data.VectorCollectionView
     {
@@ -16622,9 +16718,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Border_Background, // First property
         KnownPropertyIndex::Border_Child, // Content property
-        64, // First enter property = Microsoft.UI.Xaml.Controls.Border.Background
-        54, // First render property = Microsoft.UI.Xaml.Controls.Border.Background
-        60, // First object property = Microsoft.UI.Xaml.Controls.Border.Background
+        67, // First enter property = Microsoft.UI.Xaml.Controls.Border.Background
+        57, // First render property = Microsoft.UI.Xaml.Controls.Border.Background
+        65, // First object property = Microsoft.UI.Xaml.Controls.Border.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.BrushCollection
@@ -16717,6 +16813,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property = UnknownObject.UnknownProperty
         26, // Property slot count
     },
+    // Microsoft.UI.Xaml.ConditionCollection
+    {
+        KnownPropertyIndex::ConditionCollection_ContentProperty, // First property
+        KnownPropertyIndex::ConditionCollection_ContentProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        10, // Property slot count
+    },
     // Microsoft.UI.Xaml.ConnectedAnimationRoot
     {
         KnownPropertyIndex::FrameworkElement_ActualHeight, // First property
@@ -16730,18 +16835,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ContentPresenter_Background, // First property
         KnownPropertyIndex::ContentPresenter_Content, // Content property
-        66, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        56, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        62, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
+        69, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        59, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        67, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
         161, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Control
     {
         KnownPropertyIndex::Control_Background, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         160, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.DatePickerAutomationPeer
@@ -16759,7 +16864,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::FrameworkTemplate_Template, // Content property
         3, // First enter property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         3, // First render property = Microsoft.UI.Xaml.FrameworkTemplate.Template
-        4, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
+        5, // First object property = Microsoft.UI.Xaml.FrameworkTemplate.Template
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.DoubleCollection
@@ -16786,7 +16891,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DragOverThemeAnimation
@@ -16795,7 +16900,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         20, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DrillInThemeAnimation
@@ -16804,7 +16909,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         21, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DrillOutThemeAnimation
@@ -16813,7 +16918,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         21, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.DropTargetItemThemeAnimation
@@ -16822,7 +16927,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.FaceplateContentPresenterAutomationPeer
@@ -16840,7 +16945,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.FadeOutThemeAnimation
@@ -16849,7 +16954,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.FlipViewItemAutomationPeer
@@ -16901,9 +17006,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Glyphs_ColorFontPaletteIndex, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        75, // First enter property = Microsoft.UI.Xaml.Documents.Glyphs.Fill
-        65, // First render property = Microsoft.UI.Xaml.Documents.Glyphs.Fill
-        72, // First object property = Microsoft.UI.Xaml.Documents.Glyphs.Fill
+        78, // First enter property = Microsoft.UI.Xaml.Documents.Glyphs.Fill
+        68, // First render property = Microsoft.UI.Xaml.Documents.Glyphs.Fill
+        77, // First object property = Microsoft.UI.Xaml.Documents.Glyphs.Fill
         143, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.GradientStopCollection
@@ -16991,18 +17096,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::IconElement_Foreground, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        77, // First enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
-        66, // First render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
-        73, // First object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        80, // First enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        69, // First render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        78, // First object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
         134, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Image
     {
         KnownPropertyIndex::Image_NineGrid, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        78, // First enter property = Microsoft.UI.Xaml.Controls.Image.Source
-        67, // First render property = Microsoft.UI.Xaml.Controls.Image.Source
-        74, // First object property = Microsoft.UI.Xaml.Controls.Image.Source
+        81, // First enter property = Microsoft.UI.Xaml.Controls.Image.Source
+        70, // First render property = Microsoft.UI.Xaml.Controls.Image.Source
+        79, // First object property = Microsoft.UI.Xaml.Controls.Image.Source
         136, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ImageAutomationPeer
@@ -17018,18 +17123,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ImageBrush_ImageSource, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        79, // First enter property = Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
-        68, // First render property = Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
-        75, // First object property = Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
+        82, // First enter property = Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
+        71, // First render property = Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
+        80, // First object property = Microsoft.UI.Xaml.Media.ImageBrush.ImageSource
         15, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.InlineUIContainer
     {
         KnownPropertyIndex::InlineUIContainer_Child, // First property
         KnownPropertyIndex::InlineUIContainer_Child, // Content property
-        80, // First enter property = Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
-        69, // First render property = Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
-        76, // First object property = Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
+        83, // First enter property = Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
+        72, // First render property = Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
+        81, // First object property = Microsoft.UI.Xaml.Documents.InlineUIContainer.Child
         27, // Property slot count
     },
     // Microsoft.UI.Xaml.Input.InputScopeNameCollection
@@ -17054,9 +17159,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ItemsPresenter_Footer, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        81, // First enter property = Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
-        70, // First render property = Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
-        77, // First object property = Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
+        84, // First enter property = Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
+        73, // First render property = Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
+        82, // First object property = Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel
         141, // Property slot count
     },
     // Microsoft.UI.Xaml.Data.IterableCollectionView
@@ -17092,7 +17197,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::GradientBrush_GradientStops, // Content property
         44, // First enter property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
         36, // First render property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
-        40, // First object property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
+        41, // First object property = Microsoft.UI.Xaml.Media.GradientBrush.GradientStops
         27, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.LineBreak
@@ -17101,7 +17206,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         12, // First enter property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         10, // First render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
-        14, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         26, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ListBoxItemAutomationPeer
@@ -17144,9 +17249,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::MatrixTransform_Matrix, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        82, // First enter property = Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
-        71, // First render property = Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
-        78, // First object property = Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
+        85, // First enter property = Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
+        74, // First render property = Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
+        83, // First object property = Microsoft.UI.Xaml.Media.MatrixTransform.Matrix
         9, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.MediaBase
@@ -17243,18 +17348,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.Paragraph
     {
         KnownPropertyIndex::Paragraph_Inlines, // First property
         KnownPropertyIndex::Paragraph_Inlines, // Content property
-        84, // First enter property = Microsoft.UI.Xaml.Documents.Paragraph.Inlines
-        73, // First render property = Microsoft.UI.Xaml.Documents.Paragraph.Inlines
-        80, // First object property = Microsoft.UI.Xaml.Documents.Paragraph.Inlines
+        87, // First enter property = Microsoft.UI.Xaml.Documents.Paragraph.Inlines
+        76, // First render property = Microsoft.UI.Xaml.Documents.Paragraph.Inlines
+        85, // First object property = Microsoft.UI.Xaml.Documents.Paragraph.Inlines
         33, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.ParametricCurveCollection
@@ -17326,7 +17431,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.PointerKeyFrameCollection
@@ -17344,7 +17449,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.PointKeyFrameCollection
@@ -17362,7 +17467,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         20, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.PopOutThemeAnimation
@@ -17371,16 +17476,16 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup
     {
         KnownPropertyIndex::Popup_ActualPlacement, // First property
         KnownPropertyIndex::Popup_Child, // Content property
-        85, // First enter property = Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
-        74, // First render property = Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
-        81, // First object property = Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
+        88, // First enter property = Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
+        77, // First render property = Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
+        86, // First object property = Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions
         152, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.PopupAutomationPeer
@@ -17425,16 +17530,16 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         20, // Property slot count
     },
     // Microsoft.UI.Xaml.ResourceDictionary
     {
         KnownPropertyIndex::ResourceDictionary_ContentProperty, // First property
         KnownPropertyIndex::ResourceDictionary_ContentProperty, // Content property
-        87, // First enter property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
-        76, // First render property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
-        83, // First object property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
+        90, // First enter property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
+        79, // First render property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
+        88, // First object property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
         13, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.ResourceDictionaryCollection
@@ -17459,9 +17564,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::RichTextBlock_Blocks, // First property
         KnownPropertyIndex::RichTextBlock_Blocks, // Content property
-        89, // First enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
-        78, // First render property = Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
-        85, // First object property = Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
+        92, // First enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
+        81, // First render property = Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
+        90, // First object property = Microsoft.UI.Xaml.Controls.RichTextBlock.Blocks
         164, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.RichTextBlockAutomationPeer
@@ -17477,9 +17582,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::RichTextBlockOverflow_HasOverflowContent, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        94, // First enter property = Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
-        83, // First render property = Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
-        91, // First object property = Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
+        97, // First enter property = Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
+        86, // First render property = Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
+        96, // First object property = Microsoft.UI.Xaml.Controls.RichTextBlockOverflow.OverflowContentTarget
         138, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.RichTextBlockOverflowAutomationPeer
@@ -17515,7 +17620,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::Run_Text, // Content property
         12, // First enter property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         10, // First render property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
-        14, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // First object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
         28, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.ScaleTransform
@@ -17567,9 +17672,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Shape_Fill, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        95, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        84, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        92, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
         145, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.SkewTransform
@@ -17585,9 +17690,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Span_Inlines, // First property
         KnownPropertyIndex::Span_Inlines, // Content property
-        96, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        85, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        93, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        99, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        88, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        98, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
         27, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.SplitCloseThemeAnimation
@@ -17596,7 +17701,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         28, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
@@ -17614,7 +17719,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         28, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.SplitViewLightDismissAutomationPeer
@@ -17648,9 +17753,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Storyboard_Children, // First property
         KnownPropertyIndex::Storyboard_Children, // Content property
-        97, // First enter property = Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
-        86, // First render property = Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
-        94, // First object property = Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
+        100, // First enter property = Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
+        89, // First render property = Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
+        99, // First object property = Microsoft.UI.Xaml.Media.Animation.Storyboard.Children
         18, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.StoryboardCollection
@@ -17668,7 +17773,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         20, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.SwipeHintThemeAnimation
@@ -17677,16 +17782,16 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         20, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.TextBlock
     {
         KnownPropertyIndex::TextBlock_CharacterSpacing, // First property
         KnownPropertyIndex::TextBlock_Inlines, // Content property
-        98, // First enter property = Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
-        87, // First render property = Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
-        95, // First object property = Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
+        101, // First enter property = Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
+        90, // First render property = Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
+        100, // First object property = Microsoft.UI.Xaml.Controls.TextBlock.FontFamily
         162, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.TextBlockAutomationPeer
@@ -17758,7 +17863,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         34, // First enter property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         30, // First render property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
-        34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
+        35, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         17, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ThumbAutomationPeer
@@ -17828,9 +17933,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::TransformGroup_Children, // First property
         KnownPropertyIndex::TransformGroup_Children, // Content property
-        101, // First enter property = Microsoft.UI.Xaml.Media.TransformGroup.Children
-        90, // First render property = Microsoft.UI.Xaml.Media.TransformGroup.Children
-        99, // First object property = Microsoft.UI.Xaml.Media.TransformGroup.Children
+        104, // First enter property = Microsoft.UI.Xaml.Media.TransformGroup.Children
+        93, // First render property = Microsoft.UI.Xaml.Media.TransformGroup.Children
+        104, // First object property = Microsoft.UI.Xaml.Media.TransformGroup.Children
         10, // Property slot count
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionCollection
@@ -17918,9 +18023,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // First property
         KnownPropertyIndex::VisualStateGroupCollection_ContentProperty, // Content property
-        102, // First enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
-        91, // First render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
-        100, // First object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
+        105, // First enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
+        94, // First render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
+        105, // First object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveStoryboards
         14, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.VisualTransitionCollection
@@ -17972,9 +18077,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::AppBarSeparator_DynamicOverflowOrder, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         164, // Property slot count
     },
     // Microsoft.UI.Xaml.BasedOnSetterCollection
@@ -17990,18 +18095,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::BitmapIcon_ShowAsMonochrome, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        77, // First enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
-        66, // First render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
-        73, // First object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        80, // First enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        69, // First render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        78, // First object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
         136, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.Bold
     {
         KnownPropertyIndex::Span_Inlines, // First property
         KnownPropertyIndex::Span_Inlines, // Content property
-        96, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        85, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        93, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        99, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        88, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        98, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
         27, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ButtonAutomationPeer
@@ -18017,9 +18122,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::CalendarDatePicker_CalendarIdentifier, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         179, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.CalendarScrollViewerAutomationPeer
@@ -18035,18 +18140,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::CalendarView_BlackoutBackground, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        106, // First enter property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
-        95, // First render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
-        104, // First object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
+        109, // First enter property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
+        98, // First render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
+        109, // First object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutBackground
         237, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.CalendarViewBaseItem
     {
         KnownPropertyIndex::Control_Background, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         160, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.CalendarViewDayItemAutomationPeer
@@ -18071,27 +18176,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Canvas_Left, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.CaretBrowsingCaret
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.ColorPaletteResources
     {
         KnownPropertyIndex::ColorPaletteResources_Accent, // First property
         KnownPropertyIndex::ResourceDictionary_ContentProperty, // Content property
-        87, // First enter property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
-        76, // First render property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
-        83, // First object property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
+        90, // First enter property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
+        79, // First render property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
+        88, // First object property = Microsoft.UI.Xaml.ResourceDictionary.MergedDictionaries
         40, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ComboBoxItemDataAutomationPeer
@@ -18116,27 +18221,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::CommandingContainer_CommandingContainer, // First property
         KnownPropertyIndex::ContentPresenter_Content, // Content property
-        66, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        56, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        62, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
+        69, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        59, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        67, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
         162, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ContentControl
     {
         KnownPropertyIndex::ContentControl_Content, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.DatePicker
     {
         KnownPropertyIndex::DatePicker_CalendarIdentifier, // First property
         KnownPropertyIndex::DatePicker_Header, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         176, // Property slot count
     },
     // Microsoft.UI.Xaml.DependencyObjectCollection
@@ -18152,9 +18257,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Shape_Fill, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        95, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        84, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        92, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
         145, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.FlipViewItemDataAutomationPeer
@@ -18170,27 +18275,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::FontIcon_FontFamily, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        147, // First enter property = Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
-        136, // First render property = Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
-        147, // First object property = Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
+        150, // First enter property = Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
+        139, // First render property = Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
+        152, // First object property = Microsoft.UI.Xaml.Controls.FontIcon.FontFamily
         141, // Property slot count
     },
     // Microsoft.UI.Xaml.FullWindowMediaRoot
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Grid
     {
         KnownPropertyIndex::Grid_BackgroundSizing, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        148, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        137, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        148, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        151, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        140, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        153, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
         151, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.GridViewHeaderItemAutomationPeer
@@ -18215,18 +18320,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Hub_DefaultSectionIndex, // First property
         KnownPropertyIndex::Hub_Sections, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         170, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.HubSection
     {
         KnownPropertyIndex::HubSection_ContentTemplate, // First property
         KnownPropertyIndex::HubSection_ContentTemplate, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         164, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.HWWindowedPopupCompTreeNodeWinRT
@@ -18242,9 +18347,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Hyperlink_ElementSoundMode, // First property
         KnownPropertyIndex::Span_Inlines, // Content property
-        96, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        85, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        93, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        99, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        88, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        98, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
         41, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.HyperlinkButtonAutomationPeer
@@ -18260,18 +18365,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::IconSourceElement_IconSource, // First property
         KnownPropertyIndex::IconSourceElement_IconSource, // Content property
-        150, // First enter property = Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
-        139, // First render property = Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
-        150, // First object property = Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
+        153, // First enter property = Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
+        142, // First render property = Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
+        155, // First object property = Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource
         135, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.Italic
     {
         KnownPropertyIndex::Span_Inlines, // First property
         KnownPropertyIndex::Span_Inlines, // Content property
-        96, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        85, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        93, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        99, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        88, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        98, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
         27, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ItemCollection
@@ -18287,18 +18392,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ItemsControl_DisplayMemberPath, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         174, // Property slot count
     },
     // Microsoft.UI.Xaml.Shapes.Line
     {
         KnownPropertyIndex::Line_X1, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        95, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        84, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        92, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
         149, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ListBoxItemDataAutomationPeer
@@ -18323,9 +18428,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ContentPresenter_Background, // First property
         KnownPropertyIndex::ContentPresenter_Content, // Content property
-        66, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        56, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        62, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
+        69, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        59, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        67, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
         161, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewHeaderItemAutomationPeer
@@ -18350,27 +18455,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::MediaPlayerElement_AreTransportControlsEnabled, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        154, // First enter property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.AutoPlay
-        143, // First render property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
-        155, // First object property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
+        157, // First enter property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.AutoPlay
+        146, // First render property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
+        160, // First object property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
         168, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.MediaTransportControls
     {
         KnownPropertyIndex::MediaTransportControls_FastPlayFallbackBehaviour, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         185, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase
     {
         KnownPropertyIndex::Control_Background, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         160, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.MenuFlyoutPresenterAutomationPeer
@@ -18386,90 +18491,90 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ModernCollectionBasePanel_AreStickyGroupHeadersEnabledBase, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         143, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox
     {
         KnownPropertyIndex::PasswordBox_CanPasteClipboardContent, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        157, // First enter property = Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
-        144, // First render property = Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
-        156, // First object property = Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
+        160, // First enter property = Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
+        147, // First render property = Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
+        161, // First object property = Microsoft.UI.Xaml.Controls.PasswordBox.InputScope
         183, // Property slot count
     },
     // Microsoft.UI.Xaml.Shapes.Path
     {
         KnownPropertyIndex::Path_Data, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        159, // First enter property = Microsoft.UI.Xaml.Shapes.Path.Data
-        146, // First render property = Microsoft.UI.Xaml.Shapes.Path.Data
-        158, // First object property = Microsoft.UI.Xaml.Shapes.Path.Data
+        162, // First enter property = Microsoft.UI.Xaml.Shapes.Path.Data
+        149, // First render property = Microsoft.UI.Xaml.Shapes.Path.Data
+        163, // First object property = Microsoft.UI.Xaml.Shapes.Path.Data
         146, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.PathIcon
     {
         KnownPropertyIndex::PathIcon_Data, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        160, // First enter property = Microsoft.UI.Xaml.Controls.PathIcon.Data
-        147, // First render property = Microsoft.UI.Xaml.Controls.PathIcon.Data
-        159, // First object property = Microsoft.UI.Xaml.Controls.PathIcon.Data
+        163, // First enter property = Microsoft.UI.Xaml.Controls.PathIcon.Data
+        150, // First render property = Microsoft.UI.Xaml.Controls.PathIcon.Data
+        164, // First object property = Microsoft.UI.Xaml.Controls.PathIcon.Data
         135, // Property slot count
     },
     // Microsoft.UI.Xaml.Shapes.Polygon
     {
         KnownPropertyIndex::Polygon_FillRule, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        161, // First enter property = Microsoft.UI.Xaml.Shapes.Polygon.Points
-        148, // First render property = Microsoft.UI.Xaml.Shapes.Polygon.Points
-        160, // First object property = Microsoft.UI.Xaml.Shapes.Polygon.Points
+        164, // First enter property = Microsoft.UI.Xaml.Shapes.Polygon.Points
+        151, // First render property = Microsoft.UI.Xaml.Shapes.Polygon.Points
+        165, // First object property = Microsoft.UI.Xaml.Shapes.Polygon.Points
         147, // Property slot count
     },
     // Microsoft.UI.Xaml.Shapes.Polyline
     {
         KnownPropertyIndex::Polyline_FillRule, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        162, // First enter property = Microsoft.UI.Xaml.Shapes.Polyline.Points
-        149, // First render property = Microsoft.UI.Xaml.Shapes.Polyline.Points
-        161, // First object property = Microsoft.UI.Xaml.Shapes.Polyline.Points
+        165, // First enter property = Microsoft.UI.Xaml.Shapes.Polyline.Points
+        152, // First render property = Microsoft.UI.Xaml.Shapes.Polyline.Points
+        166, // First object property = Microsoft.UI.Xaml.Shapes.Polyline.Points
         147, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.RangeBase
     {
         KnownPropertyIndex::RangeBase_LargeChange, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Shapes.Rectangle
     {
         KnownPropertyIndex::Rectangle_RadiusX, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        95, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        84, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
-        92, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // First enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // First render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // First object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
         147, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.RelativePanel
     {
         KnownPropertyIndex::RelativePanel_Above, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         147, // Property slot count
     },
     // Microsoft.UI.Xaml.RenderTargetBitmapRoot
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.RepeatButtonAutomationPeer
@@ -18485,18 +18590,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::RichEditBox_AcceptsReturn, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        163, // First enter property = Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
-        150, // First render property = Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
-        162, // First object property = Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
+        166, // First enter property = Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
+        153, // First render property = Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
+        167, // First object property = Microsoft.UI.Xaml.Controls.RichEditBox.InputScope
         186, // Property slot count
     },
     // Microsoft.UI.Xaml.RootVisual
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ScrollBarAutomationPeer
@@ -18512,9 +18617,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ScrollContentPresenter_CanContentRenderOutsideBounds, // First property
         KnownPropertyIndex::ContentPresenter_Content, // Content property
-        66, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        56, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
-        62, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
+        69, // First enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        59, // First render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        67, // First object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
         163, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.SelectorAutomationPeer
@@ -18530,9 +18635,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::SemanticZoom_CanChangeViews, // First property
         KnownPropertyIndex::SemanticZoom_ZoomedInView, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.SliderAutomationPeer
@@ -18548,72 +18653,72 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::SplitView_CompactPaneLength, // First property
         KnownPropertyIndex::SplitView_Content, // Content property
-        166, // First enter property = Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
-        153, // First render property = Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
-        165, // First object property = Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
+        169, // First enter property = Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
+        156, // First render property = Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
+        170, // First object property = Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings
         170, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.StackPanel
     {
         KnownPropertyIndex::StackPanel_AreScrollSnapPointsRegular, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         150, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.SymbolIcon
     {
         KnownPropertyIndex::SymbolIcon_Symbol, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        77, // First enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
-        66, // First render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
-        73, // First object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        80, // First enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        69, // First render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        78, // First object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
         135, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.TextBox
     {
         KnownPropertyIndex::TextBox_AcceptsReturn, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        167, // First enter property = Microsoft.UI.Xaml.Controls.TextBox.InputScope
-        154, // First render property = Microsoft.UI.Xaml.Controls.TextBox.InputScope
-        166, // First object property = Microsoft.UI.Xaml.Controls.TextBox.InputScope
+        170, // First enter property = Microsoft.UI.Xaml.Controls.TextBox.InputScope
+        157, // First render property = Microsoft.UI.Xaml.Controls.TextBox.InputScope
+        171, // First object property = Microsoft.UI.Xaml.Controls.TextBox.InputScope
         201, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.TextBoxBase
     {
         KnownPropertyIndex::Control_Background, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         160, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Thumb
     {
         KnownPropertyIndex::Thumb_IsDragging, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         161, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.TickBar
     {
         KnownPropertyIndex::TickBar_Fill, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         143, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.TimePicker
     {
         KnownPropertyIndex::TimePicker_ClockIdentifier, // First property
         KnownPropertyIndex::TimePicker_Header, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         168, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ToggleButtonAutomationPeer
@@ -18629,27 +18734,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ToggleSwitch_Header, // First property
         KnownPropertyIndex::ToggleSwitch_Header, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         169, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.Underline
     {
         KnownPropertyIndex::Span_Inlines, // First property
         KnownPropertyIndex::Span_Inlines, // Content property
-        96, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        85, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
-        93, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        99, // First enter property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        88, // First render property = Microsoft.UI.Xaml.Documents.Span.Inlines
+        98, // First object property = Microsoft.UI.Xaml.Documents.Span.Inlines
         27, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.UserControl
     {
         KnownPropertyIndex::UserControl_Content, // First property
         KnownPropertyIndex::UserControl_Content, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         161, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.ValidationErrorsCollection
@@ -18665,45 +18770,45 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::VariableSizedWrapGrid_ColumnSpan, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         148, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.VirtualizingPanel
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Hosting.XamlIslandRoot
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.XamlIslandRootCollection
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.AppBar
     {
         KnownPropertyIndex::AppBar_ClosedDisplayMode, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         170, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.AppBarButtonAutomationPeer
@@ -18719,18 +18824,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::AppBarElementContainer_DynamicOverflowOrder, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         169, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.AppBarLightDismiss
     {
         KnownPropertyIndex::Grid_BackgroundSizing, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        148, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        137, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        148, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        151, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        140, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        153, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
         151, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.AppBarToggleButtonAutomationPeer
@@ -18746,9 +18851,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::AutoSuggestBox_AutoMaximizeSuggestionArea, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         194, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.BlockCollection
@@ -18764,45 +18869,45 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ButtonBase_ClickMode, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         170, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.CalendarPanel
     {
         KnownPropertyIndex::CalendarPanel_CacheLength, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         150, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.CalendarViewDayItem
     {
         KnownPropertyIndex::CalendarViewDayItem_Date, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         162, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.CalendarViewItem
     {
         KnownPropertyIndex::CalendarViewItem_Date, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         161, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.CarouselPanel
     {
         KnownPropertyIndex::Panel_Background, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.CheckBoxAutomationPeer
@@ -18827,27 +18932,27 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Canvas_Left, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.CommandBarOverflowPresenter
     {
         KnownPropertyIndex::ItemsControl_DisplayMemberPath, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         174, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ContentDialog
     {
         KnownPropertyIndex::ContentDialog_CloseButtonCommand, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         183, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.FlipViewAutomationPeer
@@ -18863,18 +18968,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::FlyoutPresenter_IsDefaultShadowEnabled, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         166, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Frame
     {
         KnownPropertyIndex::Frame_BackStack, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         174, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.GridViewItemDataAutomationPeer
@@ -18890,18 +18995,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // First property
         KnownPropertyIndex::ContentPresenter_Content, // Content property
-        170, // First enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
-        157, // First render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
-        169, // First object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
+        173, // First enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
+        160, // First render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
+        174, // First object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush
         183, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.GroupItem
     {
         KnownPropertyIndex::ContentControl_Content, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Documents.InlineCollection
@@ -18917,18 +19022,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ItemsStackPanel_AreStickyGroupHeadersEnabled, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         149, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ItemsWrapGrid
     {
         KnownPropertyIndex::ItemsWrapGrid_AreStickyGroupHeadersEnabled, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         151, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ListBoxAutomationPeer
@@ -18953,9 +19058,9 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ContentControl_Content, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewItemDataAutomationPeer
@@ -18971,81 +19076,81 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // First property
         KnownPropertyIndex::ContentPresenter_Content, // Content property
-        182, // First enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
-        169, // First render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
-        181, // First object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
+        185, // First enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
+        172, // First render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
+        186, // First object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush
         220, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutItem
     {
         KnownPropertyIndex::MenuFlyoutItem_Command, // First property
         KnownPropertyIndex::MenuFlyoutItem_Text, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         167, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutPresenter
     {
         KnownPropertyIndex::MenuFlyoutPresenter_IsDefaultShadowEnabled, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         177, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator
     {
         KnownPropertyIndex::Control_Background, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         160, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.MenuFlyoutSubItem
     {
         KnownPropertyIndex::MenuFlyoutSubItem_Icon, // First property
         KnownPropertyIndex::MenuFlyoutSubItem_Items, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         163, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.OrientedVirtualizingPanel
     {
         KnownPropertyIndex::OrientedVirtualizingPanel_IsContainerGeneratedForInsert, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Page
     {
         KnownPropertyIndex::Page_BottomAppBar, // First property
         KnownPropertyIndex::UserControl_Content, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.PopupRoot
     {
         KnownPropertyIndex::Canvas_Left, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.PrintRoot
     {
         KnownPropertyIndex::Canvas_Left, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.RadioButtonAutomationPeer
@@ -19061,18 +19166,18 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ScrollBar_IndicatorMode, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         168, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ScrollContentControl
     {
         KnownPropertyIndex::ContentControl_Content, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.SeekSliderAutomationPeer
@@ -19088,135 +19193,135 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::Selector_IsSelectionActive, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         180, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.SelectorItem
     {
         KnownPropertyIndex::SelectorItem_IsSelected, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         166, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Slider
     {
         KnownPropertyIndex::Slider_Header, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         177, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.SwapChainBackgroundPanel
     {
         KnownPropertyIndex::Grid_BackgroundSizing, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        148, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        137, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        148, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        151, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        140, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        153, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
         151, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.SwapChainPanel
     {
         KnownPropertyIndex::SwapChainPanel_CompositionScaleX, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        148, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        137, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
-        148, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        151, // First enter property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        140, // First render property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
+        153, // First object property = Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions
         153, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.TextSelectionGripper
     {
         KnownPropertyIndex::Canvas_Left, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ToolTip
     {
         KnownPropertyIndex::ToolTip_HorizontalOffset, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         172, // Property slot count
     },
     // Microsoft.UI.Xaml.TransitionRoot
     {
         KnownPropertyIndex::Canvas_Left, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         142, // Property slot count
     },
     // Microsoft.UI.Xaml.WindowChrome
     {
         KnownPropertyIndex::WindowChrome_CaptionVisibility, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         166, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Button
     {
         KnownPropertyIndex::Button_Flyout, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         171, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ComboBox
     {
         KnownPropertyIndex::ComboBox_Description, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         205, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ComboBoxItem
     {
         KnownPropertyIndex::SelectorItem_IsSelected, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         166, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.CommandBar
     {
         KnownPropertyIndex::CommandBar_CommandBarOverflowPresenterStyle, // First property
         KnownPropertyIndex::CommandBar_PrimaryCommands, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         177, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.FlipView
     {
         KnownPropertyIndex::FlipView_UseTouchAnimationsForAllNavigation, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         181, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.FlipViewItem
     {
         KnownPropertyIndex::SelectorItem_IsSelected, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         166, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.GridViewAutomationPeer
@@ -19232,36 +19337,36 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ContentControl_Content, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.HyperlinkButton
     {
         KnownPropertyIndex::HyperlinkButton_NavigateUri, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         171, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ListBox
     {
         KnownPropertyIndex::ListBox_SelectedItems, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         183, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ListBoxItem
     {
         KnownPropertyIndex::SelectorItem_IsSelected, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         166, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer
@@ -19277,171 +19382,171 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     {
         KnownPropertyIndex::ListViewBase_CanDragItems, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         203, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ListViewBaseItem
     {
         KnownPropertyIndex::ListViewBaseItem_IsDraggable, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         167, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ListViewHeaderItem
     {
         KnownPropertyIndex::ContentControl_Content, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         165, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.RepeatButton
     {
         KnownPropertyIndex::RepeatButton_Delay, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         172, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer
     {
         KnownPropertyIndex::ScrollViewer_BringIntoViewOnFocusChange, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         190, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem
     {
         KnownPropertyIndex::SplitMenuFlyoutItem_Items, // First property
         KnownPropertyIndex::SplitMenuFlyoutItem_Items, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         170, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
     {
         KnownPropertyIndex::ToggleButton_IsChecked, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         172, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ToggleMenuFlyoutItem
     {
         KnownPropertyIndex::ToggleMenuFlyoutItem_IsChecked, // First property
         KnownPropertyIndex::MenuFlyoutItem_Text, // Content property
-        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
-        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
-        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
         168, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.VirtualizingStackPanel
     {
         KnownPropertyIndex::VirtualizingStackPanel_AreScrollSnapPointsRegular, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         144, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.WrapGrid
     {
         KnownPropertyIndex::WrapGrid_HorizontalChildrenAlignment, // First property
         KnownPropertyIndex::Panel_Children, // Content property
-        83, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
-        72, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
-        79, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // First enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // First render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // First object property = Microsoft.UI.Xaml.Controls.Panel.Background
         148, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.AppBarButton
     {
         KnownPropertyIndex::AppBarButton_DynamicOverflowOrder, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         180, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.AppBarToggleButton
     {
         KnownPropertyIndex::AppBarToggleButton_DynamicOverflowOrder, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         181, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.CheckBox
     {
         KnownPropertyIndex::ToggleButton_IsChecked, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         172, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.GridView
     {
         KnownPropertyIndex::ListViewBase_CanDragItems, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         203, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.GridViewItem
     {
         KnownPropertyIndex::GridViewItem_TemplateSettings, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         168, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ListView
     {
         KnownPropertyIndex::ListViewBase_CanDragItems, // First property
         KnownPropertyIndex::ItemsControl_Items, // Content property
-        151, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        140, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
-        151, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        154, // First enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        143, // First render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
+        156, // First object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions
         203, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.ListViewItem
     {
         KnownPropertyIndex::ListViewItem_TemplateSettings, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         168, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.RadioButton
     {
         KnownPropertyIndex::RadioButton_GroupName, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         173, // Property slot count
     },
     // Microsoft.UI.Xaml.Internal.RootScrollViewer
     {
         KnownPropertyIndex::ScrollViewer_BringIntoViewOnFocusChange, // First property
         KnownPropertyIndex::ContentControl_Content, // Content property
-        146, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
-        144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
+        149, // First enter property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        138, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        149, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         190, // Property slot count
     },
     // Microsoft.UI.Xaml.Automation.Peers.AccessibilityView
@@ -21032,6 +21137,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxTextSubmittedEventArgs),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ICommandBarTemplateSettings),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandingContextChangedEventArgs),
+    __uuidof(ABI::Microsoft::UI::Xaml::ICondition),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimation),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationService),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogButtonClickEventArgs),
@@ -21253,6 +21359,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     GUID{} /*GUID_NULL*/,
     GUID{} /*GUID_NULL*/,
     GUID{} /*GUID_NULL*/,
+    GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::IAdaptiveTrigger),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IAddDeleteThemeTransition),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IArcSegment),
@@ -21349,6 +21456,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyout),
     GUID{} /*GUID_NULL*/,
+    __uuidof(ABI::Microsoft::UI::Xaml::IMultiTrigger),
     __uuidof(ABI::Microsoft::UI::Xaml::Input::INoFocusCandidateFoundEventArgs),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IObjectAnimationUsingKeyFrames),
@@ -21406,6 +21514,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IThemeShadow),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::ITileBrush),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::ITransform),
+    __uuidof(ABI::Microsoft::UI::Xaml::ITrigger),
     GUID{} /*GUID_NULL*/,
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBase),
@@ -21432,6 +21541,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxItemAutomationPeer),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Media::ICompositeTransform),
+    __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Condition*>),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentPresenter),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IControl),
@@ -21922,7 +22032,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[944] =
+extern const MetaDataTypeName c_aTypeNames[948] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -21988,6 +22098,7 @@ extern const MetaDataTypeName c_aTypeNames[944] =
     { KnownTypeIndex::TextBox },
     { KnownTypeIndex::TickBar },
     { KnownTypeIndex::ToolTip },
+    { KnownTypeIndex::Trigger },
     { KnownTypeIndex::Vector2 },
     { KnownTypeIndex::Vector3 },
     { KnownTypeIndex::Viewbox },
@@ -22017,6 +22128,7 @@ extern const MetaDataTypeName c_aTypeNames[944] =
     { KnownTypeIndex::ZoomUnit },
     { KnownTypeIndex::CacheMode },
     { KnownTypeIndex::ClickMode },
+    { KnownTypeIndex::Condition },
     { KnownTypeIndex::CubicEase },
     { KnownTypeIndex::DayOfWeek },
     { KnownTypeIndex::EventArgs },
@@ -22142,6 +22254,7 @@ extern const MetaDataTypeName c_aTypeNames[944] =
     { KnownTypeIndex::LineGeometry },
     { KnownTypeIndex::ListViewBase },
     { KnownTypeIndex::ListViewItem },
+    { KnownTypeIndex::MultiTrigger },
     { KnownTypeIndex::PathGeometry },
     { KnownTypeIndex::PropertyPath },
     { KnownTypeIndex::RepeatButton },
@@ -22389,6 +22502,7 @@ extern const MetaDataTypeName c_aTypeNames[944] =
     { KnownTypeIndex::CalendarViewDayItem },
     { KnownTypeIndex::CollectionViewGroup },
     { KnownTypeIndex::CommandingContainer },
+    { KnownTypeIndex::ConditionCollection },
     { KnownTypeIndex::ContentDialogButton },
     { KnownTypeIndex::ContentDialogResult },
     { KnownTypeIndex::EasingColorKeyFrame },
@@ -24336,6 +24450,22 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CommandBarTemplateSettings, // Declaring type
         KnownTypeIndex::CommandBarTemplateSettings, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Condition.Property
+    {
+        KnownPropertyIndex::Condition_Property, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::Condition, // Declaring type
+        KnownTypeIndex::Condition, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Condition.Value
+    {
+        KnownPropertyIndex::Condition_Value, // Index name
+        KnownTypeIndex::Object, // Property type
+        KnownTypeIndex::Condition, // Declaring type
+        KnownTypeIndex::Condition, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
     // Microsoft.UI.Xaml.CornerRadius.BottomLeft
     {
@@ -28025,6 +28155,22 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::MenuPopupThemeTransition, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
+    // Microsoft.UI.Xaml.MultiTrigger.Conditions
+    {
+        KnownPropertyIndex::MultiTrigger_Conditions, // Index name
+        KnownTypeIndex::ConditionCollection, // Property type
+        KnownTypeIndex::MultiTrigger, // Declaring type
+        KnownTypeIndex::MultiTrigger, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.MultiTrigger.Setters
+    {
+        KnownPropertyIndex::MultiTrigger_Setters, // Index name
+        KnownTypeIndex::SetterBaseCollection, // Property type
+        KnownTypeIndex::MultiTrigger, // Declaring type
+        KnownTypeIndex::MultiTrigger, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
+    },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.EnableDependentAnimation
     {
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_EnableDependentAnimation, // Index name
@@ -28857,6 +29003,30 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::TileBrush, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
+    // Microsoft.UI.Xaml.Trigger.Property
+    {
+        KnownPropertyIndex::Trigger_Property, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::Trigger, // Declaring type
+        KnownTypeIndex::Trigger, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Trigger.Setters
+    {
+        KnownPropertyIndex::Trigger_Setters, // Index name
+        KnownTypeIndex::SetterBaseCollection, // Property type
+        KnownTypeIndex::Trigger, // Declaring type
+        KnownTypeIndex::Trigger, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Trigger.Value
+    {
+        KnownPropertyIndex::Trigger_Value, // Index name
+        KnownTypeIndex::Object, // Property type
+        KnownTypeIndex::Trigger, // Declaring type
+        KnownTypeIndex::Trigger, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
     // Microsoft.UI.Xaml.Media.XamlCompositionBrushBase.FallbackColor
     {
         KnownPropertyIndex::XamlCompositionBrushBase_FallbackColor, // Index name
@@ -29280,6 +29450,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CompositeTransform, // Declaring type
         KnownTypeIndex::CompositeTransform, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.ConditionCollection.ContentProperty
+    {
+        KnownPropertyIndex::ConditionCollection_ContentProperty, // Index name
+        KnownTypeIndex::Condition, // Property type
+        KnownTypeIndex::ConditionCollection, // Declaring type
+        KnownTypeIndex::ConditionCollection, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Background
     {
@@ -38741,6 +38919,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMinimalYTranslation, // CommandBarTemplateSettings_OverflowContentMaxWidth
     KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMinWidth, // CommandBarTemplateSettings_OverflowContentMinimalYTranslation
     KnownPropertyIndex::DependencyObject_Column, // CommandBarTemplateSettings_OverflowContentMinWidth
+    KnownPropertyIndex::Condition_Value, // Condition_Property
+    KnownPropertyIndex::DependencyObject_Column, // Condition_Value
     KnownPropertyIndex::CornerRadius_BottomRight, // CornerRadius_BottomLeft
     KnownPropertyIndex::CornerRadius_TopLeft, // CornerRadius_BottomRight
     KnownPropertyIndex::CornerRadius_TopRight, // CornerRadius_TopLeft
@@ -39202,6 +39382,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::MenuPopupThemeTransition_Direction, // MenuPopupThemeTransition_ClosedRatio
     KnownPropertyIndex::MenuPopupThemeTransition_OpenedLength, // MenuPopupThemeTransition_Direction
     KnownPropertyIndex::Transition_GeneratedStaggerFunction, // MenuPopupThemeTransition_OpenedLength
+    KnownPropertyIndex::MultiTrigger_Setters, // MultiTrigger_Conditions
+    KnownPropertyIndex::DependencyObject_Column, // MultiTrigger_Setters
     KnownPropertyIndex::ObjectAnimationUsingKeyFrames_KeyFrames, // ObjectAnimationUsingKeyFrames_EnableDependentAnimation
     KnownPropertyIndex::Timeline_AutoReverse, // ObjectAnimationUsingKeyFrames_KeyFrames
     KnownPropertyIndex::PanelEx_ActualWidth, // PanelEx_ActualHeight
@@ -39306,6 +39488,9 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::TileBrush_AlignmentY, // TileBrush_AlignmentX
     KnownPropertyIndex::TileBrush_Stretch, // TileBrush_AlignmentY
     KnownPropertyIndex::Brush_Opacity, // TileBrush_Stretch
+    KnownPropertyIndex::Trigger_Setters, // Trigger_Property
+    KnownPropertyIndex::Trigger_Value, // Trigger_Setters
+    KnownPropertyIndex::DependencyObject_Column, // Trigger_Value
     KnownPropertyIndex::Brush_Opacity, // XamlCompositionBrushBase_FallbackColor
     KnownPropertyIndex::PresentationFrameworkCollection_Count, // AutomationAnnotationCollection_ContentProperty
     KnownPropertyIndex::PresentationFrameworkCollection_Count, // AutomationPeerAnnotationCollection_ContentProperty
@@ -39359,6 +39544,7 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::CompositeTransform_TranslateY, // CompositeTransform_TranslateXAnimation
     KnownPropertyIndex::CompositeTransform_TranslateYAnimation, // CompositeTransform_TranslateY
     KnownPropertyIndex::DependencyObject_Column, // CompositeTransform_TranslateYAnimation
+    KnownPropertyIndex::PresentationFrameworkCollection_Count, // ConditionCollection_ContentProperty
     KnownPropertyIndex::ContentPresenter_BackgroundSizing, // ContentPresenter_Background
     KnownPropertyIndex::ContentPresenter_BackgroundTransition, // ContentPresenter_BackgroundSizing
     KnownPropertyIndex::ContentPresenter_BorderBrush, // ContentPresenter_BackgroundTransition
@@ -40706,6 +40892,8 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     17, // CommandBarTemplateSettings_OverflowContentMaxWidth
     18, // CommandBarTemplateSettings_OverflowContentMinimalYTranslation
     19, // CommandBarTemplateSettings_OverflowContentMinWidth
+    8, // Condition_Property
+    9, // Condition_Value
     8, // CornerRadius_BottomLeft
     9, // CornerRadius_BottomRight
     10, // CornerRadius_TopLeft
@@ -41167,6 +41355,8 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     9, // MenuPopupThemeTransition_ClosedRatio
     10, // MenuPopupThemeTransition_Direction
     11, // MenuPopupThemeTransition_OpenedLength
+    8, // MultiTrigger_Conditions
+    9, // MultiTrigger_Setters
     16, // ObjectAnimationUsingKeyFrames_EnableDependentAnimation
     17, // ObjectAnimationUsingKeyFrames_KeyFrames
     95, // PanelEx_ActualHeight
@@ -41271,6 +41461,9 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     11, // TileBrush_AlignmentX
     12, // TileBrush_AlignmentY
     13, // TileBrush_Stretch
+    8, // Trigger_Property
+    9, // Trigger_Setters
+    10, // Trigger_Value
     11, // XamlCompositionBrushBase_FallbackColor
     9, // AutomationAnnotationCollection_ContentProperty
     9, // AutomationPeerAnnotationCollection_ContentProperty
@@ -41324,6 +41517,7 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     23, // CompositeTransform_TranslateXAnimation
     24, // CompositeTransform_TranslateY
     25, // CompositeTransform_TranslateYAnimation
+    9, // ConditionCollection_ContentProperty
     133, // ContentPresenter_Background
     134, // ContentPresenter_BackgroundSizing
     135, // ContentPresenter_BackgroundTransition
@@ -42671,6 +42865,8 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"OverflowContentMaxWidth"),
     XSTRING_PTR_STORAGE(L"OverflowContentMinimalYTranslation"),
     XSTRING_PTR_STORAGE(L"OverflowContentMinWidth"),
+    XSTRING_PTR_STORAGE(L"Property"),
+    XSTRING_PTR_STORAGE(L"Value"),
     XSTRING_PTR_STORAGE(L"BottomLeft"),
     XSTRING_PTR_STORAGE(L"BottomRight"),
     XSTRING_PTR_STORAGE(L"TopLeft"),
@@ -43132,6 +43328,8 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"ClosedRatio"),
     XSTRING_PTR_STORAGE(L"Direction"),
     XSTRING_PTR_STORAGE(L"OpenedLength"),
+    XSTRING_PTR_STORAGE(L"Conditions"),
+    XSTRING_PTR_STORAGE(L"Setters"),
     XSTRING_PTR_STORAGE(L"EnableDependentAnimation"),
     XSTRING_PTR_STORAGE(L"KeyFrames"),
     XSTRING_PTR_STORAGE(L"ActualHeight"),
@@ -43236,6 +43434,9 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"AlignmentX"),
     XSTRING_PTR_STORAGE(L"AlignmentY"),
     XSTRING_PTR_STORAGE(L"Stretch"),
+    XSTRING_PTR_STORAGE(L"Property"),
+    XSTRING_PTR_STORAGE(L"Setters"),
+    XSTRING_PTR_STORAGE(L"Value"),
     XSTRING_PTR_STORAGE(L"FallbackColor"),
     XSTRING_PTR_STORAGE(L"ContentProperty"),
     XSTRING_PTR_STORAGE(L"ContentProperty"),
@@ -43289,6 +43490,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"TranslateXAnimation"),
     XSTRING_PTR_STORAGE(L"TranslateY"),
     XSTRING_PTR_STORAGE(L"TranslateYAnimation"),
+    XSTRING_PTR_STORAGE(L"ContentProperty"),
     XSTRING_PTR_STORAGE(L"Background"),
     XSTRING_PTR_STORAGE(L"BackgroundSizing"),
     XSTRING_PTR_STORAGE(L"BackgroundTransition"),
@@ -44468,122 +44670,122 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 51;
             return 28;
         case 7:
-            *pnEndIndex = 67;
+            *pnEndIndex = 68;
             return 51;
         case 8:
-            *pnEndIndex = 91;
-            return 67;
+            *pnEndIndex = 92;
+            return 68;
         case 9:
-            *pnEndIndex = 120;
-            return 91;
+            *pnEndIndex = 122;
+            return 92;
         case 10:
-            *pnEndIndex = 161;
-            return 120;
+            *pnEndIndex = 163;
+            return 122;
         case 11:
-            *pnEndIndex = 194;
-            return 161;
+            *pnEndIndex = 196;
+            return 163;
         case 12:
-            *pnEndIndex = 232;
-            return 194;
+            *pnEndIndex = 235;
+            return 196;
         case 13:
-            *pnEndIndex = 262;
-            return 232;
+            *pnEndIndex = 265;
+            return 235;
         case 14:
-            *pnEndIndex = 300;
-            return 262;
+            *pnEndIndex = 303;
+            return 265;
         case 15:
-            *pnEndIndex = 346;
-            return 300;
+            *pnEndIndex = 349;
+            return 303;
         case 16:
-            *pnEndIndex = 385;
-            return 346;
+            *pnEndIndex = 388;
+            return 349;
         case 17:
-            *pnEndIndex = 419;
-            return 385;
+            *pnEndIndex = 422;
+            return 388;
         case 18:
-            *pnEndIndex = 459;
-            return 419;
+            *pnEndIndex = 462;
+            return 422;
         case 19:
-            *pnEndIndex = 512;
-            return 459;
+            *pnEndIndex = 516;
+            return 462;
         case 20:
-            *pnEndIndex = 560;
-            return 512;
+            *pnEndIndex = 564;
+            return 516;
         case 21:
-            *pnEndIndex = 594;
-            return 560;
+            *pnEndIndex = 598;
+            return 564;
         case 22:
-            *pnEndIndex = 645;
-            return 594;
+            *pnEndIndex = 649;
+            return 598;
         case 23:
-            *pnEndIndex = 685;
-            return 645;
+            *pnEndIndex = 689;
+            return 649;
         case 24:
-            *pnEndIndex = 718;
-            return 685;
+            *pnEndIndex = 722;
+            return 689;
         case 25:
-            *pnEndIndex = 753;
-            return 718;
+            *pnEndIndex = 757;
+            return 722;
         case 26:
-            *pnEndIndex = 781;
-            return 753;
+            *pnEndIndex = 785;
+            return 757;
         case 27:
-            *pnEndIndex = 795;
-            return 781;
+            *pnEndIndex = 799;
+            return 785;
         case 28:
-            *pnEndIndex = 816;
-            return 795;
+            *pnEndIndex = 820;
+            return 799;
         case 29:
-            *pnEndIndex = 836;
-            return 816;
+            *pnEndIndex = 840;
+            return 820;
         case 30:
-            *pnEndIndex = 857;
-            return 836;
+            *pnEndIndex = 861;
+            return 840;
         case 31:
-            *pnEndIndex = 869;
-            return 857;
+            *pnEndIndex = 873;
+            return 861;
         case 32:
-            *pnEndIndex = 886;
-            return 869;
+            *pnEndIndex = 890;
+            return 873;
         case 33:
-            *pnEndIndex = 900;
-            return 886;
+            *pnEndIndex = 904;
+            return 890;
         case 34:
-            *pnEndIndex = 913;
-            return 900;
+            *pnEndIndex = 917;
+            return 904;
         case 35:
-            *pnEndIndex = 919;
-            return 913;
+            *pnEndIndex = 923;
+            return 917;
         case 36:
-            *pnEndIndex = 925;
-            return 919;
+            *pnEndIndex = 929;
+            return 923;
         case 37:
-            *pnEndIndex = 930;
-            return 925;
+            *pnEndIndex = 934;
+            return 929;
         case 38:
-            *pnEndIndex = 933;
-            return 930;
+            *pnEndIndex = 937;
+            return 934;
         case 39:
-            *pnEndIndex = 938;
-            return 933;
-        case 40:
-            *pnEndIndex = 939;
-            return 938;
-        case 41:
-            *pnEndIndex = 940;
-            return 939;
-        case 42:
-            *pnEndIndex = 941;
-            return 940;
-        case 43:
             *pnEndIndex = 942;
-            return 941;
-        case 49:
+            return 937;
+        case 40:
             *pnEndIndex = 943;
             return 942;
-        case 50:
+        case 41:
             *pnEndIndex = 944;
             return 943;
+        case 42:
+            *pnEndIndex = 945;
+            return 944;
+        case 43:
+            *pnEndIndex = 946;
+            return 945;
+        case 49:
+            *pnEndIndex = 947;
+            return 946;
+        case 50:
+            *pnEndIndex = 948;
+            return 947;
         default:
             *pnEndIndex = 0;
             return 0;

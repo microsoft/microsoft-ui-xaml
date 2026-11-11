@@ -161,6 +161,12 @@ struct DependencyObjectTraits<CCommandBarTemplateSettings>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::CommandBarTemplateSettings;
 };
+class CCondition;
+template<>
+struct DependencyObjectTraits<CCondition>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::Condition;
+};
 class CConnectedAnimation;
 template<>
 struct DependencyObjectTraits<CConnectedAnimation>
@@ -1253,6 +1259,12 @@ struct DependencyObjectTraits<CMenuPopupThemeTransition>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::MenuPopupThemeTransition;
 };
+class CMultiTrigger;
+template<>
+struct DependencyObjectTraits<CMultiTrigger>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::MultiTrigger;
+};
 class CNullExtension;
 template<>
 struct DependencyObjectTraits<CNullExtension>
@@ -1541,6 +1553,12 @@ struct DependencyObjectTraits<CTransform>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::Transform;
 };
+class CTrigger;
+template<>
+struct DependencyObjectTraits<CTrigger>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::Trigger;
+};
 class CVectorCollectionView;
 template<>
 struct DependencyObjectTraits<CVectorCollectionView>
@@ -1672,6 +1690,12 @@ template<>
 struct DependencyObjectTraits<CCompositeTransform>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::CompositeTransform;
+};
+class CConditionCollection;
+template<>
+struct DependencyObjectTraits<CConditionCollection>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::ConditionCollection;
 };
 class CConnectedAnimationRoot;
 template<>

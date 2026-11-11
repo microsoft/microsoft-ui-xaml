@@ -32,6 +32,8 @@ HRESULT OnCoreCreateApplication(_Outptr_ CDependencyObject **ppObject, _In_ CREA
 HRESULT OnCoreCreateBasedOnSetterCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateBrushTransition(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateColorPaletteResources(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateCondition(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateConditionCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateConnectedAnimationRoot(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateCornerRadius(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateCustomResource(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
@@ -52,6 +54,7 @@ HRESULT OnCoreCreateGridLength(_Outptr_ CDependencyObject **ppObject, _In_ CREAT
 HRESULT OnCoreCreateLayoutTransitionStaggerItem(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateLengthConverter(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateMarkupExtensionBase(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateMultiTrigger(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateNullExtension(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreatePanelEx(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreatePopupRoot(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
@@ -72,6 +75,7 @@ HRESULT OnCoreCreateTargetPropertyPath(_Outptr_ CDependencyObject **ppObject, _I
 HRESULT OnCoreCreateThemeResource(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateThickness(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateTransitionRoot(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateTrigger(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateTriggerActionCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateTriggerCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateUIElementWeakCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);

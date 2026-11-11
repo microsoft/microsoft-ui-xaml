@@ -152,6 +152,8 @@ static_assert(sizeof(CCompositeTransform3D::m_rScaleZ) == sizeof(float), "Incorr
 static_assert(sizeof(CCompositeTransform3D::m_rTranslateX) == sizeof(float), "Incorrect size for CCompositeTransform3D::m_rTranslateX");
 static_assert(sizeof(CCompositeTransform3D::m_rTranslateY) == sizeof(float), "Incorrect size for CCompositeTransform3D::m_rTranslateY");
 static_assert(sizeof(CCompositeTransform3D::m_rTranslateZ) == sizeof(float), "Incorrect size for CCompositeTransform3D::m_rTranslateZ");
+static_assert(sizeof(CCondition::m_strProperty) == sizeof(xstring_ptr), "Incorrect size for CCondition::m_strProperty");
+static_assert(sizeof(CCondition::m_vValue) == sizeof(CValue), "Incorrect size for CCondition::m_vValue");
 static_assert(sizeof(CContentControl::m_pContentTemplate) == sizeof(nullptr_t), "Incorrect size for CContentControl::m_pContentTemplate");
 static_assert(sizeof(CContentControl::m_pContentTransitions) == sizeof(nullptr_t), "Incorrect size for CContentControl::m_pContentTransitions");
 static_assert(sizeof(CContentControl::m_pSelectedContentTemplate) == sizeof(nullptr_t), "Incorrect size for CContentControl::m_pSelectedContentTemplate");
@@ -412,6 +414,8 @@ static_assert(sizeof(CMediaPlayerElement::m_pPosterSource) == sizeof(nullptr_t),
 static_assert(sizeof(CMediaPlayerElement::m_Stretch) == sizeof(uint8_t), "Incorrect size for CMediaPlayerElement::m_Stretch");
 static_assert(sizeof(CMediaPlayerPresenter::m_isFullWindow) == sizeof(bool), "Incorrect size for CMediaPlayerPresenter::m_isFullWindow");
 static_assert(sizeof(CMediaPlayerPresenter::m_Stretch) == sizeof(uint8_t), "Incorrect size for CMediaPlayerPresenter::m_Stretch");
+static_assert(sizeof(CMultiTrigger::m_pConditions) == sizeof(nullptr_t), "Incorrect size for CMultiTrigger::m_pConditions");
+static_assert(sizeof(CMultiTrigger::m_pSetters) == sizeof(nullptr_t), "Incorrect size for CMultiTrigger::m_pSetters");
 static_assert(sizeof(CObjectAnimationUsingKeyFrames::m_enableDependentAnimation) == sizeof(bool), "Incorrect size for CObjectAnimationUsingKeyFrames::m_enableDependentAnimation");
 static_assert(sizeof(CObjectAnimationUsingKeyFrames::m_pKeyFrames) == sizeof(nullptr_t), "Incorrect size for CObjectAnimationUsingKeyFrames::m_pKeyFrames");
 static_assert(sizeof(CObjectKeyFrame::m_keyTime) == sizeof(nullptr_t), "Incorrect size for CObjectKeyFrame::m_keyTime");
@@ -729,6 +733,9 @@ static_assert(sizeof(CTransitionTarget::m_opacity) == sizeof(float), "Incorrect 
 static_assert(sizeof(CTransitionTarget::m_ptRenderTransformOrigin) == sizeof(XPOINTF), "Incorrect size for CTransitionTarget::m_ptRenderTransformOrigin");
 static_assert(sizeof(CTranslateTransform::m_eX) == sizeof(float), "Incorrect size for CTranslateTransform::m_eX");
 static_assert(sizeof(CTranslateTransform::m_eY) == sizeof(float), "Incorrect size for CTranslateTransform::m_eY");
+static_assert(sizeof(CTrigger::m_strProperty) == sizeof(xstring_ptr), "Incorrect size for CTrigger::m_strProperty");
+static_assert(sizeof(CTrigger::m_pSetters) == sizeof(nullptr_t), "Incorrect size for CTrigger::m_pSetters");
+static_assert(sizeof(CTrigger::m_vValue) == sizeof(CValue), "Incorrect size for CTrigger::m_vValue");
 static_assert(sizeof(CDependencyObject::m_pInheritedProperties->m_typography.m_nAnnotationAlternates) == sizeof(int32_t), "Incorrect size for CDependencyObject::m_pInheritedProperties->m_typography.m_nAnnotationAlternates");
 static_assert(sizeof(CDependencyObject::m_pInheritedProperties->m_typography.m_Capitals) == sizeof(uint8_t), "Incorrect size for CDependencyObject::m_pInheritedProperties->m_typography.m_Capitals");
 static_assert(sizeof(CDependencyObject::m_pInheritedProperties->m_typography.m_fCapitalSpacing) == sizeof(bool), "Incorrect size for CDependencyObject::m_pInheritedProperties->m_typography.m_fCapitalSpacing");
@@ -848,6 +855,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "ComboBoxTextSubmittedEventArgs.g.h"
 #include "CommandBarTemplateSettings.g.h"
 #include "CommandingContextChangedEventArgs.g.h"
+#include "Condition.g.h"
 #include "ConnectedAnimation_Partial.h"
 #include "ConnectedAnimationService_Partial.h"
 #include "ContentDialogButtonClickEventArgs_Partial.h"
@@ -1109,6 +1117,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "MediaSwapChainElement.g.h"
 #include "MenuFlyout_Partial.h"
 #include "MenuPopupThemeTransition_Partial.h"
+#include "MultiTrigger.g.h"
 #include "NoFocusCandidateFoundEventArgs.g.h"
 #include "NullExtension.g.h"
 #include "ObjectAnimationUsingKeyFrames.g.h"
@@ -1166,6 +1175,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "ThemeShadow_Partial.h"
 #include "TileBrush.g.h"
 #include "Transform_Partial.h"
+#include "Trigger.g.h"
 #include "VectorCollectionView_Partial.h"
 #include "VectorViewCollectionView_Partial.h"
 #include "XamlCompositionBrushBase_Partial.h"
@@ -1188,6 +1198,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "ComboBoxItemAutomationPeer_Partial.h"
 #include "ComboBoxLightDismissAutomationPeer_Partial.h"
 #include "CompositeTransform.g.h"
+#include "ConditionCollection.g.h"
 #include "ConnectedAnimationRoot.g.h"
 #include "ContentPresenter_Partial.h"
 #include "Control_Partial.h"
@@ -2045,6 +2056,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     {
         nullptr, // Core constructor
         nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Condition
+    {
+        &OnCoreCreateCondition, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::Condition>, // Framework constructor
     },
     // Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation
     {
@@ -2936,6 +2952,16 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateXamlUICommand, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::XamlUICommand>, // Framework constructor
     },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.Condition]
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.UIElement]
     {
         nullptr, // Core constructor
@@ -2967,11 +2993,6 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         nullptr, // Framework constructor
     },
     // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.ResourceDictionary]
-    {
-        nullptr, // Core constructor
-        nullptr, // Framework constructor
-    },
-    // Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection`1[Microsoft.UI.Xaml.SetterBase]
     {
         nullptr, // Core constructor
         nullptr, // Framework constructor
@@ -3631,6 +3652,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateMenuPopupThemeTransition, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::MenuPopupThemeTransition>, // Framework constructor
     },
+    // Microsoft.UI.Xaml.MultiTrigger
+    {
+        &OnCoreCreateMultiTrigger, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::MultiTrigger>, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Input.NoFocusCandidateFoundEventArgs
     {
         nullptr, // Core constructor
@@ -3916,6 +3942,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateTransform, // Core constructor
         nullptr, // Framework constructor
     },
+    // Microsoft.UI.Xaml.Trigger
+    {
+        &OnCoreCreateTrigger, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::Trigger>, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Data.VectorCollectionView
     {
         &OnCoreCreateVectorCollectionView, // Core constructor
@@ -4045,6 +4076,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     {
         &OnCoreCreateCompositeTransform, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::CompositeTransform>, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.ConditionCollection
+    {
+        &OnCoreCreateConditionCollection, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::ConditionCollection>, // Framework constructor
     },
     // Microsoft.UI.Xaml.ConnectedAnimationRoot
     {
@@ -7767,6 +7803,20 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.Condition.Property
+    {
+        (METHODPFN)OFFSET(CCondition, m_strProperty), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Condition.Value
+    {
+        (METHODPFN)OFFSET(CCondition, m_vValue), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.CornerRadius.BottomLeft
     {
         (METHODPFN)OFFSET(CCornerRadius, m_cornerRadius.bottomLeft), // Offset. Cast to METHODPFN to force it into the union.
@@ -10994,6 +11044,20 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.MultiTrigger.Conditions
+    {
+        (METHODPFN)OFFSET(CMultiTrigger, m_pConditions), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.MultiTrigger.Setters
+    {
+        (METHODPFN)OFFSET(CMultiTrigger, m_pSetters), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.EnableDependentAnimation
     {
         (METHODPFN)OFFSET(CObjectAnimationUsingKeyFrames, m_enableDependentAnimation), // Offset. Cast to METHODPFN to force it into the union.
@@ -11722,6 +11786,27 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.Trigger.Property
+    {
+        (METHODPFN)OFFSET(CTrigger, m_strProperty), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Trigger.Setters
+    {
+        (METHODPFN)OFFSET(CTrigger, m_pSetters), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Trigger.Value
+    {
+        (METHODPFN)OFFSET(CTrigger, m_vValue), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Media.XamlCompositionBrushBase.FallbackColor
     {
         (METHODPFN)OFFSET(CXamlCompositionBrush, m_fallbackColor), // Offset. Cast to METHODPFN to force it into the union.
@@ -12087,6 +12172,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Media.CompositeTransform.TranslateYAnimation
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.ConditionCollection.ContentProperty
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
@@ -20006,7 +20098,7 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
 };
 
 // Object properties.
-extern const MetaDataObjectProperty c_aObjectProperties[221] =
+extern const MetaDataObjectProperty c_aObjectProperties[226] =
 {
     // UnknownObject.UnknownProperty object property
     {
@@ -20027,6 +20119,13 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CApplication, m_pRootVisual), // Offset
         0, // Storage offset
         KnownPropertyIndex::Application_RootVisual, // Index name
+        0, // Next object property = UnknownObject.UnknownProperty
+    },
+    // Microsoft.UI.Xaml.Condition.Value object property
+    {
+        OFFSET(CCondition, m_vValue), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::Condition_Value, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
     // Microsoft.UI.Xaml.Internal.ExternalObjectReference.NativeValue object property
@@ -20097,7 +20196,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CStyle, m_pBasedOn), // Offset
         0, // Storage offset
         KnownPropertyIndex::Style_BasedOn, // Index name
-        13, // Next object property = Microsoft.UI.Xaml.Style.Setters
+        14, // Next object property = Microsoft.UI.Xaml.Style.Setters
     },
     // Microsoft.UI.Xaml.Style.Setters object property
     {
@@ -20111,7 +20210,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CTextElement, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::TextElement_FontFamily, // Index name
-        15, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.Foreground
+        16, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextElement.Foreground object property
     {
@@ -20139,7 +20238,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CTransitionTarget, m_pClipTransform), // Offset
         0, // Storage offset
         KnownPropertyIndex::TransitionTarget_ClipTransform, // Index name
-        19, // Next object property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform
+        20, // Next object property = Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform
     },
     // Microsoft.UI.Xaml.Media.Animation.TransitionTarget.CompositeTransform object property
     {
@@ -20153,21 +20252,21 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CVisualState, m_pDeferredSetters), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState___DeferredSetters, // Index name
-        21, // Next object property = Microsoft.UI.Xaml.VisualState.__DeferredStoryboard
+        22, // Next object property = Microsoft.UI.Xaml.VisualState.__DeferredStoryboard
     },
     // Microsoft.UI.Xaml.VisualState.__DeferredStoryboard object property
     {
         OFFSET(CVisualState, m_pDeferredStoryboard), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState___DeferredStoryboard, // Index name
-        22, // Next object property = Microsoft.UI.Xaml.VisualState.Setters
+        23, // Next object property = Microsoft.UI.Xaml.VisualState.Setters
     },
     // Microsoft.UI.Xaml.VisualState.Setters object property
     {
         OFFSET(CVisualState, m_setters), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualState_Setters, // Index name
-        23, // Next object property = Microsoft.UI.Xaml.VisualState.StateTriggers
+        24, // Next object property = Microsoft.UI.Xaml.VisualState.StateTriggers
     },
     // Microsoft.UI.Xaml.VisualState.StateTriggers object property
     {
@@ -20181,7 +20280,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CVisualStateGroup, m_pVisualStates), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroup_States, // Index name
-        25, // Next object property = Microsoft.UI.Xaml.VisualStateGroup.Transitions
+        26, // Next object property = Microsoft.UI.Xaml.VisualStateGroup.Transitions
     },
     // Microsoft.UI.Xaml.VisualStateGroup.Transitions object property
     {
@@ -20195,7 +20294,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CVisualTransition, m_pEasingFunction), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualTransition_GeneratedEasingFunction, // Index name
-        27, // Next object property = Microsoft.UI.Xaml.VisualTransition.Storyboard
+        28, // Next object property = Microsoft.UI.Xaml.VisualTransition.Storyboard
     },
     // Microsoft.UI.Xaml.VisualTransition.Storyboard object property
     {
@@ -20216,42 +20315,42 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CColorAnimation, m_pEasingFunction), // Offset
         0, // Storage offset
         KnownPropertyIndex::ColorAnimation_EasingFunction, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.ColorAnimationUsingKeyFrames.KeyFrames object property
     {
         OFFSET(CColorAnimationUsingKeyFrames, m_pKeyFrames), // Offset
         0, // Storage offset
         KnownPropertyIndex::ColorAnimationUsingKeyFrames_KeyFrames, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.DispatcherTimer.Interval object property
     {
         OFFSET(CDispatcherTimer, m_pInterval), // Offset
         0, // Storage offset
         KnownPropertyIndex::DispatcherTimer_Interval, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimation.EasingFunction object property
     {
         OFFSET(CDoubleAnimation, m_pEasingFunction), // Offset
         0, // Storage offset
         KnownPropertyIndex::DoubleAnimation_EasingFunction, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames.KeyFrames object property
     {
         OFFSET(CDoubleAnimationUsingKeyFrames, m_pKeyFrames), // Offset
         0, // Storage offset
         KnownPropertyIndex::DoubleAnimationUsingKeyFrames_KeyFrames, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children object property
     {
         OFFSET(CDynamicTimeline, m_pChild), // Offset
         0, // Storage offset
         KnownPropertyIndex::DynamicTimeline_Children, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.EasingColorKeyFrame.EasingFunction object property
     {
@@ -20286,7 +20385,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CGeometryGroup, m_pChild), // Offset
         0, // Storage offset
         KnownPropertyIndex::GeometryGroup_Children, // Index name
-        5, // Next object property = Microsoft.UI.Xaml.Media.Geometry.Transform
+        6, // Next object property = Microsoft.UI.Xaml.Media.Geometry.Transform
     },
     // Microsoft.UI.Xaml.Media.GradientBrush.GradientStops object property
     {
@@ -20302,40 +20401,54 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
+    // Microsoft.UI.Xaml.MultiTrigger.Conditions object property
+    {
+        OFFSET(CMultiTrigger, m_pConditions), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::MultiTrigger_Conditions, // Index name
+        44, // Next object property = Microsoft.UI.Xaml.MultiTrigger.Setters
+    },
+    // Microsoft.UI.Xaml.MultiTrigger.Setters object property
+    {
+        OFFSET(CMultiTrigger, m_pSetters), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::MultiTrigger_Setters, // Index name
+        0, // Next object property = UnknownObject.UnknownProperty
+    },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames object property
     {
         OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset
         0, // Storage offset
         KnownPropertyIndex::ObjectAnimationUsingKeyFrames_KeyFrames, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.PathGeometry.Figures object property
     {
         OFFSET(CPathGeometry, m_pFigures), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathGeometry_Figures, // Index name
-        5, // Next object property = Microsoft.UI.Xaml.Media.Geometry.Transform
+        6, // Next object property = Microsoft.UI.Xaml.Media.Geometry.Transform
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimation.EasingFunction object property
     {
         OFFSET(CPointAnimation, m_pEasingFunction), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointAnimation_EasingFunction, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.Animation.PointAnimationUsingKeyFrames.KeyFrames object property
     {
         OFFSET(CPointAnimationUsingKeyFrames, m_pKeyFrames), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointAnimationUsingKeyFrames_KeyFrames, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Internal.PointerAnimationUsingKeyFrames.KeyFrames object property
     {
         OFFSET(CPointerAnimationUsingKeyFrames, m_pKeyFrames), // Offset
         0, // Storage offset
         KnownPropertyIndex::PointerAnimationUsingKeyFrames_KeyFrames, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Media.PolyBezierSegment.Points object property
     {
@@ -20363,14 +20476,14 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CSetter, m_pDependencyPropertyProxy), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Property, // Index name
-        51, // Next object property = Microsoft.UI.Xaml.Setter.Target
+        54, // Next object property = Microsoft.UI.Xaml.Setter.Target
     },
     // Microsoft.UI.Xaml.Setter.Target object property
     {
         OFFSET(CSetter, m_target), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Target, // Index name
-        52, // Next object property = Microsoft.UI.Xaml.Setter.Value
+        55, // Next object property = Microsoft.UI.Xaml.Setter.Value
     },
     // Microsoft.UI.Xaml.Setter.Value object property
     {
@@ -20412,14 +20525,14 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CTextHighlighter, m_background), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Background, // Index name
-        58, // Next object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
+        61, // Next object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground object property
     {
         OFFSET(CTextHighlighter, m_foreground), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Foreground, // Index name
-        59, // Next object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Ranges
+        62, // Next object property = Microsoft.UI.Xaml.Documents.TextHighlighter.Ranges
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Ranges object property
     {
@@ -20428,12 +20541,26 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         KnownPropertyIndex::TextHighlighter_Ranges, // Index name
         0, // Next object property = UnknownObject.UnknownProperty
     },
+    // Microsoft.UI.Xaml.Trigger.Setters object property
+    {
+        OFFSET(CTrigger, m_pSetters), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::Trigger_Setters, // Index name
+        64, // Next object property = Microsoft.UI.Xaml.Trigger.Value
+    },
+    // Microsoft.UI.Xaml.Trigger.Value object property
+    {
+        OFFSET(CTrigger, m_vValue), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::Trigger_Value, // Index name
+        0, // Next object property = UnknownObject.UnknownProperty
+    },
     // Microsoft.UI.Xaml.Controls.Border.Background object property
     {
         OFFSET(CBorder, m_pBackgroundBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::Border_Background, // Index name
-        61, // Next object property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
+        66, // Next object property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush object property
     {
@@ -20447,21 +20574,21 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CContentPresenter, m_pContentTemplate), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentPresenter_ContentTemplate, // Index name
-        63, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        68, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions object property
     {
         OFFSET(CContentPresenter, m_pContentTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentPresenter_ContentTransitions, // Index name
-        64, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
+        69, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily object property
     {
         OFFSET(CContentPresenter, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::ContentPresenter_FontFamily, // Index name
-        65, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
+        70, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground object property
     {
@@ -20475,35 +20602,35 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CControl, m_pBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_Background, // Index name
-        67, // Next object property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
+        72, // Next object property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush object property
     {
         OFFSET(CControl, m_pBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_BorderBrush, // Index name
-        68, // Next object property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
+        73, // Next object property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey object property
     {
         OFFSET(CControl, m_pDefaultStyleKey), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_DefaultStyleKey, // Index name
-        69, // Next object property = Microsoft.UI.Xaml.Controls.Control.FontFamily
+        74, // Next object property = Microsoft.UI.Xaml.Controls.Control.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily object property
     {
         OFFSET(CControl, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::Control_FontFamily, // Index name
-        70, // Next object property = Microsoft.UI.Xaml.Controls.Control.Foreground
+        75, // Next object property = Microsoft.UI.Xaml.Controls.Control.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground object property
     {
         OFFSET(CControl, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         KnownPropertyIndex::Control_Foreground, // Index name
-        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Template
+        76, // Next object property = Microsoft.UI.Xaml.Controls.Control.Template
     },
     // Microsoft.UI.Xaml.Controls.Control.Template object property
     {
@@ -20545,7 +20672,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CInlineUIContainer, m_pChild), // Offset
         0, // Storage offset
         KnownPropertyIndex::InlineUIContainer_Child, // Index name
-        14, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ItemsPresenter.ItemsPanel object property
     {
@@ -20573,14 +20700,14 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CParagraph, m_pInlines), // Offset
         0, // Storage offset
         KnownPropertyIndex::Paragraph_Inlines, // Index name
-        14, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.ChildTransitions object property
     {
         OFFSET(CPopup, m_pChildTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::Popup_ChildTransitions, // Index name
-        82, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
+        87, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement object property
     {
@@ -20594,7 +20721,7 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CResourceDictionary, m_pMergedDictionaries), // Offset
         0, // Storage offset
         KnownPropertyIndex::ResourceDictionary_MergedDictionaries, // Index name
-        84, // Next object property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
+        89, // Next object property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries object property
     {
@@ -20608,35 +20735,35 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CRichTextBlock, m_pBlocks), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_Blocks, // Index name
-        86, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
+        91, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily object property
     {
         OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::RichTextBlock_FontFamily, // Index name
-        87, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
+        92, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground object property
     {
         OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         KnownPropertyIndex::RichTextBlock_Foreground, // Index name
-        88, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
+        93, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget object property
     {
         OFFSET(CRichTextBlock, m_pOverflowTarget), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_OverflowContentTarget, // Index name
-        89, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
+        94, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor object property
     {
         OFFSET(CRichTextBlock, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_SelectionHighlightColor, // Index name
-        90, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.TextHighlighters
+        95, // Next object property = Microsoft.UI.Xaml.Controls.RichTextBlock.TextHighlighters
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.TextHighlighters object property
     {
@@ -20664,35 +20791,35 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CSpan, m_pInlines), // Offset
         0, // Storage offset
         KnownPropertyIndex::Span_Inlines, // Index name
-        14, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
+        15, // Next object property = Microsoft.UI.Xaml.Documents.TextElement.FontFamily
     },
     // Microsoft.UI.Xaml.Media.Animation.Storyboard.Children object property
     {
         OFFSET(CStoryboard, m_pChild), // Offset
         0, // Storage offset
         KnownPropertyIndex::Storyboard_Children, // Index name
-        16, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
+        17, // Next object property = Microsoft.UI.Xaml.Media.Animation.Timeline.BeginTime
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.FontFamily object property
     {
         OFFSET(CTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::TextBlock_FontFamily, // Index name
-        96, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
+        101, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground object property
     {
         OFFSET(CTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         KnownPropertyIndex::TextBlock_Foreground, // Index name
-        97, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
+        102, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines object property
     {
         OFFSET(CTextBlock, m_pInlines), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBlock_Inlines, // Index name
-        98, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.TextHighlighters
+        103, // Next object property = Microsoft.UI.Xaml.Controls.TextBlock.TextHighlighters
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.TextHighlighters object property
     {
@@ -20713,21 +20840,21 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // Index name
-        101, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
+        106, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions object property
     {
         OFFSET(CVisualStateGroupCollection, m_pActiveTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveTransitions, // Index name
-        102, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
+        107, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters object property
     {
         OFFSET(CVisualStateGroupCollection, m_pDeferredSetters), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_DeferredSetters, // Index name
-        103, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
+        108, // Next object property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers object property
     {
@@ -20741,824 +20868,824 @@ extern const MetaDataObjectProperty c_aObjectProperties[221] =
         OFFSET(CCalendarView, m_pBlackoutBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutBackground, // Index name
-        105, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
+        110, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground object property
     {
         OFFSET(CCalendarView, m_pBlackoutForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutForeground, // Index name
-        106, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
+        111, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush object property
     {
         OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutStrikethroughBrush, // Index name
-        107, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
+        112, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground object property
     {
         OFFSET(CCalendarView, m_pCalendarItemBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBackground, // Index name
-        108, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
+        113, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush object property
     {
         OFFSET(CCalendarView, m_pCalendarItemBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBorderBrush, // Index name
-        109, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
+        114, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground object property
     {
         OFFSET(CCalendarView, m_pCalendarItemDisabledBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemDisabledBackground, // Index name
-        110, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
+        115, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground object property
     {
         OFFSET(CCalendarView, m_pCalendarItemForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemForeground, // Index name
-        111, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
+        116, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground object property
     {
         OFFSET(CCalendarView, m_pCalendarItemHoverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemHoverBackground, // Index name
-        112, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
+        117, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground object property
     {
         OFFSET(CCalendarView, m_pCalendarItemPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemPressedBackground, // Index name
-        113, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
+        118, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily object property
     {
         OFFSET(CCalendarView, m_pDayItemFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DayItemFontFamily, // Index name
-        114, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
+        119, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground object property
     {
         OFFSET(CCalendarView, m_pDisabledForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DisabledForeground, // Index name
-        115, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
+        120, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily object property
     {
         OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontFamily, // Index name
-        116, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
+        121, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily object property
     {
         OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontFamily, // Index name
-        117, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
+        122, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush object property
     {
         OFFSET(CCalendarView, m_pFocusBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FocusBorderBrush, // Index name
-        118, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
+        123, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush object property
     {
         OFFSET(CCalendarView, m_pHoverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_HoverBorderBrush, // Index name
-        119, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
+        124, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily object property
     {
         OFFSET(CCalendarView, m_pMonthYearItemFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_MonthYearItemFontFamily, // Index name
-        120, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
+        125, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground object property
     {
         OFFSET(CCalendarView, m_pOutOfScopeBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeBackground, // Index name
-        121, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
+        126, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground object property
     {
         OFFSET(CCalendarView, m_pOutOfScopeForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeForeground, // Index name
-        122, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
+        127, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground object property
     {
         OFFSET(CCalendarView, m_pOutOfScopeHoverForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeHoverForeground, // Index name
-        123, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
+        128, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground object property
     {
         OFFSET(CCalendarView, m_pOutOfScopePressedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopePressedForeground, // Index name
-        124, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
+        129, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush object property
     {
         OFFSET(CCalendarView, m_pPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedBorderBrush, // Index name
-        125, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
+        130, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground object property
     {
         OFFSET(CCalendarView, m_pPressedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedForeground, // Index name
-        126, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
+        131, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush object property
     {
         OFFSET(CCalendarView, m_pSelectedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedBorderBrush, // Index name
-        127, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
+        132, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush object property
     {
         OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledBorderBrush, // Index name
-        128, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
+        133, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground object property
     {
         OFFSET(CCalendarView, m_pSelectedDisabledForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledForeground, // Index name
-        129, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
+        134, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground object property
     {
         OFFSET(CCalendarView, m_pSelectedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedForeground, // Index name
-        130, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
+        135, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush object property
     {
         OFFSET(CCalendarView, m_pSelectedHoverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverBorderBrush, // Index name
-        131, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
+        136, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground object property
     {
         OFFSET(CCalendarView, m_pSelectedHoverForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverForeground, // Index name
-        132, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
+        137, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush object property
     {
         OFFSET(CCalendarView, m_pSelectedPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedBorderBrush, // Index name
-        133, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
+        138, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground object property
     {
         OFFSET(CCalendarView, m_pSelectedPressedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedForeground, // Index name
-        134, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
+        139, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground object property
     {
         OFFSET(CCalendarView, m_pTodayBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBackground, // Index name
-        135, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
+        140, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground object property
     {
         OFFSET(CCalendarView, m_pTodayBlackoutBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutBackground, // Index name
-        136, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
+        141, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground object property
     {
         OFFSET(CCalendarView, m_pTodayBlackoutForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutForeground, // Index name
-        137, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
+        142, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground object property
     {
         OFFSET(CCalendarView, m_pTodayDisabledBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayDisabledBackground, // Index name
-        138, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
+        143, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground object property
     {
         OFFSET(CCalendarView, m_pTodayForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayForeground, // Index name
-        139, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
+        144, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground object property
     {
         OFFSET(CCalendarView, m_pTodayHoverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBackground, // Index name
-        140, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
+        145, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush object property
     {
         OFFSET(CCalendarView, m_pTodayHoverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBorderBrush, // Index name
-        141, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
+        146, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground object property
     {
         OFFSET(CCalendarView, m_pTodayPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBackground, // Index name
-        142, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
+        147, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush object property
     {
         OFFSET(CCalendarView, m_pTodayPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBorderBrush, // Index name
-        143, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
+        148, // Next object property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush object property
     {
         OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodaySelectedInnerBorderBrush, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate object property
     {
         OFFSET(CContentControl, m_pContentTemplate), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_ContentTemplate, // Index name
-        145, // Next object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
+        150, // Next object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions object property
     {
         OFFSET(CContentControl, m_pContentTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_ContentTransitions, // Index name
-        146, // Next object property = Microsoft.UI.Xaml.Controls.ContentControl.SelectedContentTemplate
+        151, // Next object property = Microsoft.UI.Xaml.Controls.ContentControl.SelectedContentTemplate
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.SelectedContentTemplate object property
     {
         OFFSET(CContentControl, m_pSelectedContentTemplate), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_SelectedContentTemplate, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily object property
     {
         OFFSET(CFontIcon, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::FontIcon_FontFamily, // Index name
-        73, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        78, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions object property
     {
         OFFSET(CGrid, m_pColumnDefinitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_ColumnDefinitions, // Index name
-        149, // Next object property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
+        154, // Next object property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions object property
     {
         OFFSET(CGrid, m_pRowDefinitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_RowDefinitions, // Index name
-        79, // Next object property = Microsoft.UI.Xaml.Controls.Panel.Background
+        84, // Next object property = Microsoft.UI.Xaml.Controls.Panel.Background
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource object property
     {
         OFFSET(CIconSourceElement, m_iconSource), // Offset
         0, // Storage offset
         KnownPropertyIndex::IconSourceElement_IconSource, // Index name
-        73, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        78, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions object property
     {
         OFFSET(CItemsControl, m_pItemContainerTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemContainerTransitions, // Index name
-        152, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
+        157, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost object property
     {
         OFFSET(CItemsControl, m_pItemsHost), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsHost, // Index name
-        153, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
+        158, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel object property
     {
         OFFSET(CItemsControl, m_pItemsPanelTemplate), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsPanel, // Index name
-        154, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemTemplate
+        159, // Next object property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemTemplate
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemTemplate object property
     {
         OFFSET(CItemsControl, m_pItemTemplate), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemTemplate, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource object property
     {
         OFFSET(CMediaPlayerElement, m_pPosterSource), // Offset
         0, // Storage offset
         KnownPropertyIndex::MediaPlayerElement_PosterSource, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope object property
     {
         OFFSET(CPasswordBox, m_pInputScope), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_InputScope, // Index name
-        157, // Next object property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
+        162, // Next object property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor object property
     {
         OFFSET(CPasswordBox, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_SelectionHighlightColor, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data object property
     {
         OFFSET(CPath, m_pGeometryData), // Offset
         0, // Storage offset
         KnownPropertyIndex::Path_Data, // Index name
-        92, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data object property
     {
         OFFSET(CPathIcon, m_pData), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathIcon_Data, // Index name
-        73, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        78, // Next object property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points object property
     {
         OFFSET(CPolygon, m_pPoints), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polygon_Points, // Index name
-        92, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points object property
     {
         OFFSET(CPolyline, m_pPoints), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polyline_Points, // Index name
-        92, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        97, // Next object property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope object property
     {
         OFFSET(CRichEditBox, m_pInputScope), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_InputScope, // Index name
-        163, // Next object property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
+        168, // Next object property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor object property
     {
         OFFSET(CRichEditBox, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColor, // Index name
-        164, // Next object property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
+        169, // Next object property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused object property
     {
         OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColorWhenNotFocused, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings object property
     {
         OFFSET(CSplitView, m_pTemplateSettings), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplitView_TemplateSettings, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope object property
     {
         OFFSET(CTextBox, m_pInputScope), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_InputScope, // Index name
-        167, // Next object property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
+        172, // Next object property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor object property
     {
         OFFSET(CTextBox, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColor, // Index name
-        168, // Next object property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
+        173, // Next object property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused object property
     {
         OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColorWhenNotFocused, // Index name
-        66, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
+        71, // Next object property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush object property
     {
         OFFSET(CGridViewItemChrome, m_pCheckBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // Index name
-        170, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
+        175, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush object property
     {
         OFFSET(CGridViewItemChrome, m_pCheckHintBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckHintBrush, // Index name
-        171, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
+        176, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush object property
     {
         OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckSelectingBrush, // Index name
-        172, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
+        177, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground object property
     {
         OFFSET(CGridViewItemChrome, m_pDragBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragBackground, // Index name
-        173, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
+        178, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground object property
     {
         OFFSET(CGridViewItemChrome, m_pDragForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragForeground, // Index name
-        174, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
+        179, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush object property
     {
         OFFSET(CGridViewItemChrome, m_pFocusBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_FocusBorderBrush, // Index name
-        175, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
+        180, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground object property
     {
         OFFSET(CGridViewItemChrome, m_pPlaceholderBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PlaceholderBackground, // Index name
-        176, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
+        181, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground object property
     {
         OFFSET(CGridViewItemChrome, m_pPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PointerOverBackground, // Index name
-        177, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
+        182, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground object property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedBackground, // Index name
-        178, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
+        183, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground object property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedForeground, // Index name
-        179, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
+        184, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground object property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBackground, // Index name
-        180, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
+        185, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush object property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
-        62, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
+        67, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // Index name
-        182, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
+        187, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBrush, // Index name
-        183, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
+        188, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBorderBrush, // Index name
-        184, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
+        189, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBrush, // Index name
-        185, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
+        190, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBorderBrush, // Index name
-        186, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
+        191, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBrush, // Index name
-        187, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
+        192, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBorderBrush, // Index name
-        188, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
+        193, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBrush, // Index name
-        189, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
+        194, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedBrush, // Index name
-        190, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
+        195, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedDisabledBrush, // Index name
-        191, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
+        196, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPointerOverBrush, // Index name
-        192, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
+        197, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPressedBrush, // Index name
-        193, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
+        198, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBrush, // Index name
-        194, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
+        199, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckDisabledBrush, // Index name
-        195, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
+        200, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckHintBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckHintBrush, // Index name
-        196, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
+        201, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckPressedBrush, // Index name
-        197, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
+        202, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush object property
     {
         OFFSET(CListViewItemChrome, m_pCheckSelectingBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckSelectingBrush, // Index name
-        198, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
+        203, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground object property
     {
         OFFSET(CListViewItemChrome, m_pDragBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragBackground, // Index name
-        199, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
+        204, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground object property
     {
         OFFSET(CListViewItemChrome, m_pDragForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragForeground, // Index name
-        200, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
+        205, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pFocusBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusBorderBrush, // Index name
-        201, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
+        206, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusSecondaryBorderBrush, // Index name
-        202, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
+        207, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground object property
     {
         OFFSET(CListViewItemChrome, m_pPlaceholderBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PlaceholderBackground, // Index name
-        203, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
+        208, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground object property
     {
         OFFSET(CListViewItemChrome, m_pPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBackground, // Index name
-        204, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
+        209, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBorderBrush, // Index name
-        205, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
+        210, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground object property
     {
         OFFSET(CListViewItemChrome, m_pPointerOverForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverForeground, // Index name
-        206, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
+        211, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground object property
     {
         OFFSET(CListViewItemChrome, m_pPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PressedBackground, // Index name
-        207, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
+        212, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBackground, // Index name
-        208, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
+        213, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBorderBrush, // Index name
-        209, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
+        214, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBackground, // Index name
-        210, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
+        215, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBorderBrush, // Index name
-        211, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
+        216, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedForeground, // Index name
-        212, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
+        217, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedInnerBorderBrush, // Index name
-        213, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
+        218, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBackground, // Index name
-        214, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
+        219, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
-        215, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
+        220, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBackground, // Index name
-        216, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
+        221, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBorderBrush, // Index name
-        217, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
+        222, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorBrush, // Index name
-        218, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
+        223, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorDisabledBrush, // Index name
-        219, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
+        224, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPointerOverBrush, // Index name
-        220, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
+        225, // Next object property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush object property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPressedBrush, // Index name
-        62, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
+        67, // Next object property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTemplate
     },
 };
 
 // Render properties.
-extern const MetaDataObjectProperty c_aRenderProperties[209] =
+extern const MetaDataObjectProperty c_aRenderProperties[212] =
 {
     // UnknownObject.UnknownProperty render property
     {
@@ -21826,6 +21953,20 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
+    // Microsoft.UI.Xaml.MultiTrigger.Conditions render property
+    {
+        OFFSET(CMultiTrigger, m_pConditions), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::MultiTrigger_Conditions, // Index name
+        39, // Next render property = Microsoft.UI.Xaml.MultiTrigger.Setters
+    },
+    // Microsoft.UI.Xaml.MultiTrigger.Setters render property
+    {
+        OFFSET(CMultiTrigger, m_pSetters), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::MultiTrigger_Setters, // Index name
+        0, // Next render property = UnknownObject.UnknownProperty
+    },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames render property
     {
         OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset
@@ -21887,7 +22028,7 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CSetter, m_pDependencyPropertyProxy), // Offset
         0, // Storage offset
         KnownPropertyIndex::Setter_Property, // Index name
-        47, // Next render property = Microsoft.UI.Xaml.Setter.Target
+        49, // Next render property = Microsoft.UI.Xaml.Setter.Target
     },
     // Microsoft.UI.Xaml.Setter.Target render property
     {
@@ -21929,7 +22070,7 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CTextHighlighter, m_background), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextHighlighter_Background, // Index name
-        53, // Next render property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
+        55, // Next render property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground render property
     {
@@ -21938,12 +22079,19 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         KnownPropertyIndex::TextHighlighter_Foreground, // Index name
         0, // Next render property = UnknownObject.UnknownProperty
     },
+    // Microsoft.UI.Xaml.Trigger.Setters render property
+    {
+        OFFSET(CTrigger, m_pSetters), // Offset
+        0, // Storage offset
+        KnownPropertyIndex::Trigger_Setters, // Index name
+        0, // Next render property = UnknownObject.UnknownProperty
+    },
     // Microsoft.UI.Xaml.Controls.Border.Background render property
     {
         OFFSET(CBorder, m_pBackgroundBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::Border_Background, // Index name
-        55, // Next render property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
+        58, // Next render property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush render property
     {
@@ -21957,14 +22105,14 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CContentPresenter, m_pContentTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentPresenter_ContentTransitions, // Index name
-        57, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
+        60, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily render property
     {
         OFFSET(CContentPresenter, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::ContentPresenter_FontFamily, // Index name
-        58, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
+        61, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground render property
     {
@@ -21978,35 +22126,35 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CControl, m_pBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_Background, // Index name
-        60, // Next render property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
+        63, // Next render property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush render property
     {
         OFFSET(CControl, m_pBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_BorderBrush, // Index name
-        61, // Next render property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
+        64, // Next render property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey render property
     {
         OFFSET(CControl, m_pDefaultStyleKey), // Offset
         0, // Storage offset
         KnownPropertyIndex::Control_DefaultStyleKey, // Index name
-        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.FontFamily
+        65, // Next render property = Microsoft.UI.Xaml.Controls.Control.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily render property
     {
         OFFSET(CControl, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::Control_FontFamily, // Index name
-        63, // Next render property = Microsoft.UI.Xaml.Controls.Control.Foreground
+        66, // Next render property = Microsoft.UI.Xaml.Controls.Control.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground render property
     {
         OFFSET(CControl, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         KnownPropertyIndex::Control_Foreground, // Index name
-        64, // Next render property = Microsoft.UI.Xaml.Controls.Control.Template
+        67, // Next render property = Microsoft.UI.Xaml.Controls.Control.Template
     },
     // Microsoft.UI.Xaml.Controls.Control.Template render property
     {
@@ -22083,7 +22231,7 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CPopup, m_pChildTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::Popup_ChildTransitions, // Index name
-        75, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
+        78, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement render property
     {
@@ -22097,7 +22245,7 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CResourceDictionary, m_pMergedDictionaries), // Offset
         0, // Storage offset
         KnownPropertyIndex::ResourceDictionary_MergedDictionaries, // Index name
-        77, // Next render property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
+        80, // Next render property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries render property
     {
@@ -22111,28 +22259,28 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CRichTextBlock, m_pBlocks), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_Blocks, // Index name
-        79, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
+        82, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily render property
     {
         OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::RichTextBlock_FontFamily, // Index name
-        80, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
+        83, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground render property
     {
         OFFSET(CRichTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         KnownPropertyIndex::RichTextBlock_Foreground, // Index name
-        81, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
+        84, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget render property
     {
         OFFSET(CRichTextBlock, m_pOverflowTarget), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichTextBlock_OverflowContentTarget, // Index name
-        82, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
+        85, // Next render property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor render property
     {
@@ -22174,14 +22322,14 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::TextBlock_FontFamily, // Index name
-        88, // Next render property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
+        91, // Next render property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground render property
     {
         OFFSET(CTextBlock, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         KnownPropertyIndex::TextBlock_Foreground, // Index name
-        89, // Next render property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
+        92, // Next render property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines render property
     {
@@ -22202,21 +22350,21 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CVisualStateGroupCollection, m_pActiveStoryboards), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // Index name
-        92, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
+        95, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions render property
     {
         OFFSET(CVisualStateGroupCollection, m_pActiveTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_ActiveTransitions, // Index name
-        93, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
+        96, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters render property
     {
         OFFSET(CVisualStateGroupCollection, m_pDeferredSetters), // Offset
         0, // Storage offset
         KnownPropertyIndex::VisualStateGroupCollection_DeferredSetters, // Index name
-        94, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
+        97, // Next render property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers render property
     {
@@ -22230,803 +22378,803 @@ extern const MetaDataObjectProperty c_aRenderProperties[209] =
         OFFSET(CCalendarView, m_pBlackoutBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutBackground, // Index name
-        96, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
+        99, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground render property
     {
         OFFSET(CCalendarView, m_pBlackoutForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutForeground, // Index name
-        97, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
+        100, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush render property
     {
         OFFSET(CCalendarView, m_pBlackoutStrikethroughBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_BlackoutStrikethroughBrush, // Index name
-        98, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
+        101, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground render property
     {
         OFFSET(CCalendarView, m_pCalendarItemBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBackground, // Index name
-        99, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
+        102, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush render property
     {
         OFFSET(CCalendarView, m_pCalendarItemBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemBorderBrush, // Index name
-        100, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
+        103, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground render property
     {
         OFFSET(CCalendarView, m_pCalendarItemDisabledBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemDisabledBackground, // Index name
-        101, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
+        104, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground render property
     {
         OFFSET(CCalendarView, m_pCalendarItemForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemForeground, // Index name
-        102, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
+        105, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground render property
     {
         OFFSET(CCalendarView, m_pCalendarItemHoverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemHoverBackground, // Index name
-        103, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
+        106, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground render property
     {
         OFFSET(CCalendarView, m_pCalendarItemPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_CalendarItemPressedBackground, // Index name
-        104, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
+        107, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily render property
     {
         OFFSET(CCalendarView, m_pDayItemFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DayItemFontFamily, // Index name
-        105, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
+        108, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground render property
     {
         OFFSET(CCalendarView, m_pDisabledForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_DisabledForeground, // Index name
-        106, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
+        109, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily render property
     {
         OFFSET(CCalendarView, m_pFirstOfMonthLabelFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontFamily, // Index name
-        107, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
+        110, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily render property
     {
         OFFSET(CCalendarView, m_pFirstOfYearDecadeLabelFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontFamily, // Index name
-        108, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
+        111, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush render property
     {
         OFFSET(CCalendarView, m_pFocusBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_FocusBorderBrush, // Index name
-        109, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
+        112, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush render property
     {
         OFFSET(CCalendarView, m_pHoverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_HoverBorderBrush, // Index name
-        110, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
+        113, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily render property
     {
         OFFSET(CCalendarView, m_pMonthYearItemFontFamily), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_MonthYearItemFontFamily, // Index name
-        111, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
+        114, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground render property
     {
         OFFSET(CCalendarView, m_pOutOfScopeBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeBackground, // Index name
-        112, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
+        115, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground render property
     {
         OFFSET(CCalendarView, m_pOutOfScopeForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeForeground, // Index name
-        113, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
+        116, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground render property
     {
         OFFSET(CCalendarView, m_pOutOfScopeHoverForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopeHoverForeground, // Index name
-        114, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
+        117, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground render property
     {
         OFFSET(CCalendarView, m_pOutOfScopePressedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_OutOfScopePressedForeground, // Index name
-        115, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
+        118, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush render property
     {
         OFFSET(CCalendarView, m_pPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedBorderBrush, // Index name
-        116, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
+        119, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground render property
     {
         OFFSET(CCalendarView, m_pPressedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_PressedForeground, // Index name
-        117, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
+        120, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush render property
     {
         OFFSET(CCalendarView, m_pSelectedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedBorderBrush, // Index name
-        118, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
+        121, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush render property
     {
         OFFSET(CCalendarView, m_pSelectedDisabledBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledBorderBrush, // Index name
-        119, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
+        122, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground render property
     {
         OFFSET(CCalendarView, m_pSelectedDisabledForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedDisabledForeground, // Index name
-        120, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
+        123, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground render property
     {
         OFFSET(CCalendarView, m_pSelectedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedForeground, // Index name
-        121, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
+        124, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush render property
     {
         OFFSET(CCalendarView, m_pSelectedHoverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverBorderBrush, // Index name
-        122, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
+        125, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground render property
     {
         OFFSET(CCalendarView, m_pSelectedHoverForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedHoverForeground, // Index name
-        123, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
+        126, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush render property
     {
         OFFSET(CCalendarView, m_pSelectedPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedBorderBrush, // Index name
-        124, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
+        127, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground render property
     {
         OFFSET(CCalendarView, m_pSelectedPressedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_SelectedPressedForeground, // Index name
-        125, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
+        128, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground render property
     {
         OFFSET(CCalendarView, m_pTodayBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBackground, // Index name
-        126, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
+        129, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground render property
     {
         OFFSET(CCalendarView, m_pTodayBlackoutBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutBackground, // Index name
-        127, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
+        130, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground render property
     {
         OFFSET(CCalendarView, m_pTodayBlackoutForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayBlackoutForeground, // Index name
-        128, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
+        131, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground render property
     {
         OFFSET(CCalendarView, m_pTodayDisabledBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayDisabledBackground, // Index name
-        129, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
+        132, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground render property
     {
         OFFSET(CCalendarView, m_pTodayForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayForeground, // Index name
-        130, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
+        133, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground render property
     {
         OFFSET(CCalendarView, m_pTodayHoverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBackground, // Index name
-        131, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
+        134, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush render property
     {
         OFFSET(CCalendarView, m_pTodayHoverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayHoverBorderBrush, // Index name
-        132, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
+        135, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground render property
     {
         OFFSET(CCalendarView, m_pTodayPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBackground, // Index name
-        133, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
+        136, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush render property
     {
         OFFSET(CCalendarView, m_pTodayPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodayPressedBorderBrush, // Index name
-        134, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
+        137, // Next render property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush render property
     {
         OFFSET(CCalendarView, m_pTodaySelectedInnerBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::CalendarView_TodaySelectedInnerBorderBrush, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions render property
     {
         OFFSET(CContentControl, m_pContentTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::ContentControl_ContentTransitions, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily render property
     {
         OFFSET(CFontIcon, m_pTextFormatting), // Offset
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         KnownPropertyIndex::FontIcon_FontFamily, // Index name
-        66, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        69, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions render property
     {
         OFFSET(CGrid, m_pColumnDefinitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_ColumnDefinitions, // Index name
-        138, // Next render property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
+        141, // Next render property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions render property
     {
         OFFSET(CGrid, m_pRowDefinitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::Grid_RowDefinitions, // Index name
-        72, // Next render property = Microsoft.UI.Xaml.Controls.Panel.Background
+        75, // Next render property = Microsoft.UI.Xaml.Controls.Panel.Background
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource render property
     {
         OFFSET(CIconSourceElement, m_iconSource), // Offset
         0, // Storage offset
         KnownPropertyIndex::IconSourceElement_IconSource, // Index name
-        66, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        69, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions render property
     {
         OFFSET(CItemsControl, m_pItemContainerTransitions), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemContainerTransitions, // Index name
-        141, // Next render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
+        144, // Next render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost render property
     {
         OFFSET(CItemsControl, m_pItemsHost), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsHost, // Index name
-        142, // Next render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
+        145, // Next render property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel render property
     {
         OFFSET(CItemsControl, m_pItemsPanelTemplate), // Offset
         0, // Storage offset
         KnownPropertyIndex::ItemsControl_ItemsPanel, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource render property
     {
         OFFSET(CMediaPlayerElement, m_pPosterSource), // Offset
         0, // Storage offset
         KnownPropertyIndex::MediaPlayerElement_PosterSource, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope render property
     {
         OFFSET(CPasswordBox, m_pInputScope), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_InputScope, // Index name
-        145, // Next render property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
+        148, // Next render property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor render property
     {
         OFFSET(CPasswordBox, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::PasswordBox_SelectionHighlightColor, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data render property
     {
         OFFSET(CPath, m_pGeometryData), // Offset
         0, // Storage offset
         KnownPropertyIndex::Path_Data, // Index name
-        84, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data render property
     {
         OFFSET(CPathIcon, m_pData), // Offset
         0, // Storage offset
         KnownPropertyIndex::PathIcon_Data, // Index name
-        66, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        69, // Next render property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points render property
     {
         OFFSET(CPolygon, m_pPoints), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polygon_Points, // Index name
-        84, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points render property
     {
         OFFSET(CPolyline, m_pPoints), // Offset
         0, // Storage offset
         KnownPropertyIndex::Polyline_Points, // Index name
-        84, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        87, // Next render property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope render property
     {
         OFFSET(CRichEditBox, m_pInputScope), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_InputScope, // Index name
-        151, // Next render property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
+        154, // Next render property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor render property
     {
         OFFSET(CRichEditBox, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColor, // Index name
-        152, // Next render property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
+        155, // Next render property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused render property
     {
         OFFSET(CRichEditBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
         0, // Storage offset
         KnownPropertyIndex::RichEditBox_SelectionHighlightColorWhenNotFocused, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings render property
     {
         OFFSET(CSplitView, m_pTemplateSettings), // Offset
         0, // Storage offset
         KnownPropertyIndex::SplitView_TemplateSettings, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope render property
     {
         OFFSET(CTextBox, m_pInputScope), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_InputScope, // Index name
-        155, // Next render property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
+        158, // Next render property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor render property
     {
         OFFSET(CTextBox, m_pSelectionHighlightColor), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColor, // Index name
-        156, // Next render property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
+        159, // Next render property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused render property
     {
         OFFSET(CTextBox, m_pSelectionHighlightColorWhenNotFocused), // Offset
         0, // Storage offset
         KnownPropertyIndex::TextBox_SelectionHighlightColorWhenNotFocused, // Index name
-        59, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
+        62, // Next render property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush render property
     {
         OFFSET(CGridViewItemChrome, m_pCheckBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // Index name
-        158, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
+        161, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush render property
     {
         OFFSET(CGridViewItemChrome, m_pCheckHintBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckHintBrush, // Index name
-        159, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
+        162, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush render property
     {
         OFFSET(CGridViewItemChrome, m_pCheckSelectingBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_CheckSelectingBrush, // Index name
-        160, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
+        163, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground render property
     {
         OFFSET(CGridViewItemChrome, m_pDragBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragBackground, // Index name
-        161, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
+        164, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground render property
     {
         OFFSET(CGridViewItemChrome, m_pDragForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_DragForeground, // Index name
-        162, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
+        165, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush render property
     {
         OFFSET(CGridViewItemChrome, m_pFocusBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_FocusBorderBrush, // Index name
-        163, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
+        166, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground render property
     {
         OFFSET(CGridViewItemChrome, m_pPlaceholderBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PlaceholderBackground, // Index name
-        164, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
+        167, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground render property
     {
         OFFSET(CGridViewItemChrome, m_pPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_PointerOverBackground, // Index name
-        165, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
+        168, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground render property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedBackground, // Index name
-        166, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
+        169, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground render property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedForeground, // Index name
-        167, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
+        170, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground render property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBackground, // Index name
-        168, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
+        171, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush render property
     {
         OFFSET(CGridViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
-        56, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        59, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // Index name
-        170, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
+        173, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBrush, // Index name
-        171, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
+        174, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBorderBrush, // Index name
-        172, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
+        175, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBrush, // Index name
-        173, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
+        176, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBorderBrush, // Index name
-        174, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
+        177, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPointerOverBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBrush, // Index name
-        175, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
+        178, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBorderBrush, // Index name
-        176, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
+        179, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBrush, // Index name
-        177, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
+        180, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedBrush, // Index name
-        178, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
+        181, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedDisabledBrush, // Index name
-        179, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
+        182, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPointerOverBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPointerOverBrush, // Index name
-        180, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
+        183, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBoxSelectedPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPressedBrush, // Index name
-        181, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
+        184, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckBrush, // Index name
-        182, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
+        185, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckDisabledBrush, // Index name
-        183, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
+        186, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckHintBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckHintBrush, // Index name
-        184, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
+        187, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckPressedBrush, // Index name
-        185, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
+        188, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush render property
     {
         OFFSET(CListViewItemChrome, m_pCheckSelectingBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_CheckSelectingBrush, // Index name
-        186, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
+        189, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground render property
     {
         OFFSET(CListViewItemChrome, m_pDragBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragBackground, // Index name
-        187, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
+        190, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground render property
     {
         OFFSET(CListViewItemChrome, m_pDragForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_DragForeground, // Index name
-        188, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
+        191, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pFocusBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusBorderBrush, // Index name
-        189, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
+        192, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pFocusSecondaryBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_FocusSecondaryBorderBrush, // Index name
-        190, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
+        193, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground render property
     {
         OFFSET(CListViewItemChrome, m_pPlaceholderBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PlaceholderBackground, // Index name
-        191, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
+        194, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground render property
     {
         OFFSET(CListViewItemChrome, m_pPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBackground, // Index name
-        192, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
+        195, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBorderBrush, // Index name
-        193, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
+        196, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground render property
     {
         OFFSET(CListViewItemChrome, m_pPointerOverForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PointerOverForeground, // Index name
-        194, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
+        197, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground render property
     {
         OFFSET(CListViewItemChrome, m_pPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_PressedBackground, // Index name
-        195, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
+        198, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBackground, // Index name
-        196, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
+        199, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedBorderBrush, // Index name
-        197, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
+        200, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedDisabledBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBackground, // Index name
-        198, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
+        201, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedDisabledBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBorderBrush, // Index name
-        199, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
+        202, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedForeground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedForeground, // Index name
-        200, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
+        203, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedInnerBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedInnerBorderBrush, // Index name
-        201, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
+        204, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPointerOverBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBackground, // Index name
-        202, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
+        205, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPointerOverBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
-        203, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
+        206, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPressedBackground), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBackground, // Index name
-        204, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
+        207, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectedPressedBorderBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBorderBrush, // Index name
-        205, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
+        208, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorBrush, // Index name
-        206, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
+        209, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorDisabledBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorDisabledBrush, // Index name
-        207, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
+        210, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorPointerOverBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPointerOverBrush, // Index name
-        208, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
+        211, // Next render property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush render property
     {
         OFFSET(CListViewItemChrome, m_pSelectionIndicatorPressedBrush), // Offset
         0, // Storage offset
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPressedBrush, // Index name
-        56, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        59, // Next render property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
 };
 
 // Enter/Leave properties.
-extern const MetaDataEnterProperty c_aEnterProperties[222] =
+extern const MetaDataEnterProperty c_aEnterProperties[225] =
 {
     // UnknownObject.UnknownProperty enter property
     {
@@ -23396,6 +23544,22 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, // Index name
         0, // Next enter property = UnknownObject.UnknownProperty
     },
+    // Microsoft.UI.Xaml.MultiTrigger.Conditions enter property
+    {
+        OFFSET(CMultiTrigger, m_pConditions), // Offset
+        0, // Storage offset
+        static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
+        KnownPropertyIndex::MultiTrigger_Conditions, // Index name
+        47, // Next enter property = Microsoft.UI.Xaml.MultiTrigger.Setters
+    },
+    // Microsoft.UI.Xaml.MultiTrigger.Setters enter property
+    {
+        OFFSET(CMultiTrigger, m_pSetters), // Offset
+        0, // Storage offset
+        static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
+        KnownPropertyIndex::MultiTrigger_Setters, // Index name
+        0, // Next enter property = UnknownObject.UnknownProperty
+    },
     // Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames.KeyFrames enter property
     {
         OFFSET(CObjectAnimationUsingKeyFrames, m_pKeyFrames), // Offset
@@ -23410,7 +23574,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::PanelEx_Height, // Index name
-        48, // Next enter property = Microsoft.UI.Xaml.PanelEx.Width
+        50, // Next enter property = Microsoft.UI.Xaml.PanelEx.Width
     },
     // Microsoft.UI.Xaml.PanelEx.Width enter property
     {
@@ -23482,7 +23646,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Setter_Property, // Index name
-        57, // Next enter property = Microsoft.UI.Xaml.Setter.Target
+        59, // Next enter property = Microsoft.UI.Xaml.Setter.Target
     },
     // Microsoft.UI.Xaml.Setter.Target enter property
     {
@@ -23530,7 +23694,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextHighlighter_Background, // Index name
-        63, // Next enter property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
+        65, // Next enter property = Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground
     },
     // Microsoft.UI.Xaml.Documents.TextHighlighter.Foreground enter property
     {
@@ -23540,13 +23704,21 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         KnownPropertyIndex::TextHighlighter_Foreground, // Index name
         0, // Next enter property = UnknownObject.UnknownProperty
     },
+    // Microsoft.UI.Xaml.Trigger.Setters enter property
+    {
+        OFFSET(CTrigger, m_pSetters), // Offset
+        0, // Storage offset
+        static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
+        KnownPropertyIndex::Trigger_Setters, // Index name
+        0, // Next enter property = UnknownObject.UnknownProperty
+    },
     // Microsoft.UI.Xaml.Controls.Border.Background enter property
     {
         OFFSET(CBorder, m_pBackgroundBrush), // Offset
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Border_Background, // Index name
-        65, // Next enter property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
+        68, // Next enter property = Microsoft.UI.Xaml.Controls.Border.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Border.BorderBrush enter property
     {
@@ -23562,7 +23734,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentPresenter_ContentTransitions, // Index name
-        67, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
+        70, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.FontFamily enter property
     {
@@ -23570,7 +23742,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentPresenter_FontFamily, // Index name
-        68, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
+        71, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ContentPresenter.Foreground enter property
     {
@@ -23586,7 +23758,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_Background, // Index name
-        70, // Next enter property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
+        73, // Next enter property = Microsoft.UI.Xaml.Controls.Control.BorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Control.BorderBrush enter property
     {
@@ -23594,7 +23766,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_BorderBrush, // Index name
-        71, // Next enter property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
+        74, // Next enter property = Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey
     },
     // Microsoft.UI.Xaml.Controls.Control.DefaultStyleKey enter property
     {
@@ -23602,7 +23774,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_DefaultStyleKey, // Index name
-        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.FontFamily
+        75, // Next enter property = Microsoft.UI.Xaml.Controls.Control.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.Control.FontFamily enter property
     {
@@ -23610,7 +23782,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_FontFamily, // Index name
-        73, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Foreground
+        76, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Control.Foreground enter property
     {
@@ -23618,7 +23790,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Control_Foreground, // Index name
-        74, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Template
+        77, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Template
     },
     // Microsoft.UI.Xaml.Controls.Control.Template enter property
     {
@@ -23634,7 +23806,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Glyphs_Fill, // Index name
-        76, // Next enter property = Microsoft.UI.Xaml.Documents.Glyphs.FontUri
+        79, // Next enter property = Microsoft.UI.Xaml.Documents.Glyphs.FontUri
     },
     // Microsoft.UI.Xaml.Documents.Glyphs.FontUri enter property
     {
@@ -23714,7 +23886,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Popup_ChildTransitions, // Index name
-        86, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
+        89, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Popup.OverlayElement enter property
     {
@@ -23730,7 +23902,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ResourceDictionary_MergedDictionaries, // Index name
-        88, // Next enter property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
+        91, // Next enter property = Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries
     },
     // Microsoft.UI.Xaml.ResourceDictionary.ThemeDictionaries enter property
     {
@@ -23746,7 +23918,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_Blocks, // Index name
-        90, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
+        93, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.FontFamily enter property
     {
@@ -23754,7 +23926,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_FontFamily, // Index name
-        91, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
+        94, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.Foreground enter property
     {
@@ -23762,7 +23934,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_Foreground, // Index name
-        92, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
+        95, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.OverflowContentTarget enter property
     {
@@ -23770,7 +23942,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::DoNotEnterLeave) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichTextBlock_OverflowContentTarget, // Index name
-        93, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
+        96, // Next enter property = Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichTextBlock.SelectionHighlightColor enter property
     {
@@ -23818,7 +23990,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBlock_FontFamily, // Index name
-        99, // Next enter property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
+        102, // Next enter property = Microsoft.UI.Xaml.Controls.TextBlock.Foreground
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Foreground enter property
     {
@@ -23826,7 +23998,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pForeground), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBlock_Foreground, // Index name
-        100, // Next enter property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
+        103, // Next enter property = Microsoft.UI.Xaml.Controls.TextBlock.Inlines
     },
     // Microsoft.UI.Xaml.Controls.TextBlock.Inlines enter property
     {
@@ -23850,7 +24022,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_ActiveStoryboards, // Index name
-        103, // Next enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
+        106, // Next enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.ActiveTransitions enter property
     {
@@ -23858,7 +24030,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_ActiveTransitions, // Index name
-        104, // Next enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
+        107, // Next enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredSetters enter property
     {
@@ -23866,7 +24038,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::VisualStateGroupCollection_DeferredSetters, // Index name
-        105, // Next enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
+        108, // Next enter property = Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers
     },
     // Microsoft.UI.Xaml.Internal.VisualStateGroupCollection.DeferredStateTriggers enter property
     {
@@ -23882,7 +24054,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_BlackoutBackground, // Index name
-        107, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
+        110, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutForeground enter property
     {
@@ -23890,7 +24062,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_BlackoutForeground, // Index name
-        108, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
+        111, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.BlackoutStrikethroughBrush enter property
     {
@@ -23898,7 +24070,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_BlackoutStrikethroughBrush, // Index name
-        109, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
+        112, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBackground enter property
     {
@@ -23906,7 +24078,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemBackground, // Index name
-        110, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
+        113, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemBorderBrush enter property
     {
@@ -23914,7 +24086,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemBorderBrush, // Index name
-        111, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
+        114, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemDisabledBackground enter property
     {
@@ -23922,7 +24094,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemDisabledBackground, // Index name
-        112, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
+        115, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemForeground enter property
     {
@@ -23930,7 +24102,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemForeground, // Index name
-        113, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
+        116, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemHoverBackground enter property
     {
@@ -23938,7 +24110,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemHoverBackground, // Index name
-        114, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
+        117, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.CalendarItemPressedBackground enter property
     {
@@ -23946,7 +24118,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_CalendarItemPressedBackground, // Index name
-        115, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
+        118, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DayItemFontFamily enter property
     {
@@ -23954,7 +24126,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_DayItemFontFamily, // Index name
-        116, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
+        119, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.DisabledForeground enter property
     {
@@ -23962,7 +24134,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_DisabledForeground, // Index name
-        117, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
+        120, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfMonthLabelFontFamily enter property
     {
@@ -23970,7 +24142,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontFamily, // Index name
-        118, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
+        121, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FirstOfYearDecadeLabelFontFamily enter property
     {
@@ -23978,7 +24150,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontFamily, // Index name
-        119, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
+        122, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.FocusBorderBrush enter property
     {
@@ -23986,7 +24158,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_FocusBorderBrush, // Index name
-        120, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
+        123, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.HoverBorderBrush enter property
     {
@@ -23994,7 +24166,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_HoverBorderBrush, // Index name
-        121, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
+        124, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.MonthYearItemFontFamily enter property
     {
@@ -24002,7 +24174,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_MonthYearItemFontFamily, // Index name
-        122, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
+        125, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeBackground enter property
     {
@@ -24010,7 +24182,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopeBackground, // Index name
-        123, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
+        126, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeForeground enter property
     {
@@ -24018,7 +24190,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopeForeground, // Index name
-        124, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
+        127, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopeHoverForeground enter property
     {
@@ -24026,7 +24198,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopeHoverForeground, // Index name
-        125, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
+        128, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.OutOfScopePressedForeground enter property
     {
@@ -24034,7 +24206,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_OutOfScopePressedForeground, // Index name
-        126, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
+        129, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedBorderBrush enter property
     {
@@ -24042,7 +24214,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_PressedBorderBrush, // Index name
-        127, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
+        130, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.PressedForeground enter property
     {
@@ -24050,7 +24222,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_PressedForeground, // Index name
-        128, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
+        131, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedBorderBrush enter property
     {
@@ -24058,7 +24230,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedBorderBrush, // Index name
-        129, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
+        132, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledBorderBrush enter property
     {
@@ -24066,7 +24238,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedDisabledBorderBrush, // Index name
-        130, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
+        133, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedDisabledForeground enter property
     {
@@ -24074,7 +24246,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedDisabledForeground, // Index name
-        131, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
+        134, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedForeground enter property
     {
@@ -24082,7 +24254,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedForeground, // Index name
-        132, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
+        135, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverBorderBrush enter property
     {
@@ -24090,7 +24262,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedHoverBorderBrush, // Index name
-        133, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
+        136, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedHoverForeground enter property
     {
@@ -24098,7 +24270,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedHoverForeground, // Index name
-        134, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
+        137, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedBorderBrush enter property
     {
@@ -24106,7 +24278,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedPressedBorderBrush, // Index name
-        135, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
+        138, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.SelectedPressedForeground enter property
     {
@@ -24114,7 +24286,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_SelectedPressedForeground, // Index name
-        136, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
+        139, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBackground enter property
     {
@@ -24122,7 +24294,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayBackground, // Index name
-        137, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
+        140, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutBackground enter property
     {
@@ -24130,7 +24302,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayBlackoutBackground, // Index name
-        138, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
+        141, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayBlackoutForeground enter property
     {
@@ -24138,7 +24310,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayBlackoutForeground, // Index name
-        139, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
+        142, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayDisabledBackground enter property
     {
@@ -24146,7 +24318,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayDisabledBackground, // Index name
-        140, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
+        143, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayForeground enter property
     {
@@ -24154,7 +24326,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayForeground, // Index name
-        141, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
+        144, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBackground enter property
     {
@@ -24162,7 +24334,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayHoverBackground, // Index name
-        142, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
+        145, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayHoverBorderBrush enter property
     {
@@ -24170,7 +24342,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayHoverBorderBrush, // Index name
-        143, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
+        146, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBackground enter property
     {
@@ -24178,7 +24350,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayPressedBackground, // Index name
-        144, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
+        147, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodayPressedBorderBrush enter property
     {
@@ -24186,7 +24358,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodayPressedBorderBrush, // Index name
-        145, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
+        148, // Next enter property = Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.CalendarView.TodaySelectedInnerBorderBrush enter property
     {
@@ -24194,7 +24366,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::CalendarView_TodaySelectedInnerBorderBrush, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions enter property
     {
@@ -24202,7 +24374,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ContentControl_ContentTransitions, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.FontIcon.FontFamily enter property
     {
@@ -24210,7 +24382,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         OFFSET(TextFormatting, m_pFontFamily), // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::FontIcon_FontFamily, // Index name
-        77, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        80, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.Grid.ColumnDefinitions enter property
     {
@@ -24218,7 +24390,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Grid_ColumnDefinitions, // Index name
-        149, // Next enter property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
+        152, // Next enter property = Microsoft.UI.Xaml.Controls.Grid.RowDefinitions
     },
     // Microsoft.UI.Xaml.Controls.Grid.RowDefinitions enter property
     {
@@ -24226,7 +24398,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Grid_RowDefinitions, // Index name
-        83, // Next enter property = Microsoft.UI.Xaml.Controls.Panel.Background
+        86, // Next enter property = Microsoft.UI.Xaml.Controls.Panel.Background
     },
     // Microsoft.UI.Xaml.Controls.IconSourceElement.IconSource enter property
     {
@@ -24234,7 +24406,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::IconSourceElement_IconSource, // Index name
-        77, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        80, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemContainerTransitions enter property
     {
@@ -24242,7 +24414,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsControl_ItemContainerTransitions, // Index name
-        152, // Next enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
+        155, // Next enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsHost enter property
     {
@@ -24250,7 +24422,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::DoNotEnterLeave) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsControl_ItemsHost, // Index name
-        153, // Next enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
+        156, // Next enter property = Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel
     },
     // Microsoft.UI.Xaml.Controls.ItemsControl.ItemsPanel enter property
     {
@@ -24258,7 +24430,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ItemsControl_ItemsPanel, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.AutoPlay enter property
     {
@@ -24266,7 +24438,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::MediaPlayerElement_AutoPlay, // Index name
-        155, // Next enter property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.IsFullWindow
+        158, // Next enter property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.IsFullWindow
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.IsFullWindow enter property
     {
@@ -24274,7 +24446,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke)), // Property flags
         KnownPropertyIndex::MediaPlayerElement_IsFullWindow, // Index name
-        156, // Next enter property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
+        159, // Next enter property = Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource
     },
     // Microsoft.UI.Xaml.Controls.MediaPlayerElement.PosterSource enter property
     {
@@ -24282,7 +24454,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::NeedsInvoke) | static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::MediaPlayerElement_PosterSource, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputScope enter property
     {
@@ -24290,7 +24462,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PasswordBox_InputScope, // Index name
-        158, // Next enter property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
+        161, // Next enter property = Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.SelectionHighlightColor enter property
     {
@@ -24298,7 +24470,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PasswordBox_SelectionHighlightColor, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data enter property
     {
@@ -24306,7 +24478,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Path_Data, // Index name
-        95, // Next enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // Next enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.PathIcon.Data enter property
     {
@@ -24314,7 +24486,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::PathIcon_Data, // Index name
-        77, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
+        80, // Next enter property = Microsoft.UI.Xaml.Controls.IconElement.Foreground
     },
     // Microsoft.UI.Xaml.Shapes.Polygon.Points enter property
     {
@@ -24322,7 +24494,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Polygon_Points, // Index name
-        95, // Next enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // Next enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Shapes.Polyline.Points enter property
     {
@@ -24330,7 +24502,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::Polyline_Points, // Index name
-        95, // Next enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
+        98, // Next enter property = Microsoft.UI.Xaml.Shapes.Shape.Fill
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.InputScope enter property
     {
@@ -24338,7 +24510,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichEditBox_InputScope, // Index name
-        164, // Next enter property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
+        167, // Next enter property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColor enter property
     {
@@ -24346,7 +24518,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichEditBox_SelectionHighlightColor, // Index name
-        165, // Next enter property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
+        168, // Next enter property = Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.RichEditBox.SelectionHighlightColorWhenNotFocused enter property
     {
@@ -24354,7 +24526,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::RichEditBox_SelectionHighlightColorWhenNotFocused, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.SplitView.TemplateSettings enter property
     {
@@ -24362,7 +24534,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::SplitView_TemplateSettings, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputScope enter property
     {
@@ -24370,7 +24542,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBox_InputScope, // Index name
-        168, // Next enter property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
+        171, // Next enter property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColor enter property
     {
@@ -24378,7 +24550,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBox_SelectionHighlightColor, // Index name
-        169, // Next enter property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
+        172, // Next enter property = Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused
     },
     // Microsoft.UI.Xaml.Controls.TextBox.SelectionHighlightColorWhenNotFocused enter property
     {
@@ -24386,7 +24558,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::TextBox_SelectionHighlightColorWhenNotFocused, // Index name
-        69, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        72, // Next enter property = Microsoft.UI.Xaml.Controls.Control.Background
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckBrush enter property
     {
@@ -24394,7 +24566,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_CheckBrush, // Index name
-        171, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
+        174, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckHintBrush enter property
     {
@@ -24402,7 +24574,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_CheckHintBrush, // Index name
-        172, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
+        175, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.CheckSelectingBrush enter property
     {
@@ -24410,7 +24582,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_CheckSelectingBrush, // Index name
-        173, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
+        176, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragBackground enter property
     {
@@ -24418,7 +24590,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_DragBackground, // Index name
-        174, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
+        177, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.DragForeground enter property
     {
@@ -24426,7 +24598,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_DragForeground, // Index name
-        175, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
+        178, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.FocusBorderBrush enter property
     {
@@ -24434,7 +24606,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_FocusBorderBrush, // Index name
-        176, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
+        179, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PlaceholderBackground enter property
     {
@@ -24442,7 +24614,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_PlaceholderBackground, // Index name
-        177, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
+        180, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.PointerOverBackground enter property
     {
@@ -24450,7 +24622,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_PointerOverBackground, // Index name
-        178, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
+        181, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedBackground enter property
     {
@@ -24458,7 +24630,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedBackground, // Index name
-        179, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
+        182, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedForeground enter property
     {
@@ -24466,7 +24638,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedForeground, // Index name
-        180, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
+        183, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBackground enter property
     {
@@ -24474,7 +24646,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBackground, // Index name
-        181, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
+        184, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.GridViewItemPresenter.SelectedPointerOverBorderBrush enter property
     {
@@ -24482,7 +24654,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::GridViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
-        66, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        69, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBorderBrush enter property
     {
@@ -24490,7 +24662,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBorderBrush, // Index name
-        183, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
+        186, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxBrush enter property
     {
@@ -24498,7 +24670,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxBrush, // Index name
-        184, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
+        187, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBorderBrush enter property
     {
@@ -24506,7 +24678,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBorderBrush, // Index name
-        185, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
+        188, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxDisabledBrush enter property
     {
@@ -24514,7 +24686,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxDisabledBrush, // Index name
-        186, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
+        189, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBorderBrush enter property
     {
@@ -24522,7 +24694,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBorderBrush, // Index name
-        187, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
+        190, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPointerOverBrush enter property
     {
@@ -24530,7 +24702,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPointerOverBrush, // Index name
-        188, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
+        191, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBorderBrush enter property
     {
@@ -24538,7 +24710,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBorderBrush, // Index name
-        189, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
+        192, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxPressedBrush enter property
     {
@@ -24546,7 +24718,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxPressedBrush, // Index name
-        190, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
+        193, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedBrush enter property
     {
@@ -24554,7 +24726,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedBrush, // Index name
-        191, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
+        194, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedDisabledBrush enter property
     {
@@ -24562,7 +24734,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedDisabledBrush, // Index name
-        192, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
+        195, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPointerOverBrush enter property
     {
@@ -24570,7 +24742,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPointerOverBrush, // Index name
-        193, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
+        196, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBoxSelectedPressedBrush enter property
     {
@@ -24578,7 +24750,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBoxSelectedPressedBrush, // Index name
-        194, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
+        197, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckBrush enter property
     {
@@ -24586,7 +24758,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckBrush, // Index name
-        195, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
+        198, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckDisabledBrush enter property
     {
@@ -24594,7 +24766,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckDisabledBrush, // Index name
-        196, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
+        199, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckHintBrush enter property
     {
@@ -24602,7 +24774,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckHintBrush, // Index name
-        197, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
+        200, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckPressedBrush enter property
     {
@@ -24610,7 +24782,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckPressedBrush, // Index name
-        198, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
+        201, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.CheckSelectingBrush enter property
     {
@@ -24618,7 +24790,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_CheckSelectingBrush, // Index name
-        199, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
+        202, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragBackground enter property
     {
@@ -24626,7 +24798,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_DragBackground, // Index name
-        200, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
+        203, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.DragForeground enter property
     {
@@ -24634,7 +24806,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_DragForeground, // Index name
-        201, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
+        204, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusBorderBrush enter property
     {
@@ -24642,7 +24814,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_FocusBorderBrush, // Index name
-        202, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
+        205, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.FocusSecondaryBorderBrush enter property
     {
@@ -24650,7 +24822,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_FocusSecondaryBorderBrush, // Index name
-        203, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
+        206, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PlaceholderBackground enter property
     {
@@ -24658,7 +24830,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PlaceholderBackground, // Index name
-        204, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
+        207, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBackground enter property
     {
@@ -24666,7 +24838,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBackground, // Index name
-        205, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
+        208, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverBorderBrush enter property
     {
@@ -24674,7 +24846,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PointerOverBorderBrush, // Index name
-        206, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
+        209, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PointerOverForeground enter property
     {
@@ -24682,7 +24854,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PointerOverForeground, // Index name
-        207, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
+        210, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.PressedBackground enter property
     {
@@ -24690,7 +24862,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_PressedBackground, // Index name
-        208, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
+        211, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBackground enter property
     {
@@ -24698,7 +24870,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedBackground, // Index name
-        209, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
+        212, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedBorderBrush enter property
     {
@@ -24706,7 +24878,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedBorderBrush, // Index name
-        210, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
+        213, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBackground enter property
     {
@@ -24714,7 +24886,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBackground, // Index name
-        211, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
+        214, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedDisabledBorderBrush enter property
     {
@@ -24722,7 +24894,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedDisabledBorderBrush, // Index name
-        212, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
+        215, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedForeground enter property
     {
@@ -24730,7 +24902,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedForeground, // Index name
-        213, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
+        216, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedInnerBorderBrush enter property
     {
@@ -24738,7 +24910,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedInnerBorderBrush, // Index name
-        214, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
+        217, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBackground enter property
     {
@@ -24746,7 +24918,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBackground, // Index name
-        215, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
+        218, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPointerOverBorderBrush enter property
     {
@@ -24754,7 +24926,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPointerOverBorderBrush, // Index name
-        216, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
+        219, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBackground enter property
     {
@@ -24762,7 +24934,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBackground, // Index name
-        217, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
+        220, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectedPressedBorderBrush enter property
     {
@@ -24770,7 +24942,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectedPressedBorderBrush, // Index name
-        218, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
+        221, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorBrush enter property
     {
@@ -24778,7 +24950,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorBrush, // Index name
-        219, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
+        222, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorDisabledBrush enter property
     {
@@ -24786,7 +24958,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorDisabledBrush, // Index name
-        220, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
+        223, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPointerOverBrush enter property
     {
@@ -24794,7 +24966,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPointerOverBrush, // Index name
-        221, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
+        224, // Next enter property = Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter.SelectionIndicatorPressedBrush enter property
     {
@@ -24802,7 +24974,7 @@ extern const MetaDataEnterProperty c_aEnterProperties[222] =
         0, // Storage offset
         static_cast<MetaDataEnterPropertyInfoFlags>(static_cast<UINT>(MetaDataEnterPropertyInfoFlags::IsObjectProperty)), // Property flags
         KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorPressedBrush, // Index name
-        66, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
+        69, // Next enter property = Microsoft.UI.Xaml.Controls.ContentPresenter.ContentTransitions
     },
 };
 

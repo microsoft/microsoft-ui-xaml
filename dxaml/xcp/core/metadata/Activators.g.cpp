@@ -81,6 +81,14 @@ HRESULT OnCoreCreateColorPaletteResources(_Outptr_ CDependencyObject **ppObject,
 {
     RRETURN(CColorPaletteResources::Create(ppObject, pCreate));
 }
+HRESULT OnCoreCreateCondition(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CCondition::Create(ppObject, pCreate));
+}
+HRESULT OnCoreCreateConditionCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CConditionCollection::Create(ppObject, pCreate));
+}
 HRESULT OnCoreCreateConnectedAnimationRoot(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CConnectedAnimationRoot::Create(ppObject, pCreate));
@@ -148,6 +156,10 @@ HRESULT OnCoreCreateLengthConverter(_Outptr_ CDependencyObject **ppObject, _In_ 
 HRESULT OnCoreCreateMarkupExtensionBase(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CMarkupExtensionBase::Create(ppObject, pCreate));
+}
+HRESULT OnCoreCreateMultiTrigger(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CMultiTrigger::Create(ppObject, pCreate));
 }
 HRESULT OnCoreCreateNullExtension(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
@@ -224,6 +236,10 @@ HRESULT OnCoreCreateThickness(_Outptr_ CDependencyObject **ppObject, _In_ CREATE
 HRESULT OnCoreCreateTransitionRoot(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CTransitionRoot::Create(ppObject, pCreate));
+}
+HRESULT OnCoreCreateTrigger(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CTrigger::Create(ppObject, pCreate));
 }
 HRESULT OnCoreCreateTriggerActionCollection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {

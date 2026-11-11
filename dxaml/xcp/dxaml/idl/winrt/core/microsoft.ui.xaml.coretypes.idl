@@ -1630,6 +1630,14 @@ namespace Microsoft.UI.Xaml
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
+    runtimeclass ConditionCollection
+        :[default] Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Condition>
+    {
+        ConditionCollection();
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
     runtimeclass DataContextChangedEventArgs
     {
         Object NewValue{ get; };
@@ -1962,6 +1970,17 @@ namespace Microsoft.UI.Xaml
         Double HorizontalOffset;
         Double VerticalOffset;
         Boolean Handled;
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    runtimeclass Condition
+        : Microsoft.UI.Xaml.DependencyObject
+    {
+        Condition();
+        String Property;
+        Object Value;
+        static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2601,6 +2620,17 @@ namespace Microsoft.UI.Xaml
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    [contentproperty("Setters")]
+    runtimeclass MultiTrigger
+        : Microsoft.UI.Xaml.TriggerBase
+    {
+        MultiTrigger();
+        Microsoft.UI.Xaml.ConditionCollection Conditions{ get; };
+        Microsoft.UI.Xaml.SetterBaseCollection Setters{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [feature(Feature_Xaml2018)]
     [webhosthidden]
     [contentproperty("Children")]
@@ -2660,6 +2690,19 @@ namespace Microsoft.UI.Xaml
         StateTrigger();
         Boolean IsActive;
         static Microsoft.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    [contentproperty("Setters")]
+    runtimeclass Trigger
+        : Microsoft.UI.Xaml.TriggerBase
+    {
+        Trigger();
+        String Property;
+        Object Value;
+        Microsoft.UI.Xaml.SetterBaseCollection Setters{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
     };
 
 }

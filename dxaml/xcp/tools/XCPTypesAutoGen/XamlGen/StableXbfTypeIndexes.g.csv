@@ -984,3 +984,8 @@ SplitMenuFlyoutItemAutomationPeer,SplitMenuFlyoutItemAutomationPeer,982
 SplitMenuFlyoutItem,SplitMenuFlyoutItem,983
 RowContext,RowContext,984
 NeighborRelation,NeighborRelation,985
+Condition,Condition,986
+PresentationFrameworkCollectionOfCondition,PresentationFrameworkCollectionOfCondition,987
+MultiTrigger,MultiTrigger,988
+Trigger,Trigger,989
+ConditionCollection,ConditionCollection,990
