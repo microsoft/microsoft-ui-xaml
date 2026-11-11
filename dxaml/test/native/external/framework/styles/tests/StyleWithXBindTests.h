@@ -89,6 +89,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that setter values without connection IDs stay deferred next to and between connection-bearing setter values")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(SetterValueWithConnectionIdInTemplateRemainsDeferred)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that connection IDs inside a deferred template body do not realize the template setter value or neighboring setter values")
+        END_TEST_METHOD()
 #pragma endregion
 
     private:
