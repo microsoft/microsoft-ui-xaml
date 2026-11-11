@@ -64,13 +64,24 @@ private WinUI DLLs (see "Profile an app with private WinUI DLLs").
 
 ## Build and run
 
-Requires Windows 11, .NET SDK 10.0.403, Windows SDK 10.0.26100.0 and Visual Studio
-with MSBuild plus the x64 and ARM64 C++ toolchains. This tool has a standalone
-build boundary and does not require a WinUI product build or product initialization.
+Requires Windows 11, Visual Studio 2022 or 2026 (any edition, including Build
+Tools) with MSBuild and the x64 and ARM64 C++ build tools, Windows SDK
+10.0.26100.0, .NET SDK 10.0.403 or a later 10.0 SDK, and Git. This tool has a
+standalone build boundary and does not require a WinUI product build or product
+initialization.
+
+`scripts\Install-Prerequisites.ps1` checks these and lists the missing ones.
+When you approve, it installs them all and asks for administrator rights once:
+the .NET SDK and Git with winget, and the C++ build tools and Windows SDK with
+the Visual Studio Installer, or as Visual Studio Build Tools 2022 from winget
+when no Visual Studio can take them. `-WhatIf` only lists them; `-Force`
+installs them without asking. Like `Profile-App.ps1`, it needs PowerShell 7.4
+or later.
 
 Run from this directory:
 
 ```powershell
+.\scripts\Install-Prerequisites.ps1
 .\scripts\Build-App.ps1 -Configuration Release -Platform x64
 $output = (Get-Content .\WinUIProfiler.App\obj\ProfilerAppOutput.x64.Release.txt -Raw).Trim()
 & (Join-Path $output 'WinUIProfiler.App.exe')
@@ -124,8 +135,10 @@ Use `-ExePath`, with optional `-Arguments`, for an unpackaged app, and `-Aumid`
 for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
 
 1. Builds the profiler with `Build-App.ps1` (Release, for this machine's
-   architecture) when this checkout has no build. `-Build` rebuilds it;
-   `-ProfilerPath` uses another `WinUIProfiler.App.exe`.
+   architecture) when this checkout has no build. It first runs
+   `Install-Prerequisites.ps1`, which offers to install the missing build tools
+   (see "Build and run"). `-Build` rebuilds it; `-ProfilerPath` uses another
+   `WinUIProfiler.App.exe`.
 2. Asks for administrator rights with a UAC prompt, because reading ETW live
    and creating the links below need them. The app runs without them.
 3. Checks that the DLLs are MUX and MUXC builds for the app's architecture,
@@ -152,9 +165,9 @@ for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
    and `redirect.jsonl`.
 
 It exits with 0 when the app ran with the private DLLs and the staged runtime
-was deleted, 4 when the UAC prompt was declined and 1 otherwise. A runtime
-that cannot be deleted, for example because the app is still running, is kept
-and reported.
+was deleted, 4 when the UAC prompt in step 2 was declined and 1 otherwise. A
+runtime that cannot be deleted, for example because the app is still running,
+is kept and reported.
 
 The private DLLs must match the app's Windows App SDK version: the launcher
 replaces the two DLLs, not the rest of the runtime. UWP (AppContainer) apps are

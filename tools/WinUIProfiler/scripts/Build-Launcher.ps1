@@ -20,7 +20,9 @@ $dependencies = Get-Content -LiteralPath (Join-Path $source 'dependencies.json')
 $repository = [string]$dependencies.detours.repository
 $revision = [string]$dependencies.detours.revision
 if ($revision -cnotmatch '^[0-9a-f]{40}$') { throw 'The Detours dependency must pin a full commit SHA.' }
-if (!(Get-Command git -ErrorAction SilentlyContinue)) { throw 'Git is required to download the pinned Detours source.' }
+if (!(Get-Command git -ErrorAction SilentlyContinue)) {
+    throw 'Git is required to download the pinned Detours source. Run .\scripts\Install-Prerequisites.ps1 to install it.'
+}
 
 $dependency = Join-Path $root "artifacts\launcher\dependencies\detours-$revision"
 if (!(Test-Path -LiteralPath $dependency)) {
@@ -37,12 +39,16 @@ $actual = (Invoke-Git -C $dependency rev-parse HEAD | Select-Object -Last 1).Tri
 if ($actual -cne $revision) { throw "Unexpected Detours revision in $dependency; delete the folder and build again." }
 
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-if (!(Test-Path -LiteralPath $vswhere)) { throw 'Visual Studio C++ build tools are required to build the private WinUI launcher.' }
+$install = 'Run .\scripts\Install-Prerequisites.ps1 to install them.'
+if (!(Test-Path -LiteralPath $vswhere)) {
+    throw "Visual Studio C++ build tools are required to build the private WinUI launcher. $install"
+}
 $component = if ($arch -eq 'arm64') { 'Microsoft.VisualStudio.Component.VC.Tools.ARM64' } else {
     'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
 }
-$visualStudio = @(& $vswhere -latest -products '*' -requires $component -property installationPath) | Select-Object -First 1
-if (!$visualStudio) { throw "The Visual Studio C++ $Architecture build tools ($component) are missing." }
+$visualStudio = @(& $vswhere -latest -products '*' -version '[17.0,19.0)' -requires $component -property installationPath) |
+    Select-Object -First 1
+if (!$visualStudio) { throw "The Visual Studio C++ $Architecture build tools ($component) are missing. $install" }
 
 $output = Join-Path $root "artifacts\launcher\win-$arch"
 $null = New-Item -ItemType Directory -Path $output -Force
