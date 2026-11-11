@@ -339,7 +339,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                         control->IsTextScaleFactorEnabled = false;
                         if (fontSize == 8.0)
                         {
-                            control->Padding = xaml::Thickness(0, 0, 0, 0);
+                            control->Padding = { 0, 0, 0, 0 };
                         }
                         control->Content = ref new Platform::String(multiline ? L"Choose an option\nwith a second line" : L"Choose an option");
                         TestServices::WindowHelper->WindowContent = control;
@@ -350,7 +350,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     {
                         auto root = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(control, 0));
                         auto glyph = safe_cast<xaml::FrameworkElement^>(root->FindName(radioButton ? L"OuterEllipse" : L"NormalRectangle"));
-                        auto presenter = root->FindName(L"ContentPresenter");
+                        auto presenter = safe_cast<xaml_controls::ContentPresenter^>(root->FindName(L"ContentPresenter"));
                         auto labelRoot = xaml_media::VisualTreeHelper::GetChild(presenter, 0);
                         auto label = dynamic_cast<xaml_controls::TextBlock^>(labelRoot);
                         if (!label)
