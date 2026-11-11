@@ -2129,7 +2129,7 @@ namespace Microsoft.UI.Xaml.Markup
         void Disable(Int32 lineNumber, Int32 columnNumber);
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     interface IXamlCondition 
     {

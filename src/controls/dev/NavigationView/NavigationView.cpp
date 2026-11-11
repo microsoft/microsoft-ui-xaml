@@ -18,6 +18,10 @@
 #include "RuntimeProfiler.h"
 #include "Utils.h"
 #include "MuxcTraceLogging.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62995866: [2.0 Servicing] Prevent negative MaxHeight in NavigationView::UpdatePaneLayout during re-entrant SizeChanged (RCC: NavigationView_UpdatePaneLayoutNegativeMaxHeight)
+#define WINAPPSDK_CHANGEID_62995866 62995866
 #include "NavigationViewItemBaseRevokers.h"
 #include "IndexPath.h"
 #include "InspectingDataSource.h"
@@ -1604,7 +1608,9 @@ void NavigationView::UpdatePaneLayout()
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return totalAvailableHeight - footerGroupDesiredHeight;
                             }
-                            else if (menuItemsDesiredHeight <= totalAvailableHeightHalf)
+                            else if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62995866>()
+                                ? (menuItemsActualHeight <= totalAvailableHeightHalf)
+                                : (menuItemsDesiredHeight <= totalAvailableHeightHalf))
                             {
                                 // Footer items exceed over the half, so let's limit them.
                                 footerItemsScrollViewer.MaxHeight(totalAvailableHeight - menuItemsActualHeight);
@@ -1626,7 +1632,8 @@ void NavigationView::UpdatePaneLayout()
                                 return totalAvailableHeightHalf;
                             }
                         }
-                        else
+                        else if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62995866>()
+                            || totalAvailableHeight >= footerItemsRepeater.ActualHeight())
                         {
                             // Couldn't determine the menuItems.
                             // Let's just take all the height and let the other repeater deal with it.

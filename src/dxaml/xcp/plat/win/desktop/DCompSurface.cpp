@@ -9,6 +9,11 @@
 #include <DependencyLocator.h>
 #include <PixelFormat.h>
 
+#include "XcpAllocation.h"
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_64006293 64006293
+
 extern UINT32 g_uD3D11TextureMemoryUsage;
 extern UINT32 g_uD3D11TextureMemoryUsageNPOT;
 
@@ -162,7 +167,7 @@ DCompSurface::InitializeSurface(
     if (m_isVirtual)
     {
         ASSERT(m_requestAtlas);
-        IFCFAILFAST(pDCompTreeHost->GetCompositionHelper()->CreateVirtualSurface(
+        IFCFAILFAST(pDCompTreeHost->GetSurfaceFactory()->CreateVirtualSurface(
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             compositionSurfaceFormat,
@@ -1308,9 +1313,20 @@ DCompSurface::UpdateMemoryFootprint(bool increase)
     g_uD3D11TextureMemoryUsageNPOT += textureSize;
 
     // TODO: JCOMP: Need to separate the logic here for sysmem vs vidmem into different methods again
-    if (m_pCompositionSurface != NULL)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64006293>())
     {
-        TraceMemoryUpdateAllocationDCompSurfaceInfo(static_cast<int32_t>(textureSize));
+        if (m_pCompositionSurface != NULL)
+        {
+            TraceMemoryUpdateAllocationDCompSurfaceInfo(static_cast<int32_t>(textureSize));
+            XcpAllocation::UpdateAllocatedMemory(textureSize);
+        }
+    }
+    else
+    {
+        if (m_pCompositionSurface != NULL)
+        {
+            TraceMemoryUpdateAllocationDCompSurfaceInfo(static_cast<int32_t>(textureSize));
+        }
     }
 }
 

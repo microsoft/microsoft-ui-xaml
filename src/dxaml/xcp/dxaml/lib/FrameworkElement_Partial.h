@@ -207,6 +207,7 @@ namespace DirectUI
         _Check_return_ HRESULT IsViewportImpl(_Out_ BOOLEAN* returnValue);
         _Check_return_ HRESULT FindNameImpl(_In_ HSTRING name, _Outptr_ IInspectable** returnValue);
         _Check_return_ HRESULT SetBindingImpl(_In_ xaml::IDependencyProperty* dp, _In_ xaml_data::IBindingBase* binding);
+        _Check_return_ HRESULT SetThemeResourceBindingImpl(_In_ xaml::IDependencyProperty* property, _In_ HSTRING resourceKey);
         _Check_return_ HRESULT GetBindingExpressionImpl(_In_ xaml::IDependencyProperty* dp, _Outptr_ xaml_data::IBindingExpression** returnValue);
 
         static _Check_return_ HRESULT PropagateDataContextChange(_In_ CFrameworkElement* pChildCore);

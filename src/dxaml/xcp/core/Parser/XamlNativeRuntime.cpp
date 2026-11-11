@@ -453,7 +453,7 @@ _Check_return_ HRESULT XamlNativeRuntime::SetValue(
                                 IFC(spProperty->get_FullName(&spPropertyName));
                                 IFC(CErrorService::OriginateInvalidOperationError(
                                     pCore,
-                                    AG_E_PARSER2_OW_READ_ONLY,
+                                    AG_E_READ_ONLY_PROPERTY,
                                     spPropertyName));
                             }
 
@@ -828,7 +828,7 @@ _Check_return_ HRESULT XamlNativeRuntime::CheckIsPropertyWriteable(
 
         IFC_RETURN(CErrorService::OriginateInvalidOperationError(
             pCore,
-            AG_E_PARSER2_OW_READ_ONLY,
+            AG_E_READ_ONLY_PROPERTY,
             spPropertyName));
     }
 

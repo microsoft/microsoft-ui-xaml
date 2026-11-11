@@ -5,7 +5,13 @@ Param(
     [string]$VersionOverride,
     [switch]$NoPackageAnalysis,
     [switch]$UseDependencyOverrides,
-    [string]$Nuspec = "Microsoft.ProjectReunion.WinUI.TransportPackage.nuspec"
+    [switch]$InstallPackage,
+    [string]$Nuspec = "Microsoft.ProjectReunion.WinUI.TransportPackage.nuspec",
+    # When supplied (non-empty), pins ALL upstream inter-component dependency versions
+    # (Foundation/IXP/Base) baked into the produced nupkg to this single coherent value,
+    # overriding the eng\Version.Details.xml read path. Used by the monobuild Pack step
+    # which passes $(WindowsAppSDKFormattedVersion). Empty default preserves standalone behavior.
+    [string]$MonobuildPinnedVersion = ''
 )
 
 #
@@ -36,6 +42,12 @@ if ($VersionOverride)
 {
     $version = $VersionOverride
 }
+elseif ($MonobuildPinnedVersion)
+{
+    # Monobuild: a set MonobuildPinnedVersion implies the coherent monobuild version,
+    # so callers need not also pass -VersionOverride.
+    $version = $MonobuildPinnedVersion
+}
 else
 {
     $version = "$env:versionFinal"
@@ -60,31 +72,27 @@ $IXP_COMPONENT_VERSION = ''
 $CsWinRT_Version = $VersionsPropsContent.SelectSingleNode('//MicrosoftCsWinRTPackageVersion').InnerText
 $WEBVIEW2_Version = $VersionsPropsContent.SelectSingleNode('//WebView2PackageVersion').InnerText
 
-$VersionsDetailsPath = Join-Path "$scriptDirectory\..\.." "eng\Version.Details.xml"
-[xml]$versionDetails = Get-Content -Path $VersionsDetailsPath
+# Component versions (formerly Maestro). versions.props pins wrap a ValueOrDefault; resolve to the pinned env var, else the literal fallback.
+function Resolve-VersionPin([string]$raw) {
+    if ($env:WindowsAppSDKVersionPinned) { return $env:WindowsAppSDKVersionPinned }
+    if ($raw -match ",\s*'([^']*)'") { return $Matches[1] }
+    return $raw
+}
+$IXP_Version                  = Resolve-VersionPin $VersionsPropsContent.SelectSingleNode('//IxpTransportPackageVersion').InnerText
+$BASE_COMPONENT_VERSION       = Resolve-VersionPin $VersionsPropsContent.SelectSingleNode('//BasePackageVersion').InnerText
+$FOUNDATION_COMPONENT_VERSION = Resolve-VersionPin $VersionsPropsContent.SelectSingleNode('//FoundationPackageVersion').InnerText
+$IXP_COMPONENT_VERSION        = Resolve-VersionPin $VersionsPropsContent.SelectSingleNode('//IXPPackageVersion').InnerText
 
-# Set up Map from the dependencies to its versions to reference later
-foreach ($dependency in $versionDetails.Dependencies.ProductDependencies.Dependency)
+# Monobuild override: a single coherent version pins ALL upstream inter-component
+# dependency versions baked into the produced nupkg. Takes precedence over the
+# Version.Details.xml read above. Empty string means not supplied -> legacy behavior.
+if ($MonobuildPinnedVersion)
 {
-  if ($dependency.name -eq "Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage")
-  {
-    $IXP_Version = $dependency.version
-  }
-
-  if ($dependency.name -eq "Microsoft.WindowsAppSDK.Base")
-  {
-    $BASE_COMPONENT_VERSION = $dependency.version
-  }
-
-  if ($dependency.name -eq "Microsoft.WindowsAppSDK.Foundation")
-  {
-    $FOUNDATION_COMPONENT_VERSION = $dependency.version
-  }
-
-  if ($dependency.name -eq "Microsoft.WindowsAppSDK.InteractiveExperiences")
-  {
-    $IXP_COMPONENT_VERSION = $dependency.version
-  }
+    $FOUNDATION_COMPONENT_VERSION = $MonobuildPinnedVersion
+    $IXP_COMPONENT_VERSION        = $MonobuildPinnedVersion
+    $BASE_COMPONENT_VERSION       = $MonobuildPinnedVersion
+    $IXP_Version                  = $MonobuildPinnedVersion
+    Write-Host "MonobuildPinnedVersion applied -> all 4 inter-component dependency versions pinned to: $MonobuildPinnedVersion"
 }
 
 if ($UseDependencyOverrides)
@@ -138,5 +146,37 @@ if ($lastexitcode -ne 0)
     Write-Host "Nuget returned $lastexitcode"
     Exit $lastexitcode;
 }
+
+
+if ($InstallPackage)
+{
+    $PackageCache = Join-Path "$scriptDirectory\..\.." "packages"
+    $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"
+    $ExistingPackagePath = Join-Path $PackageCache "Microsoft.WindowsAppSDK.WinUI.$VersionOverride"
+    $PackageRefCachePath = Join-Path $PackageCache "microsoft.windowsappsdk.winui\$VersionOverride"
+
+    if (Test-Path $ExistingPackagePath)
+    {
+        Write-Host "Removing stale package: $ExistingPackagePath" -ForegroundColor Yellow
+        Remove-Item $ExistingPackagePath -Recurse -Force
+    }
+    # Also remove the PackageReference-style cache folder (lowercase, nested version directory)
+    # so that NuGet re-extracts the updated package for C# projects using PackageReference.
+    if (Test-Path $PackageRefCachePath)
+    {
+        Write-Host "Removing stale PackageReference cache: $PackageRefCachePath" -ForegroundColor Yellow
+        Remove-Item $PackageRefCachePath -Recurse -Force
+    }
+
+    Write-Host "nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
+    nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
+
+    if ($lastexitcode -ne 0)
+    {
+        Write-Host "Nuget Install returned $lastexitcode"
+        Exit $lastexitcode;
+    }
+}
+
 
 popd

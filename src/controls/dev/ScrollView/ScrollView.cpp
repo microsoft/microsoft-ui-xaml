@@ -29,6 +29,9 @@ ScrollView::ScrollView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ScrollView);
 
     EnsureProperties();
+    RegisterPropertyChangedCallback(
+        winrt::Control::CornerRadiusProperty(),
+        { this, &ScrollView::OnCornerRadiusChanged });
     SetDefaultStyleKey(this);
     HookUISettingsEvent();
     HookScrollViewEvents();
@@ -498,6 +501,7 @@ void ScrollView::OnApplyTemplate()
     }
 
     UpdateVisualStates(false /*useTransitions*/);
+    UpdateContentClippingVisualState(false /*useTransitions*/);
 }
 
 #pragma endregion
@@ -804,7 +808,11 @@ void ScrollView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     bool horizontalChange = dependencyProperty == s_HorizontalScrollBarVisibilityProperty;
     bool verticalChange = dependencyProperty == s_VerticalScrollBarVisibilityProperty;
 
-    if (horizontalChange || verticalChange)
+    if (dependencyProperty == s_CanContentRenderOutsideBoundsProperty)
+    {
+        UpdateContentClippingVisualState();
+    }
+    else if (horizontalChange || verticalChange)
     {
         UpdateScrollControllersVisibility(horizontalChange, verticalChange);
         UpdateVisualStates(
@@ -1826,6 +1834,25 @@ void ScrollView::UpdateVisualStates(
     UpdateScrollControllersSeparatorVisualState(useTransitions, scrollControllersAutoHidingChanged);
 }
 
+void ScrollView::UpdateContentClippingVisualState(bool useTransitions)
+{
+    const bool hasLocalCornerRadius =
+        ReadLocalValue(winrt::Control::CornerRadiusProperty()) != winrt::DependencyProperty::UnsetValue();
+
+    GoToState(
+        CanContentRenderOutsideBounds() && !hasLocalCornerRadius ?
+            s_contentNotClippedStateName :
+            s_contentClippedStateName,
+        useTransitions);
+}
+
+void ScrollView::OnCornerRadiusChanged(
+    const winrt::DependencyObject& /*sender*/,
+    const winrt::DependencyProperty& /*dependencyProperty*/)
+{
+    UpdateContentClippingVisualState(false /*useTransitions*/);
+}
+
 // Updates the state for the ScrollingIndicatorStates state group.
 void ScrollView::UpdateScrollControllersVisualState(
     bool useTransitions,
@@ -2614,6 +2641,10 @@ winrt::hstring ScrollView::DependencyPropertyToString(const winrt::IDependencyPr
     else if (dependencyProperty == s_VerticalScrollBarVisibilityProperty)
     {
         return L"VerticalScrollBarVisibility";
+    }
+    else if (dependencyProperty == s_CanContentRenderOutsideBoundsProperty)
+    {
+        return L"CanContentRenderOutsideBounds";
     }
     else if (dependencyProperty == s_ContentOrientationProperty)
     {

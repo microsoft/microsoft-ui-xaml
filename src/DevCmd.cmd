@@ -4,7 +4,8 @@ rem Hence to set enviroment variables, use SetEnviromentVariable
 
 pushd %~dp0
 
-PATH %PATH%;%~dp0\tools
+rem VsDevCmd.bat invokes vswhere.exe by name, even when current-directory lookup is disabled.
+set "PATH=%PATH%;%~dp0tools;%ProgramFiles(x86)%\Microsoft Visual Studio\Installer"
 set PrereleaseArg=
 
 setlocal enableextensions enabledelayedexpansion

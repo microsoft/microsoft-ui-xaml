@@ -178,7 +178,7 @@ this.Write("\r\n");
 
              if (fieldData.IsDeprecated) 
              { 
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
              } 
 this.Write("        ");
@@ -197,7 +197,7 @@ this.Write("; \r\n");
 
              if (fieldData.IsDeprecated) 
              { 
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
              } 
          } 

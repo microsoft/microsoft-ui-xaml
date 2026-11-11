@@ -467,23 +467,43 @@ _Check_return_
 HRESULT
 CDataTemplate::LoadContent(_Outptr_result_maybenull_ CDependencyObject** result, _In_opt_ CDependencyObject* templatedParent)
 {
-    // Task 16544853: Allow Deferred attaching of namescope/registrations.
-    // We cannot reuse the cached instance currently because we did not register the names during the query call.
-    // So falling back to create a new tree. This means we will end up creating one extra tree per template. Not ideal but it
-    // allows us to unblock the functionality while we figure out how to deal with the name registrations.
-
-    //if (m_cachedInstance)
-    //{
-    //    // There is a cached instance. use that and clear the cache.
-    //    *result = m_cachedInstance;
-
-    //    // We can let go of the strong peg and take a NoRef peg to emulate what LoadContent would have done.
-    //    IFC_RETURN(RemovePeerReferenceToItem(m_cachedInstance));
-    //}
-    //else
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>())
     {
-        // Let the base class do the work.
-        IFC_RETURN(CFrameworkTemplate::LoadContent(result, templatedParent, templatedParent != nullptr /* bRegisterNamesInTemplateNamescope */, false /* skipRegistrationEntirely */));
+        // A template is either parsed from markup (m_pTemplateContent) or code-authored with an
+        // element-factory callback (m_hasElementFactory), never both.
+        ASSERT(!(m_pTemplateContent != nullptr && m_hasElementFactory));
+    }
+    else
+    {
+        // With the feature flag disabled, there should be no way of setting an element factory delegate.
+        FAIL_FAST_ASSERT(!m_hasElementFactory);
+    }
+
+    if (m_hasElementFactory)
+    {
+        ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>());
+        IFC_RETURN(FxCallbacks::DataTemplate_CreateElementFromFactory(this, result));
+    }
+    else
+    {
+        // Task 16544853: Allow Deferred attaching of namescope/registrations.
+        // We cannot reuse the cached instance currently because we did not register the names during the query call.
+        // So falling back to create a new tree. This means we will end up creating one extra tree per template. Not ideal but it
+        // allows us to unblock the functionality while we figure out how to deal with the name registrations.
+
+        //if (m_cachedInstance)
+        //{
+        //    // There is a cached instance. use that and clear the cache.
+        //    *result = m_cachedInstance;
+
+        //    // We can let go of the strong peg and take a NoRef peg to emulate what LoadContent would have done.
+        //    IFC_RETURN(RemovePeerReferenceToItem(m_cachedInstance));
+        //}
+        //else
+        {
+            // Let the base class do the work.
+            IFC_RETURN(CFrameworkTemplate::LoadContent(result, templatedParent, templatedParent != nullptr /* bRegisterNamesInTemplateNamescope */, false /* skipRegistrationEntirely */));
+        }
     }
 
     return S_OK;

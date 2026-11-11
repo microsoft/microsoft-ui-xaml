@@ -50,6 +50,9 @@
 // anchor's bottom edge instead of verticalOffset (the anchor's top edge).
 #define WINAPPSDK_CHANGEID_62771256 62771256
 
+// Bug 64730431: Prevent a crash when forwarding a theme change to a staged flyout without a presenter.
+#define WINAPPSDK_CHANGEID_64730431 64730431
+
 using namespace std::placeholders;
 
 // #define DBG_FLYOUT
@@ -1533,12 +1536,22 @@ _Check_return_ HRESULT FlyoutBase::ForwardTargetPropertiesToPresenter()
     IFC_RETURN(spPresenterAsFE.Cast<FrameworkElement>()->put_AllowFocusWhenDisabled(allowFocusWhenDisabled));
 
     IFC_RETURN(ForwardThemeToPresenter());
-    
+
     return S_OK;
 }
 
 _Check_return_ HRESULT FlyoutBase::ForwardThemeToPresenter()
 {
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64730431>())
+    {
+        // A staged flyout may not have a presenter yet. Skip forwarding the theme in that case. Later, when the staged
+        // flyout opens, Open() will forward the theme at that time after creating the presenter.
+        if (!m_tpPresenter)
+        {
+            return S_OK;
+        }
+    }
+
     ctl::ComPtr<IFrameworkElement> spPresenterAsFE;
     IFC_RETURN(m_tpPresenter.As(&spPresenterAsFE));
 

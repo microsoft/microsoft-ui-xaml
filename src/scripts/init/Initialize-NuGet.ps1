@@ -14,7 +14,6 @@ $nugetDownloadName = "nuget.exe"
 $nuget_exe = . "$PSScriptRoot\Initialize-DownloadLatest.ps1" -OutDir $toolsDir -DownloadUrl "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -DownloadName $nugetDownloadName -Unzip $false
 
 # See: https://github.com/microsoft/artifacts-credprovider
-Write-Progress "Downloading the Azure Artifacts Credential Provider"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # If this is PowerShell 5, remove PowerShell 7 module paths from PSModulePath to avoid module loading conflicts.
@@ -32,7 +31,18 @@ if ($PSVersionTable.PSVersion.Major -eq 5)
 
 try
 {
-    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+    $pluginRoot = Join-Path $env:USERPROFILE ".nuget\plugins"
+    $netfxProvider = Join-Path $pluginRoot "netfx\CredentialProvider.Microsoft\CredentialProvider.Microsoft.exe"
+    $netcoreProvider = Join-Path $pluginRoot "netcore\CredentialProvider.Microsoft\CredentialProvider.Microsoft.dll"
+    if ((Test-Path -LiteralPath $netfxProvider -PathType Leaf) -and (Test-Path -LiteralPath $netcoreProvider -PathType Leaf))
+    {
+        Write-Host "Using the installed Azure Artifacts Credential Provider."
+    }
+    else
+    {
+        Write-Progress "Downloading the Azure Artifacts Credential Provider"
+        Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+    }
 }
 finally
 {

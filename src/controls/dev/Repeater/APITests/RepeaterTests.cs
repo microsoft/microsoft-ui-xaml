@@ -36,7 +36,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var elementFactory = new RecyclingElementFactory();
                 elementFactory.RecyclePool = new RecyclePool();
                 elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
-                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                           <TextBlock Text='{Binding}' Height='50' />
                       </DataTemplate>");
 
@@ -214,7 +214,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             if (PlatformConfiguration.IsDebugBuildConfiguration())
             {
                 // Test is failing in chk configuration due to:
-                // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
+                // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor
                 Log.Warning("Skipping test for Debug builds.");
                 return;
             }
@@ -278,7 +278,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        // Ensure that scrolling a nested repeater works when the 
+        // Ensure that scrolling a nested repeater works when the
         // Itemtemplates are data templates.
         [TestMethod]
         public void NestedRepeaterWithDataTemplateScenario()
@@ -446,7 +446,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // }
         }
 
-        // ScrollViewer scrolls vertically, but there is an inner 
+        // ScrollViewer scrolls vertically, but there is an inner
         // repeater which flows horizontally which needs corrections to be handled.
         //[TestMethod] 24022837
         public void VerifyCorrectionsInNonScrollableDirection()
@@ -582,7 +582,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 var scrollhost = (ItemsRepeaterScrollHost)XamlReader.Load(
-                  @"<controls:ItemsRepeaterScrollHost  
+                  @"<controls:ItemsRepeaterScrollHost
                      xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                      xmlns:local='using:MUXControlsTestApp.Samples'
@@ -880,6 +880,108 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             Verify.IsFalse(repeaterWeakRef.IsAlive,
                 "ItemsRepeater with RecyclingElementFactory should be collected after recycling and removal.");
+        }
+
+        // Verifies a code-authored DataTemplate (constructed with an element-factory callback, not markup)
+        // realized by ItemsRepeater, including recycling: the callback produces a distinct element per item,
+        // ItemsRepeater sets DataContext on each (raising DataContextChanged) so a classic {Binding} resolves,
+        // and after clearing and re-populating the source the pooled elements are reused (callback not called
+        // again) yet still receive the new item as DataContext, re-raise DataContextChanged, and update their
+        // binding.
+        [TestMethod]
+        public void ValidateCodeAuthoredDataTemplateReceivesDataContext()
+        {
+            var items = new ObservableCollection<string>(new[] { "red", "green", "blue" });
+            ItemsRepeater repeater = null;
+            int callbackCount = 0;
+            var created = new List<UIElement>();
+            var changedContexts = new Dictionary<TextBlock, object>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = new DataTemplate(() =>
+                {
+                    callbackCount++;
+                    var tb = new TextBlock();
+                    created.Add(tb);
+                    tb.DataContextChanged += (sender, args) =>
+                    {
+                        changedContexts[(TextBlock)sender] = args.NewValue;
+                    };
+                    tb.SetBinding(TextBlock.TextProperty, new Microsoft.UI.Xaml.Data.Binding());
+                    return tb;
+                });
+
+                repeater = new ItemsRepeater()
+                {
+                    ItemsSource = items,
+                    ItemTemplate = template,
+                };
+
+                Content = new ItemsRepeaterScrollHost()
+                {
+                    Width = 400,
+                    Height = 800,
+                    ScrollViewer = new ScrollViewer { Content = repeater }
+                };
+
+                Content.UpdateLayout();
+
+                // The default StackLayout creates one extra "prototype" element at index 0 via
+                // GetOrCreateElementAt(ForceCreate) to estimate the average item size
+                // (StackLayout::GetAverageElementSize), so callbackCount can exceed items.Count.
+                // Assert the intent (at least one element per item) rather than an exact count.
+                Verify.IsTrue(callbackCount >= items.Count,
+                    string.Format("Callback should be invoked at least once per item (was {0} for {1} items).", callbackCount, items.Count));
+
+                VerifyRealizedElements(repeater, items, created, changedContexts);
+
+                // The callback returns a fresh instance every time it is invoked (never the same element twice).
+                Verify.AreEqual(created.Count, created.Distinct().Count());
+
+                int countAfterFirstRealization = callbackCount;
+
+                // Recycle: clearing the source pushes realized elements into the pool; re-populating with the
+                // same count should reuse them rather than invoke the callback again. Reset the recorded
+                // contexts first so the checks below prove the event fired again on the reused elements.
+                changedContexts.Clear();
+                items.Clear();
+                Content.UpdateLayout();
+
+                items.Add("cyan");
+                items.Add("magenta");
+                items.Add("yellow");
+                Content.UpdateLayout();
+
+                Verify.AreEqual(countAfterFirstRealization, callbackCount,
+                    "Recycled elements should be reused from the pool, so the callback is not invoked again.");
+
+                // Reused elements still receive the new item as DataContext, re-raising DataContextChanged, so
+                // their {Binding} updates to the new value.
+                VerifyRealizedElements(repeater, items, created, changedContexts);
+            });
+        }
+
+        // Asserts each realized ItemsRepeater element reflects its item via DataContext, a {Binding} on Text,
+        // and DataContextChanged, and that every element is a distinct instance the callback produced.
+        private static void VerifyRealizedElements(ItemsRepeater repeater, IList<string> items, List<UIElement> created, Dictionary<TextBlock, object> changedContexts)
+        {
+            var realized = new List<UIElement>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                var element = repeater.TryGetElement(i) as TextBlock;
+                Verify.IsNotNull(element, $"Element {i} should be realized from the code-authored template.");
+                Verify.IsTrue(created.Contains(element), "Realized element should be one produced by the callback.");
+                Verify.IsTrue(changedContexts.ContainsKey(element), $"DataContextChanged should have fired for element {i}.");
+                Verify.AreEqual(items[i], changedContexts[element] as string);
+                Verify.AreEqual(items[i], element.DataContext as string);
+                // {Binding} inside the code-built subtree resolved against that DataContext.
+                Verify.AreEqual(items[i], element.Text);
+                realized.Add(element);
+            }
+
+            // Each item maps to a distinct element instance.
+            Verify.AreEqual(items.Count, realized.Distinct().Count());
         }
 
     }

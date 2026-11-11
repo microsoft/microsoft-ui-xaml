@@ -27,6 +27,9 @@
 // Bug 63435928: [2.0 Servicing] Reset the process-global ActivationFactoryCache exactly once, under CApplicationLock, to fix the concurrent XamlCore::Close double-release fast-fail (RCC: WindowsXamlManager_ActivationFactoryCacheResetRace)
 #define WINAPPSDK_CHANGEID_63435928 63435928
 
+// Bug 64354919: [2.0 experimental Servicing][WASDK] XAML cannot restart in a process, evaluate fixes/workarounds (affects File Explorer)
+#define WINAPPSDK_CHANGEID_64354919 64354919
+
 using namespace ctl;
 using namespace DirectUI;
 
@@ -50,7 +53,7 @@ public:
         auto it = std::find(m_managers.begin(), m_managers.end(), manager);
         if (it == m_managers.end())
         {
-            m_managers.push_back(manager);        
+            m_managers.push_back(manager);
         }
     }
 
@@ -131,16 +134,31 @@ public:
     {
         return false;
     }
-    
+
     _Check_return_ HRESULT OnFrameworkShutdownStarting(
         _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) override
     {
         auto managerStrongRef = m_manager;
 
-        // WARNING: "this" will be invalid after Close() returns!
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+        {
+            // XamlCore keeps WindowsXamlManager alive, and WindowsXamlManager keeps XamlCore alive through m_xamlCore.
+            // Keep the manager alive locally while closing the core, then break that cycle after raising its final event.
+            FAIL_FAST_ASSERT(m_manager);
+        }
+
         this->Close();
 
         managerStrongRef->RaiseXamlShutdownCompletedOnThreadEvent(args);
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+        {
+            // The core is now closed, so mark the manager closed while still on its owning thread. External references
+            // may be released from another thread after shutdown, and its destructor must not try to close it there.
+            IFCFAILFAST(managerStrongRef->CloseImpl(true /* synchronous */));
+
+            m_manager.Reset();
+        }
 
         return S_OK;
     }
@@ -205,7 +223,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::InitializeForCurrentThreadImpl
         IFC_RETURN(make<WindowsXamlManager>(&newManager));
         IFC_RETURN(newManager.CopyTo(ppReturnValue));
     }
-    
+
     return S_OK;
 }
 
@@ -219,7 +237,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
     {
         *ppReturnValue = nullptr;
     }
-    
+
     return S_OK;
 }
 
@@ -227,7 +245,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
 {
     if (tls_xamlCore)
     {
-        return tls_xamlCore->GetForCurrentThread();    
+        return tls_xamlCore->GetForCurrentThread();
     }
     return nullptr;
 }
@@ -339,7 +357,7 @@ _Check_return_ HRESULT WindowsXamlManager::Initialize()
             tls_xamlCore = std::make_shared<XamlCoreNewShutdown>();
         }
 
-        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the 
+        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the
         // below call to Initialize().  This is because Initialize() will call Application.OnLaunched(), which calls
         // out to app code, which may call WindowsXamlManager.InitializeForCurrentThread().
         tls_xamlCore->RegisterManager(this);
@@ -405,7 +423,7 @@ void WindowsXamlManager::RaiseXamlShutdownCompletedOnThreadEvent(_In_ msy::IDisp
         IFCFAILFAST(ctl::make<XamlShutdownCompletedOnThreadEventArgs>(&args));
 
         args->SetDispatcherQueueShutdownStartingEventArgs(shutdownStartingArgs);
-        
+
         ctl::ComPtr<xaml_hosting::IXamlShutdownCompletedOnThreadEventArgs> argsInterface;
         IFCFAILFAST(args.As(&argsInterface));
 
@@ -530,7 +548,6 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
 
         if (lastInstanceInProcess)
         {
-            // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
             FrameworkApplication::ReleaseCurrent();
 
             // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches

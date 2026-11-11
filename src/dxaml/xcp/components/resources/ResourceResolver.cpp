@@ -39,6 +39,10 @@
 #include "deferral\inc\CustomWriterRuntimeContext.h"
 #include <FxCallbacks.h>
 
+// Containment for the experimental FrameworkElement.SetThemeResourceBinding API.
+// When disabled, the API returns E_NOTIMPL and new refactored code paths don't run (we revert to old unfactored code paths).
+#define WINAPPSDK_CHANGEID_63265396 63265396
+
 namespace Diagnostics {
     std::shared_ptr<ResourceGraph> GetResourceGraph()
     {
@@ -257,13 +261,14 @@ namespace Resources {
         return S_OK;
     }
 
-    const _Check_return_ HRESULT ResourceResolver::ResolveResourceRuntime(
+    const _Check_return_ HRESULT ResourceResolver::ResolveResourceRuntime_Old(
         _In_ CDependencyObject* resolutionContext,
         _In_opt_ CResourceDictionary* dictionaryFoundIn,
         const xstring_ptr& resourceKey,
         ResourceType resourceType,
         _Out_ ResolvedResource& resolvedResource)
     {
+        ASSERT(!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63265396>());
         ResolvedResource resolved;
 
         if (dictionaryFoundIn)
@@ -344,6 +349,204 @@ namespace Resources {
 
 
         return S_OK;
+    }
+
+
+    const _Check_return_ HRESULT ResourceResolver::ResolveResourceRuntime(
+        _In_ CDependencyObject* resolutionContext,
+        _In_opt_ CResourceDictionary* dictionaryFoundIn,
+        const xstring_ptr& resourceKey,
+        ResourceType resourceType,
+        _Out_ ResolvedResource& resolvedResource)
+    {
+        ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63265396>());
+        if (dictionaryFoundIn)
+        {
+            // If the element passed in was found in a resource dictionary, look in it's LocalOnly scope to see if it can be found.
+            CDependencyObject *valueNoRef = nullptr;
+            IFC_RETURN(dictionaryFoundIn->GetKeyForResourceResolutionNoRef(resourceKey,
+                Resources::LookupScope::LocalOnly,
+                &valueNoRef,
+                &resolvedResource.DictionaryReadFrom));
+            if (valueNoRef)
+            {
+                resolvedResource.Value = valueNoRef;
+            }
+        }
+
+        bool hadContext = false;
+        // Do the tree walk first if this is a template member, this is essentially what the parser does. If it isn't found, then
+        // we'll use the cached context
+        if (!resolvedResource.Value && !resolutionContext->IsTemplateNamescopeMember())
+        {
+            // Try to see if we have cached parser context for things like template content, VSM, or Styles
+            IFC_RETURN(TryResolveResourceFromCachedParserContext(resolutionContext, resourceKey, resourceType, resolvedResource, &hadContext));
+        }
+
+        if (!resolvedResource.Value && !hadContext)
+        {
+            // If still not resolved, then walk up the tree and grab all the ResourceDictionaries and try to resolve them.
+            // GetAmbientValuesRuntime uses the XamlDiagnostics-aware parent walk; the actual key lookup and fallback are
+            // shared with the non-diagnostics ResolveThemeResourceForElement path via ResolveFromAmbientDictionaries.
+            AmbientValuesVector vecAmbientValues;
+            GetAmbientValuesRuntime(resolutionContext, vecAmbientValues);
+            IFC_RETURN(ResolveFromAmbientDictionaries(
+                resolutionContext->GetContext(),
+                resourceKey,
+                resourceType,
+                vecAmbientValues,
+                resolvedResource));
+        }
+
+        // If this is part of a template, we walked up the template first to try and resolve the resource, if it wasn't found
+        // used the cached template content
+        if (!resolvedResource.Value && resolutionContext->IsTemplateNamescopeMember())
+        {
+            // Try to see if we have cached parser context for things like template content, VSM, or Styles
+            bool hadContextIgnore;
+            IFC_RETURN(TryResolveResourceFromCachedParserContext(resolutionContext, resourceKey, resourceType, resolvedResource, &hadContextIgnore));
+        }
+
+        // Add Style in-case it existed in markup, but wasn't referenced.
+        // We need to styles with their owning dictionary if XamlDiag is enabled
+        AddStyleContext(do_pointer_cast<CStyle>(resolvedResource.Value), resolvedResource.DictionaryReadFrom.get(), false);
+
+
+        return S_OK;
+    }
+
+    // Shared resolution core: given an already-gathered list of ambient resource dictionaries, resolve
+    // the key (local scope of each ambient dictionary first), then fall back to the global theme and
+    // application resources, and compute the dictionary to use for theme re-resolution. This contains no
+    // XamlDiagnostics coupling; callers supply the ambient dictionaries however they choose. Assumes
+    // resolvedResource.Value has not already been set by the caller.
+    _Check_return_ HRESULT ResourceResolver::ResolveFromAmbientDictionaries(
+        _In_ CCoreServices* core,
+        const xstring_ptr& resourceKey,
+        ResourceType resourceType,
+        const AmbientValuesVector& vecAmbientValues,
+        _Out_ ResolvedResource& resolvedResource)
+    {
+        xref_ptr<CResourceDictionary> dictionaryReadFrom;
+        CDependencyObject* keyNoRef = nullptr;
+
+        CResourceDictionary* dictionary = nullptr;
+        for (auto ambientValuesIterator = vecAmbientValues.m_vector.begin(); !keyNoRef && (ambientValuesIterator != vecAmbientValues.m_vector.end()); ++ambientValuesIterator)
+        {
+            dictionary = checked_cast<CResourceDictionary>(ambientValuesIterator->get());
+
+            IFC_RETURN(dictionary->GetKeyForResourceResolutionNoRef(resourceKey,
+                Resources::LookupScope::LocalOnly,
+                &keyNoRef,
+                &dictionaryReadFrom));
+        }
+
+        // We only searched in the dictionaries local scope, if we haven't found the value at this point, then fallback to searching in the global
+        // resources and app dictionary.
+        if (!keyNoRef)
+        {
+            IFC_RETURN(FallbackGetKeyForResourceResolutionNoRef(
+                core,
+                resourceKey,
+                Resources::LookupScope::All,
+                &keyNoRef,
+                &dictionaryReadFrom));
+        }
+
+        xref_ptr<CResourceDictionary> dictionaryForThemeReference;
+        if (keyNoRef && resourceType == ResourceTypeTheme)
+        {
+            dictionaryForThemeReference = GetDictionaryForThemeReference(core, dictionary, dictionaryReadFrom.get());
+        }
+        resolvedResource = ResolvedResource(keyNoRef, std::move(dictionaryReadFrom), std::move(dictionaryForThemeReference));
+
+        return S_OK;
+    }
+
+    // Resolves a theme resource for a live-tree element without any XamlDiagnostics coupling. Walks the
+    // element and its ancestors (NOT via Diagnostics::GetParentForElementStateChanged, which manufactures
+    // and leaks RuntimeObjects for parentless elements), collecting each element's resource dictionaries,
+    // then shares the actual key lookup and global/application fallback with ResolveResourceRuntime via
+    // ResolveFromAmbientDictionaries. Safe to call whether or not the element is in the live tree.
+    _Check_return_ HRESULT ResourceResolver::ResolveThemeResourceForElement(
+        _In_ CDependencyObject* element,
+        const xstring_ptr& resourceKey,
+        _Out_ ResolvedResource& resolvedResource)
+    {
+        // Collect the ambient resource dictionaries from this element and its ancestors. Starting at the
+        // element itself (rather than its parent) means keys declared in the element's own Resources are
+        // in scope, matching the XAML scoping model for a {ThemeResource} set on the element.
+        //
+        // The ancestor walk mirrors ScopedResources::TraverseVisualTreeResources (the walk the live
+        // re-resolution path runs through UpdateThemeReference): use GetParentFollowPopups() for
+        // UIElements so that content hosted inside an open Popup continues up through the Popup's
+        // declaration scope in markup, rather than jumping to the PopupRoot/root visual and missing
+        // resources scoped on the <Popup>'s lexical ancestors. Falling back to GetParentInternal(false)
+        // for non-UIElement nodes (e.g. a ResourceDictionary) keeps their ancestors in scope too. Keeping
+        // this consistent with the live walk means the eager value computed at install time matches the
+        // value the binding will resolve to once it re-resolves live.
+        AmbientValuesVector vecAmbientValues;
+        for (CDependencyObject* current = element; current; )
+        {
+            CFrameworkElement* currentFE = do_pointer_cast<CFrameworkElement>(current);
+            CResourceDictionary* resources = currentFE
+                ? currentFE->GetResourcesNoCreate().get()
+                : do_pointer_cast<CResourceDictionary>(current);
+            if (resources)
+            {
+                vecAmbientValues.m_vector.push_back(xref_ptr<CDependencyObject>(resources));
+            }
+
+            if (currentFE)
+            {
+                current = currentFE->GetParentFollowPopups();
+            }
+            else if (CUIElement* currentUIE = do_pointer_cast<CUIElement>(current))
+            {
+                current = currentUIE->GetParentFollowPopups();
+            }
+            else
+            {
+                current = current->GetParentInternal(false /* publicParentOnly */);
+            }
+        }
+
+        IFC_RETURN(ResolveFromAmbientDictionaries(
+            element->GetContext(),
+            resourceKey,
+            ResourceTypeTheme,
+            vecAmbientValues,
+            resolvedResource));
+
+        return S_OK;
+    }
+
+    void ResourceResolver::RegisterThemeResourceDependencyForElement(
+        _In_ CDependencyObject* element,
+        KnownPropertyIndex propertyIndex,
+        const xstring_ptr& resourceKey,
+        const ResolvedResource& resolvedResource)
+    {
+        // Only pay the cost when XamlDiagnostics is attached, and only when the value came from a
+        // dictionary we can key the graph on. Mirrors the gate in the parse-time RegisterResourceDependency.
+        if (!DirectUI::DXamlServices::ShouldStoreSourceInformation() || !resolvedResource.DictionaryReadFrom)
+        {
+            return;
+        }
+
+        auto resourceGraph = Diagnostics::GetResourceGraph();
+
+        // Drop any prior entry for this property first, so re-binding the same property (to a different
+        // key/dictionary) doesn't leave a stale dependency that would still receive Hot Reload edits for
+        // the old key. Mirrors the rebind handling in the shared_ptr overload of RegisterResourceDependency.
+        resourceGraph->UnregisterResourceDependency(element, propertyIndex);
+
+        resourceGraph->RegisterResourceDependency(
+            element,
+            propertyIndex,
+            resolvedResource.DictionaryReadFrom.get(),
+            resourceKey,
+            ResourceTypeTheme);
     }
 
     const _Check_return_ HRESULT ResourceResolver::TryResolveResourceFromCachedParserContext(

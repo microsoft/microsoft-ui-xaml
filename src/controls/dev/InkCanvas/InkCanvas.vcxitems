@@ -15,8 +15,8 @@
   </ItemGroup>
   
   <ItemGroup>
-      <ClInclude Include="$(MSBuildThisFileDirectory)..\inc\InkContainment.h" />
       <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvas.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\inc\InkContainment.h" />
       <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvasAutomationPeer.h" />
       <ClInclude Include="$(MSBuildThisFileDirectory)InkPresenter.h" />
   </ItemGroup>

@@ -7,6 +7,9 @@
 #include <DynamicMetadataStorage.h>
 #include "FrameworkUdk/Containment.h"
 
+// Bug 64354919: [2.0 experimental Servicing][WASDK] XAML cannot restart in a process, evaluate fixes/workarounds (affects File Explorer)
+#define WINAPPSDK_CHANGEID_64354919 64354919
+
 #define WINAPPSDK_CHANGEID_62724527 62724527
 
 using namespace DirectUI;
@@ -46,6 +49,15 @@ void DynamicMetadataStorage::Destroy()
 
     // Verify we are null here because we don't want to re-enter.
     FAIL_FAST_ASSERT(s_storage == nullptr);
+}
+
+void DynamicMetadataStorage::Abandon()
+{
+    FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>());
+
+    // Metadata can hold references to objects implemented by other DLLs. During process teardown those DLLs may
+    // already have been uninitialized, so intentionally leak the storage instead of running their destructors.
+    (void)s_storage.release();
 }
 
 void DynamicMetadataStorage::ResetInstance()

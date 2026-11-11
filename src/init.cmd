@@ -9,6 +9,7 @@ rem Remove the trailing backslash
 set RepoRoot=%RepoRoot:~0,-1%
 
 set EnvOnly=
+set EnvCheck=
 set Verbose=
 set NoTitle=
 set Pipeline=
@@ -41,6 +42,9 @@ if /i "%1"=="" (
     goto:doneParsingArgs
 ) else if /i "%1"=="/envonly" (
     set EnvOnly=true
+) else if /i "%1"=="/envcheck" (
+    set EnvOnly=true
+    set EnvCheck=true
 ) else if /i "%1"=="/pipeline" (
     set EnvOnly=true
     set Pipeline=true
@@ -114,6 +118,10 @@ shift
 goto:parseArgs
 
 :doneParsingArgs
+if "%EnvCheck%"=="true" (
+    if not exist "%RepoRoot%\packages" goto :FullInitRequired
+    if not exist "%RepoRoot%\.tools\nuget.exe" goto :FullInitRequired
+)
 if "%_archIsSet%"=="" (
     set amd64=1
     set chk=1
@@ -211,14 +219,18 @@ call:SetEnviromentVariable DOTNET_MULTILEVEL_LOOKUP 0
 set PATH=%DOTNET_ROOT%;%DOTNET_ROOT_x86%;%PATH%
 
 call %RepoRoot%\scripts\init\SetupDotNetFiles.cmd %RepoRoot%
+if errorlevel 1 exit /b 1
 
 powershell -ExecutionPolicy Bypass -NoProfile %RepoRoot%\scripts\GenerateTestPfx.ps1 %RepoRoot%\build\WinUITest.pfx
+if errorlevel 1 exit /b 1
 
 if "%EnvOnly%"=="" (
     rem For pipeline builds, submodules are checked out with authentication elsewhere
     rem For dev builds, ensure that submodules are populated with latest commits
     git submodule update --init --recursive
+    if errorlevel 1 exit /b 1
     powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\init\Initialize-Restore.ps1 -RepoRoot %RepoRoot% %Verbose%
+    if errorlevel 1 exit /b 1
 )
 
 if "%ARM64EC%"=="1" (
@@ -236,6 +248,9 @@ doskey /macrofile=%RepoRoot%\scripts\aliases
 
 goto:eof
 
+:FullInitRequired
+echo ERROR: Run a full init for this flavor first, e.g. init.ps1 amd64chk
+exit /b 1
 
 :AddPathIfExists
 rem Remove quotes we used above

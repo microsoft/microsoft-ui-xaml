@@ -25,8 +25,13 @@
 #include "MultiParentShareableDependencyObject.h"
 #include "xamldiagnostics\inc\RuntimeObject.h"
 
+// Bug 63991279: Prune expired deferred ResourceGraph dependencies.
+#define WINAPPSDK_CHANGEID_63991279 63991279
+
 namespace Diagnostics
 {
+    constexpr size_t c_maxResourceDependenciesToInspectPerRegistration = 4;
+
     ResourceGraphKeyWithParent::ResourceGraphKeyWithParent(
         _In_ CResourceDictionary* dictionary,
         const xstring_ptr& key)
@@ -141,7 +146,19 @@ namespace Diagnostics
                 }
             }
 
-             m_resourceStack.emplace(std::move(graphKey),  ResourceDependency(pFrameworkDependency, pProperty->GetIndex(), dependencyType));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63991279>())
+            {
+                PruneExpiredResourceDependencies();
+                m_resourceDependencies.emplace_back(
+                    std::move(graphKey),
+                    ResourceDependency(pFrameworkDependency, pProperty->GetIndex(), dependencyType));
+            }
+            else
+            {
+                m_resourceStack.emplace(
+                    std::move(graphKey),
+                    ResourceDependency(pFrameworkDependency, pProperty->GetIndex(), dependencyType));
+            }
         }
     }
 
@@ -351,21 +368,78 @@ namespace Diagnostics
         return pOwningStyle;
     }
 
-    //Gets all registered static resource dependencies so far and adds them to the resource graph used
-    //by XamlDiagostics.  This will only be called when XamlDiagnostics is in-use.
+    void ResourceGraph::PruneExpiredResourceDependencies()
+    {
+        FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63991279>());
+
+        const size_t resourcesToInspect =
+            std::min(c_maxResourceDependenciesToInspectPerRegistration, m_resourceDependencies.size());
+
+        for (size_t resourcesInspected = 0;
+            resourcesInspected < resourcesToInspect && !m_resourceDependencies.empty();
+            ++resourcesInspected)
+        {
+            if (m_nextResourcesToInspect >= m_resourceDependencies.size())
+            {
+                m_nextResourcesToInspect = 0;
+            }
+
+            auto& resourceDependency = m_resourceDependencies[m_nextResourcesToInspect];
+            const bool isExpired = std::get<1>(resourceDependency).Expired();
+
+            if (isExpired)
+            {
+                if (m_nextResourcesToInspect != m_resourceDependencies.size() - 1)
+                {
+                    resourceDependency = std::move(m_resourceDependencies.back());
+                }
+
+                m_resourceDependencies.pop_back();
+            }
+            else
+            {
+                ++m_nextResourcesToInspect;
+            }
+        }
+    }
+
+    // Gets all registered static resource dependencies so far and adds them to the resource graph used
+    // by XamlDiagnostics. This will only be called when XamlDiagnostics is in use.
     void ResourceGraph::ResolveAllResourceDependencies()
     {
-        while (!m_resourceStack.empty())
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63991279>())
         {
-            std::tuple<ResourceGraphKey, ResourceDependency> stackElem = m_resourceStack.top();
+            while (!m_resourceDependencies.empty())
+            {
+                auto resourceDependency = std::move(m_resourceDependencies.back());
+                m_resourceDependencies.pop_back();
 
-            ResourceGraphKey curGraphKey = std::get<0>(stackElem);
-            ResourceDependency curGraphValue = std::get<1>(stackElem);
+                ResourceGraphKey& graphKey = std::get<0>(resourceDependency);
+                ResourceDependency& dependency = std::get<1>(resourceDependency);
+                if (!dependency.Expired())
+                {
+                    // We store a shared_ptr so that we can check if resolving a reference makes it valid.
+                    auto resolvedValue = std::make_shared<ResourceDependency>(std::move(dependency));
+                    AddToResolvedMap(graphKey, resolvedValue);
+                }
+            }
 
-            m_resourceStack.pop();
-            // We store a shared_ptr so that we can check if resolving a reference makes it valid.
-            auto resolvedValue = std::make_shared<ResourceDependency>(std::move(curGraphValue));
-            AddToResolvedMap(curGraphKey, resolvedValue);
+            m_nextResourcesToInspect = 0;
+        }
+        else
+        {
+            while (!m_resourceStack.empty())
+            {
+                std::tuple<ResourceGraphKey, ResourceDependency> stackElem = m_resourceStack.top();
+
+                ResourceGraphKey curGraphKey = std::get<0>(stackElem);
+                ResourceDependency curGraphValue = std::get<1>(stackElem);
+
+                m_resourceStack.pop();
+                // We store a shared_ptr so that we can check if resolving a reference makes it valid.
+                auto resolvedValue = std::make_shared<ResourceDependency>(std::move(curGraphValue));
+                AddToResolvedMap(curGraphKey, resolvedValue);
+            }
         }
     }
 

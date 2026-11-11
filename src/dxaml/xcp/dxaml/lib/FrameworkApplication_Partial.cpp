@@ -21,6 +21,8 @@
 #endif
 // Bug 62849414: Reserve space in TrackerCollections before appending multiple items
 #define WINAPPSDK_CHANGEID_62849414 62849414
+// Bug 64354919: [2.0 experimental Servicing][WASDK] XAML cannot restart in a process, evaluate fixes/workarounds (affects File Explorer)
+#define WINAPPSDK_CHANGEID_64354919 64354919
 
 #include <process.h>
 #include <RuntimeEnabledFeatures.h>
@@ -288,15 +290,15 @@ IFACEMETHODIMP FrameworkApplication::remove_UnhandledException(EventRegistration
     return m_UnhandledExceptionEventSource.Remove(token);
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE 
+_Check_return_ HRESULT STDMETHODCALLTYPE
 FrameworkApplication::add_ResourceManagerRequested(
-    _In_ wf::ITypedEventHandler<IInspectable*, xaml::ResourceManagerRequestedEventArgs*>* pValue, 
+    _In_ wf::ITypedEventHandler<IInspectable*, xaml::ResourceManagerRequestedEventArgs*>* pValue,
     _Out_ EventRegistrationToken* pToken)
 {
     return m_resourceManagerRequestedEventSource.Add(pValue, pToken);
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE 
+_Check_return_ HRESULT STDMETHODCALLTYPE
 FrameworkApplication::remove_ResourceManagerRequested(EventRegistrationToken token)
 {
     return m_resourceManagerRequestedEventSource.Remove(token);
@@ -461,11 +463,19 @@ void FrameworkApplication::ReleaseCurrent()
         // Remember the Application.Current instance before we release it. It's possible the app is keeping the object
         // alive without Xaml, in which case Xaml should reuse the same instance should we ever get reinitialized.
         IFCFAILFAST(ctl::AsWeak(g_pApplication, &g_previousApplicationWeak));
-        
-        // The metadata store may hold a reference to an IXamlMetadataProvider, which is usually the
-        // Application object (which derives from FrameworkApplication). In other words, there may be
-        // a reference cycle. We want to break that cycle when the main FrameworkView goes away.
-        g_pApplication->m_metadataRef = nullptr;
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+        {
+            // Do nothing - we don't reset the metadata on shutdown anymore.
+        }
+        else
+        {
+            // The metadata store may hold a reference to an IXamlMetadataProvider, which is usually the
+            // Application object (which derives from FrameworkApplication). In other words, there may be
+            // a reference cycle. We want to break that cycle when the main FrameworkView goes away.
+            g_pApplication->m_metadataRef = nullptr;
+        }
+
         ctl::release_interface(g_pApplication);
     }
 }
@@ -637,9 +647,16 @@ _Check_return_ HRESULT FrameworkApplication::Initialize()
     IFCEXPECT_RETURN(m_pDebugSettings);   // Should never fail
     m_pDebugSettings->UpdatePeg(true);
 
-    // Set up the metadata resetter. This object clears out the process-wide metadata when it is safe to do so (before
-    // DLLs are getting unloaded, but after we're done shutting down the visual tree).
-    m_metadataRef = std::make_shared<MetadataResetter>();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        // Do nothing - we don't reset the metadata on shutdown anymore.
+    }
+    else
+    {
+        // Set up the metadata resetter. This object clears out the process-wide metadata when it is safe to do so (before
+        // DLLs are getting unloaded, but after we're done shutting down the visual tree).
+        m_metadataRef = std::make_shared<MetadataResetter>();
+    }
 
     // Determine which AppPolicyWindowingModel is being used. Use Application::GetAppPolicyWindowingModel() to
     // get the current Windowing model.
@@ -704,7 +721,7 @@ void FrameworkApplication::GlobalDeinit()
             CApplicationLock lock;
 
             ctl::release_interface(g_pApplication);
-            
+
             // Properly releasing the weakptr here requires vccorlib to be loaded, because it's handled
             // by vccorlib140[d]!Platform::Details::ControlBlock.  But this function is called during DLL
             // unload, and vccorlib isn't always around.  So for now we just leak the IWeakReference.
@@ -938,7 +955,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT 
+_Check_return_ HRESULT
 FrameworkApplication::RaiseResourceManagerRequestedEvent(
     _Out_ wrl::ComPtr<mwar::IResourceManager>& resourceManager)
 {
@@ -974,7 +991,7 @@ _Check_return_ HRESULT FrameworkApplication::ExitImpl()
                     window->Close();
                 }
             }
-            
+
             // If there were no Windows, PostQuitMessage didn't called, so call it now.
             // If DispatcherShutdownMode was OnExplicitShutdown, PostQuitMessage() didn't get called either.
             // In both cases, call PostQuitMessage() here so that Exit() reliably exits the event loop.
@@ -1007,6 +1024,15 @@ _Check_return_ HRESULT FrameworkApplication::ExitImpl()
 _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
     _In_ xaml::ApplicationTheme value)
 {
+    DXamlCore* dxamlCore = nullptr;
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+        dxamlCore = DXamlCore::GetCurrent();
+        IFCEXPECT_RETURN(dxamlCore);
+    }
+
     // RequestedTheme cannot be set after app.xaml has been loaded.
     if (!m_isRequestedThemeSettable)
     {
@@ -1057,7 +1083,14 @@ _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
     // Note: This is special, we bypass the CApplication::SetValue so this property never actually
     // get's set on the core object. Just an annoying nuance because our parser set's this by going
     // through CApplication::SetValue. See comment above for more info.
-    IFC_RETURN(DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        IFC_RETURN(dxamlCore->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
+    }
+    else
+    {
+        IFC_RETURN(DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
+    }
 
     return S_OK;
 }
@@ -1074,8 +1107,21 @@ _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
 _Check_return_ HRESULT FrameworkApplication::get_RequestedThemeImpl(
     _Out_ xaml::ApplicationTheme* pValue)
 {
-    auto theme = DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
-    *pValue = (theme == Theming::Theme::Light ? xaml::ApplicationTheme_Light : xaml::ApplicationTheme_Dark);
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+        DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+        IFCEXPECT_RETURN(dxamlCore);
+
+        auto theme = dxamlCore->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
+        *pValue = (theme == Theming::Theme::Light ? xaml::ApplicationTheme_Light : xaml::ApplicationTheme_Dark);
+    }
+    else
+    {
+        auto theme = DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
+        *pValue = (theme == Theming::Theme::Light ? xaml::ApplicationTheme_Light : xaml::ApplicationTheme_Dark);
+    }
+
 
     RRETURN(S_OK);
 }
@@ -1222,10 +1268,26 @@ _Check_return_ HRESULT FrameworkApplication::get_HighContrastAdjustmentImpl(_Out
 // Sets the FrameworkApplication::HighContrastAdjustment property value.
 _Check_return_ HRESULT FrameworkApplication::put_HighContrastAdjustmentImpl(_In_ xaml::ApplicationHighContrastAdjustment value)
 {
+    DXamlCore* dxamlCore = nullptr;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+        dxamlCore = DXamlCore::GetCurrent();
+        IFCEXPECT_RETURN(dxamlCore);
+    }
+
     if (m_highContrastAdjustment != value)
     {
         m_highContrastAdjustment = value;
-        IFC_RETURN(DXamlCore::GetCurrent()->OnApplicationHighContrastAdjustmentChanged());
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+        {
+            IFC_RETURN(dxamlCore->OnApplicationHighContrastAdjustmentChanged());
+        }
+        else
+        {
+            IFC_RETURN(DXamlCore::GetCurrent()->OnApplicationHighContrastAdjustmentChanged());
+        }
     }
 
     return S_OK;
@@ -1271,7 +1333,7 @@ _Check_return_ HRESULT FrameworkApplication::put_ShutdownModelImpl(_In_ xaml::Sh
     IFC_RETURN(E_INVALIDARG);
 }
 
-        
+
 _Check_return_ HRESULT FrameworkApplication::get_DispatcherShutdownModeImpl(_Out_ xaml::DispatcherShutdownMode* value)
 {
     auto dxamlCore = DXamlCore::GetCurrent();

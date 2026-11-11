@@ -5,6 +5,10 @@
 
 #include "NoParentShareableDependencyObject.h"
 
+// Containment for the experimental DataTemplate constructor that takes a delegate
+// When disabled, the API returns E_NOTIMPL.
+#define WINAPPSDK_CHANGEID_63853939 63853939
+
 class CType;
 struct XamlQualifiedObject;
 
@@ -26,14 +30,14 @@ public:
     // We will keep a reference to this type on the managed
     // side when this object is assigned to a property to ensure
     // that the managed peer stays alive.
-    // We only need to do this if there's an event root assigned to this 
+    // We only need to do this if there's an event root assigned to this
     // template, or we're cacheing resource references,
-    // otherwise the managed peer can be recreated as needed. 
+    // otherwise the managed peer can be recreated as needed.
     // This works because the event root is the only piece of state that is kept
-    // on the managed side. 
+    // on the managed side.
     // the base implementation takes into account any subclasses of templates
     XUINT32 ParticipatesInManagedTreeInternal() override
-    { 
+    {
         if( HasManagedPeer() && m_fHasEventRoot )
             return PARTICIPATES_IN_MANAGED_TREE;
         else
@@ -170,7 +174,23 @@ public:
         return PARTICIPATES_IN_MANAGED_TREE;
     }
 
+    // Set by the DXAML peer (DirectUI::DataTemplate::SetElementFactory) when this DataTemplate was
+    // constructed from code with an element-factory callback (rather than a piece of markup). The
+    // callback itself lives on the peer. The core only remembers that one exists so that LoadContent
+    // can call it instead of using parsed markup content. This is only set during DataTemplate
+    // construction, and can't be changed afterwards.
+    void SetHasElementFactory(bool value)
+    {
+        FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>());
+
+        ASSERT(value);
+        ASSERT(m_pTemplateContent == nullptr);
+        m_hasElementFactory = value;
+    }
+    bool HasElementFactory() const { return m_hasElementFactory; }
+
 private:
+    bool m_hasElementFactory = false;
     xref_ptr<CDependencyObject> m_cachedInstance;
 };
 

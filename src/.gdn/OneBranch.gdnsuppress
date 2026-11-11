@@ -1,0 +1,1987 @@
+{
+  "version": "latest",
+  "suppressionSets": {
+    "default": {
+      "name": "default",
+      "createdDate": "2026-06-11 00:00:00Z"
+    }
+  },
+  "results": {
+    "0a4e201b29bf440249ed3c1482f59713fb68d1db8b9416c27105280c6119d5b7": {
+      "signature": "0a4e201b29bf440249ed3c1482f59713fb68d1db8b9416c27105280c6119d5b7",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/msvcp140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "0dfcf217ce829956be648baa756776bff94b4abad7d77d4acfcfbe028f0cc09a": {
+      "signature": "0dfcf217ce829956be648baa756776bff94b4abad7d77d4acfcfbe028f0cc09a",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "0fa257fb05f98cc69946ddaed25af50450a6060d1bb60a1825293077acc58a52": {
+      "signature": "0fa257fb05f98cc69946ddaed25af50450a6060d1bb60a1825293077acc58a52",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "1154fd6a819cb3cd29810314992f5d40851a7ac473302f2cb1d9ccc974dfd1eb": {
+      "signature": "1154fd6a819cb3cd29810314992f5d40851a7ac473302f2cb1d9ccc974dfd1eb",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "11ac3365fdc73ad3f126e97cc4bef933fcbd22a66a1f920c1199ee30350b9c62": {
+      "signature": "11ac3365fdc73ad3f126e97cc4bef933fcbd22a66a1f920c1199ee30350b9c62",
+      "target": "BuildOutput/Temp/x86freAppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/System.Private.CoreLib.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "14675176e732e2a02e5a25ae2ed53a02b9fff0547d297d8cea18b2d1e55af584": {
+      "signature": "14675176e732e2a02e5a25ae2ed53a02b9fff0547d297d8cea18b2d1e55af584",
+      "target": "BuildOutput/Temp/amd64freAppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/System.Private.CoreLib.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "1499525cb3b278c12cfb0fade7ddf9b2c51176f6894b7fc58063d8979b0d1e7f": {
+      "signature": "1499525cb3b278c12cfb0fade7ddf9b2c51176f6894b7fc58063d8979b0d1e7f",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "14ed04b7aa1a18eb3cf707ab45fa6db70ca8db970a93bd7bbf0bd546b5c29a31": {
+      "signature": "14ed04b7aa1a18eb3cf707ab45fa6db70ca8db970a93bd7bbf0bd546b5c29a31",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "1849aa7eef62b84556d71921e2318fc04f87737f1e820e4ca10a6194f41abd03": {
+      "signature": "1849aa7eef62b84556d71921e2318fc04f87737f1e820e4ca10a6194f41abd03",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "1bc40b4ca073f641d626201746340dd179108d783a17a541c133abd52d8572ab": {
+      "signature": "1bc40b4ca073f641d626201746340dd179108d783a17a541c133abd52d8572ab",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "1d61f8070f145486bad21a18574fca026bd78412860b8e0ac5a8c3e99133e6e0": {
+      "signature": "1d61f8070f145486bad21a18574fca026bd78412860b8e0ac5a8c3e99133e6e0",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/msvcp140_2_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "1eeed56c12e85a0ca2f0b5a7b9b1dbe44fd762a69c5a71296f715173e05acbc2": {
+      "signature": "1eeed56c12e85a0ca2f0b5a7b9b1dbe44fd762a69c5a71296f715173e05acbc2",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcamp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "20baa2e400d4277879c07f1f6fe05ba7751381af01090275843793416992c5da": {
+      "signature": "20baa2e400d4277879c07f1f6fe05ba7751381af01090275843793416992c5da",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vccorlib140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "234b67592e63ed11fb1fc9151303b5e0a3b93cf64644205c9b8e5420070f597b": {
+      "signature": "234b67592e63ed11fb1fc9151303b5e0a3b93cf64644205c9b8e5420070f597b",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "239e19c23da1342460203cc5c05b0dc661ccf2aa878763a2abe37f48e89a64cc": {
+      "signature": "239e19c23da1342460203cc5c05b0dc661ccf2aa878763a2abe37f48e89a64cc",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcruntime140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "250ec41558f47f341cf9da7fd96ce5304ea9ae7c3b16d585cf4235391e18cb6b": {
+      "signature": "250ec41558f47f341cf9da7fd96ce5304ea9ae7c3b16d585cf4235391e18cb6b",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "25aed2881f2ad32668cc65dece048591b162c57b7e08963b188841318e504087": {
+      "signature": "25aed2881f2ad32668cc65dece048591b162c57b7e08963b188841318e504087",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "26fe28fac7239882040263dbad0ca17cc9194d72a2864352f5413f2ef3c76b26": {
+      "signature": "26fe28fac7239882040263dbad0ca17cc9194d72a2864352f5413f2ef3c76b26",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "279146e38795cb087311d60f9604c540b34e6c158b7cfbed866860513c66dded": {
+      "signature": "279146e38795cb087311d60f9604c540b34e6c158b7cfbed866860513c66dded",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "295814deda319cf825947a32adc00e25116842356e0e9943dbb7462bb27b3d4c": {
+      "signature": "295814deda319cf825947a32adc00e25116842356e0e9943dbb7462bb27b3d4c",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "2a10b98bf1e5a90eb3bab6facc6d4c42270220b758820c93a883f60ceda1dda4": {
+      "signature": "2a10b98bf1e5a90eb3bab6facc6d4c42270220b758820c93a883f60ceda1dda4",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcruntime140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "2af0b1bf113046ea45fe13a8bcb0a3a54869f513256539974b8d85cd7a25a76e": {
+      "signature": "2af0b1bf113046ea45fe13a8bcb0a3a54869f513256539974b8d85cd7a25a76e",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcamp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "2ce8530303338f5c5769b0f6823360ae5ebd68f5b7ba5612cf4bdf6496164d9e": {
+      "signature": "2ce8530303338f5c5769b0f6823360ae5ebd68f5b7ba5612cf4bdf6496164d9e",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "2d0a9cd313d4eabe7ca452179ffd4a1b5509bcc4ee7b71f02e39ef871e68f210": {
+      "signature": "2d0a9cd313d4eabe7ca452179ffd4a1b5509bcc4ee7b71f02e39ef871e68f210",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "2dcbe74f4361d9d12b6ecc694a8576f94bce2eb048687fecc57685a61235d715": {
+      "signature": "2dcbe74f4361d9d12b6ecc694a8576f94bce2eb048687fecc57685a61235d715",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "2dfc47ac4454a33c5cbe6d72cc712cc4aa87d440ebae61f904391480d221da07": {
+      "signature": "2dfc47ac4454a33c5cbe6d72cc712cc4aa87d440ebae61f904391480d221da07",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "312d4cd15557b3af36d4224e46a5831065eb5c3d1aabdb7a2519af5a4771ad4a": {
+      "signature": "312d4cd15557b3af36d4224e46a5831065eb5c3d1aabdb7a2519af5a4771ad4a",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcomp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "3138876d53862993f95813a4a2db1fa710d510f2b87e87e3d74d9f24c7628532": {
+      "signature": "3138876d53862993f95813a4a2db1fa710d510f2b87e87e3d74d9f24c7628532",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "318ae7f943be3b4f94aad3c0d88fbb4a15df0e741754227262bed6bcf34fc586": {
+      "signature": "318ae7f943be3b4f94aad3c0d88fbb4a15df0e741754227262bed6bcf34fc586",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "3295739531169573dc03e271914995a59f022467366970b77952fa7989465282": {
+      "signature": "3295739531169573dc03e271914995a59f022467366970b77952fa7989465282",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "32b2a1d2dc0d1aad812b8081676d615cf6b18f3cf8a294ff106e863ccd654d4d": {
+      "signature": "32b2a1d2dc0d1aad812b8081676d615cf6b18f3cf8a294ff106e863ccd654d4d",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "38f15dca9b94e2d053ca08eac00155f137f9c27bc37ea493f60fc6fb7f028110": {
+      "signature": "38f15dca9b94e2d053ca08eac00155f137f9c27bc37ea493f60fc6fb7f028110",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcomp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "3bd0d6c62c199e9f4094d35adc2f5576f7a7d9ebafb768149f338f295c5fe884": {
+      "signature": "3bd0d6c62c199e9f4094d35adc2f5576f7a7d9ebafb768149f338f295c5fe884",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcruntime140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "3cd6e6483c9e8eca3a721fdfe2665471d51845dd0c8a88521d2827920587bb34": {
+      "signature": "3cd6e6483c9e8eca3a721fdfe2665471d51845dd0c8a88521d2827920587bb34",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "3d5eadce677a2f029d215acb462e3d4cac7a67976640f3a80eaa03cad307197c": {
+      "signature": "3d5eadce677a2f029d215acb462e3d4cac7a67976640f3a80eaa03cad307197c",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "3ed7c8f7b87de01f2ea41bd66d340e691e072b0cdc1c17791b7ed1075921c10f": {
+      "signature": "3ed7c8f7b87de01f2ea41bd66d340e691e072b0cdc1c17791b7ed1075921c10f",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "40a21aabceddf108609427ca5bdee457c2e05f544e5a5f1a7b027323e213cb9d": {
+      "signature": "40a21aabceddf108609427ca5bdee457c2e05f544e5a5f1a7b027323e213cb9d",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/concrt140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "41b4c1bad7d27dfc30921bbc0bc6aaa63d4235071cebaeab44e0e9af20f4ff77": {
+      "signature": "41b4c1bad7d27dfc30921bbc0bc6aaa63d4235071cebaeab44e0e9af20f4ff77",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "4290b1246209ef41008243cac8854abf8581a27f317bf645959271133b3c2cdf": {
+      "signature": "4290b1246209ef41008243cac8854abf8581a27f317bf645959271133b3c2cdf",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/concrt140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "42e8f34a38f443d4692787b8e9fbd747a6bb56e29561094c4943533522f309ab": {
+      "signature": "42e8f34a38f443d4692787b8e9fbd747a6bb56e29561094c4943533522f309ab",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "4564e8d854817b1a1ce3a8dbfab8d337a19a8222e8ab0b7e324eed4546b1f13b": {
+      "signature": "4564e8d854817b1a1ce3a8dbfab8d337a19a8222e8ab0b7e324eed4546b1f13b",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "462cb44744705eb91b2edda16e0f29692100c7799bdf29a6f5c44980883fadc1": {
+      "signature": "462cb44744705eb91b2edda16e0f29692100c7799bdf29a6f5c44980883fadc1",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/msvcp140_2_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "493da41c8b5fced2ae08352c8dad9a93e798311d8dbe27821cb71b20b72450ca": {
+      "signature": "493da41c8b5fced2ae08352c8dad9a93e798311d8dbe27821cb71b20b72450ca",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "49ade22294464ae3a48b86c0a29f45070d1c54dba1458a10a3f1fd29d9c6eaf4": {
+      "signature": "49ade22294464ae3a48b86c0a29f45070d1c54dba1458a10a3f1fd29d9c6eaf4",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/msvcp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "49b0a5ad6babd3352ac7d8e6a093751a5cd8c6a7146d4796080c0c47187f3865": {
+      "signature": "49b0a5ad6babd3352ac7d8e6a093751a5cd8c6a7146d4796080c0c47187f3865",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vccorlib140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "49bd2a5aa751f3a955242dd1078e9f3ea79ddd42c129314c561cb6b32f13b747": {
+      "signature": "49bd2a5aa751f3a955242dd1078e9f3ea79ddd42c129314c561cb6b32f13b747",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcomp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "4b466b6ee52f913be10aa02a8f4e86179230c0f527737073bfe867957af5d919": {
+      "signature": "4b466b6ee52f913be10aa02a8f4e86179230c0f527737073bfe867957af5d919",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "4be40623e45819e934a4d1c14f6713b42b07555bc79eeffef0eb2c9f0c24e726": {
+      "signature": "4be40623e45819e934a4d1c14f6713b42b07555bc79eeffef0eb2c9f0c24e726",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "4c53a4718e80d8df9e7de1d61c9f31a30bae35e1abf672d3c6bd2919a7d95181": {
+      "signature": "4c53a4718e80d8df9e7de1d61c9f31a30bae35e1abf672d3c6bd2919a7d95181",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "4fbf3df706096d68d1c38e095d97eca4e3ee52d34e10009248fa59d35cd0e3ac": {
+      "signature": "4fbf3df706096d68d1c38e095d97eca4e3ee52d34e10009248fa59d35cd0e3ac",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/concrt140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "51b977a19a9bdf1cf259b545ce119bfd2cc4afbcbd80c647c9f83c09d3a34dfc": {
+      "signature": "51b977a19a9bdf1cf259b545ce119bfd2cc4afbcbd80c647c9f83c09d3a34dfc",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "552e0e123c01e257cfee73915c151b0e0fe25c8d032b2b3e8e0c08fc287e0647": {
+      "signature": "552e0e123c01e257cfee73915c151b0e0fe25c8d032b2b3e8e0c08fc287e0647",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "5694557e5aa69862ec6aea18de1ac4cf6da510f5ab76c854b122872d259751f6": {
+      "signature": "5694557e5aa69862ec6aea18de1ac4cf6da510f5ab76c854b122872d259751f6",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "578d7e1dc85d2dcfa4dce36e38a2525e6de43417702c123db7ff8df9742a7191": {
+      "signature": "578d7e1dc85d2dcfa4dce36e38a2525e6de43417702c123db7ff8df9742a7191",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "59f0e6c765002cf7be459be283d30c4e06f25ef8b510dbc46ae7b44f5619f141": {
+      "signature": "59f0e6c765002cf7be459be283d30c4e06f25ef8b510dbc46ae7b44f5619f141",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "5be46a089697de42b1577c53fcca96a896070512764f048a7b6463f4c70acf89": {
+      "signature": "5be46a089697de42b1577c53fcca96a896070512764f048a7b6463f4c70acf89",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6172099db75318d0594109d2510dc693ae6bbea659d2b77e6f177decf86f5b49": {
+      "signature": "6172099db75318d0594109d2510dc693ae6bbea659d2b77e6f177decf86f5b49",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "618ccd5be29c0a16b9324165d6079d9eabd3425bf8566cb56e6a4a31fd2076bd": {
+      "signature": "618ccd5be29c0a16b9324165d6079d9eabd3425bf8566cb56e6a4a31fd2076bd",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "61e0c235cca48cbbb4db54c9d9ba6b2809c96520852fd8e4c3219fc1049ce011": {
+      "signature": "61e0c235cca48cbbb4db54c9d9ba6b2809c96520852fd8e4c3219fc1049ce011",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "62513b33b95448934abc3d87249ee0c89231a49cb62fdde5276dd8560da782fc": {
+      "signature": "62513b33b95448934abc3d87249ee0c89231a49cb62fdde5276dd8560da782fc",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "64854a10333d5fd0c0479433f999f91dcaef1b5830115457d008ddf62484f384": {
+      "signature": "64854a10333d5fd0c0479433f999f91dcaef1b5830115457d008ddf62484f384",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vccorlib140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "65b69f6b7bbab234e75eedde481058ea96391dd450e699d37fcda5ae07d95694": {
+      "signature": "65b69f6b7bbab234e75eedde481058ea96391dd450e699d37fcda5ae07d95694",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6728b99088d73d09a432498dac07d51c7eff9051ae5a846790becfc9dbbf08a4": {
+      "signature": "6728b99088d73d09a432498dac07d51c7eff9051ae5a846790becfc9dbbf08a4",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6820455ebad32a7c11f458cf952ad910631643f6b2c1105f8bccbc22386558d7": {
+      "signature": "6820455ebad32a7c11f458cf952ad910631643f6b2c1105f8bccbc22386558d7",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6a7c181ad2287ca91787d10662fefe25b12f2f7de2637714e73bb8fea5d7889c": {
+      "signature": "6a7c181ad2287ca91787d10662fefe25b12f2f7de2637714e73bb8fea5d7889c",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6a99c97d36ea0cc9f2e6a0e72557ca30a05544da3534ba0aaded9a4735945886": {
+      "signature": "6a99c97d36ea0cc9f2e6a0e72557ca30a05544da3534ba0aaded9a4735945886",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6bfaecd8b209b7faf61d2eba464a4ef3a26b3f8f1fe67663b9aa03824b926ee4": {
+      "signature": "6bfaecd8b209b7faf61d2eba464a4ef3a26b3f8f1fe67663b9aa03824b926ee4",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/concrt140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "6e7210f34b2bf15348eced38d7e4156a1a91d91b0c85dde3068885d696e6a176": {
+      "signature": "6e7210f34b2bf15348eced38d7e4156a1a91d91b0c85dde3068885d696e6a176",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcruntime140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "733d4765bbc3449c3987983107882cc34ea05429afe02a8cb94c1f7025f7175b": {
+      "signature": "733d4765bbc3449c3987983107882cc34ea05429afe02a8cb94c1f7025f7175b",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "73c313a4f1b224638b95f1c2f1af871ecc2b43224b94b5896c1abeef9479ba2d": {
+      "signature": "73c313a4f1b224638b95f1c2f1af871ecc2b43224b94b5896c1abeef9479ba2d",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "73f057199127e12d1d978d5f66990c0b58c56521cad8866a0914e1a9b52b94e4": {
+      "signature": "73f057199127e12d1d978d5f66990c0b58c56521cad8866a0914e1a9b52b94e4",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "760f2ab54b4efd339caec748beba183f814bd237cff020146250eb1961c4486d": {
+      "signature": "760f2ab54b4efd339caec748beba183f814bd237cff020146250eb1961c4486d",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "79981c0eb51ef231ad34673439db7309064d5c22ca65599e30996510da75fc95": {
+      "signature": "79981c0eb51ef231ad34673439db7309064d5c22ca65599e30996510da75fc95",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "79fad38f6cdabc96c03d2e8e140fa27db2c388d7393d99135d5c0e69ff22d066": {
+      "signature": "79fad38f6cdabc96c03d2e8e140fa27db2c388d7393d99135d5c0e69ff22d066",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vcruntime140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "7be3b606e326a5f0e81d2d861a9ca5883f0cfa240c76e16cdad73607f3f1ebcd": {
+      "signature": "7be3b606e326a5f0e81d2d861a9ca5883f0cfa240c76e16cdad73607f3f1ebcd",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcamp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "7cb666aae13c25143a313defa0915169bf5bae1407c896b40ece36ab1c3ea7c3": {
+      "signature": "7cb666aae13c25143a313defa0915169bf5bae1407c896b40ece36ab1c3ea7c3",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "7cb6f876ea30a108ff3e2fcd7cc093f3c2221034e49956b1ab9c078267711a2f": {
+      "signature": "7cb6f876ea30a108ff3e2fcd7cc093f3c2221034e49956b1ab9c078267711a2f",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcruntime140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "80d4238172d20553a7eb6c8d51831f23e4e741940928f27a1033858e9e102b2c": {
+      "signature": "80d4238172d20553a7eb6c8d51831f23e4e741940928f27a1033858e9e102b2c",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "83e13d43cce58ac9a06158334bd41a0164110bf83a709e83a66e8b0314876ed1": {
+      "signature": "83e13d43cce58ac9a06158334bd41a0164110bf83a709e83a66e8b0314876ed1",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "84630122a5a4dacd96df65031a141dacb2a0474052413ade3779d9ffd5bc0599": {
+      "signature": "84630122a5a4dacd96df65031a141dacb2a0474052413ade3779d9ffd5bc0599",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "877c9a846fab2374addfbfb1e6de3af11c7150d341ddfd97663c0624817bccbd": {
+      "signature": "877c9a846fab2374addfbfb1e6de3af11c7150d341ddfd97663c0624817bccbd",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vcamp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "8844b1c9e3d79ff5e77b8d99f4337a567e25b52fb70c5b01151610859981f1aa": {
+      "signature": "8844b1c9e3d79ff5e77b8d99f4337a567e25b52fb70c5b01151610859981f1aa",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "8e4c9d0a44e263cb70487c521dc69fcf755f02a6b946c97adeb5685943318e2b": {
+      "signature": "8e4c9d0a44e263cb70487c521dc69fcf755f02a6b946c97adeb5685943318e2b",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcruntime140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "8e53e8f6284a53644df4c2e53d24c3a7db6fe868dcff01cbb69e909bcb59fdaa": {
+      "signature": "8e53e8f6284a53644df4c2e53d24c3a7db6fe868dcff01cbb69e909bcb59fdaa",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "8f07f376dba9d923dd0113d065509f5d0adcca933086d7e535964272b6872148": {
+      "signature": "8f07f376dba9d923dd0113d065509f5d0adcca933086d7e535964272b6872148",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "8f6bc7667798855660a99bda3e81ad7b0870d6ee4977df4fa34eb8f53bcb1512": {
+      "signature": "8f6bc7667798855660a99bda3e81ad7b0870d6ee4977df4fa34eb8f53bcb1512",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "917b09444eccff4b5b24f30df5419ec92561014573e4a2b6d24ec991e770e543": {
+      "signature": "917b09444eccff4b5b24f30df5419ec92561014573e4a2b6d24ec991e770e543",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "92c977f4840b28a7d7faa66ae485f2e8b92c0baf05712e202aba55053529be40": {
+      "signature": "92c977f4840b28a7d7faa66ae485f2e8b92c0baf05712e202aba55053529be40",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/msvcp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "93047cf23fbe7a0ca64051fd07690fc16b66a16beedf21019d6403ad0373dee4": {
+      "signature": "93047cf23fbe7a0ca64051fd07690fc16b66a16beedf21019d6403ad0373dee4",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "93276b7789c799e725d716710a7f7a095e14bb06153b23d364536ae6befa27b0": {
+      "signature": "93276b7789c799e725d716710a7f7a095e14bb06153b23d364536ae6befa27b0",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "9346ffb92b47d0c2676dc249e40d8fd824abefad1d48788bc250c4d1c618eb0c": {
+      "signature": "9346ffb92b47d0c2676dc249e40d8fd824abefad1d48788bc250c4d1c618eb0c",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "9373d070d2e13fe2259c75eddb5097d935ebfd753b0a48756ba8af37e3876cc6": {
+      "signature": "9373d070d2e13fe2259c75eddb5097d935ebfd753b0a48756ba8af37e3876cc6",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "9c0f9ec56494992edd62f4cffcb93351eb6f82853fa4fb5f9ad38bab76d0a293": {
+      "signature": "9c0f9ec56494992edd62f4cffcb93351eb6f82853fa4fb5f9ad38bab76d0a293",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "9cfd97acb93fa38da21ec0cc924062ed8e87a0b151871b6c2ecdbb89829aa4ea": {
+      "signature": "9cfd97acb93fa38da21ec0cc924062ed8e87a0b151871b6c2ecdbb89829aa4ea",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "9e581b3283df52aba12eefe40df4120a6ff7e9d1c00a7814df235b0a513b0ace": {
+      "signature": "9e581b3283df52aba12eefe40df4120a6ff7e9d1c00a7814df235b0a513b0ace",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vcomp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "9fa6e27e0b28f4da18545b5bf0051538cd215662793de5b71226113aec231185": {
+      "signature": "9fa6e27e0b28f4da18545b5bf0051538cd215662793de5b71226113aec231185",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vcamp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "a018b375e98b52056ad1ee7328bf5b072fc0138d0551af9665b4cdda8a35fb6c": {
+      "signature": "a018b375e98b52056ad1ee7328bf5b072fc0138d0551af9665b4cdda8a35fb6c",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "a41b81d6d309169d1aa4557e78fe1429555262d8363fa04391085c4f9c106ed9": {
+      "signature": "a41b81d6d309169d1aa4557e78fe1429555262d8363fa04391085c4f9c106ed9",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "a450c6fdf75986dac70ae5668e7964e08412ac506a7bf75b20b8b918e1c10f7c": {
+      "signature": "a450c6fdf75986dac70ae5668e7964e08412ac506a7bf75b20b8b918e1c10f7c",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "a65a6c830bfe05620c376ebf41a997abf6957a054ec4f179e4828070e950f258": {
+      "signature": "a65a6c830bfe05620c376ebf41a997abf6957a054ec4f179e4828070e950f258",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcomp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "a6699ee1dfc92e8d68ad3cdf1ff6ddd818307e0d5877179d26a27098cb5386de": {
+      "signature": "a6699ee1dfc92e8d68ad3cdf1ff6ddd818307e0d5877179d26a27098cb5386de",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "a8098ae36e9b55fcf9033298ae9edc8d07fc04ec3f17bf589bfe02a7354e9439": {
+      "signature": "a8098ae36e9b55fcf9033298ae9edc8d07fc04ec3f17bf589bfe02a7354e9439",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_2_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "adb7b2687f5331af118f08dbdac3ce9893cab1a1aa90515ea84a142fded627e0": {
+      "signature": "adb7b2687f5331af118f08dbdac3ce9893cab1a1aa90515ea84a142fded627e0",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "af1bbc1c1e1214b29f758f41774d120479e33520aa2112a8d4aea1318b727b16": {
+      "signature": "af1bbc1c1e1214b29f758f41774d120479e33520aa2112a8d4aea1318b727b16",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/msvcp140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "af26e01c31d32e570ab525701c0182a12a8fdaa23edd391eba74582b069b3397": {
+      "signature": "af26e01c31d32e570ab525701c0182a12a8fdaa23edd391eba74582b069b3397",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b1a56202ad0f2af8af719cca9b1e2baf8487abf77e68bbd015355edc82861b0c": {
+      "signature": "b1a56202ad0f2af8af719cca9b1e2baf8487abf77e68bbd015355edc82861b0c",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b2314e4956e240b859114114803036d220f302a15c066920dddaf19298df10f5": {
+      "signature": "b2314e4956e240b859114114803036d220f302a15c066920dddaf19298df10f5",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b27cbf1d07f31a6e13bf1217aa322c3d7c22d3468f14939d5f1dd3f0a85db9f4": {
+      "signature": "b27cbf1d07f31a6e13bf1217aa322c3d7c22d3468f14939d5f1dd3f0a85db9f4",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b392f3f2f4bd5f1bf0049f35cc2f5b51bb06ac3b3c67f173bb42fd86e972e0da": {
+      "signature": "b392f3f2f4bd5f1bf0049f35cc2f5b51bb06ac3b3c67f173bb42fd86e972e0da",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b471c55a071ec35e5f1653eed4c6b84b86c3bb23bb910ad6b05fb81dcc8ea34a": {
+      "signature": "b471c55a071ec35e5f1653eed4c6b84b86c3bb23bb910ad6b05fb81dcc8ea34a",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b5689b821123177824daa437e2da02fc26090510206c976d1ff37f67f4912fe4": {
+      "signature": "b5689b821123177824daa437e2da02fc26090510206c976d1ff37f67f4912fe4",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vcruntime140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b5cf0160654866f2d85551703c3c9cae75f389a659ca3a77e9d26198b1245021": {
+      "signature": "b5cf0160654866f2d85551703c3c9cae75f389a659ca3a77e9d26198b1245021",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/concrt140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "b745bc874535cfafdbb19e2d5b4924d0c342d022c0a991fd4af56f0c2df0cd34": {
+      "signature": "b745bc874535cfafdbb19e2d5b4924d0c342d022c0a991fd4af56f0c2df0cd34",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "bf98c5dd8b5b2457e5fbcc59fbe7c0caf8c468486e91c35db0f67d7733c8c2f7": {
+      "signature": "bf98c5dd8b5b2457e5fbcc59fbe7c0caf8c468486e91c35db0f67d7733c8c2f7",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vccorlib140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "c168cc62dfb002bacddff7fdf5163c9c1b9688b70c6da81e157c2c9e256a9bb4": {
+      "signature": "c168cc62dfb002bacddff7fdf5163c9c1b9688b70c6da81e157c2c9e256a9bb4",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "c21d6b9d0d84220326e48044c09dccc7cdfa37bf8b81cc354f464374a9ddc072": {
+      "signature": "c21d6b9d0d84220326e48044c09dccc7cdfa37bf8b81cc354f464374a9ddc072",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "c22b7c95e82dc598e3fb6104159f78385ce4c047c486bd7d8260aa296a8a30ba": {
+      "signature": "c22b7c95e82dc598e3fb6104159f78385ce4c047c486bd7d8260aa296a8a30ba",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "c5b91a6a5bd0ffa51b894574c868452f88dee272e68f5d42eba1b50caf150563": {
+      "signature": "c5b91a6a5bd0ffa51b894574c868452f88dee272e68f5d42eba1b50caf150563",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vccorlib140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "c9297471e8778afac24114bf7c18c5b1ce006cbb61721612c1e44a46a5ff9dd3": {
+      "signature": "c9297471e8778afac24114bf7c18c5b1ce006cbb61721612c1e44a46a5ff9dd3",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "ca3756af2e40da97bd6ed35745c3d3fea4b5e273967007c3fa045249351d56f7": {
+      "signature": "ca3756af2e40da97bd6ed35745c3d3fea4b5e273967007c3fa045249351d56f7",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_2_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "cba849acb5a11d98257a2057346844232a02e4895049b1b0dfaaa7296528838e": {
+      "signature": "cba849acb5a11d98257a2057346844232a02e4895049b1b0dfaaa7296528838e",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "cf3730cf3c81828eea4d765138900a94780853fcff27865a4b2154acb210576b": {
+      "signature": "cf3730cf3c81828eea4d765138900a94780853fcff27865a4b2154acb210576b",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "cfbd819c85403c490a5caf7dd8c57daa77d8a806e2c9380c1396c97c0ebe91f8": {
+      "signature": "cfbd819c85403c490a5caf7dd8c57daa77d8a806e2c9380c1396c97c0ebe91f8",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d0918a5b67ec4ab0333ec81dcb338792a9628a32fc77bef2df3459761f335d6b": {
+      "signature": "d0918a5b67ec4ab0333ec81dcb338792a9628a32fc77bef2df3459761f335d6b",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcruntime140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d3e04a8fbf6f6b5cba70c2f355060a33ff5633e93bffa3dcf6ce8f07f43cdfd6": {
+      "signature": "d3e04a8fbf6f6b5cba70c2f355060a33ff5633e93bffa3dcf6ce8f07f43cdfd6",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d4811752d17ad9c10699fd9f8aa6ddef129b0921452fb2d040f2965b7cf7a797": {
+      "signature": "d4811752d17ad9c10699fd9f8aa6ddef129b0921452fb2d040f2965b7cf7a797",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d4d2f2866f80acefab89383afa9c1db54a20b5bcd33a55bff139cfa35db50629": {
+      "signature": "d4d2f2866f80acefab89383afa9c1db54a20b5bcd33a55bff139cfa35db50629",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcamp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d4f90e35b9085a15c5b818493030897c20ac36ab5e5e371c7e9be7d990c368c0": {
+      "signature": "d4f90e35b9085a15c5b818493030897c20ac36ab5e5e371c7e9be7d990c368c0",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2018",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d5d5b3ad658682f995c1f914d31c7527ed45a814ea3c061a8dd02197fafef33d": {
+      "signature": "d5d5b3ad658682f995c1f914d31c7527ed45a814ea3c061a8dd02197fafef33d",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vcruntime140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "d651d8a705f42c5fdd922a12f779751dabe493c9da57511c320503d50dfea111": {
+      "signature": "d651d8a705f42c5fdd922a12f779751dabe493c9da57511c320503d50dfea111",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/concrt140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "da134c8868f0a3b7a782b949929f8a4d34b6a18ab76a9bc808af79e53cb98bc8": {
+      "signature": "da134c8868f0a3b7a782b949929f8a4d34b6a18ab76a9bc808af79e53cb98bc8",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcruntime140_1_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "dad4670f6f9521656a37439da433d53d2b72e3db04d335e0bd54a03305084e02": {
+      "signature": "dad4670f6f9521656a37439da433d53d2b72e3db04d335e0bd54a03305084e02",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_2_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "dc9b48cffa807af3f3594131857de65c0edd4a1c36c156d171f256f387dbbe78": {
+      "signature": "dc9b48cffa807af3f3594131857de65c0edd4a1c36c156d171f256f387dbbe78",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "dca761b2131ccb28daba6ce46fa1fa3588bb66791f4aad6511d170d00a85698b": {
+      "signature": "dca761b2131ccb28daba6ce46fa1fa3588bb66791f4aad6511d170d00a85698b",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "dcd94fcfeffb7249d6ad8c8d2c742b4e4bd5499f95ebe6bf8254a25a97076d74": {
+      "signature": "dcd94fcfeffb7249d6ad8c8d2c742b4e4bd5499f95ebe6bf8254a25a97076d74",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcruntime140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "dda88e165dd9f05d39997c02524c3c25041712584c7063f4bacdbb3761cc787f": {
+      "signature": "dda88e165dd9f05d39997c02524c3c25041712584c7063f4bacdbb3761cc787f",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e0df7eda876b1a433aef68030a928e131b9979602ef68bef74105ed4098f8ab9": {
+      "signature": "e0df7eda876b1a433aef68030a928e131b9979602ef68bef74105ed4098f8ab9",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e1553246695b52f5801084e10253390e3e362f269ab7926b5f33a00266371e5e": {
+      "signature": "e1553246695b52f5801084e10253390e3e362f269ab7926b5f33a00266371e5e",
+      "target": "out/Build-WinUI-arm64-Release/drop_arm64fre/ARM64fre/TestDependencies/crtforwarders/vcomp140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e545758884128e765b9e3bf6ac2ddb3eb86b356b01ef43cf5bd4ac5c980bd70d": {
+      "signature": "e545758884128e765b9e3bf6ac2ddb3eb86b356b01ef43cf5bd4ac5c980bd70d",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e5f3b66292995d34ba0c5ad86e7e6d78fc46c4ff5f1da4da90d01e609cfe3de3": {
+      "signature": "e5f3b66292995d34ba0c5ad86e7e6d78fc46c4ff5f1da4da90d01e609cfe3de3",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/msvcp140_1d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e7816f3220304e6e855cb391d368882d9c2df066e5ad32d56c942eaba871e4ab": {
+      "signature": "e7816f3220304e6e855cb391d368882d9c2df066e5ad32d56c942eaba871e4ab",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vccorlib140_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e7c5c4d43fc85c8193292f6bd9106f0f7a1d660125924c1ae7910dda1babf1eb": {
+      "signature": "e7c5c4d43fc85c8193292f6bd9106f0f7a1d660125924c1ae7910dda1babf1eb",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "e879c8766237f147554dc7fef7d63d222b7ec09c450e406f80f9393c8bd5defb": {
+      "signature": "e879c8766237f147554dc7fef7d63d222b7ec09c450e406f80f9393c8bd5defb",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/vcamp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "efbcbe7ecc1f009c451c57ff9ccf44e7c15110a893e81f15f81c26e0718fc10e": {
+      "signature": "efbcbe7ecc1f009c451c57ff9ccf44e7c15110a893e81f15f81c26e0718fc10e",
+      "target": "BuildOutput/bin/amd64fre/TestDependencies/crtforwarders/concrt140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "f2884e06a45e26b5216f878083fb6428fc58056a2c5b5d267dd464e8330615d9": {
+      "signature": "f2884e06a45e26b5216f878083fb6428fc58056a2c5b5d267dd464e8330615d9",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vcomp140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "f45d3042d026000074ff0cf6684080c09bb88d8e0348669467f2ec7f5021cc98": {
+      "signature": "f45d3042d026000074ff0cf6684080c09bb88d8e0348669467f2ec7f5021cc98",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "f751511a2849b4d62ca7a021ca8df9f165f7345ff383aadf3fb8f53553be54f8": {
+      "signature": "f751511a2849b4d62ca7a021ca8df9f165f7345ff383aadf3fb8f53553be54f8",
+      "target": "BuildOutput/bin/ARM64fre/TestDependencies/crtforwarders/vcruntime140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "fc0d43c5d3766b8a714c32b127eb2637ace5872afeed2df7fad671576973e838": {
+      "signature": "fc0d43c5d3766b8a714c32b127eb2637ace5872afeed2df7fad671576973e838",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_2_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "fd94d89619f830526e5e97d17fcb4941d824a6c7e7b67b98d3e5dabbc80b5002": {
+      "signature": "fd94d89619f830526e5e97d17fcb4941d824a6c7e7b67b98d3e5dabbc80b5002",
+      "target": "out/Build-WinUI-x86-Release/drop_x86fre/x86fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "fe10b9cf1241dc8258cbde377fbec0cc8f48f853fc0e4b88c31176c590ae9969": {
+      "signature": "fe10b9cf1241dc8258cbde377fbec0cc8f48f853fc0e4b88c31176c590ae9969",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/vccorlib140d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2021",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "fe11646d9857f793cdbe16652bf32df72e310bf8175dc6833c4984e5ddc22069": {
+      "signature": "fe11646d9857f793cdbe16652bf32df72e310bf8175dc6833c4984e5ddc22069",
+      "target": "BuildOutput/bin/x86fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    },
+    "fff393c0ebffcd2edb315486fc715da0a18260d888f1e5b2e187dab14b7a4b53": {
+      "signature": "fff393c0ebffcd2edb315486fc715da0a18260d888f1e5b2e187dab14b7a4b53",
+      "target": "out/Build-WinUI-x64-Release/drop_amd64fre/amd64fre/TestDependencies/crtforwarders/msvcp140_2d_app.dll",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "binskim",
+      "ruleId": "BA2008",
+      "justification": "OS#61713413 - Microsoft pre-built CRT debug forwarders (TestDependencies/crtforwarders/*.dll) and unpacked .NET CoreRuntime appx contents (AppPackages_Unzipped/Microsoft.NET.CoreRuntime.2.2/*.dll) staged under BuildOutput/ during the full Microsoft.UI.Xaml.sln build (buildProductOnly=false in monobuild). These binaries ship from Microsoft via the corresponding nupkg dependencies, not from WinUI source, and are not consumed by Microsoft.WindowsAppSDK.WinUI.nupkg or Microsoft.ProjectReunion.WinUI.TransportPackage.nupkg. Standalone WinUI Nightly does not run BinSkim on these paths.",
+      "createdDate": "2026-06-11 00:00:00Z",
+      "expirationDate": "2026-12-08 00:00:00Z",
+      "type": null
+    }
+  }
+}

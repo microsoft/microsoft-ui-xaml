@@ -26,6 +26,8 @@ set _version=3.0.0-dev
 set _lowpriority=%XAMLBUILD_LOWPRIORITY%
 set _verbosity=/verbosity:minimal
 set _analyze=
+set _quiet=
+set _exitCode=0
 
 :parseArgs
 if "%1"=="/c" (
@@ -52,6 +54,9 @@ if "%1"=="/c" (
     set _cache=1
 ) else if "%1"=="/fake" (
     set _fake=1
+) else if "%1"=="/q" (
+    set _quiet=1
+    set _verbosity=/verbosity:quiet
 ) else if "%1"=="/muxfinal" (
     set _muxfinal=1
 ) else if "%1" == "/lowpri" (
@@ -112,6 +117,7 @@ if "%_targetTest%" == "1" if "%_targetProdTest%" == "1" (
 
 if "%_clean%"=="1" (
     call :callScript clean.cmd /all
+    if ERRORLEVEL 1 goto:showDurationAndExit
     set _restore=1
 )
 
@@ -148,7 +154,9 @@ if "%_targetMux%" == "1" (
    call :buildSolution %reporoot%\Microsoft.UI.Xaml-Product.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
+   if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildMockPackage
+   if ERRORLEVEL 1 goto:showDurationAndExit
 ) else if "%_targetProdTest%" == "1" (
    rem If we have all files, build the full solution. Otherwise, build the one limited to OSS-
    rem available projects.
@@ -156,18 +164,21 @@ if "%_targetMux%" == "1" (
       call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
       if ERRORLEVEL 1 goto:showDurationAndExit
       call :buildMockPackage
+      if ERRORLEVEL 1 goto:showDurationAndExit
       call :buildSolution %reporoot%\controls\MUXControls.sln /restore
    ) else (
       rem Build the smaller solution
       call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.OSS.sln
       if ERRORLEVEL 1 goto:showDurationAndExit
       call :buildMockPackage
+      if ERRORLEVEL 1 goto:showDurationAndExit
       rem Can't yet build the test projects in MUXControls.sln
       rem No samples yet in OSS
       set _targetSamples=0
    )
 ) else if "%_targetTest%" == "1" (
    call :buildMockPackage
+   if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 )
 if ERRORLEVEL 1 goto:showDurationAndExit
@@ -175,6 +186,7 @@ if ERRORLEVEL 1 goto:showDurationAndExit
 if "%_targetSamples%" == "1" (
     rem If not fake and not building prodtest (so already built the mock), do so
     if "%_fake%%_targetProdTest%"=="" call :buildMockPackage
+    if ERRORLEVEL 1 goto:showDurationAndExit
 
     rem Note that buildsamples.cmd does it's own check for "fake", so we just call it directly.
     call :callScript buildsamples.cmd %_versionOption%
@@ -185,9 +197,6 @@ if "%_targetSamples%" == "1" (
     )
     if ERRORLEVEL 1 goto :showDurationAndExit
 )
-echo ---
-echo BUILD SUCCEEDED.
-
 git diff --exit-code "controls/dev/dll/XamlMetadataProviderGenerated.h" > nul
 if ERRORLEVEL 1 (
     set _muxcIXMPChanged=1
@@ -213,7 +222,11 @@ set _args=%*
 for %%i in (%_solution%) do set _title=%%~ni
 
 set _binlog=%_title%.%_BuildArch%%_BuildType%.binlog
-set _options=/bl:!_binlog! !_verbosity! /clp:Summary,ForceNoAlign /ds:false !_procCount! %_args% %_versionOption% /nr:false
+if "%_quiet%"=="1" (
+    set _options=/bl:!_binlog! !_verbosity! /clp:ErrorsOnly /ds:false !_procCount! %_args% %_versionOption% /nr:false
+) else (
+    set _options=/bl:!_binlog! !_verbosity! /clp:Summary,ForceNoAlign /ds:false !_procCount! %_args% %_versionOption% /nr:false
+)
 
 if "%_restore%"=="1" (
     echo Adding restore option...
@@ -268,11 +281,12 @@ if NOT "%PSModulePath%" == "" (
 %_command%
 
 if ERRORLEVEL 1  (
+    set _exitCode=!ERRORLEVEL!
     echo ---
     echo ERROR: buildSolution for !_solution! FAILED.  Binlog is here: !_binlog!
 )
 
-goto:eof
+exit /b %_exitCode%
 
 :callScript
 
@@ -284,28 +298,29 @@ if "%_fake%"=="1" (
 call %*
 
 if ERRORLEVEL 1  (
+    set _exitCode=!ERRORLEVEL!
     echo ---
     echo ERROR: callScript FAILED.
 )
-goto :eof
+exit /b %_exitCode%
 
 
 :buildMockPackage
 if EXIST "%RepoRoot%\pack.cmd" (
     if "%_fake%"=="1" (
         echo COMMAND: call %RepoRoot%\pack.cmd /version %_version%
-        goto :eof
+        exit /b 0
     )
     call %RepoRoot%\pack.cmd /version %_version%
 ) else (
     if "%_fake%"=="1" (
         echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
-        goto :eof
+        exit /b 0
     )
     call %RepoRoot%\pack.component.cmd /version %_version%
 )
-if ERRORLEVEL 1 goto :showDurationAndExit
-goto :eof
+if ERRORLEVEL 1 set _exitCode=!ERRORLEVEL!
+exit /b %_exitCode%
 
 
 :showDurationAndExit
@@ -342,8 +357,14 @@ set BUILDDURATION_HSC=0%BUILDDURATION_HSC%
 echo ---
 echo Start time: %BUILDCMDSTARTTIME%. End time: %BUILDCMDENDTIME%
 echo    Elapsed: %BUILDDURATION_HRS:~-2%:%BUILDDURATION_MIN:~-2%:%BUILDDURATION_SEC:~-2%.%BUILDDURATION_HSC:~-2%
-endlocal
-goto :eof
+if not "%_exitCode%"=="0" (
+    echo BUILD FAILED ^(exit code %_exitCode%^).
+) else if "%_fake%"=="1" (
+    echo DRY RUN COMPLETE.
+) else (
+    echo BUILD SUCCEEDED.
+)
+endlocal & exit /b %_exitCode%
 
 :usage
 echo Usage:
@@ -358,6 +379,7 @@ echo        samples             Builds sample apps
 echo        all                 Builds the world
 echo.
 echo    Options:
+echo        /q              Quiet MSBuild output (errors only).
 echo        /c              Deletes bin, obj, temp, and packaging directories before building. 
 echo                        Kills all existing instances of msbuild.exe, so should not be run alongside another build
 echo        /restore        Add the Nuget restore option

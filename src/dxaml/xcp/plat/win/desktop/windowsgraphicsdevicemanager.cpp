@@ -394,8 +394,7 @@ _Check_return_ HRESULT WindowsGraphicsDeviceManager::CreateFinalReleaseAsserter(
     DebugDeviceFinalReleaseAsserter *pAsserter = NULL;
     ID3D11Device *pD3D11DeviceNoRef = NULL;
     ID2D1Device *pD2DDeviceNoRef = NULL;
-    IDCompositionDesktopDevice *pDCompDeviceNoRef = NULL;
-    bool hasInteropCompositor = false;
+    IDCompositionDevice2 *pDCompDeviceNoRef = NULL;
 
     // We're breaking our own rules here about not holding on to the D3D device. We'll allow it here because
     // this is debug code during device lost recovery. The FinalReleaseAsserter will take a ref on the D3D
@@ -412,11 +411,9 @@ _Check_return_ HRESULT WindowsGraphicsDeviceManager::CreateFinalReleaseAsserter(
     if (m_pDCompTreeHost != NULL)
     {
         pDCompDeviceNoRef = m_pDCompTreeHost->GetMainDevice();
-        hasInteropCompositor = m_pDCompTreeHost->HasInteropCompositor();
     }
 
     pAsserter = new DebugDeviceFinalReleaseAsserter(
-                                hasInteropCompositor,
                                 pD3D11DeviceNoRef,
                                 pD2DDeviceNoRef,
                                 pDCompDeviceNoRef);
@@ -432,15 +429,13 @@ _Check_return_ HRESULT WindowsGraphicsDeviceManager::CreateFinalReleaseAsserter(
 //
 //------------------------------------------------------------------------------
 DebugDeviceFinalReleaseAsserter::DebugDeviceFinalReleaseAsserter(
-    bool hasInteropCompositor,
     _In_opt_ ID3D11Device *pD3D11Device,
     _In_opt_ ID2D1Device *pD2DDevice,
-    _In_opt_ IDCompositionDesktopDevice *pDCompDevice)
+    _In_opt_ IDCompositionDevice2 *pDCompDevice)
 {
     SetInterface(m_pD3D11Device, pD3D11Device);
     SetInterface(m_pD2DDevice, pD2DDevice);
     SetInterface(m_pDCompDevice, pDCompDevice);
-    m_hasInteropCompositor = hasInteropCompositor;
 }
 
 //------------------------------------------------------------------------------
@@ -483,13 +478,9 @@ DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert()
         // seem to be anyway to "null" this out, for now we will  simply not check the DComp device
 
 #if 0   // There are a bunch of references still holding onto the interop compositor.  See bug: Bug 23782596 : Renable or remove DebugDeviceFinalReleaseAsserter
-        if (m_hasInteropCompositor && remainingRefCount != 1)
+        if (remainingRefCount != 1)
         {
             LOG_LEAK_EX(L"DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert: expected remainingRefCount = 1, actual = %d", remainingRefCount);
-        }
-        else if (!m_hasInteropCompositor && remainingRefCount != 0)
-        {
-            LOG_LEAK_EX(L"DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert: expected remainingRefCount = 0, actual = %d", remainingRefCount);
         }
 #endif
         m_pDCompDevice = NULL;

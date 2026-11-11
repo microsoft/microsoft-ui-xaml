@@ -6,6 +6,10 @@
 #include "UIElementCollection.g.h"
 #include "UIElement.g.h"
 
+// Containment for the experimental DataTemplate constructor that takes a delegate
+// When disabled, the API returns E_NOTIMPL.
+#define WINAPPSDK_CHANGEID_63853939 63853939
+
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
 using namespace DirectUI;
@@ -20,9 +24,22 @@ _Check_return_ HRESULT DirectUI::DataTemplate::LoadContentImpl(_Outptr_ xaml::ID
     hr = CoreImports::CDataTemplate_LoadContent(static_cast<CDataTemplate*>(GetHandle()), &returnValueNative);
     if (FAILED(hr))
     {
-        // Translate to XamlParseFailed error. The CLR knows how to translate this to
-        // a XamlParseException.
-        hr = MAKE_HRESULT(SEVERITY_ERROR, FACILITY_XAML, E_XAMLPARSEFAILED);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>())
+        {
+            if (!m_elementFactory)
+            {
+                // Markup case only: translate a parse failure to XamlParseFailed. The CLR knows how to
+                // translate this to a XamlParseException. For a code-authored template there is no parse,
+                // so the callback's original failure HRESULT is propagated unchanged.
+                hr = MAKE_HRESULT(SEVERITY_ERROR, FACILITY_XAML, E_XAMLPARSEFAILED);
+            }
+        }
+        else
+        {
+            // Translate to XamlParseFailed error. The CLR knows how to translate this to
+            // a XamlParseException.
+            hr = MAKE_HRESULT(SEVERITY_ERROR, FACILITY_XAML, E_XAMLPARSEFAILED);
+        }
     }
     IFC(hr);
 
@@ -33,9 +50,63 @@ _Check_return_ HRESULT DirectUI::DataTemplate::LoadContentImpl(_Outptr_ xaml::ID
     }
 
 Cleanup:
+    // Template loading leaves the root pegged until an owning reference exists
+    // outside the parser. The returned interface (or this peer during failure
+    // cleanup) now provides that reference.
+    if (pReturnValuePeer)
+    {
+        pReturnValuePeer->UnpegNoRef();
+    }
+
     ReleaseInterface(returnValueNative);
     ctl::release_interface(pReturnValuePeer);
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT DirectUI::DataTemplate::SetElementFactory(_In_ xaml::IDataTemplateElementFactory* value)
+{
+    FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>());
+    SetPtrValue(m_elementFactory, value);
+    // Mark the core object so the core LoadContent path can call this callback. The factory
+    // is always non-null (set once at construction), so the core flag is only ever enabled.
+    IFC_RETURN(CoreImports::CDataTemplate_SetHasElementFactory(static_cast<CDataTemplate*>(GetHandle()), true));
+    return S_OK;
+}
+
+_Check_return_ HRESULT DirectUI::DataTemplate::CreateElementFromFactory(
+    _In_ CDependencyObject* nativeTemplate,
+    _Outptr_result_maybenull_ CDependencyObject** ppResult)
+{
+    FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>());
+    *ppResult = nullptr;
+
+    ctl::ComPtr<DependencyObject> peer;
+    IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(nativeTemplate, &peer));
+
+    DataTemplate* dataTemplate = peer.Cast<DataTemplate>();
+    ASSERT(dataTemplate->m_elementFactory);
+
+    ctl::ComPtr<xaml::IUIElement> element;
+    IFC_RETURN(dataTemplate->m_elementFactory.Get()->Invoke(&element));
+
+    // A null result is tolerated, matching an empty <DataTemplate/>
+    if (element)
+    {
+        CDependencyObject* nativeElement = static_cast<UIElement*>(element.Get())->GetHandle();
+
+        // The app created this element and may have attached handlers (e.g. Loaded, DataContextChanged),
+        // so its peer already exists and is stateful, but it is not yet parented. Without entering the tree
+        // there's nothing protecting the peer, and if the peer gets released then all its event handlers are
+        // lost. Set an expected reference now to bridge the gap until the element is parented. If the element
+        // is parented later, the existing logic around CDO::OnParentChange and Set/ClearExpectedReferenceOnPeer
+        // keeps it balanced, and if it is never parented then the expected reference is released when the
+        // core object is destroyed, preventing a leak.
+        IFC_RETURN(nativeElement->SetExpectedReferenceOnPeer());
+
+        SetInterface(*ppResult, nativeElement);
+    }
+
+    return S_OK;
 }
 
 _Check_return_ HRESULT DirectUI::DataTemplate::GetElementImpl(_In_ xaml::IElementFactoryGetArgs* args, _Outptr_ xaml::IUIElement** retrunValue)
@@ -148,4 +219,32 @@ _Check_return_ HRESULT DirectUI::DataTemplate::RecycleElementImpl(_In_ xaml::IEl
     m_parents.emplace_back(weakParent);
 
     return S_OK;
+}
+
+_Check_return_ HRESULT DirectUI::DataTemplateFactory::CreateInstanceFromCallbackImpl(
+    _In_ xaml::IDataTemplateElementFactory* pElementFactory,
+    _In_opt_ IInspectable* pOuter,
+    _Outptr_ IInspectable** ppInner,
+    _Outptr_ xaml::IDataTemplate** ppInstance)
+{
+    HRESULT hr = S_OK;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63853939>())
+    {
+        ctl::ComPtr<xaml::IDataTemplate> instance;
+
+        ARG_NOTNULL(pElementFactory, "elementFactory");
+        ARG_VALIDRETURNPOINTER(ppInstance);
+
+        IFC(CreateInstance(pOuter, ppInner, &instance));
+        IFC(instance.Cast<DataTemplate>()->SetElementFactory(pElementFactory));
+
+        *ppInstance = instance.Detach();
+    }
+    else
+    {
+        hr = E_NOTIMPL;
+    }
+
+Cleanup:
+    return hr;
 }

@@ -143,6 +143,7 @@ namespace MUXControlsTestApp
             MouseWheelScrollTest,
             NavigationErrorTest,
             Focus_BasicTabTest,
+            Focus_DisabledParentTest,
             Focus_ReverseTabTest,
             Focus_BackAndForthTabTest,
             Focus_MouseActivateTest,
@@ -221,6 +222,7 @@ namespace MUXControlsTestApp
             { TestList.MouseWheelScrollTest, 2 },
             { TestList.NavigationErrorTest, 0 },
             { TestList.Focus_BasicTabTest, 3 },
+            { TestList.Focus_DisabledParentTest, 3 },
             { TestList.Focus_ReverseTabTest, 3 },
             { TestList.Focus_BackAndForthTabTest, 3 },
             { TestList.Focus_MouseActivateTest, 3 },
@@ -633,6 +635,11 @@ namespace MUXControlsTestApp
                 case TestList.CoreWebView2Initialized_FailedTest:
                     {
                         // Defer 1st source set to CompleteCurrentTest to listen to event during CoreWV initialization
+                    }
+                    break;
+                case TestList.Focus_DisabledParentTest:
+                    {
+                        // Defer CoreWebView2 creation until CompleteCurrentTest.
                     }
                     break;
                 case TestList.WindowlessPopupTest:
@@ -1393,6 +1400,52 @@ namespace MUXControlsTestApp
                             logger.Verify(result == expectedResult,
                                           string.Format("Test {0}: Expected result {1} did not match with returned result {2}",
                                                         selectedTest, expectedResult.ToString(), result));
+                        }
+                        break;
+
+                    case TestList.Focus_DisabledParentTest:
+                        {
+                            IntPtr hostHwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.CurrentWindow);
+                            var tabStopButton1 = FindName("TabStopButton1") as Button;
+                            bool parentDisabledAfterControllerCreation = false;
+                            TypedEventHandler<WebView2, CoreWebView2InitializedEventArgs> disableParentOnInitialized =
+                                (sender, args) =>
+                                {
+                                    if (args.Exception == null)
+                                    {
+                                        WindowNativeMethods.EnableWindow(hostHwnd, false);
+                                        parentDisabledAfterControllerCreation = !WindowNativeMethods.IsWindowEnabled(hostHwnd);
+                                    }
+                                };
+
+                            logger.Verify(
+                                tabStopButton1.Focus(FocusState.Programmatic),
+                                string.Format("Test {0}: Failed to focus the XAML tab stop.", selectedTest));
+
+                            MyWebView2.CoreWebView2Initialized += disableParentOnInitialized;
+                            try
+                            {
+                                var initializationTask = MyWebView2.EnsureCoreWebView2Async();
+
+                                logger.Verify(
+                                    MyWebView2.Focus(FocusState.Programmatic),
+                                    string.Format("Test {0}: Failed to focus WebView2 while initialization was pending.", selectedTest));
+
+                                await initializationTask;
+
+                                logger.Verify(
+                                    MyWebView2.CoreWebView2 != null,
+                                    string.Format("Test {0}: CoreWebView2 initialization did not complete.", selectedTest));
+
+                                logger.Verify(
+                                    parentDisabledAfterControllerCreation,
+                                    string.Format("Test {0}: The parent HWND was not disabled after controller creation.", selectedTest));
+                            }
+                            finally
+                            {
+                                MyWebView2.CoreWebView2Initialized -= disableParentOnInitialized;
+                                WindowNativeMethods.EnableWindow(hostHwnd, true);
+                            }
                         }
                         break;
 

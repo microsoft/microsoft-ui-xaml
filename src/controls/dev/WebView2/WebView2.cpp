@@ -23,8 +23,12 @@
 #include "MuxcTraceLogging.h"
 #include <shellapi.h>  // For DragQueryFile, CF_HDROP
 #include <appmodel.h>
+#include "FrameworkUdk/Containment.h"
 
 using namespace Microsoft::WRL;
+
+// Bug 64312861: [2.0 servicing] Handle invalid argument during WebView2 focus transfer
+#define WINAPPSDK_CHANGEID_64312861 64312861
 
 static constexpr wstring_view s_error_wv2_closed{ L"Cannot create CoreWebView2 for Closed WebView2 element."sv };
 static constexpr wstring_view s_error_cwv2_not_present{ L"Failed because a valid CoreWebView2 is not present. Make sure one was created, for example by calling EnsureCoreWebView2Async() API."sv };
@@ -1333,11 +1337,39 @@ void WebView2::MoveFocusIntoCoreWebView2(winrt::CoreWebView2MoveFocusReason reas
 {
     if (m_coreWebView && m_coreWebViewController)
     {
-        CoreWebView2RunIgnoreInvalidStateSync(
-            [&]()
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64312861>())
+        {
+            try
             {
-                m_coreWebViewController.MoveFocus(reason);
-            });
+                CoreWebView2RunIgnoreInvalidStateSync(
+                    [&]()
+                    {
+                        m_coreWebViewController.MoveFocus(reason);
+                    });
+            }
+            catch (const winrt::hresult_error& error)
+            {
+                TraceLoggingProviderWrite(
+                    XamlTelemetryLogging,
+                    "WebView2_MoveFocus_Failed",
+                    TraceLoggingHResult(error.code().value, "HRESULT"),
+                    TraceLoggingInt32(static_cast<int32_t>(reason), "Reason"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING));
+
+                if (error.code().value != E_INVALIDARG)
+                {
+                    throw;
+                }
+            }
+        }
+        else
+        {
+            CoreWebView2RunIgnoreInvalidStateSync(
+                [&]()
+                {
+                    m_coreWebViewController.MoveFocus(reason);
+                });
+        }
     }
 }
 

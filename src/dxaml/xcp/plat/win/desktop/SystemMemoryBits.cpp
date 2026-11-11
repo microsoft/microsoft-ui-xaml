@@ -5,6 +5,9 @@
 #include <MUX-ETWEvents.h>
 
 #include "XcpAllocation.h"
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_64006293 64006293
 
 //------------------------------------------------------------------------------
 //
@@ -235,7 +238,15 @@ SystemMemoryBitsDriver::SystemMemoryBitsDriver(
     m_pTexture->AddRef();
     XINT64 size = GetWidth() * GetHeight() * GetPixelStride();
     
-    TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(size));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64006293>())
+    {
+        TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(size));
+        XcpAllocation::UpdateAllocatedMemory(size);
+    }
+    else
+    {
+        TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(size));
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -249,7 +260,15 @@ SystemMemoryBitsDriver::~SystemMemoryBitsDriver()
     ReleaseInterface(m_pTexture);
     XINT64 size = GetWidth() * GetHeight() * GetPixelStride();
     
-    TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(-size));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64006293>())
+    {
+        TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(-size));
+        XcpAllocation::UpdateAllocatedMemory(-size);
+    }
+    else
+    {
+        TraceMemoryUpdateAllocationSystemMemoryBitsInfo(static_cast<int32_t>(-size));
+    }
 }
 
 //-------------------------------------------------------------------------

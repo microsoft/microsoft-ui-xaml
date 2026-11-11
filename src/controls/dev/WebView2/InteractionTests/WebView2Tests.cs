@@ -760,12 +760,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Failing on Helix since 2026-10-15: received error status Unknown instead of HostNameNotResolved
         public void NavigationErrorTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("NavigationErrorTest");
                 CompleteTestAndWaitForResult("NavigationErrorTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void Focus_DisabledParentTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("Focus_DisabledParentTest", false /* waitForLoadCompleted */);
+                CompleteTestAndWaitForResult("Focus_DisabledParentTest");
             }
         }
 

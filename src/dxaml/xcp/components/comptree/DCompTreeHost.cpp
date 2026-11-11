@@ -149,7 +149,6 @@ DCompTreeHost::DCompTreeHost(
     , m_useExplicitAtlasHint(false)
     , m_disableAtlas(FALSE)
     , m_isInitialized(false)
-    , m_isCallbackThreadRegistered(false)
 {
     XCP_WEAK(&m_pGraphicsDeviceManagerNoRef);
     ComputeAndCachePrimaryMonitorSize();
@@ -219,12 +218,12 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
 
     m_projectedShadowManager->ReleaseResources();
 
-    if (m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->GetSurfaceFactory() != nullptr)
+    if (GetSurfaceFactory() != nullptr)
     {
         //we store the pointers of offered surfacefactories in a list
         //in OfferTracker, so we need to inform OfferTracker this SurfaceFactory
         //is being released
-        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(m_pCompositionHelper->GetSurfaceFactory());
+        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(GetSurfaceFactory());
     }
 
     DCompSurfaceFactoryManager* instance = DCompSurfaceFactoryManager::Instance();
@@ -314,7 +313,6 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     m_offerTracker->Reset();
 
     m_isInitialized = false;
-    m_isCallbackThreadRegistered = false;
 
     // The background visual got released along with the background primitive. Clear the rect so that we'll make a new background
     // primitive the next time someone tries to attach the background visual.
@@ -434,8 +432,8 @@ DCompTreeHost::ReclaimResources(_Out_ bool *pDiscarded)
 void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector)
 {
     //First, we put the main SurfaceFactory into the vector
-    if (m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->GetSurfaceFactory() != nullptr) {
-        surfaceFactoryVector->push_back(m_pCompositionHelper->GetSurfaceFactory());
+    if (GetSurfaceFactory() != nullptr) {
+        surfaceFactoryVector->push_back(GetSurfaceFactory());
     }
 
     //We also need to put secondary SFs into the vector
@@ -1044,15 +1042,6 @@ bool DCompTreeHost::CheckMainDeviceState()
     }
 
     return result;
-}
-
-void DCompTreeHost::RegisterDCompAnimationCompletedCallbackThread()
-{
-    if (m_isInitialized && !m_isCallbackThreadRegistered)
-    {
-        IFCFAILFAST(m_pCompositionHelper->RegisterCallbackThread());
-        m_isCallbackThreadRegistered = true;
-    }
 }
 
 //----------------------------------------------------------------------------
@@ -1973,11 +1962,6 @@ DCompTreeHost::WaitForCommitCompletion()
     return S_OK;
 }
 
-bool DCompTreeHost::HasInteropCompositor() const
-{
-    return m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->HasInteropCompositor();
-}
-
 // Start/Stop tracking the effective visibility of this element.
 // Note carefully, effective visibility for implicit Show/Hide animations has special semantics.
 // See additional notes in CUIElement::ComputeEffectiveVisibility();
@@ -2638,7 +2622,7 @@ DCompSurfaceFactory::~DCompSurfaceFactory()
 /*static*/ _Check_return_ HRESULT
 DCompSurfaceFactory::Create(
     _In_ DCompTreeHost *pDCompTreeHost,
-    _In_ IDCompositionDesktopDevice *pMainDevice,
+    _In_ IDCompositionDevice2 *pMainDevice,
     _In_ IUnknown *pIUnknownDevice,
     _Outptr_ DCompSurfaceFactory **ppSurfaceFactoryWrapper
     )

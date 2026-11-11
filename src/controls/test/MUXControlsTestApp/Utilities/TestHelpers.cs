@@ -32,6 +32,15 @@ namespace MUXControlsTestApp
         public const string _22H2 = "22621";
     }
 
+    internal static class WindowNativeMethods
+    {
+        [DllImport("user32.dll")]
+        internal static extern bool EnableWindow(IntPtr hwnd, bool enable);
+
+        [DllImport("user32.dll")]
+        internal static extern bool IsWindowEnabled(IntPtr hwnd);
+    }
+
     // This type is used for Interaction tests that do verification and log results to a textbox which the
     // MITA code can read back.
     public class ResultsLogger : IDisposable

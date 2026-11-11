@@ -3,6 +3,8 @@
 
 #include "precomp.h"
 #include "ReferenceTrackerManager.h"
+#include <XcpAllocation.h>
+#include "FrameworkUdk/Containment.h"
 #include <DependencyLocator.h>
 #include <GCInstrumentationAggregator.h>
 #include <AutoReentrantReferenceLock.h>
@@ -11,6 +13,8 @@
 #include "TrackerTargetReference.h"
 #include "DependencyObjectAbstractionHelpers.h"
 #include "MUX-ETWEvents.h"
+
+#define WINAPPSDK_CHANGEID_64006293 64006293
 
 using namespace DirectUI;
 using namespace Instrumentation;
@@ -380,6 +384,13 @@ ReferenceTrackerManager::TriggerCollectionForSuspend( )
 int ReferenceTrackerManager::_peerCount = 0;
 int ReferenceTrackerManager::_targetCount = 0;
 int ReferenceTrackerManager::_unreachableCount = 0;
+
+int ReferenceTrackerManager::GetUnreachableCount()
+{
+    FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64006293>());
+
+    return _unreachableCount;
+}
 
 _Check_return_
 IFACEMETHODIMP
@@ -899,6 +910,19 @@ ReferenceTrackerManager::SetReferenceTrackerHost( _In_ IReferenceTrackerHost *va
 {
     // Keep the callbacks.
     ReplaceInterface( _pReferenceTrackerHost, value );
+
+    // Enable native heap allocation tracking now that a managed runtime is
+    // present. The tracking feeds the orphaned-object GC trigger heuristic
+    // in PerFrameCallback and is only useful when there's a managed GC to
+    // drive. Pure C++ apps (no managed runtime) skip the tracking entirely
+    // to avoid per-allocation overhead.
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64006293>())
+    {
+        if (value != nullptr)
+        {
+            XcpAllocation::EnableMemoryTracking();
+        }
+    }
 
     return S_OK;
 }

@@ -409,16 +409,28 @@ End Namespace
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
 
-            Private Sub <#=evt.EventHandlerCodeName#>(<#=evt.Parameters.Declaration()#>)
+            Private <#=evt.EventHandlerCodeName#> As <#=evt.MemberType#>
+
+            Private Sub <#=evt.EventHandlerCodeName#>Handler(<#=evt.Parameters.Declaration()#>)
 <#+                     if (!evt.PathStep.ValueType.IsDelegate())#>
 <#+                     {#>
                 <#=evt.PathStep.CodeGen().PathExpression#>
 <#+                     }#>
 <#+                     else#>
 <#+                     {#>
-                <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
+                <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>)
 <#+                     }#>
             End Sub
+
+            Private Function Create_<#=evt.EventHandlerCodeName#>() As <#=evt.MemberType#>
+                Dim weakBindings = New Global.System.WeakReference(Of <#=bindUniverse.BindingsClassName#>)(Me)
+                Return Sub(<#=evt.Parameters.Declaration()#>)
+                    Dim bindings As <#=bindUniverse.BindingsClassName#> = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.<#=evt.EventHandlerCodeName#>Handler(<#=evt.Parameters.ForCall()#>)
+                    End If
+                End Sub
+            End Function
 <#+                 }#>
 <#+             }#>
 
@@ -467,10 +479,10 @@ End Namespace
 <#+                         if (element.IsWeakRef)#>
 <#+                         {#>
                     If (Me.<#=element.ObjectCodeName#>.IsAlive) Then
-                        RemoveHandler DirectCast(Me.<#=element.ObjectCodeName#>.Target, <#=element.Type#>).<#=evt.MemberName#>, AddressOf <#=evt.EventHandlerCodeName#>
+                        RemoveHandler DirectCast(Me.<#=element.ObjectCodeName#>.Target, <#=element.Type#>).<#=evt.MemberName#>, Me.<#=evt.EventHandlerCodeName#>
                     End If
 <#+                         } else {#>
-                    RemoveHandler Me.<#=element.ObjectCodeName#>.<#=evt.MemberName#>, AddressOf <#=evt.EventHandlerCodeName#>
+                    RemoveHandler Me.<#=element.ObjectCodeName#>.<#=evt.MemberName#>, Me.<#=evt.EventHandlerCodeName#>
 <#+                         }#>
 <#+                     }#>
 <#+                 }#>
@@ -516,7 +528,8 @@ End Namespace
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
 <#+                     Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
-                        AddHandler DirectCast(target, <#=element.Type#>).<#=evt.MemberName#>, AddressOf <#=evt.EventHandlerCodeName#>
+                        Me.<#=evt.EventHandlerCodeName#> = Me.Create_<#=evt.EventHandlerCodeName#>()
+                        AddHandler DirectCast(target, <#=element.Type#>).<#=evt.MemberName#>, Me.<#=evt.EventHandlerCodeName#>
 <#+                     Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                 }#>
 <#+                 if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))#>

@@ -10720,7 +10720,7 @@ CInputServices::PrepareSecondaryContentRelationshipForCurveUpdate(
         xref_ptr<CDMViewport> spViewport;
         xref_ptr<CDMContent> spContent;
         xref_ptr<IPALDirectManipulationService> spDMService;
-        xref_ptr<IDCompositionDesktopDevice> spDCompDevice;
+        xref_ptr<IDCompositionDevice2> spDCompDevice;
         DMDeferredRelease deferredRelease;
 
         IFC_RETURN(FxCallbacks::UIElement_GetDManipElement(spDMContainer, spDManipElement.ReleaseAndGetAddressOf()));

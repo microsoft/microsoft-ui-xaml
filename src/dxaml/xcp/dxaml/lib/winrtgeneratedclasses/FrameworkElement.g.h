@@ -13,8 +13,26 @@
 
 #include "UIElement.g.h"
 #include "Thickness.g.h"
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __FrameworkElement_GUID "ca0bea2c-b556-4b05-8650-b9d1af48b953"
+
+#pragma region forwarders
+namespace ctl
+{
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(SetThemeResourceBinding)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pProperty, _In_ HSTRING resourceKey) override { return This()->SetThemeResourceBinding(pProperty, resourceKey); }
+    };
+}
+#pragma endregion
 
 namespace DirectUI
 {
@@ -31,6 +49,9 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Xaml::IFrameworkElement
         , public ABI::Microsoft::UI::Xaml::IFrameworkElementProtected
         , public ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi, FrameworkElementGenerated >
+#endif
     {
         friend class DirectUI::FrameworkElement;
 
@@ -40,6 +61,9 @@ namespace DirectUI
             INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElement)
             INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElementProtected)
             INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(FrameworkElementGenerated, DirectUI::UIElement)
 
     public:
@@ -178,6 +202,9 @@ namespace DirectUI
         IFACEMETHOD(OnApplyTemplate)() override;
         _Check_return_ HRESULT OnApplyTemplateProtected();
         IFACEMETHOD(SetBinding)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::IBindingBase* pBinding) override;
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE SetThemeResourceBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pProperty, _In_ HSTRING resourceKey);
+#endif
 
 
     protected:

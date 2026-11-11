@@ -29,6 +29,15 @@ namespace XcpAllocation {
     _Check_return_ __declspec(allocator) void *OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize);
     void __stdcall OSMemoryFree(_Frees_ptr_opt_ void *pAddress);
 
+    void UpdateAllocatedMemory(INT64 cSize);
+
+    // Enables tracking of native XAML heap allocations into g_allocatedMemory.
+    // Called by ReferenceTrackerManager::SetReferenceTrackerHost when a managed
+    // runtime registers, since tracking is only useful for the orphaned-object
+    // GC trigger heuristic (which requires a managed runtime to be present).
+    // Apps without a managed runtime pay only a single bool check per alloc/free.
+    void EnableMemoryTracking();
+
     // An allocator that allows STL to hook into the XcpDebugSetLeakDetectionFlag() machinery
     template <typename T>
     struct LeakIgnoringAllocator

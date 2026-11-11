@@ -4106,7 +4106,7 @@ Cleanup:
 //------------------------------------------------------------------------------
 void
 DXamlCore::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     CCoreServices* pCoreServices = GetHandle();

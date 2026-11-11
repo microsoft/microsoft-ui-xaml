@@ -22,6 +22,10 @@
 #include <DependencyObject.h>
 #include <DependencyObject\inc\ValueBuffer.h>
 
+// Containment for the experimental FrameworkElement.SetThemeResourceBinding API.
+// When disabled, the API returns E_NOTIMPL and new refactored code paths don't run (we revert to old unfactored code paths).
+#define WINAPPSDK_CHANGEID_63265396 63265396
+
 using namespace DirectUI;
 
 namespace Diagnostics
@@ -94,12 +98,24 @@ namespace Diagnostics
         ASSERT(!Expired());
         IFC_RETURN(FixDependencyAndProperty());
 
-        IFC_RETURN(Resources::ResourceResolver::ResolveResourceRuntime(
-            resourceContext ? resourceContext : GetDependency().get(),
-            dictionary,
-            key,
-            m_resourceType,
-            resolvedResource));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63265396>())
+        {
+            IFC_RETURN(Resources::ResourceResolver::ResolveResourceRuntime(
+                resourceContext ? resourceContext : GetDependency().get(),
+                dictionary,
+                key,
+                m_resourceType,
+                resolvedResource));
+        }
+        else
+        {
+            IFC_RETURN(Resources::ResourceResolver::ResolveResourceRuntime_Old(
+                resourceContext ? resourceContext : GetDependency().get(),
+                dictionary,
+                key,
+                m_resourceType,
+                resolvedResource));
+        }
 
         auto previousState = m_state;
         m_state = VisualElementState::ErrorResolved;

@@ -13,11 +13,14 @@
 
 #include "ColorNames.h"
 
+#include <winrt/Windows.UI.ViewManagement.h>
+
 // Faithful C++/WinRT port of onecoreuap\...\inkcontrols\lib\InkToolbarPenConfigurationControl_Partial.*.
 // PORTABLE parts ported 1:1 (color picker ListViewBase, stroke-width Slider, selection/focus/navigation,
-// binding, ColorNames tooltips). STUBBED + documented (lift-unavailable, subagent-verified): the live
-// wincomp stroke preview (IInkPresenterHost / ElementCompositionPreview), Surface Dial (ExternalActor),
-// and real-time high-contrast monitoring (AccessibilitySettings). PenButton is the generated DP.
+// binding, ColorNames tooltips). The stroke preview is reimplemented as a lightweight 2D XAML Path
+// (color+width) since the UWP live wincomp preview (IInkPresenterHost / ElementCompositionPreview) is not
+// on the lift surface. STUBBED + documented (lift-unavailable, subagent-verified): Surface Dial
+// (ExternalActor) and real-time high-contrast monitoring (AccessibilitySettings). PenButton is the generated DP.
 class InkToolbarPenConfigurationControl :
     public ReferenceTracker<InkToolbarPenConfigurationControl, winrt::implementation::InkToolbarPenConfigurationControlT>, 
     public InkToolbarPenConfigurationControlProperties
@@ -48,6 +51,16 @@ private:
     void ConfigureLocalizableElements(winrt::Control const& me);
     void RemoveColorPicker(winrt::Control const& me);
     void RegenerateItemSource();
+    void ConfigureStrokeWidthPreview();
+    void PositionPreviewStroke();
+    void OnPreviewGridSizeChanged(winrt::IInspectable const& sender, winrt::SizeChangedEventArgs const& args);
+    void ConfigureHighContrast();
+    void UpdateHighContrast();
+    // Undoes every template-part subscription. OnApplyTemplate can run more than once, and the handlers
+    // below are bound to a raw 'this', so they must be revoked before re-wiring or the stale ones dangle.
+    void DetachTemplateHandlers();
+    bool IsHighContrast() const;
+    void OnHighContrastChanged(winrt::Windows::UI::ViewManagement::AccessibilitySettings const& sender, winrt::IInspectable const& args);
 
     void OnSelectedItemChanged(winrt::IInspectable const& sender, winrt::SelectionChangedEventArgs const& args);
     void OnContainerContentChanging(winrt::ListViewBase const& sender, winrt::ContainerContentChangingEventArgs const& args);
@@ -63,6 +76,7 @@ private:
 
     void OnL3PointerPressed();
     void OnL3PointerReleased(bool isColor);
+    void OnL3KeyDown(winrt::KeyRoutedEventArgs const& args);
     static bool AreSame(double a, double b);
 
     winrt::weak_ref<winrt::InkToolbar> m_inkToolbar;
@@ -86,5 +100,19 @@ private:
     winrt::IInspectable m_widthSliderPointerPressedEventHandler{ nullptr };
     winrt::IInspectable m_widthSliderPointerReleasedEventHandler{ nullptr };
     winrt::IInspectable m_widthSliderKeyDownEventHandler{ nullptr };
+
+    // Lightweight 2D pen-flyout preview (the UWP live wincomp preview is not portable to the lift).
+    winrt::weak_ref<winrt::Microsoft::UI::Xaml::Controls::Grid> m_strokePreviewGrid;
+    winrt::weak_ref<winrt::Microsoft::UI::Xaml::Shapes::Path> m_previewPath;
+    winrt::event_token m_previewGridSizeChangedToken{};
+    winrt::Windows::Foundation::Rect m_previewGeometryBounds{ 0, 0, 0, 0 };
+
+    winrt::Windows::UI::ViewManagement::AccessibilitySettings m_accessibilitySettings{ nullptr };
+    winrt::event_token m_highContrastChangedToken{};
+
+    // Palette item templates swapped by UpdateHighContrast (UWP m_originalColorPickerItemTemplate /
+    // m_highContrastColorPickerItemTemplate). The high-contrast one outlines each swatch.
+    winrt::DataTemplate m_originalColorPickerItemTemplate{ nullptr };
+    winrt::DataTemplate m_highContrastColorPickerItemTemplate{ nullptr };
 };
 

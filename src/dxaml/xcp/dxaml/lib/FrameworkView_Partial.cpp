@@ -9,6 +9,10 @@
 #include <MetadataAPI.h>
 #include <DependencyLocator.h>
 #include <MetadataResetter.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 64354919: [2.0 experimental Servicing][WASDK] XAML cannot restart in a process, evaluate fixes/workarounds (affects File Explorer)
+#define WINAPPSDK_CHANGEID_64354919 64354919
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -46,8 +50,15 @@ IFACEMETHODIMP FrameworkView::Initialize(_In_ wac::ICoreApplicationView* pCoreAp
     ReplaceInterface(m_pCoreApplicationView, pCoreApplicationView);
     IFC(HookCoreActivationEvents(TRUE /* fRegister */));
 
-    // Get reference to metadata from app object after it has been initialized.
-    m_metadataRef = FrameworkApplication::GetCurrentNoRef()->GetMetadataReference();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        // Do nothing - we don't reset the metadata on shutdown anymore.
+    }
+    else
+    {
+        // Get reference to metadata from app object after it has been initialized.
+        m_metadataRef = FrameworkApplication::GetCurrentNoRef()->GetMetadataReference();
+    }
 
 Cleanup:
     if (FAILED(hr) && fIsMainView)
@@ -119,9 +130,16 @@ Cleanup:
     // (CoreApplicationView references the FrameworkView, and the FrameworkView references the CoreApplicationView).
     ReleaseInterface(m_pCoreApplicationView);
 
-    // Clear the reference to the metadata store from this thread. If this is the last reference, this will
-    // reset the metadata store.
-    m_metadataRef = nullptr;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64354919>())
+    {
+        // Do nothing - we don't reset the metadata on shutdown anymore.
+    }
+    else
+    {
+        // Clear the reference to the metadata store from this thread. If this is the last reference, this will
+        // reset the metadata store.
+        m_metadataRef = nullptr;
+    }
 
     VERIFYHR(hr);
     // should we return hr as result of Uninitialize?
@@ -236,4 +254,3 @@ _Check_return_ HRESULT FrameworkView::HookCoreActivationEvents(bool fRegister)
 Cleanup:
     RRETURN(hr);
 }
-

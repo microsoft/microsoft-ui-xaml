@@ -18,9 +18,14 @@
 #include "ItemContainer.h"
 #include "ItemContainerRevokers.h"
 #include "ScrollView.h"
+#include "ScrollPresenter.h"
 #include "SelectionNode.h"
 #include "SelectionModel.h"
 #include "SharedHelpers.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 64290699: [2.0 servicing] ItemsView crashes when the pending bring-into-view target is invalidated
+#define WINAPPSDK_CHANGEID_64290699 64290699
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ItemsViewTrace::s_IsDebugOutputEnabled{ false };
@@ -962,14 +967,40 @@ void ItemsView::OnScrollViewAnchorRequested(
 {
     ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"ScrollingAnchorRequestedEventArgs.AnchorCandidates.Size", args.AnchorCandidates().Size());
 
-    if (m_bringIntoViewElement != nullptr)
+    if (const auto bringIntoViewElement = m_bringIntoViewElement.get())
     {
-        // During a StartBringItemIntoView operation, its target element is used as the scroll anchor so that any potential shuffling of the Layout does not disturb the final visual.
-        // This anchor is used until the new layout has a chance to settle.
-        ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_bringIntoViewElement.get(), L"ScrollingAnchorRequestedEventArgs.AnchorElement set to m_bringIntoViewElement.");
-        ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"at index", GetElementIndex(m_bringIntoViewElement.get()));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64290699>())
+        {
+            // The retained target may no longer be a valid anchor (collapsed, or recycled and detached).
+            // Submitting it would make ScrollingAnchorRequestedEventArgs.AnchorElement throw E_INVALIDARG
+            // during layout, so the anchor is left unset for ScrollPresenter to pick from the candidates.
+            if (IsValidScrollAnchor(scrollView, bringIntoViewElement))
+            {
+                // During a StartBringItemIntoView operation, its target element is used as the scroll anchor so that any potential shuffling of the Layout does not disturb the final visual.
+                // This anchor is used until the new layout has a chance to settle.
+                ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, bringIntoViewElement, L"ScrollingAnchorRequestedEventArgs.AnchorElement set to m_bringIntoViewElement.");
+                ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"at index", GetElementIndex(bringIntoViewElement));
 
-        args.AnchorElement(m_bringIntoViewElement.get());
+                args.AnchorElement(bringIntoViewElement);
+            }
+#ifdef DBG
+            else
+            {
+                ITEMSVIEW_TRACE_INFO(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, bringIntoViewElement, L"ScrollingAnchorRequestedEventArgs.AnchorElement unset. m_bringIntoViewElement is no longer a valid anchor.");
+            }
+#endif
+        }
+        else
+        {
+            // Change disabled: reproduce the pre-fix (WinAppSDK 2.0 and earlier) behavior byte-for-byte -
+            // unconditionally submit the retained target as the scroll anchor.
+            // During a StartBringItemIntoView operation, its target element is used as the scroll anchor so that any potential shuffling of the Layout does not disturb the final visual.
+            // This anchor is used until the new layout has a chance to settle.
+            ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, bringIntoViewElement, L"ScrollingAnchorRequestedEventArgs.AnchorElement set to m_bringIntoViewElement.");
+            ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"at index", GetElementIndex(bringIntoViewElement));
+
+            args.AnchorElement(bringIntoViewElement);
+        }
     }
 #ifdef DBG
     else
@@ -977,6 +1008,29 @@ void ItemsView::OnScrollViewAnchorRequested(
         ITEMSVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ScrollingAnchorRequestedEventArgs.AnchorElement unset. m_bringIntoViewElement null.");
     }
 #endif
+}
+
+// Returns True when the element would be accepted by ScrollingAnchorRequestedEventArgs.AnchorElement,
+// i.e. when it is still visible and still belongs to the ScrollPresenter's content.
+bool ItemsView::IsValidScrollAnchor(
+    const winrt::ScrollView& scrollView,
+    const winrt::UIElement& element) const
+{
+    MUX_ASSERT(element != nullptr);
+
+    if (scrollView == nullptr)
+    {
+        return false;
+    }
+
+    const auto scrollPresenter = winrt::get_self<::ScrollView>(scrollView)->ScrollPresenter();
+
+    if (scrollPresenter == nullptr)
+    {
+        return false;
+    }
+
+    return winrt::get_self<::ScrollPresenter>(scrollPresenter)->IsElementValidAnchor(element);
 }
 
 void ItemsView::OnScrollViewBringingIntoView(

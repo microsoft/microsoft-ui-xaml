@@ -7,6 +7,10 @@
 
 #include "corep.h"
 #include "inputservices.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62943243: [2.0 Servicing] Skip UpdateCursor on a disposed windowed-popup island in ReleasePointerCapture to prevent crash on late-queued input (RCC: PointerInputProcessor_ReleaseCaptureOnDisposedIsland)
+#define WINAPPSDK_CHANGEID_62943243 62943243
 
 #include "RightTappedEventArgs.h"
 
@@ -1732,8 +1736,23 @@ _Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDepend
 
     if (pPointer->GetPointerDeviceType() == DirectUI::PointerDeviceType::Mouse)
     {
-        CDependencyObject* rootElement = m_inputManager.GetContentRoot()->GetVisualTreeNoRef()->GetRootElementNoRef();
-        IFC_RETURN(m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement, m_fSawMouseLeave));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62943243>())
+        {
+            // Skip cursor refresh on a disposed island (late queued LostFocus race after XamlIslandRoot::Dispose).
+            // A disposed island stays non-null (CContentRoot holds a strong ref; Close() doesn't reset it).
+            CContentRoot* contentRoot = m_inputManager.GetContentRoot();
+            CXamlIslandRoot* islandRoot = contentRoot->GetXamlIslandRootNoRef();
+            if (islandRoot == nullptr || islandRoot->IsActive())
+            {
+                CDependencyObject* rootElement = contentRoot->GetVisualTreeNoRef()->GetRootElementNoRef();
+                IFC_RETURN(m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement, m_fSawMouseLeave));
+            }
+        }
+        else
+        {
+            CDependencyObject* rootElement = m_inputManager.GetContentRoot()->GetVisualTreeNoRef()->GetRootElementNoRef();
+            IFC_RETURN(m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement, m_fSawMouseLeave));
+        }
     }
 
     return S_OK;

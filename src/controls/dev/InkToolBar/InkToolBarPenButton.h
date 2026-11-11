@@ -12,6 +12,8 @@
 #include "InkToolbarToolButton.h"
 #include "ColorNames.h"
 
+#include <winrt/Windows.UI.ViewManagement.h>
+
 // Faithful C++/WinRT port of onecoreuap\...\inkcontrols\lib\InkToolbarPenButton_Partial.{h,cpp}.
 // Palette / SelectedBrush / SelectedBrushIndex / Min|MaxStrokeWidth / SelectedStrokeWidth are the
 // generated DPs (InkToolbarPenButtonProperties). UWP's IPenButtonDerived is expressed as virtual
@@ -44,21 +46,27 @@ public:
     virtual winrt::InkDrawingAttributes CreateInkDrawingAttributes() { return nullptr; }
     virtual std::vector<winrt::Windows::UI::Color> GetColors();
 
+    // High-contrast pen-flyout palette: the normal palette filtered to colors with >=7.0 WCAG contrast
+    // vs the system background, plus the system color. Replaces UWP's internal GetHighContrastAdjustedInkColor.
+    winrt::IVector<winrt::Brush> GetHighContrastPalette(int highContrastAdjustment);
+    bool IsHighContrast();
+
 protected:
     ~InkToolbarPenButton() {}
 
 private:
-    // Sets SelectedBrush from the (normal or high-contrast) palette at the given index (UWP).
+    // Sets SelectedBrush from the active (normal or high-contrast) palette at the given index (UWP).
     void SetSelectedBrushByIndex(int index);
     // Pushes the selected color name into AutomationProperties.HelpText (UWP UpdatePenButtonHelpText).
     void UpdatePenButtonHelpText();
+    static double RelativeLuminance(winrt::Windows::UI::Color const& c);
+    static double ContrastRatio(winrt::Windows::UI::Color const& a, winrt::Windows::UI::Color const& b);
 
     ColorNames m_colorNames;
     int m_normalModeBrushIndex{ -1 };
     int m_highContrastModeBrushIndex{ -1 };
-    // High-contrast palette (UWP m_highContrastPalette). The internal per-color contrast adjust
-    // (IInkPresenterInternal2::GetHighContrastAdjustedInkColor) is not surfaced by the lift InkPresenter
-    // proxy yet -> tracked as a lifted-platform delta; normal palette is used until then.
+    // High-contrast palette (UWP m_highContrastPalette): the contrast-filtered colors shown in HC mode.
     winrt::IVector<winrt::Brush> m_highContrastPalette{ nullptr };
+    winrt::Windows::UI::ViewManagement::AccessibilitySettings m_accessibilitySettings{ nullptr };
 };
 

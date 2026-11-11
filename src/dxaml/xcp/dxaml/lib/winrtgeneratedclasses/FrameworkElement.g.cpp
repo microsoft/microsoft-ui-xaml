@@ -45,6 +45,12 @@ HRESULT DirectUI::FrameworkElementGenerated::QueryInterfaceImpl(_In_ REFIID iid,
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi>(this);
+    }
+#endif
     else
     {
         RRETURN(DirectUI::UIElement::QueryInterfaceImpl(iid, ppObject));
@@ -1171,6 +1177,27 @@ Cleanup:
     }
     RRETURN(hr);
 }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkElementGenerated::SetThemeResourceBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pProperty, _In_ HSTRING resourceKey)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "FrameworkElement_SetThemeResourceBinding", 0);
+    }
+    ARG_NOTNULL(pProperty, "property");
+    ARG_NOTNULL(resourceKey, "resourceKey");
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<FrameworkElement*>(this)->SetThemeResourceBindingImpl(pProperty, resourceKey));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "FrameworkElement_SetThemeResourceBinding", hr);
+    }
+    RRETURN(hr);
+}
+#endif
 
 _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventAddHandlerByIndex(_In_ KnownEventIndex nEventIndex, _In_ IInspectable* pHandler, _In_ BOOLEAN handledEventsToo)
 {

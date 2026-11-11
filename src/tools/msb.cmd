@@ -3,9 +3,12 @@ setlocal enabledelayedexpansion
 rem skip signing when using msb to build
 set SkipSigning=true
 set _subfolder=
+set _verbosity=m
+set _console=Summary
 
 set args=%*
 
+if /i "%1" EQU "/q" (set _verbosity=q && set _console=ErrorsOnly && set args=!args:~3! && shift)
 if /i "%1" EQU "/skiploggingbuild" (set args=!args:~18! && goto :buildIt)
 
 rem The logging DLL doesn't currently work with multiproc msbuild, skip it for now
@@ -24,5 +27,5 @@ echo Something went wrong trying to build the logging assembly -- exiting.
 exit /b 1
 
 :buildIt
-MSBuild.exe  %args% %LoggingOpts% /m /nologo /bl /v:m /clp:Summary /consoleLoggerParameters:ForceNoAlign
+MSBuild.exe  %args% %LoggingOpts% /m /nologo /bl /v:%_verbosity% /clp:%_console% /consoleLoggerParameters:ForceNoAlign
 exit /b %ERRORLEVEL%

@@ -255,6 +255,8 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT ContentPresenter_OnContentTemplateSelectorChanged(_In_ CDependencyObject* target, _In_ const PropertyChangedParams& args);
 
+    _Check_return_ HRESULT DataTemplate_CreateElementFromFactory(_In_ CDependencyObject* nativeTemplate, _Outptr_result_maybenull_ CDependencyObject** ppResult);
+
     _Check_return_ HRESULT Popup_OnClosed(_In_ CDependencyObject* nativePopup);
 
     void Popup_OnIslandLostFocus(_In_ CDependencyObject* nativePopup);
