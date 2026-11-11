@@ -595,6 +595,84 @@ finally
     }
 }
 
+// The default marker configuration is valid, and "repeats" is only for an app's milestone, as true or false.
+{
+    Expect(MarkerConfig.Default.Milestones.Any(milestone => milestone.Repeats),
+        "The default marker configuration must be valid and have milestones whose event repeats.");
+    foreach (var milestone in new[]
+    {
+        """{ "builtin": "FirstFrameDrawn", "repeats": true }""",
+        """{ "label": "Clicked", "provider": "Contoso.Launch", "event": "Clicked", "from": "launcher", "repeats": false }""",
+        """{ "label": "Frame", "provider": "Contoso.Launch", "event": "Frame", "repeats": "yes" }"""
+    })
+    {
+        ExpectThrows<MarkerConfigException>(() => MarkerConfig.Parse($$"""
+            {
+              "version": 1,
+              "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
+              "milestones": [{{milestone}}]
+            }
+            """), $"Must reject the milestone {milestone}.");
+    }
+
+    Console.WriteLine("Passed: the default marker configuration is valid, and \"repeats\" is only for an app's milestone.");
+}
+
+// Attached to a running app, the first event the recording has of a type the app writes again after its launch need not
+// be the launch's, so its milestone is not reached; recorded from the app's start, it is.
+{
+    var marker = new MarkerProvider("Contoso.Launch", Guid.Parse("0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d"));
+    var repeatsConfig = MarkerConfig.Parse("""
+        {
+          "version": 1,
+          "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
+          "milestones": [
+          { "label": "Frame", "provider": "Contoso.Launch", "event": "Frame", "repeats": true },
+          { "label": "Ready", "provider": "Contoso.Launch", "event": "Ready" }
+          ]
+        }
+        """);
+    foreach (var (coverage, reached, notReached) in new[]
+    {
+        (SessionCoverage.Connection, "Ready", "Frame"),
+        (SessionCoverage.ProcessStart, "Frame, Ready", "")
+    })
+    {
+        var repeatsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-LaunchRepeats-{Guid.NewGuid():N}.sqlite");
+        try
+        {
+            var frequency = System.Diagnostics.Stopwatch.Frequency;
+            var startQpc = System.Diagnostics.Stopwatch.GetTimestamp();
+            using (var repeatsWriter = SessionWriter.Create(repeatsPath,
+                new(300, "Contoso", DateTime.UtcNow.AddSeconds(-5), frequency, startQpc, coverage)))
+            {
+                string[] names = ["Frame", "Ready", "Frame"];
+                for (var index = 0; index < names.Length; index++)
+                {
+                    repeatsWriter.Process(index + 1, new(startQpc + (index + 1) * frequency / 100, (index + 1) * 10, 300, 1,
+                        XamlProvider.Marker, true, names[index], 0, [], marker));
+                }
+            }
+
+            var timeline = new LaunchTimelineReader(repeatsPath, repeatsConfig).Read();
+            var actual = (string.Join(", ", timeline.Milestones.Select(milestone => milestone.Label)),
+                string.Join(", ", timeline.NotReached.Select(definition => definition.Label)));
+            Expect(actual == (reached, notReached) &&
+                timeline.Notes.HasFlag(LaunchNotes.Attached) == (coverage == SessionCoverage.Connection),
+                $"A {coverage} session must reach '{reached}' and not '{notReached}', not '{actual.Item1}' and '{actual.Item2}'.");
+        }
+        finally
+        {
+            foreach (var file in new[] { repeatsPath, repeatsPath + "-wal", repeatsPath + "-shm" })
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
+    Console.WriteLine("Passed: attached to a running app, a milestone whose event repeats is not reached; recorded from the app's start, it is.");
+}
+
 // A launcher, process 100, whose activities A and B, on its threads 1 and 2, overlap and each launch an app, 201 or 202.
 // The parent of a process's first thread is the thread that created it, so each app's launch has the events of the
 // activity whose thread created its process, or that no other activity's thread did.
@@ -800,13 +878,17 @@ if (OperatingSystem.IsWindows())
         using var current = System.Diagnostics.Process.GetCurrentProcess();
         Expect(ProcessParent.Find(child) == (Environment.ProcessId, current.ProcessName),
             "A process's parent must be the process that created it, named while it runs.");
+        // A process that started after the child only reused its parent's ID, so it doesn't name the parent.
+        Expect(ProcessParent.FindName(Environment.ProcessId, DateTime.UtcNow) == current.ProcessName &&
+            ProcessParent.FindName(Environment.ProcessId, DateTime.UnixEpoch) is null,
+            "A parent's ID must be named only by a process that started before the child.");
     }
     finally
     {
         child.Kill(entireProcessTree: true);
     }
 
-    Console.WriteLine("Passed: a process's parent is the process that created it.");
+    Console.WriteLine("Passed: a process's parent is the process that created it, and a process that reused its ID doesn't name it.");
 }
 
 static void Expect(bool condition, string message)

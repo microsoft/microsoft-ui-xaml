@@ -16,7 +16,8 @@ internal static class ProcessParent
 {
     private const int ProcessBasicInformationClass = 0;
 
-    // The parent's ID, and its executable name without .exe while it runs; null when the child can't be queried.
+    // The parent's ID, and its executable name without .exe while it runs; null when the child can't be queried. The ID is
+    // returned even when the parent has exited, or another process has its ID now, as the launch events it wrote carry it.
     public static (int ProcessId, string? Name)? Find(Process process)
     {
         ArgumentNullException.ThrowIfNull(process);
@@ -37,7 +38,8 @@ internal static class ProcessParent
         }
     }
 
-    private static string? FindName(int processId, DateTime childStartedUtc)
+    // Null for a process that started after the child, which only reused the parent's ID.
+    internal static string? FindName(int processId, DateTime childStartedUtc)
     {
         try
         {

@@ -59,9 +59,11 @@ public sealed record FieldMatch(string Field, string Value, decimal? Number = nu
 // values Where gives. Label names it; with LabelFrom instead, the first event with each value of that field is a milestone
 // named by the value. Process, an executable name without .exe, limits the milestone to that app's sessions. From is the
 // process whose event marks it: for the launcher, the event nearest the target's creation, within
-// MarkerProviderSettings.LauncherWindow of it.
+// MarkerProviderSettings.LauncherWindow of it. Repeats is whether the app writes the event again after its launch, such as
+// once a frame: a session that starts recording after the launch then doesn't reach the milestone (LaunchNotes.Attached).
 public sealed record MilestoneDefinition(string? Label, BuiltInMilestone? BuiltIn, MarkerProvider? Provider, string? Event,
-    string? LabelFrom, IReadOnlyList<FieldMatch> Where, string? Process, MilestoneSource From = MilestoneSource.App)
+    string? LabelFrom, IReadOnlyList<FieldMatch> Where, string? Process, MilestoneSource From = MilestoneSource.App,
+    bool Repeats = false)
 {
     // The provider and event, and the field values the event needs, such as "Contoso.App/ReadyToInteract"; null for a
     // built-in milestone.
@@ -311,7 +313,7 @@ public sealed class MarkerConfig
 
         private MilestoneDefinition ReadMilestone(JsonElement element, string where, Dictionary<string, MarkerProvider> known)
         {
-            Allow(element, where, "label", "builtin", "provider", "event", "labelFrom", "where", "process", "from");
+            Allow(element, where, "label", "builtin", "provider", "event", "labelFrom", "where", "process", "from", "repeats");
             var label = String(element, "label", where);
             var process = String(element, "process", where) is { } name ? WithoutExe(name) : null;
             if (String(element, "builtin", where) is { } builtInName)
@@ -320,7 +322,7 @@ public sealed class MarkerConfig
                     .Cast<BuiltInMilestone?>()
                     .FirstOrDefault(value => value.ToString()!.Equals(builtInName, StringComparison.OrdinalIgnoreCase))
                     ?? throw Error(where, $"\"builtin\" must be {string.Join(" or ", Enum.GetNames<BuiltInMilestone>())}");
-                if (Array.Find(["provider", "event", "labelFrom", "where", "from"], other => element.TryGetProperty(other, out _)) is { } extra)
+                if (Array.Find(["provider", "event", "labelFrom", "where", "from", "repeats"], other => element.TryGetProperty(other, out _)) is { } extra)
                 {
                     throw Error(where, $"a built-in milestone has no \"{extra}\"");
                 }
@@ -355,7 +357,13 @@ public sealed class MarkerConfig
                 throw Error(where, $"the profiler records {provider.Name} only from the target, so a launcher milestone needs a provider from \"providers\"");
             }
 
-            return new(label, null, provider, eventName, labelFrom, Conditions(element, where), process, from);
+            var repeats = Bool(element, "repeats", where);
+            if (repeats is not null && from == MilestoneSource.Launcher)
+            {
+                throw Error(where, "a launcher milestone has no \"repeats\": the launcher's event nearest the app's creation marks it");
+            }
+
+            return new(label, null, provider, eventName, labelFrom, Conditions(element, where), process, from, repeats ?? false);
         }
 
         private List<FieldMatch> Conditions(JsonElement element, string where)
@@ -463,6 +471,15 @@ public sealed class MarkerConfig
                 ? value.GetString()!.Trim()
                 : throw Error(where, $"\"{name}\" must be a non-empty string");
         }
+
+        private bool? Bool(JsonElement element, string name, string where) =>
+            !element.TryGetProperty(name, out var value) ? null
+            : value.ValueKind switch
+            {
+                JsonValueKind.True => true,
+                JsonValueKind.False => false,
+                _ => throw Error(where, $"\"{name}\" must be true or false")
+            };
 
         private MarkerConfigException Error(string where, string message) => new($"{Source}: {where}: {message}.");
     }

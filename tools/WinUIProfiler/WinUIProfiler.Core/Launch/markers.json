@@ -27,10 +27,12 @@
   // above, or a XAML provider such as Microsoft.UI.Xaml or Microsoft-Windows-XAML) whose fields have the values in
   // "where", if given. "label" names it; with "labelFrom" instead, the first event with each value of that field is a
   // milestone named by the value. "process" (an executable name, with or without .exe) shows the milestone for that app
-  // only. "from": "launcher" takes the event from the process that launched the app instead: of its events within 10
-  // seconds of the app's creation that are part of the launch, the one nearest the creation (see "Launcher milestones"
-  // in the README). The timeline's times are from the earliest launcher milestone before the creation, or else from the
-  // creation.
+  // only. "repeats": true is for an event the app writes again after its launch, such as once a frame or once a UI
+  // thread: when the profiler connects to the running app, the first one it records need not be the launch's, so the
+  // milestone is not reached. "from": "launcher" takes the event from the process that launched the app instead: of its
+  // events within 10 seconds of the app's creation that are part of the launch, the one nearest the creation (see
+  // "Launcher milestones" in the README). The timeline's times are from the earliest launcher milestone before the
+  // creation, or else from the creation.
   "milestones": [
     // The shell's event for a user's click that launched the app (not written for a launch from the profiler or by UI
     // Automation).
@@ -40,19 +42,20 @@
     { "provider": "Microsoft.Windows.ShellExecute", "event": "ShellExecuteExW/Start", "label": "ShellExecute", "from": "launcher" },
     { "builtin": "ProcessCreated", "label": "Process created" },
     // WinUI's startup in the app. No event marks an app's WinMain; the nearest is XAML init, when WinUI starts
-    // initializing on the app's UI thread. The first XAML the app loads is usually its App.xaml.
-    { "provider": "Microsoft-Windows-XAML", "event": "InitializeCore/Start", "label": "XAML init" },
-    { "provider": "Microsoft-Windows-XAML", "event": "ApplicationLoadComponent/Start", "label": "First XAML load" },
-    { "provider": "Microsoft-Windows-XAML", "event": "CreateWindow/Start", "label": "Window creation" },
-    { "provider": "Microsoft-Windows-XAML", "event": "PutRootVisual/Start", "label": "Root visual set" },
+    // initializing on the app's UI thread. The first XAML the app loads is usually its App.xaml. WinUI writes these
+    // events again after the launch: for each UI thread, XAML load or window.
+    { "provider": "Microsoft-Windows-XAML", "event": "InitializeCore/Start", "label": "XAML init", "repeats": true },
+    { "provider": "Microsoft-Windows-XAML", "event": "ApplicationLoadComponent/Start", "label": "First XAML load", "repeats": true },
+    { "provider": "Microsoft-Windows-XAML", "event": "CreateWindow/Start", "label": "Window creation", "repeats": true },
+    { "provider": "Microsoft-Windows-XAML", "event": "PutRootVisual/Start", "label": "Root visual set", "repeats": true },
     // When Windows first shows the app's main window, which can be after the app's first frame.
     { "provider": "Win32kTraceLogging", "event": "FirstMainWindowShownForProcess", "label": "Window shown" },
     // The first UI thread frame's start, and the end of the first layout and of the Loaded events WinUI raises after it.
-    { "provider": "Microsoft-Windows-XAML", "event": "Frame/Start", "label": "First frame start" },
-    { "provider": "Microsoft-Windows-XAML", "event": "Layout/Stop", "label": "First layout done" },
-    { "provider": "Microsoft-Windows-XAML", "event": "RaiseAllLoadedEvents/Stop", "label": "Loaded events" },
-    // WinUI's event at the end of the first UI thread frame, whether or not it drew.
-    { "provider": "Microsoft.UI.Xaml", "event": "FirstUiThreadFrameEnd", "label": "First UI thread frame" },
+    { "provider": "Microsoft-Windows-XAML", "event": "Frame/Start", "label": "First frame start", "repeats": true },
+    { "provider": "Microsoft-Windows-XAML", "event": "Layout/Stop", "label": "First layout done", "repeats": true },
+    { "provider": "Microsoft-Windows-XAML", "event": "RaiseAllLoadedEvents/Stop", "label": "Loaded events", "repeats": true },
+    // WinUI's event at the end of the first frame of each UI thread, whether or not it drew.
+    { "provider": "Microsoft.UI.Xaml", "event": "FirstUiThreadFrameEnd", "label": "First UI thread frame", "repeats": true },
     { "builtin": "FirstFrameDrawn", "label": "First frame drawn" },
     // Windows' measures of the app's launch, which some apps log, such as Paint.
     { "provider": "Microsoft.Windows.AppLifeCycle", "event": "ModernAppLaunch_UIResponsive/Stop", "label": "UI responsive" },

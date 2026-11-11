@@ -813,8 +813,10 @@ command prints the same timeline for a trace or a session file.
 - The first frame drawn is when the first tick that drew on the first UI thread
   ended, the first of the ticks the Frames tab gives for a launch.
 - Attached to a running process, the recording starts after the launch: the
-  tab says when, from the process's creation, and the milestones before it,
-  and the first frame drawn, are missing.
+  tab says when, from the process's creation, and the milestones before it
+  are missing, as are the first frame drawn and the milestones whose event
+  repeats (`repeats`), such as **First frame start**: the first such event
+  the recording saw need not be the launch's.
 - When the session file has deleted its oldest events to stay within its size
   limit before the tab read them, as when **Reload** reads a long recording
   again, milestones among them may be missing or show a later event, and the
@@ -849,13 +851,14 @@ No event marks an app's `WinMain`; the nearest is **XAML init**. The tab
 shows the milestones in time order, which can differ from the table's: an app
 can draw its first frame before Windows shows its window, so **Window shown**
 can come after **First frame drawn**. **Edit markers** in the Launch tab
-creates the file from the default the first time and opens it in Notepad; once
-it is saved, **Reload** reads it again and shows its milestones. The file is a
-copy, so it doesn't get the milestones added to the default later; delete it
-to use the default again. When the file is not valid, the tab says why and
-uses the default, so a mistake in it never stops a connection. The CLI does
-the same, with a warning; it reads another file with `--markers`, and stops
-with exit code 3 when that file is not valid.
+creates the file from the default the first time and opens it in Notepad, or
+in the app that opens `.json` files if Notepad can't start; once it is saved,
+**Reload** reads it again and shows its milestones. The file is a copy, so it
+doesn't get the default's later changes, such as new milestones; delete it to
+use the default again. When the file is not valid, the tab says why and uses
+the default, so a mistake in it never stops a connection. The CLI does the
+same, with a warning; it reads another file with `--markers`, and stops with
+exit code 3 when that file is not valid.
 
 The configuration's providers are recorded for the same process as the XAML
 providers, live at their level and keywords, and from a trace as the trace has
@@ -913,6 +916,7 @@ them without listing them. A milestone has:
 | `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, for an app that writes one event for all its milestones and names each in a field |
 | `process` | An executable name, with or without `.exe`: the milestone is only for that app, and for a session whose process name is not known |
 | `from` | `app`, the default, or `launcher`: an event of the process that launched the app marks the milestone (see [Launcher milestones](#launcher-milestones)). Its provider is one in `providers`; a built-in milestone has no `from` |
+| `repeats` | `true` for an event the app writes again after its launch, such as once a frame or once a UI thread, as the default's XAML events are. A session attached to a running app doesn't reach the milestone, as the first such event it records need not be the launch's. A built-in or launcher milestone has no `repeats` |
 
 Provider, event and field names match case-insensitively. Property names are
 case-sensitive, and an unknown one is an error. An EventSource method named
