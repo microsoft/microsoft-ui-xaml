@@ -1,0 +1,126 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker.Split('-')[0])</TargetFramework>
+    <Platforms>x86;x64;ARM64;ARM64EC</Platforms>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+    <PublishAot>false</PublishAot>
+    <_SharedTestProjectionDirectory>$(IntermediateOutputPath)SharedTestProjections\</_SharedTestProjectionDirectory>
+    <_SharedTestCsWinRTPath>$(NugetPackageDirectory)\microsoft.windows.cswinrt\$(MicrosoftCsWinRTv3PackageVersion)</_SharedTestCsWinRTPath>
+    <_SharedReservedSidecars>;WinRT.Interop;WinRT.Projection;WinRT.Component;WinRT.Sdk.Projection;WinRT.Sdk.Xaml.Projection;</_SharedReservedSidecars>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup Condition="'$(UseCsWinRT3)' == 'true'">
+    <ProjectReference Include="$(ProjectRoot)controls\test\MUXControls.Test\MUXControls.Test.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(ProjectRoot)dxaml\test\managed\**\Microsoft.UI.Xaml.Tests.Managed.*.csproj"
+                      Exclude="$(ProjectRoot)dxaml\test\managed\common\Microsoft.UI.Xaml.Tests.Managed.Common.csproj;$(ProjectRoot)dxaml\test\managed\PGOTests\*.csproj"
+                      ReferenceOutputAssembly="false"
+                      Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32' or '$(Platform)' == 'x64'" />
+    <ProjectReference Include="$(ProjectRoot)dxaml\test\infra\Win32Hosting\WPF\HostingHelpers\Private.Infrastructure.Hosting.HostingHelpers.csproj"
+                      ReferenceOutputAssembly="false"
+                      Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32' or '$(Platform)' == 'x64'" />
+    <ProjectReferenceTargets Include="Build" Targets=".default;GetSharedTestProjectionInputs" />
+  </ItemGroup>
+
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.RunCsWinRTInteropGenerator"
+             AssemblyFile="$(_SharedTestCsWinRTPath)\tools\WinRT.Generator.Tasks.dll"
+             Condition="'$(UseCsWinRT3)' == 'true'" />
+
+  <UsingTask TaskName="SelectSharedTestAssemblies" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Candidates ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <Assemblies ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Reflection" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var selected = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+        var versions = new Dictionary<string, Version>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in Candidates)
+        {
+            var identity = AssemblyName.GetAssemblyName(item.ItemSpec);
+            ITaskItem previous;
+            bool desktop = item.ItemSpec.IndexOf(@"\Microsoft.WindowsDesktop.App.Ref\", StringComparison.OrdinalIgnoreCase) >= 0;
+            // WindowsBase has the same version in the Core forwarding stub and the full WPF reference.
+            if (!selected.TryGetValue(identity.Name, out previous) ||
+                identity.Version > versions[identity.Name] ||
+                (identity.Version == versions[identity.Name] && desktop &&
+                 previous.ItemSpec.IndexOf(@"\Microsoft.WindowsDesktop.App.Ref\", StringComparison.OrdinalIgnoreCase) < 0))
+            {
+                selected[identity.Name] = item;
+                versions[identity.Name] = identity.Version;
+            }
+        }
+        Assemblies = selected.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase).Select(pair => pair.Value).ToArray();
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GenerateSharedTestProjections" AfterTargets="Build"
+          Condition="'$(UseCsWinRT3)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="@(ProjectReference)" Targets="GetSharedTestProjectionInputs" BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_SharedTestProjectionInput" />
+    </MSBuild>
+    <ItemGroup>
+      <!-- Select reserved sidecars only through the anchor, not through individual consumers' probing paths. -->
+      <_SharedReferenceCandidate Include="@(_SharedTestProjectionInput)"
+                                 Condition="'%(Kind)' == 'Reference' and !$(_SharedReservedSidecars.Contains(';%(Filename);'))" />
+      <_SharedImplementationCandidate Include="@(_SharedTestProjectionInput)"
+                                      Condition="'%(Kind)' == 'Implementation' and !$(_SharedReservedSidecars.Contains(';%(Filename);'))" />
+      <_SharedAnchor Include="@(_SharedTestProjectionInput)" Condition="'%(Kind)' == 'Anchor'" />
+      <_SharedSidecar Include="@(_SharedTestProjectionInput)" Condition="'%(Kind)' == 'Sidecar'" />
+      <_SharedSdkAnchor Include="@(_SharedTestProjectionInput)" Condition="'%(Kind)' == 'SdkAnchor'" />
+      <_SharedSdkSidecar Include="@(_SharedTestProjectionInput)" Condition="'%(Kind)' == 'SdkSidecar'" />
+    </ItemGroup>
+    <SelectSharedTestAssemblies Candidates="@(_SharedReferenceCandidate)">
+      <Output TaskParameter="Assemblies" ItemName="_SharedReference" />
+    </SelectSharedTestAssemblies>
+    <SelectSharedTestAssemblies Candidates="@(_SharedImplementationCandidate)">
+      <Output TaskParameter="Assemblies" ItemName="_SharedImplementation" />
+    </SelectSharedTestAssemblies>
+    <ItemGroup Condition="'@(_SharedAnchor)' == ''">
+      <_SharedAnchor Include="@(_SharedSdkAnchor)" />
+      <_SharedSidecar Include="@(_SharedSdkSidecar)" />
+    </ItemGroup>
+    <Error Condition="'@(_SharedAnchor)' == ''" Text="No native hosting or managed TAEF consumer was built for the shared test projections." />
+    <Error Condition="!Exists('%(_SharedSidecar.Identity)')" Text="Missing shared test projection input: %(_SharedSidecar.Identity)" />
+    <MakeDir Directories="$(_SharedTestProjectionDirectory)" />
+    <Copy SourceFiles="@(_SharedSidecar)" DestinationFolder="$(_SharedTestProjectionDirectory)" SkipUnchangedFiles="true" />
+    <PropertyGroup>
+      <_SharedWinRTProjectionPath Condition="Exists('$(_SharedTestProjectionDirectory)WinRT.Projection.dll')">$(_SharedTestProjectionDirectory)WinRT.Projection.dll</_SharedWinRTProjectionPath>
+      <_SharedWinRTComponentPath Condition="Exists('$(_SharedTestProjectionDirectory)WinRT.Component.dll')">$(_SharedTestProjectionDirectory)WinRT.Component.dll</_SharedWinRTComponentPath>
+    </PropertyGroup>
+    <RunCsWinRTInteropGenerator
+        ReferenceAssemblyPaths="@(_SharedReference)"
+        ImplementationAssemblyPaths="@(_SharedImplementation)"
+        OutputAssemblyPath="@(_SharedAnchor)"
+        WinRTSdkProjectionAssemblyPath="$(_SharedTestProjectionDirectory)WinRT.Sdk.Projection.dll"
+        WinRTProjectionAssemblyPath="$(_SharedWinRTProjectionPath)"
+        WinRTComponentAssemblyPath="$(_SharedWinRTComponentPath)"
+        InteropAssemblyDirectory="$(_SharedTestProjectionDirectory)"
+        CsWinRTToolsDirectory="$(_SharedTestCsWinRTPath)\tools"
+        UseWindowsUIXamlProjections="false"
+        EnableDefaultCustomPropertyProviderSupport="true"
+        MarshallingMode="minimal"
+        ValidateWinRTRuntimeAssemblyVersion="true"
+        ValidateWinRTRuntimeDllVersion2References="true"
+        EnableIncrementalGeneration="true"
+        TreatWarningsAsErrors="true" />
+    <ItemGroup>
+      <_SharedTestProjectionOutput Include="$(_SharedTestProjectionDirectory)*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SharedTestProjectionOutput)"
+          DestinationFolder="$(ArtifactsBinDir)Test\SharedTestProjections" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

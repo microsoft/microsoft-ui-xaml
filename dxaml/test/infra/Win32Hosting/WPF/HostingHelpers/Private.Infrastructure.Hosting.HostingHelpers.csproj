@@ -22,6 +22,7 @@
     <!-- Generate runtime projections for activation by native TAEF through WinRT.Host.
          Exclude ARM64, where the required project references below are unavailable. -->
     <CsWinRTBuildForNativeConsumer Condition="'$(UseCsWinRT3)'=='true' and '$(Platform)'!='ARM64'">true</CsWinRTBuildForNativeConsumer>
+    <SharedTestProjectionConsumer Condition="'$(UseCsWinRT3)'=='true'">true</SharedTestProjectionConsumer>
 
     <!-- Root TypeMap discovery when WinRT.Host loads WinRT.Component.dll. -->
     <CsWinRTEmitEntryPointInitializer Condition="'$(UseCsWinRT3)'=='true' and '$(Platform)'!='ARM64'">true</CsWinRTEmitEntryPointInitializer>

@@ -335,7 +335,7 @@ namespace Private {
             wrl::ComPtr<IWICBitmapDecoder> wicBitmapDecoder;
 
             std::wstring fileName(file.GetRawBuffer(nullptr));
-            const static std::wstring mastersMarkerStr(L"\\test\\resources\\masters\\");
+            const static std::wstring mastersMarkerStr(L"\\resources\\masters\\");
             const auto found = fileName.find(mastersMarkerStr);
             const bool isMaster = found != std::wstring::npos;
             if (isMaster)

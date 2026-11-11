@@ -1775,7 +1775,7 @@ namespace Private { namespace Infrastructure {
         wrl::ComPtr<wf::IAsyncOperation<wst::StorageFile*>> getFileAsyncOp;
 
         std::wstring resPath(::WindowsGetStringRawBuffer(filenameWithPath, nullptr));
-        const static std::wstring mastersMarkerStr(L"\\test\\resources\\masters\\");
+        const static std::wstring mastersMarkerStr(L"\\resources\\masters\\");
         const auto found = resPath.find(mastersMarkerStr);
         const bool isMaster = found != std::wstring::npos;
         if (isMaster)

@@ -14,11 +14,10 @@
     <TestCode>true</TestCode>
   </PropertyGroup>
 
-  <!-- Each CsWinRT 3.0 test module needs its own merged projection and output folder to avoid filename collisions.
-       Common is a shared dependency, not a test module; its WinRT usage is covered by the consuming test's projection. -->
+  <!-- Generate module inputs locally; SharedTestProjections combines their maps for flat TAEF deployment. -->
   <PropertyGroup Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
     <CsWinRTGenerateInteropAssembly>true</CsWinRTGenerateInteropAssembly>
-    <TargetDestination>$(TestBinplaceDestinationPath)\$(MSBuildProjectName)</TargetDestination>
+    <SharedTestProjectionConsumer>true</SharedTestProjectionConsumer>
 
     <!-- TAEF loads these DLLs directly, not through WinRT.Host; AssemblySetup sets the TypeMap entry assembly.
          They consume WinRT types but do not author components, so do not enable CsWinRTComponent. -->
@@ -55,16 +54,12 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Deploy generated projections and WinRT.Runtime beside each test DLL.
-       Evaluate the wildcard after AddBinplaceItems so generated files exist. -->
+  <!-- SharedTestProjections owns the deployed sidecars; retain runtime forwarders and test resources. -->
   <Target Name="BinplaceCsWinRT3MergedProjection"
           AfterTargets="AddBinplaceItems"
           BeforeTargets="Binplace"
           Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
     <ItemGroup>
-      <BinplaceItem Include="$(OutDir)WinRT.*.dll">
-        <Destination>$(TargetDestination)</Destination>
-      </BinplaceItem>
       <!-- Include the WebView2 runtime forwarder when present. -->
       <BinplaceItem Include="$(OutDir)Microsoft.Web.WebView2.Core.Projection.dll" Condition="Exists('$(OutDir)Microsoft.Web.WebView2.Core.Projection.dll')">
         <Destination>$(TargetDestination)</Destination>

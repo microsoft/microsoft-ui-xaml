@@ -22,6 +22,7 @@
     <Import Project="eng\adhocapp.targets" Condition="'$(AdHocApp)'=='true'"/>
     <Import Project="eng\graph.targets" Condition="'$(IsGraphBuild)' == 'true'" />
     <Import Project="eng\projectcaching.targets" />
+    <Import Project="eng\SharedTestProjections.targets" Condition="'$(SharedTestProjectionConsumer)' == 'true' and '$(UseCsWinRT3)' == 'true'" />
     <Import Project="eng\lightup.targets" />
 	<Import Project="$(ProjectRoot)\eng\WebView2ProjectionWorkaround.targets" />
 

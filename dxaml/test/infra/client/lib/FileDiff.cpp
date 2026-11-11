@@ -353,7 +353,7 @@ namespace FileDiff
     bool File::ReadFromResource(const wchar_t* filePath)
     {
         std::wstring fileName(filePath);
-        const static std::wstring mastersMarkerStr(L"\\test\\resources\\masters\\");
+        const static std::wstring mastersMarkerStr(L"\\resources\\masters\\");
         const auto found = fileName.find(mastersMarkerStr);
         const bool isMaster = found != std::wstring::npos;
         if (isMaster)

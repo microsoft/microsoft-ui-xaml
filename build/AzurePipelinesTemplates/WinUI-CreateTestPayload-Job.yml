@@ -68,13 +68,13 @@ jobs:
       - name: dropSubfolder
         value: drop_cswinrt3
       - name: managedTestFilePattern
-        value: 'Test\*\Microsoft.UI.Xaml.Tests.Managed.*.dll'
+        value: 'Test\Microsoft.UI.Xaml.Tests.Managed.*.dll'
       - name: muxControlsTestFilePattern
-        value: 'Test\MUXControls.Test\MUXControls.Test.dll'
+        value: 'Test\MUXControls.Test.dll'
       - name: scenarioTestTaefQuery
         value: "@Name='Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.WinUICsDesktopSampleAppTests.*'"
       - name: projectionPayloadAdditionalArguments
-        value: '-IsolateManagedTestProjections -SkipWinUIGallery'
+        value: '-UseSharedTestProjections -SkipWinUIGallery'
     - ${{ else }}:
       - name: dropSubfolder
         value: drop

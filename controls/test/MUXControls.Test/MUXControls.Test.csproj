@@ -134,20 +134,10 @@
     <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
   </PropertyGroup>
 
-  <!--
-    CsWinRT 3.0: like the dxaml managed TAEF test DLLs, MUXControls.Test must generate its OWN merged
-    WinRT.Projection. CsWinRTGenerateInteropAssembly generates the marshalling support and merged projection
-    required by this test module. Discovery also requires a TAEF loader that supports generic assembly attributes.
-
-    Because HostingHelpers also binplaces a WinRT.Projection.dll into the flat Test\ root, isolate MUXControls.Test
-    (and its identically named projection) into its own Test\MUXControls.Test\ subfolder so they do not collide -
-    the same model as the dxaml managed tests. The helix work-item patterns
-    (WinUI-CreateTestPayload-Job.yml) and payload closure replication (CreateTestPayload.ps1) point at this
-    subfolder for v3. v3-only; 2.x keeps the flat layout and the full implementation projection.
-  -->
+  <!-- SharedTestProjections combines this SDK-only runner's maps with the native and DXAML test consumers. -->
   <PropertyGroup Condition="'$(UseCsWinRT3)'=='true'">
     <CsWinRTGenerateInteropAssembly>true</CsWinRTGenerateInteropAssembly>
-    <TargetDestination>$(TestBinplaceDestinationPath)\MUXControls.Test</TargetDestination>
+    <SharedTestProjectionConsumer>true</SharedTestProjectionConsumer>
 
     <!--
       CsWinRT 3.0: eng\sdkconfig.props pins CsWinRTWindowsMetadata to $(WindowsTargetPlatformVersion) (10.0.22621.0),
@@ -199,22 +189,6 @@
     Microsoft.UI.Xaml (which references Resources types); MUXControls.Test does not, so it is intentionally omitted.
   -->
 
-  <!--
-    CsWinRT 3.0: binplace the merged projection assemblies CsWinRTGenerateInteropAssembly produced (CsWinRT writes
-    them to $(OutDir)) into this DLL's subfolder ($(TargetDestination), set above), next to MUXControls.Test.dll.
-    Runs after AddBinplaceItems populates $(OutDir) and before Binplace copies, so the files exist when the glob
-    is evaluated. v3-only.
-  -->
-  <Target Name="BinplaceCsWinRT3MergedProjection"
-          AfterTargets="AddBinplaceItems"
-          BeforeTargets="Binplace"
-          Condition="'$(UseCsWinRT3)'=='true'">
-    <ItemGroup>
-      <BinplaceItem Include="$(OutDir)WinRT.*.dll">
-        <Destination>$(TargetDestination)</Destination>
-      </BinplaceItem>
-    </ItemGroup>
-  </Target>
   <ItemGroup>
     <BinplaceItem Include="$(OutDir)MUXControls.Test.dll" />
     <BinplaceItem Include="$(OutDir)MUXTestInfra.dll" />
