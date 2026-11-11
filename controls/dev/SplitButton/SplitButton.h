@@ -45,6 +45,7 @@ private:
     void RegisterFlyoutEvents();
     void UnregisterEvents();
 
+    void OnIsEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     // Internal event handlers
@@ -68,6 +69,7 @@ private:
 
     winrt::UIElement::KeyDown_revoker m_keyDownRevoker{};
     winrt::UIElement::KeyUp_revoker m_keyUpRevoker{};
+    PropertyChanged_revoker m_isEnabledChangedRevoker{};
 
     winrt::ButtonBase::Click_revoker m_clickPrimaryRevoker{};
     PropertyChanged_revoker m_pressedPrimaryRevoker{};
