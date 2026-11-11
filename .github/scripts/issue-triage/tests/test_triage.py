@@ -367,9 +367,22 @@ class RoutingTests(TriageFixture):
     def test_high_confidence_adds_one_area_and_derived_team(self):
         self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), ["area-Expander", "team-Controls"])
 
-    def test_lower_confidence_is_comment_only(self):
-        for confidence in ("MEDIUM", "LOW"):
-            self.assertEqual(t.planned_labels(self.result(area_confidence=confidence), self.evidence, MAPPING), [])
+    def test_medium_confidence_publishes_one_area_without_deriving_a_team(self):
+        self.client.issue["labels"] = [{"name": "bug"}]
+        evidence = t.prepare(self.client, event(), MAPPING)
+        result = t.validate(agent_output(evidence, area_confidence="MEDIUM"), evidence)
+        plan = t.publish(self.client, result, evidence, MAPPING, write=True)
+        self.assertEqual(plan["add_labels"], ["area-Expander", "needs-triage"])
+        self.assertIn("medium confidence", plan["comment"])
+        self.assertIn("No automatic team assignment", plan["comment"])
+        self.assertIn("area-Expander", t.label_names(self.client.issue))
+        self.assertFalse(any(label.startswith("team-") for label in t.label_names(self.client.issue)))
+
+    def test_low_or_no_confidence_does_not_add_an_area(self):
+        for area, confidence in (("area-Expander", "LOW"), ("None", "NONE")):
+            with self.subTest(confidence=confidence):
+                result = self.result(area=area, area_confidence=confidence)
+                self.assertEqual(t.planned_labels(result, self.evidence, MAPPING), [])
 
     def test_unexplained_high_area_is_deferred_without_discarding_other_triage(self):
         result = self.result(
@@ -380,14 +393,17 @@ class RoutingTests(TriageFixture):
         self.assertTrue(result["review_notes"])
         plan = t.publish(self.client, result, self.evidence, MAPPING, write=True)
         self.assertTrue(plan["published"])
-        self.assertEqual(plan["add_labels"], ["needs-repro"])
+        self.assertEqual(plan["add_labels"], ["area-Expander", "needs-repro"])
         self.assertIn("supporting report evidence", plan["comment"])
         self.assertIn(result["summary"], plan["comment"])
-        self.assertNotIn("area-Expander", plan["add_labels"])
+        self.assertNotIn("team-Controls", plan["add_labels"])
 
     def test_existing_area_wins_over_model(self):
         self.evidence["existing_labels"] += ["area-Binding"]
-        self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), [])
+        for confidence in ("HIGH", "MEDIUM"):
+            with self.subTest(confidence=confidence):
+                self.assertEqual(t.planned_labels(
+                    self.result(area_confidence=confidence), self.evidence, MAPPING), [])
 
     def test_existing_area_can_supply_its_missing_team(self):
         self.evidence["existing_labels"] += ["area-Expander"]
@@ -395,7 +411,16 @@ class RoutingTests(TriageFixture):
 
     def test_existing_team_is_preserved_and_conflicting_area_is_not_added(self):
         self.evidence["existing_labels"] += ["team-Markup"]
-        self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), ["team-Core"])
+        for confidence in ("HIGH", "MEDIUM"):
+            with self.subTest(confidence=confidence):
+                self.assertEqual(t.planned_labels(
+                    self.result(area_confidence=confidence), self.evidence, MAPPING), ["team-Core"])
+
+    def test_medium_area_retains_review_with_an_existing_compatible_team(self):
+        self.evidence["existing_labels"] = ["bug", "team-Controls"]
+        result = self.result(area_confidence="MEDIUM")
+        self.assertEqual(t.planned_labels(result, self.evidence, MAPPING),
+                         ["area-Expander", "needs-triage"])
 
     def test_multiple_existing_areas_are_not_collapsed(self):
         self.evidence["existing_labels"] += ["area-Expander", "area-Binding"]
@@ -494,7 +519,7 @@ class ConditionalRoutingTests(TriageFixture):
 
     def test_medium_confidence_does_not_apply_an_override(self):
         result = self.conditional_result(area_confidence="MEDIUM")
-        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), ["area-Expander"])
 
     def test_team_compatibility_uses_the_selected_override_not_the_default(self):
         self.evidence["existing_labels"].append("team-Rendering")
@@ -648,7 +673,8 @@ class CoreParentRoutingTests(TriageFixture):
         for confidence in ("MEDIUM", "LOW"):
             with self.subTest(confidence=confidence):
                 result = self.binding_result(area_confidence=confidence)
-                self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+                expected = ["area-Binding"] if confidence == "MEDIUM" else []
+                self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), expected)
 
     def test_non_core_routes_do_not_gain_a_parent(self):
         for team in ("team-Controls", "team-CompInput", "team-Design"):

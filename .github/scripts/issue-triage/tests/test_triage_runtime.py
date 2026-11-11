@@ -306,7 +306,10 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("support HIGH `area-TitleBar` routing", routing)
         self.assertIn("A bare label request or unsupported guess is not a technical diagnosis.", routing)
         self.assertIn("If the diagnosis conflicts with the supplied observations, use MEDIUM/LOW", routing)
-        self.assertIn("Unresolved competing areas also remain advisory unless", routing)
+        self.assertIn("MEDIUM and HIGH", routing)
+        self.assertIn("suggestions can add the winning area label; LOW suggestions remain advisory.", routing)
+        self.assertIn("New team assignment from a suggested area still requires HIGH confidence.", routing)
+        self.assertIn("Do not inflate confidence merely to obtain a label.", routing)
         self.assertIn("Existing area and team labels always take", routing)
         self.assertIn("Never emit a team name.", routing)
 

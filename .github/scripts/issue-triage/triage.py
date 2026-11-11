@@ -576,7 +576,7 @@ def validate(output: dict, evidence: dict) -> dict:
         result["area_confidence"] = "MEDIUM"
         result["review_notes"].append(
             "The area suggestion lacks supporting report evidence. HIGH confidence was "
-            "reduced to MEDIUM; new area routing needs maintainer confirmation."
+            "reduced to MEDIUM; team routing needs maintainer confirmation."
         )
     raw_duplicates = required_string(item, "duplicate_candidates_json", 6000)
     duplicates = json.loads(raw_duplicates)
@@ -710,7 +710,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     teams = {label for label in existing if label.startswith("team-")}
     area_to_add = None
     team_to_add = None
-    if not areas and result["area"] != "None" and result["area_confidence"] == "HIGH":
+    if not areas and result["area"] != "None" and result["area_confidence"] in ("HIGH", "MEDIUM"):
         area = result["area"]
         mapped_team = route_team(mapping, area, result["routing_rule"])
         compatible = not teams or not mapped_team or mapped_team in teams
@@ -724,7 +724,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         candidate_team = None
         if result["area"] == effective_area and result["area_confidence"] == "HIGH":
             candidate_team = route_team(mapping, effective_area, result["routing_rule"])
-        elif not entry.get("overrides"):
+        elif areas and not entry.get("overrides"):
             candidate_team = entry.get("team")
         # A conditional owner cannot be inferred from a different/uncertain area.
         if not teams or teams <= team_ancestors(candidate_team, parents):
@@ -743,6 +743,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         team_labels.update(team_ancestors(team, parents))
     needs_triage = (
         not effective_areas
+        or (bool(area_to_add) and result["area_confidence"] == "MEDIUM")
         or (not teams and not team_to_add)
         or (bool(area_to_add or team_to_add) and entry.get("confidence") == "low")
     )

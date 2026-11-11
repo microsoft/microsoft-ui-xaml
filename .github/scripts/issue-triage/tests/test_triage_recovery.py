@@ -57,6 +57,8 @@ class AssessmentRecoveryTests(unittest.TestCase):
                         self.assertIn(rule, plan["comment"])
                     else:
                         self.assertNotIn(team, plan["add_labels"])
+                        self.assertEqual(area in plan["add_labels"],
+                                         confidence == "MEDIUM" and not human_team)
                     self.assertEqual(client.writes, [])
 
     def test_learned_lifetime_override_does_not_change_default_or_existing_area(self):
@@ -163,7 +165,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
             self.contribution_guidance_result(evidence)
         self.assertEqual(self.client.writes, [])
 
-    def test_unmatched_gpu_reports_do_not_gain_an_owner_from_team_only_configuration(self):
+    def test_unmatched_gpu_reports_do_not_gain_a_team_from_team_only_configuration(self):
         for area, confidence in (("None", "NONE"), ("area-Performance", "MEDIUM"),
                                  ("area-Images", "MEDIUM"), ("area-Windowing", "MEDIUM")):
             with self.subTest(area=area):
@@ -171,7 +173,8 @@ class AssessmentRecoveryTests(unittest.TestCase):
                     area=area, area_confidence=confidence,
                     routing_reason="Graphics-device or atlas retention ownership remains unresolved.",
                 )
-                self.assertEqual(t.planned_labels(result, evidence, self.mapping), [])
+                self.assertEqual(t.planned_labels(result, evidence, self.mapping),
+                                 [] if area == "None" else [area])
 
     def test_webview_default_routes_controls_without_rendering_or_core(self):
         for description in (
@@ -438,14 +441,14 @@ class AssessmentRecoveryTests(unittest.TestCase):
         self.assertIn("needs-triage", plan["comment"])
         self.assertEqual(self.client.writes, [])
 
-    def test_unresolved_titlebar_diagnosis_remains_advisory(self):
+    def test_medium_titlebar_diagnosis_adds_area_but_defers_team(self):
         result, evidence = self.validate(
             area="area-TitleBar", area_confidence="MEDIUM",
             routing_reason="TitleBar only appears in sample code; it is unclear whether content focus, "
                            "application activation, or title-bar state fails.",
         )
         plan = t.publish(self.client, result, evidence, self.mapping, write=False)
-        self.assertEqual(plan["add_labels"], [])
+        self.assertEqual(plan["add_labels"], ["area-TitleBar"])
         self.assertIn("No automatic team assignment", plan["comment"])
         self.assertEqual(self.client.writes, [])
 
