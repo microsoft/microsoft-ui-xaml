@@ -74,8 +74,7 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
         }
         if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
         {
-            auto const table = header ? winrt::get_self<TableViewGroupHeader>(header)->GetOwningTableView() : nullptr;
-            if (auto const name = GroupInfoToName(info, !table || table.ShowGroupHeaderCount()); !name.empty())
+            if (auto const name = GroupInfoToName(info); !name.empty())
             {
                 return name;
             }

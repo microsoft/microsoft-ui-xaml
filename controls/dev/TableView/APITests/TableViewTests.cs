@@ -122,7 +122,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, tableView.Columns.Count);
                 Verify.AreEqual(TableViewHeadersVisibility.Column, tableView.HeadersVisibility);
                 Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.GridLinesVisibility);
-                Verify.IsTrue(tableView.ShowGroupHeaderCount);
                 Verify.IsTrue(tableView.CanUserResizeColumns);
                 Verify.IsNull(tableView.RowBackground);
                 Verify.IsNull(tableView.AlternatingRowBackground);
@@ -239,7 +238,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(TableView.ColumnsProperty);
                 Verify.IsNotNull(TableView.HeadersVisibilityProperty);
                 Verify.IsNotNull(TableView.GridLinesVisibilityProperty);
-                Verify.IsNotNull(TableView.ShowGroupHeaderCountProperty);
                 Verify.IsNotNull(TableView.CanUserResizeColumnsProperty);
                 Verify.IsNotNull(TableView.RowBackgroundProperty);
                 Verify.IsNotNull(TableView.AlternatingRowBackgroundProperty);
@@ -305,9 +303,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySettableDependencyProperty(tableView, TableView.GridLinesVisibilityProperty, "TableView.GridLinesVisibility",
                     TableViewGridLinesVisibility.None, TableViewGridLinesVisibility.Horizontal,
                     () => tableView.GridLinesVisibility, value => tableView.GridLinesVisibility = (TableViewGridLinesVisibility)value);
-                VerifySettableDependencyProperty(tableView, TableView.ShowGroupHeaderCountProperty, "TableView.ShowGroupHeaderCount",
-                    false, true,
-                    () => tableView.ShowGroupHeaderCount, value => tableView.ShowGroupHeaderCount = (bool)value);
                 VerifySettableDependencyProperty(tableView, TableView.CanUserResizeColumnsProperty, "TableView.CanUserResizeColumns",
                     false, true,
                     () => tableView.CanUserResizeColumns, value => tableView.CanUserResizeColumns = (bool)value);

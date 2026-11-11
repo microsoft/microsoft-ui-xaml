@@ -29,7 +29,6 @@ GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr }
 GlobalDependencyProperty TableViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
-GlobalDependencyProperty TableViewProperties::s_ShowGroupHeaderCountProperty{ nullptr };
 
 TableViewProperties::TableViewProperties()
     : m_beginningEditEventSource{static_cast<TableView*>(this)}
@@ -219,17 +218,6 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::TableViewSelectionMode>::BoxValueIfNecessary(winrt::TableViewSelectionMode::Single),
                 winrt::PropertyChangedCallback(&OnSelectionModePropertyChanged));
     }
-    if (!s_ShowGroupHeaderCountProperty)
-    {
-        s_ShowGroupHeaderCountProperty =
-            InitializeDependencyProperty(
-                L"ShowGroupHeaderCount",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::TableView>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnShowGroupHeaderCountPropertyChanged));
-    }
 }
 
 void TableViewProperties::ClearProperties()
@@ -250,7 +238,6 @@ void TableViewProperties::ClearProperties()
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
-    s_ShowGroupHeaderCountProperty = nullptr;
 }
 
 void TableViewProperties::OnAlternatingRowBackgroundPropertyChanged(
@@ -363,14 +350,6 @@ void TableViewProperties::OnSelectionModePropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnSelectionModePropertyChanged(args);
-}
-
-void TableViewProperties::OnShowGroupHeaderCountPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TableView>();
-    winrt::get_self<TableView>(owner)->OnShowGroupHeaderCountPropertyChanged(args);
 }
 
 void TableViewProperties::AlternatingRowBackground(winrt::Brush const& value)
@@ -579,19 +558,6 @@ void TableViewProperties::SelectionMode(winrt::TableViewSelectionMode const& val
 winrt::TableViewSelectionMode TableViewProperties::SelectionMode()
 {
     return ValueHelper<winrt::TableViewSelectionMode>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_SelectionModeProperty));
-}
-
-void TableViewProperties::ShowGroupHeaderCount(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableView*>(this)->SetValue(s_ShowGroupHeaderCountProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool TableViewProperties::ShowGroupHeaderCount()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_ShowGroupHeaderCountProperty));
 }
 
 winrt::event_token TableViewProperties::BeginningEdit(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs> const& value)

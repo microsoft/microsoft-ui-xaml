@@ -261,7 +261,6 @@ public:
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnShowGroupHeaderCountPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Density resources fall back to the selected preset; rows and columns call these via get_self.
@@ -1168,7 +1167,6 @@ private:
     {
         return axis == BulkExpansionAxis::Rows ? m_rowBulkExpansionGeneration : m_groupBulkExpansionGeneration;
     }
-    uint64_t m_groupHeaderCountGeneration{ 0 };
 
     void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree = false);
     void QueueGroupExpansionByIdentity(

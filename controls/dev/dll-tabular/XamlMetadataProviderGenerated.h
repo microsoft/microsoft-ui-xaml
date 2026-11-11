@@ -183,7 +183,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"SelectedIndex", L"Int32", statics.SelectedIndexProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedItem", L"Object", statics.SelectedItemProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectionMode", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode", statics.SelectionModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ShowGroupHeaderCount", L"Boolean", statics.ShowGroupHeaderCountProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(

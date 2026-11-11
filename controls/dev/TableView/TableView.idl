@@ -353,10 +353,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("true")]
-    Boolean ShowGroupHeaderCount { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Style ColumnHeaderStyle { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -411,7 +407,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty ShowGroupHeaderCountProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ColumnHeaderStyleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };

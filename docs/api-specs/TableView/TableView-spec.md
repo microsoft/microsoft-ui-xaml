@@ -584,7 +584,6 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
-| `ShowGroupHeaderCount` | `Boolean` | `true` | Shows counts in every default section header. When false, collapses the count without a leftover gap and omits it from the default section automation name. Custom content templates, explicit automation names and labels remain app-owned; count data stays available on `TableViewGroupInfo`. Can be changed at runtime. |
 | `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
@@ -1561,7 +1560,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
         Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
-        Boolean ShowGroupHeaderCount;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
         Boolean IsReadOnly;
 
@@ -1601,7 +1599,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ShowGroupHeaderCountProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };

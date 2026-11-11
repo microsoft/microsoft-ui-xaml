@@ -253,13 +253,9 @@ inline winrt::hstring ItemToName(winrt::IInspectable const& item)
     return {};
 }
 
-inline winrt::hstring GroupInfoToName(winrt::TableViewGroupInfo const& info, bool includeCount = true)
+inline winrt::hstring GroupInfoToName(winrt::TableViewGroupInfo const& info)
 {
     const auto keyText = info.KeyText();
-    if (!includeCount)
-    {
-        return keyText;
-    }
     const auto countText = info.ItemCountText();
     if (!keyText.empty() && !countText.empty())
     {
