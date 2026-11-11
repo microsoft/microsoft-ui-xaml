@@ -21,8 +21,46 @@ CTargetPropertyPath::FromString(_In_ CREATEPARAMETERS *pCreate)
         std::shared_ptr<XamlSchemaContext> schemaContext;
         IFC_RETURN(serviceProviderContext->GetSchemaContext(schemaContext));
 
+        // A Setter inside a Trigger or MultiTrigger names its target element like a VisualState Setter does, even
+        // when the trigger is part of a template that is defined inside a Style. Trigger.Property and
+        // MultiTrigger.Conditions are both assigned before the setters, so finding either one means we are
+        // inside a trigger.
+        bool insideTrigger = false;
+        {
+            std::shared_ptr<XamlType> styleXamlType;
+            std::shared_ptr<XamlType> visualStateGroupCollectionXamlType;
+            std::shared_ptr<XamlProperty> triggerPropertyXamlProperty;
+            std::shared_ptr<XamlProperty> multiTriggerConditionsXamlProperty;
+            std::shared_ptr<XamlQualifiedObject> triggerValue;
+            IFC_RETURN(schemaContext->GetXamlType(
+                XamlTypeToken(tpkNative, KnownTypeIndex::Style),
+                styleXamlType));
+            IFC_RETURN(schemaContext->GetXamlType(
+                XamlTypeToken(tpkNative, KnownTypeIndex::VisualStateGroupCollection),
+                visualStateGroupCollectionXamlType));
+            IFC_RETURN(schemaContext->GetXamlProperty(
+                XamlPropertyToken(tpkNative, KnownPropertyIndex::Trigger_Property),
+                XamlTypeToken(tpkNative, KnownTypeIndex::String),
+                triggerPropertyXamlProperty));
+            IFC_RETURN(schemaContext->GetXamlProperty(
+                XamlPropertyToken(tpkNative, KnownPropertyIndex::MultiTrigger_Conditions),
+                XamlTypeToken(tpkNative, KnownTypeIndex::ConditionCollection),
+                multiTriggerConditionsXamlProperty));
+
+            IFC_RETURN(serviceProviderContext->GetAmbientValue(
+                styleXamlType /* stop search if this type is encountered */,
+                visualStateGroupCollectionXamlType /* stop search if this type is encountered */,
+                triggerPropertyXamlProperty,
+                multiTriggerConditionsXamlProperty,
+                std::shared_ptr<XamlType>(),
+                CompressedStackCacheHint::None,
+                triggerValue));
+            insideTrigger = (triggerValue != nullptr);
+        }
+
         // Find Style.TargetType if it exists
         std::shared_ptr<XamlQualifiedObject> targetTypeValue;
+        if (!insideTrigger)
         {
             std::shared_ptr<XamlType> styleXamlType;
             std::shared_ptr<XamlType> visualStateGroupCollectionXamlType;

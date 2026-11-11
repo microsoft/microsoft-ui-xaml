@@ -681,6 +681,73 @@ public:
 
 namespace FxCallbacks
 {
+    namespace
+    {
+        // Forwards property changes of the source object to a callback. Removing the handler from its source
+        // (or Deactivate) stops the forwarding, even if something else still holds a reference to the handler.
+        class PropertyChangedForwarder final : public ctl::implements<DirectUI::IDPChangedEventHandler>
+        {
+        public:
+            explicit PropertyChangedForwarder(std::function<HRESULT(const CDependencyProperty*)> callback)
+                : m_callback(std::move(callback))
+            {}
+
+            void Deactivate() { m_callback = nullptr; }
+
+            IFACEMETHODIMP Invoke(_In_ xaml::IDependencyObject* /*pSender*/, _In_ const CDependencyProperty* pDP) override
+            {
+                if (m_callback)
+                {
+                    // Keep the callback alive in case it removes this handler while running.
+                    auto callback = m_callback;
+                    IFC_RETURN(callback(pDP));
+                }
+                return S_OK;
+            }
+
+        private:
+            std::function<HRESULT(const CDependencyProperty*)> m_callback;
+        };
+    }
+
+    _Check_return_ HRESULT DependencyObject_AddPropertyChangedHandler(_In_ CDependencyObject* source, _In_ std::function<HRESULT(const CDependencyProperty*)> callback, _Outptr_ IUnknown** handlerToken)
+    {
+        *handlerToken = nullptr;
+
+        ctl::ComPtr<DirectUI::DependencyObject> peer;
+        IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(source, &peer));
+
+        ctl::ComPtr<DirectUI::IDPChangedEventSource> eventSource;
+        IFC_RETURN(peer->GetDPChangedEventSource(&eventSource));
+
+        ctl::ComPtr<PropertyChangedForwarder> forwarder;
+        forwarder.Attach(new PropertyChangedForwarder(std::move(callback)));
+        IFC_RETURN(eventSource->AddHandler(forwarder.Get()));
+
+        *handlerToken = static_cast<IUnknown*>(static_cast<DirectUI::IDPChangedEventHandler*>(forwarder.Detach()));
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT DependencyObject_RemovePropertyChangedHandler(_In_ CDependencyObject* source, _In_ IUnknown* handlerToken)
+    {
+        ctl::ComPtr<DirectUI::IDPChangedEventHandler> handler;
+        IFC_RETURN(handlerToken->QueryInterface(IID_PPV_ARGS(&handler)));
+        static_cast<PropertyChangedForwarder*>(handler.Get())->Deactivate();
+
+        ctl::ComPtr<DirectUI::DependencyObject> peer;
+        if (SUCCEEDED(DXamlCore::GetCurrent()->TryGetPeer(source, &peer)) && peer)
+        {
+            ctl::ComPtr<DirectUI::IDPChangedEventSource> eventSource;
+            IFC_RETURN(peer->TryGetDPChangedEventSource(&eventSource));
+            if (eventSource)
+            {
+                IFC_RETURN(eventSource->RemoveHandler(handler.Get()));
+            }
+        }
+
+        return S_OK;
+    }
+
     _Check_return_ HRESULT DependencyObject_NotifyPropertyChanged(_In_ CDependencyObject* pDO, _In_ const PropertyChangedParams& args)
         { return DirectUI::DependencyObject::NotifyPropertyChanged(pDO, args); }
 

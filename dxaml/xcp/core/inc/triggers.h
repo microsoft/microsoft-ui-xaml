@@ -5,22 +5,24 @@
 
 class CStoryboard;
 class CCoreServices;
+class TriggerEvaluator;
 
 //------------------------------------------------------------------------
 //
 //  Class:  CTriggerCollection
 //
 //  Synopsis:
-//      Object created for <TriggerCollection> tag
+//      Object created for <TriggerCollection> tag. While it is in the live tree it
+//      evaluates the Trigger and MultiTrigger objects it contains.
 //
 //------------------------------------------------------------------------
 
 class CTriggerCollection final : public CDOCollection
 {
 private:
-    CTriggerCollection(_In_ CCoreServices *pCore)
-        : CDOCollection(pCore)
-    {}
+    CTriggerCollection(_In_ CCoreServices *pCore);
+
+   ~CTriggerCollection() override;
 
 public:
 // Creation method
@@ -28,15 +30,19 @@ public:
     DECLARE_CREATE(CTriggerCollection);
 
 // CDependencyObject overrides
-
     KnownTypeIndex GetTypeIndex() const override
     {
         return DependencyObjectTraits<CTriggerCollection>::Index;
     }
 
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
+
 // CCollection overrides
     bool ShouldEnsureNameResolution() override { return true; }
 
+private:
+    std::unique_ptr<TriggerEvaluator> m_evaluator;
 };
 
 

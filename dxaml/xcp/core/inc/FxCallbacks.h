@@ -7,6 +7,7 @@
 
 #include <FeatureFlags.h>
 #include <internaleventhandler.h>
+#include <functional>
 
 class CAutomationPeer;
 class CBitmapSource;
@@ -64,6 +65,12 @@ XAML_ABI_NAMESPACE_END
 namespace FxCallbacks
 {
     _Check_return_ HRESULT DependencyObject_NotifyPropertyChanged(_In_ CDependencyObject* pDO, _In_ const PropertyChangedParams& args);
+
+    // Calls |callback| whenever any dependency property changes on |source|. |handlerToken| is an opaque reference
+    // that must be handed back to DependencyObject_RemovePropertyChangedHandler to stop the notifications.
+    _Check_return_ HRESULT DependencyObject_AddPropertyChangedHandler(_In_ CDependencyObject* source, _In_ std::function<HRESULT(const CDependencyProperty*)> callback, _Outptr_ IUnknown** handlerToken);
+
+    _Check_return_ HRESULT DependencyObject_RemovePropertyChangedHandler(_In_ CDependencyObject* source, _In_ IUnknown* handlerToken);
 
     _Check_return_ HRESULT DependencyObject_EnterImpl(_In_ CDependencyObject* nativeDO, _In_ CDependencyObject* nativeNamescopeOwner, _In_ bool bLive, _In_ bool bSkipNameRegistration, _In_ bool bCoercedIsEnabled, _In_ bool bUseLayoutRounding);
 
