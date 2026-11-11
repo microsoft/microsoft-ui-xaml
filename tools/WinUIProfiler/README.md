@@ -826,16 +826,29 @@ command prints the same timeline for a trace or a session file.
 The marker configuration is a JSON file, which can have comments and trailing
 commas: the providers to record along with the XAML providers, and the
 milestones. The profiler uses `%LOCALAPPDATA%\WinUIProfiler\markers.json` when
-it exists, and otherwise the default, `Launch\markers.json`: Windows' launch
-events (see [Launcher milestones](#launcher-milestones)), the process's
-creation, WinUI's startup in the app (Microsoft-Windows-XAML's
-`InitializeCore/Start`, `CreateWindow/Start`, `PutRootVisual/Start` and
-`RaiseAllLoadedEvents/Stop`), the first UI thread frame (`Microsoft.UI.Xaml`'s
-`FirstUiThreadFrameEnd`), the first frame drawn, Windows' measures of when the
-app's UI responded and was complete, which some apps log, such as Paint, and
-the Microsoft Store's launch scenarios. No event marks an app's `WinMain`; the
-nearest is **XAML init** (`InitializeCore/Start`), when WinUI starts
-initializing on the app's UI thread. **Edit markers** in the Launch tab
+it exists, and otherwise the default, `Launch\markers.json`, whose milestones
+are the steps a WinUI app's launch goes through:
+
+| Milestone | Event |
+| --- | --- |
+| User click, Activation requested, ShellExecute | Windows' launch events, from the launcher (see [Launcher milestones](#launcher-milestones)) |
+| Process created | Built in |
+| XAML init | Microsoft-Windows-XAML `InitializeCore/Start`: WinUI starts initializing on the app's UI thread |
+| First XAML load | Microsoft-Windows-XAML `ApplicationLoadComponent/Start`: the first XAML the app loads, usually its `App.xaml` |
+| Window creation | Microsoft-Windows-XAML `CreateWindow/Start` |
+| Root visual set | Microsoft-Windows-XAML `PutRootVisual/Start` |
+| Window shown | Win32kTraceLogging `FirstMainWindowShownForProcess`: Windows first shows the app's main window |
+| First frame start | Microsoft-Windows-XAML `Frame/Start`: the first UI thread frame starts |
+| First layout done | Microsoft-Windows-XAML `Layout/Stop` |
+| Loaded events | Microsoft-Windows-XAML `RaiseAllLoadedEvents/Stop` |
+| First UI thread frame | Microsoft.UI.Xaml `FirstUiThreadFrameEnd`: the first UI thread frame ends, whether or not it drew |
+| First frame drawn | Built in |
+| UI responsive, Visible complete | Microsoft.Windows.AppLifeCycle `ModernAppLaunch_UIResponsive/Stop` and `ModernAppLaunch_VisibleComplete/Stop`: Windows' measures of when the app's UI responded and was complete, which some apps log, such as Paint |
+
+No event marks an app's `WinMain`; the nearest is **XAML init**. The tab
+shows the milestones in time order, which can differ from the table's: an app
+can draw its first frame before Windows shows its window, so **Window shown**
+can come after **First frame drawn**. **Edit markers** in the Launch tab
 creates the file from the default the first time and opens it in Notepad; once
 it is saved, **Reload** reads it again and shows its milestones. The file is a
 copy, so it doesn't get the milestones added to the default later; delete it
@@ -897,7 +910,7 @@ them without listing them. A milestone has:
 | `provider`, `event` | Instead of `builtin`: the first event of this name from this provider marks the milestone. The provider is one in `providers`, or one the profiler always records, such as `Microsoft.UI.Xaml` or `Microsoft-Windows-XAML` |
 | `where` | Field values the event needs, such as `{ "Items": 200 }`. A number matches a numeric field with that value; a string, `true` or `false` matches the field's value as text, case-insensitively |
 | `label` | The milestone's name |
-| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, as the Store's `PerfMetrics` events name each launch scenario in `scenario` |
+| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, for an app that writes one event for all its milestones and names each in a field |
 | `process` | An executable name, with or without `.exe`: the milestone is only for that app, and for a session whose process name is not known |
 | `from` | `app`, the default, or `launcher`: an event of the process that launched the app marks the milestone (see [Launcher milestones](#launcher-milestones)). Its provider is one in `providers`; a built-in milestone has no `from` |
 
@@ -994,11 +1007,12 @@ launches apart with the kernel's thread events. The `logman` commands of
 kernel's process and thread events. WPR can record them in one file with the
 providers: use a profile with the kernel's process and thread events, the
 providers in `providers.txt`, and the configuration's providers, such as an
-app's own. Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k write from
-the kernel, so only to a session in nonpaged memory, which WPR uses only for a
-provider with `NonPagedMemory="true"`: give them that, in a small collector of
-their own, or their GPU memory and window focus events are lost. The default
-configuration's providers are:
+app's own. Microsoft-Windows-DxgKrnl, Microsoft-Windows-Win32k and
+Win32kTraceLogging write from the kernel, so only to a session in nonpaged
+memory, which WPR uses only for a provider with `NonPagedMemory="true"`: give
+them that, in a small collector of their own, or their GPU memory, window
+focus and window shown events are lost. The default configuration's providers
+are:
 
 | Provider | GUID |
 | --- | --- |
@@ -1006,7 +1020,10 @@ configuration's providers are:
 | Microsoft.Windows.ApplicationModel.DesktopAppx | `5526aed1-f6e5-5896-cbf0-27d9f59b6be7` |
 | Microsoft.Windows.ShellExecute | `382b5e24-181e-417f-a8d6-2155f749e724` |
 | Microsoft.Windows.AppLifeCycle | `ef00584a-2655-462c-bc24-e7de630e7fbf` |
-| Microsoft-Windows-Store | `9c2a37f3-e5fd-5cae-bcd1-43dafeee1ff0` |
+| Win32kTraceLogging | `487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53` |
+
+Record Win32kTraceLogging with keywords `0x400000000000`, as the configuration
+does, which keeps it to a few events.
 
 Then, with the profile in `launch.wprp` and `$cli` as above:
 

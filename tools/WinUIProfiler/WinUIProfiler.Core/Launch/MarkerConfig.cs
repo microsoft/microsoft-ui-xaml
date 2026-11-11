@@ -367,7 +367,7 @@ public sealed class MarkerConfig
 
             if (conditions.ValueKind != JsonValueKind.Object)
             {
-                throw Error(where, "\"where\" must be an object of field names and values, such as { \"scenario\": \"FirstShimmer\" }");
+                throw Error(where, "\"where\" must be an object of field names and values, such as { \"Items\": 200 }");
             }
 
             var matches = new List<FieldMatch>();

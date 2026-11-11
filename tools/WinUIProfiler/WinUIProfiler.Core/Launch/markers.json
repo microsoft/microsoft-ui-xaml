@@ -16,7 +16,9 @@
     { "name": "Microsoft.Windows.ApplicationModel.DesktopAppx" },
     { "name": "Microsoft.Windows.ShellExecute", "guid": "382b5e24-181e-417f-a8d6-2155f749e724" },
     { "name": "Microsoft.Windows.AppLifeCycle", "guid": "ef00584a-2655-462c-bc24-e7de630e7fbf" },
-    { "name": "Microsoft-Windows-Store" },
+    // Windows' window manager. Its measures keyword has only a few events, such as the one when a process first shows
+    // its main window.
+    { "name": "Win32kTraceLogging", "guid": "487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53", "keywords": "0x400000000000" },
     // An app's own provider, such as an EventSource named Contoso.App:
     // { "name": "Contoso.App" },
   ],
@@ -38,10 +40,16 @@
     { "provider": "Microsoft.Windows.ShellExecute", "event": "ShellExecuteExW/Start", "label": "ShellExecute", "from": "launcher" },
     { "builtin": "ProcessCreated", "label": "Process created" },
     // WinUI's startup in the app. No event marks an app's WinMain; the nearest is XAML init, when WinUI starts
-    // initializing on the app's UI thread.
+    // initializing on the app's UI thread. The first XAML the app loads is usually its App.xaml.
     { "provider": "Microsoft-Windows-XAML", "event": "InitializeCore/Start", "label": "XAML init" },
+    { "provider": "Microsoft-Windows-XAML", "event": "ApplicationLoadComponent/Start", "label": "First XAML load" },
     { "provider": "Microsoft-Windows-XAML", "event": "CreateWindow/Start", "label": "Window creation" },
     { "provider": "Microsoft-Windows-XAML", "event": "PutRootVisual/Start", "label": "Root visual set" },
+    // When Windows first shows the app's main window, which can be after the app's first frame.
+    { "provider": "Win32kTraceLogging", "event": "FirstMainWindowShownForProcess", "label": "Window shown" },
+    // The first UI thread frame's start, and the end of the first layout and of the Loaded events WinUI raises after it.
+    { "provider": "Microsoft-Windows-XAML", "event": "Frame/Start", "label": "First frame start" },
+    { "provider": "Microsoft-Windows-XAML", "event": "Layout/Stop", "label": "First layout done" },
     { "provider": "Microsoft-Windows-XAML", "event": "RaiseAllLoadedEvents/Stop", "label": "Loaded events" },
     // WinUI's event at the end of the first UI thread frame, whether or not it drew.
     { "provider": "Microsoft.UI.Xaml", "event": "FirstUiThreadFrameEnd", "label": "First UI thread frame" },
@@ -49,8 +57,6 @@
     // Windows' measures of the app's launch, which some apps log, such as Paint.
     { "provider": "Microsoft.Windows.AppLifeCycle", "event": "ModernAppLaunch_UIResponsive/Stop", "label": "UI responsive" },
     { "provider": "Microsoft.Windows.AppLifeCycle", "event": "ModernAppLaunch_VisibleComplete/Stop", "label": "Visible complete" },
-    // The Microsoft Store's launch scenarios, such as FirstShimmer and VisibleComplete.
-    { "provider": "Microsoft-Windows-Store", "event": "PerfMetrics", "labelFrom": "scenario", "process": "WinStore.App" },
     // An app's own milestone:
     // { "provider": "Contoso.App", "event": "ReadyToInteract", "label": "Ready to interact" },
   ]
