@@ -269,11 +269,20 @@ _Check_return_ HRESULT CTileBrush::AdjustDecodeRectForStretch(
 
     GetNaturalBounds(&naturalBounds);
 
+    // An SVG with an intrinsic size stays sharp above its natural size, so it isn't clamped to it. It also draws at its
+    // own aspect ratio inside the decoded surface, so for Fill it decodes at that ratio covering the render bounds and
+    // the brush stretches it.
+    const bool hasIntrinsicSize =
+        OfTypeByIndex<KnownTypeIndex::ImageBrush>() &&
+        static_cast<CImageBrush*>(this)->m_pImageSource &&
+        static_cast<CImageBrush*>(this)->m_pImageSource->HasIntrinsicSize();
+    const auto stretch = (hasIntrinsicSize && (m_Stretch == DirectUI::Stretch::Fill)) ? DirectUI::Stretch::UniformToFill : m_Stretch;
+
     // NOTE: Order of operations below is important to reduce rounding errors
     if ((naturalBounds.Width != 0) &&
         (naturalBounds.Height != 0))
     {
-        switch (m_Stretch)
+        switch (stretch)
         {
         case DirectUI::Stretch::None:
             // No stretch, need to use all the image pixels
@@ -318,12 +327,7 @@ _Check_return_ HRESULT CTileBrush::AdjustDecodeRectForStretch(
             break;
         }
 
-        // Clamp to natural bounds. An SVG with an intrinsic size stays sharp above its natural size, so it isn't clamped.
-        const bool hasIntrinsicSize =
-            OfTypeByIndex<KnownTypeIndex::ImageBrush>() &&
-            static_cast<CImageBrush*>(this)->m_pImageSource &&
-            static_cast<CImageBrush*>(this)->m_pImageSource->HasIntrinsicSize();
-
+        // Clamp to natural bounds
         if (!hasIntrinsicSize && (pDecodeBounds->Width > naturalBounds.Width))
         {
             pDecodeBounds->Width = naturalBounds.Width;

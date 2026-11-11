@@ -228,16 +228,17 @@ _Check_return_ HRESULT EncodedImageData::ParseSvg(
     }
 
     // An absolute width and height on the root element are the SVG's intrinsic size, in DIPs since SVG user units are
-    // 96 DPI. Report that as the natural size. Sizes that aren't positive and finite, or that exceed the box above,
-    // keep the box.
+    // 96 DPI. Report that as the natural size. Sizes that aren't whole positive numbers, or that exceed the box above,
+    // keep the box. Rounding a fractional size would change the aspect ratio.
     if (widthSpecified && heightSpecified &&
         (widthUnits == D2D1_SVG_LENGTH_UNITS_NUMBER) && (heightUnits == D2D1_SVG_LENGTH_UNITS_NUMBER) &&
         (rootWidth.value > 0.0f) && (rootHeight.value > 0.0f) &&
-        (std::ceil(rootWidth.value) <= static_cast<float>(m_imageMetadata.width)) &&
-        (std::ceil(rootHeight.value) <= static_cast<float>(m_imageMetadata.height)))
+        (rootWidth.value == std::floor(rootWidth.value)) && (rootHeight.value == std::floor(rootHeight.value)) &&
+        (rootWidth.value <= static_cast<float>(m_imageMetadata.width)) &&
+        (rootHeight.value <= static_cast<float>(m_imageMetadata.height)))
     {
-        m_imageMetadata.width = static_cast<uint32_t>(std::ceil(rootWidth.value));
-        m_imageMetadata.height = static_cast<uint32_t>(std::ceil(rootHeight.value));
+        m_imageMetadata.width = static_cast<uint32_t>(rootWidth.value);
+        m_imageMetadata.height = static_cast<uint32_t>(rootHeight.value);
         m_imageMetadata.hasIntrinsicSize = true;
     }
 
