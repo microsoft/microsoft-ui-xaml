@@ -1759,29 +1759,15 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
 
         //
         // The BitmapImage now needs a software surface due to BaseContentRenderer::MaskPartEnsureRealizationTexture's
-        // partHasContent check. We won't find one since we never set a software surface. We also won't try to redecode
-        // the encoded image we already have because CImageSource::RedecodeEncodedImage doesn't actually do a decode if
-        // it's decoding to render size. We're stuck with an ImageSource with no software surface that can't render.
-        //
-        // This is a bug that Gallery is hitting. They have a BitmapImage in a collapsed
-        // subtree that decoded without setting a software surface, and when the subtree is made visible again that
-        // ImageBrush/BitmapImage don't render again. For now Gallery can work around it.
-        //
-        // A few options for fixing:
-        //  - Why is a software surface needed in the first place? We don't use it in the Visual tree. Is it to compute
-        //    the stretch matrix in case the ImageBrush doesn't fill the surface? We can use the hardware surface size
-        //    for that.
-        //  - Why not trigger a software decode from RedecodeEncodedImage if we're decoding to render size? Does that
-        //    break something? (rather, is there test coverage for the things that it breaks?)
+        // partHasContent check. CImageSource::ReloadReleasedSoftwareImage tracks the image so the decode is requested
+        // after the render walk, and DecodeToRenderSize decodes the software surface.
         //
     });
     wh->WaitForIdle();
 
-    // This should have a visual, but doesn't due to the bug.
     wh->GetElementRenderedVisuals(problematicBorder, visuals);
-    VERIFY_IS_TRUE(visuals->Size == 0);
+    VERIFY_IS_TRUE(visuals->Size == 1);
 
-    // This has a visual despite the bug
     wh->GetElementRenderedVisuals(workaroundBorder, visuals2);
     VERIFY_IS_TRUE(visuals2->Size == 1);
 }
