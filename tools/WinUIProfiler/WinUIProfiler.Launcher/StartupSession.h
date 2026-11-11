@@ -6,6 +6,8 @@
 
 namespace profiler
 {
+    constexpr DWORD StartupProtocolVersion = 2;
+    constexpr LONG64 StartupGenerationIncrement = 1LL << 32;
     // EVENT_FILTER_TYPE_PID accepts at most eight processes in one ETW session.
     constexpr size_t MaxStartupProcesses = 8;
     constexpr DWORD NoParent = MAXDWORD;
@@ -39,7 +41,8 @@ namespace profiler
         FILETIME notBefore;
         DWORD launcherPid;
         FILETIME launcherCreated;
-        volatile LONG active;
+        // Low DWORD: activity references (1 enables startup); high DWORD: creation generation.
+        alignas(8) volatile LONG64 active;
         volatile LONG claimedPid;
         volatile LONG debuggerComplete;
         volatile LONG error;
@@ -58,6 +61,16 @@ namespace profiler
     inline LONG ReadState(const volatile LONG& value)
     {
         return InterlockedCompareExchange(const_cast<volatile LONG*>(&value), 0, 0);
+    }
+
+    inline LONG64 ReadState(const volatile LONG64& value)
+    {
+        return InterlockedCompareExchange64(const_cast<volatile LONG64*>(&value), 0, 0);
+    }
+
+    inline DWORD StartupActivityCount(LONG64 state)
+    {
+        return state > 0 ? static_cast<DWORD>(state) : 0;
     }
 
     class StartupSession
@@ -97,10 +110,10 @@ namespace profiler
             data = static_cast<StartupData*>(MapViewOfFile(mapping.get(),
                 FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(StartupData)));
             if (!data) return false;
-            payload.version = ProtocolVersion;
+            payload.version = StartupProtocolVersion;
             wcscpy_s(payload.mapping, name.c_str());
             data->size = sizeof(StartupData);
-            data->version = ProtocolVersion;
+            data->version = StartupProtocolVersion;
             data->active = 1;
             GetSystemTimeAsFileTime(&data->notBefore);
             data->launcherPid = GetCurrentProcessId();
@@ -111,7 +124,7 @@ namespace profiler
 
         bool Open(const StartupPayload& value)
         {
-            if (value.version != ProtocolVersion || !wmemchr(value.mapping, 0, ARRAYSIZE(value.mapping)) ||
+            if (value.version != StartupProtocolVersion || !wmemchr(value.mapping, 0, ARRAYSIZE(value.mapping)) ||
                 !std::wstring_view(value.mapping).starts_with(L"Local\\WinUIProfiler.Redirect."))
             {
                 SetLastError(ERROR_INVALID_DATA);
@@ -122,7 +135,7 @@ namespace profiler
             data = static_cast<StartupData*>(MapViewOfFile(mapping.get(),
                 FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(StartupData)));
             if (!data) return false;
-            if (data->size != sizeof(StartupData) || data->version != ProtocolVersion ||
+            if (data->size != sizeof(StartupData) || data->version != StartupProtocolVersion ||
                 !wmemchr(data->executable, 0, ARRAYSIZE(data->executable)) ||
                 !wmemchr(data->dll, 0, ARRAYSIZE(data->dll)) ||
                 !wmemchr(data->source, 0, ARRAYSIZE(data->source)) ||

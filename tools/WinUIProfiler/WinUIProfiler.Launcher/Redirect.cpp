@@ -133,10 +133,11 @@ namespace
         {
             return create(flags, processInfo);
         }
-        LONG active = profiler::ReadState(Session.data->active);
+        LONG64 active = profiler::ReadState(Session.data->active);
         while (active > 0)
         {
-            const LONG previous = InterlockedCompareExchange(&Session.data->active, active + 1, active);
+            const LONG64 previous = InterlockedCompareExchange64(&Session.data->active,
+                active + profiler::StartupGenerationIncrement + 1, active);
             if (previous == active) break;
             active = previous;
         }
@@ -148,7 +149,7 @@ namespace
             {
                 const DWORD error = GetLastError();
                 CreatingProcess = false;
-                InterlockedDecrement(&Session.data->active);
+                InterlockedDecrement64(&Session.data->active);
                 SetEvent(Changed.get());
                 SetLastError(error);
             }
@@ -278,7 +279,7 @@ namespace
             CompareFileTime(&created, &Session.data->launcherCreated) != 0 ||
             WaitForSingleObject(Controller.get(), 0) != WAIT_TIMEOUT)
         {
-            InterlockedExchange(&Session.data->active, 0);
+            InterlockedExchange64(&Session.data->active, 0);
             InterlockedExchange(&CurrentProcess->error, ERROR_CANCELLED);
             return true;
         }

@@ -157,7 +157,7 @@ namespace
         }
         profiler::StartupSession context;
         profiler::StartupPayload payload{};
-        payload.version = profiler::ProtocolVersion;
+        payload.version = profiler::StartupProtocolVersion;
         if (contextName.size() >= ARRAYSIZE(payload.mapping)) return ERROR_INVALID_PARAMETER;
         wcscpy_s(payload.mapping, contextName.c_str());
         if (!context.Open(payload))
@@ -275,6 +275,7 @@ namespace
         const ULONGLONG started = GetTickCount64();
         while (GetTickCount64() - started < profiler::StartupTimeoutMs)
         {
+            const LONG64 activity = profiler::ReadState(session.data->active);
             if (const LONG error = profiler::ReadState(session.data->error)) return static_cast<DWORD>(error);
             std::array<bool, profiler::MaxStartupProcesses> alive{};
             bool anyAlive = false;
@@ -333,13 +334,28 @@ namespace
                 }
                 selected = static_cast<DWORD>(profiler::ReadState(entry.pid));
             }
-            // A creation hook holds an activity reference until its child is registered and resumed.
-            if (selected && liveLeaves == 1 && !packageState.enabled &&
-                InterlockedCompareExchange(&session.data->active, 0, 1) == 1)
+            // A completed creation must invalidate the snapshot, even after its activity reference is released.
+            if (selected && liveLeaves == 1 && !packageState.enabled)
             {
-                if (const LONG error = profiler::ReadState(session.data->error)) return static_cast<DWORD>(error);
-                pid = selected;
-                return ERROR_SUCCESS;
+#if defined(PROFILER_STARTUP_SELECTION_TEST)
+                const auto barrier = L"Local\\WinUIProfiler.SelectionTest." +
+                    std::to_wstring(profiler::ReadState(session.data->claimedPid));
+                profiler::Handle snapshot(OpenEventW(EVENT_MODIFY_STATE, FALSE, (barrier + L".snapshot").c_str()));
+                if (snapshot)
+                {
+                    profiler::Handle created(OpenEventW(SYNCHRONIZE, FALSE, (barrier + L".created").c_str()));
+                    if (!created || !SetEvent(snapshot.get())) return GetLastError();
+                    const DWORD ready = WaitForSingleObject(created.get(), 10000);
+                    if (ready != WAIT_OBJECT_0) return ready == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError();
+                }
+#endif
+                if (profiler::StartupActivityCount(activity) == 1 &&
+                    InterlockedCompareExchange64(&session.data->active, 0, activity) == activity)
+                {
+                    if (const LONG error = profiler::ReadState(session.data->error)) return static_cast<DWORD>(error);
+                    pid = selected;
+                    return ERROR_SUCCESS;
+                }
             }
             if (anyRegistered && !anyAlive) return exitError;
             if (WaitForSingleObject(changed, 50) == WAIT_FAILED) return GetLastError();
@@ -551,11 +567,12 @@ namespace
             }
         }
         const auto closing = GetTickCount64();
-        while (profiler::ReadState(session.data->active) > 1 && GetTickCount64() - closing < 1000)
+        while (profiler::StartupActivityCount(profiler::ReadState(session.data->active)) > 1 &&
+            GetTickCount64() - closing < 1000)
         {
             Sleep(1);
         }
-        InterlockedExchange(&session.data->active, 0);
+        InterlockedExchange64(&session.data->active, 0);
         // Activation may return before the debugger callback runs (notably under WOW64).
         const HRESULT cleanup = packageState.Close();
         if (FAILED(cleanup) && !error)

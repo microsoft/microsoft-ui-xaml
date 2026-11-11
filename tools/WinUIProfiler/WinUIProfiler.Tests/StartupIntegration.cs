@@ -19,27 +19,36 @@ internal static class StartupIntegration
         var fixture = Path.Combine(native, "tests", "Fixture.exe");
         var root = Path.Combine(Path.GetTempPath(), "WinUIProfiler-Startup", Guid.NewGuid().ToString("N"));
         var architecture = RuntimeInformation.OSArchitecture == Architecture.Arm64 ? "ARM64" : "x64";
-        var deployment = Path.Combine(root, "NativeLauncher");
-        var payload = Directory.CreateDirectory(Path.Combine(deployment, architecture)).FullName;
-        foreach (var name in new[] { "ProfilerLauncher.exe", "ProfilerRedirect.dll" })
+        string DeployLauncher(string directory, string launcher)
         {
-            File.Copy(Path.Combine(native, name), Path.Combine(payload, name));
+            var deployment = Path.Combine(root, directory);
+            var payload = Directory.CreateDirectory(Path.Combine(deployment, architecture)).FullName;
+            File.Copy(launcher, Path.Combine(payload, "ProfilerLauncher.exe"));
+            File.Copy(Path.Combine(native, "ProfilerRedirect.dll"), Path.Combine(payload, "ProfilerRedirect.dll"));
+            string Hash(string name) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(payload, name))));
+            File.WriteAllText(Path.Combine(deployment, "manifest.json"), JsonSerializer.Serialize(
+                new NativeLauncherManifest(1, [new(architecture, Hash("ProfilerLauncher.exe"), Hash("ProfilerRedirect.dll"))])));
+            return deployment;
         }
-        string Hash(string name) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(payload, name))));
-        File.WriteAllText(Path.Combine(deployment, "manifest.json"), JsonSerializer.Serialize(
-            new NativeLauncherManifest(1, [new(architecture, Hash("ProfilerLauncher.exe"), Hash("ProfilerRedirect.dll"))])));
+        var deployment = DeployLauncher("NativeLauncher", Path.Combine(native, "ProfilerLauncher.exe"));
+        var selectionTestDeployment = DeployLauncher("SelectionTestLauncher", Path.Combine(native, "tests", "ProfilerLauncher.exe"));
         var runtime = new PrivateRuntimeLaunch(Path.Combine(native, "tests", "private"),
             Path.Combine(native, "tests", "original"), true, "", deployment);
         Console.WriteLine($"Startup integration evidence: {root}");
         foreach (var (mode, count) in new (string, int)[]
         {
+            ("selection-race", 2),
             ("runtime", 1), ("handoff", 2), ("handoff-chain", 3), ("handoff-environment", 2),
             ("handoff-suspended", 2), ("handoff-ansi", 2), ("handoff-as-user", 2), ("handoff-as-user-ansi", 2),
             ("other-child", 1), ("create-failure", 1), ("late-child", 1)
         })
         {
             var directory = Directory.CreateDirectory(Path.Combine(root, mode)).FullName;
-            var options = runtime with { LaunchDirectory = Path.Combine(directory, "launch") };
+            var options = runtime with
+            {
+                LaunchDirectory = Path.Combine(directory, "launch"),
+                LauncherDirectory = mode == "selection-race" ? selectionTestDeployment : deployment
+            };
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(40));
             NativeLaunchSession? launch = null;
             try
@@ -57,6 +66,14 @@ internal static class StartupIntegration
                     result.RootElement.GetProperty("pid").GetInt32() == launch.Result.ProcessId,
                     $"{mode}: the UI child did not load both private DLLs");
                 NativeLauncher.VerifyModules(launch.Process, options);
+                if (mode == "selection-race")
+                {
+                    using var parent = await ReadJsonAsync(resultPath + ".parent", timeout.Token);
+                    Check(parent.RootElement.GetProperty("pid").GetInt32() == launch.Result.ActivationProcessId &&
+                        parent.RootElement.GetProperty("mux").GetInt32() == 2 &&
+                        parent.RootElement.GetProperty("muxc").GetInt32() == 2,
+                        "A parent that already loaded WinUI must not remain selected after the barrier creates its child.");
+                }
                 if (mode == "other-child")
                 {
                     using var other = await ReadJsonAsync(resultPath + ".0", timeout.Token);

@@ -41,7 +41,10 @@ built under `artifacts\launcher`.
 The launcher waits up to 30 seconds for a single live leaf to load private MUX.
 It then stops startup propagation and writes the selected UI process and the
 startup inventory. Multiple runtime-bearing leaves fail as ambiguous rather
-than selecting an arbitrary process. Native handles retain even exited
+than selecting an arbitrary process. Selection atomically checks both the
+creation generation and activity count, so a child created during enumeration
+forces a fresh snapshot even if its creation hook has already returned.
+Native handles retain even exited
 bootstraps until the managed consumer binds matching handles and writes
 `<result>.accepted`; this handoff wait is bounded to 10 seconds.
 It never runs elevated: an elevated profiler
@@ -134,6 +137,8 @@ environments, caller suspension, both API encodings, restricted-token launches,
 transitive children, ambiguity, the eight-process bound, unrelated executables,
 late-child exclusion, early events from an exited parent, and continued child
 collection after the provider filter changes.
+The selection-race case uses a test-only launcher barrier to complete a child
+creation after the parent's leaf snapshot; production launchers omit the barrier.
 The test prints its evidence directory.
 
 ## Limits

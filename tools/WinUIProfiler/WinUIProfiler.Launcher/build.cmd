@@ -50,6 +50,8 @@ if errorlevel 1 exit /b 1
 if /i not "%~7"=="tests" exit /b 0
 if not exist tests\original mkdir tests\original
 if not exist tests\private mkdir tests\private
+cl /nologo /std:c++20 /W4 /WX /EHsc /MT /O2 /DUNICODE /D_UNICODE /DPROFILER_STARTUP_SELECTION_TEST /I"%DETOURSROOT%\include" "%SOURCEROOT%\Launcher.cpp" /link /SUBSYSTEM:WINDOWS /OUT:tests\ProfilerLauncher.exe "%DETOURSROOT%\lib.%LIBARCH%\detours.lib" ole32.lib shell32.lib uuid.lib advapi32.lib
+if errorlevel 1 exit /b 1
 cl /nologo /std:c++20 /W4 /WX /EHsc /MT /O2 /DUNICODE /D_UNICODE "%SOURCEROOT%\tests\Fixture.cpp" /link /SUBSYSTEM:WINDOWS /OUT:tests\Fixture.exe shell32.lib advapi32.lib
 if errorlevel 1 exit /b 1
 copy /y tests\Fixture.exe tests\OtherFixture.exe >nul

@@ -126,6 +126,16 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
         }
     }
 
+    profiler::Handle selectionSnapshot;
+    profiler::Handle childCreated;
+    if (mode == L"selection-race")
+    {
+        const auto barrier = L"Local\\WinUIProfiler.SelectionTest." + std::to_wstring(GetCurrentProcessId());
+        selectionSnapshot.reset(CreateEventW(nullptr, TRUE, FALSE, (barrier + L".snapshot").c_str()));
+        childCreated.reset(CreateEventW(nullptr, TRUE, FALSE, (barrier + L".created").c_str()));
+        if (!selectionSnapshot || !childCreated) return static_cast<int>(GetLastError());
+    }
+
     const auto original = directory + L"\\original\\";
     const DWORD flags = LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
     HMODULE mux = LoadLibraryExW((original + L"Microsoft.UI.Xaml.dll").c_str(), nullptr, flags);
@@ -138,13 +148,37 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
         ",\"mux\":" + std::to_string(coreBuild()) + ",\"muxc\":" + std::to_string(controlsBuild()) +
         ",\"muxPath\":" + profiler::Json(profiler::ModulePath(mux)) +
         ",\"muxcPath\":" + profiler::Json(profiler::ModulePath(muxc)) + "}\n";
+    const auto result = mode == L"selection-race" ? output + L".parent" : output;
     {
-        profiler::Handle file(CreateFileW((output + L".tmp").c_str(), GENERIC_WRITE, 0, nullptr,
+        profiler::Handle file(CreateFileW((result + L".tmp").c_str(), GENERIC_WRITE, 0, nullptr,
             CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
         if (!file || !profiler::WriteAll(file.get(), text)) return static_cast<int>(GetLastError());
     }
-    if (!MoveFileExW((output + L".tmp").c_str(), output.c_str(), MOVEFILE_WRITE_THROUGH))
+    if (!MoveFileExW((result + L".tmp").c_str(), result.c_str(), MOVEFILE_WRITE_THROUGH))
         return static_cast<int>(GetLastError());
+    if (mode == L"selection-race")
+    {
+        const DWORD snapshot = WaitForSingleObject(selectionSnapshot.get(), 10000);
+        if (snapshot != WAIT_OBJECT_0)
+            return static_cast<int>(snapshot == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError());
+        const auto executable = directory + L"\\Fixture.exe";
+        std::wstring command = profiler::Quote(executable) + L" " + profiler::Quote(output) + L" runtime";
+        STARTUPINFOW startup{ sizeof(startup) };
+        PROCESS_INFORMATION child{};
+        if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, 0,
+            nullptr, nullptr, &startup, &child)) return static_cast<int>(GetLastError());
+        profiler::Handle process(child.hProcess);
+        profiler::Handle thread(child.hThread);
+        if (!SetEvent(childCreated.get())) return static_cast<int>(GetLastError());
+        if (WaitForSingleObject(process.get(), 5000) != WAIT_OBJECT_0)
+        {
+            TerminateProcess(process.get(), ERROR_TIMEOUT);
+            return ERROR_TIMEOUT;
+        }
+        DWORD error = ERROR_SUCCESS;
+        if (!GetExitCodeProcess(process.get(), &error)) return static_cast<int>(GetLastError());
+        return static_cast<int>(error);
+    }
     if (mode == L"late-child")
     {
         const ULONGLONG started = GetTickCount64();
