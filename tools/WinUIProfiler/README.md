@@ -863,9 +863,12 @@ exit code 3 when that file is not valid.
 The configuration's providers are recorded for the same process as the XAML
 providers, live at their level and keywords, and from a trace as the trace has
 them; those a launcher milestone names are recorded for the launcher too.
-Their events are saved to the session file. A provider added to the
-configuration is recorded from the next connection or trace read; a milestone
-added for a provider already recorded shows at once.
+Their events are saved to the session file. Live, Win32kTraceLogging is
+enabled for every process, because Windows registers it in the kernel, and ETW
+doesn't enable a provider registered in the kernel for a session that filters
+by process; the events of other processes are skipped as they are read. A
+provider added to the configuration is recorded from the next connection or
+trace read; a milestone added for a provider already recorded shows at once.
 
 An app marks a milestone by writing an event, such as with an `EventSource` in
 C#:

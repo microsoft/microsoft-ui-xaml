@@ -19,6 +19,8 @@ public sealed class LiveEtwSource : IDisposable
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
     private const string SessionPrefix = "WinUIProfiler-";
+    // Win32kTraceLogging, a provider of the default marker configuration.
+    private static readonly Guid Win32kTraceLogging = new("487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53");
 
     private readonly object gate = new();
     private readonly TraceEventSession session;
@@ -157,8 +159,11 @@ public sealed class LiveEtwSource : IDisposable
     // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
     // parsed while it is enabled has positions, so a launch has them from the start.
     // The marker providers get the level and keywords their configuration names, and the same process filter, or for a
-    // launcher provider launcherOptions. ETW enables a provider that has not registered yet when it does, so an app's
-    // provider needs no special order.
+    // launcher provider launcherOptions. Except Win32kTraceLogging, which win32k registers in the kernel: ETW doesn't
+    // enable a provider registered in the kernel for a session that filters by process (see EVENT_FILTER_DESCRIPTOR),
+    // so it is enabled for every process, and XamlEventSubscription keeps the target's events, and for a launcher
+    // provider the launcher's. ETW enables a provider that has not registered yet when it does, so an app's provider
+    // needs no special order.
     private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
         TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers)
     {
@@ -170,7 +175,7 @@ public sealed class LiveEtwSource : IDisposable
         foreach (var marker in markers)
         {
             session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
-                marker.Launcher ? launcherOptions : options);
+                marker.Provider.Id == Win32kTraceLogging ? null : marker.Launcher ? launcherOptions : options);
         }
     }
 
