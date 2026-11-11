@@ -521,8 +521,11 @@ function Get-LaunchRecords([string] $Directory) {
 }
 
 # A packaged app's writes under LocalAppData can be redirected to its package's LocalCache.
-function Find-RedirectLog([string] $LaunchDirectory, [string] $PackageFamily) {
-    $path = Join-Path $LaunchDirectory 'redirect.jsonl'
+function Find-RedirectLog([string] $LaunchDirectory, [string] $PackageFamily, $Result) {
+    $name = if ($Result.schemaVersion -eq 2 -and $Result.pid -ne $Result.activationPid) {
+        "redirect.$($Result.pid).jsonl"
+    } else { 'redirect.jsonl' }
+    $path = Join-Path $LaunchDirectory $name
     if (Test-Path -LiteralPath $path -PathType Leaf) { return $path }
     if ($PackageFamily) {
         $local = [Environment]::GetFolderPath('LocalApplicationData')
@@ -707,8 +710,16 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
         $records = @(Get-LaunchRecords $launches)
         $closed = $true
         foreach ($record in $records) {
-            if ($record.result -and $record.result.pid -gt 0) {
-                $closed = (Close-LaunchedApp ([int]$record.result.pid) ([long]$record.result.creationTimeFileTime) $executable) -and $closed
+            $owned = @($record.result.processes)
+            if ($record.result -and $record.result.pid -gt 0 -and $record.result.pid -notin $owned.pid) {
+                $owned += $record.result
+            }
+            # Descendants are registered after their parents. Never use a process-name kill or follow arbitrary children.
+            [array]::Reverse($owned)
+            foreach ($process in $owned) {
+                if ($process.pid -gt 0 -and $process.creationTimeFileTime -gt 0) {
+                    $closed = (Close-LaunchedApp ([int]$process.pid) ([long]$process.creationTimeFileTime) $executable) -and $closed
+                }
             }
         }
         $removed = $true
@@ -732,7 +743,7 @@ function Write-ProfileSummary($Records, [string] $Runtime, $Package, [datetime] 
     $succeeded = 0
     foreach ($record in $Records) {
         $result = $record.result
-        $log = Find-RedirectLog $record.directory $Package.family
+        $log = Find-RedirectLog $record.directory $Package.family $result
         $logText = if ($log) { " Log: $log" } else { '' }
         if (-not $result) {
             Write-Warning "Launch $($record.number) wrote no result. See $($record.directory)."
@@ -745,11 +756,30 @@ function Write-ProfileSummary($Records, [string] $Runtime, $Package, [datetime] 
             $redirected = if ($log) { @(Get-RedirectedFiles $log $Runtime) } else { @() }
             $loaded = if ($redirected.Count) { "; loaded the private $($redirected -join ' and ')" } else { '' }
             Write-Host "Launch $($record.number): PID $($result.pid)$loaded.$logText"
+            if ($result.schemaVersion -eq 2 -and $result.activationPid -ne $result.pid) {
+                Write-Host "Startup handoff: activation PID $($result.activationPid) -> UI PID $($result.pid)."
+            }
+        }
+        $inventory = Join-Path $record.directory 'recordings.json'
+        if (Test-Path -LiteralPath $inventory -PathType Leaf) {
+            $capture = Get-Content -LiteralPath $inventory -Raw | ConvertFrom-Json
+            foreach ($recording in $capture.recordings) {
+                $role = if ($recording.isPrimary) { 'UI, default' } else { 'startup process' }
+                Write-Host "Session (PID $($recording.pid), $role): $($recording.sessionFile)"
+                if ($recording.error) { Write-Warning $recording.error }
+                elseif ($recording.xamlEvents + $recording.profilerEvents -eq 0) {
+                    Write-Host "PID $($recording.pid): no XAML events observed; UI metrics are not attributed to it."
+                }
+            }
         }
     }
     $sessions = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'WinUIProfiler\Sessions'
     if (Test-Path -LiteralPath $sessions -PathType Container) {
-        foreach ($session in (Get-ChildItem -LiteralPath $sessions -File -Filter *.sqlite | Where-Object LastWriteTime -GE $Started)) {
+        $launchedIds = @($Records |
+            Where-Object { -not (Test-Path -LiteralPath (Join-Path $_.directory 'recordings.json') -PathType Leaf) } |
+            ForEach-Object { $_.result.pid; $_.result.processes.pid })
+        foreach ($session in (Get-ChildItem -LiteralPath $sessions -File -Filter *.sqlite |
+            Where-Object { $_.LastWriteTime -ge $Started -and $_.BaseName.Split('-')[-1] -in $launchedIds })) {
             Write-Host "Session: $($session.FullName)"
         }
     }

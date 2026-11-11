@@ -5,10 +5,11 @@ using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Session;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// A real-time ETW session that reads one process's events from the XAML providers and the marker providers, and the
+// A real-time ETW session that reads selected processes' events from the XAML providers and the marker providers, and the
 // kernel's GPU memory and window focus events for it, while the profiler is connected. For a launch, the launcher
 // providers' (MarkerProviderSettings.Launcher) events of the profiler, which launches the target, are read too.
 public sealed class LiveEtwSource : IDisposable
@@ -55,17 +56,22 @@ public sealed class LiveEtwSource : IDisposable
 
     // For a process that is already running: its events from now on. Markers are the marker providers to read too.
     public static LiveEtwSource Start(int processId, IReadOnlyCollection<MarkerProviderSettings> markers,
-        Action<ProfilerEvent> sink)
+        Action<ProfilerEvent> sink) =>
+        Start(new Dictionary<int, long?> { [processId] = null }, markers, sink);
+
+    public static LiveEtwSource Start(IReadOnlyDictionary<int, long?> processes,
+        IReadOnlyCollection<MarkerProviderSettings> markers, Action<ProfilerEvent> sink)
     {
+        var selected = ValidateProcesses(processes);
         ArgumentNullException.ThrowIfNull(sink);
-        var source = Create(ForProcess(processId), ForProcess(processId), markers);
+        var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
+        var source = Create(options, options, markers);
         try
         {
-            lock (source.gate)
-            {
-                source.BeginReading(processId, null, sink);
-            }
-
+            XamlEventSubscription.SubscribeProcesses(source.session.Source, selected, source.markers, sink, null);
+            source.CaptureGpuMemoryState();
+            source.reader.Start();
+            source.reading = true;
             return source;
         }
         catch
@@ -95,12 +101,18 @@ public sealed class LiveEtwSource : IDisposable
             new TraceEventProviderOptions { ProcessNameFilter = launcherNames }, markers);
     }
 
-    // Narrows the session to the launched process and delivers its events, including those buffered since
+    // Narrows the session to the launched processes and delivers their events, including those buffered since
     // the session started, and the events of launcherProcessId, the process that launched it, from the launcher
     // providers: those written before the session was narrowed. The same session keeps running, so nothing is lost
     // while the filter changes.
-    public void StartReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink)
+    public void StartReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink) =>
+        StartReading(new Dictionary<int, long?> { [processId] = null }, launcherProcessId, sink);
+
+    // The native startup group owns handles for these exact process instances for the duration of the capture.
+    // Keep every validated member enabled, rather than replacing the activation PID with only the UI child's PID.
+    public void StartReading(IReadOnlyDictionary<int, long?> processes, int? launcherProcessId, Action<ProfilerEvent> sink)
     {
+        var selected = ValidateProcesses(processes);
         ArgumentNullException.ThrowIfNull(sink);
         lock (gate)
         {
@@ -111,12 +123,25 @@ public sealed class LiveEtwSource : IDisposable
             }
 
             // Other processes with the same executable name, and the profiler, stop writing to the session.
-            EnableProviders(session, ForProcess(processId), ForProcess(processId), markers);
-            BeginReading(processId, launcherProcessId, sink);
+            var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
+            EnableProviders(session, options, options, markers);
+            XamlEventSubscription.SubscribeProcesses(session.Source, selected, markers, sink, launcherProcessId);
+            CaptureGpuMemoryState();
+            reader.Start();
+            reading = true;
         }
     }
 
-    private static TraceEventProviderOptions ForProcess(int processId) => new() { ProcessIDFilter = [processId] };
+    private static Dictionary<int, long?> ValidateProcesses(IReadOnlyDictionary<int, long?> processes)
+    {
+        ArgumentNullException.ThrowIfNull(processes);
+        if (processes.Count is < 1 or > NativeLaunchProtocol.MaxStartupProcesses ||
+            processes.Any(entry => entry.Key <= 0 || entry.Value is <= 0))
+        {
+            throw new ArgumentException("An ETW startup group needs one to eight valid process identities.", nameof(processes));
+        }
+        return processes.ToDictionary();
+    }
 
     // Needs an elevated process or membership in the local Performance Log Users group;
     // otherwise starting the session throws UnauthorizedAccessException.
@@ -258,16 +283,6 @@ public sealed class LiveEtwSource : IDisposable
         }
     }
 
-    // The process ID check also skips events other processes with the same executable name wrote before the
-    // session was narrowed to one process.
-    private void BeginReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink)
-    {
-        XamlEventSubscription.Subscribe(session.Source, processId, markers, sink, launcherProcessId);
-        CaptureGpuMemoryState();
-        reader.Start();
-        reading = true;
-    }
-
     private void Read()
     {
         try
@@ -292,13 +307,23 @@ public sealed class LiveEtwSource : IDisposable
 
             eventsLost = session.EventsLost;
             disposed = true;
-            // Stopping the session makes Process() return on the reader thread.
-            session.Dispose();
+            // Stop flushes ETW's final buffers. Disposing its source immediately would cancel Process() before
+            // those buffers are delivered, losing the last events of a short-lived startup process.
+            try
+            {
+                session.Stop();
+            }
+            catch
+            {
+                session.Dispose();
+                throw;
+            }
         }
 
-        if (reading)
+        try
         {
-            reader.Join();
+            if (reading) reader.Join();
         }
+        finally { session.Dispose(); }
     }
 }

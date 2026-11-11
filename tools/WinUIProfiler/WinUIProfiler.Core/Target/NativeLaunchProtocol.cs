@@ -14,7 +14,14 @@ public sealed record PrivateRuntimeLaunch(string RuntimeDirectory, string Source
 // CreationTimeFileTime (a UTC FILETIME) name the app's process instance, since a later process can reuse the ID.
 // ProcessId is 0 when no process started; CreationTimeFileTime is 0 when the launcher could not read it.
 public sealed record NativeLaunchResult(int ProcessId, long CreationTimeFileTime, uint Error, string Stage,
-    string PackageFullName, string ApplicationUserModelId);
+    string PackageFullName, string ApplicationUserModelId)
+{
+    public int? ActivationProcessId { get; init; }
+    public IReadOnlyList<NativeLaunchProcess> Processes { get; init; } = [];
+}
+
+public sealed record NativeLaunchProcess(int ProcessId, int ParentProcessId, long CreationTimeFileTime,
+    bool HelperReady, bool RuntimeLoaded, uint Error);
 
 // The private WinUI launcher's command line and result files (WinUIProfiler.Launcher\README.md).
 public static class NativeLaunchProtocol
@@ -22,7 +29,16 @@ public static class NativeLaunchProtocol
     public const string ResultFile = "launch.json";
     public const string LogFile = "redirect.jsonl";
     public const string OwnerSuffix = ".owner.json";
-    public const int MaxResultBytes = 4096;
+    public const string AcceptedSuffix = ".accepted";
+    public const int MaxResultBytes = 16384;
+    public const int MaxStartupProcesses = 8;
+
+    public static string LogFileFor(NativeLaunchResult result, int? processId = null)
+    {
+        var pid = processId ?? result.ProcessId;
+        return result.ActivationProcessId is not { } activation || pid == activation
+            ? LogFile : $"redirect.{pid}.jsonl";
+    }
 
     // Quotes an argument so that CommandLineToArgvW reads it back unchanged.
     public static string Quote(string value)
@@ -84,7 +100,7 @@ public static class NativeLaunchProtocol
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object ||
-            Number(root, "schemaVersion") != 1 ||
+            Number(root, "schemaVersion") is not (1 or 2) ||
             Number(root, "pid") is not { } pid || pid is < 0 or > int.MaxValue ||
             Number(root, "creationTimeFileTime") is not { } created || created < 0 ||
             Number(root, "error") is not { } error || error is < 0 or > uint.MaxValue ||
@@ -94,7 +110,52 @@ public static class NativeLaunchProtocol
             throw new InvalidDataException("The private WinUI launcher wrote an invalid result.");
         }
 
-        return new((int)pid, created, (uint)error, stage, Text(root, "packageFullName") ?? "", Text(root, "aumid") ?? "");
+        var result = new NativeLaunchResult((int)pid, created, (uint)error, stage,
+            Text(root, "packageFullName") ?? "", Text(root, "aumid") ?? "");
+        if (Number(root, "schemaVersion") == 1)
+        {
+            return result;
+        }
+
+        if (Number(root, "activationPid") is not { } activation || activation is < 0 or > int.MaxValue ||
+            !root.TryGetProperty("processes", out var entries) || entries.ValueKind != JsonValueKind.Array ||
+            entries.GetArrayLength() > MaxStartupProcesses)
+        {
+            throw new InvalidDataException("The private WinUI launcher's startup process inventory is invalid.");
+        }
+
+        var processes = new Dictionary<int, NativeLaunchProcess>();
+        foreach (var entry in entries.EnumerateArray())
+        {
+            if (entry.ValueKind != JsonValueKind.Object ||
+                Number(entry, "pid") is not { } entryPid || entryPid is < 1 or > int.MaxValue ||
+                Number(entry, "parentPid") is not { } parentPid || parentPid is < 0 or > int.MaxValue ||
+                Number(entry, "creationTimeFileTime") is not { } entryCreated ||
+                entryCreated is < 1 or > 2650467743999999999L ||
+                Boolean(entry, "helperReady") is not { } helperReady ||
+                Boolean(entry, "runtimeLoaded") is not { } runtimeLoaded ||
+                Number(entry, "error") is not { } entryError || entryError is < 0 or > uint.MaxValue ||
+                (runtimeLoaded && !helperReady) ||
+                processes.ContainsKey((int)entryPid) ||
+                (parentPid == 0 ? entryPid != activation :
+                    !processes.TryGetValue((int)parentPid, out var parent) || parent.CreationTimeFileTime > entryCreated))
+            {
+                throw new InvalidDataException("The private WinUI launcher's startup ancestry or process identity is invalid.");
+            }
+
+            processes.Add((int)entryPid, new((int)entryPid, (int)parentPid, entryCreated, helperReady, runtimeLoaded,
+                (uint)entryError));
+        }
+
+        if (error == 0 &&
+            (!processes.TryGetValue((int)pid, out var selected) || selected.CreationTimeFileTime != created ||
+                !selected.RuntimeLoaded || !selected.HelperReady || selected.Error != 0 ||
+                processes.Values.Any(process => process.Error != 0)))
+        {
+            throw new InvalidDataException("The private WinUI launcher's selected process did not load the private runtime.");
+        }
+
+        return result with { ActivationProcessId = (int)activation, Processes = processes.Values.ToArray() };
     }
 
     // The launcher's process ID and creation time from the owner file it writes as it starts.
@@ -120,4 +181,8 @@ public static class NativeLaunchProtocol
 
     private static string? Text(JsonElement root, string name) =>
         root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+    private static bool? Boolean(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean() : null;
 }

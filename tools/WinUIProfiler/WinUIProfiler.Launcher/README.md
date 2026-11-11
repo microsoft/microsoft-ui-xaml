@@ -7,8 +7,7 @@ files are never changed, no `.local` redirection is set up, and no restart is
 needed. The profiler uses it when it is started with `--private-runtime`; see
 "Profile an app with private WinUI DLLs" in the profiler's README.
 
-The sources are copied from the `winui-perf-tools` native launcher in
-winui-tools. They build with the Visual Studio C++ tools and
+The launcher builds with the Visual Studio C++ tools and
 [Microsoft Detours](https://github.com/microsoft/Detours), which
 `scripts\Build-Launcher.ps1` downloads at the commit pinned in
 `dependencies.json`. Git holds only the sources; the binaries and Detours are
@@ -32,9 +31,25 @@ built under `artifacts\launcher`.
   MUI resources, still come from the original runtime. If MUX is already
   loaded when the helper starts, or a private DLL is missing, it fails instead
   of running the app with the wrong runtime.
+- **Startup children:** while startup is active, the helper intercepts
+  `CreateProcessW/A` and `CreateProcessAsUserW/A`. It inserts the helper before
+  resuming a child only when the executable, package, user and Windows session
+  match. The executable is matched by file identity, so a path through a
+  junction or symbolic link matches the resolved path Windows reports. A
+  Detours payload supplies the configuration even with a custom
+  environment. Caller-requested suspension is preserved. The bounded registry
+  includes the activation process and up to seven same-app descendants.
 
-The launcher waits up to 30 seconds for the helper to report ready, then
-writes its result and exits. It never runs elevated: an elevated profiler
+The launcher waits up to 30 seconds for a single live leaf to load private MUX.
+It then stops startup propagation and writes the selected UI process and the
+startup inventory. Multiple runtime-bearing leaves fail as ambiguous rather
+than selecting an arbitrary process. Selection atomically checks both the
+creation generation and activity count, so a child created during enumeration
+forces a fresh snapshot even if its creation hook has already returned.
+Native handles retain even exited
+bootstraps until the managed consumer binds matching handles and writes
+`<result>.accepted`; this handoff wait is bounded to 10 seconds.
+It never runs elevated: an elevated profiler
 starts it through the signed-in Explorer desktop, so the app does not inherit
 administrator rights.
 
@@ -58,7 +73,20 @@ app without arguments. Unknown or repeated options exit with code 87.
 - `<result>` (`launch.json`) records the outcome:
 
   ```json
-  {"schemaVersion":1,"pid":1234,"creationTimeFileTime":134000000000000000,"error":0,"stage":"ready","packageFullName":"","aumid":""}
+  {
+    "schemaVersion": 2,
+    "pid": 1235,
+    "creationTimeFileTime": 134000000000000100,
+    "error": 0,
+    "stage": "ready",
+    "packageFullName": "",
+    "aumid": "",
+    "activationPid": 1234,
+    "processes": [
+      {"pid":1234,"parentPid":0,"creationTimeFileTime":134000000000000000,"helperReady":true,"runtimeLoaded":false,"error":0},
+      {"pid":1235,"parentPid":1234,"creationTimeFileTime":134000000000000100,"helperReady":true,"runtimeLoaded":true,"error":0}
+    ]
+  }
   ```
 
   `pid` and `creationTimeFileTime` (the process's creation time as a UTC
@@ -71,16 +99,26 @@ app without arguments. Unknown or repeated options exit with code 87.
   failed: `configuration`, `create_process`, `insert_helper`,
   `package_debug_settings`, `package_enable_debugging`,
   `package_activation_manager`, `package_activate`, `package_debugger`,
-  `helper_ready`, `package_cleanup`, `package_identity` or `process_times`. A
-  helper that does not report ready within 30 seconds gives error 1460
-  (`ERROR_TIMEOUT`); an app that exits first gives its exit code.
+  `runtime_ready`, `runtime_ambiguous`, `package_cleanup`, `package_identity`
+  or `process_times`. A startup that does not select a runtime within 30 seconds
+  gives error 1460 (`ERROR_TIMEOUT`); two eligible UI leaves give error 234
+  (`ERROR_MORE_DATA`). Exceeding the eight-process bound gives error 111
+  (`ERROR_BUFFER_OVERFLOW`).
+  `parentPid: 0` identifies the activation root inside the tracked group, not
+  its OS parent. The managed reader also accepts legacy version-1 results;
+  they do not supply a startup inventory. The owner file remains version 1.
 - `<log>` (`redirect.jsonl`) has one JSON line per helper event, for example
   `{"event":"redirected","pid":1234,"requested":"...","selected":"...","error":0}`.
+  Each descendant writes `redirect.<pid>.jsonl`, so logs never overwrite
+  the activation process's log.
   A packaged app may write it to its package's `LocalCache` folder instead,
   because Windows virtualizes new files a packaged app creates in `AppData`.
 
-A ready result means only that the helper started. The profiler then checks
-that the `Microsoft.UI.Xaml.dll` the app loaded is the private file.
+A version-2 ready result identifies the process that loaded private MUX.
+The profiler independently verifies its process identity and loaded DLL file
+identities, connects TAP and live metrics to it, and retains separate ETW
+recordings for the other startup members. `recordings.json` beside the result
+maps those identities to their SQLite files and final capture counts.
 
 ## Build
 
@@ -94,12 +132,23 @@ From `tools\WinUIProfiler`:
 the profiler in `NativeLauncher\<architecture>`, with a `manifest.json` of
 SHA-256 hashes that the profiler checks before each launch.
 
+Run `scripts\Test-StartupHandoff.ps1` from an elevated PowerShell for the opt-in
+native and real-ETW regressions. It builds only test-owned fixture executables
+and fake runtime DLLs, never installed applications. The cases cover custom
+environments, caller suspension, both API encodings, restricted-token launches,
+transitive children, ambiguity, the eight-process bound, unrelated executables,
+launches through a junction, late-child exclusion, early events from an exited
+parent, and continued child collection after the provider filter changes.
+The selection-race case uses a test-only launcher barrier to complete a child
+creation after the parent's leaf snapshot; production launchers omit the barrier.
+The test prints its evidence directory.
+
 ## Limits
 
 - The private MUX and MUXC must be ABI- and resource-compatible with the
   runtime they replace: same Windows App SDK version and architecture.
-- UWP (AppContainer) apps and apps started through a launcher stub are not
-  supported.
+- UWP (AppContainer), different-executable stubs, broker-created descendants,
+  and descendants created after startup selection are not supported.
 - The helper and the package debugger add time to the launch. Compare only
   launches that use the same mode and DLLs.
 - Don't debug or profile the same package in another session at the same
@@ -110,5 +159,5 @@ SHA-256 hashes that the profiler checks before each launch.
   path has them. Without short names (on a Dev Drive, for example), a path
   with characters outside that code page fails at `create_process` or
   `package_debugger` with error 1113 (`ERROR_NO_UNICODE_TRANSLATION`), and a
-  non-ASCII path fails at `helper_ready` when the app's manifest sets another
+  non-ASCII path fails at `runtime_ready` when the app's manifest sets another
   `activeCodePage`, such as UTF-8.
