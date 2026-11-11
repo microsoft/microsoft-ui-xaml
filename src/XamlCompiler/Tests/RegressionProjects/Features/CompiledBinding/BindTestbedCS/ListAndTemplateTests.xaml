@@ -22,6 +22,43 @@
                 </Grid>
             </DataTemplate>
 
+            <DataTemplate x:Key="StaticBindingTemplate" x:DataType="x:String">
+                <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="StaticUntypedBindingTemplate">
+                <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="StaticUntypedPhasedBindingTemplate">
+                <TextBlock x:Phase="1" Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="InstanceOnlyBindingTemplate" x:DataType="model:FakeSettings">
+                <TextBlock Tag="{x:Bind BoolSetting, Mode=TwoWay}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="StaticPhasedBindingTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock x:Phase="1" Tag="{x:Bind BoolSetting, Mode=TwoWay}"/>
+                    <TextBlock Tag="{x:Bind model:FakeSettings.Instance.BoolSetting, Mode=OneWay}"/>
+                    <TextBlock x:Phase="1" Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="StaticValueBindingTemplate" x:DataType="x:Int32">
+                <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}" Tag="{x:Bind}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="StaticObservableBindingTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock Tag="{x:Bind BoolSetting, Mode=TwoWay}"/>
+                    <TextBlock Tag="{x:Bind model:FakeSettings.Instance.BoolSetting, Mode=TwoWay}"/>
+                    <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="StaticNamedSourceTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock x:Name="deferredSource" x:DeferLoadStrategy="Lazy" Text="before null"/>
+                    <TextBlock x:Name="namedTarget" Text="{x:Bind deferredSource.Text, Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                </StackPanel>
+            </DataTemplate>
+
             <ResourceDictionary.MergedDictionaries>
                 <local:Templates/>
                 <Subfolder:SubDictionary />
@@ -60,6 +97,10 @@
 
                 <TextBlock Style="{StaticResource Note}"><Run>Button using template as ContentTemplate</Run></TextBlock>
                 <Button ContentTemplate="{StaticResource FullNameTemplateInRDFile}" x:Name="someButton"/>
+
+                <TextBlock Style="{StaticResource Note}">Static template bindings without content</TextBlock>
+                <ContentControl DataContext="{x:Null}" ContentTemplate="{StaticResource StaticBindingTemplate}"/>
+                <ContentControl DataContext="{x:Null}" ContentTemplate="{StaticResource StaticValueBindingTemplate}"/>
 
                 <TextBlock Style="{StaticResource Note}"><Run>Button using template with valuetype data root</Run></TextBlock>
                 <StackPanel Orientation="Horizontal">

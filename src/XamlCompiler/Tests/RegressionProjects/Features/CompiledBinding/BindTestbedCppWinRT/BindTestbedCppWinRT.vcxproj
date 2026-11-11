@@ -274,7 +274,7 @@
     <!-- Reference BindTestbedModel so its WinMD, DLL, and generated WinRT.Host runtime
          configuration flow through project outputs without hard-coded paths. -->
     <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Private>false</Private>
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
 

@@ -742,6 +742,11 @@ this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.DataRootType));
 
 this.Write(" dataRoot;\r\n");
 
+             if (bindUniverse.NeedsStaticBindingsUpdate && !bindUniverse.IsDataIndependentUntypedTemplate) {
+this.Write("            // A missing item is distinct from default(T) and from independent bi" +
+        "nding initialization.\r\n            private bool hasDataRoot;\r\n");
+
+             }
              if (bindUniverse.NeededForOuterScopeElement) 
              { 
 this.Write("            #pragma warning disable 649\r\n");
@@ -1456,22 +1461,19 @@ this.Write(" sender, ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.DataContextChangedEventArgs)));
 
-this.Write(@" args)
-            {
-                 if (this.SetDataRoot(args.NewValue))
-                 {
-                    this.Update();
+this.Write(" args)\r\n            {\r\n                 if (this.SetDataRoot(args.NewValue))\r\n   " +
+        "              {\r\n                    this.Update();\r\n                 }\r\n");
+
+                 if (bindUniverse.NeedsStaticBindingsUpdate) {
+this.Write("                 else\r\n                 {\r\n                    // SetDataRoot det" +
+        "ached listeners; restore only sources that do not need an item.\r\n               " +
+        "     this.UpdateStaticBindings(NOT_PHASED);\r\n                 }\r\n");
+
                  }
-            }
-
-            // IDataTemplateExtension
-
-            public bool ProcessBinding(uint phase)
-            {
-                throw new global::System.NotImplementedException();
-            }
-
-            public int ProcessBindings(");
+this.Write("            }\r\n\r\n            // IDataTemplateExtension\r\n\r\n            public bool" +
+        " ProcessBinding(uint phase)\r\n            {\r\n                throw new global::Sy" +
+        "stem.NotImplementedException();\r\n            }\r\n\r\n            public int Process" +
+        "Bindings(");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.ContainerContentChangingEventArgs)));
 
@@ -1558,12 +1560,20 @@ this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.GetNextPhase(kvp
 this.Write(";\r\n                        break;\r\n");
 
                      } 
-this.Write("                }\r\n                this.Update_(");
+this.Write("                }\r\n");
+
+                 if (bindUniverse.IsDataIndependentUntypedTemplate) {
+this.Write("                this.UpdateStaticBindings(1 << phase);\r\n");
+
+                 } else {
+this.Write("                this.Update_(");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(bindUniverse.RootStep.ValueType, "item")));
 
-this.Write(", 1 << phase);\r\n            }\r\n\r\n            public void Recycle()\r\n            {" +
-        "\r\n");
+this.Write(", 1 << phase);\r\n");
+
+                 }
+this.Write("            }\r\n\r\n            public void Recycle()\r\n            {\r\n");
 
              if (bindUniverse.NeedsBindingsTracking)
              {
@@ -1640,12 +1650,17 @@ this.Write(@"_Bindings
 
              if (bindUniverse.HasBindings)
              {
+                 if (bindUniverse.IsDataIndependentUntypedTemplate) {
+this.Write("                this.UpdateStaticBindings(NOT_PHASED);\r\n");
+
+                 } else {
 this.Write("                this.Update_");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.RootStep.CodeName));
 
 this.Write("(this.dataRoot, NOT_PHASED);\r\n");
 
+                 }
              }
 this.Write("                this.initialized = true;\r\n            }\r\n\r\n            public voi" +
         "d StopTracking()\r\n            {\r\n");
@@ -1775,13 +1790,43 @@ this.Write("\r\n            public bool SetDataRoot(global::System.Object newDat
 this.Write("                this.bindingsTracking.ReleaseAllListeners();\r\n");
 
              }
-this.Write("                if (newDataRoot != null)\r\n                {\r\n                    " +
-        "this.dataRoot = ");
+             if (bindUniverse.IsDataIndependentUntypedTemplate) {
+this.Write("                // Every binding path is item-independent; never convert an arbit" +
+        "rary item\r\n                // to the synthetic DataTemplate type just because it" +
+        " happens to be non-null.\r\n                this.dataRoot = default(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.DataRootType));
+
+this.Write(");\r\n                return true;\r\n");
+
+             } else {
+             if (bindUniverse.NeedsStaticBindingsUpdate) {
+this.Write("                this.hasDataRoot = newDataRoot != null;\r\n");
+
+             }
+this.Write("                if (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.NeedsStaticBindingsUpdate ? "this.hasDataRoot" : "newDataRoot != null"));
+
+this.Write(")\r\n                {\r\n                    this.dataRoot = ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(bindUniverse.DataRootType, "newDataRoot")));
 
-this.Write(";\r\n                    return true;\r\n                }\r\n                return fa" +
-        "lse;\r\n            }\r\n");
+this.Write(";\r\n                    return true;\r\n                }\r\n");
+
+             if (bindUniverse.NeedsStaticBindingsUpdate) {
+this.Write("                // Do not let independent-source notifications retrieve the previ" +
+        "ous item.\r\n                this.dataRoot = default(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.DataRootType));
+
+this.Write(");\r\n");
+
+             }
+this.Write("                return false;\r\n");
+
+             }
+this.Write("            }\r\n");
 
              if (bindUniverse.RootElement.IsBindingFileRoot)
              {
@@ -1891,6 +1936,24 @@ this.Write(".Current.Resources[key]);\r\n            }\r\n");
 this.Write("\r\n            // Update methods for each path node used in binding steps.\r\n");
 
              }
+             if (bindUniverse.NeedsStaticBindingsUpdate) {
+this.Write("            // Reconnect static/named sources and dispatch their functions withou" +
+        "t walking the data root.\r\n            private void UpdateStaticBindings(int phas" +
+        "e)\r\n            {\r\n");
+
+                 if (bindUniverse.RootStep.Children.OfType<RootNamedElementStep>().Any() || bindUniverse.ElementRootStep != null) {
+this.Write("                ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(" bindings = this;\r\n");
+
+                 }
+                 Output_Update_Steps(false, "this", bindUniverse.RootStep.Children.OfType<RootNamedElementStep>(), true, "phase");
+                 Output_Update_Independent_Steps(bindUniverse);
+this.Write("                this.initialized = true;\r\n            }\r\n");
+
+             }
              foreach (BindPathStep bindStep in bindUniverse.BindPathSteps.Values.Where(bindStep => bindStep.IsIncludedInUpdate == true))
              {
 this.Write("            private void Update_");
@@ -1929,15 +1992,7 @@ this.Write("(obj);\r\n");
                      Output_Binding_Phased_SetValue(distinctPhase, false, bindStep, false);
                  }
                  if (bindStep is RootStep) { 
-                     Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");
-                     if (bindUniverse.ElementRootStep != null) 
-                     { 
-                         Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent == bindUniverse.ElementRootStep), false, "phase");
-                     } 
-                     if (bindUniverse.NeedsCompleteUpdate) { 
-this.Write("                this.CompleteUpdate(phase);\r\n");
-
-                     }
+                     Output_Update_Independent_Steps(bindUniverse);
                  }
 this.Write("            }\r\n");
 
@@ -2692,6 +2747,7 @@ this.Write("        }\r\n");
  } 
  private void Output_UpdateTwoWay(BindAssignment ba)
  {
+     // Independent initialization must not enable reverse writes through a missing item.
 this.Write("            private void UpdateTwoWay_");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.ConnectionIdElement.ConnectionId));
@@ -2700,7 +2756,11 @@ this.Write("_");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.MemberName));
 
-this.Write("()\r\n            {\r\n                if (this.initialized)\r\n                {\r\n");
+this.Write("()\r\n            {\r\n                if (this.initialized");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(ba.NeedsDataRootForReverseAssignment ? " && this.hasDataRoot" : ""));
+
+this.Write(")\r\n                {\r\n");
 
              MethodStep bindBackStep = ba.BindBackStep as MethodStep; 
              if (bindBackStep != null)
@@ -3647,6 +3707,18 @@ this.Write("            }\r\n");
 
      }
  }
+ private void Output_Update_Independent_Steps(BindUniverse bindUniverse)
+ {
+     // Both independent root kinds must be restored before draining queued function bindings.
+     Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");
+     if (bindUniverse.ElementRootStep != null) {
+         Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent == bindUniverse.ElementRootStep), false, "phase");
+     }
+     if (bindUniverse.NeedsCompleteUpdate) {
+this.Write("                this.CompleteUpdate(phase);\r\n");
+
+     }
+ }
  private void Output_TryGetValueFunctions(BindUniverse bindUniverse)
  {
      foreach (BindPathStep step in bindUniverse.TryGetValueSteps)
@@ -3661,6 +3733,16 @@ this.Write(this.ToStringHelper.ToStringWithCulture(step.ValueType));
 
 this.Write(" val)\r\n            {\r\n");
 
+         if (bindUniverse.NeedsStaticBindingsUpdate && step is RootStep root && !root.IsElementRoot) {
+this.Write("                // A missing value-type item must not resolve successfully as its" +
+        " default value.\r\n                if (!this.hasDataRoot)\r\n                {\r\n    " +
+        "                val = default(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(step.ValueType));
+
+this.Write(");\r\n                    return false;\r\n                }\r\n");
+
+         }
          if (!step.IsRetrievedThroughParent) {
 this.Write("                val = ");
 

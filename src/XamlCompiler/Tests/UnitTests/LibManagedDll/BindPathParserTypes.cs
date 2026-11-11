@@ -16,6 +16,13 @@ namespace LibManagedDll
         public string Format(string value) { return String.Format("Format: {0}", value); }
 
         public string Describe(AnotherClassForPathing other) { return other == null ? "null" : "self"; }
+
+        public void SetText(object value) { }
+    }
+
+    public struct ValueTypeBindingItem
+    {
+        public AnotherClassForPathing Receiver { get; }
     }
 
     public class NamedElementForPathing : FrameworkElement
@@ -58,6 +65,9 @@ namespace LibManagedDll
         public string FormatPositionFloat(float value) { return String.Format("Position: {0}", value); }
         public string FormatPositionDouble(double value) { return String.Format("Position: {0}", value); }
         public string FormatTitle(string value) { return String.Format("Title: {0}", value); }
+        public static string FormatTitleStatic(string value) { return String.Format("Title: {0}", value); }
+        public static string FormatObjectStatic(object value) { return String.Format("Value: {0}", value); }
+        public static void SetTextStatic(object value) { }
         public string FormatTitleAndLevel(string title, double level, bool isManager)
         {
             string titleString = title ?? "null_title";

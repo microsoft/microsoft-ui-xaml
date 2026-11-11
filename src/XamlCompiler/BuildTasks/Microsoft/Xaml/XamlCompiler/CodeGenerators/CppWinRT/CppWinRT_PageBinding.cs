@@ -49,7 +49,40 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(ProjectInfo.RootNamespace)));
             this.Write("::implementation::IXamlBindingTracking\r\n");
   }
-            this.Write("{\r\n        ");
+            this.Write("{\r\n");
+  if (bindUniverse.NeedsStaticBindingsUpdate) {
+            this.Write("        using Base = ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(ProjectInfo.RootNamespace)));
+            this.Write("::implementation::");
+            this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.DataRootType.NeedsBoxUnbox() ? "ValueTypeXamlBindings" : "ReferenceTypeXamlBindings"));
+            this.Write("<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.DataRootType));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetBindingTrackingClassName(bindUniverse, Model.CodeInfo)));
+            this.Write(@">;
+
+        bool SetDataRoot(IInspectable const& data) override
+        {
+            // Only this affected template opts into cleanup and missing-item validity. Leave
+            // ordinary templates, pages and ControlTemplates on the shared legacy setter.
+            ReleaseAllListeners();
+");
+      if (bindUniverse.IsDataIndependentUntypedTemplate) {
+            this.Write("            // No forward path, argument or reverse receiver needs this untyped i" +
+                    "tem.\r\n            // Do not convert it to the synthetic DataTemplate root, even " +
+                    "when non-null.\r\n            return true;\r\n");
+      } else {
+            this.Write("            this->_hasDataRoot = data != nullptr;\r\n            if (!this->_hasDat" +
+                    "aRoot)\r\n            {\r\n                this->ClearDataRoot();\r\n                r" +
+                    "eturn false;\r\n            }\r\n            return Base::SetDataRoot(data);\r\n");
+      }
+            this.Write("        }\r\n\r\n");
+  }
+  if (bindUniverse.IsDataIndependentUntypedTemplate) {
+            this.Write("        void Update() override\r\n        {\r\n            UpdateStaticBindings();\r\n " +
+                    "       }\r\n\r\n");
+  }
+            this.Write("        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
             this.Write("()\r\n        {\r\n");
   if (bindUniverse.NeedsBindingsTracking) {
@@ -223,9 +256,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.GetNextPhase(kvp.Key)));
             this.Write(";\r\n                }\r\n                break;\r\n");
       } 
-            this.Write("            }\r\n            Update_(::winrt::unbox_value<");
+            this.Write("            }\r\n");
+      if (bindUniverse.IsDataIndependentUntypedTemplate) {
+            this.Write("            UpdateStaticBindings(1 << phase);\r\n");
+      } else {
+            this.Write("            Update_(::winrt::unbox_value<");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.RootStep.ValueType));
-            this.Write(">(item) , 1 << phase);\r\n        }\r\n");
+            this.Write(">(item) , 1 << phase);\r\n");
+      }
+            this.Write("        }\r\n");
  } else if (bindUniverse.NeedsIDataTemplateComponent) { 
             this.Write("        void Recycle() override\r\n        {\r\n            return;\r\n        }\r\n\r\n   " +
                     "     void ProcessBindings(IInspectable const& item, int itemIndex, int phase, in" +
@@ -260,6 +299,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("::IValueConverter>();\r\n        }\r\n");
   }
             this.Write("\r\n    private:\r\n");
+  if (bindUniverse.NeedsStaticBindingsUpdate && !bindUniverse.IsDataIndependentUntypedTemplate) {
+            this.Write("        // A missing item differs from default(T), even while independent binding" +
+                    "s are initialized.\r\n        bool _hasDataRoot = false;\r\n");
+  }
   if (bindUniverse.BoundElements != null && bindUniverse.BoundElements.Any()) { 
             this.Write("        // Fields for each control that has bindings.\r\n");
   }
@@ -319,6 +362,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
       }
             this.Write("\r\n        // Update methods for each path node used in binding steps.\r\n");
   }
+  if (bindUniverse.NeedsStaticBindingsUpdate) {
+            this.Write("        // Reconnect static/named sources and dispatch their functions without wa" +
+                    "lking the data root.\r\n        void UpdateStaticBindings() override\r\n        {\r\n");
+      if (bindUniverse.IsDataIndependentUntypedTemplate) {
+            this.Write("            UpdateStaticBindings(this->NOT_PHASED);\r\n        }\r\n\r\n        void Up" +
+                    "dateStaticBindings(int32_t phase)\r\n        {\r\n");
+      } else {
+            this.Write("            int phase = this->NOT_PHASED;\r\n");
+      }
+      Output_Update_Steps(false, bindUniverse.RootStep.Children.OfType<RootNamedElementStep>(), true, "phase");
+      Output_Update_Independent_Steps(bindUniverse);
+            this.Write("            this->_isInitialized = true;\r\n        }\r\n");
+  }
   foreach (var bindStep in bindUniverse.BindPathSteps.Values.Where(bindStep => bindStep.IsIncludedInUpdate == true)) { 
             this.Write("\r\n");
       if (bindStep is FunctionStep) { 
@@ -342,10 +398,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
           Output_Binding_Phased_SetValue(distinctPhase, false, bindStep, false);
       }
       if (bindStep is RootStep) { 
-          Output_Update_Steps(false, bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");
-          if (bindUniverse.NeedsCompleteUpdate) { 
-            this.Write("            CompleteUpdate(phase);\r\n");
-          }
+          Output_Update_Independent_Steps(bindUniverse);
       }
             this.Write("        }\r\n");
   }
@@ -732,6 +785,7 @@ this.Write("\r\n");
      }
  private void Output_Connect_TwoWayBinding(BindAssignment ba)
  {
+     // Independent initialization must not enable reverse writes through a missing item.
      Output_ApiInformationCall_Push(ba.ApiInformation, Indent.None); 
      if (ba.NeedsLostFocusForTwoWay) { 
 this.Write("                ");
@@ -774,8 +828,12 @@ this.Write("Property(),\r\n                    [weakThis{ this->weak_from_this()
 
      } 
 this.Write("                        if (auto strongThis{ weakThis.lock() })\r\n                " +
-        "        {\r\n                            if (IsInitialized())\r\n                   " +
-        "         {\r\n                                // Update Two Way binding\r\n");
+        "        {\r\n                            if (IsInitialized()");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(ba.NeedsDataRootForReverseAssignment ? " && this->_hasDataRoot" : ""));
+
+this.Write(")\r\n                            {\r\n                                // Update Two W" +
+        "ay binding\r\n");
 
      MethodStep bindBackStep = ba.BindBackStep as MethodStep; 
      if (bindBackStep != null) { 
@@ -1584,6 +1642,19 @@ this.Write("        }\r\n");
 
      }
  }
+ private void Output_Update_Independent_Steps(BindUniverse bindUniverse)
+ {
+     // Static paths retain their existing update behavior. Only affected templates detach
+     // namescope listeners in SetDataRoot, so only those scopes need to restore them here.
+     Output_Update_Steps(false, bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");
+     if (bindUniverse.NeedsStaticBindingsUpdate && bindUniverse.ElementRootStep != null) {
+         Output_Update_Steps(false, bindUniverse.BindPathSteps.Values.Where(s => s.Parent == bindUniverse.ElementRootStep), false, "phase");
+     }
+     if (bindUniverse.NeedsCompleteUpdate) {
+this.Write("            CompleteUpdate(phase);\r\n");
+
+     }
+ }
  private void Output_TryGetValueFunctions(BindUniverse bindUniverse)
  {
      foreach (BindPathStep step in bindUniverse.TryGetValueSteps)
@@ -1598,6 +1669,12 @@ this.Write(this.ToStringHelper.ToStringWithCulture(step.ValueType));
 
 this.Write("& val)\r\n        {\r\n");
 
+         if (bindUniverse.NeedsStaticBindingsUpdate && step is RootStep root && !root.IsElementRoot) {
+this.Write("            // A missing value-type item must not resolve successfully as its def" +
+        "ault value.\r\n            if (!this->_hasDataRoot)\r\n            {\r\n              " +
+        "  return false;\r\n            }\r\n");
+
+         }
          if (!step.IsRetrievedThroughParent) {
 this.Write("            val = ");
 

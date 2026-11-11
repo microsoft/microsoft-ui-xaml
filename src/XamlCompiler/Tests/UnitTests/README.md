@@ -88,6 +88,72 @@ would otherwise run from a partial copied payload.
 
 The script returns VSTest's exit code unchanged.
 
+## Static bindings with null template items
+
+`FunctionBinding_Static*` covers static bindings in a `DataTemplate` without a data
+item, including omitted `x:DataType`, static properties, mixed instance bindings,
+value-type items, and null-to-item-to-null transitions. The C# cases compile and
+execute the emitted binding class and setters against a minimal framework surface,
+asserting the assigned text and that item-dependent functions do not reuse stale
+data or evaluate BindBack-only receivers for missing items. The C++/WinRT
+cases check the corresponding generated activation, root-validity guards, and
+restoration of independent named-element sources.
+`FunctionBinding_StaticBindBackDoesNotInitializeTemplateWithoutItem` also verifies
+that a static BindBack-only root cannot activate an instance-dependent forward
+binding before any item is supplied, while preserving reverse updates once an
+item initializes the binding.
+
+`ListAndTemplateTests.xaml` in both compiled-binding regression applications also
+includes null-content static templates, so their generated C# and C++/WinRT are
+compiled and compared with the codegen masters.
+
+`Runtime_StaticTemplateBindings_CSharp`, `Runtime_StaticTemplateBindings_CppWinRT`,
+and `Runtime_StaticTemplateBindings_CppWinRTIncremental` launch their built WinUI
+applications with `--test-static-template-bindings` and require successful results
+from every runtime assertion group. Run them with
+`runtests.cmd /TestCaseFilter:FullyQualifiedName~Runtime_StaticTemplateBindings`.
+They require an interactive Windows desktop and the runnable application payloads
+produced by `XamlCompilerTests.sln`; missing payloads or timeouts fail rather than skip.
+The native applications host the managed model through app-local `WinRT.Host.dll`
+and require an installed .NET 8 runtime compatible with its runtimeconfig. The
+launcher removes build-SDK `DOTNET_ROOT` overrides from the child process so they
+cannot hide the installed target runtime.
+
+The applications activate a real window and assert that initially null-content
+`ContentControl` templates display their static function result, both without
+`x:DataType` (the original #7810 reproduction) and with a declared data type.
+They also check item-to-null-to-item transitions with an observable object that
+is also a static binding source.
+Untyped, entirely item-independent static templates additionally cover non-null
+`Content`, null `Content` with inherited non-null `DataContext`, and null/item/null
+transitions through both paths. Context-transition checks overwrite the previous
+text so a skipped update cannot pass using a stale result. Direct untyped component
+calls cover null and unrelated non-null items, preserving phase-zero/phase-one
+scheduling. `FunctionBinding_StaticUntyped*` executes the same generated-entry-point
+contract; required-conversion cases retain typed roots, whole-item bindings,
+item-dependent function arguments, and reverse-only receivers.
+It verifies that static notifications and static TwoWay bindings remain active
+without updating or writing to the removed item, and that an already-connected
+deferred named source keeps updating its target after item replacement or removal.
+The C++/WinRT mode also verifies compatibility for ordinary and named-only templates:
+ordinary bindings retain their previous null-context notifications/reverse writes,
+and entering a live tree with no item does not newly initialize a named-only template.
+Listener cleanup, missing-item root validity and static-only initialization are
+restricted to DataTemplates with forward static bindings; page and ControlTemplate
+bindings keep the shared legacy lifecycle.
+Direct `IDataTemplateComponent.ProcessBindings` calls cover phase-zero/phase-one
+scheduling, independence from subsequent DataContext inheritance, listener release
+on `Recycle`, and reuse with a replacement item while independent static notifications
+continue. Null-item reverse-assignment safety is covered through DataContext changes;
+the separate existing typed `ProcessBindings(null, ...)` cast failure is not changed here.
+
+`CodeGenerator_*NamedTemplateSourceConnection*` verifies that ordinary and deferred
+named DataTemplate sources receive rewritten connection IDs matching generated
+Connect cases in C# and C++/WinRT. The same cases preserve page and ControlTemplate
+named-source connections. Assertions are scoped to the source's Connect case and
+require assignment from the connected target rather than matching an unrelated
+disconnect or connector-factory switch.
+
 ## Primitive and array metadata regressions
 
 `Schema_CppWinRTArray*` and `Schema_ArrayTypeNamesPreserveOtherLanguages` cover

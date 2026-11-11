@@ -33,6 +33,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
 
         public BindPathStep BindBackStep { get; private set; }
+        internal bool NeedsDataRootForReverseAssignment =>
+            BindUniverse.NeedsStaticBindingsUpdate && ReverseAssignmentUsesDataRoot;
+
+        internal bool ReverseAssignmentUsesDataRoot
+        {
+            get
+            {
+                // BindBack can use a different receiver from the forward path. Stop at a named
+                // element because it is reached through the namescope, not through the data item.
+                var step = BindBackStep ?? PathStep;
+                while (step.Parent != null && !(step is RootNamedElementStep))
+                {
+                    step = step.Parent;
+                }
+                return step is RootStep root && !root.IsElementRoot;
+            }
+        }
+
         public BindStatus BindStatus { get; set; }
         public string BindBackPath { get; }
         public String TargetNullValue { get; }
