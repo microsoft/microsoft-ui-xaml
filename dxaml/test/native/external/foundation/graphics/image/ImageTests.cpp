@@ -1763,9 +1763,14 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
         // after the render walk, and DecodeToRenderSize decodes the software surface.
         //
     });
-    wh->WaitForIdle();
 
-    wh->GetElementRenderedVisuals(problematicBorder, visuals);
+    // The software decode reuses a request that WaitForIdle doesn't count, so wait until the border draws.
+    const auto deadline = std::chrono::steady_clock::now() + Event::GetDefaultTimeout();
+    do
+    {
+        wh->WaitForIdle();
+        wh->GetElementRenderedVisuals(problematicBorder, visuals);
+    } while (visuals->Size == 0 && std::chrono::steady_clock::now() < deadline);
     VERIFY_IS_TRUE(visuals->Size == 1);
 
     wh->GetElementRenderedVisuals(workaroundBorder, visuals2);
