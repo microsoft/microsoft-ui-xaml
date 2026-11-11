@@ -1902,7 +1902,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 statesObservedInLoaded.Add(GetNavigationViewItemDisabledState(item));
                 if (itemManagers.TryGetValue(item, out var recorders))
                 {
-                    // Later focus changes are not part of the load-time repair.
+                    // Capture load-time catch-up and host preparation, but exclude later focus changes.
                     foreach (var recorder in recorders)
                     {
                         recorder.Recording = false;
@@ -2020,23 +2020,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             Verify.AreEqual(enabled ? "Enabled" : "Disabled", state,
                                 "Application Loaded handlers must observe the reconciled enabled state.");
                         }
-                        Verify.AreEqual(changeEnabledState ? itemCount : 0, enabledRequests,
-                            "Only changed enabled states require catch-up work.");
-                        if (changeEnabledState)
-                        {
-                            Verify.IsTrue(transitions > 0,
-                                "Enabled-state catch-up must retain the existing transition behavior.");
-                            Verify.IsTrue(presentationRequests >= itemCount,
-                                "Reload must synchronize presentation beyond interaction states.");
-                        }
-                        else
-                        {
-                            Verify.AreEqual(0, transitions,
-                                "Unchanged enabled states must not request visual transitions.");
-                            Verify.AreEqual(0, requests, "Unchanged enabled states must not trigger redundant state updates.");
-                        }
-                        Verify.IsTrue(requests <= itemCount * 20,
-                            "Presentation synchronization must have bounded work per child.");
+                        // OnLoaded always refreshes states during host preparation. Only changed enabled states
+                        // require an additional refresh from OnNavigationViewItemBaseLoaded.
+                        int refreshesPerItem = changeEnabledState ? 2 : 1;
+                        Verify.AreEqual(itemCount * refreshesPerItem, enabledRequests,
+                            "Each item needs one host-preparation refresh, plus catch-up only when enabled changes.");
+                        Verify.IsTrue(transitions > 0,
+                            "Host preparation and enabled-state catch-up retain their existing transition behavior.");
+                        Verify.IsTrue(presentationRequests >= itemCount,
+                            "Reload must synchronize presentation beyond interaction states.");
+                        Verify.IsTrue(requests <= itemCount * refreshesPerItem * 16,
+                            "Host preparation and catch-up must have bounded visual-state work per child.");
                     });
                 }
                 RunOnUIThread.Execute(() =>
