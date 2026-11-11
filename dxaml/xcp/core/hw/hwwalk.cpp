@@ -3269,7 +3269,8 @@ HWWalk::IsShapeMaskRequiredForRectangle(
 
     XCORNERRADIUS cornerRadius = pFrameworkElement->GetCornerRadius();
     CBrush * pBackgroundBrush = pFrameworkElement->GetBackgroundBrush();
-    CBrush * pBorderBrush = pFrameworkElement->GetBorderBrush();
+    // A border brush with zero thickness draws nothing.
+    CBrush * pBorderBrush = CBorder::HasNonZeroThickness(pFrameworkElement->GetBorderThickness()) ? pFrameworkElement->GetBorderBrush() : nullptr;
 
     // Borders can often be drawn as simple SpriteVisuals, like Rectangles.
     // We will fallback to using a rasterized mask to render the shape if any of the following are true:
@@ -3945,7 +3946,7 @@ CBrush*
 BorderOutlinePart::GetBrush(
     )
 {
-    return m_pFrameworkElement->GetBorderBrush();
+    return CBorder::HasNonZeroThickness(m_pFrameworkElement->GetBorderThickness()) ? m_pFrameworkElement->GetBorderBrush() : nullptr;
 }
 
 //------------------------------------------------------------------------------
