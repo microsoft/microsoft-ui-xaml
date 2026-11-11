@@ -51,11 +51,25 @@
   <Target Name="EnsureTableViewTipPackageBuildImports" BeforeTargets="PrepareForBuild">
     <Error Condition="!Exists('$(TestInProductionTargetsFile)')"
            Text="The selected TestInProduction package is missing. Restore NuGet packages before building Tabular. Missing file: $(TestInProductionTargetsFile)" />
+    <PropertyGroup>
+      <_TableViewTipStubReason Condition="'$(TableViewTIPProductionVersion)' == ''">$(TableViewTIPPackagesConfig) is missing or names no Microsoft.Windows.TestInProduction version</_TableViewTipStubReason>
+      <_TableViewTipStubReason Condition="'$(TableViewTIPProductionVersion)' != ''">Microsoft.Windows.TestInProduction $(TableViewTIPProductionVersion) is not restored ($(TableViewTIPProductionTargetsFile) does not exist); restore $(TableViewTIPPackagesConfig) into $(NugetPackageDirectory)</_TableViewTipStubReason>
+    </PropertyGroup>
+    <Error Condition="'$(IsInternalWinUIBuild)' == 'true' and '$(TF_BUILD)' != '' and '$(TestInProductionIsReal)' != 'true' and '$(UseTestInProductionStub)' != 'true'"
+           Text="TableView TiP would build with the public stub and report nothing: $(_TableViewTipStubReason). Set UseTestInProductionStub=true to choose the stub on purpose." />
   </Target>
   <!-- Give C++/WinRT MUXC's unmerged winmd for shared/future type projections; do not feed it to MIDL. -->
   <PropertyGroup>
     <CppWinRTParameters>$(CppWinRTParameters) -reference "$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd"</CppWinRTParameters>
   </PropertyGroup>
+  <!-- The reference projection (MUXC winmd) and the component projection both write
+       generated\winrt\Microsoft.UI.Xaml.XamlTypeInfo.h, since both declare types in that namespace. If only the
+       reference projection reruns, it overwrites the header without XamlControlsTabularXamlMetaDataProvider and
+       compilation fails with C2039. Make the component projection rerun whenever the reference projection did,
+       so its version of the header always wins. -->
+  <ItemGroup>
+    <CustomAdditionalComponentWinMDInputs Include="$(CppWinRTReferenceProjectionResponseFile)" />
+  </ItemGroup>
   <!-- Fail clearly when single-project builds run before MUXC produced the component winmd Tabular's
        C++/WinRT projection consumes. -->
   <Target Name="EnsureMuxcComponentWinMDBuilt" BeforeTargets="CppWinRTMakeComponentProjection;ClCompile">

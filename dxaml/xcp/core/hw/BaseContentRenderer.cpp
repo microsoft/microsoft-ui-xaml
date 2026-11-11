@@ -495,8 +495,12 @@ _Check_return_ HRESULT BaseContentRenderer::MaskCombinedRenderHelper(
 
             alphaMaskOffset.x = static_cast<float>(XcpFloor(fillBounds.left * scaleX));
             alphaMaskOffset.y = static_cast<float>(XcpFloor(fillBounds.top * scaleY));
-            alphaMaskWidth = XcpCeiling( (XcpCeiling(fillBounds.right) - XcpFloor(fillBounds.left)) * scaleX );
-            alphaMaskHeight = XcpCeiling( (XcpCeiling(fillBounds.bottom) - XcpFloor(fillBounds.top)) * scaleY );
+            // Round the scaled edges before subtracting.
+            // At 175%, [9, 18] becomes [15.75, 31.5].
+            // - Subtracting before rounding gives size 9px, which at 175% is 15.75px, which gets ceiling to 16px.
+            // - But the boundaries actually get floored down to 15px and ceilinged up to 32px, which is a size of 17px. Producing a 16px surface will clip an antialiased edge off.
+            alphaMaskWidth = static_cast<uint32_t>(XcpCeiling(fillBounds.right * scaleX) - alphaMaskOffset.x);
+            alphaMaskHeight = static_cast<uint32_t>(XcpCeiling(fillBounds.bottom * scaleY) - alphaMaskOffset.y);
         }
         else
         {
@@ -589,6 +593,18 @@ _Check_return_ HRESULT BaseContentRenderer::MaskCombinedRenderHelper(
         {
             const float scaleXDownToFitMaxTexture = static_cast<float>(maxTextureSize) / static_cast<float>(alphaMaskWidth);
             realizationScale.Scale(scaleXDownToFitMaxTexture, 1);
+
+            //
+            // Note: AlphaMask::Impl::RasterizeElement will subtract out the alphaMaskOffset to put the top-left of the
+            // shape at the top-left of the alpha mask surface. If we're scaling the shape down further to fit into the
+            // max texture size, also scale down the offset. Otherwise we subtract the wrong number and can draw the
+            // shape outside the surface entirely.
+            //
+            // e.g. A geometry starting at x=1000 at scale 0.5 has offset 500. If the scale is reduced to 0.25 and the
+            // offset isn't updated, we draw the shape at 1000 * 0.25 - 500 = -250, off the edge of the surface. Instead
+            // update the offset to 250 as well, so we draw the shape at 1000 * 0.25 - 250 = 0.
+            //
+            alphaMaskOffset.x *= scaleXDownToFitMaxTexture;
             alphaMaskWidth = MIN(static_cast<uint32_t>(alphaMaskWidth * scaleXDownToFitMaxTexture), maxTextureSize);
         }
 
@@ -596,6 +612,8 @@ _Check_return_ HRESULT BaseContentRenderer::MaskCombinedRenderHelper(
         {
             const float scaleYDownToFitMaxTexture = static_cast<float>(maxTextureSize) / static_cast<float>(alphaMaskHeight);
             realizationScale.Scale(1, scaleYDownToFitMaxTexture);
+
+            alphaMaskOffset.y *= scaleYDownToFitMaxTexture;
             alphaMaskHeight = MIN(static_cast<uint32_t>(alphaMaskHeight * scaleYDownToFitMaxTexture), maxTextureSize);
         }
     }

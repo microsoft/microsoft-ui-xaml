@@ -33,6 +33,10 @@ The greatest drawback of manifest-based ETW events is the necessity of having a 
 
 TraceLogging is an alternative way of writing ETW events that has been used by components like Shell for years. It doesn't require a manifest at all, so the traces that are generated can be opened anywhere without messing with a .man file. TraceLogging events don't show up in the Event Viewer, which is a limitation that WinUI can live with for most of the events that we want to log. This is the way to add new ETW events into Xaml. We should also gradually convert existing manifest-based events to TraceLogging.
 
+When converting an existing manifest event, preserve its payload field names and event level unless an intentional schema or filtering change is required. Explicit `TraceLoggingProviderEnabled` checks must use the same level as the event write.
+
+Layout, focus, virtualization, navigation, hit-testing and PasswordBox events use the normal `XamlTelemetry` TraceLogging provider in all build configurations. Each operation is emitted once, with its existing payload plus typed element/object identities. Profiler tree and memory instrumentation is also compiled in all configurations; event emission is controlled by runtime ETW enablement. Per-element `RealizeTransition` markers remain separate from the existing manifest Begin/End events because those bracket the whole pass, not each element.
+
 WIL TraceLogging documentation has detailed documentation for TraceLogging. This document covers the basics.
 
 TraceLogging needs a GUID corresponding to the provider. For now, use the same provider as system Xaml. To create new providers, generate the GUID with `TldGuid.exe`.

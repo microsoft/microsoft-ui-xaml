@@ -22,11 +22,20 @@ public sealed class ParentRelation
         ParentKeyOf = parentKeyOf;
     }
 
-    /// <summary>Person rows: EmployeeId under ManagerId (the org chart).</summary>
+    // <snippet Hierarchy>
+    // The two selectors ParentBy takes: a row's unique key, and its parent's key (null for a root).
+    // Person rows: EmployeeId under ManagerId (the org chart).
     public static ParentRelation Manager { get; } = new(
         "Manager",
         row => (row as Person)?.EmployeeId,
         row => (row as Person)?.ManagerId);
+
+    // Person rows: EmployeeId under MentorId, a second tree over the same rows.
+    public static ParentRelation Mentor { get; } = new(
+        "Mentor",
+        row => (row as Person)?.EmployeeId,
+        row => (row as Person)?.MentorId);
+    // </snippet>
 
     public string Label { get; }
 

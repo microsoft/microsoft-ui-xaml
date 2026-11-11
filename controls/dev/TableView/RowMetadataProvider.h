@@ -59,6 +59,7 @@ public:
     bool Expand(winrt::hstring const& key) override;
     bool Collapse(winrt::hstring const& key) override;
     bool Toggle(winrt::hstring const& key) override;
+    bool WouldChangeExpansion(winrt::hstring const& key, std::optional<bool> desired) noexcept override;
 
     // Bulk group commands. No-ops when the source is not grouped.
     void ExpandAllGroups() override;

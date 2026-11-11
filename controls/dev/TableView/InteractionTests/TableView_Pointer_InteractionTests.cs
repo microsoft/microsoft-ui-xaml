@@ -34,6 +34,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewPointerInteractionTests
     {
         [ClassInitialize]

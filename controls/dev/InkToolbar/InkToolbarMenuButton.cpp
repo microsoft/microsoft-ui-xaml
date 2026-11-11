@@ -48,6 +48,8 @@ void InkToolbarMenuButton::OnApplyTemplate()
         if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
         {
             winrt::AutomationProperties::SetName(flyout, flyoutName);
+            // The measuring-tools list is not a dialog; as one, Narrator reads its whole content on open.
+            winrt::AutomationProperties::SetIsDialog(flyout, false);
         }
     }
 
@@ -190,4 +192,26 @@ void InkToolbarMenuButton::CloseL3()
     {
         flyout.Hide();
     }
+}
+
+// A click on an active stencil button that has two stencils opens the dropdown instead of turning the
+// stencil off (UWP pointer behavior, kept). UIA Toggle must change ToggleState, so it sets
+// InkToolbar.IsStencilButtonChecked directly, which shows the last stencil or hides all of them.
+void InkToolbarMenuButton::ToggleFromAutomation(bool turnOn)
+{
+    auto toolbar = GetParentInkToolbar();
+    if (!toolbar)
+    {
+        return;
+    }
+    if (MenuKind() != winrt::InkToolbarMenuKind::Stencil)
+    {
+        winrt::get_self<InkToolbar>(toolbar)->ExecuteMenuAction(*this, true /* isNormalActivation */);
+        return;
+    }
+    if (!turnOn)
+    {
+        CloseL3();
+    }
+    toolbar.IsStencilButtonChecked(turnOn);
 }

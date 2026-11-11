@@ -283,7 +283,7 @@ public:
 
     IFACEMETHODIMP GetCountOfDescendantUIElements(_Out_ UINT64* count) override
     {
-        TraceGetElementCountBegin();
+        XamlTelemetry::GetElementCountBegin(m_owner->GetHandle());
 
         DXamlServices::GetDXamlCore()->SetRTWElementCount(0);
 
@@ -292,7 +292,7 @@ public:
 
         *count = DXamlServices::GetDXamlCore()->GetRTWElementCount();
 
-        TraceGetElementCountEnd();
+        XamlTelemetry::GetElementCountEnd(m_owner->GetHandle());
 
         return S_OK;
     }

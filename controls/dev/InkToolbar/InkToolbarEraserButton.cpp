@@ -404,7 +404,35 @@ void InkToolbarEraserButton::HookUpToEraserEvents(winrt::RoutedEventHandler cons
         ConfigureEraserFlyoutItems(handler, shouldHookup, token, flyoutContent, EraserFlyoutItemKind::PrecisionSmallEraser);
         ConfigureEraserFlyoutItems(handler, shouldHookup, token, flyoutContent, EraserFlyoutItemKind::PrecisionLargeEraser);
         ConfigureEraserFlyoutItems(handler, shouldHookup, token, flyoutContent, EraserFlyoutItemKind::ClearAll);
+        UpdateEraserFlyoutItemsSetInfo(flyoutContent);
         eventHookedUp = true;
+    }
+}
+
+// Give the visible eraser modes their position and size within the set. Clear all is an action, not a
+// mode, so it is not part of the set.
+void InkToolbarEraserButton::UpdateEraserFlyoutItemsSetInfo(winrt::DependencyObject const& flyoutContent)
+{
+    wchar_t const* const modeNames[] = { STROKEERASER_ITEM_NAME, SMALLERASER_ITEM_NAME, LARGEERASER_ITEM_NAME };
+
+    int size = 0;
+    for (auto name : modeNames)
+    {
+        if (auto item = FindChild(flyoutContent, name); item && item.Visibility() == winrt::Visibility::Visible)
+        {
+            ++size;
+        }
+    }
+
+    int position = 0;
+    for (auto name : modeNames)
+    {
+        if (auto item = FindChild(flyoutContent, name))
+        {
+            bool isVisible = item.Visibility() == winrt::Visibility::Visible;
+            winrt::AutomationProperties::SetPositionInSet(item, isVisible ? ++position : 0);
+            winrt::AutomationProperties::SetSizeOfSet(item, isVisible ? size : 0);
+        }
     }
 }
 

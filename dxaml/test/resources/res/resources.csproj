@@ -13,6 +13,8 @@
     -->
     <BinplaceItem Include="managed\**" Destination="$(TargetDestination)\managed" />
     <BinplaceItem Include="native\**" Destination="$(TargetDestination)\native" />
+    <BinplaceItem Include="$(WinUITestResourcesPath)\fonts\*.ttf;$(WinUITestResourcesPath)\fonts\*.ttc;$(WinUITestResourcesPath)\fonts\*.tcc"
+                  Destination="$(TargetDestination)\native\external\foundation\graphics\rendering" />
     <BinplaceItem Include="AppAnalysis\*.*" Destination="$(TargetDestination)\AppAnalysis" />
     <BinplaceItem Include="BVTs\*.*" Destination="$(TargetDestination)\BVTs" />
     <BinplaceItem Include="sample\*.*" Destination="$(TargetDestination)\sample" />
@@ -20,4 +22,9 @@
       <Destination>$(TargetDestination)\native\controls\general\</Destination>
     </BinplaceItem>
   </ItemGroup>
+
+  <Target Name="ValidateWinUITestResources" BeforeTargets="Build">
+    <Error Condition="!Exists('$(WinUITestResourcesPath)\fonts')"
+           Text="WinUI test fonts are missing from $(WinUITestResourcesPath). Run init.cmd to restore Microsoft.Internal.WinUITestResources." />
+  </Target>
 </Project>

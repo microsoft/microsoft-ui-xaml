@@ -2,11 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "DCompTreeHost.h"
-#ifdef XAMLPROFILER_ENABLED
-#include "WucVisualTreeProfiler.h"
-#include "XamlProfilerTracing.h"
-#endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>
@@ -190,6 +188,19 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 _Check_return_ HRESULT
 DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
 {
+    // shouldDeferClosingInteropCompositor is true when WindowsGraphicsDeviceManager::CleanupCachedDeviceResources
+    // performs DComp cleanup. Islands need to do extra cleanup in this scenario.
+    if (shouldDeferClosingInteropCompositor)
+    {
+        // Unhook island-owned input and events while the old compositor is still usable.
+        // Keep the registered XAML roots so recovery can create new ContentIslands for them.
+        for (auto& islandData : m_islandRenderData)
+        {
+            IFC_RETURN(islandData.first->ReleaseContentIsland());
+            islandData.second = XamlIslandRenderData();
+        }
+    }
+
     if (m_systemBackdropBrush != nullptr)
     {
         CCoreServices* coreServicesNoRef = GetCoreServicesNoRef();
@@ -488,11 +499,9 @@ DCompTreeHost::EnsureDCompDevice() noexcept
     LoadMockDevice();
     #endif
 
-    // The static factory can survive device loss. No need to create it again.
-    if (m_easingFunctionStatics == nullptr)
-    {
-        m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
-    }
+    // MockDComp injection and removal reset the process-wide factory cache. Refresh this
+    // per-host reference when recreating the compositor so it follows the active composition engine.
+    m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
 
     IFC_RETURN(m_pCompositionHelper.Initialize(this));
 
@@ -592,6 +601,10 @@ DCompTreeHost::EnsureResources() noexcept
                 );
             if (SUCCEEDED(createTextureHR))
             {
+                if (XamlProfilerTracing::IsProfilerEnabled())
+                {
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
+                }
                 m_hasNative8BitSurfaceSupport = TRUE;
                 ReleaseInterface(p8BitSupportCheckSurface);
             }
@@ -627,6 +640,19 @@ void DCompTreeHost::ReleaseGraphicsResources()
 
     m_compositionGraphicsDevice.Reset();
     m_wucBrushManager.ReleaseGraphicsDevice();
+}
+
+_Check_return_ HRESULT DCompTreeHost::RebuildXamlIslandResources()
+{
+    for (auto& islandData : m_islandRenderData)
+    {
+        if (islandData.first->GetContentIsland() == nullptr)
+        {
+            IFC_RETURN(islandData.first->RebuildContentIsland());
+        }
+    }
+
+    return S_OK;
 }
 
 _Check_return_
@@ -764,6 +790,10 @@ DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
 
                 wrl::ComPtr<ixp::IContainerVisual> containerRootVisual;
                 IFCFAILFAST(m_spCompositor->CreateContainerVisual(&containerRootVisual));
+                if (XamlProfilerTracing::IsProfilerEnabled())
+                {
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                }
 
                 wrl::ComPtr<ixp::IVisual> rootVisual;
                 IFCFAILFAST(containerRootVisual.As(&rootVisual));
@@ -804,6 +834,10 @@ _Check_return_ HRESULT
 DCompTreeHost::SetTargetHelper()
 {
     IFCFAILFAST(GetCompositor()->CreateContainerVisual(m_hwndVisual.ReleaseAndGetAddressOf()));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+    }
 
     // Mark this visual as a standard visual root to differentiate it from the root of Xaml Islands.
     // This is necessary because using lifted IXP we now put standard visual roots into a composition
@@ -825,9 +859,17 @@ DCompTreeHost::SetTargetHelper()
 
         wrl::ComPtr<WUComp::IContainerVisual> containerVisual;
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual1));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual1.Get()));
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual2));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual2.Get()));
     }
@@ -890,12 +932,20 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         {
             wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
             IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            }
             IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
             wrl::ComPtr<WUComp::ICompositionBrush> brush;
             IFCFAILFAST(colorBrush.As(&brush));
 
             ComPtr<WUComp::ISpriteVisual> spriteVisual;
             IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            }
             IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
             IFCFAILFAST(spriteVisual.As(&renderData.m_disconnectedRootVisual));
 
@@ -915,11 +965,19 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
         IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+        }
         IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
         IFCFAILFAST(colorBrush.As(&brush));
 
         ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
         IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
         IFCFAILFAST(spriteVisual.As(&m_disconnectedHWndVisual));
 
@@ -967,12 +1025,10 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
 
         // Notify the XAML Profiler that this visual became the root of the in-proc island target,
         // so a consumer can attach the island's WUC visual subtree to the right target.
-#ifdef XAMLPROFILER_ENABLED
-        if (WucVisualTreeProfiler::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), 0 /* ownerCompNodeId unknown */);
+            XamlProfilerTracing::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent));
         }
-#endif // XAMLPROFILER_ENABLED
     }
 
     return S_OK;//RRETURN_REMOVAL
@@ -1057,17 +1113,13 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 renderData.contentConnected = true;
 
                 // Notify the XAML Profiler that this island root visual was connected to its
-                // ContentIsland target, including the owning comp node so the consumer can stitch
-                // the XamlIslandRoot's WUC subtree onto the island.
-#ifdef XAMLPROFILER_ENABLED
-                if (WucVisualTreeProfiler::IsEnabled())
+                // ContentIsland target.
+                if (XamlProfilerTracing::IsEnabled())
                 {
-                    WucVisualTreeProfiler::NotifyRootSet(
+                    XamlProfilerTracing::NotifyRootSet(
                         wucVisual,
-                        reinterpret_cast<uint64_t>(xamlIslandRoot),
-                        reinterpret_cast<uint64_t>(compositionPeer));
+                        reinterpret_cast<uint64_t>(xamlIslandRoot));
                 }
-#endif // XAMLPROFILER_ENABLED
 
                 // If this is our first island and we need a Frame visual then add it here.  Note that at this point the
                 // commit has already been done so we need to recommit.
@@ -1242,6 +1294,10 @@ _Check_return_ HRESULT DCompTreeHost::CreateContainerVisual(_Outptr_ WUComp::ICo
 {
     xref_ptr<WUComp::IContainerVisual> spContainerVisual;
     IFC_RETURN(GetCompositor()->CreateContainerVisual(spContainerVisual.ReleaseAndGetAddressOf()));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+    }
 
     if (VisualDebugTagsEnabled())
     {
@@ -1626,6 +1682,10 @@ void DCompTreeHost::UpdateUIThreadCounters(
     wrl::ComPtr<WUComp::ICompositionBrush> brush;
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
     IFCFAILFAST(GetCompositor()->CreateSurfaceBrush(&surfaceBrush))
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+    }
     IFCFAILFAST(surfaceBrush->put_HorizontalAlignmentRatio(0));
     IFCFAILFAST(surfaceBrush->put_VerticalAlignmentRatio(0));
     IFCFAILFAST(surfaceBrush->put_Stretch(WUComp::CompositionStretch::CompositionStretch_Fill));
@@ -1702,6 +1762,10 @@ void DCompTreeHost::ShowUIThreadCounters()
                 IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
                 IFCFAILFAST(contentIslandExperimental->put_Root(nullptr));
                 IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
+                if (XamlProfilerTracing::IsProfilerEnabled())
+                {
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                }
 
                 // mark this as our FrameCount/Root host.
                 wrl::ComPtr<WUComp::ICompositionObject> compositionObject;
@@ -1727,6 +1791,10 @@ void DCompTreeHost::ShowUIThreadCounters()
     {
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
         IFCFAILFAST(spriteVisual.As(&m_frameRateVisual));
 
         wrl::ComPtr<WUComp::IVisualCollection> childCollection;
@@ -1896,6 +1964,10 @@ DCompTreeHost::CreateFrameRateSurface(
                 D2D1::ColorF(D2D1::ColorF::White),
                 &m_pFrameRateScratchBrush
                 ));
+            if (XamlProfilerTracing::IsProfilerEnabled())
+            {
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
+            }
         }
 
         // Clear to black.

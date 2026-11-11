@@ -70,7 +70,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowBasicPopup)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing shadows
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Support Projected Shadows
         TEST_METHOD_PROPERTY(L"Description", L"Basic ThemeShadow usage on Popup element.")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
@@ -84,7 +84,7 @@ public:
 
     BEGIN_TEST_METHOD(ThemeShadowBasicNonPopupLTE)
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Support Projected Shadows
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing shadows
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"ThemeShadow usage on LayoutTransitionElement target.")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -158,7 +158,7 @@ public:
 
     BEGIN_TEST_METHOD(EnsureRootCanvasCompNodeParentLessPopup)
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Support Projected Shadows
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Ensure canvas root has compNode when ThemeShadow is present, popup is parentless")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -192,7 +192,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowVerifyShadowPixels)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Basic DropShadow with pixel verification using RenderTargetBitmap.")
     END_TEST_METHOD()
 
@@ -202,7 +202,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowDynamicCornerRadiusOnParent)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Testing DropShadows where child inherits corner radius values from parent.")
     END_TEST_METHOD()
 
@@ -212,17 +212,17 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowUseCachedBrush)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Testing DropShadows that all use the same dimensions in order to exercise the cached DropShadow.")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowSystemThemeRedrawRTB)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Testing DropShadows that differ in appearance based on the system theme, verified with RTB.")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowCornerRoundingOnControl)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Testing DropShadows on Control elements with corner rounding.")
     END_TEST_METHOD()
 

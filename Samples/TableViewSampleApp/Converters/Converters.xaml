@@ -19,4 +19,7 @@
     <converters:ShowcaseDepartmentTintConverter x:Key="ShowcaseDepartmentTintConverter"/>
     <converters:ShowcaseDepartmentDotConverter x:Key="ShowcaseDepartmentDotConverter"/>
     <converters:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>
+
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    <converters:BoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" Invert="True"/>
 </ResourceDictionary>
