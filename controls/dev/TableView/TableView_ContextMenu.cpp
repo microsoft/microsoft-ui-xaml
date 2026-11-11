@@ -117,21 +117,16 @@ bool TableViewDetails::IsOwnRequestSource(
     return false;
 }
 
-void TableViewDetails::HideFlyoutWithoutClosingVeto(winrt::FlyoutBase const& flyout)
-{
-    // Append after app handlers so a Closing veto cannot block suppression or teardown.
-    auto const closingRevoker = flyout.Closing(winrt::auto_revoke,
-        [](auto&&, winrt::FlyoutBaseClosingEventArgs const& args) { args.Cancel(false); });
-    flyout.Hide();
-}
-
 void TableViewDetails::SuppressContextFlyoutWhileEditing(
     winrt::FlyoutBase const& flyout,
     winrt::TableView const& owner)
 {
     if (owner && winrt::get_self<TableView>(owner)->AreContextMenusSuppressed())
     {
-        HideFlyoutWithoutClosingVeto(flyout);
+        // This is still Opening: a Closing veto must not expose a menu over an uncommitted edit.
+        auto const closingRevoker = flyout.Closing(winrt::auto_revoke,
+            [](auto&&, winrt::FlyoutBaseClosingEventArgs const& args) { args.Cancel(false); });
+        flyout.Hide();
     }
 }
 

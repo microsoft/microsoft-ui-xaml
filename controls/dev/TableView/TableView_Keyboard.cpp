@@ -5,7 +5,6 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
-#include "TableViewColumnHeader.h"
 #include "ResizeGripper.h"
 #include "TableViewGroupHeader.h"
 #include "TableViewColumn.h"
@@ -443,17 +442,11 @@ bool TableView::IsHeaderCellActionableInternal(const winrt::FrameworkElement& he
     }
 
 
-    // The dropdown is actionable chrome; otherwise inspect only content, not the sort glyph or gripper.
+    // Only the content region: the sort glyph and resize gripper are chrome, not content.
     winrt::DependencyObject content = header;
     if (auto const columnHeader = header.try_as<winrt::TableViewColumnHeader>())
     {
-        auto const headerImpl = winrt::get_self<TableViewColumnHeader>(columnHeader);
-        if (auto const button = headerImpl->GetFlyoutButtonInternal();
-            button && button.IsEnabled() && button.Visibility() == winrt::Visibility::Visible)
-        {
-            return true;
-        }
-        if (auto const presenter = headerImpl->GetContentPresenterInternal())
+        if (auto const presenter = winrt::get_self<TableViewColumnHeader>(columnHeader)->GetContentPresenterInternal())
         {
             content = presenter;
         }
@@ -1038,47 +1031,9 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
     const int32_t step = forward ? 1 : -1;
     const int32_t targetIndex = std::clamp(currentIndex + step, 0, count - 1);
 
-    const auto focusFlyoutButton = [](const winrt::FrameworkElement& cell)
-    {
-        if (auto const header = cell.try_as<winrt::TableViewColumnHeader>())
-        {
-            if (auto const button = winrt::get_self<TableViewColumnHeader>(header)->GetFlyoutButtonInternal();
-                button && button.IsEnabled() && button.Visibility() == winrt::Visibility::Visible)
-            {
-                return button.Focus(winrt::FocusState::Keyboard);
-            }
-        }
-        return false;
-    };
-    auto const currentCell = cells[static_cast<size_t>(currentIndex)];
-    if (forward && args.OriginalSource().try_as<winrt::DependencyObject>() == currentCell &&
-        focusFlyoutButton(currentCell))
-    {
-        args.Handled(true);
-        return true;
-    }
-    if (!forward)
-    {
-        if (auto const header = currentCell.try_as<winrt::TableViewColumnHeader>();
-            header && winrt::get_self<TableViewColumnHeader>(header)->IsInsideFlyoutButton(args.OriginalSource()))
-        {
-            header.Focus(winrt::FocusState::Keyboard);
-            args.Handled(true);
-            return true;
-        }
-    }
-
-    const auto focusedIndex = liveIndex == targetIndex
-        ? liveIndex : FocusVisibleHeaderFrom(targetIndex, targetIndex == currentIndex ? 0 : step);
-    if (focusedIndex >= 0 && focusedIndex != currentIndex)
-    {
-        if (!forward)
-        {
-            focusFlyoutButton(cells[static_cast<size_t>(focusedIndex)]);
-        }
-    }
     // Past the last (first) actionable header the row scrolls on, so the remaining columns stay reachable.
-    else if (liveIndex == currentIndex)
+    if ((liveIndex == targetIndex || FocusVisibleHeaderFrom(targetIndex, targetIndex == currentIndex ? 0 : step) < 0) &&
+        liveIndex == currentIndex)
     {
         ScrollBodyHorizontallyInternal(forward);
     }

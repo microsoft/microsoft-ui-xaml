@@ -19,7 +19,6 @@ public:
     void OnApplyTemplate();
     winrt::AutomationPeer OnCreateAutomationPeer();
     winrt::AutomationPeer GetExistingAutomationPeerInternal() const { return m_automationPeer.get(); }
-    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // None of these mark the event handled, so Tapped-to-sort and focus are unaffected.
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
@@ -42,10 +41,6 @@ public:
 
     winrt::ContentPresenter GetContentPresenterInternal() const { return m_contentPresenter.get(); }
     winrt::Border GetGridLineInternal() const { return m_gridLine.get(); }
-    winrt::DropDownButton GetFlyoutButtonInternal() const { return m_flyoutButton.get(); }
-    void RefreshFlyoutInternal();
-    void ReleaseFlyoutInternal();
-    bool IsInsideFlyoutButton(winrt::IInspectable const& source) const;
 
     // True while Content is the TextBlock the TableView made for a string Header.
     void SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding);
@@ -78,15 +73,9 @@ private:
     tracker_ref<winrt::Border> m_resizeGripperHost{ this };
     tracker_ref<winrt::SortIndicator> m_sortIndicator{ this };
     tracker_ref<winrt::ResizeGripper> m_resizeGripper{ this };
-    tracker_ref<winrt::DropDownButton> m_flyoutButton{ this };
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
-    winrt::UIElement::PointerEntered_revoker m_flyoutPointerEnteredRevoker{};
-    winrt::UIElement::PointerExited_revoker m_flyoutPointerExitedRevoker{};
-    winrt::FlyoutBase::Opened_revoker m_flyoutOpenedRevoker{};
-    winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
-    winrt::FrameworkElement::Unloaded_revoker m_flyoutUnloadedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     winrt::Thickness m_templateContentMargin{};
@@ -99,7 +88,5 @@ private:
     winrt::Thickness m_textPadding{};
     winrt::Thickness m_initialControlPadding{};
     bool m_hasTextPadding{ false };
-    bool m_isFlyoutPointerOver{ false };
-    bool m_isFlyoutOpen{ false };
     bool m_ownsTabStopStamp{ false };
 };

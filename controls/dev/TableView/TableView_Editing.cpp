@@ -1007,29 +1007,6 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
     }
 
     m_editState = closed ? EditState::None : EditState::Editing;
-    RefreshHeaderFlyoutsAfterEdit(closed);
-    return closed;
-}
-
-void TableView::RefreshHeaderFlyoutsAfterEdit(bool closed)
-{
-    try
-    {
-        RefreshHeaderFlyouts();
-    }
-    catch (...)
-    {
-        try
-        {
-            if (closed) { DrainCoalescedEditReshape(); }
-            else { ClearCoalescedEditReshape(); }
-        }
-        catch (...)
-        {
-            TVDiag::LogRetailF(L"[TableView] A reshape queued during edit teardown threw after header-flyout restoration failed.");
-        }
-        throw;
-    }
 
     if (closed)
     {
@@ -1039,6 +1016,8 @@ void TableView::RefreshHeaderFlyoutsAfterEdit(bool closed)
     {
         ClearCoalescedEditReshape();
     }
+
+    return closed;
 }
 
 bool TableView::EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel)
@@ -1338,7 +1317,7 @@ void TableView::DrainCoalescedEditReshape()
     }
 }
 
-void TableView::ResetPendingBeginEdit() noexcept
+void TableView::ResetPendingBeginEdit()
 {
     m_currentEditItem.set(nullptr);
     m_currentEditColumn.set(nullptr);
@@ -1428,14 +1407,6 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             ResetPendingBeginEdit();
             try
             {
-                RefreshHeaderFlyouts();
-            }
-            catch (...)
-            {
-                TVDiag::LogRetailF(L"[TableView] A failed BeginEdit could not refresh the header flyouts.");
-            }
-            try
-            {
                 DrainCoalescedEditReshape();
             }
             catch (...)
@@ -1449,7 +1420,6 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
         // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
         // the checks below unwind rather than promoting to Editing over a recycled row.
-        RefreshHeaderFlyouts();
         const bool allowed = RaiseBeginningEdit(item, column, tip);
         if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
         {
@@ -1462,7 +1432,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             // transaction open, so anything held here belongs to a previous cell in the same row and
             // is still legitimately live. Clearing it would leave the item with an unpaired BeginEdit.
             ResetPendingBeginEdit();
-            RefreshHeaderFlyoutsAfterEdit(true);
+            DrainCoalescedEditReshape();
             return false;
         }
 
@@ -1494,7 +1464,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         {
             tip.Ignore(TableViewTip::IgnoreReason::Stale);
             ResetPendingBeginEdit();
-            RefreshHeaderFlyoutsAfterEdit(true);
+            DrainCoalescedEditReshape();
             return false;
         }
 

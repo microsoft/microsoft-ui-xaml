@@ -241,15 +241,6 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 
 **Value transfer.** Editing bindings use `UpdateSourceTrigger=Explicit`; commit calls `UpdateSource()`, validates after the write and undoes a blocked write. A forced close (source change, or read-only) commits a valid value while the item is still in the source and passes the filter, else reports `Cancel` and writes nothing, as WPF does. A rollback inside layout is posted, and skipped if the value changed meanwhile.
 
-**Failed begin cleanup.** `ResetPendingBeginEdit` is state-only and `noexcept`. The unwind guard
-logs header-flyout refresh failures separately from queued reshape-drain failures, so a failed
-refresh cannot escape cleanup or prevent the drain. Cancelled and stale begins use the same guarded
-header refresh and reshape drain as completed edits.
-
-**Completed edit cleanup.** Once teardown closes the editor, a throwing header-flyout restoration
-still drains queued reshapes and resumes held live shaping before rethrowing the original error.
-A secondary drain failure is logged without replacing the restoration error.
-
 **Re-entrancy rules.** Recycling, rebuilds and property callbacks can run inside layout, where moving focus fails fast (`0xc0000420`):
 
 - `TableViewRow::EndCellEdit` restores the display element and moves focus; it runs only on interactive close paths.
@@ -331,7 +322,7 @@ Column-header hover has no additional backplate in Light/Dark. Enabled, sortable
 ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
 sort help. Sorted headers retain their actual direction indicator. Pressed retains the existing
 theme-aware backplate; High Contrast keeps ButtonFace/ButtonText at rest and with keyboard focus,
-and uses Highlight/HighlightText on hover and while pressed. The independent header dropdown retains its own states.
+and uses Highlight/HighlightText on hover and while pressed.
 The reserved sort space is unchanged, so revealing the icon does not move text or resize columns.
 Unsorted pointer-hover entry/exit uses an 83ms linear opacity fade. Keep the inner glyph rendered
 until fade-out finishes; VSM owns interruption/reversal. Keyboard focus, pressed/sorted states,

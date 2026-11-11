@@ -849,7 +849,6 @@ Template parts. All are optional; a missing part disables only its feature:
 | `PART_GridLine` | `Border` | Always-present vertical separator, except the last column's where it meets the viewport edge, regardless of frame visibility; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort icon on a sortable column. Its margin follows header padding, with another 4px on each horizontal side: a 4px text gap and a 16px trailing inset with the default 12px header padding. The icon always follows `PART_ContentPresenter`'s `Foreground`: secondary text for regular headers, primary text for strong headers, and matching custom, disabled, or High Contrast foregrounds. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
-| `PART_HeaderFlyoutButton` | `DropDownButton` | Optional trailing dropdown, visible only when the column has a `HeaderFlyout`. The default template reserves a separate 26px segment (`TableViewHeaderFlyoutButtonWidth`), outside the text/sort region and mirrored in RTL. The resize gripper retains priority at the shared column edge. |
 
 Visual states:
 
@@ -858,61 +857,15 @@ Visual states:
 | `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort. In Light/Dark, hover leaves the resting plate unchanged; pressed retains `TabularSurfaceHeaderBackgroundPressedBrush` and `TabularSurfaceHeaderBorderPressedBrush`. `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
 | `HighContrastStates` | `HighContrastNormal`, `HighContrastSortable`, `HighContrastPointerOver`, `HighContrastPressed` | Enabled, user-sortable headers retain the ButtonText/ButtonFace pairing at rest and with keyboard focus. Hover and pressed use HighlightText on a Highlight backplate, with a matching Highlight border. Non-sortable headers retain their resting appearance; disabled headers retain their disabled appearance. |
 | `SortStates` | `Unsorted`, `UnsortedSortAvailable`, `SortAscending`, `SortDescending` | An unsorted, enabled, user-sortable header shows the ascending sort affordance on hover, keyboard focus, or press. Leaving those states hides it. Actual ascending/descending indicators remain visible independently of hover/focus. The preview does not change sorting or automation help. |
-| `HeaderEdgeStates` | `InteriorHeader`, `LeftEdgeHeader`, `RightEdgeHeader`, `SingleHeader` | Follow visible columns and trailing separator suppression in local coordinates; XAML mirrors the header and dropdown corners once for RTL. Set the fill's corner radius using the `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens. |
+| `HeaderEdgeStates` | `InteriorHeader`, `LeftEdgeHeader`, `RightEdgeHeader`, `SingleHeader` | Follow visible columns and trailing separator suppression in local coordinates; XAML mirrors the header corners once for RTL. Set the fill's corner radius using the `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens. |
 
 The default indicator uses 16px Regular **Arrow Sort Up Lines** / **Arrow Sort Down Lines** vectors
 at the trailing edge, mirrored in RTL. Its fill follows the header's `Foreground`; standalone
 indicators use `SortIndicatorForeground`. The unsorted pointer-hover affordance fades over 83ms
 when Windows animations are enabled; keyboard, pressed, sorted, disabled, and HC changes are immediate.
-Reserved icon space prevents text movement. Dropdown hover or an open flyout does not reveal the sort affordance.
+Reserved icon space prevents text movement.
 
 The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
-
-### Header dropdowns
-
-Set `TableViewColumn.HeaderFlyout` to an app-owned `FlyoutBase` to show a separate dropdown button.
-It is independent of `HeaderContextFlyout` (right-click, Menu key, or Shift+F10), and works on columns
-that cannot sort. Activating the header still sorts; activating the dropdown does not.
-The sort area and dropdown have independent hover/pressed foregrounds and backgrounds, including
-in High Contrast; hovering the sort area does not recolor the unhovered chevron.
-In High Contrast, the enabled dropdown uses ButtonText on ButtonFace at rest whether or not
-its column can sort; its own hover/pressed/open states retain HighlightText on Highlight.
-In Light/Dark, the resting chevron inherits the header's foreground, including custom and
-strong-header styles. Leaving High Contrast removes the ButtonText override and restores
-that inheritance.
-The column separator paints above dropdown chrome; the resize gripper retains pointer priority.
-Left/Right moves between each header's sort area and dropdown in visual order, mirrored in RTL.
-Enter/Space on the sort area sorts; on the dropdown it opens the flyout.
-From a focused header or its dropdown, Alt+Down or F4 opens the dropdown. The native flyout supplies keyboard
-navigation, Escape/light dismissal, and focus restoration; its button exposes `ExpandCollapse`
-as a child of the header's automation peer, named "Options for [column header]".
-The dropdown remains focusable for keyboard opening and native flyout focus restoration.
-Known limitation: Tab can focus the dropdown as an extra stop; one-stop-per-header routing
-and its keyboard/accessibility review are deferred.
-
-```xml
-<tabular:TableViewTextColumn Header="Status" Binding="{Binding Status}">
-    <tabular:TableViewTextColumn.HeaderFlyout>
-        <MenuFlyout Placement="BottomEdgeAlignedRight">
-            <MenuFlyoutItem Text="All statuses" Click="ClearStatusFilter" />
-            <MenuFlyoutItem Text="Ready" Click="FilterReadyStatus" />
-        </MenuFlyout>
-    </tabular:TableViewTextColumn.HeaderFlyout>
-</tabular:TableViewTextColumn>
-```
-
-The app owns menu content, commands, placement, and any filter indication. Commands may call
-`TableViewSource.Filter(predicate)` or `ClearFilter()` on the existing source; this API adds no
-filter model or automatic distinct-value discovery. The source's public filter is one replaceable
-predicate, not a separate filter per column: apps combine their column predicates themselves.
-Changing `HeaderFlyout` updates the realized header without rebuilding it or resetting accumulated
-body Auto widths. Setting it to null removes the dropdown and closes a flyout opened by that button.
-Disabling the header, removing/retemplating it, or unloading it also closes its own open flyout;
-a `Closing` cancellation cannot veto this teardown or editing suppression. A shared flyout
-currently anchored elsewhere is not dismissed.
-While a cell is editing, the dropdown stays visible but disabled and has no attached flyout, including
-during BeginningEdit and CellEditEnding. Existing right-click context-menu precedence is unchanged.
-Custom header templates may omit the part, disabling only the dropdown.
 
 ## TableViewColumn class
 
@@ -928,7 +881,6 @@ Base class for TableView columns.
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
 | `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
-| `HeaderFlyout` | `FlyoutBase` | `null` | App-supplied flyout opened by the optional header dropdown, independently of sorting and `HeaderContextFlyout`. |
 | `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
 | `HeaderContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Context flyout for this column's header. Opens at the header cell; it does not receive a row data item. |
 | `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanResize="False"`). |
@@ -1206,10 +1158,8 @@ Selected fills reserve the outline's 1px stroke; unselected fills reach its oute
 The selection outline uses a `3,2,3,2` inset (`TableViewSelectionIndicatorMargin`) and remains
 separate from native keyboard focus.
 `TableViewFocusVisualMargin` controls column and section headers,
-`TableViewRowFocusVisualMargin` controls rows and their generated cells, and
-`TableViewHeaderFlyoutButtonFocusVisualMargin` controls header dropdowns. Their values are
-`0`, `0,-1,0,-1`, and `-1`, respectively, in Light/Dark. High Contrast keeps the same
-header and row/cell margins but uses `0` for header dropdowns.
+`TableViewRowFocusVisualMargin` controls rows and their generated cells. Their values are
+`0` and `0,-1,0,-1`, respectively, in Light/Dark and High Contrast.
 
 Enabled HC rows use a 1px Highlight interaction outline, or ButtonText when a selected row is
 hovered/pressed. Normal hides it. These states retain resting backgrounds, foregrounds, and

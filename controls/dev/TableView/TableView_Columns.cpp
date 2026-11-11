@@ -546,28 +546,6 @@ void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& colum
     RefreshHeaderTabStopsInternal();
 }
 
-void TableView::RefreshHeaderFlyouts()
-{
-    if (auto const host = m_headerHost.get())
-    {
-        std::vector<winrt::TableViewColumnHeader> headers;
-        for (auto const& child : host.Children())
-        {
-            if (auto const header = child.try_as<winrt::TableViewColumnHeader>())
-            {
-                headers.push_back(header);
-            }
-        }
-        for (auto const& header : headers)
-        {
-            winrt::get_self<TableViewColumnHeader>(header)->RefreshFlyoutInternal();
-        }
-    }
-    RefreshHeaderTabStopsInternal();
-    ApplyGridLinesToHeader();
-    InvalidateMeasure();
-}
-
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
 {
     if (!column)

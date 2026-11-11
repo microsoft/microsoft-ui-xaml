@@ -3922,12 +3922,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyFocusMarginsKeepBaselineExceptHighContrastDropdown()
+        public void VerifyFocusMarginsKeepBaseline()
         {
-            bool highContrast = false;
             RunOnUIThread.Execute(() =>
             {
-                highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
                 var resources = new TabularControlsResources();
                 foreach (var theme in new[] { "Light", "Default", "HighContrast" })
                 {
@@ -3936,18 +3934,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         (Thickness)dictionary["TableViewFocusVisualMargin"], theme);
                     Verify.AreEqual(new Thickness(0, -1, 0, -1),
                         (Thickness)dictionary["TableViewRowFocusVisualMargin"], theme);
-                    Verify.AreEqual(new Thickness(theme == "HighContrast" ? 0 : -1),
-                        (Thickness)dictionary["TableViewHeaderFlyoutButtonFocusVisualMargin"], theme);
                 }
             });
-            Log.Comment($"System High Contrast: {highContrast}");
 
             TableView tableView = null;
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateGroupedThemingTable();
                 tableView.IsTextScaleFactorEnabled = false;
-                tableView.Columns[0].HeaderFlyout = new MenuFlyout();
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -3967,7 +3961,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         });
                         IdleSynchronizer.Wait();
 
-                        foreach (var surface in new[] { "Row", "Cell", "Column", "Section", "Dropdown" })
+                        foreach (var surface in new[] { "Row", "Cell", "Column", "Section" })
                         {
                             FrameworkElement target = null;
                             RunOnUIThread.Execute(() =>
@@ -3980,7 +3974,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                     case "Cell": target = GetRowCell(row, 0); break;
                                     case "Column": target = header; break;
                                     case "Section": target = FindVisualChildrenByType<TableViewGroupHeader>(tableView).First(); break;
-                                    case "Dropdown": target = (DropDownButton)header.FindVisualChildByName("PART_HeaderFlyoutButton"); break;
                                 }
                                 Verify.IsNotNull(target, surface);
                                 target.IsTabStop = true;
@@ -4006,10 +3999,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                         expected.Top += bounds.Top;
                                         expected.Bottom += target.ActualHeight - bounds.Bottom;
                                     }
-                                }
-                                else if (surface == "Dropdown")
-                                {
-                                    expected = new Thickness(highContrast ? 0 : -1);
                                 }
                                 Verify.AreEqual(expected, target.FocusVisualMargin, context);
                                 Verify.AreEqual(testCase.RowMinHeight, GetRealizedRows(tableView).First().ActualHeight,
@@ -4815,84 +4804,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             {
-                foreach (var hasFlyout in new[] { false, true })
+                TableView tableView = null;
+                Grid layoutRoot = null;
+                Border firstFill = null;
+                Border lastFill = null;
+                RunOnUIThread.Execute(() =>
                 {
-                    TableView tableView = null;
-                    Grid layoutRoot = null;
-                    Border firstFill = null;
-                    Border lastFill = null;
-                    DropDownButton button = null;
-                    RunOnUIThread.Execute(() =>
+                    tableView = CreateThemingTable();
+                    tableView.FlowDirection = flow;
+                    tableView.Resources["TableViewHeaderLeftCornerRadius"] = new CornerRadius(8, 0, 0, 0);
+                    tableView.Resources["TableViewHeaderRightCornerRadius"] = new CornerRadius(0, 8, 0, 0);
+                    foreach (var column in tableView.Columns)
                     {
-                        tableView = CreateThemingTable();
-                        tableView.FlowDirection = flow;
-                        tableView.Resources["TableViewHeaderLeftCornerRadius"] = new CornerRadius(8, 0, 0, 0);
-                        tableView.Resources["TableViewHeaderRightCornerRadius"] = new CornerRadius(0, 8, 0, 0);
-                        foreach (var column in tableView.Columns)
-                        {
-                            column.Width = new GridLength(1, GridUnitType.Star);
-                        }
-                        if (hasFlyout)
-                        {
-                            tableView.Columns[1].HeaderFlyout = new MenuFlyout();
-                        }
-                        // An LTR ancestor makes the table's RTL transform observable.
-                        layoutRoot = new Grid
-                        {
-                            Width = tableView.Width,
-                            Height = tableView.Height,
-                            FlowDirection = FlowDirection.LeftToRight
-                        };
-                        layoutRoot.Children.Add(tableView);
-                        LoadContent(layoutRoot);
-                    });
-                    IdleSynchronizer.Wait();
-                    RunOnUIThread.Execute(() =>
-                    {
-                        var first = RequireColumnHeader(tableView, 0);
-                        var last = RequireColumnHeader(tableView, 1);
-                        firstFill = (Border)first.FindVisualChildByName("PART_Background");
-                        lastFill = (Border)last.FindVisualChildByName("PART_Background");
-                        Verify.AreEqual(Visibility.Collapsed,
-                            ((Border)last.FindVisualChildByName("PART_GridLine")).Visibility,
-                            "Star columns must fill the viewport so the terminal header is an exposed edge.");
-                        if (hasFlyout)
-                        {
-                            button = (DropDownButton)last.FindVisualChildByName("PART_HeaderFlyoutButton");
-                        }
-                    });
-
-                    foreach (var state in hasFlyout ? new[] { "FlyoutClosed", "FlyoutOpen" } : new[] { "Normal" })
-                    {
-                        RunOnUIThread.Execute(() =>
-                        {
-                            if (button != null)
-                            {
-                                Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
-                            }
-                            Content.UpdateLayout();
-                            var context = $"{flow}, flyout={hasFlyout}, {state}";
-                            void VerifyCorners(Border plate, CornerRadius expected)
-                            {
-                                Verify.AreEqual(expected, plate.CornerRadius, context);
-                                Verify.IsGreaterThan(plate.ActualWidth, 0.0, context);
-                                var transform = plate.TransformToVisual(layoutRoot);
-                                var left = transform.TransformPoint(new Point());
-                                var right = transform.TransformPoint(new Point(plate.ActualWidth, 0));
-                                Verify.IsTrue(flow == FlowDirection.RightToLeft ? right.X < left.X : right.X > left.X,
-                                    $"Logical corners must mirror into physical coordinates: {context}.");
-                            }
-                            VerifyCorners(firstFill, new CornerRadius(8, 0, 0, 0));
-                            VerifyCorners(lastFill, new CornerRadius(0, hasFlyout ? 0 : 8, 0, 0));
-                            if (button != null)
-                            {
-                                VerifyCorners((Border)button.FindVisualChildByName(state == "FlyoutOpen" ? "OpenChrome" : "Chrome"),
-                                    new CornerRadius(0, 8, 0, 0));
-                            }
-                        });
-                        IdleSynchronizer.Wait();
+                        column.Width = new GridLength(1, GridUnitType.Star);
                     }
-                }
+                    // An LTR ancestor makes the table's RTL transform observable.
+                    layoutRoot = new Grid
+                    {
+                        Width = tableView.Width,
+                        Height = tableView.Height,
+                        FlowDirection = FlowDirection.LeftToRight
+                    };
+                    layoutRoot.Children.Add(tableView);
+                    LoadContent(layoutRoot);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var first = RequireColumnHeader(tableView, 0);
+                    var last = RequireColumnHeader(tableView, 1);
+                    firstFill = (Border)first.FindVisualChildByName("PART_Background");
+                    lastFill = (Border)last.FindVisualChildByName("PART_Background");
+                    Verify.AreEqual(Visibility.Collapsed,
+                        ((Border)last.FindVisualChildByName("PART_GridLine")).Visibility,
+                        "Star columns must fill the viewport so the terminal header is an exposed edge.");
+
+                    Content.UpdateLayout();
+                    var context = $"{flow}";
+                    void VerifyCorners(Border plate, CornerRadius expected)
+                    {
+                        Verify.AreEqual(expected, plate.CornerRadius, context);
+                        Verify.IsGreaterThan(plate.ActualWidth, 0.0, context);
+                        var transform = plate.TransformToVisual(layoutRoot);
+                        var left = transform.TransformPoint(new Point());
+                        var right = transform.TransformPoint(new Point(plate.ActualWidth, 0));
+                        Verify.IsTrue(flow == FlowDirection.RightToLeft ? right.X < left.X : right.X > left.X,
+                            $"Logical corners must mirror into physical coordinates: {context}.");
+                    }
+                    VerifyCorners(firstFill, new CornerRadius(8, 0, 0, 0));
+                    VerifyCorners(lastFill, new CornerRadius(0, 8, 0, 0));
+                });
+                IdleSynchronizer.Wait();
             }
         }
 
@@ -6075,292 +6037,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         }
                     }
                 }
-            }
-        }
-
-        [TestMethod]
-        public void VerifyHeaderDropdownDoesNotCoverColumnSeparator()
-        {
-            var separatorColor = Color.FromArgb(0xFF, 0x12, 0x9E, 0x5A);
-            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
-            {
-                foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
-                {
-                    foreach (var density in DensityCases)
-                    {
-                        TableView tableView = null;
-                        Grid snapshotRoot = null;
-                        TableViewColumnHeader header = null;
-                        DropDownButton button = null;
-                        Border separator = null;
-                        Rect bounds = default;
-                        double snapshotWidth = 0;
-                        double snapshotHeight = 0;
-                        RunOnUIThread.Execute(() =>
-                        {
-                            tableView = CreateThemingTable();
-                            tableView.Columns.Add(MakeTextColumn("Status", bindingPath: "Role"));
-                            tableView.Columns[1].HeaderFlyout = new MenuFlyout();
-                            tableView.RequestedTheme = theme;
-                            tableView.FlowDirection = flow;
-                            tableView.Density = density.Density;
-                            tableView.HighContrastAdjustment = ElementHighContrastAdjustment.None;
-                            tableView.Resources["TabularSurfaceHeaderSeparatorBrush"] = new SolidColorBrush(separatorColor);
-                            // Include the header's RTL mirror transform in the captured subtree.
-                            snapshotRoot = new Grid { Width = tableView.Width, Height = tableView.Height, FlowDirection = FlowDirection.LeftToRight };
-                            snapshotRoot.Children.Add(tableView);
-                            LoadContent(snapshotRoot);
-                        });
-                        IdleSynchronizer.Wait();
-                        RunOnUIThread.Execute(() =>
-                        {
-                            header = RequireColumnHeader(tableView, 1);
-                            button = (DropDownButton)header.FindVisualChildByName("PART_HeaderFlyoutButton");
-                            separator = (Border)header.FindVisualChildByName("PART_GridLine");
-                            Verify.AreEqual(Visibility.Visible, button.Visibility);
-                            Verify.IsFalse(separator.IsHitTestVisible, "The overlay must not intercept dropdown or resize input.");
-
-                            // Force opaque HC-like chrome in every theme, including when the OS is not in HC.
-                            ((Border)button.FindVisualChildByName("Chrome")).Background = new SolidColorBrush(Microsoft.UI.Colors.Black);
-                            ((Border)button.FindVisualChildByName("OpenChrome")).Background = new SolidColorBrush(Microsoft.UI.Colors.Black);
-                        });
-
-                        foreach (var state in new[] { "FlyoutClosed", "FlyoutOpen" })
-                        {
-                            RunOnUIThread.Execute(() =>
-                            {
-                                Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
-                                Content.UpdateLayout();
-                            });
-                            IdleSynchronizer.Wait();
-                            RunOnUIThread.Execute(() =>
-                            {
-                                bounds = separator.TransformToVisual(snapshotRoot).TransformBounds(
-                                    new Rect(0, 0, separator.ActualWidth, separator.ActualHeight));
-                                snapshotWidth = snapshotRoot.ActualWidth;
-                                snapshotHeight = snapshotRoot.ActualHeight;
-                            });
-
-                            var image = RenderElementPixels(snapshotRoot);
-                            int centerX = (int)((bounds.X + 0.5) * image.Width / snapshotWidth);
-                            int y = (int)((bounds.Y + bounds.Height / 2) * image.Height / snapshotHeight);
-                            bool found = false;
-                            for (int x = Math.Max(0, centerX - 2); x <= Math.Min(image.Width - 1, centerX + 2); x++)
-                            {
-                                int offset = (y * image.Width + x) * 4;
-                                found |= image.Pixels[offset] == separatorColor.B
-                                    && image.Pixels[offset + 1] == separatorColor.G
-                                    && image.Pixels[offset + 2] == separatorColor.R
-                                    && image.Pixels[offset + 3] == separatorColor.A;
-                            }
-                            Verify.IsTrue(found,
-                                $"The always-present column separator must remain above opaque dropdown chrome: {theme}, {flow}, {density.Density}, {state}.");
-                        }
-                    }
-                }
-            }
-        }
-
-        [TestMethod]
-        public void VerifyHeaderDropdownRestoresInheritedForegroundAfterHighContrastStyle()
-        {
-            bool highContrast = false;
-            RunOnUIThread.Execute(() => highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast);
-
-            foreach (var strong in new[] { false, true })
-            {
-                TableView tableView = null;
-                DropDownButton button = null;
-                FontIcon chevron = null;
-                RunOnUIThread.Execute(() =>
-                {
-                    tableView = CreateThemingTable();
-                    tableView.Columns[0].HeaderFlyout = new MenuFlyout();
-                    if (strong)
-                    {
-                        tableView.ColumnHeaderStyle = (Style)new TabularControlsResources()["StrongTableViewColumnHeaderStyle"];
-                    }
-                    LoadContent(tableView);
-                });
-                IdleSynchronizer.Wait();
-
-                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
-                {
-                    RunOnUIThread.Execute(() => tableView.RequestedTheme = theme);
-                    IdleSynchronizer.Wait();
-                    RunOnUIThread.Execute(() =>
-                    {
-                        var header = RequireColumnHeader(tableView, 0);
-                        button = (DropDownButton)header.FindVisualChildByName("PART_HeaderFlyoutButton");
-                        chevron = (FontIcon)button.FindVisualChildByName("Chevron");
-                        Verify.IsNotNull(chevron.Foreground, "Theme changes must not leave the chevron without a foreground.");
-                        var expected = highContrast
-                            ? ((SolidColorBrush)Application.Current.Resources["SystemColorButtonTextColorBrush"]).Color
-                            : ((SolidColorBrush)header.Foreground).Color;
-                        Verify.AreEqual(expected, ((SolidColorBrush)chevron.Foreground).Color,
-                            $"The existing chevron must follow the resolved theme: {theme}, strong={strong}.");
-                    });
-                }
-
-                // Exercise the real template's HC -> normal style replacement without changing the OS setting.
-                foreach (var styleTheme in new[] { "HighContrast", "Light", "HighContrast", "Default", "Light" })
-                {
-                    RunOnUIThread.Execute(() =>
-                    {
-                        var root = (Grid)VisualTreeHelper.GetParent(button.FindVisualChildByName("Chrome"));
-                        var dictionary = (ResourceDictionary)root.Resources.ThemeDictionaries[styleTheme];
-                        chevron.Style = (Style)dictionary["HeaderFlyoutChevronStyle"];
-                    });
-                    IdleSynchronizer.Wait();
-
-                    foreach (var color in new[] { Color.FromArgb(0xFF, 0x80, 0x60, 0x40), Color.FromArgb(0xFF, 0x40, 0x60, 0x80) })
-                    {
-                        RunOnUIThread.Execute(() => RequireColumnHeader(tableView, 0).Foreground = new SolidColorBrush(color));
-                        IdleSynchronizer.Wait();
-                        RunOnUIThread.Execute(() =>
-                        {
-                            var expected = styleTheme == "HighContrast"
-                                ? ((SolidColorBrush)Application.Current.Resources["SystemColorButtonTextColorBrush"]).Color
-                                : color;
-                            Verify.IsNotNull(chevron.Foreground, $"The chevron must have a foreground after {styleTheme} style restoration.");
-                            Verify.AreEqual(expected, ((SolidColorBrush)chevron.Foreground).Color,
-                                $"Only HC overrides inherited foreground: {styleTheme}, strong={strong}.");
-                        });
-                    }
-                }
-            }
-        }
-
-        [TestMethod]
-        public void VerifyHeaderDropdownForegroundIsIndependentOfHeaderInteraction()
-        {
-            bool highContrast = false;
-            var hover = Color.FromArgb(0xFF, 0x20, 0x40, 0x60);
-            var pressed = Color.FromArgb(0xFF, 0x60, 0x40, 0x20);
-            var disabled = Color.FromArgb(0xFF, 0x40, 0x60, 0x20);
-            RunOnUIThread.Execute(() =>
-            {
-                highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
-                EnsureTabularControlsResources();
-                SetApplicationResource("TabularSurfaceHeaderForegroundPointerOverBrush", new SolidColorBrush(hover));
-                SetApplicationResource("TabularSurfaceHeaderForegroundPressedBrush", new SolidColorBrush(pressed));
-                SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
-            });
-
-            try
-            {
-                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
-                {
-                    foreach (var appearance in new[] { "Regular", "Strong", "Custom", "SortingOff", "NonSortable" })
-                    {
-                        TableView tableView = null;
-                        TableViewColumnHeader header = null;
-                        DropDownButton button = null;
-                        FontIcon chevron = null;
-                        Color foreground = default;
-                        Color background = default;
-                        RunOnUIThread.Execute(() =>
-                        {
-                            tableView = CreateThemingTable();
-                            tableView.RequestedTheme = theme;
-                            tableView.Columns[0].HeaderFlyout = new MenuFlyout();
-                            if (appearance == "SortingOff")
-                            {
-                                tableView.CanUserSortColumns = false;
-                            }
-                            if (appearance == "NonSortable")
-                            {
-                                tableView.Columns[0].CanSort = false;
-                            }
-                            if (appearance == "Strong")
-                            {
-                                tableView.ColumnHeaderStyle = (Style)new TabularControlsResources()["StrongTableViewColumnHeaderStyle"];
-                            }
-                            LoadContent(tableView);
-                        });
-                        IdleSynchronizer.Wait();
-                        RunOnUIThread.Execute(() =>
-                        {
-                            header = RequireColumnHeader(tableView, 0);
-                            button = (DropDownButton)header.FindVisualChildByName("PART_HeaderFlyoutButton");
-                            chevron = (FontIcon)button.FindVisualChildByName("Chevron");
-                            Verify.IsNotNull(chevron.Foreground, "The dropdown chevron must resolve its resting foreground.");
-                            if (appearance == "Custom")
-                            {
-                                header.Foreground = new SolidColorBrush(Color.FromArgb(0xFF, 0x80, 0x60, 0x40));
-                            }
-                            foreground = highContrast
-                                ? ((SolidColorBrush)Application.Current.Resources["SystemColorButtonTextColorBrush"]).Color
-                                : ((SolidColorBrush)header.Foreground).Color;
-                            background = ((SolidColorBrush)((Border)button.FindVisualChildByName("Chrome")).Background).Color;
-                            if (highContrast)
-                            {
-                                Verify.AreEqual(((SolidColorBrush)Application.Current.Resources["SystemColorButtonFaceColorBrush"]).Color,
-                                    background, $"The HC dropdown uses ButtonFace independently of sorting ({theme}, {appearance}).");
-                            }
-                        });
-                        IdleSynchronizer.Wait();
-
-                        foreach (var state in new[] { "PointerOver", "Pressed" })
-                        {
-                            var interaction = state == "PointerOver" ? hover : pressed;
-                            RunOnUIThread.Execute(() =>
-                            {
-                                Verify.AreEqual(foreground, ((SolidColorBrush)chevron.Foreground).Color);
-                                Verify.IsTrue(VisualStateManager.GoToState(header, state, false));
-                                Verify.IsTrue(VisualStateManager.GoToState(header, "HighContrast" + state, false));
-                            });
-                            IdleSynchronizer.Wait();
-                            RunOnUIThread.Execute(() =>
-                            {
-                                var context = $"{theme}, {appearance}, {state}";
-                                Verify.AreEqual(interaction, ((SolidColorBrush)GetHeaderPresenter(tableView, 0).Foreground).Color,
-                                    $"The header uses its High Contrast interaction foreground ({context}).");
-                                Verify.AreEqual(foreground, ((SolidColorBrush)chevron.Foreground).Color,
-                                    $"Header interaction must not recolor the unhovered dropdown ({context}).");
-                                Verify.AreEqual(background,
-                                    ((SolidColorBrush)((Border)button.FindVisualChildByName("Chrome")).Background).Color,
-                                    $"Header interaction must not change the dropdown background ({context}).");
-                                Verify.IsTrue(VisualStateManager.GoToState(button, state, false));
-                            });
-                            IdleSynchronizer.Wait();
-                            RunOnUIThread.Execute(() =>
-                            {
-                                Verify.AreEqual(interaction, ((SolidColorBrush)chevron.Foreground).Color,
-                                    "The dropdown must still use its interaction foreground when it is itself hovered or pressed.");
-                                Verify.IsTrue(VisualStateManager.GoToState(button, "Normal", false));
-                                Verify.IsTrue(VisualStateManager.GoToState(header, "Normal", false));
-                                Verify.IsTrue(VisualStateManager.GoToState(header, "HighContrastNormal", false));
-                            });
-                            IdleSynchronizer.Wait();
-                        }
-
-                        SetIsEnabledAndWait(tableView, false, header, button);
-                        RunOnUIThread.Execute(() =>
-                        {
-                            var context = $"{theme}, {appearance}";
-                            Verify.IsFalse(button.IsEnabled, $"The disabled header must disable its dropdown ({context}).");
-                            Verify.AreEqual(disabled, ((SolidColorBrush)chevron.Foreground).Color,
-                                $"Disabling the header must still dim its dropdown independently ({context}).");
-                        });
-                        SetIsEnabledAndWait(tableView, true, header, button);
-                        RunOnUIThread.Execute(() =>
-                        {
-                            Verify.IsTrue(button.IsEnabled);
-                            Verify.AreEqual(foreground, ((SolidColorBrush)chevron.Foreground).Color,
-                                "Re-enabling the header restores its dropdown's resting foreground.");
-                        });
-                    }
-                }
-            }
-            finally
-            {
-                RunOnUIThread.Execute(() =>
-                {
-                    ClearApplicationResource("TabularSurfaceHeaderForegroundPointerOverBrush");
-                    ClearApplicationResource("TabularSurfaceHeaderForegroundPressedBrush");
-                    ClearApplicationResource("TabularSurfaceRowForegroundDisabledBrush");
-                });
             }
         }
 

@@ -472,7 +472,6 @@ public:
 
     // The one context menu policy check: no TableView menu opens while a cell is editing.
     bool AreContextMenusSuppressed() const noexcept { return IsEditing(); }
-    void RefreshHeaderFlyouts();
 
     // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
     // element that raised it or on any ancestor opens. Hooked below every element that can carry a
@@ -899,8 +898,7 @@ private:
     winrt::TableViewRow FindRealizedRowForItem(winrt::IInspectable const& item);
     bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
     // Beginning -> None without touching the row's visual or the item transaction.
-    void ResetPendingBeginEdit() noexcept;
-    void RefreshHeaderFlyoutsAfterEdit(bool closed);
+    void ResetPendingBeginEdit();
 
     void EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip);
 

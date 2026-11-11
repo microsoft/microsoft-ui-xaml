@@ -21,7 +21,6 @@ GlobalDependencyProperty TableViewColumnProperties::s_CellEditingTemplatePropert
 GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderContextFlyoutProperty{ nullptr };
-GlobalDependencyProperty TableViewColumnProperties::s_HeaderFlyoutProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderStyleProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateSelectorProperty{ nullptr };
@@ -129,17 +128,6 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
                 nullptr);
-    }
-    if (!s_HeaderFlyoutProperty)
-    {
-        s_HeaderFlyoutProperty =
-            InitializeDependencyProperty(
-                L"HeaderFlyout",
-                winrt::name_of<winrt::FlyoutBase>(),
-                winrt::name_of<winrt::TableViewColumn>(),
-                false /* isAttached */,
-                ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderFlyoutPropertyChanged));
     }
     if (!s_HeaderStyleProperty)
     {
@@ -285,7 +273,6 @@ void TableViewColumnProperties::ClearProperties()
     s_FrozenEdgeProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HeaderContextFlyoutProperty = nullptr;
-    s_HeaderFlyoutProperty = nullptr;
     s_HeaderStyleProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_HeaderTemplateSelectorProperty = nullptr;
@@ -333,14 +320,6 @@ void TableViewColumnProperties::OnFrozenEdgePropertyChanged(
 }
 
 void TableViewColumnProperties::OnHeaderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TableViewColumn>();
-    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
-}
-
-void TableViewColumnProperties::OnHeaderFlyoutPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -522,19 +501,6 @@ void TableViewColumnProperties::HeaderContextFlyout(winrt::FlyoutBase const& val
 winrt::FlyoutBase TableViewColumnProperties::HeaderContextFlyout()
 {
     return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderContextFlyoutProperty));
-}
-
-void TableViewColumnProperties::HeaderFlyout(winrt::FlyoutBase const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableViewColumn*>(this)->SetValue(s_HeaderFlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::FlyoutBase TableViewColumnProperties::HeaderFlyout()
-{
-    return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderFlyoutProperty));
 }
 
 void TableViewColumnProperties::HeaderStyle(winrt::Style const& value)

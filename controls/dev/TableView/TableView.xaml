@@ -97,122 +97,8 @@
         </Setter>
     </Style>
 
-    <x:Double x:Key="TableViewHeaderFlyoutButtonWidth">26</x:Double>
-
-    <Style x:Key="TableViewHeaderFlyoutButtonStyle" TargetType="DropDownButton">
-        <Setter Property="Width" Value="{ThemeResource TableViewHeaderFlyoutButtonWidth}" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewHeaderFlyoutButtonFocusVisualMargin}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="DropDownButton">
-                    <Grid Background="Transparent">
-                        <Grid.Resources>
-                            <ResourceDictionary>
-                                <ResourceDictionary.ThemeDictionaries>
-                                    <ResourceDictionary x:Key="Light">
-                                        <Style x:Key="HeaderFlyoutChevronStyle" TargetType="FontIcon" />
-                                        <Style x:Key="HeaderFlyoutChromeStyle" TargetType="Border">
-                                            <Setter Property="Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundBrush}" />
-                                        </Style>
-                                    </ResourceDictionary>
-                                    <ResourceDictionary x:Key="Default">
-                                        <Style x:Key="HeaderFlyoutChevronStyle" TargetType="FontIcon" />
-                                        <Style x:Key="HeaderFlyoutChromeStyle" TargetType="Border">
-                                            <Setter Property="Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundBrush}" />
-                                        </Style>
-                                    </ResourceDictionary>
-                                    <ResourceDictionary x:Key="HighContrast">
-                                        <Style x:Key="HeaderFlyoutChevronStyle" TargetType="FontIcon">
-                                            <Setter Property="Foreground" Value="{ThemeResource SystemColorButtonTextColorBrush}" />
-                                        </Style>
-                                        <Style x:Key="HeaderFlyoutChromeStyle" TargetType="Border">
-                                            <Setter Property="Background" Value="{ThemeResource SystemColorButtonFaceColorBrush}" />
-                                        </Style>
-                                    </ResourceDictionary>
-                                </ResourceDictionary.ThemeDictionaries>
-                            </ResourceDictionary>
-                        </Grid.Resources>
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="Chrome.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
-                                        <Setter Target="Chevron.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Pressed">
-                                    <VisualState.Setters>
-                                        <Setter Target="Chrome.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
-                                        <Setter Target="Chevron.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Disabled">
-                                    <VisualState.Setters>
-                                        <Setter Target="Chevron.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="FlyoutStates">
-                                <VisualState x:Name="FlyoutClosed" />
-                                <VisualState x:Name="FlyoutOpen">
-                                    <VisualState.Setters>
-                                        <Setter Target="Chrome.Visibility" Value="Collapsed" />
-                                        <Setter Target="OpenChrome.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="HeaderEdgeStates">
-                                <VisualState x:Name="InteriorHeader" />
-                                <VisualState x:Name="LeftEdgeHeader">
-                                    <VisualState.Setters>
-                                        <Setter Target="Chrome.CornerRadius" Value="{ThemeResource TableViewHeaderLeftCornerRadius}" />
-                                        <Setter Target="OpenChrome.CornerRadius" Value="{ThemeResource TableViewHeaderLeftCornerRadius}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="RightEdgeHeader">
-                                    <VisualState.Setters>
-                                        <Setter Target="Chrome.CornerRadius" Value="{ThemeResource TableViewHeaderRightCornerRadius}" />
-                                        <Setter Target="OpenChrome.CornerRadius" Value="{ThemeResource TableViewHeaderRightCornerRadius}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <Border x:Name="Chrome"
-                                Style="{ThemeResource HeaderFlyoutChromeStyle}"
-                                BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
-                                BorderThickness="1,0,0,0">
-                            <FontIcon x:Name="Chevron"
-                                      Style="{ThemeResource HeaderFlyoutChevronStyle}"
-                                      FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                      FontSize="12"
-                                      Glyph="&#xE70D;"
-                                      HighContrastAdjustment="None"
-                                      AutomationProperties.AccessibilityView="Raw" />
-                        </Border>
-                        <Border x:Name="OpenChrome"
-                                Background="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}"
-                                BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
-                                BorderThickness="1,0,0,0"
-                                Visibility="Collapsed">
-                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                      FontSize="12"
-                                      Glyph="&#xE70D;"
-                                      Foreground="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}"
-                                      HighContrastAdjustment="None"
-                                      AutomationProperties.AccessibilityView="Raw" />
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <Style TargetType="controls:TableViewColumnHeader">
         <Setter Property="IsTabStop" Value="True" />
-        <Setter Property="TabFocusNavigation" Value="Once" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="{ThemeResource TableViewFocusVisualMargin}" />
         <!-- Without a fill the padding takes no pointer input, killing the tooltip and click-to-sort there. -->
@@ -244,7 +130,6 @@
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
-                                        <Setter Target="PART_HeaderFlyoutButton.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -339,11 +224,6 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
                         <!-- Extend the solid fill under the stroke to avoid a seam between them. -->
                         <Border x:Name="PART_Background"
                                 Background="{TemplateBinding Background}"
@@ -374,15 +254,7 @@
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
 
-                        <DropDownButton x:Name="PART_HeaderFlyoutButton"
-                                        Grid.Column="1"
-                                        Style="{StaticResource TableViewHeaderFlyoutButtonStyle}"
-                                        Foreground="{TemplateBinding Foreground}"
-                                        Visibility="Collapsed" />
-
-                        <!-- Above opaque dropdown chrome, including High Contrast ButtonFace. -->
                         <Border x:Name="PART_GridLine"
-                                Grid.ColumnSpan="2"
                                 Width="1"
                                 HorizontalAlignment="Right"
                                 Background="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
@@ -391,7 +263,7 @@
                                 AutomationProperties.AccessibilityView="Raw" />
 
                         <!-- Last, so the gripper wins the hit test on the shared edge. -->
-                        <Border x:Name="PART_ResizeGripperHost" Grid.ColumnSpan="2" />
+                        <Border x:Name="PART_ResizeGripperHost" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

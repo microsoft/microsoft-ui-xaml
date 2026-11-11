@@ -7,7 +7,6 @@
 #include "TableView.h"
 #include "TableViewContextMenu.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
-#include "TableViewAutomationHelpers.h"
 #include "SharedHelpers.h"
 
 static constexpr std::wstring_view s_ContentPresenterPartName{ L"PART_ContentPresenter"sv };
@@ -15,7 +14,6 @@ static constexpr std::wstring_view s_GridLinePartName{ L"PART_GridLine"sv };
 static constexpr std::wstring_view s_SortIndicatorHostPartName{ L"PART_SortIndicatorHost"sv };
 static constexpr std::wstring_view s_ResizeGripperHostPartName{ L"PART_ResizeGripperHost"sv };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
-static constexpr std::wstring_view s_FlyoutButtonPartName{ L"PART_HeaderFlyoutButton"sv };
 
 TableViewColumnHeader::TableViewColumnHeader()
 {
@@ -76,7 +74,6 @@ void TableViewColumnHeader::OnApplyTemplate()
 
     m_isEnabledChangedRevoker.revoke();
     m_templateRootContextRequestedRevoker.revoke();
-    ReleaseFlyoutInternal();
 
     if (auto const oldGripperHost = m_resizeGripperHost.get())
     {
@@ -91,7 +88,6 @@ void TableViewColumnHeader::OnApplyTemplate()
     m_gridLine.set(GetTemplateChild(hstring{ s_GridLinePartName }).try_as<winrt::Border>());
     m_sortIndicatorHost.set(GetTemplateChild(hstring{ s_SortIndicatorHostPartName }).try_as<winrt::Border>());
     m_resizeGripperHost.set(GetTemplateChild(hstring{ s_ResizeGripperHostPartName }).try_as<winrt::Border>());
-    m_flyoutButton.set(GetTemplateChild(hstring{ s_FlyoutButtonPartName }).try_as<winrt::DropDownButton>());
 
     m_templateContentMargin = {};
     m_hasTextPadding = false;
@@ -102,44 +98,6 @@ void TableViewColumnHeader::OnApplyTemplate()
     UpdateContentReserve();
     UpdateContentPadding();
     HostSortIndicator();
-    if (auto const button = m_flyoutButton.get())
-    {
-        m_flyoutPointerEnteredRevoker = button.PointerEntered(winrt::auto_revoke,
-            [weakThis = get_weak()](auto&&, auto&&)
-            {
-                if (auto self = weakThis.get())
-                {
-                    self->m_isFlyoutPointerOver = true;
-                    self->UpdateVisualStates(true);
-                }
-            });
-        m_flyoutPointerExitedRevoker = button.PointerExited(winrt::auto_revoke,
-            [weakThis = get_weak()](auto&&, auto&&)
-            {
-                if (auto self = weakThis.get())
-                {
-                    self->m_isFlyoutPointerOver = false;
-                    self->UpdateVisualStates(true);
-                }
-            });
-        RefreshFlyoutInternal();
-    }
-    m_flyoutUnloadedRevoker = Unloaded(winrt::auto_revoke,
-        [weakThis = get_weak()](auto&&, auto&&)
-        {
-            if (auto self = weakThis.get())
-            {
-                if (auto const button = self->m_flyoutButton.get())
-                {
-                    if (auto const flyout = button.Flyout();
-                        flyout && flyout.IsOpen() && flyout.Target() == button)
-                    {
-                        TableViewDetails::HideFlyoutWithoutClosingVeto(flyout);
-                    }
-                }
-            }
-        });
-
     if (auto const gripperHost = m_resizeGripperHost.get())
     {
         if (auto const gripper = m_resizeGripper.get())
@@ -167,7 +125,6 @@ void TableViewColumnHeader::OnApplyTemplate()
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->RefreshFlyoutInternal();
                 strongThis->UpdateVisualStates(true /* useTransitions */);
             }
         });
@@ -178,170 +135,6 @@ void TableViewColumnHeader::OnApplyTemplate()
     {
         winrt::get_self<TableView>(owner)->OnColumnHeaderTemplateApplied(*this);
     }
-}
-
-void TableViewColumnHeader::ReleaseFlyoutInternal()
-{
-    m_flyoutPointerEnteredRevoker.revoke();
-    m_flyoutPointerExitedRevoker.revoke();
-    m_flyoutOpenedRevoker.revoke();
-    m_flyoutClosedRevoker.revoke();
-    m_flyoutUnloadedRevoker.revoke();
-    m_isFlyoutOpen = false;
-    m_isFlyoutPointerOver = false;
-    auto const button = m_flyoutButton.get();
-    m_flyoutButton.set(nullptr);
-    if (button)
-    {
-        auto const flyout = button.Flyout();
-        button.Flyout(nullptr);
-        if (flyout && flyout.Target() == button)
-        {
-            TableViewDetails::HideFlyoutWithoutClosingVeto(flyout);
-        }
-    }
-}
-
-void TableViewColumnHeader::RefreshFlyoutInternal()
-{
-    auto const button = m_flyoutButton.get();
-    if (!button)
-    {
-        return;
-    }
-    auto const column = Column();
-    auto const owner = GetOwningTableView();
-    const bool available = IsEnabled() && owner &&
-        !winrt::get_self<TableView>(owner)->AreContextMenusSuppressed();
-    auto const oldFlyout = button.Flyout();
-    auto flyout = available && column ? column.HeaderFlyout() : nullptr;
-    if (oldFlyout != flyout)
-    {
-        m_flyoutOpenedRevoker.revoke();
-        m_flyoutClosedRevoker.revoke();
-        button.Flyout(nullptr);
-        m_isFlyoutOpen = false;
-        winrt::VisualStateManager::GoToState(button, L"FlyoutClosed", false);
-        if (oldFlyout && oldFlyout.Target() == button)
-        {
-            TableViewDetails::HideFlyoutWithoutClosingVeto(oldFlyout);
-        }
-        // Closing invokes app code, which can replace this header or update its flyout.
-        if (m_flyoutButton.get() != button || Column() != column || GetOwningTableView() != owner ||
-            button.Flyout())
-        {
-            return;
-        }
-        flyout = IsEnabled() && owner && column &&
-            !winrt::get_self<TableView>(owner)->AreContextMenusSuppressed() ? column.HeaderFlyout() : nullptr;
-        button.Flyout(flyout);
-        if (flyout)
-        {
-            m_flyoutOpenedRevoker = flyout.Opened(winrt::auto_revoke,
-                [weakThis = get_weak()](auto&&, auto&&)
-                {
-                    if (auto self = weakThis.get())
-                    {
-                        auto const button = self->m_flyoutButton.get();
-                        auto const flyout = button ? button.Flyout() : nullptr;
-                        self->m_isFlyoutOpen = flyout && flyout.IsOpen() && flyout.Target() == button;
-                        if (button)
-                        {
-                            winrt::VisualStateManager::GoToState(button,
-                                self->m_isFlyoutOpen ? L"FlyoutOpen" : L"FlyoutClosed", false);
-                        }
-                        self->UpdateVisualStates(true);
-                    }
-                });
-            m_flyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
-                [weakThis = get_weak()](auto&&, auto&&)
-                {
-                    if (auto self = weakThis.get())
-                    {
-                        if (auto const button = self->m_flyoutButton.get())
-                        {
-                            auto const flyout = button.Flyout();
-                            self->m_isFlyoutOpen = flyout && flyout.IsOpen() && flyout.Target() == button;
-                            winrt::VisualStateManager::GoToState(button,
-                                self->m_isFlyoutOpen ? L"FlyoutOpen" : L"FlyoutClosed", false);
-                        }
-                        self->UpdateVisualStates(true);
-                    }
-                });
-        }
-    }
-    button.Visibility(column && column.HeaderFlyout() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-    button.IsEnabled(IsEnabled() && owner && !winrt::get_self<TableView>(owner)->AreContextMenusSuppressed());
-    if (column && column.HeaderFlyout())
-    {
-        auto headerName = winrt::AutomationProperties::GetName(*this);
-        if (headerName.empty())
-        {
-            if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this))
-            {
-                headerName = peer.GetName();
-            }
-        }
-        const auto name = headerName.empty()
-            ? LocalizedOrFallbackForTableViewAutomation(SR_TableViewHeaderOptionsGenericName, L"Column options")
-            : StringUtil::FormatString(LocalizedOrFallbackForTableViewAutomation(
-                SR_TableViewHeaderOptionsName, L"Options for %1!s!"), headerName.c_str());
-        winrt::AutomationProperties::SetName(button, name);
-        winrt::ToolTipService::SetToolTip(button, winrt::box_value(name));
-    }
-    UpdateVisualStates(false);
-}
-
-void TableViewColumnHeader::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
-{
-    auto const button = m_flyoutButton.get();
-    const auto isKeyDown = [](winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::None;
-    };
-    const bool alt = isKeyDown(winrt::VirtualKey::Menu);
-    if (!args.Handled() &&
-        (args.OriginalSource().try_as<winrt::DependencyObject>() == *this ||
-            IsInsideFlyoutButton(args.OriginalSource())) &&
-        button && button.IsEnabled() && button.Visibility() == winrt::Visibility::Visible &&
-        !isKeyDown(winrt::VirtualKey::Control) && !isKeyDown(winrt::VirtualKey::Shift) &&
-        ((args.Key() == winrt::VirtualKey::F4 && !alt) || (args.Key() == winrt::VirtualKey::Down && alt)))
-    {
-        auto const owner = GetOwningTableView();
-        auto const column = Column();
-        if (button.Flyout())
-        {
-            button.Focus(winrt::FocusState::Keyboard);
-            // Focus runs app code, which can replace the menu, column, or template.
-            if (m_flyoutButton.get() == button && GetOwningTableView() == owner &&
-                Column() == column && owner && button.IsEnabled() &&
-                button.Visibility() == winrt::Visibility::Visible &&
-                !winrt::get_self<TableView>(owner)->AreContextMenusSuppressed())
-            {
-                if (auto const flyout = button.Flyout())
-                {
-                    flyout.ShowAt(button);
-                    args.Handled(true);
-                }
-            }
-        }
-    }
-    __super::OnKeyDown(args);
-}
-
-bool TableViewColumnHeader::IsInsideFlyoutButton(winrt::IInspectable const& source) const
-{
-    auto const button = m_flyoutButton.get();
-    for (auto current = source.try_as<winrt::DependencyObject>(); current && current != *this;
-        current = winrt::VisualTreeHelper::GetParent(current))
-    {
-        if (button && current == button)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorReserve)
@@ -504,17 +297,17 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
 
 void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
 {
-    // The dropdown has its own interaction states; only the header's sort target drives these.
+    // Hover and press advertise click-to-sort, so a header that cannot sort stays Normal.
     const wchar_t* commonState = L"Normal";
     if (!IsEnabled())
     {
         commonState = L"Disabled";
     }
-    else if (m_isSortable && m_isPressed && !m_isFlyoutPointerOver && !m_isFlyoutOpen)
+    else if (m_isSortable && m_isPressed)
     {
         commonState = L"Pressed";
     }
-    else if (m_isSortable && m_isPointerOver && !m_isFlyoutPointerOver && !m_isFlyoutOpen)
+    else if (m_isSortable && m_isPointerOver)
     {
         commonState = L"PointerOver";
     }
@@ -553,7 +346,7 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     {
         sortState = L"SortDescending";
     }
-    else if (IsEnabled() && m_isSortable && !m_isFlyoutOpen &&
+    else if (IsEnabled() && m_isSortable &&
         (commonState == std::wstring_view{ L"PointerOver" } ||
             commonState == std::wstring_view{ L"Pressed" } ||
             FocusState() == winrt::FocusState::Keyboard))
@@ -568,7 +361,7 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
         indicator.Direction(TableView::ToSortIndicatorDirection(direction));
     }
     const bool animateSortAffordance = useTransitions && IsLoaded() && IsEnabled() &&
-        m_isSortable && !m_isFlyoutOpen && !highlighted &&
+        m_isSortable && !highlighted &&
         FocusState() != winrt::FocusState::Keyboard &&
         commonState != std::wstring_view{ L"Pressed" } &&
         SharedHelpers::IsAnimationsEnabled();
@@ -593,7 +386,7 @@ void TableViewColumnHeader::OnPointerExited(winrt::PointerRoutedEventArgs const&
 void TableViewColumnHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerPressed(args);
-    m_isPressed = !IsInsideFlyoutButton(args.OriginalSource());
+    m_isPressed = true;
     UpdateVisualStates(true /* useTransitions */);
 }
 
