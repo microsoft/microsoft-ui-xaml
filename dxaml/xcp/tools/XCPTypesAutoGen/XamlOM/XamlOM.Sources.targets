@@ -127,6 +127,7 @@
     <CompileFiles Include="Model\Microsoft.UI.Xaml.ComponentModel.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Controls.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Controls.Primitives.cs" />
+    <CompileFiles Include="Model\Microsoft.UI.Xaml.Controls.RowContext.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Data.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Documents.cs" />

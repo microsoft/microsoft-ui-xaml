@@ -804,6 +804,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "MarkupExtension.g.h"
 #include "MediaTransportControlsHelper.g.h"
 #include "ParserServiceProvider_Partial.h"
+#include "RowContext.g.h"
 #include "StyleSelector_Partial.h"
 #include "TextOptions.g.h"
 #include "ToolTipService_Partial.h"
@@ -1801,6 +1802,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         nullptr, // Framework constructor
     },
     // Microsoft.UI.Xaml.Markup.ParserServiceProvider
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext
     {
         nullptr, // Core constructor
         nullptr, // Framework constructor
@@ -6140,6 +6146,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateNavigationMode, // Core constructor
         nullptr, // Framework constructor
     },
+    // Microsoft.UI.Xaml.Controls.NeighborRelation
+    {
+        &OnCoreCreateNeighborRelation, // Core constructor
+        nullptr, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction
     {
         &OnCoreCreateNotifyCollectionChangedAction, // Core constructor
@@ -6812,6 +6823,34 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Markup.ParserServiceProvider.TargetProperty
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.IsNextSelected
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.IsPreviousSelected
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.NextRelation
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.PreviousRelation
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback

@@ -128,6 +128,7 @@ REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Input::ManipulationModes, 
 REFERENCE_ELEMENT_NAME_IMPL(DirectUI::MarkupExtensionType, L"");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode, L"Microsoft.UI.Xaml.Navigation.NavigationCacheMode");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Navigation::NavigationMode, L"Microsoft.UI.Xaml.Navigation.NavigationMode");
+REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::NeighborRelation, L"Microsoft.UI.Xaml.Controls.NeighborRelation");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction, L"Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::OpticalMarginAlignment, L"Microsoft.UI.Xaml.OpticalMarginAlignment");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::Orientation, L"Microsoft.UI.Xaml.Controls.Orientation");
@@ -1723,6 +1724,19 @@ Cleanup:
     return hr;
 }
 
+__declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_NeighborRelation(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
+{
+    HRESULT hr = S_OK;
+    ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::NeighborRelation>* ptr = nullptr;
+    IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
+    ABI::Microsoft::UI::Xaml::Controls::NeighborRelation value;
+    IFC(ptr->get_Value(&value));
+    *pnValue = static_cast<uint32_t>(value);
+Cleanup:
+    ReleaseInterfaceNoNULL(ptr);
+    return hr;
+}
+
 __declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_NotifyCollectionChangedAction(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
 {
     HRESULT hr = S_OK;
@@ -2822,6 +2836,8 @@ _Check_return_ HRESULT GetEnumValueFromKnownWinRTBox(_In_ IInspectable* pBox, _I
             return GetValueFor_KnownTypeIndex_NavigationCacheMode(pBox, typeGuid, pnValue);
         case KnownTypeIndex::NavigationMode:
             return GetValueFor_KnownTypeIndex_NavigationMode(pBox, typeGuid, pnValue);
+        case KnownTypeIndex::NeighborRelation:
+            return GetValueFor_KnownTypeIndex_NeighborRelation(pBox, typeGuid, pnValue);
         case KnownTypeIndex::NotifyCollectionChangedAction:
             return GetValueFor_KnownTypeIndex_NotifyCollectionChangedAction(pBox, typeGuid, pnValue);
         case KnownTypeIndex::OpticalMarginAlignment:
@@ -3201,6 +3217,8 @@ _Check_return_ HRESULT GetKnownWinRTBoxFromEnumValue(_In_ UINT nValue, _In_ cons
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode>(static_cast<ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode>(nValue), ppBox);
         case KnownTypeIndex::NavigationMode:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Navigation::NavigationMode>(static_cast<ABI::Microsoft::UI::Xaml::Navigation::NavigationMode>(nValue), ppBox);
+        case KnownTypeIndex::NeighborRelation:
+            return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Controls::NeighborRelation>(static_cast<ABI::Microsoft::UI::Xaml::Controls::NeighborRelation>(nValue), ppBox);
         case KnownTypeIndex::NotifyCollectionChangedAction:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction>(static_cast<ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction>(nValue), ppBox);
         case KnownTypeIndex::OpticalMarginAlignment:

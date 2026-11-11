@@ -541,6 +541,32 @@ namespace DirectUI
             TrackerPtr<TrackerCollection<xaml::UIElement*>> m_toBeClearedContainers;
             TrackerPtr<TrackerCollection<IInspectable*>> m_toBeClearedItems;
 
+        #pragma region RowContext (experimental)
+        private:
+            // Computes the RowContext attached property values (neighbor relations and neighbor
+            // selection) for a ListViewItem container and writes them to the container.
+            // Containers that are not ListViewItems are left untouched. Only vertical ItemsStackPanel
+            // is supported; other layouts get the default values.
+            _Check_return_ HRESULT UpdateRowContext(
+                _In_ xaml::IDependencyObject* pContainer);
+
+            // Recomputes RowContext for every realized container.
+            _Check_return_ HRESULT UpdateRowContextForRealizedContainers();
+
+            // Requests a recomputation after the next layout pass. Used when the item-to-container
+            // mapping is not yet coherent, for example while the collection is changing.
+            _Check_return_ HRESULT QueueRowContextUpdate();
+
+            _Check_return_ HRESULT OnRowContextLayoutUpdated(
+                _In_ IInspectable* pSender,
+                _In_ IInspectable* pArgs);
+
+            ctl::EventPtr<FrameworkElementLayoutUpdatedEventCallback> m_rowContextLayoutUpdatedHandler;
+            bool m_hasListViewItemContainers = false;
+            bool m_rowContextUpdatePending = false;
+            bool m_isUpdatingRowContext = false;
+        #pragma endregion
+
             // Flags indicating whether items/groups should be tab stops.
             BOOLEAN m_itemsAreTabStops;
             BOOLEAN m_groupsAreTabStops;
@@ -746,6 +772,12 @@ namespace DirectUI
             // any swipe in progress.
             _Check_return_ HRESULT OnItemsChanged(
                 _In_ wfc::IVectorChangedEventArgs* pArgs)
+                override;
+
+            // Refreshes RowContext before the SelectionChanged event is raised so that
+            // handlers observe up-to-date neighbor information.
+            _Check_return_ HRESULT OnSelectionChanged(
+                _In_ xaml_controls::ISelectionChangedEventArgs* pSelectionChangedEventArgs)
                 override;
 
             _Check_return_ HRESULT FocusImpl(

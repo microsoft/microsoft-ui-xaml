@@ -714,6 +714,12 @@ public:
     static _Check_return_ HRESULT Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate);
 };
 
+class CNeighborRelation final : public CEnumerated
+{
+public:
+    static _Check_return_ HRESULT Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate);
+};
+
 class CNotifyCollectionChangedAction final : public CEnumerated
 {
 public:

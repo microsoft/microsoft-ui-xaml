@@ -157,6 +157,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_HubSection();
     _Check_return_ IActivationFactory* CreateActivationFactory_IconSource();
     _Check_return_ IActivationFactory* CreateActivationFactory_MenuFlyout();
+    _Check_return_ IActivationFactory* CreateActivationFactory_RowContext();
     _Check_return_ IActivationFactory* CreateActivationFactory_StackPanel();
     _Check_return_ IActivationFactory* CreateActivationFactory_SymbolIcon();
     _Check_return_ IActivationFactory* CreateActivationFactory_TimePicker();
@@ -814,6 +815,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.HubSection"), &DirectUI::CreateActivationFactory_HubSection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.IconSource"), &DirectUI::CreateActivationFactory_IconSource)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.MenuFlyout"), &DirectUI::CreateActivationFactory_MenuFlyout)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.RowContext"), &DirectUI::CreateActivationFactory_RowContext)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.StackPanel"), &DirectUI::CreateActivationFactory_StackPanel)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.SymbolIcon"), &DirectUI::CreateActivationFactory_SymbolIcon)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.TimePicker"), &DirectUI::CreateActivationFactory_TimePicker)

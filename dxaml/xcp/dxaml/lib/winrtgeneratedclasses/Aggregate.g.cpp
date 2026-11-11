@@ -478,6 +478,7 @@ using namespace DirectUI;
 #include "RichEditBoxTextChangingEventArgs.g.cpp"
 #include "RichTextBlock.g.cpp"
 #include "RichTextBlockOverflow.g.cpp"
+#include "RowContext.g.cpp"
 #include "RowDefinition.g.cpp"
 #include "RowDefinitionCollection.g.cpp"
 #include "ScrollContentControl.g.cpp"

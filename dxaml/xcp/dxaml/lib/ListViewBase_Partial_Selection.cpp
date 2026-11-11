@@ -121,6 +121,18 @@ Cleanup:
 // whether or not we want to call the base implementation which will focus the
 // newSelectedIndex for us.
 _Check_return_ HRESULT ListViewBase::OnSelectionChanged(
+    _In_ xaml_controls::ISelectionChangedEventArgs* pSelectionChangedEventArgs)
+{
+    // Refresh before SelectionChanged is raised so handlers see current neighbor information.
+    IFC_RETURN(UpdateRowContextForRealizedContainers());
+
+    return ListViewBaseGenerated::OnSelectionChanged(pSelectionChangedEventArgs);
+}
+
+// Called after the Selector has changed the selected item.  We determine
+// whether or not we want to call the base implementation which will focus the
+// newSelectedIndex for us.
+_Check_return_ HRESULT ListViewBase::OnSelectionChanged(
     _In_ INT oldSelectedIndex,
     _In_ INT newSelectedIndex,
     _In_ IInspectable* pOldSelectedItem,
@@ -185,6 +197,10 @@ _Check_return_ HRESULT ListViewBase::OnItemsChanged(
 
     IFCPTR(pArgs);
     IFC(ListViewBaseGenerated::OnItemsChanged(pArgs));
+
+    // Neighbors change when items are added, removed, moved or replaced. Recompute once layout
+    // has established the new item-to-container mapping.
+    IFC(QueueRowContextUpdate());
 
     IFC(pArgs->get_CollectionChange(&action));
     switch (action)

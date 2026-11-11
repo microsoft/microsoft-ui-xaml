@@ -999,6 +999,8 @@ namespace Parser
         SeekSliderAutomationPeer = 981,
         SplitMenuFlyoutItemAutomationPeer = 982,
         SplitMenuFlyoutItem = 983,
+        RowContext = 984,
+        NeighborRelation = 985,
     };
 
     enum class StableXbfPropertyIndex: UINT16
@@ -3479,6 +3481,10 @@ namespace Parser
         Window_MinHeight = 2473,
         Window_MinWidth = 2474,
         Window_PlacementId = 2475,
+        RowContext_IsNextSelected = 2476,
+        RowContext_IsPreviousSelected = 2477,
+        RowContext_NextRelation = 2478,
+        RowContext_PreviousRelation = 2479,
     };
 
     enum class StableEventIndex: UINT16
@@ -3825,7 +3831,7 @@ namespace Parser
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
     };
 
-    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::SplitMenuFlyoutItem) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::Window_PlacementId) + 1;
+    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::NeighborRelation) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::RowContext_PreviousRelation) + 1;
     static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
 }

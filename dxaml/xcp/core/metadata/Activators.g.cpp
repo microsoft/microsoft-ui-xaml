@@ -1866,6 +1866,10 @@ HRESULT OnCoreCreateNavigationMode(_Outptr_ CDependencyObject **ppObject, _In_ C
 {
     RRETURN(CNavigationMode::Create(ppObject, pCreate));
 }
+HRESULT OnCoreCreateNeighborRelation(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CNeighborRelation::Create(ppObject, pCreate));
+}
 HRESULT OnCoreCreateNotifyCollectionChangedAction(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CNotifyCollectionChangedAction::Create(ppObject, pCreate));

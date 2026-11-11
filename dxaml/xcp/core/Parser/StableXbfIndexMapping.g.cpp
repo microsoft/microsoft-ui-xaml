@@ -1002,6 +1002,8 @@ namespace Parser
         KnownTypeIndex::SeekSliderAutomationPeer,
         KnownTypeIndex::SplitMenuFlyoutItemAutomationPeer,
         KnownTypeIndex::SplitMenuFlyoutItem,
+        KnownTypeIndex::RowContext,
+        KnownTypeIndex::NeighborRelation,
     };
 
     // Map known type indexes to stable Xbf type indexes
@@ -1070,6 +1072,7 @@ namespace Parser
         StableXbfTypeIndex::MediaPlayer,
         StableXbfTypeIndex::MediaTransportControlsHelper,
         StableXbfTypeIndex::ParserServiceProvider,
+        StableXbfTypeIndex::RowContext,
         StableXbfTypeIndex::StyleSelector,
         StableXbfTypeIndex::TextOptions,
         StableXbfTypeIndex::ToolTipService,
@@ -1937,6 +1940,7 @@ namespace Parser
         StableXbfTypeIndex::MarkupExtensionType,
         StableXbfTypeIndex::NavigationCacheMode,
         StableXbfTypeIndex::NavigationMode,
+        StableXbfTypeIndex::NeighborRelation,
         StableXbfTypeIndex::NotifyCollectionChangedAction,
         StableXbfTypeIndex::OpticalMarginAlignment,
         StableXbfTypeIndex::Orientation,
@@ -4484,6 +4488,10 @@ namespace Parser
         KnownPropertyIndex::Window_MinHeight,
         KnownPropertyIndex::Window_MinWidth,
         KnownPropertyIndex::Window_PlacementId,
+        KnownPropertyIndex::RowContext_IsNextSelected,
+        KnownPropertyIndex::RowContext_IsPreviousSelected,
+        KnownPropertyIndex::RowContext_NextRelation,
+        KnownPropertyIndex::RowContext_PreviousRelation,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4538,6 +4546,10 @@ namespace Parser
         StableXbfPropertyIndex::ParserServiceProvider_RootObject,
         StableXbfPropertyIndex::ParserServiceProvider_TargetObject,
         StableXbfPropertyIndex::ParserServiceProvider_TargetProperty,
+        StableXbfPropertyIndex::RowContext_IsNextSelected,
+        StableXbfPropertyIndex::RowContext_IsPreviousSelected,
+        StableXbfPropertyIndex::RowContext_NextRelation,
+        StableXbfPropertyIndex::RowContext_PreviousRelation,
         StableXbfPropertyIndex::TextOptions_TextFormattingMode,
         StableXbfPropertyIndex::TextOptions_TextHintingMode,
         StableXbfPropertyIndex::TextOptions_TextRenderingMode,

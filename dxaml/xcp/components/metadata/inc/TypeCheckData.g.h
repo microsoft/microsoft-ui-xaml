@@ -142,6 +142,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 0, 0 },
     // Microsoft.UI.Xaml.Markup.ParserServiceProvider
     { 140737488355329, 140737488355329 },
+    // Microsoft.UI.Xaml.Controls.RowContext
+    { 0, 0 },
     // Microsoft.UI.Xaml.Controls.StyleSelector
     { 140737488355329, 140737488355329 },
     // Microsoft.UI.Xaml.TextOptions
@@ -1875,6 +1877,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     // Microsoft.UI.Xaml.Navigation.NavigationCacheMode
     { 0, 0 },
     // Microsoft.UI.Xaml.Navigation.NavigationMode
+    { 0, 0 },
+    // Microsoft.UI.Xaml.Controls.NeighborRelation
     { 0, 0 },
     // Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction
     { 0, 0 },

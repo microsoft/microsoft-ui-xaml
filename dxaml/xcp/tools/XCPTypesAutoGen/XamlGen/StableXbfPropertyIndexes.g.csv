@@ -2474,3 +2474,7 @@ Window_MaxWidth,Window_MaxWidth,2472
 Window_MinHeight,Window_MinHeight,2473
 Window_MinWidth,Window_MinWidth,2474
 Window_PlacementId,Window_PlacementId,2475
+RowContext_IsNextSelected,RowContext_IsNextSelected,2476
+RowContext_IsPreviousSelected,RowContext_IsPreviousSelected,2477
+RowContext_NextRelation,RowContext_NextRelation,2478
+RowContext_PreviousRelation,RowContext_PreviousRelation,2479

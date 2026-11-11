@@ -1002,6 +1002,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         SeekSliderAutomationPeer = 981,
         SplitMenuFlyoutItemAutomationPeer = 982,
         SplitMenuFlyoutItem = 983,
+        RowContext = 984,
+        NeighborRelation = 985,
     }
 
     // Define the stable XBF property indices
@@ -3483,6 +3485,10 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         Window_MinHeight = 2473,
         Window_MinWidth = 2474,
         Window_PlacementId = 2475,
+        RowContext_IsNextSelected = 2476,
+        RowContext_IsPreviousSelected = 2477,
+        RowContext_NextRelation = 2478,
+        RowContext_PreviousRelation = 2479,
     }
 
     // Define the stable XBF event indices
@@ -3917,6 +3923,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.MediaPlayer, new XamlTypeInfo("Windows.Media.Playback.MediaPlayer", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
             { StableXbfTypeIndex.MediaTransportControlsHelper, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.MediaTransportControlsHelper", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
             { StableXbfTypeIndex.ParserServiceProvider, new XamlTypeInfo("Microsoft.UI.Xaml.Markup.ParserServiceProvider", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.RowContext, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.RowContext", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
             { StableXbfTypeIndex.StyleSelector, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.StyleSelector", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
             { StableXbfTypeIndex.TextOptions, new XamlTypeInfo("Microsoft.UI.Xaml.TextOptions", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
             { StableXbfTypeIndex.ToolTipService, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.ToolTipService", StableXbfTypeIndex.Object, XamlTypeFlags.None) },
@@ -4667,6 +4674,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.MarkupExtensionType, new XamlTypeInfo("Microsoft.UI.Xaml.MarkupExtensionType", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.NavigationCacheMode, new XamlTypeInfo("Microsoft.UI.Xaml.Navigation.NavigationCacheMode", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.NavigationMode, new XamlTypeInfo("Microsoft.UI.Xaml.Navigation.NavigationMode", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.NeighborRelation, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.NeighborRelation", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.NotifyCollectionChangedAction, new XamlTypeInfo("Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.OpticalMarginAlignment, new XamlTypeInfo("Microsoft.UI.Xaml.OpticalMarginAlignment", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.Orientation, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.Orientation", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
@@ -4786,6 +4794,10 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.ParserServiceProvider_RootObject, new XamlPropertyInfo("Microsoft.UI.Xaml.Markup.ParserServiceProvider.RootObject", StableXbfTypeIndex.Object, StableXbfTypeIndex.ParserServiceProvider, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.ParserServiceProvider_TargetObject, new XamlPropertyInfo("Microsoft.UI.Xaml.Markup.ParserServiceProvider.TargetObject", StableXbfTypeIndex.Object, StableXbfTypeIndex.ParserServiceProvider, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.ParserServiceProvider_TargetProperty, new XamlPropertyInfo("Microsoft.UI.Xaml.Markup.ParserServiceProvider.TargetProperty", StableXbfTypeIndex.Object, StableXbfTypeIndex.ParserServiceProvider, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.RowContext_IsNextSelected, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.RowContext.IsNextSelected", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.RowContext, XamlPropertyFlags.IsAttached) },
+            { StableXbfPropertyIndex.RowContext_IsPreviousSelected, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.RowContext.IsPreviousSelected", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.RowContext, XamlPropertyFlags.IsAttached) },
+            { StableXbfPropertyIndex.RowContext_NextRelation, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.RowContext.NextRelation", StableXbfTypeIndex.NeighborRelation, StableXbfTypeIndex.RowContext, XamlPropertyFlags.IsAttached) },
+            { StableXbfPropertyIndex.RowContext_PreviousRelation, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.RowContext.PreviousRelation", StableXbfTypeIndex.NeighborRelation, StableXbfTypeIndex.RowContext, XamlPropertyFlags.IsAttached) },
             { StableXbfPropertyIndex.TextOptions_TextFormattingMode, new XamlPropertyInfo("Microsoft.UI.Xaml.TextOptions.TextFormattingMode", StableXbfTypeIndex.TextFormattingMode, StableXbfTypeIndex.TextOptions, XamlPropertyFlags.IsAttached) },
             { StableXbfPropertyIndex.TextOptions_TextHintingMode, new XamlPropertyInfo("Microsoft.UI.Xaml.TextOptions.TextHintingMode", StableXbfTypeIndex.TextHintingMode, StableXbfTypeIndex.TextOptions, XamlPropertyFlags.IsAttached) },
             { StableXbfPropertyIndex.TextOptions_TextRenderingMode, new XamlPropertyInfo("Microsoft.UI.Xaml.TextOptions.TextRenderingMode", StableXbfTypeIndex.TextRenderingMode, StableXbfTypeIndex.TextOptions, XamlPropertyFlags.IsAttached) },

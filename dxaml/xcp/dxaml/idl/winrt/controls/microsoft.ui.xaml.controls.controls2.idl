@@ -144,6 +144,15 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
+    enum NeighborRelation
+    {
+        None,
+        SameGroup,
+        OtherGroup,
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
     enum SplitViewDisplayMode
     {
         Overlay,
@@ -399,6 +408,7 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ContentDialogButton>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ContentDialogPlacement>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ContentDialogResult>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.NeighborRelation>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.SplitViewDisplayMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.SplitViewPanePlacement>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.Symbol>;
@@ -785,6 +795,21 @@ namespace Microsoft.UI.Xaml.Controls
     runtimeclass RichEditBoxTextChangingEventArgs
     {
         Boolean IsContentChanging{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass RowContext
+    {
+        static Microsoft.UI.Xaml.DependencyProperty PreviousRelationProperty{ get; };
+        static Microsoft.UI.Xaml.Controls.NeighborRelation GetPreviousRelation(Microsoft.UI.Xaml.Controls.ListViewItem element);
+        static Microsoft.UI.Xaml.DependencyProperty NextRelationProperty{ get; };
+        static Microsoft.UI.Xaml.Controls.NeighborRelation GetNextRelation(Microsoft.UI.Xaml.Controls.ListViewItem element);
+        static Microsoft.UI.Xaml.DependencyProperty IsPreviousSelectedProperty{ get; };
+        static Boolean GetIsPreviousSelected(Microsoft.UI.Xaml.Controls.ListViewItem element);
+        static Microsoft.UI.Xaml.DependencyProperty IsNextSelectedProperty{ get; };
+        static Boolean GetIsNextSelected(Microsoft.UI.Xaml.Controls.ListViewItem element);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

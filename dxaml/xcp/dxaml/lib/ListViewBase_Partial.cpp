@@ -160,6 +160,7 @@ _Check_return_ HRESULT ListViewBase::OnPropertyChanged2(_In_ const PropertyChang
             // Call the Selector::UpdateVisibleAndCachedItemsSelectionAndVisualState function
             // OnSelectionModeChanged will update all Selection related properties
             IFC(UpdateVisibleAndCachedItemsSelectionAndVisualState(false /* updateIsSelected */));
+            IFC(UpdateRowContextForRealizedContainers());
             break;
         }
     case KnownPropertyIndex::ListViewBase_IsSwipeEnabled:
@@ -207,6 +208,8 @@ _Check_return_ HRESULT ListViewBase::OnPropertyChanged2(_In_ const PropertyChang
     case KnownPropertyIndex::ItemsControl_ItemsPanel:
         {
             ItemsControl::TraceVirtualizationEnabledByModernPanel();
+            // The layout decides whether RowContext is supported, so recompute for the new panel.
+            IFC(QueueRowContextUpdate());
             break;
         }
     case KnownPropertyIndex::ListViewBase_IsMultiSelectCheckBoxEnabled:
@@ -259,6 +262,14 @@ IFACEMETHODIMP ListViewBase::PrepareContainerForItemOverride(
             IFC(ListViewBaseGenerated::PrepareContainerForItemOverride(element, item));
         }
         IFC(hr); // in case the state could not have been updated by the StateChangeSuspender Destructor
+
+        if (ctl::is<IListViewItem>(element))
+        {
+            m_hasListViewItemContainers = true;
+            IFC(UpdateRowContext(element));
+            // The container-to-index mapping may not be established yet, so recompute after layout too.
+            IFC(QueueRowContextUpdate());
+        }
     }
 
 Cleanup:
@@ -409,6 +420,212 @@ IFACEMETHODIMP ListViewBase::ClearContainerForItemOverride(
 
 Cleanup:
     RRETURN(hr);
+}
+
+// Computes the neighbor information that RowContext exposes for a ListViewItem container.
+// Neighbors are the displayed items (in order) around the container's item, whether or not
+// their containers are realized.
+_Check_return_ HRESULT ListViewBase::UpdateRowContext(
+    _In_ xaml::IDependencyObject* pContainer)
+{
+    // GridViewItem and other containers keep the default values.
+    if (!ctl::is<IListViewItem>(pContainer))
+    {
+        return S_OK;
+    }
+
+    if (m_isUpdatingRowContext)
+    {
+        // A property changed callback re-entered us; finish the current pass first.
+        return QueueRowContextUpdate();
+    }
+
+    struct ResetFlag
+    {
+        bool& flag;
+        ~ResetFlag() { flag = false; }
+    } resetFlag{ m_isUpdatingRowContext };
+    m_isUpdatingRowContext = true;
+
+    xaml_controls::NeighborRelation previousRelation = xaml_controls::NeighborRelation_None;
+    xaml_controls::NeighborRelation nextRelation = xaml_controls::NeighborRelation_None;
+    BOOLEAN isPreviousSelected = FALSE;
+    BOOLEAN isNextSelected = FALSE;
+
+    ctl::ComPtr<xaml_controls::IPanel> panel;
+    IFC_RETURN(get_ItemsPanelRoot(&panel));
+
+    // Only a vertical ItemsStackPanel is supported by the proof of concept.
+    bool isSupportedLayout = false;
+    if (auto itemsStackPanel = panel.AsOrNull<xaml_controls::IItemsStackPanel>())
+    {
+        xaml_controls::Orientation orientation = xaml_controls::Orientation_Vertical;
+        IFC_RETURN(itemsStackPanel->get_Orientation(&orientation));
+        isSupportedLayout = (orientation == xaml_controls::Orientation_Vertical);
+    }
+
+    INT index = -1;
+    UINT itemCountUnsigned = 0;
+    if (isSupportedLayout)
+    {
+        IFC_RETURN(IndexFromContainer(pContainer, &index));
+        IFC_RETURN(GetItemCount(itemCountUnsigned));
+    }
+
+    const INT itemCount = static_cast<INT>(itemCountUnsigned);
+    if (isSupportedLayout && index >= 0 && index < itemCount)
+    {
+        BOOLEAN isGrouping = FALSE;
+        IFC_RETURN(get_IsGrouping(&isGrouping));
+
+        ModernCollectionBasePanel* modernPanel = nullptr;
+        if (isGrouping)
+        {
+            auto modernPanelInterface = panel.AsOrNull<IModernCollectionBasePanel>();
+            if (modernPanelInterface)
+            {
+                modernPanel = modernPanelInterface.Cast<ModernCollectionBasePanel>();
+            }
+        }
+
+        INT32 groupIndex = -1;
+        if (modernPanel)
+        {
+            IFC_RETURN(modernPanel->GetGroupInformationFromItemIndex(index, &groupIndex, nullptr, nullptr));
+        }
+
+        // In a list that is not grouped every neighbor is in the same group.
+        const auto getRelationAndSelection = [&](INT neighborIndex, xaml_controls::NeighborRelation* relation, BOOLEAN* isSelected) -> HRESULT
+        {
+            *relation = xaml_controls::NeighborRelation_None;
+            *isSelected = FALSE;
+
+            if (neighborIndex >= 0 && neighborIndex < itemCount)
+            {
+                INT32 neighborGroupIndex = -1;
+                if (modernPanel)
+                {
+                    IFC_RETURN(modernPanel->GetGroupInformationFromItemIndex(neighborIndex, &neighborGroupIndex, nullptr, nullptr));
+                }
+
+                *relation = (neighborGroupIndex == groupIndex)
+                    ? xaml_controls::NeighborRelation_SameGroup
+                    : xaml_controls::NeighborRelation_OtherGroup;
+
+                bool selected = false;
+                IFC_RETURN(IsIndexSelected(neighborIndex, &selected));
+                *isSelected = selected ? TRUE : FALSE;
+            }
+
+            return S_OK;
+        };
+
+        IFC_RETURN(getRelationAndSelection(index - 1, &previousRelation, &isPreviousSelected));
+        IFC_RETURN(getRelationAndSelection(index + 1, &nextRelation, &isNextSelected));
+    }
+
+    DependencyObject* container = static_cast<DependencyObject*>(pContainer);
+    IFC_RETURN(DependencyObject::SetAttachedValueByKnownIndex(container, KnownPropertyIndex::RowContext_PreviousRelation, previousRelation));
+    IFC_RETURN(DependencyObject::SetAttachedValueByKnownIndex(container, KnownPropertyIndex::RowContext_NextRelation, nextRelation));
+    IFC_RETURN(DependencyObject::SetAttachedValueByKnownIndex(container, KnownPropertyIndex::RowContext_IsPreviousSelected, isPreviousSelected));
+    IFC_RETURN(DependencyObject::SetAttachedValueByKnownIndex(container, KnownPropertyIndex::RowContext_IsNextSelected, isNextSelected));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::UpdateRowContextForRealizedContainers()
+{
+    if (!m_hasListViewItemContainers)
+    {
+        return S_OK;
+    }
+
+    if (m_inCollectionChange)
+    {
+        // Item and container indices are not coherent until the change has been processed.
+        return QueueRowContextUpdate();
+    }
+
+    ctl::ComPtr<xaml_controls::IPanel> panel;
+    IFC_RETURN(get_ItemsPanelRoot(&panel));
+
+    auto modernPanelInterface = panel.AsOrNull<IModernCollectionBasePanel>();
+    if (!modernPanelInterface)
+    {
+        return S_OK;
+    }
+
+    int firstCachedIndex = -1;
+    int lastCachedIndex = -1;
+    std::vector<unsigned int> pinnedElementsIndices;
+
+    ModernCollectionBasePanel* modernPanel = modernPanelInterface.Cast<ModernCollectionBasePanel>();
+    IFC_RETURN(modernPanel->get_FirstCacheIndexBase(&firstCachedIndex));
+    IFC_RETURN(modernPanel->get_LastCacheIndexBase(&lastCachedIndex));
+    IFC_RETURN(modernPanel->GetPinnedElementsIndexVector(xaml_controls::ElementType_ItemContainer, &pinnedElementsIndices));
+
+    const auto updateContainerAt = [this](int itemIndex) -> HRESULT
+    {
+        ctl::ComPtr<IDependencyObject> container;
+        IFC_RETURN(ContainerFromIndex(itemIndex, &container));
+        if (container)
+        {
+            IFC_RETURN(UpdateRowContext(container.Get()));
+        }
+        return S_OK;
+    };
+
+    if (firstCachedIndex >= 0)
+    {
+        for (int i = firstCachedIndex; i <= lastCachedIndex; ++i)
+        {
+            IFC_RETURN(updateContainerAt(i));
+        }
+    }
+
+    for (unsigned int pinnedIndex : pinnedElementsIndices)
+    {
+        // Containers inside the cached range were already updated.
+        const int index = static_cast<int>(pinnedIndex);
+        if (firstCachedIndex < 0 || index < firstCachedIndex || index > lastCachedIndex)
+        {
+            IFC_RETURN(updateContainerAt(index));
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::QueueRowContextUpdate()
+{
+    if (!m_hasListViewItemContainers)
+    {
+        return S_OK;
+    }
+
+    m_rowContextUpdatePending = true;
+
+    if (!m_rowContextLayoutUpdatedHandler)
+    {
+        IFC_RETURN(m_rowContextLayoutUpdatedHandler.AttachEventHandler(
+            this,
+            std::bind(&ListViewBase::OnRowContextLayoutUpdated, this, _1, _2)));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT ListViewBase::OnRowContextLayoutUpdated(
+    _In_ IInspectable* /*pSender*/,
+    _In_ IInspectable* /*pArgs*/)
+{
+    if (m_rowContextUpdatePending)
+    {
+        m_rowContextUpdatePending = false;
+        IFC_RETURN(UpdateRowContextForRealizedContainers());
+    }
+
+    return S_OK;
 }
 
 // Causes the object to scroll into view.  If it is not visible, it is aligned

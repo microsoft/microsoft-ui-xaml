@@ -674,6 +674,7 @@ HRESULT OnCoreCreateManipulationModes(_Outptr_ CDependencyObject **ppObject, _In
 HRESULT OnCoreCreateMarkupExtensionType(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateNavigationCacheMode(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateNavigationMode(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateNeighborRelation(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateNotifyCollectionChangedAction(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateOpticalMarginAlignment(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateOrientation(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);

@@ -510,6 +510,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::Object, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
     },
+    // Microsoft.UI.Xaml.Controls.RowContext
+    {
+        KnownTypeIndex::RowContext, // Index name
+        KnownTypeIndex::Object, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
+    },
     // Microsoft.UI.Xaml.Controls.StyleSelector
     {
         KnownTypeIndex::StyleSelector, // Index name
@@ -5712,6 +5718,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
     },
+    // Microsoft.UI.Xaml.Controls.NeighborRelation
+    {
+        KnownTypeIndex::NeighborRelation, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
     // Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction
     {
         KnownTypeIndex::NotifyCollectionChangedAction, // Index name
@@ -6490,6 +6502,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"ParserServiceProvider"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Markup.ParserServiceProvider"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Markup, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext
+    {
+        XSTRING_PTR_STORAGE(L"RowContext"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.RowContext"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Controls, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Controls.StyleSelector
     {
@@ -11693,6 +11711,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Navigation.NavigationMode"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Navigation, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Controls.NeighborRelation
+    {
+        XSTRING_PTR_STORAGE(L"NeighborRelation"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.NeighborRelation"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Controls, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction
     {
         XSTRING_PTR_STORAGE(L"NotifyCollectionChangedAction"), // Name
@@ -12660,6 +12684,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
         4, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext
+    {
+        KnownPropertyIndex::RowContext_IsNextSelected, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.StyleSelector
     {
@@ -20347,6 +20380,14 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property
         0, // Property slot count
     },
+    // Microsoft.UI.Xaml.Controls.NeighborRelation
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
     // Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
@@ -20943,6 +20984,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Windows::Media::Playback::IMediaPlayer),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControlsHelper),
     GUID{} /*GUID_NULL*/,
+    __uuidof(ABI::Microsoft::UI::Xaml::Controls::IRowContext),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IStyleSelector),
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToolTipService),
@@ -21810,6 +21852,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Navigation::NavigationMode>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::NeighborRelation>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::OpticalMarginAlignment>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::Orientation>),
@@ -21879,7 +21922,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[942] =
+extern const MetaDataTypeName c_aTypeNames[944] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -22031,6 +22074,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::Projection },
     { KnownTypeIndex::Quaternion },
     { KnownTypeIndex::RootVisual },
+    { KnownTypeIndex::RowContext },
     { KnownTypeIndex::ScrollMode },
     { KnownTypeIndex::SetterBase },
     { KnownTypeIndex::StackPanel },
@@ -22246,6 +22290,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::IsTypeNotPresent },
     { KnownTypeIndex::ListViewBaseItem },
     { KnownTypeIndex::LogicalDirection },
+    { KnownTypeIndex::NeighborRelation },
     { KnownTypeIndex::ParallelTimeline },
     { KnownTypeIndex::PatternInterface },
     { KnownTypeIndex::PointerDirection },
@@ -23219,6 +23264,38 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::ParserServiceProvider, // Declaring type
         KnownTypeIndex::ParserServiceProvider, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.IsNextSelected
+    {
+        KnownPropertyIndex::RowContext_IsNextSelected, // Index name
+        KnownTypeIndex::Boolean, // Property type
+        KnownTypeIndex::RowContext, // Declaring type
+        KnownTypeIndex::ListViewItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsAttached) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.IsPreviousSelected
+    {
+        KnownPropertyIndex::RowContext_IsPreviousSelected, // Index name
+        KnownTypeIndex::Boolean, // Property type
+        KnownTypeIndex::RowContext, // Declaring type
+        KnownTypeIndex::ListViewItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsAttached) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.NextRelation
+    {
+        KnownPropertyIndex::RowContext_NextRelation, // Index name
+        KnownTypeIndex::NeighborRelation, // Property type
+        KnownTypeIndex::RowContext, // Declaring type
+        KnownTypeIndex::ListViewItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsAttached) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Controls.RowContext.PreviousRelation
+    {
+        KnownPropertyIndex::RowContext_PreviousRelation, // Index name
+        KnownTypeIndex::NeighborRelation, // Property type
+        KnownTypeIndex::RowContext, // Declaring type
+        KnownTypeIndex::ListViewItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsAttached) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.TextOptions.TextFormattingMode
     {
@@ -38530,6 +38607,10 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::ParserServiceProvider_TargetObject, // ParserServiceProvider_RootObject
     KnownPropertyIndex::ParserServiceProvider_TargetProperty, // ParserServiceProvider_TargetObject
     KnownPropertyIndex::UnknownType_UnknownProperty, // ParserServiceProvider_TargetProperty
+    KnownPropertyIndex::RowContext_IsPreviousSelected, // RowContext_IsNextSelected
+    KnownPropertyIndex::RowContext_NextRelation, // RowContext_IsPreviousSelected
+    KnownPropertyIndex::RowContext_PreviousRelation, // RowContext_NextRelation
+    KnownPropertyIndex::UnknownType_UnknownProperty, // RowContext_PreviousRelation
     KnownPropertyIndex::TextOptions_TextHintingMode, // TextOptions_TextFormattingMode
     KnownPropertyIndex::TextOptions_TextRenderingMode, // TextOptions_TextHintingMode
     KnownPropertyIndex::UnknownType_UnknownProperty, // TextOptions_TextRenderingMode
@@ -40491,6 +40572,10 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     1, // ParserServiceProvider_RootObject
     2, // ParserServiceProvider_TargetObject
     3, // ParserServiceProvider_TargetProperty
+    0, // RowContext_IsNextSelected
+    0, // RowContext_IsPreviousSelected
+    0, // RowContext_NextRelation
+    0, // RowContext_PreviousRelation
     0, // TextOptions_TextFormattingMode
     0, // TextOptions_TextHintingMode
     0, // TextOptions_TextRenderingMode
@@ -42452,6 +42537,10 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"RootObject"),
     XSTRING_PTR_STORAGE(L"TargetObject"),
     XSTRING_PTR_STORAGE(L"TargetProperty"),
+    XSTRING_PTR_STORAGE(L"IsNextSelected"),
+    XSTRING_PTR_STORAGE(L"IsPreviousSelected"),
+    XSTRING_PTR_STORAGE(L"NextRelation"),
+    XSTRING_PTR_STORAGE(L"PreviousRelation"),
     XSTRING_PTR_STORAGE(L"TextFormattingMode"),
     XSTRING_PTR_STORAGE(L"TextHintingMode"),
     XSTRING_PTR_STORAGE(L"TextRenderingMode"),
@@ -44388,113 +44477,113 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 120;
             return 91;
         case 10:
-            *pnEndIndex = 160;
+            *pnEndIndex = 161;
             return 120;
         case 11:
-            *pnEndIndex = 193;
-            return 160;
+            *pnEndIndex = 194;
+            return 161;
         case 12:
-            *pnEndIndex = 231;
-            return 193;
+            *pnEndIndex = 232;
+            return 194;
         case 13:
-            *pnEndIndex = 261;
-            return 231;
+            *pnEndIndex = 262;
+            return 232;
         case 14:
-            *pnEndIndex = 299;
-            return 261;
+            *pnEndIndex = 300;
+            return 262;
         case 15:
-            *pnEndIndex = 345;
-            return 299;
+            *pnEndIndex = 346;
+            return 300;
         case 16:
-            *pnEndIndex = 383;
-            return 345;
+            *pnEndIndex = 385;
+            return 346;
         case 17:
-            *pnEndIndex = 417;
-            return 383;
+            *pnEndIndex = 419;
+            return 385;
         case 18:
-            *pnEndIndex = 457;
-            return 417;
+            *pnEndIndex = 459;
+            return 419;
         case 19:
-            *pnEndIndex = 510;
-            return 457;
+            *pnEndIndex = 512;
+            return 459;
         case 20:
-            *pnEndIndex = 558;
-            return 510;
+            *pnEndIndex = 560;
+            return 512;
         case 21:
-            *pnEndIndex = 592;
-            return 558;
+            *pnEndIndex = 594;
+            return 560;
         case 22:
-            *pnEndIndex = 643;
-            return 592;
+            *pnEndIndex = 645;
+            return 594;
         case 23:
-            *pnEndIndex = 683;
-            return 643;
+            *pnEndIndex = 685;
+            return 645;
         case 24:
-            *pnEndIndex = 716;
-            return 683;
+            *pnEndIndex = 718;
+            return 685;
         case 25:
-            *pnEndIndex = 751;
-            return 716;
+            *pnEndIndex = 753;
+            return 718;
         case 26:
-            *pnEndIndex = 779;
-            return 751;
+            *pnEndIndex = 781;
+            return 753;
         case 27:
-            *pnEndIndex = 793;
-            return 779;
+            *pnEndIndex = 795;
+            return 781;
         case 28:
-            *pnEndIndex = 814;
-            return 793;
+            *pnEndIndex = 816;
+            return 795;
         case 29:
-            *pnEndIndex = 834;
-            return 814;
+            *pnEndIndex = 836;
+            return 816;
         case 30:
-            *pnEndIndex = 855;
-            return 834;
+            *pnEndIndex = 857;
+            return 836;
         case 31:
-            *pnEndIndex = 867;
-            return 855;
+            *pnEndIndex = 869;
+            return 857;
         case 32:
-            *pnEndIndex = 884;
-            return 867;
+            *pnEndIndex = 886;
+            return 869;
         case 33:
-            *pnEndIndex = 898;
-            return 884;
+            *pnEndIndex = 900;
+            return 886;
         case 34:
-            *pnEndIndex = 911;
-            return 898;
+            *pnEndIndex = 913;
+            return 900;
         case 35:
-            *pnEndIndex = 917;
-            return 911;
+            *pnEndIndex = 919;
+            return 913;
         case 36:
-            *pnEndIndex = 923;
-            return 917;
+            *pnEndIndex = 925;
+            return 919;
         case 37:
-            *pnEndIndex = 928;
-            return 923;
+            *pnEndIndex = 930;
+            return 925;
         case 38:
-            *pnEndIndex = 931;
-            return 928;
+            *pnEndIndex = 933;
+            return 930;
         case 39:
-            *pnEndIndex = 936;
-            return 931;
-        case 40:
-            *pnEndIndex = 937;
-            return 936;
-        case 41:
             *pnEndIndex = 938;
-            return 937;
-        case 42:
+            return 933;
+        case 40:
             *pnEndIndex = 939;
             return 938;
-        case 43:
+        case 41:
             *pnEndIndex = 940;
             return 939;
-        case 49:
+        case 42:
             *pnEndIndex = 941;
             return 940;
-        case 50:
+        case 43:
             *pnEndIndex = 942;
             return 941;
+        case 49:
+            *pnEndIndex = 943;
+            return 942;
+        case 50:
+            *pnEndIndex = 944;
+            return 943;
         default:
             *pnEndIndex = 0;
             return 0;
@@ -44973,6 +45062,10 @@ _Check_return_ HRESULT GetEnumValueTable(_In_ KnownTypeIndex nTypeIndex, _Out_ U
         case KnownTypeIndex::NavigationMode:
             *pnCount = ARRAY_SIZE(satNavigationMode);
             *ppTable = satNavigationMode;
+            return S_OK;
+        case KnownTypeIndex::NeighborRelation:
+            *pnCount = ARRAY_SIZE(satNeighborRelation);
+            *ppTable = satNeighborRelation;
             return S_OK;
         case KnownTypeIndex::NotifyCollectionChangedAction:
             *pnCount = ARRAY_SIZE(satNotifyCollectionChangedAction);

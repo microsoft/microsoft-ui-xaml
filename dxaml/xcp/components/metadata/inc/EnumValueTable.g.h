@@ -1091,6 +1091,13 @@ extern __declspec(selectany) const XTABLE satNavigationMode[] =
     { XSTRING_PTR_STORAGE(L"Refresh"), 3 },
 };
 
+extern __declspec(selectany) const XTABLE satNeighborRelation[] =
+{
+    { XSTRING_PTR_STORAGE(L"None"), 0 },
+    { XSTRING_PTR_STORAGE(L"SameGroup"), 1 },
+    { XSTRING_PTR_STORAGE(L"OtherGroup"), 2 },
+};
+
 extern __declspec(selectany) const XTABLE satNotifyCollectionChangedAction[] =
 {
     { XSTRING_PTR_STORAGE(L"Add"), 0 },

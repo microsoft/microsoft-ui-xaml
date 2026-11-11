@@ -424,6 +424,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::IRichEditBoxTextChangingEventArgs IRichEditBoxTextChangingEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Controls::IRichTextBlock IRichTextBlock;
     typedef ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow IRichTextBlockOverflow;
+    typedef ABI::Microsoft::UI::Xaml::Controls::IRowContext IRowContext;
     typedef ABI::Microsoft::UI::Xaml::Controls::IRowDefinition IRowDefinition;
     typedef ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter IScrollContentPresenter;
     typedef ABI::Microsoft::UI::Xaml::Controls::IScrollViewer IScrollViewer;

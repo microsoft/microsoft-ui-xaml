@@ -597,6 +597,11 @@ _Check_return_ HRESULT CNavigationMode::Create(_Outptr_ CDependencyObject** ppOb
     return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satNavigationMode), satNavigationMode, KnownTypeIndex::NavigationMode, /* IsFlagsEnumeration */ false);
 }
 
+_Check_return_ HRESULT CNeighborRelation::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
+{
+    return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satNeighborRelation), satNeighborRelation, KnownTypeIndex::NeighborRelation, /* IsFlagsEnumeration */ false);
+}
+
 _Check_return_ HRESULT CNotifyCollectionChangedAction::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
 {
     return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satNotifyCollectionChangedAction), satNotifyCollectionChangedAction, KnownTypeIndex::NotifyCollectionChangedAction, /* IsFlagsEnumeration */ false);
