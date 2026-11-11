@@ -318,15 +318,20 @@ _Check_return_ HRESULT CTileBrush::AdjustDecodeRectForStretch(
             break;
         }
 
-        // Clamp to natural bounds
-        if (pDecodeBounds->Width > naturalBounds.Width)
+        // Clamp to natural bounds. An SVG with an intrinsic size stays sharp above its natural size, so it isn't clamped.
+        const bool hasIntrinsicSize =
+            OfTypeByIndex<KnownTypeIndex::ImageBrush>() &&
+            static_cast<CImageBrush*>(this)->m_pImageSource &&
+            static_cast<CImageBrush*>(this)->m_pImageSource->HasIntrinsicSize();
+
+        if (!hasIntrinsicSize && (pDecodeBounds->Width > naturalBounds.Width))
         {
             pDecodeBounds->Width = naturalBounds.Width;
 
             pDecodeBounds->Height = naturalBounds.Height;
         }
 
-        if (pDecodeBounds->Height > naturalBounds.Height)
+        if (!hasIntrinsicSize && (pDecodeBounds->Height > naturalBounds.Height))
         {
             pDecodeBounds->Height = naturalBounds.Height;
 
