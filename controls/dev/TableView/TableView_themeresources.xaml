@@ -5,133 +5,68 @@
     xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
     <ResourceDictionary.ThemeDictionaries>
-        <!-- Declare Light + Default (Dark) + HighContrast explicitly: once any merged theme
-             dictionary defines "Light", XAML treats "Default" as Dark (not a Light fallback),
-             so omitting "Light" would drop these tokens from the Light theme. -->
         <ResourceDictionary x:Key="Light">
-            <!-- TableView metric tokens (incl. header ResizeGripper width) only. TabularSurface* brushes live in
-                 CommonStyles/TabularSurfaces_themeresources.xaml; mirroring them here causes a
-                 duplicate-key build failure when the theme-XBF pages merge. -->
-            <x:Double x:Key="TableViewRowMinHeightLarge">40</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSizeSmall">14</x:Double>
-            <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
-            <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
-            <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
-            <!-- The header's bottom edge and internal column edges meet gridlines. -->
-            <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
-            <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
-            <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
-            <x:Double x:Key="TableViewCellFontSize">14</x:Double>
-            <x:Double x:Key="TableViewCellFontSizeSmall">14</x:Double>
-            <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
-
-            <!-- Header/cell chrome metrics as theme tokens (tunable without code edits). -->
-            <Thickness x:Key="TableViewHeaderCellPaddingLarge">12,10,12,10</Thickness>
-            <x:Double x:Key="TableViewRowMinHeight">32</x:Double>
-            <x:Double x:Key="TableViewRowMinHeightSmall">24</x:Double>
-            <Thickness x:Key="TableViewCellPaddingLarge">12,10,12,10</Thickness>
-            <Thickness x:Key="TableViewCellPadding">12,6,12,6</Thickness>
-            <Thickness x:Key="TableViewCellPaddingSmall">12,2,12,2</Thickness>
-            <Thickness x:Key="TableViewHeaderCellPadding">12,6,12,6</Thickness>
-            <Thickness x:Key="TableViewHeaderCellPaddingSmall">12,2,12,2</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPaddingLarge">12,9,12,11</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPadding">12,5,12,7</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPaddingSmall">12,1,12,3</Thickness>
-            <Thickness x:Key="TableViewCellTextPaddingLarge">12,9,12,11</Thickness>
-            <Thickness x:Key="TableViewCellTextPadding">12,5,12,7</Thickness>
-            <Thickness x:Key="TableViewCellTextPaddingSmall">12,1,12,3</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPaddingLarge">0,9,0,11</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPadding">0,5,0,7</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPaddingSmall">0,1,0,3</Thickness>
-            <x:Double x:Key="TableViewGroupHeaderMinHeightLarge">40</x:Double>
-            <x:Double x:Key="TableViewGroupHeaderMinHeight">32</x:Double>
-            <x:Double x:Key="TableViewGroupHeaderMinHeightSmall">24</x:Double>
-            <Thickness x:Key="TableViewGroupHeaderPaddingLarge">4,10,12,10</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderPadding">4,6,12,6</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderPaddingSmall">4,2,12,2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
-            <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. -->
-            <x:Double x:Key="TableViewRowMinHeightLarge">40</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSizeSmall">14</x:Double>
-            <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
-            <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
-            <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">0</Thickness>
-            <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
-            <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
-            <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
-            <x:Double x:Key="TableViewCellFontSize">14</x:Double>
-            <x:Double x:Key="TableViewCellFontSizeSmall">14</x:Double>
-            <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
-            <Thickness x:Key="TableViewHeaderCellPaddingLarge">12,10,12,10</Thickness>
-            <x:Double x:Key="TableViewRowMinHeight">32</x:Double>
-            <x:Double x:Key="TableViewRowMinHeightSmall">24</x:Double>
-            <Thickness x:Key="TableViewCellPaddingLarge">12,10,12,10</Thickness>
-            <Thickness x:Key="TableViewCellPadding">12,6,12,6</Thickness>
-            <Thickness x:Key="TableViewCellPaddingSmall">12,2,12,2</Thickness>
-            <Thickness x:Key="TableViewHeaderCellPadding">12,6,12,6</Thickness>
-            <Thickness x:Key="TableViewHeaderCellPaddingSmall">12,2,12,2</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPaddingLarge">12,9,12,11</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPadding">12,5,12,7</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPaddingSmall">12,1,12,3</Thickness>
-            <Thickness x:Key="TableViewCellTextPaddingLarge">12,9,12,11</Thickness>
-            <Thickness x:Key="TableViewCellTextPadding">12,5,12,7</Thickness>
-            <Thickness x:Key="TableViewCellTextPaddingSmall">12,1,12,3</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPaddingLarge">0,9,0,11</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPadding">0,5,0,7</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPaddingSmall">0,1,0,3</Thickness>
-            <x:Double x:Key="TableViewGroupHeaderMinHeightLarge">40</x:Double>
-            <x:Double x:Key="TableViewGroupHeaderMinHeight">32</x:Double>
-            <x:Double x:Key="TableViewGroupHeaderMinHeightSmall">24</x:Double>
-            <Thickness x:Key="TableViewGroupHeaderPaddingLarge">4,10,12,10</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderPadding">4,6,12,6</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderPaddingSmall">4,2,12,2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. The
-                 canonical HighContrast System*Color brushes live in TabularSurfaces_themeresources.xaml. -->
-            <x:Double x:Key="TableViewRowMinHeightLarge">40</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
-            <x:Double x:Key="TableViewHeaderFontSizeSmall">14</x:Double>
-            <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
-            <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
-            <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
             <Thickness x:Key="TableViewHeaderInteractionBorderThickness">1</Thickness>
-            <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
-            <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
-            <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
-            <x:Double x:Key="TableViewCellFontSize">14</x:Double>
-            <x:Double x:Key="TableViewCellFontSizeSmall">14</x:Double>
-            <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
-            <Thickness x:Key="TableViewHeaderCellPaddingLarge">12,10,12,10</Thickness>
-            <x:Double x:Key="TableViewRowMinHeight">32</x:Double>
-            <x:Double x:Key="TableViewRowMinHeightSmall">24</x:Double>
-            <Thickness x:Key="TableViewCellPaddingLarge">12,10,12,10</Thickness>
-            <Thickness x:Key="TableViewCellPadding">12,6,12,6</Thickness>
-            <Thickness x:Key="TableViewCellPaddingSmall">12,2,12,2</Thickness>
-            <Thickness x:Key="TableViewHeaderCellPadding">12,6,12,6</Thickness>
-            <Thickness x:Key="TableViewHeaderCellPaddingSmall">12,2,12,2</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPaddingLarge">12,9,12,11</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPadding">12,5,12,7</Thickness>
-            <Thickness x:Key="TableViewHeaderTextPaddingSmall">12,1,12,3</Thickness>
-            <Thickness x:Key="TableViewCellTextPaddingLarge">12,9,12,11</Thickness>
-            <Thickness x:Key="TableViewCellTextPadding">12,5,12,7</Thickness>
-            <Thickness x:Key="TableViewCellTextPaddingSmall">12,1,12,3</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPaddingLarge">0,9,0,11</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPadding">0,5,0,7</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderTextPaddingSmall">0,1,0,3</Thickness>
-            <x:Double x:Key="TableViewGroupHeaderMinHeightLarge">40</x:Double>
-            <x:Double x:Key="TableViewGroupHeaderMinHeight">32</x:Double>
-            <x:Double x:Key="TableViewGroupHeaderMinHeightSmall">24</x:Double>
-            <Thickness x:Key="TableViewGroupHeaderPaddingLarge">4,10,12,10</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderPadding">4,6,12,6</Thickness>
-            <Thickness x:Key="TableViewGroupHeaderPaddingSmall">4,2,12,2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <!-- TabularSurface* brushes live in CommonStyles/TabularSurfaces_themeresources.xaml. -->
+    <!-- Typography -->
+    <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+    <x:Double x:Key="TableViewCellFontSizeSmall">14</x:Double>
+    <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+    <x:Double x:Key="TableViewHeaderFontSizeSmall">14</x:Double>
+    <FontWeight x:Key="TableViewHeaderFontWeight">Normal</FontWeight>
+
+    <!-- Focus and header chrome -->
+    <Thickness x:Key="TableViewFocusVisualMargin">0</Thickness>
+    <Thickness x:Key="TableViewRowFocusVisualMargin">0,-1,0,-1</Thickness>
+    <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
+    <!-- The header's bottom edge and internal column edges meet gridlines. -->
+    <CornerRadius x:Key="TableViewHeaderLeftCornerRadius">4,0,0,0</CornerRadius>
+    <CornerRadius x:Key="TableViewHeaderRightCornerRadius">0,4,0,0</CornerRadius>
+    <CornerRadius x:Key="TableViewHeaderSingleCornerRadius">4,4,0,0</CornerRadius>
+
+    <!-- Row and cell density metrics -->
+    <x:Double x:Key="TableViewRowMinHeightSmall">24</x:Double>
+    <x:Double x:Key="TableViewRowMinHeightMedium">32</x:Double>
+    <x:Double x:Key="TableViewRowMinHeightLarge">40</x:Double>
+
+    <Thickness x:Key="TableViewCellPaddingSmall">12,2,12,2</Thickness>
+    <Thickness x:Key="TableViewCellPaddingMedium">12,6,12,6</Thickness>
+    <Thickness x:Key="TableViewCellPaddingLarge">12,10,12,10</Thickness>
+
+    <Thickness x:Key="TableViewCellTextPaddingSmall">12,1,12,3</Thickness>
+    <Thickness x:Key="TableViewCellTextPaddingMedium">12,5,12,7</Thickness>
+    <Thickness x:Key="TableViewCellTextPaddingLarge">12,9,12,11</Thickness>
+
+    <!-- Column-header density metrics -->
+    <Thickness x:Key="TableViewHeaderCellPaddingSmall">12,2,12,2</Thickness>
+    <Thickness x:Key="TableViewHeaderCellPaddingMedium">12,6,12,6</Thickness>
+    <Thickness x:Key="TableViewHeaderCellPaddingLarge">12,10,12,10</Thickness>
+
+    <Thickness x:Key="TableViewHeaderTextPaddingSmall">12,1,12,3</Thickness>
+    <Thickness x:Key="TableViewHeaderTextPaddingMedium">12,5,12,7</Thickness>
+    <Thickness x:Key="TableViewHeaderTextPaddingLarge">12,9,12,11</Thickness>
+
+    <!-- Group-header density metrics -->
+    <x:Double x:Key="TableViewGroupHeaderMinHeightSmall">24</x:Double>
+    <x:Double x:Key="TableViewGroupHeaderMinHeightMedium">32</x:Double>
+    <x:Double x:Key="TableViewGroupHeaderMinHeightLarge">40</x:Double>
+
+    <Thickness x:Key="TableViewGroupHeaderPaddingSmall">4,2,12,2</Thickness>
+    <Thickness x:Key="TableViewGroupHeaderPaddingMedium">4,6,12,6</Thickness>
+    <Thickness x:Key="TableViewGroupHeaderPaddingLarge">4,10,12,10</Thickness>
+
+    <Thickness x:Key="TableViewGroupHeaderTextPaddingSmall">0,1,0,3</Thickness>
+    <Thickness x:Key="TableViewGroupHeaderTextPaddingMedium">0,5,0,7</Thickness>
+    <Thickness x:Key="TableViewGroupHeaderTextPaddingLarge">0,9,0,11</Thickness>
 
     <Style x:Key="DefaultTableViewStyle" TargetType="tabular:TableView">
         <Setter Property="Density" Value="Medium" />

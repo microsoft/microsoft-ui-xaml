@@ -96,7 +96,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(groupHeader.Template, "TableViewGroupHeader must resolve its default ControlTemplate.");
 
                 Verify.AreEqual(new Thickness(4, 6, 12, 6), groupHeader.Padding,
-                    "TableViewGroupHeader's default style must take Padding from TableViewGroupHeaderPadding.");
+                    "TableViewGroupHeader's default style must take Padding from TableViewGroupHeaderPaddingMedium.");
             });
         }
 
@@ -149,8 +149,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //
         // Models CommonStylesTests.VerifyAllThemesContainSameResourceKeys, which does not reach these
         // keys at all - it builds a XamlControlsResources, and TableView's resources live in
-        // TabularControlsResources. Covers the TableView* metric tokens in the same pass: same failure
-        // mode, and no reason to walk the dictionaries twice.
+        // TabularControlsResources. Theme-independent TableView metrics live in the outer dictionary.
         [TestMethod]
         public void VerifyTabularSurfaceKeysExistInEveryThemeDictionary()
         {
@@ -201,11 +200,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"Keys defined in {themeName} but missing from Default: {string.Join(", ", missingFromDefault)}");
                 }
 
-                // Both families must actually be present, or the parity check above is vacuously true
-                // for whichever one failed to merge.
                 Verify.IsTrue(defaultKeys.Any(key => key.StartsWith("TabularSurface", StringComparison.Ordinal)),
                     "The brush palette from TabularSurfaces_themeresources.xaml must be part of TabularControlsResources.");
-                Verify.IsTrue(defaultKeys.Contains("TableViewRowMinHeight"),
+                Verify.IsTrue(resources.ContainsKey("TableViewRowMinHeightMedium"),
                     "The metric tokens from TableView_themeresources.xaml must be part of TabularControlsResources.");
             });
         }
@@ -3310,18 +3307,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var resources = new TabularControlsResources();
-                foreach (var theme in new[] { "Light", "Default", "HighContrast" })
+                Verify.IsFalse(resources.ContainsKey("TableViewCellTextVerticalOffset"));
+                Verify.IsFalse(resources.ContainsKey("TableViewHeaderTextVerticalOffset"));
+                foreach (var density in DensityCases)
                 {
-                    var dictionary = (ResourceDictionary)resources.ThemeDictionaries[theme];
-                    Verify.IsFalse(dictionary.ContainsKey("TableViewCellTextVerticalOffset"));
-                    Verify.IsFalse(dictionary.ContainsKey("TableViewHeaderTextVerticalOffset"));
-                    foreach (var density in DensityCases)
-                    {
-                        Verify.AreEqual(density.TextPadding, dictionary["TableViewCellTextPadding" + density.ResourceSuffix]);
-                        Verify.AreEqual(density.TextPadding, dictionary["TableViewHeaderTextPadding" + density.ResourceSuffix]);
-                        Verify.AreEqual(new Thickness(0, density.TextPadding.Top, 0, density.TextPadding.Bottom),
-                            dictionary["TableViewGroupHeaderTextPadding" + density.ResourceSuffix]);
-                    }
+                    Verify.AreEqual(density.TextPadding, resources["TableViewCellTextPadding" + density.ResourceSuffix]);
+                    Verify.AreEqual(density.TextPadding, resources["TableViewHeaderTextPadding" + density.ResourceSuffix]);
+                    Verify.AreEqual(new Thickness(0, density.TextPadding.Top, 0, density.TextPadding.Bottom),
+                        resources["TableViewGroupHeaderTextPadding" + density.ResourceSuffix]);
                 }
             });
         }
@@ -3639,11 +3632,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     var resources = new TabularControlsResources();
-                    foreach (var theme in new[] { "Light", "Default", "HighContrast" })
-                    {
-                        Verify.AreEqual(density.TextPadding, ((ResourceDictionary)resources.ThemeDictionaries[theme])[
-                            "TableViewCellTextPadding" + density.ResourceSuffix]);
-                    }
+                    Verify.AreEqual(density.TextPadding, resources["TableViewCellTextPadding" + density.ResourceSuffix]);
                     table = CreateThemingTable();
                     table.Density = density.Density;
                     table.Resources["TableViewCellTextPadding" + density.ResourceSuffix] = textPadding;
@@ -3755,11 +3744,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     var resources = new TabularControlsResources();
-                    foreach (var theme in new[] { "Light", "Default", "HighContrast" })
-                    {
-                        Verify.AreEqual(density.TextPadding, ((ResourceDictionary)resources.ThemeDictionaries[theme])[
-                            "TableViewHeaderTextPadding" + density.ResourceSuffix]);
-                    }
+                    Verify.AreEqual(density.TextPadding, resources["TableViewHeaderTextPadding" + density.ResourceSuffix]);
                     table = CreateThemingTable();
                     table.Density = density.Density;
                     appTransform = new TranslateTransform { Y = 3 };
@@ -3890,14 +3875,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var resources = new TabularControlsResources();
-                foreach (var theme in new[] { "Light", "Default", "HighContrast" })
-                {
-                    var dictionary = (ResourceDictionary)resources.ThemeDictionaries[theme];
-                    Verify.AreEqual(new Thickness(0),
-                        (Thickness)dictionary["TableViewFocusVisualMargin"], theme);
-                    Verify.AreEqual(new Thickness(0, -1, 0, -1),
-                        (Thickness)dictionary["TableViewRowFocusVisualMargin"], theme);
-                }
+                Verify.AreEqual(new Thickness(0), (Thickness)resources["TableViewFocusVisualMargin"]);
+                Verify.AreEqual(new Thickness(0, -1, 0, -1), (Thickness)resources["TableViewRowFocusVisualMargin"]);
             });
 
             TableView tableView = null;
@@ -4407,7 +4386,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                SetApplicationResource("TableViewRowMinHeight", overriddenMinHeight);
+                SetApplicationResource("TableViewRowMinHeightMedium", overriddenMinHeight);
 
                 tableView = CreateThemingTable();
                 tableView.Density = TableViewDensity.Medium;
@@ -4429,14 +4408,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Verify.AreEqual(overriddenMinHeight, row.MinHeight,
-                        "An app-scope TableViewRowMinHeight override must win. A value of 32 here means the metric came " +
+                        "An app-scope TableViewRowMinHeightMedium override must win. A value of 32 here means the metric came " +
                         "from the C++ fallback constant and the resource key is decorative.");
                 });
             }
             finally
             {
                 // Application.Resources is UI-thread affine; a finally block runs on the test thread.
-                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewRowMinHeight"));
+                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewRowMinHeightMedium"));
             }
         }
 
@@ -4446,14 +4425,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var resources = new TabularControlsResources();
-                foreach (var theme in new[] { "Light", "Default", "HighContrast" })
+                foreach (var key in new[] { "TableViewCellFontSize", "TableViewHeaderFontSize",
+                    "TableViewCellFontSizeSmall", "TableViewHeaderFontSizeSmall" })
                 {
-                    var dictionary = (ResourceDictionary)resources.ThemeDictionaries[theme];
-                    foreach (var key in new[] { "TableViewCellFontSize", "TableViewHeaderFontSize",
-                        "TableViewCellFontSizeSmall", "TableViewHeaderFontSizeSmall" })
-                    {
-                        Verify.AreEqual(14.0, dictionary[key], $"{theme}: all built-in density presets must ship at 14px.");
-                    }
+                    Verify.AreEqual(14.0, resources[key], "All built-in density presets must ship at 14px.");
                 }
             });
             foreach (var testCase in DensityCases)
@@ -7144,7 +7119,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             internal Thickness CellPadding;
             internal Thickness TextPadding;
             internal double FontSize;
-            internal string ResourceSuffix => Density == TableViewDensity.Medium ? "" : Density.ToString();
+            internal string ResourceSuffix => Density.ToString();
         }
 
         // The literal presets from TableView_themeresources.xaml, not from the code constants. They

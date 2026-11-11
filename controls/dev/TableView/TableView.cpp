@@ -2428,7 +2428,7 @@ static std::wstring_view DensitySuffix(winrt::TableViewDensity density)
     {
     case winrt::TableViewDensity::Large: return L"Large"sv;
     case winrt::TableViewDensity::Small: return L"Small"sv;
-    default: return L""sv;
+    default: return L"Medium"sv;
     }
 }
 

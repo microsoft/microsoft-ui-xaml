@@ -174,8 +174,9 @@ with `BandedTableViewStyle` or `BorderlessTableViewStyle`, or use a derived styl
 </Style>
 ```
 
-Unsuffixed metric resources represent Medium; `Large` and `Small` suffixes select
-the other sizes, for example `TableViewRowMinHeightLarge` and `TableViewCellTextPaddingSmall`.
+Density metric resources use explicit `Small`, `Medium`, and `Large` suffixes, for example
+`TableViewRowMinHeightMedium` and `TableViewCellTextPaddingSmall`. Theme-independent
+metrics are defined once outside the theme dictionaries.
 
 ```xaml
 <tabular:TableView
@@ -806,9 +807,9 @@ Header `Foreground` is independent of body text. A style's `ContentTemplate` or
 takes precedence. Styles targeting types other than `TableViewColumnHeader` or its base types are ignored.
 
 Generated plain-string header labels and `TableViewTextColumn` display labels use
-asymmetric padding authored directly in `TableViewHeaderTextPadding` and
-`TableViewCellTextPadding`, with `Large` / `Small` suffixed variants.
-Light, Default/Dark and High Contrast all define the same values:
+asymmetric padding authored directly in the `TableViewHeaderTextPadding` and
+`TableViewCellTextPadding` resource families, with `Small` / `Medium` / `Large` suffixes.
+These shared values apply in Light, Default/Dark and High Contrast:
 
 | Density | Header/display-cell text padding (left, top, right, bottom) | Section text-presenter padding |
 |---|---|---|
@@ -816,7 +817,7 @@ Light, Default/Dark and High Contrast all define the same values:
 | Medium | `12,5,12,7` | `0,5,0,7` |
 | Small | `12,1,12,3` | `0,1,0,3` |
 
-Section titles and counts use `TableViewGroupHeaderTextPadding` and its density variants
+Section titles and counts use the `TableViewGroupHeaderTextPadding` density resource family
 to match cell text vertically. The section host retains its separate 4px leading / 12px
 trailing padding and the chevron retains its symmetric density padding. App-owned section
 templates and explicit section `Padding` keep their authored alignment.
