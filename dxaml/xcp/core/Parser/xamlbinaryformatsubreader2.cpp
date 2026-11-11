@@ -49,10 +49,48 @@ _Check_return_ HRESULT XamlBinaryFormatSubReader2::HasConnectionId(
     _In_ unsigned int nodeIndex,
     _Out_ bool* hasConnectionId) const
 {
-    UNREFERENCED_PARAMETER(nodeIndex);
-
-    // TODO: Inspect the object scope at nodeIndex for SetConnectionId nodes.
     *hasConnectionId = false;
+    IFCEXPECT_RETURN(nodeIndex < m_nodeStreamLength);
+
+    try
+    {
+        // A separate reader preserves both the active cursor and its reusable temporary XamlQualifiedObject.
+        XamlBinaryFormatSubReader2 reader(
+            m_spXamlBinaryFormatMasterReader,
+            m_nodeStreamMasterOffset,
+            m_nodeStreamLength,
+            m_lineStreamLength,
+            m_nodeStream,
+            m_lineStream);
+        reader.set_NextIndex(nodeIndex);
+
+        ObjectWriterNode node;
+        IFCEXPECT_RETURN(reader.TryRead(node));
+        IFCEXPECT_RETURN(node.RequiresNewScope());
+
+        unsigned int scopeDepth = 1;
+        while (scopeDepth > 0)
+        {
+            IFCEXPECT_RETURN(reader.TryRead(node));
+
+            if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
+            {
+                *hasConnectionId = true;
+                return S_OK;
+            }
+
+            if (node.RequiresNewScope())
+            {
+                ++scopeDepth;
+            }
+            else if (node.RequiresScopeToEnd())
+            {
+                --scopeDepth;
+            }
+        }
+    }
+    CATCH_RETURN();
+
     return S_OK;
 }
 
