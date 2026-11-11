@@ -215,6 +215,22 @@ namespace BindTestbed
         BindTestbedModel.ObservableEmployees NiceEmployees;
     }
 
+    struct NestedGeometry
+    {
+        Windows.Foundation.Size Size;
+        Int32 Unchanged;
+    };
+
+    runtimeclass TwoWayStructTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        TwoWayStructTests();
+        Windows.Foundation.Size MySize;
+        Windows.Foundation.Rect MyRect;
+        NestedGeometry Geometry;
+        Windows.Foundation.Collections.IVector<Windows.Foundation.Size> Sizes{ get; };
+        Windows.Foundation.Collections.IMap<String, Windows.Foundation.Size> SizeMap{ get; };
+    }
+
     runtimeclass TwoWayTests : Microsoft.UI.Xaml.Controls.UserControl
     {
         TwoWayTests();

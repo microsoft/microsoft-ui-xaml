@@ -40,6 +40,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(CommonFilesPath)AppPreamble.cpp.props" />
 
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>DISABLE_XAML_GENERATED_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
   <PropertyGroup Label="Packaging">
     <!-- Produce an unsigned package as part of the normal build -->
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
@@ -121,6 +127,9 @@
     <ClInclude Include="TestsPage2.h">
       <DependentUpon>TestsPage2.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="TwoWayStructTests.h">
+      <DependentUpon>TwoWayStructTests.xaml</DependentUpon>
+    </ClInclude>
     <ClInclude Include="TwoWayTests.h">
       <DependentUpon>TwoWayTests.xaml</DependentUpon>
     </ClInclude>
@@ -172,6 +181,7 @@
       <DeploymentContent>true</DeploymentContent>
     </Page>
     <Page Include="TestsPage2.xaml" />
+    <Page Include="TwoWayStructTests.xaml" />
     <Page Include="TwoWayTests.xaml" />
     <Page Include="DisableXBindTests.xaml">
       <SubType>Designer</SubType>
@@ -254,6 +264,9 @@
     <ClCompile Include="TestsPage2.cpp">
       <DependentUpon>TestsPage2.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="TwoWayStructTests.cpp">
+      <DependentUpon>TwoWayStructTests.xaml</DependentUpon>
+    </ClCompile>
     <ClCompile Include="TwoWayTests.cpp">
       <DependentUpon>TwoWayTests.xaml</DependentUpon>
     </ClCompile>
@@ -274,7 +287,7 @@
     <!-- Reference BindTestbedModel so its WinMD, DLL, and generated WinRT.Host runtime
          configuration flow through project outputs without hard-coded paths. -->
     <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Private>false</Private>
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
 

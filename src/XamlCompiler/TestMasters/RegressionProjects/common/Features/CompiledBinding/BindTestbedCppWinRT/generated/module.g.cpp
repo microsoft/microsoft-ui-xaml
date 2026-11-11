@@ -23,6 +23,7 @@ void* winrt_make_BindTestbed_NullableTests();
 void* winrt_make_BindTestbed_PhasingTests();
 void* winrt_make_BindTestbed_Templates();
 void* winrt_make_BindTestbed_TestsPage2();
+void* winrt_make_BindTestbed_TwoWayStructTests();
 void* winrt_make_BindTestbed_TwoWayTests();
 void* winrt_make_BindTestbed_XamlMetaDataProvider();
 void* winrt_make_BindTestbed_xPropertiesTest();
@@ -150,6 +151,11 @@ void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view 
     if (requal(name, L"BindTestbed.TestsPage2"))
     {
         return winrt_make_BindTestbed_TestsPage2();
+    }
+
+    if (requal(name, L"BindTestbed.TwoWayStructTests"))
+    {
+        return winrt_make_BindTestbed_TwoWayStructTests();
     }
 
     if (requal(name, L"BindTestbed.TwoWayTests"))

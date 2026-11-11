@@ -472,13 +472,37 @@ namespace UnitTests
             RunArrayMetadataTests("MetadataTestbedCppWinRTIncremental");
         }
 
+        [TestMethod]
+        public void Bindings_TwoWayStructFieldsCppWinRT()
+        {
+            RunStructBindingTests("BindTestbedCppWinRT");
+        }
+
+        [TestMethod]
+        public void Bindings_TwoWayStructFieldsCppWinRTIncremental()
+        {
+            RunStructBindingTests("BindTestbedCppWinRTIncremental");
+        }
+
+        private static void RunStructBindingTests(string projectName)
+        {
+            string executable = Path.Combine(CodegenRoot.Value,
+                @"CompilerTests\Features\CompiledBinding\BindTestbedCppWinRT", projectName, "BindTestbed.exe");
+            RunNativeTests(executable, "--test-struct-bindings", "Two-way struct binding tests passed.");
+        }
+
         private static void RunArrayMetadataTests(string projectName)
         {
             string executable = Path.Combine(CodegenRoot.Value,
                 @"CompilerTests\Features\Metadata\MetadataTestbedCppWinRT", projectName, "MetadataTestbedCppWinRT.exe");
-            Assert.IsTrue(File.Exists(executable), $"Build {projectName} before running this test: {executable}");
+            RunNativeTests(executable, "--test-array-metadata", "Array metadata tests passed.");
+        }
 
-            using (var process = Process.Start(new ProcessStartInfo(executable, "--test-array-metadata")
+        private static void RunNativeTests(string executable, string arguments, string successMessage)
+        {
+            Assert.IsTrue(File.Exists(executable), $"Build the native regression project before running this test: {executable}");
+
+            using (var process = Process.Start(new ProcessStartInfo(executable, arguments)
             {
                 WorkingDirectory = Path.GetDirectoryName(executable),
                 UseShellExecute = false,
@@ -493,10 +517,10 @@ namespace UnitTests
                 {
                     process.Kill();
                     process.WaitForExit();
-                    Assert.Fail($"{projectName} array metadata tests timed out.\n{output.Result}\n{error.Result}");
+                    Assert.Fail($"{executable} {arguments} timed out.\n{output.Result}\n{error.Result}");
                 }
-                Assert.AreEqual(0, process.ExitCode, $"{projectName}\n{output.Result}\n{error.Result}");
-                StringAssert.Contains(output.Result, "Array metadata tests passed.");
+                Assert.AreEqual(0, process.ExitCode, $"{executable} {arguments}\n{output.Result}\n{error.Result}");
+                StringAssert.Contains(output.Result, successMessage);
             }
         }
 

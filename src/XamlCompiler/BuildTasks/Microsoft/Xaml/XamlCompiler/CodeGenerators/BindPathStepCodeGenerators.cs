@@ -339,6 +339,39 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
     internal class FieldStepCodeGenerator : PropertyStepCodeGenerator<FieldStep>
     {
+        public override ICodeGenOutput PathSetExpression(ICodeGenOutput value)
+        {
+            return new LanguageSpecificString(
+                () => $"{PathExpression.CppCXName()} = {value.CppCXName()}",
+                () => CppWinRTSetExpression(value),
+                () => $"{PathExpression.CSharpName()} = {value.CSharpName()}",
+                () => $"{PathExpression.VBName()} = {value.VBName()}");
+        }
+
+        private string CppWinRTSetExpression(ICodeGenOutput value)
+        {
+            BindPathStep storage = Instance.Parent;
+            string fieldPath = Instance.FieldName;
+            while (storage is FieldStep field && field.Parent.ValueType.UnderlyingType.IsValueType)
+            {
+                fieldPath = field.FieldName + "." + fieldPath;
+                storage = field.Parent;
+            }
+
+            if (storage is FieldStep || !storage.ValueType.UnderlyingType.IsValueType)
+            {
+                return $"{PathExpression.CppWinRTName()} = {value.CppWinRTName()}";
+            }
+
+            // Projected struct getters return copies. Update the outermost struct once, then use
+            // its existing setter (including SetAt/Insert) to persist the changed field.
+            string local = "value_" + Instance.CodeName;
+            string writeBack = storage.CodeGen().PathSetExpression(
+                new LanguageSpecificString(() => local)).CppWinRTName();
+            return $"[&]() {{ auto {local} = {storage.CodeGen().PathExpression.CppWinRTName()}; " +
+                $"{local}.{fieldPath} = {value.CppWinRTName()}; {writeBack}; }}()";
+        }
+
         public override ICodeGenOutput PathExpression
         {
             get

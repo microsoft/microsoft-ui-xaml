@@ -6,11 +6,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation;
 
 namespace LibManagedWinmd
 {
+    public struct NestedGeometry
+    {
+        public Size Size;
+        public int Unchanged;
+    }
+
     public sealed class SchemaTypeHolder : Control
     {
+        public Size MySize { get; set; }
+        public Rect MyRect { get; set; }
+        public NestedGeometry Geometry { get; set; }
+        public IList<Size> Sizes { get; set; }
+        public IDictionary<string, Size> SizeMap { get; set; }
+
         MyIDictionary _dict = new MyIDictionary();
         public MyIDictionary Dictionary
         {

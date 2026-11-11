@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<assembly manifestVersion="1.0"
+    xmlns="urn:schemas-microsoft-com:asm.v1"
+    xmlns:asmv3="urn:schemas-microsoft-com:asm.v3"
+    xmlns:winrtv1="urn:schemas-microsoft-com:winrt.v1">
+    <!-- The command-line regression mode also needs the referenced model's metadata provider. -->
+    <asmv3:file name="WinRT.Host.dll">
+        <winrtv1:activatableClass
+            name="BindTestbedModel.BindTestbedModel_XamlTypeInfo.XamlMetaDataProvider"
+            threadingModel="both"/>
+    </asmv3:file>
+</assembly>

@@ -115,3 +115,20 @@ assembly's flavor; they are included in `XamlCompilerTests.sln`.
 The round trips use C++/WinRT's existing array boxing support. This projection
 fix does not add generalized boxing for enum, custom-struct, or runtime-class
 element types.
+
+## Two-way struct field bindings
+
+`Bindings_TwoWayStructFieldsCppWinRT*` launches the ordinary and incremental
+compiled-binding testbeds with `--test-struct-bindings`. The native fixture
+loads real XAML and changes `NumberBox.Value` to exercise the generated TwoWay
+callbacks for `Size.Width`, `Rect.X`, nested structs, and vector/map struct
+elements. It verifies source write-back, unchanged sibling fields/elements,
+and property setter counts. This mode does not instantiate the managed demo
+models or display a window; their metadata provider remains a runtime dependency
+of the testbed's generated metadata and is registered in its application manifest.
+The initialized prompt's `DOTNET_ROOT` must contain a .NET 8 runtime compatible
+with the generated `WinRT.Host.runtimeconfig.json`.
+
+Both `BindTestbedCppWinRT` projects in `XamlCompilerTests.sln` compile the
+fixture's generated binding code, so invalid field-as-accessor calls fail the
+native build independently of generated-text comparisons.

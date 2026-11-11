@@ -1,0 +1,14 @@
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.TwoWayStructTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <NumberBox x:Name="SizeWidth" Value="{x:Bind MySize.Width, Mode=TwoWay}"/>
+        <NumberBox x:Name="RectX" Value="{x:Bind MyRect.X, Mode=TwoWay}"/>
+        <NumberBox x:Name="NestedWidth" Value="{x:Bind Geometry.Size.Width, Mode=TwoWay}"/>
+        <NumberBox x:Name="VectorWidth" Value="{x:Bind Sizes[0].Width, Mode=TwoWay}"/>
+        <NumberBox x:Name="MapHeight" Value="{x:Bind SizeMap['first'].Height, Mode=TwoWay}"/>
+    </StackPanel>
+</UserControl>

@@ -24,6 +24,80 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void CodeGenerator_CppWinRTTwoWaySizeField()
+        {
+            AssertCppWinRTStructUpdate(
+                GenerateCppWinRTTwoWayBinding("MySize.Width"),
+                "GetDataRoot().MySize()", "Width", "GetDataRoot().MySize({0})");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTTwoWayRectField()
+        {
+            AssertCppWinRTStructUpdate(
+                GenerateCppWinRTTwoWayBinding("MyRect.X"),
+                "GetDataRoot().MyRect()", "X", "GetDataRoot().MyRect({0})");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTTwoWayNestedStructField()
+        {
+            AssertCppWinRTStructUpdate(
+                GenerateCppWinRTTwoWayBinding("Geometry.Size.Width"),
+                "GetDataRoot().Geometry()", "Size.Width", "GetDataRoot().Geometry({0})");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTTwoWayStructVectorField()
+        {
+            const string vector = "GetDataRoot().Sizes().as<::winrt::Windows::Foundation::Collections::IVector<::winrt::Windows::Foundation::Size>>()";
+            AssertCppWinRTStructUpdate(
+                GenerateCppWinRTTwoWayBinding("Sizes[0].Width"),
+                vector + ".GetAt(0)", "Width", vector + ".SetAt(0, {0})");
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CppWinRTTwoWayStructMapField()
+        {
+            const string map = "GetDataRoot().SizeMap().as<::winrt::Windows::Foundation::Collections::IMap<::winrt::hstring, ::winrt::Windows::Foundation::Size>>()";
+            AssertCppWinRTStructUpdate(
+                GenerateCppWinRTTwoWayBinding("SizeMap['first'].Height"),
+                map + ".Lookup(L\"first\")", "Height", map + ".Insert(L\"first\", {0})");
+        }
+
+        private string GenerateCppWinRTTwoWayBinding(string path)
+        {
+            string xaml = $@"
+<Page
+    x:Class='LibManagedWinmd.SchemaTypeHolder'
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <NumberBox Value=""{{x:Bind {path}, Mode=TwoWay}}""/>
+</Page>";
+            var context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest), "TwoWayStructFields");
+            // Native metadata exposes WinRT struct members as fields, unlike managed projections.
+            DirectUISchemaContext schema = _testHelper.LoadSchema(
+                SchemaMode.NativeRuntime | SchemaMode.LoadUserWinmd);
+            List<FileNameAndContentPair> pairs = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, CodeGenLanguage.CppWinRT);
+            Assert.AreEqual(1, pairs.Count);
+            return pairs[0].Contents;
+        }
+
+        private static void AssertCppWinRTStructUpdate(
+            string code, string getter, string field, string setter)
+        {
+            // A field assignment must update a copy and write the entire struct back, preserving
+            // its other members. Assigning to the getter's temporary is not a source update.
+            string pattern = @"auto (?<value>\w+) = " + Regex.Escape(getter) + @";\s*" +
+                @"\k<value>\." + Regex.Escape(field) + @" = [^;]+;\s*" +
+                Regex.Escape(string.Format(setter, "STRUCT_VALUE"))
+                    .Replace("STRUCT_VALUE", @"\k<value>") + ";";
+            Assert.IsTrue(Regex.IsMatch(code, pattern), code);
+        }
+
+        [TestMethod]
         public void CodeGenerator_ControlTemplateBoundLoad_CSharp()
         {
             AssertControlTemplateBoundLoad(CodeGenLanguage.CSharp, false /* rootHasBindings */, false /* namedTemplate */);

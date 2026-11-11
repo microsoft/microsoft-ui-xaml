@@ -12,6 +12,7 @@
 
 #include "App.h"
 #include "MainPage.h"
+#include "TwoWayStructTests.h"
 
 namespace winrt::BindTestbed::implementation
 {
@@ -27,6 +28,11 @@ namespace winrt::BindTestbed::implementation
     /// </summary>
     App::App()
     {
+        // The native regression fixture does not need the managed demo resources or models.
+        if (IsStructBindingTestMode())
+        {
+            return;
+        }
         InitializeComponent();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
@@ -51,6 +57,11 @@ namespace winrt::BindTestbed::implementation
     /// <param name="e">Details about the launch request and process.</param>
     void App::OnLaunched(wux::LaunchActivatedEventArgs const& e)
     {
+        if (IsStructBindingTestMode())
+        {
+            RunStructBindingTests();
+            return;
+        }
         wuxc::Frame rootFrame(nullptr);
 
         // Desktop (Win32) app model: the window is created by the app, not supplied by

@@ -39,6 +39,11 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(CommonFilesPath)AppPreamble.cpp.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>DISABLE_XAML_GENERATED_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BasicTests.h">
       <DependentUpon>BasicTests.xaml</DependentUpon>
@@ -97,6 +102,9 @@
     <ClInclude Include="TestsPage2.h">
       <DependentUpon>TestsPage2.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="TwoWayStructTests.h">
+      <DependentUpon>TwoWayStructTests.xaml</DependentUpon>
+    </ClInclude>
     <ClInclude Include="TwoWayTests.h">
       <DependentUpon>TwoWayTests.xaml</DependentUpon>
     </ClInclude>
@@ -148,6 +156,7 @@
       <DeploymentContent>true</DeploymentContent>
     </Page>
     <Page Include="TestsPage2.xaml" />
+    <Page Include="TwoWayStructTests.xaml" />
     <Page Include="TwoWayTests.xaml" />
     <Page Include="DisableXBindTests.xaml">
       <SubType>Designer</SubType>
@@ -230,6 +239,9 @@
     <ClCompile Include="TestsPage2.cpp">
       <DependentUpon>TestsPage2.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="TwoWayStructTests.cpp">
+      <DependentUpon>TwoWayStructTests.xaml</DependentUpon>
+    </ClCompile>
     <ClCompile Include="TwoWayTests.cpp">
       <DependentUpon>TwoWayTests.xaml</DependentUpon>
     </ClCompile>
@@ -264,7 +276,7 @@
       winrt/BindTestbedModel.h, so this project needs the component's metadata too.
     -->
     <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Private>false</Private>
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
 
