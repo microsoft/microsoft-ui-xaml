@@ -23,6 +23,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private string? finalEtwError;
     private RecordingStatus? finalRecording;
     private string? finalRecordingError;
+    private IReadOnlyList<ProcessRecordingStatus> finalStartupRecordings = [];
+    private NativeLaunchResult? finalStartupProcesses;
     public event PropertyChangedEventHandler? PropertyChanged;
     public MetricHistory? History
     {
@@ -43,6 +45,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     public string? EtwError => connection?.EtwError ?? finalEtwError;
     public RecordingStatus? Recording => connection?.Recording ?? replay?.Recording ?? finalRecording;
     public string? RecordingError => connection?.RecordingError ?? replay?.RecordingError ?? finalRecordingError;
+    public IReadOnlyList<ProcessRecordingStatus> StartupRecordings => connection?.StartupRecordings ?? finalStartupRecordings;
+    public NativeLaunchResult? StartupProcesses => connection?.StartupProcesses ?? finalStartupProcesses;
     // The trace being read, or the last one read, until the next connection.
     public string? TracePath
     {
@@ -76,6 +80,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalEtwError = null;
         finalRecording = null;
         finalRecordingError = null;
+        finalStartupRecordings = [];
+        finalStartupProcesses = null;
         finalTrace = null;
         TracePath = null;
         TraceTarget = null;
@@ -153,6 +159,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalEtwError = null;
         finalRecording = null;
         finalRecordingError = null;
+        finalStartupRecordings = [];
+        finalStartupProcesses = null;
         finalTrace = null;
         TracePath = etlPath;
         TraceTarget = process;
@@ -217,6 +225,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalEtwError = owned.EtwError;
         finalRecording = owned.Recording;
         finalRecordingError = owned.RecordingError;
+        finalStartupRecordings = owned.StartupRecordings;
+        finalStartupProcesses = owned.StartupProcesses;
         connection = null;
         Notify();
     }
@@ -311,6 +321,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
             finalEtwError = owned.EtwError;
             finalRecording = owned.Recording;
             finalRecordingError = owned.RecordingError;
+            finalStartupRecordings = owned.StartupRecordings;
+            finalStartupProcesses = owned.StartupProcesses;
             connection = null;
             IsBusy = false;
             Notify();

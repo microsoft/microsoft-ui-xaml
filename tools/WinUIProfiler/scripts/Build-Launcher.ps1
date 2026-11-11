@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('x64', 'ARM64')][string]$Architecture = 'x64'
+    [ValidateSet('x64', 'ARM64')][string]$Architecture = 'x64',
+    [switch]$BuildTests
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -54,7 +55,8 @@ $hostArchitecture = try {
 } catch { 'x64' }
 $log = Join-Path $output 'build.log'
 $build = Join-Path $source 'build.cmd'
-& $env:ComSpec /d /c "call `"$build`" `"$visualStudio`" `"$dependency`" `"$source`" `"$output`" $arch $hostArchitecture > `"$log`" 2>&1"
+$testArgument = if ($BuildTests) { 'tests' } else { '' }
+& $env:ComSpec /d /c "call `"$build`" `"$visualStudio`" `"$dependency`" `"$source`" `"$output`" $arch $hostArchitecture $testArgument > `"$log`" 2>&1"
 if ($LASTEXITCODE -ne 0) {
     Get-Content -LiteralPath $log -Tail 30 | Write-Host
     throw "Building the private WinUI launcher for $Architecture failed. See $log."
