@@ -117,7 +117,7 @@
           <wucSpriteVisual SizeX="500" SizeY="10" BorderMode="Soft">
             <ColorBrush Color="rgb {1, 0, 0}" />
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="600" SizeY="1200" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
+          <wucSpriteVisual SizeX="10" SizeY="20" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
             <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="17" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="60" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
@@ -130,21 +130,21 @@
             <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 7.5, 0}" Surface="19" />
           </wucSpriteVisual>
           <wucSpriteVisual BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="17" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="20" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="0" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="17" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="20" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="0" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="17" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="20" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="20" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="18" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="600" SizeY="10" BorderMode="Soft">
             <ColorBrush Color="rgb {1, 0, 0}" />
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="600" SizeY="1200" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
+          <wucSpriteVisual SizeX="10" SizeY="20" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
             <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="21" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="60" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
@@ -157,16 +157,16 @@
             <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 7.5, 0}" Surface="23" />
           </wucSpriteVisual>
           <wucSpriteVisual BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="21" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="24" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="0" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="21" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="24" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="0" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="21" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="24" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="24" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="22" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="700" SizeY="10" BorderMode="Soft">
             <ColorBrush Color="rgb {1, 0, 0}" />
@@ -252,29 +252,29 @@
           <wucSpriteVisual SizeX="1000" SizeY="10" BorderMode="Soft">
             <ColorBrush Color="rgb {1, 0, 0}" />
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="600" SizeY="1200" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
+          <wucSpriteVisual SizeX="100" SizeY="200" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
             <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="35" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="60" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="36" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0.6667, 0, 0, 0.6667, 0, -1.907e-06}" Surface="36" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="15" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="37" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 0, -7.823e-07}" Surface="37" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
             <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 7.5, 0}" Surface="37" />
           </wucSpriteVisual>
           <wucSpriteVisual BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="35" />
+            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="38" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="0" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="35" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0.3, 0, 0, 0, 0, 0}" Surface="38" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="0" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="35" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0, 0, 0, 0.15, 0, 0}" Surface="38" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="38" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0.6667, 0, 0, 0.3333, 0, 0}" Surface="36" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="1100" SizeY="10" BorderMode="Soft">
             <ColorBrush Color="rgb {1, 0, 0}" />
