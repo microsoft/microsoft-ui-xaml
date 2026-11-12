@@ -73,7 +73,7 @@ static const std::wstring& GetMuxPath()
 std::wstring GetMuxAbsPath(_In_ LPCWSTR lpLibFileName)
 {
     FAIL_FAST_ASSERT(lpLibFileName != nullptr && L'\0' != lpLibFileName[0]);
-    auto muxPath = GetMuxPath();
+    const auto& muxPath = GetMuxPath();
     FAIL_FAST_ASSERT(!muxPath.empty());
     
     if (PathIsRelativeW(lpLibFileName))

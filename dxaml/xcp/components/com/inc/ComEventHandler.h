@@ -203,7 +203,7 @@ public:
 
     // Allow this class to be moveable. Much less restrictive than being copyable. For instance, this allows them to be
     // stored in a std::vector
-    EventPtrBase(_Inout_ EventPtrBase&& other)
+    EventPtrBase(_Inout_ EventPtrBase&& other) noexcept
         : m_pHandler(other.m_pHandler)
     {
         other.m_pHandler = nullptr;

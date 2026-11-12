@@ -459,7 +459,6 @@ FloatFromString(
     const WCHAR  *pStringSave = pString;
     XDOUBLE eValue;
     UINT32 cPostSpaceSave = cString;
-    HRESULT hr;
 
 // Consume any leading whitespace
 
@@ -495,10 +494,10 @@ FloatFromString(
         {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-            hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+            IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
 #pragma warning (pop)
-           *peValue = FLOAT(eValue);
-            return hr;
+            *peValue = FLOAT(eValue);
+            return S_OK;
         }
 
         nLeading *= 10;
@@ -542,10 +541,10 @@ FloatFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
 #pragma warning (pop)
-               *peValue = FLOAT(eValue);
-                return hr;
+                *peValue = FLOAT(eValue);
+                return S_OK;
             }
 
             nTrailing *= 10;
@@ -588,9 +587,9 @@ FloatFromString(
 
             if (nExponent > 2)
             {
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
-               *peValue = FLOAT(eValue);
-                return hr;
+                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
+                *peValue = FLOAT(eValue);
+                return S_OK;
             }
 
             nExponent *= 10;
@@ -711,7 +710,6 @@ NonSignedFromString(
     UINT32 cStringSave = cString;
     const WCHAR  *pStringSave = pString;
     XDOUBLE eValue;
-    HRESULT hr;
 
 // Consume any leading whitespace
 
@@ -732,10 +730,10 @@ NonSignedFromString(
         {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-            hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+            IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
 #pragma warning (pop)
-           *peValue = FLOAT(eValue);
-            return hr;
+            *peValue = FLOAT(eValue);
+            return S_OK;
         }
 
         nLeading *= 10;
@@ -761,11 +759,11 @@ NonSignedFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
 #pragma warning (pop)
 
-               *peValue = FLOAT(eValue);
-                return hr;
+                *peValue = FLOAT(eValue);
+                return S_OK;
             }
 
             nTrailing *= 10;
@@ -808,10 +806,10 @@ NonSignedFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
 #pragma warning (pop)
-               *peValue = FLOAT(eValue);
-                return hr;
+                *peValue = FLOAT(eValue);
+                return S_OK;
             }
 
             nExponent *= 10;

@@ -63,7 +63,7 @@ class VariantMap : public IQualifierContextCallback
         // Set OnSelectionChanged method evaluated when 'best-fit' selection changes
         void SetOnSelectionChanged(_In_ std::function<HRESULT(TTarget, TTarget, bool)> func);
 
-        static bool CompareQualifiers(_In_ std::shared_ptr<IQualifier> q1, _In_ std::shared_ptr<IQualifier> q2);
+        static bool CompareQualifiers(_In_ const std::shared_ptr<IQualifier>& q1, _In_ const std::shared_ptr<IQualifier>& q2);
 
         std::vector<VariantMapItem<TTarget, TData> >& GetVariantMapItems();
 
@@ -200,13 +200,15 @@ template <class TTarget, class TData>
 _Check_return_ HRESULT VariantMap<TTarget, TData>::Clear(_In_ TTarget target)
 {
     auto isTarget = [&](VariantMapItem<TTarget, TData>& a) { return a.m_target == target; };
-    auto it = /*[nodiscard] forcing to assign return value*/
-        remove_if(begin(m_qualifiedObjects), end(m_qualifiedObjects), isTarget); 
+    m_qualifiedObjects.erase(
+        remove_if(begin(m_qualifiedObjects), end(m_qualifiedObjects), isTarget),
+        end(m_qualifiedObjects));
+    m_dirty = true;
     return S_OK; // RRETURN_REMOVAL
 };
 
 template <class TTarget, class TData>
-bool VariantMap<TTarget, TData>::CompareQualifiers(_In_ std::shared_ptr<IQualifier> q1, _In_ std::shared_ptr<IQualifier> q2)
+bool VariantMap<TTarget, TData>::CompareQualifiers(_In_ const std::shared_ptr<IQualifier>& q1, _In_ const std::shared_ptr<IQualifier>& q2)
 {
     // For a qualifier to be equal to another qualifier, all context dimensions must match
     return ((q1->Score(QualifierFlags::Identifier)  == q2->Score(QualifierFlags::Identifier)) &&
@@ -254,7 +256,7 @@ _Check_return_ HRESULT VariantMap<TTarget, TData>::Evaluate()
     // ----------------------------------------------------------
 
     // Sort items by precedence
-    auto comparator = [&](VariantMapItem<TTarget, TData> a, VariantMapItem<TTarget, TData> b)
+    auto comparator = [&](const VariantMapItem<TTarget, TData>& a, const VariantMapItem<TTarget, TData>& b)
         {
             if(a.m_pQualifier->Score(QualifierFlags::Extensible) != b.m_pQualifier->Score(QualifierFlags::Extensible))
             {
