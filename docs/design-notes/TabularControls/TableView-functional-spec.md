@@ -148,6 +148,8 @@ the source publishes, so the same engine serves an app that never touches `Table
 
 The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
 header in the current column, else the first actionable one; the next `Tab` leaves the table.
+While a cell is being edited, `Tab` / `Shift+Tab` instead commit and edit the next / previous
+editable cell (see Editing); only past the last (first) editable cell does focus leave the table.
 `Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
 in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
 header row. When no header is actionable or headers are hidden, the rows are the stop, entered in
