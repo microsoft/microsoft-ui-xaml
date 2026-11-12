@@ -217,7 +217,7 @@
       <AdditionalOptions>%(AdditionalOptions) /d2:-guard4 /guard:cf /d2:-nocfgrngchk /d2:-guardcfgfuncptr</AdditionalOptions>
       <AdditionalOptions Condition="'$(GuardCheckesp)'=='1'">%(AdditionalOptions) /d2:-guardcheckesp2 </AdditionalOptions>
 
-      <LinkTimeCodeGeneration Condition="'$(Configuration)' == 'Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)' == 'Release' and '$(XamlDisableWholeProgramOptimization)' != 'true'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
 
       <AdditionalOptions>
         %(AdditionalOptions)

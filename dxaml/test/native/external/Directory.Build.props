@@ -6,6 +6,8 @@
     <UseXamlCompiler>true</UseXamlCompiler>
     <IntegrationTest Condition="'$(MSBuildProjectName)' != 'customTypes'">true</IntegrationTest>
     <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
+    <!-- Test-only binaries don't need /GL + /LTCG; skipping them saves significant Release link time. -->
+    <XamlDisableWholeProgramOptimization>true</XamlDisableWholeProgramOptimization>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
