@@ -3375,6 +3375,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(header.Padding, GetHeaderPresenter(table, 0).Padding,
                         "Replacing generated content must restore the template's unadjusted padding.");
+                    header.Padding = new Thickness(24, 4, 32, 8);
+                    table.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(header.Padding, GetHeaderPresenter(table, 0).Padding,
+                        "App-owned content must continue following live control-padding changes.");
                 });
             }
         }

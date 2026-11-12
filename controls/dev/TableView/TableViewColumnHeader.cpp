@@ -195,10 +195,7 @@ void TableViewColumnHeader::UpdateContentPadding()
         }
         else if (m_hasTextPadding)
         {
-            winrt::Binding binding;
-            binding.Source(*this);
-            binding.Path(winrt::PropertyPath(L"Padding"));
-            winrt::BindingOperations::SetBinding(presenter, winrt::ContentPresenter::PaddingProperty(), binding);
+            SharedHelpers::SetBinding(L"Padding", presenter, winrt::ContentPresenter::PaddingProperty());
             m_hasTextPadding = false;
         }
     }

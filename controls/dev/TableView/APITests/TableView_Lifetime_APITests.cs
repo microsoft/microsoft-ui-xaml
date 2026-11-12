@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -24,6 +25,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TableViewLifetimeTests : TableViewApiTestBase
     {
+        [TestMethod]
+        [TestProperty("Description", "Verifies rebuilt text headers avoid self-referencing padding bindings and are collected while their TableView remains loaded.")]
+        public void VerifyRebuiltTextHeadersAreCollected()
+        {
+            TableView tableView = null;
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(MakeManyItems(40), headers: new[] { "Name", "Role" }, width: 400, height: 300);
+                LoadContent(tableView);
+            });
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headers = FindVisualChildrenByType<TableViewColumnHeader>(tableView);
+                Verify.AreEqual(2, headers.Count);
+                foreach (var header in headers)
+                {
+                    Verify.IsNotNull(header.Content as TextBlock);
+                    var presenter = header.FindVisualChildByName("PART_ContentPresenter");
+                    Verify.IsNotNull(presenter);
+                    var name = $"Header {tracked.Count / 2}";
+                    tracked[name] = new WeakReference(header);
+                    tracked[name + " presenter"] = new WeakReference(presenter);
+                }
+                tableView.Density = TableViewDensity.Compact;
+                tableView.UpdateLayout();
+                foreach (var header in headers)
+                {
+                    Verify.IsNull(header.Content, "Rebuilding must release the old generated header content.");
+                    var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                    var binding = presenter.GetBindingExpression(ContentPresenter.PaddingProperty);
+                    Verify.IsNotNull(binding, "Releasing generated content must restore the padding binding.");
+                    Verify.IsNull(binding.ParentBinding.Source,
+                        "A restored padding binding must not strongly root its owning header through Source.");
+                }
+            });
+            SettleAfterLoad();
+
+            AssertCollected(tracked);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsLoaded, "The table must outlive the released headers.");
+                Verify.AreEqual(2, FindVisualChildrenByType<TableViewColumnHeader>(tableView).Count);
+            });
+            GC.KeepAlive(tableView);
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a TableView is collected after it is unloaded, while the items source it was bound to stays alive.")]
         public void VerifyTableViewIsCollectedWhileItsItemsSourceOutlivesIt()
