@@ -1157,8 +1157,8 @@ namespace MUXControlsTestApp
                 {
                     toolTip.DataContextChanged -= OnDataContextChanged;
                     BasicTableView.Columns.Clear();
-                    BasicTableView.Density = BasicTableView.Density == TableViewDensity.Medium
-                        ? TableViewDensity.Large : TableViewDensity.Medium;
+                    BasicTableView.Density = BasicTableView.Density == TableViewDensity.Compact
+                        ? TableViewDensity.Standard : TableViewDensity.Compact;
                 }
             }
             toolTip.DataContextChanged += OnDataContextChanged;

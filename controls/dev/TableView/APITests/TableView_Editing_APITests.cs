@@ -684,7 +684,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     oldWidth = table.Columns[0].ActualWidth;
                     Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), items[0].Name));
                     editor = FindVisualChildrenByType<TextBox>(table).Single();
-                    table.Density = TableViewDensity.Small;
+                    table.Density = TableViewDensity.Compact;
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -724,8 +724,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.IsTextScaleFactorEnabled = false;
                     table.Resources["TableViewCellFontSize"] = 17.0;
                     table.Resources["TableViewCellFontSizeSmall"] = 13.0;
-                    table.Density = TableViewDensity.Small;
-                    table.Density = TableViewDensity.Large;
+                    table.Density = TableViewDensity.Compact;
+                    table.Density = TableViewDensity.Comfortable;
                     column = new AuthoredFontTextColumn(mode)
                     {
                         Header = "Name",
@@ -743,7 +743,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     display = (TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0));
                     fontBinding = display.GetBindingExpression(TextBlock.FontSizeProperty);
                     Verify.AreEqual(mode == "BaseBinding" ? 17.0 : 24.0, display.FontSize, mode);
-                    table.Density = TableViewDensity.Small;
+                    table.Density = TableViewDensity.Compact;
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -752,7 +752,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"A custom factory's font must survive density restamping: {mode}.");
                     Verify.AreEqual(13.0, ((TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 1))).FontSize,
                         "Control-owned text must still follow the density font resource.");
-                    table.Density = TableViewDensity.Large;
+                    table.Density = TableViewDensity.Comfortable;
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -760,7 +760,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Pending"),
                         "The vetoed commit leaves an editor open.");
                     Verify.IsTrue(table.IsEditing);
-                    table.Density = TableViewDensity.Small;
+                    table.Density = TableViewDensity.Compact;
                     if (mode == "BaseBinding")
                     {
                         column.FontSource.FontSize = 26;
@@ -2915,7 +2915,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
                 {
-                    foreach (var density in new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small })
+                    foreach (var density in new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact })
                     {
                         var m = OpenEditorAndMeasure(density, flowDirection, "Asha", layout.Rounding, layout.GridLines);
                         VerifyLinesMatch($"{density}/{flowDirection}/{layout.GridLines}/rounding={layout.Rounding}", m.DisplayLine, m.EditorLine);
@@ -2925,10 +2925,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a fallback-font glyph at Medium density neither grows the editor past the cell nor grows the row.")]
-        public void VerifyFallbackGlyphKeepsMediumEditorAndRowHeight()
+        [TestProperty("Description", "Verifies a fallback-font glyph at Standard density neither grows the editor past the cell nor grows the row.")]
+        public void VerifyFallbackGlyphKeepsStandardEditorAndRowHeight()
         {
-            var m = OpenEditorAndMeasure(TableViewDensity.Medium, FlowDirection.LeftToRight, "Asha \U0001F600");
+            var m = OpenEditorAndMeasure(TableViewDensity.Standard, FlowDirection.LeftToRight, "Asha \U0001F600");
             Log.Comment($"Fallback glyph: dy(top)={m.EditorLine.Top - m.DisplayLine.Top} dy(bottom)={m.EditorLine.Bottom - m.DisplayLine.Bottom}; " +
                 $"cell {m.CellHeightBefore} -> editor {m.EditorHeight}; row {m.RowHeightBefore} -> {m.RowHeightAfter}");
 
@@ -2942,9 +2942,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyEditorRecentresAfterFallbackGlyphIsRemoved()
         {
             // Myanmar Text's line is taller than Segoe UI's, so the editor grows its text view for it first.
-            var m = OpenEditorAndMeasure(TableViewDensity.Medium, FlowDirection.LeftToRight, "Asha",
+            var m = OpenEditorAndMeasure(TableViewDensity.Standard, FlowDirection.LeftToRight, "Asha",
                 editorTexts: new[] { "Asha \u1019\u103C\u1014\u103A\u1019\u102C", "Asha" });
-            VerifyLinesMatch("Medium, fallback glyph removed", m.DisplayLine, m.EditorLine);
+            VerifyLinesMatch("Standard, fallback glyph removed", m.DisplayLine, m.EditorLine);
         }
 
         private sealed class EditorMeasurement

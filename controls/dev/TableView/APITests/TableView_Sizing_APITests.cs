@@ -369,19 +369,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     standardWidth = tableView.Columns[0].ActualWidth;
-                    tableView.Density = TableViewDensity.Small;
+                    tableView.Density = TableViewDensity.Compact;
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.IsLessThan(tableView.Columns[0].ActualWidth, standardWidth,
                         "Smaller text must release stale Auto width maxima for both headers and cells.");
-                    tableView.Density = TableViewDensity.Large;
+                    tableView.Density = TableViewDensity.Comfortable;
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                     Verify.AreEqual(standardWidth, tableView.Columns[0].ActualWidth,
-                        "Returning to Large must restore the larger text's Auto width."));
+                        "Returning to Comfortable must restore the larger text's Auto width."));
             }
         }
 
@@ -492,7 +492,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDensityWithoutFontChangeKeepsGrownAutoWidth()
         {
-            var densities = new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small };
+            var densities = new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact };
             foreach (var initialDensity in densities)
             {
                 foreach (var density in densities.Where(value => value != initialDensity))

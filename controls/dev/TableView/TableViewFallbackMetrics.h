@@ -24,7 +24,7 @@ namespace TableViewDetails
     };
 
     inline DensityFallbackMetrics const& GetDensityFallbackMetrics(
-        winrt::TableViewDensity density = winrt::TableViewDensity::Medium)
+        winrt::TableViewDensity density = winrt::TableViewDensity::Standard)
     {
         static constexpr DensityFallbackMetrics medium{
             32.0, { 12, 6, 12, 6 }, { 12, 5, 12, 7 }, { 4, 6, 12, 6 } };
@@ -35,8 +35,8 @@ namespace TableViewDetails
 
         switch (density)
         {
-        case winrt::TableViewDensity::Large: return large;
-        case winrt::TableViewDensity::Small: return smallMetrics;
+        case winrt::TableViewDensity::Comfortable: return large;
+        case winrt::TableViewDensity::Compact: return smallMetrics;
         default: return medium;
         }
     }

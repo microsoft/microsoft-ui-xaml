@@ -1431,7 +1431,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var table = Place(source);
             foreach (var grouped in new[] { false, true })
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
-            foreach (var density in new[] { TableViewDensity.Large, TableViewDensity.Medium, TableViewDensity.Small })
+            foreach (var density in new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact })
             {
                 RunOnUIThread.Execute(() =>
                 {

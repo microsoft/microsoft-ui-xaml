@@ -3,7 +3,7 @@ InitializeComponent();
 
 PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-PropTable.Density = TableViewDensity.Medium;
+PropTable.Density = TableViewDensity.Compact;
 
 public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
 

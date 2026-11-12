@@ -13,7 +13,7 @@
     <Page.Resources>
         <!-- snippet -->
         <!-- Cells wrap rather than trim so long values stay readable under text scaling.
-             Padding matches a Medium text cell. -->
+             Padding matches a Compact text cell. -->
         <DataTemplate x:Key="PropertyNameTemplate" x:DataType="models:FilePropertyEntry">
             <TextBlock Text="{x:Bind Property}" TextWrapping="Wrap" Padding="8,2,8,2" VerticalAlignment="Center"/>
         </DataTemplate>

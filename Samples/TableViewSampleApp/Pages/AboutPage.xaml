@@ -85,7 +85,7 @@
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                TextWrapping="Wrap"/>
-                    <TextBlock Text="Enums: TableViewSelectionMode { None, Single }; TableViewHeadersVisibility { None, Column }; TableViewDensity { Small, Medium, Large }; TableViewGridLinesVisibility { None, Horizontal, Vertical, All }."
+                    <TextBlock Text="Enums: TableViewSelectionMode { None, Single }; TableViewHeadersVisibility { None, Column }; TableViewDensity { Compact, Standard, Comfortable }; TableViewGridLinesVisibility { None, Horizontal, Vertical, All }."
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                TextWrapping="Wrap"/>

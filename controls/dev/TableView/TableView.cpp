@@ -2426,8 +2426,8 @@ static std::wstring_view DensitySuffix(winrt::TableViewDensity density)
 {
     switch (density)
     {
-    case winrt::TableViewDensity::Large: return L"Large"sv;
-    case winrt::TableViewDensity::Small: return L"Small"sv;
+    case winrt::TableViewDensity::Comfortable: return L"Large"sv;
+    case winrt::TableViewDensity::Compact: return L"Small"sv;
     default: return L"Medium"sv;
     }
 }
@@ -2526,7 +2526,7 @@ double TableView::GetCellFontSize()
         return cache.font.cellFontSize;
     }
 
-    const bool isSmall = Density() == winrt::TableViewDensity::Small;
+    const bool isSmall = Density() == winrt::TableViewDensity::Compact;
     const double fallback = TableViewDetails::c_cellFontSizeFallback;
     if (auto raw = LookupElementResource(*this,
         isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"))
@@ -2700,7 +2700,7 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
 
     auto const resolveFontSizes = [this](winrt::TableViewDensity density)
     {
-        const bool isSmall = density == winrt::TableViewDensity::Small;
+        const bool isSmall = density == winrt::TableViewDensity::Compact;
         return std::pair{
             winrt::unbox_value_or<double>(LookupElementResource(*this,
                 isSmall ? L"TableViewCellFontSizeSmall" : L"TableViewCellFontSize"), TableViewDetails::c_cellFontSizeFallback),
@@ -3465,7 +3465,7 @@ void TableView::RebuildHeadersCore()
     const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const winrt::Thickness cachedHeaderTextPadding = GetDensityHeaderTextPadding();
-    const bool isSmall = Density() == winrt::TableViewDensity::Small;
+    const bool isSmall = Density() == winrt::TableViewDensity::Compact;
     const double smallHeaderFontSize = isSmall
         ? winrt::unbox_value_or<double>(LookupElementResource(*this, L"TableViewHeaderFontSizeSmall"), TableViewDetails::c_headerFontSizeFallback)
         : TableViewDetails::c_headerFontSizeFallback;

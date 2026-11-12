@@ -45,7 +45,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
         PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-        PropTable.Density = TableViewDensity.Medium;
+        PropTable.Density = TableViewDensity.Compact;
         // </snippet>
 
         InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key), s_parentProperty));

@@ -69,15 +69,15 @@
     <Thickness x:Key="TableViewGroupHeaderTextPaddingLarge">0,9,0,11</Thickness>
 
     <Style x:Key="DefaultTableViewStyle" TargetType="tabular:TableView">
-        <Setter Property="Density" Value="Medium" />
+        <Setter Property="Density" Value="Standard" />
     </Style>
 
-    <Style x:Key="SmallTableViewStyle" TargetType="tabular:TableView" BasedOn="{StaticResource DefaultTableViewStyle}">
-        <Setter Property="Density" Value="Small" />
+    <Style x:Key="CompactTableViewStyle" TargetType="tabular:TableView" BasedOn="{StaticResource DefaultTableViewStyle}">
+        <Setter Property="Density" Value="Compact" />
     </Style>
 
-    <Style x:Key="LargeTableViewStyle" TargetType="tabular:TableView" BasedOn="{StaticResource DefaultTableViewStyle}">
-        <Setter Property="Density" Value="Large" />
+    <Style x:Key="ComfortableTableViewStyle" TargetType="tabular:TableView" BasedOn="{StaticResource DefaultTableViewStyle}">
+        <Setter Property="Density" Value="Comfortable" />
     </Style>
 
     <Style x:Key="BandedTableViewStyle" TargetType="tabular:TableView">

@@ -50,7 +50,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
 
         FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         FileTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-        FileTable.Density = TableViewDensity.Medium;
+        FileTable.Density = TableViewDensity.Compact;
         // handledEventsToo: the table consumes Enter for its own row navigation.
         FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
         // </snippet>

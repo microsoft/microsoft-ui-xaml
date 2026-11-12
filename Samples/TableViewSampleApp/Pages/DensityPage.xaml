@@ -10,11 +10,11 @@
 
     <controls:SamplePresenter
         Header="Density"
-        Description="TableView.Density sets the minimum row, column-header and group-header heights and the built-in padding to Small, Medium or Large. Medium is the default. SmallTableViewStyle and LargeTableViewStyle select the same presets. Template content, such as the 28 px avatar and the Department and Status chips, can make rows taller than the preset minimum. The cells here are read-only visuals."
+        Description="TableView.Density sets the minimum row, column-header and group-header heights and the built-in padding to Compact, Standard or Comfortable. Standard is the default. CompactTableViewStyle and ComfortableTableViewStyle select the same presets. Template content, such as the 28 px avatar and the Department and Status chips, can make rows taller than the preset minimum. The cells here are read-only visuals."
         Snippet="Density"
         StretchExample="True"
-        TryIt="Choose Small, Medium, then Large and compare the rows and column headers. Switch Shaping to Grouped and change the density again to compare the group headers too. Then select a row and move it to the next group."
-        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for Small, Medium and Large. Custom template content can make rows taller. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
+        TryIt="Choose Compact, Standard, then Comfortable and compare the rows and column headers. Switch Shaping to Grouped and change the density again to compare the group headers too. Then select a row and move it to the next group."
+        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for Compact, Standard and Comfortable. Custom template content can make rows taller. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -51,9 +51,9 @@
                         SelectedIndex="1"
                         SelectionChanged="OnDensityChanged"
                         HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Small (24px)" Tag="Small"/>
-                        <ComboBoxItem Content="Medium (32px, default)" Tag="Medium"/>
-                        <ComboBoxItem Content="Large (40px)" Tag="Large"/>
+                        <ComboBoxItem Content="Compact" Tag="Compact"/>
+                        <ComboBoxItem Content="Standard (default)" Tag="Standard"/>
+                        <ComboBoxItem Content="Comfortable" Tag="Comfortable"/>
                     </ComboBox>
                     <!-- /snippet -->
                 </controls:RailSection>
@@ -111,7 +111,7 @@
                 </controls:RailSection>
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Density">
-                    <TextBlock x:Name="DensityText" AutomationProperties.AutomationId="DensityText" controls:StatusPanel.Label="Density" Text="Medium"/>
+                    <TextBlock x:Name="DensityText" AutomationProperties.AutomationId="DensityText" controls:StatusPanel.Label="Density" Text="Standard"/>
                 </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>

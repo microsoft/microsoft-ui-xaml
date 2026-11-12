@@ -14,7 +14,7 @@
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
          the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
-        <Setter Property="Density" Value="Medium" />
+        <Setter Property="Density" Value="Standard" />
         <!-- The control is ONE tab stop, not a stop of its own: IsTabStop="False" keeps focus off the
              table element, and TabNavigation="Once" makes the header row and the body a single stop.
              TableView redirects Tab and Shift+Tab entry to the header row (or the body when no
@@ -243,7 +243,7 @@
 
                         <Border x:Name="PART_SortIndicatorHost"
                                 Margin="{TemplateBinding Padding}"
-                                Padding="4,0,4,0"
+                                Padding="4,0,0,0"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 IsHitTestVisible="False"

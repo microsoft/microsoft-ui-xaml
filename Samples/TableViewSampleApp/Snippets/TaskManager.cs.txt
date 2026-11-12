@@ -3,7 +3,7 @@ InitializeComponent();
 
 ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-ProcessTable.Density = TableViewDensity.Medium;
+ProcessTable.Density = TableViewDensity.Compact;
 // Metrics open descending, as in Task Manager: the busiest process comes first.
 foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
 {
