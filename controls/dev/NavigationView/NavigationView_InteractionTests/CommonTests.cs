@@ -1935,5 +1935,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.IsNotNull(item1, "Item 1 should exist");
             }
         }
+
+        // Issue #8095: a TeachingTip whose IsOpen is bound to Target.IsPointerOver should open when the pointer hovers a
+        // Target that lives inside a NavigationViewItem, just like it does for a Target outside the NavigationView.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyTeachingTipOpensForTargetInsideNavigationViewItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Menuitem Stretch Test" }))
+            {
+                var checkStateButton = new Button(FindElement.ById("CheckTeachingTipStateButton"));
+
+                Log.Comment("Control: hover the target that is outside the NavigationView.");
+                VerifyTeachingTipOpensOnHover("TipTargetOutsideNavView", "OutsideTipState", checkStateButton);
+
+                Log.Comment("Hover the target that is inside a NavigationViewItem.");
+                VerifyTeachingTipOpensOnHover("TipTargetInsideNavViewItem", "InsideTipState", checkStateButton);
+            }
+        }
+
+        private void VerifyTeachingTipOpensOnHover(string targetId, string stateId, Button checkStateButton)
+        {
+            TestEnvironment.Application.CoreWindow.MovePointer(0, 0);
+            Wait.ForIdle();
+
+            var target = FindElement.ById(targetId);
+            Verify.IsNotNull(target, targetId + " should exist");
+            target.MovePointer();
+            Wait.ForIdle();
+
+            // The tip opens on a later rendering tick and then plays an expand animation, so poll until it has finished
+            // opening (a tip that is still opening rejects the close when the pointer leaves).
+            // Invoke goes through UIA and does not move the pointer off the target.
+            string state = PollTipState(stateId, checkStateButton, "PopupOpen=True;Idle=True");
+            Log.Comment(stateId + ": " + state);
+            Verify.IsTrue(state.Contains("IsPointerOver=True"), targetId + " should report IsPointerOver while hovered");
+            Verify.IsTrue(state.Contains("PopupOpen=True;Idle=True"), "The TeachingTip targeting " + targetId + " should be open (and done opening) while its target is hovered");
+
+            TestEnvironment.Application.CoreWindow.MovePointer(0, 0);
+            Wait.ForIdle();
+            state = PollTipState(stateId, checkStateButton, "PopupOpen=False;Idle=True");
+            Log.Comment(stateId + " after the pointer left: " + state);
+            Verify.IsTrue(state.Contains("PopupOpen=False;Idle=True"), "The TeachingTip targeting " + targetId + " should close when the pointer leaves");
+        }
+
+        private static string PollTipState(string stateId, Button checkStateButton, string expected)
+        {
+            string state = string.Empty;
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                checkStateButton.Invoke();
+                Wait.ForIdle();
+                state = new TextBlock(FindElement.ById(stateId)).DocumentText;
+                if (state.Contains(expected))
+                {
+                    break;
+                }
+                System.Threading.Thread.Sleep(100);
+            }
+            return state;
+        }
     }
 }

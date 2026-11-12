@@ -11,6 +11,26 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <!-- This page contains a NavigationView control that is in LeftMinimal mode on initial load -->
     <StackPanel>
+        <!-- Issue #8095: a TeachingTip whose Target is inside a NavigationViewItem should open like one whose Target is outside. -->
+        <StackPanel Orientation="Horizontal">
+            <AppBarButton x:Name="TipTargetOutsideNavView" AutomationProperties.AutomationId="TipTargetOutsideNavView" Label="Outside" Icon="Help" Margin="10"/>
+            <Button x:Name="CheckTeachingTipStateButton" AutomationProperties.AutomationId="CheckTeachingTipStateButton" Content="Check TeachingTip state" Click="CheckTeachingTipStateButton_Click" VerticalAlignment="Center"/>
+        </StackPanel>
+        <TextBlock x:Name="OutsideTipState" AutomationProperties.AutomationId="OutsideTipState" Text="Not checked"/>
+        <TextBlock x:Name="InsideTipState" AutomationProperties.AutomationId="InsideTipState" Text="Not checked"/>
+        <muxcontrols:NavigationView x:Name="TeachingTipNavView" PaneDisplayMode="Left" IsSettingsVisible="False">
+            <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem Width="200">
+                    <StackPanel>
+                        <AppBarButton x:Name="TipTargetInsideNavViewItem" AutomationProperties.AutomationId="TipTargetInsideNavViewItem" Label="Inside" Icon="Help" Margin="10"/>
+                    </StackPanel>
+                </muxcontrols:NavigationViewItem>
+            </muxcontrols:NavigationView.MenuItems>
+        </muxcontrols:NavigationView>
+        <muxcontrols:TeachingTip x:Name="OutsideTip" Title="Outside tip" Subtitle="Target is outside the NavigationView" PreferredPlacement="TopRight"
+            IsOpen="{Binding ElementName=TipTargetOutsideNavView, Path=IsPointerOver}" Target="{x:Bind TipTargetOutsideNavView}"/>
+        <muxcontrols:TeachingTip x:Name="InsideTip" Title="Inside tip" Subtitle="Target is inside a NavigationViewItem" PreferredPlacement="TopRight"
+            IsOpen="{Binding ElementName=TipTargetInsideNavViewItem, Path=IsPointerOver}" Target="{x:Bind TipTargetInsideNavViewItem}"/>
         <muxcontrols:NavigationView >
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem HorizontalContentAlignment="Center" Icon="Find" Tag="find" IsSelected="True">

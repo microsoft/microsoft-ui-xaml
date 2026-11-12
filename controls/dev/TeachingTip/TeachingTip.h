@@ -29,6 +29,9 @@ public:
     // UIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
+    // Sets IsOpen like IsOpen(value) does, but keeps a binding the app has on IsOpen.
+    void SetIsOpenKeepingBinding(bool isOpen);
+
     tracker_ref<winrt::FrameworkElement> m_target{ this };
 
     // TestHooks

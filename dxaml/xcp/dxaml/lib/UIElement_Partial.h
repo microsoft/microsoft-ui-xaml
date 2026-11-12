@@ -454,6 +454,7 @@ namespace DirectUI
 
             HRESULT PauseNewDispatchIfAvailableImpl();
             HRESULT ResumeNewDispatchIfAvailableImpl();
+            _Check_return_ HRESULT SetValuePreservingBindingImpl(_In_ xaml::IDependencyProperty* dp, _In_ IInspectable* value);
 
             void SetAnimateIfBringIntoView()
             {

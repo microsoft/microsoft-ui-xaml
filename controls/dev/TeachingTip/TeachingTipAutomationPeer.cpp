@@ -79,7 +79,7 @@ winrt::WindowVisualState TeachingTipAutomationPeer::VisualState()
 
 void TeachingTipAutomationPeer::Close()
 {
-    winrt::get_self<TeachingTip>(GetTeachingTip())->IsOpen(false);
+    winrt::get_self<TeachingTip>(GetTeachingTip())->SetIsOpenKeepingBinding(false);
 }
 
 void TeachingTipAutomationPeer::SetVisualState(winrt::WindowVisualState state)

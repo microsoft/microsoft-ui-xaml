@@ -312,6 +312,7 @@ namespace Microsoft.UI.Xaml
         Boolean FocusNoActivate(Microsoft.UI.Xaml.FocusState value);
         void PauseNewDispatchIfAvailable();
         void ResumeNewDispatchIfAvailable();
+        void SetValuePreservingBinding(Microsoft.UI.Xaml.DependencyProperty dp, Object value);
     };
 
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
