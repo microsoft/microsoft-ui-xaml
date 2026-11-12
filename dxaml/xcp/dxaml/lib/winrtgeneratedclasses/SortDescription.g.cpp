@@ -30,7 +30,7 @@ HRESULT DirectUI::SortDescription::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ISortDescription)) && Feature_ExperimentalApi::IsEnabled())
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ISortDescription*>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Data::ISortDescription>(this);
     }
 #endif
     else
@@ -43,10 +43,11 @@ HRESULT DirectUI::SortDescription::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
 }
 
 // Properties.
-IFACEMETHODIMP DirectUI::SortDescription::get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescription::get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    
     IFC(CValueBoxer::CopyValue(m_direction, pValue));
 Cleanup:
     RRETURN(hr);
@@ -54,22 +55,25 @@ Cleanup:
 _Check_return_ HRESULT DirectUI::SortDescription::put_Direction(ABI::Microsoft::UI::Xaml::Data::ListSortDirection value)
 {
     HRESULT hr = S_OK;
+    
     IFC(CValueBoxer::CopyValue(value, &m_direction));
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SortDescription::get_PropertyName(_Out_ HSTRING* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescription::get_PropertyName(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
-    IFC(m_pPropertyName.CopyTo(pValue));
+    
+    IFC(m_propertyName.CopyTo(pValue));
 Cleanup:
     RRETURN(hr);
 }
 _Check_return_ HRESULT DirectUI::SortDescription::put_PropertyName(_In_opt_ HSTRING value)
 {
     HRESULT hr = S_OK;
-    IFC(m_pPropertyName.Set(value));
+    
+    IFC(m_propertyName.Set(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -97,11 +101,16 @@ HRESULT DirectUI::SortDescriptionFactory::QueryInterfaceImpl(_In_ REFIID iid, _O
 #endif
 }
 
+_Check_return_ HRESULT DirectUI::SortDescriptionFactory::CheckActivationAllowed()
+{
+    RRETURN(S_OK);
+}
 
 // Factory methods.
 IFACEMETHODIMP DirectUI::SortDescriptionFactory::CreateInstance(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::ListSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance)
 {
     HRESULT hr = S_OK;
+    
     ARG_VALIDRETURNPOINTER(ppInstance);
     IFC(CreateInstanceImpl(propertyName, direction, ppInstance));
 Cleanup:

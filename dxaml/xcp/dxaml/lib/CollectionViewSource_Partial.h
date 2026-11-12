@@ -63,8 +63,8 @@ namespace DirectUI
 
         CVSViewChangedEventSource *m_pCVSViewChangedEventSource;
 
-        TrackerPtr<wfc::IObservableVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
-        TrackerPtr<wfc::IObservableVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
+        TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
+        TrackerPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
         TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
 
         // Non-null only while View is a shaped view.
