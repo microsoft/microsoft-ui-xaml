@@ -9,20 +9,20 @@ namespace TableViewSampleApp.Pages;
 
 public sealed partial class VirtualizationPage
 {
-    private int _peakPool;
+    private int _peakContainers;
     private double _rowHeight;                 // last measured; rows are uniform in this table
 
     protected override void RefreshReadouts()
     {
-        var (visible, pool, rowHeight) = IsLoaded ? CountRows() : (0, 0, 0d);
+        var (visible, containers, rowHeight) = IsLoaded ? CountRows() : (0, 0, 0d);
         _rowHeight = rowHeight > 0 ? rowHeight : _rowHeight;
-        _peakPool = Math.Max(_peakPool, pool);
+        _peakContainers = Math.Max(_peakContainers, containers);
         var total = _people.Count;
 
         Status.Rows = SampleShaping.RowCountText(total);
         RealizedRowsText.Text = visible.ToString("N0", CultureInfo.CurrentCulture);
-        RowPoolText.Text = pool.ToString("N0", CultureInfo.CurrentCulture);
-        PeakPoolText.Text = _peakPool.ToString("N0", CultureInfo.CurrentCulture);
+        RowPoolText.Text = containers.ToString("N0", CultureInfo.CurrentCulture);
+        PeakPoolText.Text = _peakContainers.ToString("N0", CultureInfo.CurrentCulture);
         RealizedShareText.Text = total > 0
             ? string.Format(CultureInfo.CurrentCulture, "{0:P2} of {1:N0}", (double)visible / total, total)
             : "—";

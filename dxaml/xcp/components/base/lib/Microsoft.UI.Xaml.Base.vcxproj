@@ -24,10 +24,12 @@
         <ClCompile Include="..\FloatUtil.cpp"/>
         <ClCompile Include="..\bit_vector.cpp"/>
         <ClCompile Include="..\DesignMode.cpp"/>
+        <ClCompile Include="..\RenderingResourceDiagnostics.cpp"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\inc\XamlProfilerTracing.h"/>
+        <ClInclude Include="..\inc\RenderingResourceDiagnostics.h"/>
+        <ClInclude Include="..\inc\XamlProfilerTracing.h"/>
     </ItemGroup>
 
     <PropertyGroup>

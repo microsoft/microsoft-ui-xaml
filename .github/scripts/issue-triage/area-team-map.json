@@ -41,7 +41,11 @@
     "team": "team-CompInput",
     "confidence": "low",
     "match": ["AppWindow", "window presenter", "OverlappedPresenter", "window resize", "always on top"],
-    "overrides": [{"id": "xaml-hosting", "when": "XAML content, XamlRoot or island hosting inside the window", "team": "team-Reach"}]
+    "note": "Use this area for an evidenced failure in direct AppWindow operations. If a window report does not distinguish XAML/WinUI Window from AppWindow, prefer area-XamlWindow for initial investigation. AppWindow appearing in a workaround does not establish an AppWindow defect. Preserve an existing area label and assess its configured overrides.",
+    "overrides": [
+      {"id": "xaml-hosting", "when": "XAML content, XamlRoot or island hosting inside the window", "team": "team-Reach"},
+      {"id": "xaml-window-facade", "when": "The report identifies Window.Width/Height propagation or XAML Window activation ordering as the failing boundary, while the corresponding direct AppWindow operation works", "team": "team-Core"}
+    ]
   },
   "area-Application": {
     "team": "team-Reach",
@@ -560,9 +564,10 @@
     "match": ["TextBox", "RichEditBox", "text input", "caret", "selection", "spell check"]
   },
   "area-TitleBar": {
-    "team": "team-Reach",
+    "team": "team-Controls",
     "confidence": "low",
-    "match": ["TitleBar", "custom title bar", "caption buttons", "ExtendsContentIntoTitleBar", "drag region"],
+    "match": ["TitleBar", "custom title bar", "caption buttons", "drag region"],
+    "note": "ExtendsContentIntoTitleBar is a Window/AppWindow API, not a TitleBar control property. Custom title-bar integration reports can start here when the control/window boundary is unclear; this is initial investigation, not API ownership. A failure explicitly isolated to a Window/AppWindow property or operation belongs to the corresponding window area.",
     "overrides": [{"id": "pointer-handling", "when": "hit testing, drag region input or caption button pointer handling", "team": "team-CompInput"}]
   },
   "area-ToggleSwitch": {
@@ -611,9 +616,10 @@
     "match": ["VisualStateManager", "VisualState", "state trigger", "AdaptiveTrigger"]
   },
   "area-WebView": {
-    "team": "team-Rendering",
+    "team": "team-Controls",
     "confidence": "high",
-    "match": ["WebView2", "WebView", "CoreWebView2", "Edge runtime", "browser control"]
+    "match": ["WebView2", "WebView", "CoreWebView2", "Edge runtime", "browser control"],
+    "note": "Use this area for WinUI WebView/WebView2 control and integration defects; its default owner does not depend on product generation. A browser-runtime failure or WebView2 merely appearing in a sample does not by itself establish a WinUI control defect; prefer an evidenced underlying area."
   },
   "area-Windowing": {
     "team": "team-CompInput",
@@ -638,7 +644,8 @@
   "area-XamlWindow": {
     "team": "team-Reach",
     "confidence": "high",
-    "match": ["Microsoft.UI.Xaml.Window", "XamlRoot", "window content", "Window.Activate", "window closed"]
+    "match": ["Microsoft.UI.Xaml.Window", "XamlRoot", "window content", "Window.Activate", "window closed", "Window.Width", "Window.Height", "pre-activation sizing", "Window.ExtendsContentIntoTitleBar"],
+    "note": "Use this area for XAML/WinUI Window property propagation, size synchronization and activation ordering. Prefer it for initial investigation when a window report does not distinguish XAML/WinUI Window from AppWindow; maintainers can redirect later. A failure isolated to a direct AppWindow operation retains its own route. Window or XamlRoot merely appearing in sample code is not enough; a clearly identified control or content-layout failure keeps its own area."
   },
   "area-wapproj": {
     "team": "team-Markup",

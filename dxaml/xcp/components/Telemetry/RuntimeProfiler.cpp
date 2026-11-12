@@ -19,6 +19,23 @@ extern const char *gFileVersion;
 
 namespace RuntimeProfiler {
 
+    void FireStartupEvent()
+    {
+        // DXamlCore can initialize on multiple UI threads and restart within the same process.
+        static volatile LONG startupEventAttempted = 0;
+        if (InterlockedCompareExchange(&startupEventAttempted, 1, 0) == 0)
+        {
+            TraceLoggingWrite(
+                g_hTraceProvider,
+                "WinUIAppStartup",
+                TraceLoggingDescription("WinUI initialized successfully in this app process."),
+                TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                TraceLoggingString(gFileVersion, "BinaryVersion"),
+                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+        }
+    }
+
     void UninitializeRuntimeProfiler();
 
     struct FunctionTelemetryCount

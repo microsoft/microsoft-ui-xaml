@@ -185,4 +185,6 @@
 
 #include "MUX-ETWEvents.h"
 
+#include "XamlProfilerTracing.h"
+
 #include <FeatureFlags.h>
