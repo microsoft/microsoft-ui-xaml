@@ -1060,11 +1060,11 @@ that no session has started for 30 days.
 | `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
 | `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
 
-Two skills tell Copilot how to use the tools. Copilot reads
-`winui-profiler-analysis` for questions about a WinUI app's performance.
-`/winui-profiler:open-session [session.sqlite | folder]` summarizes a session
-or lists a folder's sessions. When no session file is given, the tools use the
-newest one in `%LOCALAPPDATA%\WinUIProfiler\Sessions`.
+One skill, `analyze-session`, tells Copilot how to use the tools. Copilot
+reads it for questions about a WinUI app's performance, and
+`/winui-profiler:analyze-session [session.sqlite | folder]` runs it to
+summarize a session or list a folder's sessions. When no session file is
+given, the tools use the newest one in `%LOCALAPPDATA%\WinUIProfiler\Sessions`.
 
 Each tool's result also says how it got its answer. Copilot doesn't write SQL:
 each view runs fixed statements, then sorts, groups, counts and pages their
@@ -1078,7 +1078,7 @@ on each file it lists that could be read; one that ran on another file would
 also have `files`, the files it ran on. `computed` says what the call did
 with the rows. The statements that check a file's version, views and columns,
 and statements that fail, aren't listed; a call that fails returns only its
-error. The skills end every answer with a **How I got this** section that
+error. The skill ends every answer with a **How I got this** section that
 shows each call with its `queries` and `computed`, copied as returned, so the
 answer can be checked by running the statements.
 
