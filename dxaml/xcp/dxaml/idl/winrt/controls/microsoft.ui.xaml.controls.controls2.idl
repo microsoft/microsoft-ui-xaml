@@ -749,9 +749,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass HubSectionCollection
+    unsealed runtimeclass HubSectionCollection
         :[default] Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.HubSection>
     {
+        [method_name("CreateInstance")] HubSectionCollection();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

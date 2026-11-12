@@ -117,7 +117,7 @@ namespace Microsoft.UI.Xaml.Controls
     [NativeName("CHubSectionCollection")]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]
     [Guids(ClassGuid = "3df2d721-6551-47aa-8447-43da41afa38b")]
-    public sealed class HubSectionCollection
+    public class HubSectionCollection
      : Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection<HubSection>
     {
         [CoreType(typeof(Microsoft.UI.Xaml.DependencyObject))]
@@ -128,7 +128,7 @@ namespace Microsoft.UI.Xaml.Controls
             set;
         }
 
-        internal HubSectionCollection() { }
+        public HubSectionCollection() { }
     }
 
     [DXamlIdlGroup("Controls2")]
