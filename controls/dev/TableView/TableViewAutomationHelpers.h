@@ -253,6 +253,28 @@ inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const&
     return count;
 }
 
+// Position among visible columns in logical order, or -1 when `target` is missing or not visible.
+inline int32_t VisibleColumnIndexOf(winrt::IVector<winrt::TableViewColumn> const& columns, winrt::TableViewColumn const& target)
+{
+    if (!columns || !IsVisibleColumn(target))
+    {
+        return -1;
+    }
+    int32_t visible = 0;
+    for (auto const& column : columns)
+    {
+        if (column == target)
+        {
+            return visible;
+        }
+        if (IsVisibleColumn(column))
+        {
+            ++visible;
+        }
+    }
+    return -1;
+}
+
 constexpr int32_t c_maxCellContentChildrenPerLevel = 32;
 
 inline bool ShouldWalkCellContentSubtree(winrt::FrameworkElement const& content)

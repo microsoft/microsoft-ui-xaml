@@ -426,7 +426,13 @@ is outside the editor's visual tree. An unrelated popup is not part of the edito
 does not postpone focus-loss commit. Escape consumed by the editor, or used to dismiss
 its own menu, does not also cancel the cell edit.
 
-While `Tab` moves an edit, a vetoed or failed commit keeps the editor open, and selection follows a move to another row.
+While `Tab` moves an edit, a vetoed or failed commit keeps the editor open, and selection follows a move to another row. In more detail:
+
+- Cells are visited in logical column order. Collapsed columns and cells that cannot be edited (read-only table or column, or no editor) are skipped.
+- Past the last (first) editable cell of a row, the edit wraps to the first (last) editable cell of the next (previous) data row; group headers are skipped. Past the last (first) row, the commit still runs and focus leaves the table as a `Tab` from the focused cell would.
+- A target row outside the viewport is scrolled into view, and its editor opens once focus lands on it.
+- `Tab` is left to the editor when the editor (or a control inside it) handles it, when focus is in an editor-owned flyout/popup, or when a multi-control editor still has a tab stop in that direction. `Ctrl+Tab` and `Alt+Tab` are never intercepted.
+- A `CellEditEnding` handler that moves focus off the edited record ends the move; the next editor does not open.
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
 

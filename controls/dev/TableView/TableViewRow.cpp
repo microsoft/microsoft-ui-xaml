@@ -84,11 +84,7 @@ namespace
         }
     }
 
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Collects tab stops BELOW a cell wrapper (the wrapper is owned by SetCellsTabStopInternal).
     // Keeps descending past a found tab stop: a focusable container can hold more.
@@ -833,10 +829,9 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         args.Key() == winrt::VirtualKey::Tab &&
         // Ctrl+Tab is app-level navigation and Alt is the resize chord; neither is a band move.
         !IsKeyDown(winrt::VirtualKey::Control) &&
-        !IsKeyDown(winrt::VirtualKey::Menu) &&
-        IsGridLevelFocusInternal())
+        !IsKeyDown(winrt::VirtualKey::Menu))
     {
-        SuppressCellContentTabStopsForTabWalkInternal();
+        PrepareTabWalkFromCellInternal();
     }
 
     // Unmodified only: Ctrl+arrow is focus-without-select; Shift/Alt chords belong to the app.

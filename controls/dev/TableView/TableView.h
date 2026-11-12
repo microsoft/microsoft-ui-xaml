@@ -554,6 +554,16 @@ public:
     void CompleteFocusLossCommit();
     // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
     void MarkEditorFlyoutClosing();
+    // True when Tab is consumed, including by a vetoed commit.
+    bool TryMoveEditToAdjacentCell(bool forward);
+    void FindAdjacentEditableColumns(
+        winrt::TableViewColumn const& source,
+        bool forward,
+        winrt::TableViewColumn& inRow,
+        winrt::TableViewColumn& wrap);
+    int32_t StepToAdjacentDataRow(int32_t row, bool forward);
+    bool IsBodyFocusOnItem(winrt::IInspectable const& item);
+    bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
@@ -829,12 +839,6 @@ private:
     // Bumped when a forced teardown closes an edit awaiting a deferral, so a late completion can
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
-
-    int32_t GetVisibleColumnIndex(winrt::TableViewColumn const& column);
-    // True when Tab is consumed, including by a vetoed commit.
-    bool TryMoveEditToAdjacentCell(bool forward);
-    bool IsBodyFocusOnItem(winrt::IInspectable const& item);
-    bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
 
     // A Tab target outside the viewport: BeginEdit runs once the pending body focus lands on it.
     tracker_ref<winrt::IInspectable> m_beginEditAfterBodyFocusItem{ this };

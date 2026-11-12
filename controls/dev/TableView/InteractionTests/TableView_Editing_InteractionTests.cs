@@ -395,7 +395,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
-        #region Tab / Shift+Tab while editing (ADO 64540419)
+        #region Tab / Shift+Tab while editing
 
         // BasicTableView columns: Name, Age, ReadOnlyCity (IsReadOnly), Score, Template (editing template),
         // Action (not editable). Tab commits and edits the next editable visible cell, Shift+Tab the previous one.

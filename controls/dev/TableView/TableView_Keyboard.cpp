@@ -27,11 +27,7 @@
 
 namespace
 {
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
     // enough: the walk must actually reach the header host, or a focused cell (an open editor,
