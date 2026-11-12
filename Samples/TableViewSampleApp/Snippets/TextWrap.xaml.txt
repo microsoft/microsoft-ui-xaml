@@ -18,7 +18,13 @@
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
 </tv:TableView>

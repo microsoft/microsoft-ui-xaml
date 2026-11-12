@@ -13,7 +13,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 **WPF migration.** The API keeps WPF `DataGrid` concepts where they help:
 
-- `TableViewTextColumn.Binding` is a plain CLR property, like `DataGridBoundColumn.Binding`.
+- `TableViewColumn.CellToolTipBinding` is a plain CLR property, like `DataGridBoundColumn.Binding`.
 - `TableViewHeadersVisibility` has only `None` and `Column`; row headers are out of scope.
 - `TableViewGridLinesVisibility` keeps WPF's names and values, so persisted casts round-trip.
 - `Width` is a `GridLength`, so XAML can express `Pixel`, `Auto` and `*`.
@@ -24,7 +24,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 **`TableViewRow` is public and unsealed** although its properties are read-only. It is the realized row container (like `ListViewItem`), and the public row automation peer constructor takes it.
 
-**Two built-in column types.** `TableViewTextColumn` is the efficient common case (one `TextBlock` per cell); `TableViewTemplateColumn` hosts any visual through `CellTemplate`. Without a `CellTemplate` it renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
+**One built-in column type.** `TableViewTemplateColumn` hosts any visual through `CellTemplate`; a text cell is a template whose root is a bound `TextBlock`. A built-in text column is deferred to V2 (API spec, TableViewTextColumn (deferred)). Without a `CellTemplate` it renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
 
 # Functional spec link
 
@@ -53,7 +53,7 @@ Arrows show data flow, not ownership: `TableView` holds a `TableViewSource`, whi
 |---|---|---|
 | `TableView` | unsealed `Control` | The table. Content property is `Columns`. |
 | `TableViewColumn` | unsealed `DependencyObject` | Width, header, sort, freeze, read-only, cell factory (`GenerateElementCore`). |
-| `TableViewTextColumn`, `TableViewTemplateColumn` | unsealed columns | Text cells and templated cells. |
+| `TableViewTemplateColumn` | unsealed column | Templated cells, including text cells. |
 | `TableViewRow` | unsealed `Control` | Realized data row. `IsSelected`, `Level`, `IsExpandable`, `IsExpanded` are read-only. |
 | `TableViewGroupHeader` | unsealed `ContentControl` | Realized group band. `IsExpanded`/`IsExpandable` are read-only; activation calls the owning `TableView`, which raises `GroupExpanding`/`GroupCollapsed`. |
 | `TableViewColumnHeader` | sealed `ContentControl` | One per column, created only by `TableView`. |
@@ -185,7 +185,6 @@ A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` i
 
 On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **reactively** through inheritance and bindings. Cells are never re-stamped, because changing a live cell during the repeater's measure re-enters layout and fails fast.
 
-- `TableViewTextColumn` binds `TextBlock.Text` to its `Binding`.
 - `TableViewTemplateColumn` binds `ContentPresenter.Content` to the cell wrapper's inherited `DataContext`, because a `ContentPresenter` sets its own `DataContext` to its `Content`.
 - **Custom columns** must bind to the inherited `DataContext` and not set a local one. `dataItem` is for initial setup only; content that bakes it in (or initializes once, in `Loaded` or with `x:Bind` `OneTime`) shows the previous item after a scroll.
 
@@ -285,7 +284,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
 | `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
-| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
+| Theme keys | `TableViewHeaderFontSize` (14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
@@ -411,8 +410,7 @@ XAML refuses because a container outside the visual tree holds it. An app except
 back across any other ABI call loses its tag and counts as TableView's, and so does an app `SelectionChanged`
 handler that runs out of memory inside a `SelectionModel` call, since that failure has no error object to match. For
 the display factory and the sort member path the column class decides, so a built-in method that throws on an
-app-derived column without an override counts as the app's, and a built-in text column's binding converter that
-throws while the column builds a cell counts as TableView's. Running out of memory
+app-derived column without an override counts as the app's. Running out of memory
 while walking an enumeration-only source counts as TableView's, because
 TableView's own allocation may be what failed. App delegates that throw outside a shaping verb (live shaping, a
 source change) are not reported, nor is a `ParentBy` parent key selector that throws (its row becomes a root).
@@ -439,7 +437,7 @@ Every event also carries `SchemaVersion`.
 | `SourceRowsBucket` | Rows before the filter: every source row, or for a tree every node |
 | `DataRowsBucket` | Data rows after the filter, without group headers and whatever is expanded; for a tree, the nodes the filter keeps |
 | `PeakRealizedRowsBucket` | Containers the rows repeater has created since the template was applied. It creates one only when none is free and keeps them across loads, so this is the most rows realized at once, plus the most group headers, over the instance's loads |
-| `ColumnKinds` | Text 1, template 2, app-derived 4 (a column class that is not TableView's) |
+| `ColumnKinds` | Template 2, app-derived 4 (a column class that is not TableView's); 1 (text) is retired |
 | `SourceKinds` | A collection TableView projected 1, the app's own `TableViewSource` 2 |
 | `IsRightToLeft` | The table flows right to left |
 | `TemplateIncomplete` | The applied template lacks `PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost` |
@@ -477,7 +475,7 @@ These contracts are documented only here; they belong in the [API spec](../../ap
 - **Sort methods.** `SortByColumn` and `ToggleSortDirection` ignore `CanUserSort` and `CanUserSortColumns`, which gate user input only (pointer, keyboard, UIA Invoke). Turning any `CanUser*` flag off, column or table level, does not clear the active sort (WPF parity). `SortByColumn(column, None)` clears. `ToggleSortDirection` walks the column's `SortCycle`. Both return `false`, changing nothing, when `Sorting` is canceled, the column cannot sort (no sort path and no `CustomSortComparer`), rows lack identity, or the source is refused. `TableView.ClearSort()` clears column sorts and the item sort levels on the effective `TableViewSource`, keeps `SortGroups`, and returns `true` if anything was cleared.
 - **Sort events.** `Sorting` is raised first and is cancellable, letting the app own the order and light the chevron with `TableViewSource.Sort(path, …)`. `Sorted` follows. A null `Column` means clear-all. An app that owns the order can instead set the column's display-only `SortDirection`.
 - **`SortCycle`** is per column. Its first direction is the opening one; the `*None` variants add a step back to source order.
-- **`SortMemberPath`.** When empty, `TableViewTextColumn` uses `Binding.Path.Path` if the binding targets the row item (no `Source`, `RelativeSource` or `ElementName`), through the overridable `GetSortMemberPathCore()`. `CustomSortComparer` wins over the path and must be a pure function. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and chevron stay, `Sorting` was raised and `Sorted` is not, and the fault is reported.
+- **`SortMemberPath`.** When empty, an app-derived column can supply a path through the overridable `GetSortMemberPathCore()`; otherwise the column sorts only through `CustomSortComparer`. `CustomSortComparer` wins over the path and must be a pure function. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and chevron stay, `Sorting` was raised and `Sorted` is not, and the fault is reported.
 - **`TableViewSource`.** `From` accepts `IVector<Object>`, `IBindableVector`, `IIterable<Object>` or `IBindableIterable`. Null items, predicate or key selector throw `E_INVALIDARG`; `groupIdentitySelector` may be null. Use `ClearFilter()` to remove a filter. `ParentBy` errors are in the [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md).
 - **Context flyouts.** First match wins. Cell: a `ContextFlyout` in the cell content, `CellContextFlyout`, the row's `ContextFlyout`, `TableView.ContextFlyout`. Header: a `ContextFlyout` in the header content, `HeaderContextFlyout`, `TableView.ContextFlyout`. Opening one focuses its target and does not change selection. When the table resolves the request (keyboard, or pointer on padding), a text control inside the content counts only with a locally set `ContextFlyout` (not a Style setter), and nested `TableView`s and items inside a nested items host are skipped.
 - **`TableViewRow.Level`** is 1-based for tree rows and `0` otherwise, matching `AutomationProperties.Level`.

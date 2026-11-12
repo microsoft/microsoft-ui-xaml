@@ -46,7 +46,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var column = new TableViewTextColumn();
+                var column = new TableViewTemplateColumn();
 
                 // Chosen above the documented MinWidth default of 20.0 (TableView.idl:130) so this
                 // test observes the pixel path and not the lower clamp.
@@ -68,7 +68,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // Route 1: Width authored below an existing MinWidth.
-                var column = new TableViewTextColumn { MinWidth = 90.0 };
+                var column = new TableViewTemplateColumn { MinWidth = 90.0 };
                 column.Width = new GridLength(30.0, GridUnitType.Pixel);
 
                 Verify.AreEqual(90.0, column.ActualWidth, "ActualWidth must clamp up to MinWidth.");
@@ -79,7 +79,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Clamping must not rewrite the authored Width.");
 
                 // Route 2: MinWidth raised above an already-authored Width.
-                var other = new TableViewTextColumn();
+                var other = new TableViewTemplateColumn();
                 other.Width = new GridLength(50.0, GridUnitType.Pixel);
                 Verify.AreEqual(50.0, other.ActualWidth, "Precondition: the pixel width should resolve before MinWidth is raised.");
 
@@ -99,14 +99,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // regress without the other.
             RunOnUIThread.Execute(() =>
             {
-                var column = new TableViewTextColumn { MaxWidth = 100.0 };
+                var column = new TableViewTemplateColumn { MaxWidth = 100.0 };
                 column.Width = new GridLength(400.0, GridUnitType.Pixel);
 
                 Verify.AreEqual(100.0, column.ActualWidth, "ActualWidth must clamp down to MaxWidth.");
                 Verify.AreEqual(new GridLength(400.0, GridUnitType.Pixel), column.Width,
                     "Clamping must not rewrite the authored Width.");
 
-                var other = new TableViewTextColumn();
+                var other = new TableViewTemplateColumn();
                 other.Width = new GridLength(300.0, GridUnitType.Pixel);
                 Verify.AreEqual(300.0, other.ActualWidth, "Precondition: the pixel width should resolve before MaxWidth is lowered.");
 
@@ -131,7 +131,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // spec gap - the behavior is defensible but undocumented, and the IDL should state it.
             RunOnUIThread.Execute(() =>
             {
-                var column = new TableViewTextColumn
+                var column = new TableViewTemplateColumn
                 {
                     MinWidth = 200.0,
                     MaxWidth = 50.0,
@@ -143,7 +143,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Both orderings of assignment must agree; a guard applied on only one property's
                 // changed-callback would pass one and fail the other.
-                var reversed = new TableViewTextColumn();
+                var reversed = new TableViewTemplateColumn();
                 reversed.Width = new GridLength(120.0, GridUnitType.Pixel);
                 reversed.MaxWidth = 50.0;
                 reversed.MinWidth = 200.0;
@@ -170,7 +170,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var (property, badValue, label) in NonFiniteBoundCases())
                 {
-                    var column = new TableViewTextColumn();
+                    var column = new TableViewTemplateColumn();
                     column.Width = new GridLength(150.0, GridUnitType.Pixel);
 
                     if (property == "MinWidth")
@@ -215,7 +215,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // default - but it is a spec gap.
             RunOnUIThread.Execute(() =>
             {
-                var auto = new TableViewTextColumn();
+                var auto = new TableViewTemplateColumn();
                 auto.Width = GridLength.Auto;
 
                 Verify.AreEqual(GridUnitType.Auto, auto.Width.GridUnitType,
@@ -223,7 +223,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(c_provisionalWidth, auto.ActualWidth,
                     "An unresolved Auto column must report the finite provisional width.");
 
-                var star = new TableViewTextColumn();
+                var star = new TableViewTemplateColumn();
                 star.Width = new GridLength(2.0, GridUnitType.Star);
 
                 Verify.AreEqual(GridUnitType.Star, star.Width.GridUnitType, "A star Width must stay a star Width.");
@@ -2026,7 +2026,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateLockedStarTable();
-                tableView.Columns.Add(MakeTextColumn("Zero", "Name", new GridLength(0.0, GridUnitType.Star)));
+                tableView.Columns.Add(MakeTextTemplateColumn("Zero", "Name", new GridLength(0.0, GridUnitType.Star)));
                 LoadContent(tableView);
             });
 
@@ -3086,7 +3086,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = CreateTableViewShell(
                 names.Select(name => new Person { Name = name, Role = "Role" }).ToList(), 600, 260);
 
-            tableView.Columns.Add(MakeTextColumn(header, "Name", GridLength.Auto));
+            tableView.Columns.Add(MakeTextTemplateColumn(header, "Name", GridLength.Auto));
 
             return tableView;
         }

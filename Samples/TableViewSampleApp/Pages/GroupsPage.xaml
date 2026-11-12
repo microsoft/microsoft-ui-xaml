@@ -80,11 +80,23 @@
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
                 <!-- Auto: when Photo is the first column, it widens to fit the indent and the expander chevron. -->
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="Auto" MinWidth="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn Header="Department" Width="150" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
                 <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>
                 <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value."/>
-                <tv:TableViewTextColumn Header="Salary" Width="100" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" HeaderToolTip="Annual salary in whole currency units. Sorts by the number, not the text."/>
+                <tv:TableViewTemplateColumn Header="Salary" Width="100" HeaderToolTip="Annual salary in whole currency units. Sorts by the number, not the text." SortMemberPath="Salary">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

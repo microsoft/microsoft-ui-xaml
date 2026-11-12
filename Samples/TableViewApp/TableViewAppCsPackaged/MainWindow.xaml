@@ -37,8 +37,20 @@
                 </Grid.RowDefinitions>
                 <TextBlock Text="Table 1 - instantiated from MARKUP (XAML)" FontWeight="SemiBold" />
                 <tabular:TableView x:Name="MarkupTable" Grid.Row="1" ItemsSource="{x:Bind People}">
-                    <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-                    <tabular:TableViewTextColumn Header="Age" Binding="{Binding Age}" />
+                    <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+                        <tabular:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </tabular:TableViewTemplateColumn.CellTemplate>
+                    </tabular:TableViewTemplateColumn>
+                    <tabular:TableViewTemplateColumn Header="Age" SortMemberPath="Age">
+                        <tabular:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Age}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </tabular:TableViewTemplateColumn.CellTemplate>
+                    </tabular:TableViewTemplateColumn>
                 </tabular:TableView>
             </Grid>
 

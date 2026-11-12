@@ -158,15 +158,6 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
 
 [MUX_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TableViewTextColumn : TableViewColumn
-{
-    TableViewTextColumn();
-
-    Microsoft.UI.Xaml.Data.Binding Binding;
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TableViewTemplateColumn : TableViewColumn
 {

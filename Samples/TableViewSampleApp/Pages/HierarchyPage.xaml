@@ -30,13 +30,31 @@
                 <tv:TableView.Resources>
                     <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
                 </tv:TableView.Resources>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
                 <!-- Auto: when Photo is the first column, it widens to fit the indent and the expander chevron. -->
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="Auto" MinWidth="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-                <tv:TableViewTextColumn Header="Role" Width="200" Binding="{Binding Role}"/>
+                <tv:TableViewTemplateColumn Header="Role" Width="200" SortMemberPath="Role">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Role}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
-                <tv:TableViewTextColumn Header="#" Width="80" Binding="{Binding EmployeeId}"/>
+                <tv:TableViewTemplateColumn Header="#" Width="80" SortMemberPath="EmployeeId">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding EmployeeId}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

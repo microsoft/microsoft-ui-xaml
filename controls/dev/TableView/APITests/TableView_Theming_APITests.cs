@@ -1614,9 +1614,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Horizontal padding is identical across all three densities by design - density is vertical
-        // only - so a test asserting horizontal change would be asserting a bug.
+        // only - so a test asserting horizontal change would be asserting a bug. Cell content padding is
+        // the app's CellTemplate, so only the header is checked.
         [TestMethod]
-        public void VerifyCellAndHeaderPaddingFollowDensity()
+        public void VerifyHeaderPaddingFollowsDensity()
         {
             foreach (var testCase in DensityCases)
             {
@@ -1636,20 +1637,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    var cellText = RequireFirstCellTextBlock(tableView);
-                    if (cellText == null)
-                    {
-                        return;
-                    }
-
-                    Verify.AreEqual(testCase.CellPadding, cellText.Padding,
-                        $"Density={testCase.Density} must give generated text cells a Padding of {testCase.CellPadding}. " +
-                        "Without it rows grow taller but text stays pinned to the top, so Comfortable buys empty space " +
-                        "instead of breathing room.");
-
                     var headerPresenter = GetHeaderPresenter(tableView, 0);
                     Verify.AreEqual(testCase.CellPadding, headerPresenter.Padding,
-                        $"Density={testCase.Density} must give header cells the same padding as body cells.");
+                        $"Density={testCase.Density} must give header cells a Padding of {testCase.CellPadding}.");
                 });
             }
         }
@@ -1895,15 +1885,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "The density change should update the existing row rather than force a rebuild.");
                 Verify.AreEqual(30.0, rowAfter.MinHeight,
                     "An already-realized row must pick up the Compact metric; otherwise the table shows a mix of densities as the user scrolls.");
-
-                var cellText = RequireFirstCellTextBlock(tableView);
-                if (cellText == null)
-                {
-                    return;
-                }
-
-                Verify.AreEqual(new Thickness(8, 2, 8, 2), cellText.Padding,
-                    "An already-realized cell must pick up the Compact padding.");
             });
         }
 
@@ -1954,12 +1935,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // A negative test, and new relative to PR !15971489. The product states the exclusion as
-        // deliberate (TableView.h:62: font sizes resolve from fixed, non-density-suffixed keys and are
-        // kept out of the density cache "to avoid implying otherwise"), and TableView-dev-spec.md:215
-        // scopes Density to "row min-height + built-in cell/header padding".
+        // A negative test, and new relative to PR !15971489. Header font size resolves from a fixed,
+        // non-density-suffixed key, and TableView-dev-spec.md scopes Density to row min-height and
+        // header padding.
         //
-        // If someone adds a density suffix to the font keys, Compact starts shrinking text - a
+        // If someone adds a density suffix to the font key, Compact starts shrinking text - a
         // legibility regression that would read as intentional to a reviewer.
         [TestMethod]
         public void VerifyFontSizeDoesNotVaryWithDensity()
@@ -1981,16 +1961,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    var cellText = RequireFirstCellTextBlock(tableView);
-                    if (cellText == null)
-                    {
-                        return;
-                    }
-
-                    Verify.AreEqual(expectedFontSize, cellText.FontSize,
-                        $"Cell font size must stay {expectedFontSize} at Density={testCase.Density}: TableViewCellFontSize has no " +
-                        "density variants, and density is specified as row height and padding only.");
-
                     var headerPresenter = GetHeaderPresenter(tableView, 0);
                     Verify.AreEqual(expectedFontSize, headerPresenter.FontSize,
                         $"Header font size must stay {expectedFontSize} at Density={testCase.Density}.");
@@ -2541,8 +2511,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var replacement = donor.GetValue(TableView.ColumnsProperty);
                 donor.SetValue(TableView.ColumnsProperty, new TableView().GetValue(TableView.ColumnsProperty));
                 var columns = (IList<TableViewColumn>)replacement;
-                columns.Add(MakeTextColumn("Name"));
-                columns.Add(MakeTextColumn("Role"));
+                columns.Add(MakeTextTemplateColumn("Name"));
+                columns.Add(MakeTextTemplateColumn("Role"));
 
                 tableView.SetValue(TableView.ColumnsProperty, replacement);
             });
@@ -2667,12 +2637,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 if (change == "ClearAndAddNew")
                 {
                     tableView.Columns.Clear();
-                    tableView.Columns.Add(MakeTextColumn("Name"));
-                    tableView.Columns.Add(MakeTextColumn("Role"));
+                    tableView.Columns.Add(MakeTextTemplateColumn("Name"));
+                    tableView.Columns.Add(MakeTextTemplateColumn("Role"));
                 }
                 else
                 {
-                    tableView.Columns[0] = MakeTextColumn("Name");
+                    tableView.Columns[0] = MakeTextTemplateColumn("Name");
                 }
             });
             IdleSynchronizer.Wait();
@@ -3316,7 +3286,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var name in cases)
                 {
                     var tableView = (TableView)root.FindName(name);
-                    tableView.Columns.Add(MakeTextColumn("Name"));
+                    tableView.Columns.Add(MakeTextTemplateColumn("Name"));
                     tableView.ItemsSource = MakeItems();
                 }
 
@@ -3543,19 +3513,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Application.Current.Resources.Remove(key);
             }
-        }
-
-        // The TextBlock TableViewTextColumn generates, which is where cell padding and font size land.
-        internal static TextBlock RequireFirstCellTextBlock(TableView tableView)
-        {
-            var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
-            if (row == null)
-            {
-                Verify.Fail("The TableView should realize at least one row.");
-                return null;
-            }
-
-            return GetCellTextBlock(GetRowCell(row, 0));
         }
 
         internal static Color RequireCellSeparatorColor(TableView tableView, string context)

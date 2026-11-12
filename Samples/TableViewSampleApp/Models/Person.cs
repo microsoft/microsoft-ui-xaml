@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
-using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Models;
 
@@ -112,7 +111,7 @@ public sealed class Person : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Formatted JoinDate suitable for a TableViewTextColumn Binding.
+    /// Formatted JoinDate suitable for a text cell template's Binding.
     /// SortPage binds a plain text column to this string (display) while
     /// sorting on the actual <see cref="JoinDate"/> DateTimeOffset via
     /// SortMemberPath="JoinDate" so the order is correct chronologically.

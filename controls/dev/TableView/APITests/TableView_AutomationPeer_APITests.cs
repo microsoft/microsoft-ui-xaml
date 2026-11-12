@@ -382,7 +382,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewShell(new BoxingIntList(200), 600, 300);
-                tableView.Columns.Add(MakeTextColumn("Value", "."));
+                tableView.Columns.Add(MakeTextTemplateColumn("Value", "."));
                 tableView.SelectionMode = TableViewSelectionMode.Single;
                 LoadContent(tableView);
             });
@@ -447,6 +447,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
                 unrealizedName = itemPeer.GetName();
+                Verify.IsFalse(unrealizedName.Contains(nameof(PlainPerson)),
+                    $"An unrealized row of template columns must not be named after its item's type (got '{unrealizedName}').");
                 Verify.IsNull(itemPeer.GetPattern(PatternInterface.ScrollItem), "An unrealized row has no element to scroll into view.");
                 ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
             });
@@ -910,8 +912,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static TableView CreateNamedPeopleTable(object items)
         {
             var tableView = CreateTableViewShell(items, 600, 300);
-            tableView.Columns.Add(MakeTextColumn("Name"));
-            tableView.Columns.Add(MakeTextColumn("Role"));
+            tableView.Columns.Add(MakeTextTemplateColumn("Name"));
+            tableView.Columns.Add(MakeTextTemplateColumn("Role"));
             tableView.SelectionMode = TableViewSelectionMode.Single;
             return tableView;
         }
@@ -979,7 +981,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
                     .ToList();
                 tableView = CreateTableViewShell(items, 600, 300);
-                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Name"));
                 tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
                     @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
                           <Border Height=""{Binding RowHeight}"" />
@@ -1044,7 +1046,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 })
                 .ToList();
             var tableView = CreateTableViewShell(items, width, 320);
-            tableView.Columns.Add(MakeTextColumn("Name"));
+            tableView.Columns.Add(MakeTextTemplateColumn("Name"));
             var notes = MakeTemplateColumn("Notes", (DataTemplate)XamlReader.Load(
                 @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
                       <TextBlock Text=""{Binding Notes}"" TextWrapping=""Wrap"" />
@@ -1067,7 +1069,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
                     .ToList();
                 tableView = CreateTableViewShell(items, 600, 300);
-                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Name"));
                 tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
                     @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
                           <Border Height=""{Binding RowHeight}"" />
@@ -1510,7 +1512,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns[1].Visibility = Visibility.Collapsed;
                 // Alias over Role, so its cells read differently from the Name column's.
                 tableView.Columns.RemoveAt(2);
-                tableView.Columns.Add(MakeTextColumn("Alias", "Role"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Alias", "Role"));
                 LoadContent(tableView);
             });
 
@@ -1919,14 +1921,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // A non-string header has no textual prefix. It must be an object that is neither
                 // IStringable nor a String-typed IPropertyValue - a boxed primitive is NOT one, because
                 // PropertyValue implements IStringable and stringifies happily.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = new Border { Width = 20, Height = 12 },
-                    Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Role"),
                 });
 
                 // A string header over an empty value.
-                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Name"));
 
                 LoadContent(tableView);
             });
@@ -1968,10 +1970,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
                 var icon = new SymbolIcon { Symbol = Symbol.Important };
                 AutomationProperties.SetName(icon, "Priority");
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = icon,
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
                 LoadContent(tableView);
@@ -2118,7 +2120,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rowPeer = RequireRowPeer(tableView, 0);
                 var cellPeer = GetCellPeer(rowPeer, 0);
 
-                // Spec silent; reasoned from the text-column case being named and template columns having
+                // Spec silent; reasoned from text cells being named and other template content having
                 // no reason to be a second-class citizen. A cell holding a button, a rating or a status
                 // glyph is a common shape, and it must not read as nothing.
                 Verify.AreEqual("Active", cellPeer.GetName(),
@@ -2523,14 +2525,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // template root. The header object must be neither IStringable nor a String-typed
                 // IPropertyValue, or TryGetColumnHeaderText short-circuits the fallback under test -
                 // a boxed primitive stringifies and would never reach it.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = new Border { Width = 20, Height = 12 },
                     HeaderTemplate = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
                               <Border AutomationProperties.Name=""Priority"" Width=""30"" Height=""16"" />
                           </DataTemplate>"),
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                 });
 
                 LoadContent(tableView);
@@ -2559,14 +2561,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = new TitledColumnHeader { Title = "CPU" },
                     HeaderTemplate = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
                               <TextBlock Text=""{Binding Title}"" />
                           </DataTemplate>"),
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                 });
 
                 LoadContent(tableView);
@@ -2594,11 +2596,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
                 tableView.CanUserResizeColumns = true;
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = new Border { Width = 20, Height = 12 },
                     CanUserResize = true,
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                 });
 
                 LoadContent(tableView);
@@ -3176,11 +3178,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
-                var fixedColumn = MakeTextColumn("Name", width: new GridLength(120));
+                var fixedColumn = MakeTextTemplateColumn("Name", width: new GridLength(120));
                 fixedColumn.CanUserSort = false;
                 fixedColumn.MinWidth = 120;
                 fixedColumn.MaxWidth = 120;
-                var starColumn = MakeTextColumn("Role", width: new GridLength(1, GridUnitType.Star));
+                var starColumn = MakeTextTemplateColumn("Role", width: new GridLength(1, GridUnitType.Star));
                 starColumn.CanUserSort = false;
                 tableView.Columns.Add(fixedColumn);
                 tableView.Columns.Add(starColumn);
@@ -3812,7 +3814,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // The header rebuild for a new column is queued, so in this turn its header is not realized.
-                extra = MakeTextColumn("Extra", "Name");
+                extra = MakeTextTemplateColumn("Extra", "Name");
                 tableView.Columns.Add(extra);
 
                 var tablePeer = new ProviderResolvingTableViewAutomationPeer(tableView);
@@ -4732,7 +4734,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewAutomationTestHelpers
     {
-        // Three text columns over distinct properties, so a composed cell name is unambiguous about
+        // Three text template columns over distinct properties, so a composed cell name is unambiguous about
         // which column it came from.
         internal static TableView CreateAutomationTable() => CreateAutomationTable(MakeItems());
 
@@ -4750,9 +4752,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static TableView AddAutomationColumns(TableView tableView)
         {
-            tableView.Columns.Add(MakeTextColumn("Name"));
-            tableView.Columns.Add(MakeTextColumn("Role"));
-            tableView.Columns.Add(MakeTextColumn("Alias", "Name"));
+            tableView.Columns.Add(MakeTextTemplateColumn("Name"));
+            tableView.Columns.Add(MakeTextTemplateColumn("Role"));
+            tableView.Columns.Add(MakeTextTemplateColumn("Alias", "Name"));
 
             return tableView;
         }

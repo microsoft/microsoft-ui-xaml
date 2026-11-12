@@ -17,7 +17,6 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableView.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewColumn.properties.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTextColumn.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTemplateColumn.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.h" />
@@ -29,7 +28,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTipTypes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewContextMenu.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumn.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTextColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellsPanel.h" />
@@ -58,7 +56,6 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewColumn.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTextColumn.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTemplateColumn.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.cpp" />
@@ -75,7 +72,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewColumn.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTextColumn.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRow.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewCellsPanel.cpp" />

@@ -632,35 +632,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITableViewTextColumnFactory>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn"); },
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    xamlType.AddMember(
-                        L"Binding", /* propertyName */
-                        L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewTextColumn>().Binding(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewTextColumn>().Binding(value ? value.as<winrt::Microsoft::UI::Xaml::Data::Binding>() : nullptr); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.TabularControlsResources",
         /* Arg2 CreateXamlTypeCallback */ 
         []()

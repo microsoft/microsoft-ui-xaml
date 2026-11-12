@@ -644,10 +644,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Adds a Score column that sorts only through a CustomSortComparer, then sorts by it.
         private static void SortByComparerColumn(TableView tableView, SortDirection direction)
         {
-            TableViewTextColumn column = null;
+            TableViewTemplateColumn column = null;
             RunOnUIThread.Execute(() =>
             {
-                column = MakeTextColumn("Score");
+                column = MakeTextTemplateColumn("Score");
                 column.CustomSortComparer = new LiveScoreComparer();
                 tableView.Columns.Add(column);
             });

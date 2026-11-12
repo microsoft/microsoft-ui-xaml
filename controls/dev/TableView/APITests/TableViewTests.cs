@@ -40,20 +40,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies TableViewTextColumn can be constructed.")]
-        public void VerifyTextColumnConstructs()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var textColumn = new TableViewTextColumn();
-
-                Verify.IsNotNull(textColumn);
-                Verify.IsTrue(textColumn is TableViewColumn, "TableViewTextColumn derives from TableViewColumn.");
-                Verify.IsNull(textColumn.Binding, "A text column starts unbound.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies TableViewTemplateColumn can be constructed.")]
         public void VerifyTemplateColumnConstructs()
         {
@@ -162,28 +148,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(column.CustomSortComparer);
                 Verify.AreEqual(SortDirection.None, column.SortDirection);
                 Verify.IsNull(column.CellToolTipBinding, "CellToolTipBinding is a CLR property and defaults to null, meaning no cell tooltip.");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies TableViewTextColumn default property values.")]
-        public void VerifyTextColumnDefaultPropertyValues()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var textColumn = new TableViewTextColumn();
-
-                Log.Comment("Verifying TableViewTextColumn-specific default property values.");
-                Verify.IsNull(textColumn.Binding, "Binding is a CLR property so XAML passes the Binding through unevaluated; it starts null.");
-                Verify.IsNull(textColumn.CellToolTipBinding);
-
-                Log.Comment("Verifying TableViewTextColumn inherits the TableViewColumn defaults.");
-                Verify.IsNull(textColumn.Header);
-                Verify.AreEqual(120.0, textColumn.Width.Value);
-                Verify.AreEqual(20.0, textColumn.MinWidth);
-                Verify.AreEqual(120.0, textColumn.ActualWidth);
-                Verify.IsTrue(textColumn.CanUserSort);
-                Verify.AreEqual(SortDirection.None, textColumn.SortDirection);
             });
         }
 
@@ -328,7 +292,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     -1, () => freshTableView.SelectedIndex);
 
                 Log.Comment("Verifying TableView.Columns is the collection exposed by its dependency property.");
-                freshTableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                freshTableView.Columns.Add(new TableViewTemplateColumn { Header = "Name" });
                 var columnsFromDependencyProperty = freshTableView.GetValue(TableView.ColumnsProperty) as IList<TableViewColumn>;
                 Verify.IsNotNull(columnsFromDependencyProperty, "TableView.Columns: ColumnsProperty should hold the column collection.");
                 Verify.AreEqual(1, columnsFromDependencyProperty.Count,
@@ -344,7 +308,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Verifying settable TableViewColumn dependency properties.");
-                var column = new TableViewTextColumn();
+                var column = new TableViewTemplateColumn();
                 VerifySettableDependencyProperty(column, TableViewColumn.HeaderProperty, "TableViewColumn.Header",
                     "Header A", "Header B",
                     () => column.Header, value => column.Header = value);
@@ -389,7 +353,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     () => column.SortDirection, value => column.SortDirection = (SortDirection)value);
 
                 Log.Comment("Verifying read-only TableViewColumn dependency properties read through their dependency property.");
-                var freshColumn = new TableViewTextColumn();
+                var freshColumn = new TableViewTemplateColumn();
                 VerifyReadOnlyDependencyProperty(freshColumn, TableViewColumn.ActualWidthProperty, "TableViewColumn.ActualWidth",
                     120.0, () => freshColumn.ActualWidth);
                 VerifyReadOnlyDependencyProperty(freshColumn, TableViewColumn.SortDirectionProperty, "TableViewColumn.SortDirection",
@@ -429,8 +393,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                         xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'>
-                        <tabular:TableViewTextColumn Header='Name' />
-                        <tabular:TableViewTextColumn>Role</tabular:TableViewTextColumn>
+                        <tabular:TableViewTemplateColumn Header='Name' />
+                        <tabular:TableViewTemplateColumn>Role</tabular:TableViewTemplateColumn>
                     </tabular:TableView>");
 
                 Verify.IsNotNull(tableView);

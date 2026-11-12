@@ -186,7 +186,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #endregion
 
-        #region 2.2 Text column binding
+        #region 2.2 Text template binding
 
         [TestMethod]
         [TestProperty("Description", "Verifies the generated text cell shows the value at the column's binding path, and shows nothing when the path cannot resolve.")]
@@ -201,24 +201,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Binding binding = null;
+                string path = null;
 
                 switch (bindingCase)
                 {
                     case "Simple":
-                        binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+                        path = "Name";
                         expected = "Asha";
                         break;
                     case "Dotted":
-                        binding = new Binding { Path = new PropertyPath("Department.Name"), Mode = BindingMode.OneWay };
+                        path = "Department.Name";
                         expected = "Studio";
                         break;
                     case "Invalid":
-                        binding = new Binding { Path = new PropertyPath("NoSuchProperty"), Mode = BindingMode.OneWay };
+                        path = "NoSuchProperty";
                         expected = string.Empty;
                         break;
                     case "None":
-                        binding = null;
+                        path = null;
                         expected = string.Empty;
                         break;
                     default:
@@ -228,7 +228,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView = CreateTableViewShell(MakeShapedPeople(), 500, 700);
 
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Under test", Binding = binding });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Under test",
+                    CellTemplate = path == null ? CreateTextTemplate(string.Empty) : MakeTextCellTemplate(path),
+                });
 
                 LoadContent(tableView);
             });
@@ -250,20 +254,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies replacing Binding on a loaded text column re-projects its realized cells.")]
-        public void VerifyTextColumnBindingChangeAfterLoadUpdatesRealizedCells()
+        [TestProperty("Description", "Verifies replacing the CellTemplate on a loaded text template column re-projects its realized cells.")]
+        public void VerifyTextTemplateChangeAfterLoadUpdatesRealizedCells()
         {
             TableView tableView = null;
-            TableViewTextColumn column = null;
+            TableViewTemplateColumn column = null;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewShell(MakeShapedPeople(), 500, 700);
 
-                column = MakeTextColumn("Under test", "Name");
+                column = MakeTextTemplateColumn("Under test", "Name");
 
                 tableView.Columns.Add(column);
-                tableView.Columns.Add(MakeTextColumn("Role"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Role"));
 
                 LoadContent(tableView);
             });
@@ -274,7 +278,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "Precondition: the column starts bound to Name.");
 
-                column.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                column.CellTemplate = MakeTextCellTemplate("Role");
             });
 
             SettleLayout(tableView);
@@ -282,7 +286,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual("Designer", GetCellText(tableView, 0, 0),
-                    "Re-pointing Binding must re-project the realized cells of that column.");
+                    "Replacing the CellTemplate must re-project the realized cells of that column.");
                 Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0),
                     "Every realized row in the column must be re-projected, not only the first.");
                 Verify.AreEqual("Designer", GetCellText(tableView, 0, 1),
@@ -785,7 +789,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewShell(null, 500, 700);
-                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Name"));
 
                 LoadContent(tableView);
             });
@@ -835,7 +839,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewShell(null, 500, 700);
-                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Name"));
 
                 LoadContent(tableView);
             });
@@ -920,7 +924,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewBindingTestHelpers
     {
-        // Two text columns over Name and Role, tall enough that the six-item fixtures fully realize.
+        // Two text template columns over Name and Role, tall enough that the six-item fixtures fully realize.
         internal static TableView CreateBindingTable(object itemsSource)
             => CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 500, height: 700);
 

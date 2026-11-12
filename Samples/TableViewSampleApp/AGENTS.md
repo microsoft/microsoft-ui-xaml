@@ -256,8 +256,8 @@ text. Use `MinWidth`/`MaxWidth` with `TextWrapping`, and let height be `Auto`; l
 200% and 400% text scaling and in a portrait window. `SamplePresenter` already drops the options
 rail below the example under `WideLayoutMinWidth` (900px) — do not add a fixed-width container that
 defeats it. Where text is trimmed, `TextTrimming` must be paired with a `ToolTipService.ToolTip`
-and the full string exposed to UIA, so trimming never destroys information. `TableViewTextColumn`
-always trims; where a cell value can be long (a path, a description), use a
+and the full string exposed to UIA, so trimming never destroys information. A text cell using
+`CellTextStyle` always trims; where a cell value can be long (a path, a description), use a
 `TableViewTemplateColumn` with a wrapping `TextBlock` and a `SortMemberPath`, as `TextWrapPage` and
 `FilePropertiesPage` do. Keep a `TextBox` placeholder short and put the longer hint in `HelpText`
 and a tooltip: placeholders do not wrap.

@@ -29,8 +29,20 @@
                 MinHeight="320">
                 <!-- The name columns are plain text so bidi text rendering can be checked. -->
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-                <tv:TableViewTextColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="140" Binding="{Binding FirstName}" CellToolTipBinding="{Binding Bio}" HeaderToolTip="Hover a name for that person's notes."/>
-                <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="120" Binding="{Binding LastName}"/>
+                <tv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="140" CellToolTipBinding="{Binding Bio}" HeaderToolTip="Hover a name for that person's notes." SortMemberPath="FirstName">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding FirstName}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTemplateColumn x:Name="LastNameColumn" Header="Last name" Width="120" SortMemberPath="LastName">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding LastName}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
                 <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>

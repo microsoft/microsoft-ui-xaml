@@ -10,6 +10,15 @@
     mc:Ignorable="d">
 
     <local:TestPage.Resources>
+        <DataTemplate x:Key="CodeTextCellTemplate">
+            <TextBlock Text="{Binding Code}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="NameTextCellTemplate">
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="QuantityTextCellTemplate">
+            <TextBlock Text="{Binding Quantity}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
         <!-- No PART_BodyScroller or PART_HeaderScroller: the app's ScrollViewer is the only scroller. -->
         <ControlTemplate x:Key="ScrollerlessTableTemplate" TargetType="controls:TableView">
             <Grid>
@@ -76,9 +85,9 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             SelectionMode="Single">
-            <controls:TableViewTextColumn Header="Name" Width="200" Binding="{Binding Name}" />
-            <controls:TableViewTextColumn Header="Quantity" Width="120" Binding="{Binding Quantity}" />
-            <controls:TableViewTextColumn Header="Code" Width="160" Binding="{Binding Code}" />
+            <controls:TableViewTemplateColumn Header="Name" Width="200" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+            <controls:TableViewTemplateColumn Header="Quantity" Width="120" SortMemberPath="Quantity" CellTemplate="{StaticResource QuantityTextCellTemplate}" />
+            <controls:TableViewTemplateColumn Header="Code" Width="160" SortMemberPath="Code" CellTemplate="{StaticResource CodeTextCellTemplate}" />
         </controls:TableView>
 
         <StackPanel x:Name="ScrollerlessHost"
@@ -95,8 +104,8 @@
                                     AutomationProperties.AutomationId="ScrollerlessTable"
                                     Template="{StaticResource ScrollerlessTableTemplate}"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="Code" Width="160" Binding="{Binding Code}" />
+                    <controls:TableViewTemplateColumn Header="Name" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Code" Width="160" SortMemberPath="Code" CellTemplate="{StaticResource CodeTextCellTemplate}" />
                 </controls:TableView>
             </ScrollViewer>
             <!-- Format documented on TableViewVirtualizationPageFacts.ScrollerlessReadout. -->

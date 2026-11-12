@@ -107,6 +107,12 @@
                 Keep these flat (no BasedOn) so they resolve before the merged
                 theme resource dictionary in any code path.
             -->
+            <!-- The text cell of a TableViewTemplateColumn: TableView has no built-in text column in V1. -->
+            <Style x:Key="CellTextStyle" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="8,4,8,4"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            </Style>
             <Style x:Key="SectionHeaderTextStyle" TargetType="TextBlock">
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="FontSize" Value="14"/>

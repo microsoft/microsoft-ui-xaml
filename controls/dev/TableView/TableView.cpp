@@ -454,7 +454,6 @@ namespace
         cache.density.hasRowMinHeight = false;
         cache.density.hasCellPadding = false;
         cache.density.hasHeaderCellPadding = false;
-        cache.font.hasCellFontSize = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
         cache.hierarchy.hasGroupHeaderContentOffset = false;
@@ -2338,26 +2337,6 @@ winrt::Thickness TableView::GetDensityHeaderCellPadding()
     cache.density.headerCellPadding = fallback;
     cache.density.hasHeaderCellPadding = true;
     return cache.density.headerCellPadding;
-}
-
-double TableView::GetCellFontSize()
-{
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.font.hasCellFontSize)
-    {
-        return cache.font.cellFontSize;
-    }
-
-    constexpr double fallback = 14.0;
-    if (auto raw = LookupElementResource(*this, L"TableViewCellFontSize"))
-    {
-        cache.font.cellFontSize = winrt::unbox_value_or<double>(raw, fallback);
-        cache.font.hasCellFontSize = true;
-        return cache.font.cellFontSize;
-    }
-    cache.font.cellFontSize = fallback;
-    cache.font.hasCellFontSize = true;
-    return cache.font.cellFontSize;
 }
 
 // The system focus visual takes its corners from the focused element's CornerRadius, but a rounded

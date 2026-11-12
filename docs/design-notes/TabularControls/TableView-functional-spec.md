@@ -37,6 +37,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
 - Read-only: cells are display-only and there is no edit mode in V1 (see [Editing](#editing)). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
+- Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities
@@ -101,7 +102,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 Deferred to V2 / future DataGrid. TableView V1 has no editing API and no edit mode: no
 `IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/
 `CellEditEnded` (and their args and `TableViewEditAction`), `CellEditingTemplate` or
-`CommitCellEditCore`, and no built-in `TextBox` editor in `TableViewTextColumn`. The named
+`CommitCellEditCore`, and no built-in text column or `TextBox` editor. The named
 scenarios need at most an app-owned rename of one field, which composes from a
 `TableViewTemplateColumn` and app code; see
 [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance).
@@ -120,10 +121,10 @@ scenarios need at most an app-owned rename of one field, which composes from a
 
 ### Styling & theming
 - Light / Dark / High Contrast theme tokens + inline fallbacks (`DividerStrokeColorDefault` gridlines, `CardStrokeColorDefault` outer border). — **PR2** (full self-themed Theme-XBF emission deferred)
-- Cell-level styling: custom cells via `TableViewTemplateColumn` + built-in text-cell defaults (left, vertically centered). A public per-column alignment/weight API — **deferred (PR3+)**.
+- Cell-level styling: cells via `TableViewTemplateColumn`; text cells use an app `TextBlock` style (left, vertically centered, trimmed). A public per-column alignment/weight API — **deferred (PR3+)**.
 
 ### Tooltips
-- Cell: opt-in via `TableViewColumn.CellToolTipBinding`; the binding is evaluated against each row's data item and its value is the tooltip content. No binding means no tooltip and no per-cell cost. Needed because text cells render with `CharacterEllipsis` and no wrapping, so over-wide values are otherwise unreadable. — **PR3**
+- Cell: opt-in via `TableViewColumn.CellToolTipBinding`; the binding is evaluated against each row's data item and its value is the tooltip content. No binding means no tooltip and no per-cell cost. Needed because text cells typically render with `CharacterEllipsis` and no wrapping, so over-wide values are otherwise unreadable. — **PR3**
 - Author precedence: a tooltip set inside a cell's own content template opens over that content; the control's tooltip covers the rest of the cell, and the control never touches a tooltip it did not attach.
 - Content: a string, or any content a `ToolTip` can host. A `UIElement` is parented by that cell's `ToolTip`, so a converter returns a fresh element per evaluation. Computed content is authored with an `IValueConverter`.
 - Accessibility: string tooltip text is published as the cell's `AutomationProperties.HelpText`, and `TableViewCellAutomationPeer` suppresses it at UIA query time when it merely repeats the cell's own text, so the value is not announced twice. Suppression is gated on the ownership record, so text the app set is never dropped.

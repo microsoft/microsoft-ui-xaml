@@ -56,8 +56,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 observable.VectorChanged += OnVectorChanged;
                 try
                 {
-                    var first = new TableViewTextColumn { Header = "Name" };
-                    var second = new TableViewTextColumn { Header = "Role" };
+                    var first = new TableViewTemplateColumn { Header = "Name" };
+                    var second = new TableViewTemplateColumn { Header = "Role" };
 
                     tableView.Columns.Add(first);
                     tableView.Columns.Insert(0, second);
@@ -98,7 +98,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyHeaderColumns(tableView, tableView.Columns.ToArray(), "before the add");
                 VerifyEveryRowMatchesHeaders(tableView, "before the add");
 
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Role" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Role" });
                 Content.UpdateLayout();
             });
 
@@ -128,7 +128,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                inserted = new TableViewTextColumn { Header = "City" };
+                inserted = new TableViewTemplateColumn { Header = "City" };
                 tableView.Columns.Insert(1, inserted);
                 Content.UpdateLayout();
             });
@@ -240,7 +240,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 replaced = tableView.Columns[0];
                 untouched = tableView.Columns[1];
-                replacement = new TableViewTextColumn { Header = "City" };
+                replacement = new TableViewTemplateColumn { Header = "City" };
 
                 tableView.Columns[0] = replacement;
                 Content.UpdateLayout();
@@ -272,10 +272,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // control cannot rebuild incrementally; it must reconcile on first layout instead.
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
 
-                var scratch = new TableViewTextColumn { Header = "Scratch" };
+                var scratch = new TableViewTemplateColumn { Header = "Scratch" };
                 tableView.Columns.Add(scratch);
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
-                tableView.Columns.Insert(0, new TableViewTextColumn { Header = "Role" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Name" });
+                tableView.Columns.Insert(0, new TableViewTemplateColumn { Header = "Role" });
                 tableView.Columns.Remove(scratch);
 
                 LoadContent(tableView);
@@ -314,10 +314,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             var mutations = new (string Name, Action<TableView> Apply)[]
             {
-                ("add", tv => tv.Columns.Add(new TableViewTextColumn { Header = "City" })),
-                ("insert", tv => tv.Columns.Insert(0, new TableViewTextColumn { Header = "Score" })),
+                ("add", tv => tv.Columns.Add(new TableViewTemplateColumn { Header = "City" })),
+                ("insert", tv => tv.Columns.Insert(0, new TableViewTemplateColumn { Header = "Score" })),
                 ("remove", tv => tv.Columns.RemoveAt(1)),
-                ("replace", tv => tv.Columns[0] = new TableViewTextColumn { Header = "Notes" }),
+                ("replace", tv => tv.Columns[0] = new TableViewTemplateColumn { Header = "Notes" }),
                 ("clear", tv => tv.Columns.Clear()),
             };
 
@@ -603,7 +603,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
 
-        // Builds a TableView with the given text column headers, loads it, and lays it out.
+        // Builds a TableView with the given text template column headers, loads it, and lays it out.
         private TableView CreateLoadedTableView(params string[] headers)
         {
             var tableView = CreateTableView(headers: headers);
@@ -680,9 +680,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new string[0]);
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
-                tableView.Columns.Add(new TableViewTextColumn { Header = objectHeader });
-                tableView.Columns.Add(new TableViewTextColumn { Header = null });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Name" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = objectHeader });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = null });
 
                 LoadContent(tableView);
             });
@@ -1366,28 +1366,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewCellFactoryTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies a realized TableViewTextColumn cell is a TextBlock.")]
-        public void VerifyTextColumnGenerateElementProducesTextBlock()
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView = CreateTableView(headers: new[] { "Name" });
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var element = GetCellContent(GetRowCell(GetProjectedRow(tableView, 0), 0));
-                Verify.IsNotNull(element, "The text column should produce a cell element.");
-                Verify.IsTrue(element is TextBlock, $"The built-in text cell should be a TextBlock, was {element.GetType().Name}.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies built-in columns do not set a local DataContext on generated cells.")]
         public void VerifyGenerateElementDoesNotSetLocalDataContext()
         {
@@ -1411,7 +1389,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // The IDL imposes this rule on third-party columns; the built-ins are its reference
                 // implementation and must follow it too.
                 Verify.AreEqual(DependencyProperty.UnsetValue, textElement.ReadLocalValue(FrameworkElement.DataContextProperty),
-                    "A text cell must not carry a local DataContext.");
+                    "A text template cell must not carry a local DataContext.");
                 Verify.AreEqual(DependencyProperty.UnsetValue, templateElement.ReadLocalValue(FrameworkElement.DataContextProperty),
                     "A template cell must not carry a local DataContext.");
             });

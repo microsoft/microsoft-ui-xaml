@@ -189,19 +189,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // A single Name column over the source, loaded and settled.
+        // A single Name text template column over the source, loaded and settled.
         internal static TableView CreateTreeTable(object source)
         {
-            var column = new TableViewTextColumn
-            {
-                Header = "Name",
-                Binding = new Microsoft.UI.Xaml.Data.Binding
-                {
-                    Path = new PropertyPath("Name"),
-                    Mode = Microsoft.UI.Xaml.Data.BindingMode.OneWay,
-                },
-                Width = new GridLength(1, GridUnitType.Star),
-            };
+            var column = MakeTextTemplateColumn("Name", width: new GridLength(1, GridUnitType.Star));
 
             var tableView = new TableView { Width = 400, Height = 600 };
             tableView.Columns.Add(column);

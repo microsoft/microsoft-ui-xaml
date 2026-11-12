@@ -25,7 +25,7 @@ namespace TableViewTelemetry
     // TableView_Instance's ColumnKinds bits. A column whose class is not one of ours is the app's.
     namespace ColumnKind
     {
-        constexpr uint32_t Text = 1u << 0;
+        // Bit 0 (Text) is retired; not reused so existing telemetry stays comparable.
         constexpr uint32_t Template = 1u << 1;
         constexpr uint32_t AppDerived = 1u << 2;
     }

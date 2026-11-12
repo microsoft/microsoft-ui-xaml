@@ -1042,54 +1042,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewCellContentTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies generated text cells are vertically centred and trim rather than wrap.")]
-        public void VerifyGeneratedTextCellMetrics()
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                // Row 0 is short, row 1 is far too long for the column. Comparing the two isolates
-                // trimming from every other height contributor.
-                var items = new List<Person>
-                {
-                    new Person { Name = "Al", Role = "R" },
-                    new Person { Name = VeryLongText, Role = "R" },
-                };
-
-                tableView = CreateTableViewWithColumns(items, columns: new[] { ("Name", new GridLength(90.0, GridUnitType.Pixel)) });
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var rows = GetRealizedRows(tableView);
-                Verify.IsGreaterThan(rows.Count, 1, "Both rows should be realized.");
-
-                var shortText = GetCellContent(GetRowCell(rows[0], 0)) as TextBlock;
-                var longText = GetCellContent(GetRowCell(rows[1], 0)) as TextBlock;
-                Verify.IsNotNull(shortText, "A text column should generate a TextBlock.");
-                Verify.IsNotNull(longText, "A text column should generate a TextBlock.");
-
-                Verify.AreEqual(VerticalAlignment.Center, longText.VerticalAlignment,
-                    "Cell text is vertically centred within the row for the standard grid look.");
-                Verify.AreEqual(TextTrimming.CharacterEllipsis, longText.TextTrimming,
-                    "Cell text must trim with an ellipsis rather than wrap.");
-                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Normal.Weight, longText.FontWeight.Weight,
-                    "Cell text uses the Fluent body weight.");
-
-                // The point of CharacterEllipsis: without it the over-long value wraps and grows the
-                // row, so every row with long text becomes a different height and the table stops
-                // looking like a grid.
-                Log.Comment($"Short cell height {shortText.ActualHeight}; long cell height {longText.ActualHeight}.");
-                Verify.AreEqual(shortText.ActualHeight, longText.ActualHeight,
-                    "A value too wide for its column must be trimmed to one line, not wrapped onto several.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies FontWeight set on the TableView reaches generated text cells.")]
         public void VerifyTableViewFontWeightReachesTextCells()
         {
@@ -1107,8 +1059,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var text = GetCellContent(GetRowCell(RequireFirstRow(tableView), 0)) as TextBlock;
-                Verify.IsNotNull(text, "A text column should generate a TextBlock.");
+                var text = GetCellTextBlock(GetRowCell(RequireFirstRow(tableView), 0));
                 Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, text.FontWeight.Weight,
                     "A text cell must not set a local FontWeight that blocks the TableView's value.");
             });
@@ -1160,13 +1111,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewRowRecyclingTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies recycled text and template cells show the values of the items they now represent.")]
+        [TestProperty("Description", "Verifies recycled text-template and template cells show the values of the items they now represent.")]
         public void VerifyRecycledCellsShowNewItemValues()
         {
-            // Both column types are checked in one table because they reach their content by genuinely
-            // different routes - a Text binding set through BindingOperations on the TextBlock, versus a
-            // Content binding sourced from the cell wrapper - so a regression in one would not break the
-            // other. Category 3 covers the third route, an app-authored GenerateElementCore override.
+            // Both template columns are checked in one table: the text template's TextBlock and the
+            // presenter's inherited DataContext. Category 3 covers the other route, an app-authored
+            // GenerateElementCore override.
             TableView tableView = null;
             List<Person> items = null;
 
@@ -1205,8 +1155,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         sawRecycledItem = true;
                     }
 
-                    var text = GetCellContent(GetRowCell(row, 0)) as TextBlock;
-                    Verify.IsNotNull(text, "The text column should generate a TextBlock.");
+                    var text = GetCellTextBlock(GetRowCell(row, 0));
                     Verify.AreEqual(item.Name, text.Text,
                         "A recycled text cell must show the value of the item its row now represents.");
 

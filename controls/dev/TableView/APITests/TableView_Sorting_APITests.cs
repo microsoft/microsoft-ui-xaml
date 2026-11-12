@@ -58,11 +58,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(SortDirection.None, column.SortDirection,
                     "SortDirection defaults to None (TableView.idl:185).");
 
-                var textColumn = new TableViewTextColumn();
+                var templateColumn = new TableViewTemplateColumn();
 
-                Verify.IsTrue(textColumn.CanUserSort, "A text column shares the base defaults.");
-                Verify.AreEqual(SortDirection.None, textColumn.SortDirection, "A text column starts unsorted.");
-                Verify.AreEqual(string.Empty, textColumn.SortMemberPath, "A text column starts with no explicit path.");
+                Verify.IsTrue(templateColumn.CanUserSort, "A template column shares the base defaults.");
+                Verify.AreEqual(SortDirection.None, templateColumn.SortDirection, "A template column starts unsorted.");
+                Verify.AreEqual(string.Empty, templateColumn.SortMemberPath, "A template column starts with no explicit path.");
             });
         }
 
@@ -76,27 +76,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual("DepartmentName", column.ReadSortMemberPath(),
                     "The base column returns SortMemberPath verbatim (TableView.idl:192-193).");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a text column with no explicit SortMemberPath falls back to its Binding path.")]
-        public void VerifyGetSortMemberPathFallsBackToTextColumnBindingPath()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var column = new SortPathProbeTextColumn
-                {
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
-                };
-
-                Verify.AreEqual("Name", column.ReadSortMemberPath(),
-                    "An empty SortMemberPath falls back to Binding.Path.Path (TableView.idl:175, :192).");
-
-                column.SortMemberPath = "Role";
-
-                Verify.AreEqual("Role", column.ReadSortMemberPath(),
-                    "An explicit path takes priority over the binding fallback.");
             });
         }
 
@@ -1164,7 +1143,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                preset = MakeTextColumn("Team", "DepartmentName");
+                preset = MakeTextTemplateColumn("Team", "DepartmentName");
                 preset.SortDirection = SortDirection.Descending;
                 tableView.Columns.Add(preset);
             });
@@ -1472,17 +1451,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // The IDL calls this shape out explicitly: one column formats a value, another ranks
                 // the same one. Both name the same path.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = "Name",
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                     SortMemberPath = "Name",
                 });
 
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = "Name again",
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                     SortMemberPath = "Name",
                 });
 
@@ -1635,9 +1614,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("Columns cleared", (t, c) =>
                 {
                     t.Columns.Clear();
-                    t.Columns.Add(new TableViewTextColumn { Header = "Role" });
+                    t.Columns.Add(new TableViewTemplateColumn { Header = "Role" });
                 }, (t, c) => t.Columns.Insert(0, c)),
-                ("different column inserted", (t, c) => { }, (t, c) => t.Columns.Insert(0, new TableViewTextColumn { Header = "Other" })),
+                ("different column inserted", (t, c) => { }, (t, c) => t.Columns.Insert(0, new TableViewTemplateColumn { Header = "Other" })),
             };
 
             foreach (var testCase in cases)
@@ -1709,7 +1688,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 name = tableView.Columns[0];
                 Verify.IsTrue(tableView.SortByColumn(name, SortDirection.Ascending), "Precondition: the Name column sorts.");
                 tableView.Sorted += (s, e) => sorted.Add(e.Column);
-                tableView.Columns[0] = new TableViewTextColumn { Header = "Other" };
+                tableView.Columns[0] = new TableViewTemplateColumn { Header = "Other" };
             });
 
             SettleLayout(tableView);
@@ -1872,8 +1851,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         break;
                     case "ReplaceColumns":
                         tableView.Columns.Clear();
-                        tableView.Columns.Add(MakeTextColumn("Name"));
-                        tableView.Columns.Add(MakeTextColumn("Role"));
+                        tableView.Columns.Add(MakeTextTemplateColumn("Name"));
+                        tableView.Columns.Add(MakeTextTemplateColumn("Role"));
                         break;
                     default:
                         tableView.CanUserSortColumns = false;
@@ -2391,10 +2370,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public string ReadSortMemberPath() => GetSortMemberPathCore();
     }
 
-    internal partial class SortPathProbeTextColumn : TableViewTextColumn
-    {
-        public string ReadSortMemberPath() => GetSortMemberPathCore();
-    }
 
     internal sealed partial class ThrowingSortComparer : ITableViewSortComparer
     {
@@ -2435,8 +2410,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static TableView CreateSortTable() => CreateSortTable(MakeShapedPeople());
 
-        // Two text columns with bindings but no explicit SortMemberPath, so the common authoring
-        // shape (sort key resolved through the binding fallback) is what most tests exercise.
+        // Two text template columns whose SortMemberPath names the displayed property, the common
+        // authoring shape most tests exercise.
         internal static TableView CreateSortTable(object itemsSource)
             => CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 600, height: 700);
 

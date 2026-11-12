@@ -89,8 +89,7 @@ namespace TableViewDetails
         {
             auto const className = winrt::get_class_name(column);
             std::wstring_view const name{ className };
-            return name != winrt::name_of<winrt::TableViewTextColumn>() &&
-                name != winrt::name_of<winrt::TableViewTemplateColumn>() && name != winrt::name_of<winrt::TableViewColumn>();
+            return name != winrt::name_of<winrt::TableViewTemplateColumn>() && name != winrt::name_of<winrt::TableViewColumn>();
         }
         catch (...) { return true; }
     }
@@ -171,16 +170,6 @@ struct TableViewResourceCache
     };
     DensityInfo density{};
 
-    // Font sizes resolved from fixed (non-density-suffixed) ThemeResource keys, so they do NOT
-    // vary with Density; kept out of DensityInfo to avoid implying otherwise. Still cached and
-    // cleared by InvalidateTableViewResourceCache alongside the other resolved resources.
-    struct FontInfo
-    {
-        bool hasCellFontSize{ false };
-        double cellFontSize{ 0.0 };
-    };
-    FontInfo font{};
-
     // Cached hierarchy geometry. Runtime resource swaps raise no notification, so they apply only
     // after cache invalidation (density/theme/HC/re-template) and row re-prepare.
     struct HierarchyInfo
@@ -257,7 +246,6 @@ public:
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
-    double GetCellFontSize();
     void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
@@ -268,7 +256,7 @@ public:
     double GetGroupHeaderContentOffset();
 
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
-    // density/font accessors above.
+    // density accessors above.
     winrt::Brush GetGridLineBrush();
 
     static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);

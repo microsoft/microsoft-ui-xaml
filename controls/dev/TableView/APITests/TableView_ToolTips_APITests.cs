@@ -520,19 +520,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Column 0: tooltip repeats what the cell shows - the most common authoring shape for
                 // this feature, since you tooltip the column you truncate.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = "Name",
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                     CellToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
                 });
 
                 // Column 1: same tooltip text over a different cell value. Without this arm, a peer that
                 // returned empty unconditionally would pass.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = "Role",
-                    Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Role"),
                     CellToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
                 });
 
@@ -866,7 +866,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             new NotifyingPerson { Name = "Mei", Role = "Architect" },
         };
 
-        // One text column showing Name, optionally tooltipped from another path. cellToolTipPath null
+        // One text template column showing Name, optionally tooltipped from another path. cellToolTipPath null
         // means the column opts out entirely, which is its own tested behaviour.
         internal static TableView CreateToolTipTable(
             IList items,
@@ -874,7 +874,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IValueConverter converter = null)
         {
             var tableView = CreateTableViewWithColumns(items, height: 300);
-            var column = (TableViewTextColumn)tableView.Columns[0];
+            var column = tableView.Columns[0];
 
             if (cellToolTipPath != null)
             {

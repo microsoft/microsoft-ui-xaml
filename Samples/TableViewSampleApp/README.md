@@ -76,14 +76,22 @@ ships in the Tabular DLL rather than in MUXC. Without the merge the app throws
 `XamlParseException 0x802B000A` during its first layout pass, which surfaces as a `0xC000027B`
 stowed exception a few seconds after launch.
 
-Declare columns, or the table renders rows with no header row and no cells:
+Declare columns, or the table renders rows with no header row and no cells. A text column is a
+`TableViewTemplateColumn` whose cell template is a bound `TextBlock`; set `SortMemberPath` so it sorts:
 
 ```xml
 <tabular:TableView x:Name="Table">
-  <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-  <tabular:TableViewTextColumn Header="Age"  Binding="{Binding Age}" />
+  <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+    <tabular:TableViewTemplateColumn.CellTemplate>
+      <DataTemplate>
+        <TextBlock Text="{Binding Name}" Style="{StaticResource CellTextStyle}" />
+      </DataTemplate>
+    </tabular:TableViewTemplateColumn.CellTemplate>
+  </tabular:TableViewTemplateColumn>
 </tabular:TableView>
 ```
+
+`CellTextStyle` (in `App.xaml`) centres the text, pads it and trims it with an ellipsis.
 
 `TableView` is `[MUX_PREVIEW]`, so C# usage raises `CS8305` and XAML usage raises `WMC1501`
 ("for evaluation purposes only"). This sample suppresses `CS8305`; the XAML warnings are left
@@ -103,7 +111,7 @@ visible on purpose.
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
   pages whose rows have no parent relation show those modes disabled with the reason
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
-- `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
+- `TableViewTemplateColumn` usage (text and richer cells) with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
   a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
   that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a

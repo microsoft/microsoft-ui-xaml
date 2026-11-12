@@ -9,8 +9,8 @@
 // app that would rather order its own collection cancels it and owns both the rows and the
 // column's sort state from there.
 //
-// A column supplies its key either as a property path (SortMemberPath, or the cell binding for a
-// text column) or as a CustomSortComparer. A comparer cannot be pushed into the projection - the
+// A column supplies its key either as a property path (SortMemberPath) or as a
+// CustomSortComparer. A comparer cannot be pushed into the projection - the
 // projection sorts by key - so comparer columns are ranked up front and the rank becomes the key.
 
 #include "pch.h"

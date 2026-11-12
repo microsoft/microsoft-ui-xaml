@@ -81,7 +81,7 @@
                     <TextBlock Text="ItemsSource is set in code-behind from TableViewSource.From(items).Filter(...).GroupBy(..., identity).Sort(...)."
                                Style="{ThemeResource BodyTextBlockStyle}"
                                TextWrapping="Wrap"/>
-                    <TextBlock Text="Columns: TableViewTextColumn (lightweight bound text, sortable via SortMemberPath) and TableViewTemplateColumn (DataTemplate cells)."
+                    <TextBlock Text="Columns: TableViewTemplateColumn (DataTemplate cells; a TextBlock template gives bound text, sortable via SortMemberPath)."
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                TextWrapping="Wrap"/>

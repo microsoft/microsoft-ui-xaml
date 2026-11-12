@@ -12,7 +12,6 @@ namespace
     {
         uint32_t kinds{};
         if (column.try_as<winrt::TableViewTemplateColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Template; }
-        else if (column.try_as<winrt::TableViewTextColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Text; }
         if (TableViewDetails::IsAppDerivedColumn(column)) { kinds |= TableViewTelemetry::ColumnKind::AppDerived; }
         return kinds;
     }

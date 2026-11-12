@@ -1109,10 +1109,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var cellWidth = new GridLength(150.0, GridUnitType.Pixel);
             f.Table = CreateTableViewShell(source, 600, 560);
             f.NameColumn = nameTemplate == null
-                ? MakeTextColumn("Name", width: cellWidth)
+                ? MakeTextTemplateColumn("Name", width: cellWidth)
                 : MakeTemplateColumn("Name", nameTemplate, cellWidth);
             f.DepartmentColumn = MakeTemplateColumn("Department", departmentTemplate ?? CreateBoundTextTemplate("Role"), cellWidth);
-            f.OfficeColumn = MakeTextColumn("Office", "Role", cellWidth);
+            f.OfficeColumn = MakeTextTemplateColumn("Office", "Role", cellWidth);
             f.Table.Columns.Add(f.NameColumn);
             f.Table.Columns.Add(f.DepartmentColumn);
             f.Table.Columns.Add(f.OfficeColumn);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Markup;
 
 namespace TableViewAppCsUnpackaged
 {
@@ -26,20 +27,23 @@ namespace TableViewAppCsUnpackaged
 
             // Second instance built entirely from code, to cover the non-markup activation path.
             var codeTable = new TableView { Height = 160, ItemsSource = People };
-            codeTable.Columns.Add(new TableViewTextColumn
-            {
-                Header = "Name",
-                Binding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Name") }
-            });
-            codeTable.Columns.Add(new TableViewTextColumn
-            {
-                Header = "Age",
-                Binding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Age") }
-            });
+            codeTable.Columns.Add(MakeColumn("Name", "Name"));
+            codeTable.Columns.Add(MakeColumn("Age", "Age"));
             CodeTableHost.Children.Add(codeTable);
 
             StatusText.Text = $"Both tables are bound to the same {People.Count} items.";
         }
+
+        // A text column is a TableViewTemplateColumn whose cell is a TextBlock bound to the property.
+        private static TableViewTemplateColumn MakeColumn(string header, string path) => new TableViewTemplateColumn
+        {
+            Header = header,
+            SortMemberPath = path,
+            CellTemplate = (DataTemplate)XamlReader.Load(
+                "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                $"<TextBlock Text='{{Binding {path}}}' VerticalAlignment='Center' Padding='8,4,8,4' TextTrimming='CharacterEllipsis' />" +
+                "</DataTemplate>"),
+        };
 
         private void ToggleTheme_Click(object sender, RoutedEventArgs e)
         {

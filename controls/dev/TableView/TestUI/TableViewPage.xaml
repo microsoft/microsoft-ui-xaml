@@ -10,6 +10,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <local:TestPage.Resources>
+        <DataTemplate x:Key="AgeTextCellTemplate">
+            <TextBlock Text="{Binding Age}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="CityTextCellTemplate">
+            <TextBlock Text="{Binding City}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="DeptTextCellTemplate">
+            <TextBlock Text="{Binding Dept}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="IdTextCellTemplate">
+            <TextBlock Text="{Binding Id}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="NameTextCellTemplate">
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="ScoreTextCellTemplate">
+            <TextBlock Text="{Binding Score}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+    </local:TestPage.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="8" Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -246,31 +267,32 @@
                             </StackPanel>
                         </DataTemplate>
                     </controls:TableView.EmptyTemplate>
-                    <controls:TableViewTextColumn x:Name="NameColumn"
-                                                  Header="Name"
-                                                  Width="160"
-                                                  MinWidth="60"
-                                                  CanUserSort="True"
-                                                  SortMemberPath="Name"
-                                                  Binding="{Binding Name}"
-                                                  CellToolTipBinding="{Binding Name}"
-                                                  HeaderToolTip="The person's name" />
-                    <controls:TableViewTextColumn x:Name="AgeColumn"
-                                                  Header="Age"
-                                                  Width="100"
-                                                  CanUserSort="True"
-                                                  SortMemberPath="Age"
-                                                  Binding="{Binding Age}" />
-                    <controls:TableViewTextColumn Header="ReadOnlyCity"
-                                                  Width="160"
-                                                  CanUserSort="False"
-                                                  Binding="{Binding City}" />
-                    <controls:TableViewTextColumn x:Name="ScoreColumn"
-                                                  Header="Score"
-                                                  Width="100"
-                                                  CanUserSort="True"
-                                                  SortMemberPath="Score"
-                                                  Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn x:Name="NameColumn"
+                                                      Header="Name"
+                                                      Width="160"
+                                                      MinWidth="60"
+                                                      CanUserSort="True"
+                                                      SortMemberPath="Name"
+                                                      CellToolTipBinding="{Binding Name}"
+                                                      HeaderToolTip="The person's name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn x:Name="AgeColumn"
+                                                      Header="Age"
+                                                      Width="100"
+                                                      CanUserSort="True"
+                                                      SortMemberPath="Age"
+                                                      CellTemplate="{StaticResource AgeTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ReadOnlyCity"
+                                                      Width="160"
+                                                      CanUserSort="False"
+                                                      SortMemberPath="City"
+                                                      CellTemplate="{StaticResource CityTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn x:Name="ScoreColumn"
+                                                      Header="Score"
+                                                      Width="100"
+                                                      CanUserSort="True"
+                                                      SortMemberPath="Score"
+                                                      CellTemplate="{StaticResource ScoreTextCellTemplate}" />
                     <controls:TableViewTemplateColumn x:Name="TemplateColumn" Header="Template" Width="200">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
@@ -303,12 +325,13 @@
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="RtlName"
-                                                  Width="180"
-                                                  MinWidth="60"
-                                                  Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlCity" Width="220" CanUserSort="False" Binding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="RtlAge" Width="220" Binding="{Binding Age}" />
+                    <controls:TableViewTemplateColumn Header="RtlName"
+                                                      Width="180"
+                                                      MinWidth="60"
+                                                      SortMemberPath="Name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlCity" Width="220" CanUserSort="False" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlAge" Width="220" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -317,8 +340,8 @@
                                     AutomationProperties.Name="GroupedTableView"
                                     AutomationProperties.AutomationId="GroupedTableView"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="GroupedName" Width="200" Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="GroupedCity" Width="160" Binding="{Binding City}" />
+                    <controls:TableViewTemplateColumn Header="GroupedName" Width="200" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="GroupedCity" Width="160" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -342,7 +365,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="PagerName" Width="200" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="PagerName" Width="200" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -355,14 +378,15 @@
                                     Width="520"
                                     HorizontalAlignment="Left"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="FrozenName"
-                                                  Width="180"
-                                                  FrozenEdge="Leading"
-                                                  Binding="{Binding Name}"
-                                                  CellToolTipBinding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="ScrollCity" Width="220" Binding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
-                    <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
+                    <controls:TableViewTemplateColumn Header="FrozenName"
+                                                      Width="180"
+                                                      FrozenEdge="Leading"
+                                                      CellToolTipBinding="{Binding City}"
+                                                      SortMemberPath="Name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ScrollCity" Width="220" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ScrollAge" Width="220" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ScrollId" Width="220" SortMemberPath="Id" CellTemplate="{StaticResource IdTextCellTemplate}" />
                 </controls:TableView>
                 <!-- Publishes PART_BodyScroller's offsets and the frozen band's rendered geometry for
                      out-of-process tests. See ReportScrollOffsets in the code-behind. -->
@@ -418,9 +442,9 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="Dept" Width="100" Binding="{Binding Dept}" />
-                    <controls:TableViewTextColumn Header="Score" Width="100" Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn Header="Name" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Dept" Width="100" SortMemberPath="Dept" CellTemplate="{StaticResource DeptTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Score" Width="100" SortMemberPath="Score" CellTemplate="{StaticResource ScoreTextCellTemplate}" />
                 </controls:TableView>
 
                 <controls:TableView x:Name="HierarchyRtlTable"
@@ -434,9 +458,9 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="RtlName" Width="160" Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlDept" Width="100" Binding="{Binding Dept}" />
-                    <controls:TableViewTextColumn Header="RtlScore" Width="100" Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn Header="RtlName" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlDept" Width="100" SortMemberPath="Dept" CellTemplate="{StaticResource DeptTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlScore" Width="100" SortMemberPath="Score" CellTemplate="{StaticResource ScoreTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -514,11 +538,12 @@
                             <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}" />
                         </Style>
                     </controls:TableView.Resources>
-                    <controls:TableViewTextColumn Header="Name"
-                                                  Width="160"
-                                                  Binding="{Binding Name}"
-                                                  CellContextFlyout="{StaticResource CellMenu}"
-                                                  HeaderContextFlyout="{StaticResource HeaderMenu}" />
+                    <controls:TableViewTemplateColumn Header="Name"
+                                                      Width="160"
+                                                      CellContextFlyout="{StaticResource CellMenu}"
+                                                      HeaderContextFlyout="{StaticResource HeaderMenu}"
+                                                      SortMemberPath="Name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
                     <controls:TableViewTemplateColumn Header="City" Width="160">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
@@ -529,7 +554,7 @@
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
                     </controls:TableViewTemplateColumn>
-                    <controls:TableViewTextColumn Header="Age" Width="100" Binding="{Binding Age}" />
+                    <controls:TableViewTemplateColumn Header="Age" Width="100" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -543,7 +568,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="ControlsName" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="ControlsName" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
                     <controls:TableViewTemplateColumn Header="ControlsActive" Width="84">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">

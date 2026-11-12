@@ -18,9 +18,9 @@ xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
 
 ## How to use TableView
 
-### Basic usage (with a TableViewTextColumn)
+### Basic usage (text cells with a TableViewTemplateColumn)
 
-Set `TableView.ItemsSource` and add `TableViewTextColumn` instances to `Columns`. `TableViewTextColumn.Binding` is a CLR property, not a dependency property, and accepts a normal XAML `Binding`.
+Set `TableView.ItemsSource` and add columns to `Columns`. V1 has no built-in text column (see [TableViewTextColumn (deferred)](#tableviewtextcolumn-deferred)): a text cell is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`. Write one `TextBlock` style for the text cells, and set `SortMemberPath` on each column so it sorts. `{x:Bind}` with an `x:DataType` on the template works as well as `{Binding}`.
 
 ```xaml
 <Page
@@ -29,20 +29,47 @@ Set `TableView.ItemsSource` and add `TableViewTextColumn` instances to `Columns`
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
+    <Page.Resources>
+        <!-- Written once: centred, padded to match the header, and trimmed with an ellipsis. -->
+        <Style x:Key="TableCellTextStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="8,4,8,4" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+    </Page.Resources>
+
     <Grid Padding="24">
         <tabular:TableView ItemsSource="{x:Bind People}">
             <tabular:TableView.Columns>
-                <tabular:TableViewTextColumn
+                <tabular:TableViewTemplateColumn
                     Header="Name"
-                    Binding="{Binding Name}" />
+                    SortMemberPath="Name">
+                    <tabular:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+                        </DataTemplate>
+                    </tabular:TableViewTemplateColumn.CellTemplate>
+                </tabular:TableViewTemplateColumn>
 
-                <tabular:TableViewTextColumn
+                <tabular:TableViewTemplateColumn
                     Header="Role"
-                    Binding="{Binding Role}" />
+                    SortMemberPath="Role">
+                    <tabular:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Role}" Style="{StaticResource TableCellTextStyle}" />
+                        </DataTemplate>
+                    </tabular:TableViewTemplateColumn.CellTemplate>
+                </tabular:TableViewTemplateColumn>
 
-                <tabular:TableViewTextColumn
+                <tabular:TableViewTemplateColumn
                     Header="Location"
-                    Binding="{Binding Location}" />
+                    SortMemberPath="Location">
+                    <tabular:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Location}" Style="{StaticResource TableCellTextStyle}" />
+                        </DataTemplate>
+                    </tabular:TableViewTemplateColumn.CellTemplate>
+                </tabular:TableViewTemplateColumn>
             </tabular:TableView.Columns>
         </tabular:TableView>
     </Grid>
@@ -88,13 +115,25 @@ Use `TableViewTemplateColumn.CellTemplate` for custom cell layout or formatting.
     <Grid Padding="24">
         <tabular:TableView ItemsSource="{x:Bind Orders}">
             <tabular:TableView.Columns>
-                <tabular:TableViewTextColumn
+                <tabular:TableViewTemplateColumn
                     Header="Order"
-                    Binding="{Binding OrderNumber}" />
+                    SortMemberPath="OrderNumber">
+                    <tabular:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding OrderNumber}" Style="{StaticResource TableCellTextStyle}" />
+                        </DataTemplate>
+                    </tabular:TableViewTemplateColumn.CellTemplate>
+                </tabular:TableViewTemplateColumn>
 
-                <tabular:TableViewTextColumn
+                <tabular:TableViewTemplateColumn
                     Header="Customer"
-                    Binding="{Binding Customer}" />
+                    SortMemberPath="Customer">
+                    <tabular:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Customer}" Style="{StaticResource TableCellTextStyle}" />
+                        </DataTemplate>
+                    </tabular:TableViewTemplateColumn.CellTemplate>
+                </tabular:TableViewTemplateColumn>
 
                 <tabular:TableViewTemplateColumn Header="Status">
                     <tabular:TableViewTemplateColumn.CellTemplate>
@@ -145,7 +184,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height and header content is vertically centered; a text-cell template should centre its `TextBlock` too, as `TableCellTextStyle` does. `Density` does not reach the padding inside a `CellTemplate`.
 
 > **Migrating from earlier previews:** `HeaderGridLinesVisibility` was removed. `GridLinesVisibility` affects only the body lines; to hide the header separators and the rule under the header, override `TabularSurfaceHeaderSeparatorBrush` with `Transparent`.
 
@@ -158,9 +197,27 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
     <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
-        <tabular:TableViewTextColumn Header="Location" Binding="{Binding Location}" />
+        <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Role" SortMemberPath="Role">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Role}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Location" SortMemberPath="Location">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Location}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
     </tabular:TableView.Columns>
 </tabular:TableView>
 ```
@@ -198,22 +255,46 @@ Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin th
 ```xaml
 <tabular:TableView ItemsSource="{x:Bind Orders}">
     <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn
+        <tabular:TableViewTemplateColumn
             Header="Order"
-            Binding="{Binding OrderNumber}"
-            FrozenEdge="Leading" />
+            FrozenEdge="Leading"
+            SortMemberPath="OrderNumber">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding OrderNumber}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
 
-        <tabular:TableViewTextColumn
+        <tabular:TableViewTemplateColumn
             Header="Customer"
-            Binding="{Binding Customer}" />
+            SortMemberPath="Customer">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Customer}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
 
-        <tabular:TableViewTextColumn
+        <tabular:TableViewTemplateColumn
             Header="Status"
-            Binding="{Binding Status}" />
+            SortMemberPath="Status">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Status}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
 
-        <tabular:TableViewTextColumn
+        <tabular:TableViewTemplateColumn
             Header="Location"
-            Binding="{Binding Location}" />
+            SortMemberPath="Location">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Location}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
     </tabular:TableView.Columns>
 </tabular:TableView>
 ```
@@ -250,9 +331,27 @@ Use `EmptyTemplate` when the table has no rows.
     </tabular:TableView.EmptyTemplate>
 
     <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Order" Binding="{Binding OrderNumber}" />
-        <tabular:TableViewTextColumn Header="Customer" Binding="{Binding Customer}" />
-        <tabular:TableViewTextColumn Header="Status" Binding="{Binding Status}" />
+        <tabular:TableViewTemplateColumn Header="Order" SortMemberPath="OrderNumber">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding OrderNumber}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Customer" SortMemberPath="Customer">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Customer}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Status" SortMemberPath="Status">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Status}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
     </tabular:TableView.Columns>
 </tabular:TableView>
 ```
@@ -275,9 +374,27 @@ The keyboard focus model is described in the [functional spec](../../design-note
     HeadersVisibility="Column"
     GridLinesVisibility="All">
     <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
-        <tabular:TableViewTextColumn Header="Location" Binding="{Binding Location}" />
+        <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Role" SortMemberPath="Role">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Role}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Location" SortMemberPath="Location">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Location}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
     </tabular:TableView.Columns>
 </tabular:TableView>
 ```
@@ -425,9 +542,27 @@ Scrolling is structural rather than a named part. The header scroller and the bo
     GridLinesVisibility="All"
     Density="Standard">
     <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
-        <tabular:TableViewTextColumn Header="Location" Binding="{Binding Location}" />
+        <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Role" SortMemberPath="Role">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Role}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
+        <tabular:TableViewTemplateColumn Header="Location" SortMemberPath="Location">
+            <tabular:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Location}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tabular:TableViewTemplateColumn.CellTemplate>
+        </tabular:TableViewTemplateColumn>
     </tabular:TableView.Columns>
 </tabular:TableView>
 ```
@@ -507,7 +642,7 @@ Selection is raised only for real changes: a re-select of the already-selected r
 These are understood and deliberately not addressed by single selection:
 
 - **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
-- **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Hovered, pressed and selected cells also turn off High Contrast text backplates (`HighContrastAdjustment="None"` on `PART_CellForegroundPresenter`, which cell content inherits), because the control paints its own high-contrast highlight pair; such app-coloured text therefore gets no automatic backplate either. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
+- **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. A text cell whose `TextBlock` sets no `Foreground` inherits it correctly; template columns are free to set one, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Hovered, pressed and selected cells also turn off High Contrast text backplates (`HighContrastAdjustment="None"` on `PART_CellForegroundPresenter`, which cell content inherits), because the control paints its own high-contrast highlight pair; such app-coloured text therefore gets no automatic backplate either. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
 
@@ -644,12 +779,12 @@ Base class for TableView columns.
 | `CanUserResize` | `Boolean` | `true` | Whether the user can resize this column (pointer, keyboard, UI Automation); also requires `TableView.CanUserResizeColumns`. |
 | `CanUserSort` | `Boolean` | `true` | Whether the user can sort by this column's header. Gates user input only: `SortByColumn` and `ToggleSortDirection` ignore it, and turning it off does not clear an active sort. The table-level `CanUserSortColumns` and `CanUserResizeColumns` follow the same rule. |
 | `SortDirection` | `SortDirection` | `None` | The header's sort arrow. **Display only**: the control sets it when it sorts; an app that sorts itself (for example after cancelling `Sorting`) can set it. Setting it never reshapes data, and a non-`None` value clears the arrow on other columns. If a column's `CustomSortComparer` throws during a header sort or `SortByColumn`, the sort is aborted before commit: the previous sort and arrow stay, and `Sorted` is not raised. A value set in XAML or before the column is added is applied when it joins `Columns`. |
-| `SortMemberPath` | `String` | Empty string | Property path the column sorts by. When empty, `GetSortMemberPathCore()` supplies it (`TableViewTextColumn` derives it from `Binding.Path`). |
+| `SortMemberPath` | `String` | Empty string | Property path the column sorts by. When empty, an app-derived column's `GetSortMemberPathCore()` override can supply it; otherwise the column sorts only through `CustomSortComparer`. |
 | `SortCycle` | `TableViewSortCycle` | `AscendingDescending` | Order of directions a header click or `ToggleSortDirection` steps through; the `*None` values add a step back to the unsorted order. |
 | `CustomSortComparer` | `ITableViewSortComparer` | `null` | Comparer for this column's sort; wins over `SortMemberPath`. Must be pure. |
 | `Visibility` | `Visibility` | `Visible` | Column visibility. |
 | `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
-| `CellToolTipBinding` | `Binding` | `null` | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `CellToolTipBinding` | `Binding` | `null` | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column. |
 | `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
 
 More sorting detail, including `GetSortMemberPathCore`, is in the [API review](../../design-notes/TabularControls/TableView-API-Review.md#23-sorting).
@@ -680,13 +815,19 @@ Resizing a later column (by pointer, keyboard or UI Automation) never moves it: 
 
 ### Cell tooltips
 
-Text cells render with `CharacterEllipsis` and no wrapping, so a value wider than its column is
+Text cells styled like `TableCellTextStyle` render with `CharacterEllipsis` and no wrapping, so a value wider than its column is
 unreadable. `CellToolTipBinding` surfaces the full value:
 
 ```xml
-<tabular:TableViewTextColumn Header="Notes"
-                             Binding="{Binding Notes}"
-                             CellToolTipBinding="{Binding Notes}" />
+<tabular:TableViewTemplateColumn Header="Notes"
+                                 CellToolTipBinding="{Binding Notes}"
+                                 SortMemberPath="Notes">
+    <tabular:TableViewTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding Notes}" Style="{StaticResource TableCellTextStyle}" />
+        </DataTemplate>
+    </tabular:TableViewTemplateColumn.CellTemplate>
+</tabular:TableViewTemplateColumn>
 ```
 
 Because the tooltip is an ordinary binding it tracks the row's `DataContext`: a recycled row
@@ -706,9 +847,15 @@ suppressed, so the resize cursor is not reset under a resting pointer. It return
 leaves the gripper or the gripper is withdrawn.
 
 ```xml
-<tabular:TableViewTextColumn Header="Notes"
-                             Binding="{Binding Notes}"
-                             HeaderToolTip="Free-form notes captured at intake" />
+<tabular:TableViewTemplateColumn Header="Notes"
+                                 HeaderToolTip="Free-form notes captured at intake"
+                                 SortMemberPath="Notes">
+    <tabular:TableViewTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding Notes}" Style="{StaticResource TableCellTextStyle}" />
+        </DataTemplate>
+    </tabular:TableViewTemplateColumn.CellTemplate>
+</tabular:TableViewTemplateColumn>
 ```
 
 Header cells are rebuilt rather than recycled, so the value is read from the column when the header
@@ -730,18 +877,23 @@ for each request, so replacing or clearing one applies to the next request witho
 rebuilding the cells.
 
 ```xaml
-<tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}">
-    <tabular:TableViewTextColumn.CellContextFlyout>
+<tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+    <tabular:TableViewTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+        </DataTemplate>
+    </tabular:TableViewTemplateColumn.CellTemplate>
+    <tabular:TableViewTemplateColumn.CellContextFlyout>
         <MenuFlyout>
             <MenuFlyoutItem Text="{Binding Name}" />
         </MenuFlyout>
-    </tabular:TableViewTextColumn.CellContextFlyout>
-    <tabular:TableViewTextColumn.HeaderContextFlyout>
+    </tabular:TableViewTemplateColumn.CellContextFlyout>
+    <tabular:TableViewTemplateColumn.HeaderContextFlyout>
         <MenuFlyout>
             <MenuFlyoutItem Text="Column actions" />
         </MenuFlyout>
-    </tabular:TableViewTextColumn.HeaderContextFlyout>
-</tabular:TableViewTextColumn>
+    </tabular:TableViewTemplateColumn.HeaderContextFlyout>
+</tabular:TableViewTemplateColumn>
 ```
 
 #### Resolution order
@@ -817,26 +969,6 @@ move; this change does not redefine touch/hold, keyboard, or UIA behavior.
 An unavailable pooled group-header automation peer rejects `ShowContextMenu` with
 `ElementNotAvailable`, just as it rejects a row-coordinate query. It cannot open either
 its retained menu or the table fallback.
-
-## TableViewTextColumn class
-
-A column that generates a data-bound `TextBlock` for each cell. It is display-only.
-
-`TableViewTextColumn` derives from `TableViewColumn`.
-
-| Member | Type | Description |
-|---|---|---|
-| `Binding` | `Microsoft.UI.Xaml.Data.Binding` | CLR property used to bind generated cell text. This is not a dependency property. |
-
-When `SortMemberPath` is empty, the column sorts by `Binding.Path`, but only for bindings against the row data item: when the binding names an explicit `Source`, `ElementName` or `RelativeSource`, the path is relative to *that* object, so the column reports no sort path.
-
-Example:
-
-```xaml
-<tabular:TableViewTextColumn
-    Header="Name"
-    Binding="{Binding Name}" />
-```
 
 ## TableViewTemplateColumn class
 
@@ -1003,7 +1135,7 @@ TableView provides UI Automation peers for grid/table accessibility and row sele
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` (constructor takes the cell `FrameworkElement` owner) | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
-These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` implements `IValueProvider` read-only (`IsReadOnly` is always `true` and `SetValue` fails), and does not offer the Value pattern from `GetPattern` in this release; a cell's text is its `Name`. Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
+These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` implements `IValueProvider` read-only (`IsReadOnly` is always `true` and `SetValue` fails), and does not offer the Value pattern from `GetPattern` in this release; a cell's text is its `Name`. A selected row that is not realized (scrolled out of view) is named from the item's values at the visible columns' `SortMemberPath`s, joined like realized cell text; only when none yields text does it fall back to the item's own string form (for a class without `ToString`, its type name). Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
 
 Migration notes:
 
@@ -1029,7 +1161,7 @@ A column header exposes the Transform pattern (required by UIA for a resizable `
 
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
-`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from its text columns' values, else from the item (a name the app gives the row, or template-column text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
+`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from the item's values at the visible columns' `SortMemberPath`s, else from the item (a name the app gives the row, or the text of columns with no `SortMemberPath`, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
 
 # API Details
 
@@ -1232,15 +1364,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewTextColumn : TableViewColumn
-    {
-        TableViewTextColumn();
-
-        Microsoft.UI.Xaml.Data.Binding Binding;
     }
 
     [MUX_PREVIEW]
@@ -1515,7 +1638,8 @@ Removed from V1, to be revisited there:
   `TableViewBeginningEditEventArgs`, `TableViewCellEditEndingEventArgs`,
   `TableViewCellEditEndedEventArgs` and the `TableViewEditAction` enum.
 - `TableViewColumn.CellEditingTemplate` and the overridable `TableViewColumn.CommitCellEditCore`.
-- The built-in `TextBox` editor of `TableViewTextColumn`, which stays as a display-only column.
+- The built-in `TextBox` editor of `TableViewTextColumn`; the column itself is also deferred (see
+  [TableViewTextColumn (deferred)](#tableviewtextcolumn-deferred)).
 - Edit gestures (double-click/double-tap, `F2`, `Enter`, `Esc`, focus-loss commit), menu
   suppression while editing, the live-shaping hold during an edit, and the settable
   `IValueProvider` path on cells (the provider stays, read-only).
@@ -1627,7 +1751,7 @@ The display-only base delivered previously:
 
 - Preview API surface for display-only TableView.
 - Developer-defined columns through `TableView.Columns`.
-- Text cells through `TableViewTextColumn`.
+- Text cells through a `TableViewTemplateColumn` with a bound `TextBlock`.
 - Custom templated cells through `TableViewTemplateColumn`.
 - Column-header strip rendering.
 - Row virtualization through `ItemsRepeater`.
@@ -1645,6 +1769,29 @@ These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
 - Column resize and reorder.
+
+## TableViewTextColumn (deferred)
+
+Cut from V1 and deferred to V2; it can return additively:
+
+- `TableViewTextColumn` (`Binding`, with a built-in `TextBox` editor). V1 writes a text cell as a
+  `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set (see
+  [Basic usage](#basic-usage-text-cells-with-a-tableviewtemplatecolumn)):
+
+  ```xaml
+  <!-- Was: <tabular:TableViewTextColumn Header="Type" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey" /> -->
+  <tabular:TableViewTemplateColumn Header="Type" SortMemberPath="TypeSortKey">
+      <tabular:TableViewTemplateColumn.CellTemplate>
+          <DataTemplate>
+              <TextBlock Text="{Binding TypeDisplay}" Style="{StaticResource TableCellTextStyle}" />
+          </DataTemplate>
+      </tabular:TableViewTemplateColumn.CellTemplate>
+  </tabular:TableViewTemplateColumn>
+  ```
+
+  V1 has no cell editing either (see [Deferred to V2 / future DataGrid](#deferred-to-v2--future-datagrid)). If
+  the scroll performance of template text cells misses the budget, a display-only text column is the V2
+  candidate.
 
 ## Non-goals (out of scope for v1)
 

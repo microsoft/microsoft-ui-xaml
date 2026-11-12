@@ -188,21 +188,13 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         }
         else
         {
-            // Text columns sort by their Binding path; no SortMemberPath needed.
-            AssessmentTable.Columns.Add(new TableViewTextColumn
-            {
-                Header = "Record",
-                Width = new GridLength(2, GridUnitType.Star),
-                MinWidth = 240,
-                Binding = new Binding { Path = new PropertyPath(nameof(AccessibilityRow.DisplayText)) },
-            });
-            AssessmentTable.Columns.Add(new TableViewTextColumn
-            {
-                Header = "Department",
-                Width = new GridLength(1, GridUnitType.Star),
-                MinWidth = 160,
-                Binding = new Binding { Path = new PropertyPath(nameof(AccessibilityRow.Department)) },
-            });
+            // Text template columns sort by their SortMemberPath, set to the bound property.
+            var record = SampleColumns.Text("Record", nameof(AccessibilityRow.DisplayText), new GridLength(2, GridUnitType.Star));
+            record.MinWidth = 240;
+            AssessmentTable.Columns.Add(record);
+            var department = SampleColumns.Text("Department", nameof(AccessibilityRow.Department), new GridLength(1, GridUnitType.Star));
+            department.MinWidth = 160;
+            AssessmentTable.Columns.Add(department);
         }
 
         // One deliberate default-name baseline; no row/cell blanket names or provider overrides.

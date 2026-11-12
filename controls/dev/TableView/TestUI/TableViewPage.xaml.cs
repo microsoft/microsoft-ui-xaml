@@ -994,7 +994,7 @@ namespace MUXControlsTestApp
                 {
                     if (column.CellContextFlyout == null && column.CellToolTipBinding == null &&
                         !Equals(column.Header, "ReadOnlyCity") &&
-                        (column is TableViewTextColumn || ReferenceEquals(column, TemplateColumn)))
+                        (IsFixtureTextColumn(column) || ReferenceEquals(column, TemplateColumn)))
                     {
                         target.Add(column);
                     }
@@ -1003,6 +1003,22 @@ namespace MUXControlsTestApp
 
             ApplyFixtureCells();
             SetFixtureCellMenus(_hierarchyFixtureMenuColumns, true);
+        }
+
+        // The text columns are template columns over the page's *TextCellTemplate resources.
+        private bool IsFixtureTextColumn(TableViewColumn column)
+        {
+            if (column is TableViewTemplateColumn templateColumn && templateColumn.CellTemplate != null)
+            {
+                foreach (var key in new[] { "AgeTextCellTemplate", "CityTextCellTemplate", "DeptTextCellTemplate", "IdTextCellTemplate", "NameTextCellTemplate", "ScoreTextCellTemplate" })
+                {
+                    if (ReferenceEquals(templateColumn.CellTemplate, Resources[key]))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private void ApplyFixtureCells()
@@ -1186,11 +1202,12 @@ namespace MUXControlsTestApp
         {
             _addedColumnCount++;
 
-            BasicTableView.Columns.Add(new TableViewTextColumn
+            BasicTableView.Columns.Add(new TableViewTemplateColumn
             {
                 Header = "Added " + _addedColumnCount,
                 Width = new GridLength(120),
-                Binding = new Binding { Path = new PropertyPath("City") },
+                SortMemberPath = "City",
+                CellTemplate = (DataTemplate)Resources["CityTextCellTemplate"],
             });
         }
 
