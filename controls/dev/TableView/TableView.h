@@ -556,6 +556,11 @@ public:
     void MarkEditorFlyoutClosing();
     // True when Tab is consumed, including by a vetoed commit.
     bool TryMoveEditToAdjacentCell(bool forward);
+    bool IsTabEditMovePending() const noexcept { return m_tabEditMovePending; }
+    // Drops a pending Tab move's BeginEdit and releases the live-shaping hold it kept.
+    void EndPendingTabEditMove();
+    // While a Tab move waits for its row, a repeated Tab is swallowed and Escape drops the edit.
+    bool TryHandleKeyDuringPendingTabEditMove(const winrt::KeyRoutedEventArgs& args);
     void FindAdjacentEditableColumns(
         winrt::TableViewColumn const& source,
         bool forward,
@@ -843,6 +848,11 @@ private:
     // A Tab target outside the viewport: BeginEdit runs once the pending body focus lands on it.
     tracker_ref<winrt::IInspectable> m_beginEditAfterBodyFocusItem{ this };
     tracker_ref<winrt::TableViewColumn> m_beginEditAfterBodyFocusColumn{ this };
+    // True from the off-screen Tab move until its BeginEdit runs or the move is dropped. Holds live
+    // shaping, so a reshape from the commit cannot re-aim focus away from the target.
+    bool m_tabEditMovePending{ false };
+    // Bumped when a pending Tab move ends, so its posted BeginEdit can recognise itself as stale.
+    uint32_t m_tabEditMoveGeneration{ 0 };
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.

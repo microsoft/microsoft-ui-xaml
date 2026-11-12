@@ -6,6 +6,7 @@
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
+#include "TableViewSource.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewFocusHelpers.h"
 #include "TVDiag.h"
@@ -382,12 +383,75 @@ bool TableView::TryMoveEditToAdjacentCell(bool forward)
     {
         m_beginEditAfterBodyFocusItem.set(item);
         m_beginEditAfterBodyFocusColumn.set(column);
+        m_tabEditMovePending = true;
     }
     else if (IsBodyFocusOnItem(item))
     {
         BeginEdit(item, column);
     }
     return true;
+}
+
+void TableView::EndPendingTabEditMove()
+{
+    m_beginEditAfterBodyFocusItem.set(nullptr);
+    m_beginEditAfterBodyFocusColumn.set(nullptr);
+    ++m_tabEditMoveGeneration;
+    if (std::exchange(m_tabEditMovePending, false) && !IsEditing())
+    {
+        if (auto const source = m_activeSource.get())
+        {
+            // Posted, and re-checks the hold when it runs.
+            winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();
+        }
+    }
+}
+
+// Tunneling, so a swallowed Tab never reaches the row's tab-walk preparation or XAML's tab
+// navigation; with no editor open, the second Tab would otherwise leave the table.
+bool TableView::TryHandleKeyDuringPendingTabEditMove(const winrt::KeyRoutedEventArgs& args)
+{
+    if (!m_tabEditMovePending || args.Handled())
+    {
+        return false;
+    }
+
+    using winrt::Windows::System::VirtualKey;
+    switch (args.Key())
+    {
+    case VirtualKey::Tab:
+        if (IsKeyDown(VirtualKey::Control) || IsKeyDown(VirtualKey::Menu))
+        {
+            EndPendingTabEditMove();
+            return false;
+        }
+        args.Handled(true);
+        return true;
+
+    case VirtualKey::Escape:
+        // The focus move still lands; only the edit it would have opened is cancelled.
+        EndPendingTabEditMove();
+        args.Handled(true);
+        return true;
+
+    case VirtualKey::Shift:
+    case VirtualKey::Control:
+    case VirtualKey::Menu:
+    case VirtualKey::LeftShift:
+    case VirtualKey::RightShift:
+    case VirtualKey::LeftControl:
+    case VirtualKey::RightControl:
+    case VirtualKey::LeftMenu:
+    case VirtualKey::RightMenu:
+    case VirtualKey::LeftWindows:
+    case VirtualKey::RightWindows:
+        return false;
+
+    default:
+        // Any other key is a newer intent than the Tab.
+        EndPendingTabEditMove();
+        return false;
+    }
 }
 
 bool TableView::IsBodyFocusOnItem(winrt::IInspectable const& item)
