@@ -13,15 +13,6 @@ static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBord
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
-
-    RegisterPropertyChangedCallback(winrt::UIElement::ContextFlyoutProperty(),
-        [weakThis = get_weak()](auto&&, auto&&)
-        {
-            if (auto const strongThis = weakThis.get())
-            {
-                strongThis->m_contextFlyoutOpeningRevoker = TableViewDetails::HookContextFlyoutSuppression(*strongThis);
-            }
-        });
 }
 
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
@@ -91,22 +82,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
-    m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
-
-    // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
-    // a cell is editing.
-    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
-        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                if (auto const owner = strongThis->GetOwningTableView())
-                {
-                    winrt::get_self<TableView>(owner)->SuppressContextRequestWhileEditing(args);
-                }
-            }
-        });
 
     // Keep CommonStates in sync with IsEnabled so Disabled activates when a consumer toggles it
     // at runtime, not only when it happens to be false at template time.
@@ -446,7 +422,7 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     }
 
     // Focus before the toggle so the toggle captures it for the restore after the reshape.
-    // Focus on release, not press: leaving an open editor commits it and can reshape mid-gesture.
+    // Focus on release, not press: moving focus runs app code that can reshape mid-gesture.
     if (Focus(winrt::FocusState::Pointer))
     {
         if (auto const owner = GetOwningTableView())
@@ -455,7 +431,7 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
         }
     }
 
-    // The editor commit inside Focus() can reshape and recycle this header onto another group.
+    // App code run by Focus() can reshape and recycle this header onto another group.
     if (pressedIdentity != GetGroupIdentity())
     {
         if (IsExpandable())

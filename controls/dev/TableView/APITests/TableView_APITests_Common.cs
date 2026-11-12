@@ -137,6 +137,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return column;
         }
 
+        // Plain text cells are not focus targets; a cell menu makes every cell actionable, so the
+        // body can reach cell level.
+        internal static void MakeCellsActionable(TableView tableView)
+        {
+            foreach (var column in tableView.Columns)
+            {
+                column.CellContextFlyout = new MenuFlyout();
+            }
+        }
+
         // A template column whose cells inflate cellTemplate. Width is left at the column default
         // unless supplied.
         internal static TableViewTemplateColumn MakeTemplateColumn(string header, DataTemplate cellTemplate, GridLength? width = null)

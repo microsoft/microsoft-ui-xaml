@@ -10,8 +10,7 @@
     x:Name="FileTable"
     AutomationProperties.Name="Folder contents"
     ItemsSource="{x:Bind Source}"
-    SelectionMode="Single"
-    IsReadOnly="True">
+    SelectionMode="Single">
     <!-- Name, Type and Size sort by a folders-first key; Date modified sorts by the DateModified value,
          not its display text. -->
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>

@@ -24,9 +24,7 @@
     AutomationProperties.Name="Support tickets"
     ItemsSource="{x:Bind Source}"
     HeadersVisibility="Column"
-    SelectionMode="Single"
-    IsReadOnly="True">
-    <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
+    SelectionMode="Single">
     <tv:TableViewTextColumn Header="Ticket" Width="80" Binding="{Binding TicketId}"/>
     <tv:TableViewTemplateColumn Header="Assignee" Width="100" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}"/>
     <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="140" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>

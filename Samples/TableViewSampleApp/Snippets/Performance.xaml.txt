@@ -2,8 +2,7 @@
 <tv:TableView
     x:Name="PerfTable"
     AutomationProperties.Name="Performance run dataset"
-    SelectionMode="Single"
-    IsReadOnly="True">
+    SelectionMode="Single">
     <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}"/>
     <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
     <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="140" Binding="{Binding Department}"/>

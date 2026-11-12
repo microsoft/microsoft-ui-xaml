@@ -30,7 +30,6 @@ void TableView::SampleInstanceTelemetry() noexcept
         sample.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
         sample.templateIncomplete = m_templateIncomplete;
         bool anySortable{};
-        bool anyEditable{};
         if (auto const columns = Columns())
         {
             for (auto const& column : columns)
@@ -38,11 +37,9 @@ void TableView::SampleInstanceTelemetry() noexcept
                 if (!column) { continue; }
                 sample.columnKinds |= ColumnKindOf(column);
                 anySortable = anySortable || column.CanUserSort();
-                anyEditable = anyEditable || !column.IsReadOnly();
             }
         }
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }
-        if (!IsReadOnly() && anyEditable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Editing; }
         if (auto const source = m_activeSource.get())
         {
             auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);

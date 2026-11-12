@@ -5,8 +5,6 @@
 #include "common.h"
 #include "TableViewTextColumn.h"
 #include "TableView.h"
-#include "TableViewAutomationHelpers.h"
-#include "SharedHelpers.h"
 
 TableViewTextColumn::TableViewTextColumn()
 {
@@ -56,198 +54,6 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     return textBlock;
 }
 
-winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const winrt::IInspectable& dataItem)
-{
-    // An explicit CellEditingTemplate wins: a text column is a convenience over the template path,
-    // not a separate mechanism, so an app can replace the editor without subclassing.
-    if (CellEditingTemplate())
-    {
-        return __super::GenerateEditingElementCore(dataItem);
-    }
-
-    // A column with no Binding has nothing to write back to, so it declines the edit rather than
-    // opening a TextBox whose contents could never be committed.
-    auto const binding = m_binding.get();
-    if (!binding)
-    {
-        return nullptr;
-    }
-
-    winrt::TextBox textBox;
-    auto const owner = GetOwningTableView();
-
-    // Match the display cell's metrics so swapping the TextBlock for the TextBox does not shift the
-    // text or resize the row as the edit opens.
-    textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
-    textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    auto const cellPadding = owner
-        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
-        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4);
-    textBox.Padding(cellPadding);
-
-    // The template insets the text by BorderThickness, so subtract it to keep the editor as tall as the
-    // cell. It also top-aligns the line in a content area that MinHeight stretches, so pad the line
-    // into the middle of a fixed target height to keep it where the display text was.
-    textBox.Loaded([cellPadding, hooked = false](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&) mutable
-    {
-        auto const textBox = sender.as<winrt::TextBox>();
-        textBox.ApplyTemplate();
-        auto const border = textBox.BorderThickness();
-        auto const padTop = std::max(0.0, cellPadding.Top - border.Top);
-        auto const padBottom = std::max(0.0, cellPadding.Bottom - border.Bottom);
-        textBox.Padding(winrt::ThicknessHelper::FromLengths(
-            std::max(0.0, cellPadding.Left - border.Left), padTop,
-            std::max(0.0, cellPadding.Right - border.Right), padBottom));
-
-        auto const contentElement = SharedHelpers::FindInVisualTreeByName(textBox, L"ContentElement");
-        auto const scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
-        auto const textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
-        if (!textView)
-        {
-            return;
-        }
-        auto const centerLine = [weakTextBox = winrt::make_weak(textBox), padTop, padBottom, border](winrt::IInspectable const& sender, auto const&)
-        {
-            auto const textBox = weakTextBox.get();
-            if (!textBox)
-            {
-                return;
-            }
-            double const line = sender.as<winrt::UIElement>().DesiredSize().Height;
-            auto const target = std::max(textBox.MinHeight() - border.Top - border.Bottom, line + padTop + padBottom);
-            auto const leftover = std::max(0.0, target - line);
-            auto const extra = (leftover - padTop - padBottom) / 2;
-            auto padding = textBox.Padding();
-            padding.Top = padTop + extra;
-            padding.Bottom = padBottom + extra;
-            textBox.Padding(padding);
-        };
-        if (!hooked)
-        {
-            textView.SizeChanged(centerLine);
-            hooked = true;
-        }
-        centerLine(textView, nullptr);
-    });
-
-    // The shipping TextBox style carries its own MinHeight (32px), which is taller than a Compact
-    // TableView row (30px). Left alone, opening an editor grows the row and shifts the rows below
-    // it. Clamp to the row's own minimum so the swap is visually neutral.
-    if (owner)
-    {
-        textBox.MinHeight(winrt::get_self<TableView>(owner)->GetDensityRowMinHeight());
-    }
-
-    // The consumer's Binding is reused rather than copied field-by-field so that Converter,
-    // ConverterParameter, StringFormat and TargetNullValue all keep working in the editor.
-    // Only the parts that editing requires are forced.
-    winrt::Microsoft::UI::Xaml::Data::Binding editingBinding;
-    editingBinding.Path(binding.Path());
-    editingBinding.Converter(binding.Converter());
-    editingBinding.ConverterParameter(binding.ConverterParameter());
-    editingBinding.ConverterLanguage(binding.ConverterLanguage());
-    editingBinding.TargetNullValue(binding.TargetNullValue());
-    editingBinding.FallbackValue(binding.FallbackValue());
-
-    // Carry the source selector across. Without this a display binding that targets an explicit
-    // object or named element silently becomes a binding against the row's DataContext, and the
-    // edit would be written to a different object than the one being displayed.
-    if (auto const source = binding.Source())
-    {
-        editingBinding.Source(source);
-    }
-    if (auto const elementName = binding.ElementName(); !elementName.empty())
-    {
-        editingBinding.ElementName(elementName);
-    }
-    if (auto const relativeSource = binding.RelativeSource())
-    {
-        editingBinding.RelativeSource(relativeSource);
-    }
-
-    // TwoWay is required: a OneWay display binding would never write the edited value back.
-    editingBinding.Mode(winrt::Microsoft::UI::Xaml::Data::BindingMode::TwoWay);
-
-    // Explicit rather than the default PropertyChanged: the control decides when the value lands on
-    // the item, so a cancel can restore the pre-edit value and a validation failure can hold the
-    // edit open. With PropertyChanged every keystroke would already have mutated the item.
-    editingBinding.UpdateSourceTrigger(winrt::Microsoft::UI::Xaml::Data::UpdateSourceTrigger::Explicit);
-
-    winrt::BindingOperations::SetBinding(textBox, winrt::TextBox::TextProperty(), editingBinding);
-
-    if (auto const headerText = ResolveColumnAccessibleName(owner, *this); !headerText.empty())
-    {
-        winrt::AutomationProperties::SetName(textBox, headerText);
-    }
-
-    return textBox;
-}
-
-winrt::IInspectable TableViewTextColumn::PrepareCellForEditCore(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs)
-{
-    __super::PrepareCellForEditCore(editingElement, editingEventArgs);
-
-    auto const textBox = editingElement.try_as<winrt::TextBox>();
-    if (!textBox)
-    {
-        // A CellEditingTemplate replaced the built-in TextBox; the base already handled focus.
-        return nullptr;
-    }
-
-    // Select-all matches the platform grid convention: the first keystroke replaces the value.
-    textBox.SelectAll();
-
-    // The pre-edit text, handed back to CancelCellEditCore. Not strictly needed while cancel is a
-    // re-pull from the source, but it makes the column's revert independent of the binding.
-    return winrt::box_value(textBox.Text());
-}
-
-// Exact, rather than the base's subtree walk: this column knows its editor is a TextBox bound on
-// Text, so it can commit and revert without inspecting anything.
-bool TableViewTextColumn::CommitCellEditCore(const winrt::FrameworkElement& editingElement)
-{
-    auto const textBox = editingElement.try_as<winrt::TextBox>();
-    if (!textBox)
-    {
-        return __super::CommitCellEditCore(editingElement);
-    }
-
-    auto const expression = textBox.GetBindingExpression(winrt::TextBox::TextProperty());
-    if (!expression)
-    {
-        return false;
-    }
-
-    try
-    {
-        expression.UpdateSource();
-    }
-    catch (...)
-    {
-        // The app rejected the value in its setter.
-        return false;
-    }
-
-    return true;
-}
-
-void TableViewTextColumn::CancelCellEditCore(const winrt::FrameworkElement& editingElement, const winrt::IInspectable& uneditedValue)
-{
-    // Restoring the text is not strictly required - the editor is discarded and the display element
-    // re-reads the source, which an Explicit binding never wrote - but it keeps the editor coherent
-    // for anything that observes it during teardown.
-    if (auto const textBox = editingElement.try_as<winrt::TextBox>())
-    {
-        if (auto const original = uneditedValue.try_as<winrt::hstring>())
-        {
-            textBox.Text(original.value());
-            return;
-        }
-    }
-
-    __super::CancelCellEditCore(editingElement, uneditedValue);
-}
-
 winrt::hstring TableViewTextColumn::GetSortMemberPathCore()
 {
     // An explicit SortMemberPath always wins: it is how a consumer sorts on a field the cell does
@@ -257,18 +63,9 @@ winrt::hstring TableViewTextColumn::GetSortMemberPathCore()
         return explicitPath;
     }
 
-    // Otherwise sort on whatever the cell shows. The same source-qualification rule as editing
-    // applies - a binding against an explicit source names a path on THAT object, and sorting the
-    // rows by it would be meaningless.
-    return GetEditingPropertyPath();
-}
-
-winrt::hstring TableViewTextColumn::GetEditingPropertyPath() const
-{
-    // Only reported for bindings against the row data item. When the binding names an explicit
-    // source the path is relative to THAT object, and the control's snapshot/validation - which
-    // resolve against the row item - would touch the wrong one. The editor's own binding expression
-    // remains the commit mechanism there, and the empty answer keeps the control from guessing.
+    // Otherwise sort on whatever the cell shows, but only for bindings against the row data item: a
+    // binding against an explicit source names a path on THAT object, and sorting the rows by it
+    // would be meaningless.
     if (auto const binding = m_binding.get())
     {
         if (binding.Source() || binding.RelativeSource() || !binding.ElementName().empty())

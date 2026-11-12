@@ -218,7 +218,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableViewWithColumns(MakeManyItems(200), height: 200);
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -271,7 +271,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewWithColumns(MakeManyItems(6), height: 400);
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -332,7 +332,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -390,7 +390,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("C", new GridLength(120.0, GridUnitType.Pixel)),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 after = new Button { Content = "After" };
                 var panel = new StackPanel();
                 panel.Children.Add(tableView);
@@ -451,7 +451,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("C", new GridLength(120.0, GridUnitType.Pixel)),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 after = new Button { Content = "After" };
                 var panel = new StackPanel();
                 panel.Children.Add(tableView);
@@ -516,7 +516,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -601,7 +601,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -687,7 +687,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableViewWithColumns(source, height: 200);
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -935,7 +935,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Role", new GridLength(150.0, GridUnitType.Pixel)),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 (_, before, panel) = LoadFocusFixture(tableView);
             });
             SettleLayout(tableView);
@@ -990,7 +990,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a one-row, headers-hidden table left at cell level stays reachable by Tab after IsReadOnly makes every cell inactive.")]
+        [TestProperty("Description", "Verifies a one-row, headers-hidden table left at cell level stays reachable by Tab after every cell becomes inactive.")]
         public void VerifyCellLevelRowWithNoActionableCellStaysTabStop()
         {
             TableView tableView = null;
@@ -1000,7 +1000,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewWithColumns(new List<Person> { new Person { Name = "Solo", Role = "Only" } }, height: 200);
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = LoadFocusFixture(tableView).Before;
             });
             SettleLayout(tableView);
@@ -1013,7 +1013,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
             RunOnUIThread.Execute(() => Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: Before takes focus."));
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() => tableView.IsReadOnly = true);
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var column in tableView.Columns)
+                {
+                    column.CellContextFlyout = null;
+                }
+            });
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>

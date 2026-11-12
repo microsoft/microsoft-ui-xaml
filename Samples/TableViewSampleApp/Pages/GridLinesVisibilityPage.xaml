@@ -128,7 +128,6 @@
                 ItemsSource="{x:Bind Source}"
                 GridLinesVisibility="All"
                 SelectionMode="Single"
-                IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- To hide every header line (column separators and bottom rule), override the brush

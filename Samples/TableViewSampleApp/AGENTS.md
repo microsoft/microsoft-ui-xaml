@@ -183,7 +183,7 @@ feature stay outside the regions. A tiny snippet is fine.
 - C#: the data setup and the TableView calls, including the calls the rail's controls make, as
   small handlers. Keep page plumbing (readouts, pickers, button enabling, guards for controls not
   created yet) outside the regions, or mark the line `// snippet:skip`. A non-obvious app
-  requirement gets a one-line comment next to the call, for example on `CommitEdit`:
+  requirement gets a one-line comment next to the call, for example on a button handler:
   `// Buttons that call these need AllowFocusOnInteraction="False", ...`.
 - Comments inside a region: one or two lines on the non-obvious why; no `// ----` banners or
   `///` blocks.

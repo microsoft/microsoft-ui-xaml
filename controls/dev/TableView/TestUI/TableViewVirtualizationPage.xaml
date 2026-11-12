@@ -37,8 +37,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Focus-neutral: nothing can move focus onto it, so an editor open in the table keeps focus while
-             the source mutates underneath it. -->
+        <!-- Focus-neutral: nothing can move focus onto it, so focus in the table is kept while the source
+             mutates underneath it. -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
             <Button Content="Remove First Item (focus-neutral)"
                     AutomationProperties.Name="RemoveFirstItemButton"
@@ -75,11 +75,10 @@
                             Width="520"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
-                            IsReadOnly="False"
                             SelectionMode="Single">
             <controls:TableViewTextColumn Header="Name" Width="200" Binding="{Binding Name}" />
             <controls:TableViewTextColumn Header="Quantity" Width="120" Binding="{Binding Quantity}" />
-            <controls:TableViewTextColumn Header="Code" Width="160" IsReadOnly="True" Binding="{Binding Code}" />
+            <controls:TableViewTextColumn Header="Code" Width="160" Binding="{Binding Code}" />
         </controls:TableView>
 
         <StackPanel x:Name="ScrollerlessHost"

@@ -183,7 +183,7 @@ namespace
             }
             // Read from the source: m_item may be a weak reference to a box nothing else keeps alive.
             auto const tableImpl = winrt::get_self<TableView>(m_table.get());
-            auto const item = tableImpl->UnwrapEditingDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
+            auto const item = tableImpl->UnwrapDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
             if (auto const composed = ComposeTextColumnValues(*tableImpl, item); !composed.empty())
             {
                 return composed;
@@ -292,7 +292,7 @@ namespace
             auto const matches = [&](int32_t index)
             {
                 return index >= 0 && index < count &&
-                    m_item.SameIdentityAs(tableImpl->UnwrapEditingDataItem(view.GetAt(index)));
+                    m_item.SameIdentityAs(tableImpl->UnwrapDataItem(view.GetAt(index)));
             };
             // The selected index first: after an insert, m_lastIndex can hold another occurrence of the item.
             for (const int32_t hint : { selectedIndex, m_lastIndex })
@@ -325,7 +325,7 @@ namespace
         bool IsItemRow(winrt::TableViewRow const& row)
         {
             return m_byIndex ||
-                m_item.SameIdentityAs(winrt::get_self<TableView>(m_table.get())->UnwrapEditingDataItem(row.DataContext()));
+                m_item.SameIdentityAs(winrt::get_self<TableView>(m_table.get())->UnwrapDataItem(row.DataContext()));
         }
 
         winrt::TableViewRow RealizedRow(int32_t index)
@@ -618,18 +618,6 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     return clipped;
 }
 
-void TableViewAutomationPeer::ShowContextMenuCore()
-{
-    // The base raises ContextRequested on the TableView itself, which shows its own
-    // ContextFlyout before the template-root suppression hook can see it.
-    if (auto const impl = GetImpl(); impl && impl->AreContextMenusSuppressed())
-    {
-        return;
-    }
-
-    __super::ShowContextMenuCore();
-}
-
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.
@@ -844,7 +832,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         winrt::IInspectable item{ nullptr };
         if (auto const view = repeater.ItemsSourceView(); view && selectedIndex < view.Count())
         {
-            item = impl->UnwrapEditingDataItem(view.GetAt(selectedIndex));
+            item = impl->UnwrapDataItem(view.GetAt(selectedIndex));
         }
         auto const rowElement = repeater.TryGetElement(selectedIndex);
         if (rowElement)
@@ -903,7 +891,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
         }
         auto const repeater = table.GetRowsRepeaterInternal();
         const bool byIndex = !TableView::SameInspectableIdentity(
-            item, table.UnwrapEditingDataItem(repeater.ItemsSourceView().GetAt(index)));
+            item, table.UnwrapDataItem(repeater.ItemsSourceView().GetAt(index)));
         peer = winrt::make_self<TableViewRowItemAutomationPeer>(
             table.get_strong().as<winrt::TableView>(), item, index, byIndex).as<winrt::AutomationPeer>();
     }

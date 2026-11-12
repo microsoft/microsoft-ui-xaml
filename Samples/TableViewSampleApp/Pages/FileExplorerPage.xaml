@@ -88,7 +88,6 @@
                     AutomationProperties.Name="Folder contents"
                     ItemsSource="{x:Bind Source}"
                     SelectionMode="Single"
-                    IsReadOnly="True"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
                     <!-- Name, Type and Size sort by a folders-first key; Date modified sorts by the DateModified value,

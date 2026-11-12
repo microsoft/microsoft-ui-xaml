@@ -349,8 +349,7 @@ inline winrt::hstring GetCellContentName(
 
 // The name UIA uses for a column: its string header, else an element header's own name (hidden
 // headers collapse their header cells), else the name its realized header item exposes, which is
-// the only source for an object or templated header. Shared by the cell peer and the built-in
-// editor so both name the column the same way.
+// the only source for an object or templated header.
 inline winrt::hstring ResolveColumnAccessibleName(winrt::TableView const& table, winrt::TableViewColumn const& column)
 {
     if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))

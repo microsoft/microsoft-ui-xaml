@@ -20,7 +20,6 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestH
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // An open edit surviving a recycle needs BeginEdit, which has no API, so the interaction tests cover it.
     [TestClass]
     public class TableViewGroupHeaderRecyclingTests : TableViewApiTestBase
     {

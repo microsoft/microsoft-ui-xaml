@@ -152,9 +152,6 @@ public:
     // expanded. Neither reads app code.
     uint32_t SourceRowCount() const;
     uint32_t DataRowCount() const;
-    // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
-    // node expansion. Header rows never match.
-    bool ContainsShapedItem(winrt::IInspectable const& item) const;
 
     // Internal: the owning TableView caches the projection (ItemsSourceView, row metadata and
     // grouped-ness) when it binds, so it must be told when a shaping verb swaps that projection
@@ -193,10 +190,6 @@ public:
         winrt::IInspectable const& owner,
         std::function<uint64_t(TableViewTip::Operation, bool)> begin,
         ShapingTipCompleted complete);
-    // The owner holds live restores while its cell editor is open and resumes them when it
-    // closes (see ShapedItemsSource::SetLiveShapingHold).
-    void SetLiveShapingHold(std::function<bool()> isHeld);
-    void ResumeHeldLiveShaping();
     // Lets the owner refresh a custom comparer's ranks as items change (see
     // ShapedItemsSource::SetLiveItemChangedHook).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);

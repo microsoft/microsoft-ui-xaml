@@ -93,10 +93,8 @@
                 ItemsSource="{x:Bind Source}"
                 HeadersVisibility="Column"
                 SelectionMode="Single"
-                IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
                 <tv:TableViewTextColumn Header="Ticket" Width="80" Binding="{Binding TicketId}" HeaderToolTip="Incident number, unique per ticket."/>
                 <tv:TableViewTemplateColumn Header="Assignee" Width="100" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
                 <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="140" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>

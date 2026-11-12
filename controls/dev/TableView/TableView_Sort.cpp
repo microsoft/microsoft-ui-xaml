@@ -290,7 +290,6 @@ bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
 bool TableView::SortByColumnInternal(
     const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort, bool resort)
 {
-    FlushDeferredEditReshapes();
     // Only a clear may skip the sort-key check.
     requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
     if (!CanSortColumnNow(column, requireCanSort))
@@ -321,40 +320,22 @@ bool TableView::SortByColumnInternal(
         return false;
     }
 
-    // An open editor is showing a row at an index that is about to move. Close it first; if it
-    // cannot close synchronously, replay this request once it does.
-    if (!TryTerminateEditForControlInitiatedReshape())
-    {
-        QueueReshapeBehindEdit(TableViewTip::Operation::Sort, [this, column, direction, measureTip, requireCanSort, resort]()
-        {
-            SortByColumnInternal(column, direction, measureTip, requireCanSort, resort);
-        }, true);
-        return false;
-    }
-    if (!IsSortRequestStillValid(column, requireCanSort))
-    {
-        return false;
-    }
-
     if (RaiseSortingAndCheckCanceled(column, direction))
     {
         return false;
     }
 
-    // The edit commit and the Sorting handler are app code that can change the rows.
+    // The Sorting handler is app code that can change the rows.
     if (!IsSortRequestStillValid(column, requireCanSort) || !CanApplySortTo(direction))
     {
         return false;
     }
 
-    const bool applied = RecomputeSortDPsAndRaiseInternal(column, measureTip, false, direction);
-    DrainCoalescedEditReshape();
-    return applied;
+    return RecomputeSortDPsAndRaiseInternal(column, measureTip, false, direction);
 }
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 {
-    FlushDeferredEditReshapes();
     if (!CanSortColumnNow(column))
     {
         return false;
@@ -403,19 +384,6 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    if (!TryTerminateEditForControlInitiatedReshape())
-    {
-        QueueReshapeBehindEdit(TableViewTip::Operation::Sort, [this, column]()
-        {
-            ToggleSortDirection(column);
-        }, true);
-        return false;
-    }
-    if (!IsSortRequestStillValid(column))
-    {
-        return false;
-    }
-
     if (RaiseSortingAndCheckCanceled(column, next))
     {
         return false;
@@ -426,9 +394,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    const bool applied = RecomputeSortDPsAndRaiseInternal(column, true, false, next);
-    DrainCoalescedEditReshape();
-    return applied;
+    return RecomputeSortDPsAndRaiseInternal(column, true, false, next);
 }
 
 bool TableView::ClearSort()
@@ -479,26 +445,12 @@ bool TableView::IsSortLitOnlyByApp() const
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
     CancelPendingSortRestore();
-    FlushDeferredEditReshapes();
     if (!IsSortClearStillValid(explicitClear))
     {
         return false;
     }
 
     if (!explicitClear && IsSortLitOnlyByApp())
-    {
-        return false;
-    }
-
-    if (!TryTerminateEditForControlInitiatedReshape())
-    {
-        QueueReshapeBehindEdit(TableViewTip::Operation::Sort, [this, measureTip, explicitClear]()
-        {
-            ClearSortInternal(measureTip, explicitClear);
-        }, true);
-        return false;
-    }
-    if (!IsSortClearStillValid(explicitClear))
     {
         return false;
     }
@@ -526,7 +478,6 @@ bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 
     // Null trigger: Sorted fires with Column=null to signal a full clear.
     RecomputeSortDPsAndRaiseInternal(nullptr, measureTip, explicitClear);
-    DrainCoalescedEditReshape();
     return true;
 }
 

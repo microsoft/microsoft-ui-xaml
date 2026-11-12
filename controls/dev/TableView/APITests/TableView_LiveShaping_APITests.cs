@@ -13,7 +13,6 @@ using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewEditingTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -206,89 +205,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("B C D A E",
                 After(tableView, () => list.Add(new LiveRow { Id = 5, Name = "E", Score = 60, Team = "X" })),
                 "The next collection change must repair the stale row before applying the add.");
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a live reshape waits for an open cell edit and runs once the edit closes.")]
-        public void VerifyHeldWhileEditing()
-        {
-            var list = MakeLiveFlat();
-            var tableView = Place(MakeSource(list, s => s.Sort(LiveByScore, SortDirection.Ascending), live: true), editable: true);
-
-            // A vetoed commit keeps the editor opened by SetValue open.
-            var veto = true;
-            var began = false;
-            RunOnUIThread.Execute(() =>
-            {
-                tableView.CellEditEnding += (s, e) => e.Cancel = veto;
-                CaptureSetValue(GetValueProvider(tableView, Named(list, "C"), columnIndex: 0), "Zed");
-                began = tableView.IsEditing;
-                veto = false;
-            });
-
-            SettleLayout(tableView);
-            Verify.IsTrue(began, "Precondition: SetValue with a vetoed commit must leave an edit open.");
-
-            var during = After(tableView, () => Named(list, "A").Score = 50);
-            var editingDuring = false;
-            RunOnUIThread.Execute(() => editingDuring = tableView.IsEditing);
-
-            Verify.AreEqual("A B C D", during, "A live reshape must wait while a cell edit is open.");
-            Verify.IsTrue(editingDuring, "A live change must not end the user's edit.");
-
-            var after = After(tableView, () => tableView.CancelEdit());
-            var editingAfter = true;
-            RunOnUIThread.Execute(() => editingAfter = tableView.IsEditing);
-
-            Verify.IsFalse(editingAfter, "CancelEdit must close the edit.");
-            Verify.AreEqual("B C D A", after, "The held reshape must run once the edit closes.");
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies bulk expand and collapse calls on a flat source during an open edit do not end it.")]
-        public void VerifyBulkOnFlatDoesNotEndEdit()
-        {
-            var items = MakeTree();
-            var tableView = Place(MakeSource(items, s => s.Sort(EmpKey(e => e.Name), SortDirection.Ascending), live: false), editable: true);
-
-            var veto = true;
-            var endings = 0;
-            var editing = false;
-            var kept = false;
-            var observed = -1;
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView.CellEditEnding += (s, e) =>
-                {
-                    endings++;
-                    if (veto)
-                    {
-                        e.Cancel = true;
-                    }
-                };
-
-                // The vetoed commit leaves the editor open.
-                CaptureSetValue(GetValueProvider(tableView, Named(items, "Ada"), columnIndex: 0), "Zed");
-                veto = false;
-                editing = tableView.IsEditing;
-                endings = 0;
-
-                tableView.ExpandAllRows();
-                tableView.CollapseAllRows();
-                tableView.ExpandAllGroups();
-                tableView.CollapseAllGroups();
-
-                kept = tableView.IsEditing;
-                observed = endings;
-                tableView.CancelEdit();
-            });
-
-            SettleLayout(tableView);
-
-            Verify.IsTrue(editing, "Precondition: SetValue with a vetoed commit must leave an edit open.");
-            Verify.IsTrue(kept, "Expand/collapse-all calls with nothing to do must not end the edit.");
-            Verify.AreEqual(0, observed, "No CellEditEnding may be raised by the no-op bulk calls.");
         }
 
         #endregion
@@ -689,13 +605,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return source;
         }
 
-        private TableView Place(TableViewSource source, bool expandRows = false, bool editable = false)
+        private TableView Place(TableViewSource source, bool expandRows = false)
         {
             TableView tableView = null;
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                tableView = CreateTreeTable(source, editable);
+                tableView = CreateTreeTable(source);
                 LoadContent(tableView);
             });
 

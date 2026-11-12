@@ -43,7 +43,6 @@
                 AutomationProperties.Name="People with wrapped bios"
                 ItemsSource="{x:Bind Source}"
                 SelectionMode="Single"
-                IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>

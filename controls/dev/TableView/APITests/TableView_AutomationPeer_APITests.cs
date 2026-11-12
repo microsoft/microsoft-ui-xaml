@@ -3081,7 +3081,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
                 var row = GetRealizedRows(tableView)[0];
                 Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A Hyperlink inside nested Bold/Italic spans makes the cell actionable.");
                 Verify.IsTrue(GetCellPeer(row, 4).IsKeyboardFocusable(), "A focusable Grid (IsTabStop) makes the cell actionable.");
@@ -3288,33 +3287,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a text column with no Binding has no editor, so its cells are not actionable in an editable table, and UIA SetFocus on an editable cell focuses that exact cell.")]
-        public void VerifyUnboundTextColumnCellIsNotActionable()
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView = CreateAutomationTable();
-                tableView.IsReadOnly = false;
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Unbound" });
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var row = GetRealizedRows(tableView)[0];
-                Verify.IsFalse(GetCellPeer(row, 3).IsKeyboardFocusable(), "An unbound text column has no editor, so its cell is inactive.");
-                Verify.IsTrue(GetCellPeer(row, 0).IsKeyboardFocusable(), "A bound text cell in an editable table is actionable.");
-                GetCellPeer(row, 0).SetFocus();
-                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot);
-                Verify.IsFalse(focused is TableViewRow, "UIA SetFocus on a cell must not leave focus on the row.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies that in a read-only table a cell hosting a nested TableView is keyboard-focusable, while a plain text cell is not and refuses UIA SetFocus.")]
         public void VerifyCellHostingNestedTableIsActionable()
         {
@@ -3339,7 +3311,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
                 var row = GetRealizedRows(tableView)[0];
                 Verify.IsFalse(GetCellPeer(row, 0).IsKeyboardFocusable(), "A read-only text cell with no tooltip is inactive.");
                 Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A cell hosting a nested TableView is actionable.");

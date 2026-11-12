@@ -25,7 +25,6 @@
                 AutomationProperties.AutomationId="PerformanceTable"
                 AutomationProperties.Name="Performance run dataset"
                 SelectionMode="Single"
-                IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}"/>

@@ -177,8 +177,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"GridLinesVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility", statics.GridLinesVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GroupHeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.GroupHeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeadersVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility", statics.HeadersVisibilityProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsEditing", L"Boolean", statics.IsEditingProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ItemsSource", L"Object", statics.ItemsSourceProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"RowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.RowBackgroundProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedIndex", L"Int32", statics.SelectedIndexProperty(), false /* isContent */);
@@ -233,7 +231,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"CanUserResize", L"Boolean", statics.CanUserResizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserSort", L"Boolean", statics.CanUserSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.CellContextFlyoutProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
@@ -241,7 +238,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"HeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.HeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplateSelector", L"Microsoft.UI.Xaml.Controls.DataTemplateSelector", statics.HeaderTemplateSelectorProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderToolTip", L"Object", statics.HeaderToolTipProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MaxWidth", L"Double", statics.MaxWidthProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MinWidth", L"Double", statics.MinWidthProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SortCycle", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle", statics.SortCycleProperty(), false /* isContent */);
@@ -316,26 +312,6 @@ Entry c_typeEntries[] =
                     if (fromString == L"Standard") return box_value(winrt::TableViewDensity::Standard);
                     if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Comfortable") return box_value(winrt::TableViewDensity::Comfortable);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewEditAction",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewEditAction",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"Commit") return box_value(winrt::TableViewEditAction::Commit);
-                    if (fromString == L"Cancel") return box_value(winrt::TableViewEditAction::Cancel);
                     throw winrt::hresult_invalid_argument();
                 });
 

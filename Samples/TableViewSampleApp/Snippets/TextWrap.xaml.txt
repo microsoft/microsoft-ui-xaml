@@ -16,8 +16,7 @@
     x:Name="PeopleTable"
     AutomationProperties.Name="People with wrapped bios"
     ItemsSource="{x:Bind Source}"
-    SelectionMode="Single"
-    IsReadOnly="True">
+    SelectionMode="Single">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="360" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>

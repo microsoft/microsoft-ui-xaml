@@ -29,7 +29,7 @@
 
             <controls:SamplePageHeader
                 Title="TableView"
-                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences: model-first data shaping with TableViewSource, text and template columns, sorting, filtering, grouped rows, selection, in-place cell editing, headers, grid lines, density, column layout and sizing, column lifecycle, virtualization, keyboard navigation, accessibility and right-to-left support."/>
+                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences: model-first data shaping with TableViewSource, text and template columns, sorting, filtering, grouped rows, selection, headers, grid lines, density, column layout and sizing, column lifecycle, virtualization, keyboard navigation, accessibility and right-to-left support."/>
 
             <muxc:InfoBar
                 IsOpen="True"
@@ -57,7 +57,6 @@
                     <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy, ParentBy and Sort, reshaped in place</x:String>
                     <x:String>Columns — TableViewTextColumn for bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
                     <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable from the keyboard</x:String>
-                    <x:String>Cell editing — double-click or F2 edits a cell in place, CellEditingTemplate supplies a custom editor, and TableView.IsReadOnly locks the whole table</x:String>
                     <x:String>Header-click sort via SortMemberPath, with a direction indicator</x:String>
                     <x:String>Filtering — TableViewSource.Filter(predicate)</x:String>
                     <x:String>Grouped rows with collapsible group headers</x:String>
@@ -107,7 +106,6 @@
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Text wrap + row height" Tag="TextWrap" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Text wrap and row height sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Cell templating" Tag="CellTemplating" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell templating sample."/>
-                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Cell editing" Tag="CellEditing" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell editing sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Empty state" Tag="EmptyState" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Empty state sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Density" Tag="Density" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Density sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Right-to-left layout" Tag="RightToLeft" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Right-to-left layout sample."/>

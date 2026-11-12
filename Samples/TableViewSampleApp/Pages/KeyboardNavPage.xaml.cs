@@ -121,11 +121,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void ResetFixture(bool announce)
     {
-        if (!CloseEditForSetup())
-        {
-            return;
-        }
-
         _updating = true;
         var previousObservations = ExpectedObservationsText.Text;
         try
@@ -135,11 +130,9 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             _data.Reset();
             ScenarioSelector.SelectedIndex = 0;
             GroupingToggle.IsOn = false;
-            EditingToggle.IsOn = false;
             EnabledToggle.IsOn = true;
             FixtureSelectionModeSelector.SelectedIndex = 0;
             AssessmentTable.IsEnabled = true;
-            AssessmentTable.IsReadOnly = true;
             AssessmentTable.SelectionMode = TableViewSelectionMode.Single;
             ConfigureColumns();
             _fixtureSource = TableViewSource.From(_data.Rows);
@@ -231,8 +224,8 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             "Intrinsic" =>
                 "Two template columns only. With baseline values, check whether the row names contain Record 01 and Design, " +
                 "and whether the Record cell name reads Record 01, with Record reported once as its column header item. The inner buttons take their names from the displayed text. " +
-                "Activate one to log an app Click event in Last action. Template cells do not offer the cell Value pattern in this preview, " +
-                "even when text editing is allowed; inspect the buttons' Invoke pattern separately.",
+                "Activate one to log an app Click event in Last action. Template cells do not offer the cell Value pattern; " +
+                "inspect the buttons' Invoke pattern separately.",
             "Explicit" =>
                 "With baseline values, the Record button displays Record 01 but has the explicit app name " +
                 "Explicit label for record 01. Check whether the Record cell name includes that label; record what you see. " +
@@ -247,25 +240,13 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             _ =>
                 "Baseline: 24 source records and two text columns. Inspect the app-provided table Name " +
                 "Accessibility regression records and the AutomationId KeyboardNavFixtureTable. For the first flat row, check whether the row " +
-                "name reads Record 01, Design and the cell name Record 01, with Record reported once as its column header item. With text editing allowed, plain text cells " +
-                "can offer the Value pattern with the displayed text (Record 01). Turning editing off removes " +
-                "that editable Value pattern; verify it with an inspector rather than assuming a read-only Value provider exists.",
+                "name reads Record 01, Design and the cell name Record 01, with Record reported once as its column header item. Cells do not offer " +
+                "the Value pattern; verify it with an inspector.",
         };
-
-    private bool CloseEditForSetup()
-    {
-        if (!AssessmentTable.IsEditing || AssessmentTable.CancelEdit())
-        {
-            return true;
-        }
-
-        SetLastAction("Setup not applied: CancelEdit did not close the editor. Finish or cancel the edit in the table.");
-        return false;
-    }
 
     private void OnScenarioChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_updating || AssessmentTable is null || !CloseEditForSetup())
+        if (_updating || AssessmentTable is null)
         {
             return;
         }
@@ -279,7 +260,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnGroupingToggled(object sender, RoutedEventArgs e)
     {
-        if (_updating || _fixtureSource is null || !CloseEditForSetup())
+        if (_updating || _fixtureSource is null)
         {
             return;
         }
@@ -299,20 +280,9 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             : "Fixture grouping cleared on the same TableViewSource.");
     }
 
-    private void OnEditingToggled(object sender, RoutedEventArgs e)
-    {
-        if (_updating || !CloseEditForSetup())
-        {
-            return;
-        }
-
-        AssessmentTable.IsReadOnly = !EditingToggle.IsOn;
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Fixture IsReadOnly -> {0}; template scenarios still have no cell editor.", AssessmentTable.IsReadOnly));
-    }
-
     private void OnEnabledToggled(object sender, RoutedEventArgs e)
     {
-        if (_updating || !CloseEditForSetup())
+        if (_updating)
         {
             return;
         }
@@ -335,11 +305,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnMutateSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup())
-        {
-            return;
-        }
-
         var row = AssessmentTable.SelectedItem as AccessibilityRow;
         SetLastAction(_data.Mutate(row)
             ? string.Format(CultureInfo.CurrentCulture, "Mutated selected record {0} in place.", row!.Id)
@@ -348,11 +313,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup())
-        {
-            return;
-        }
-
         var row = AssessmentTable.SelectedItem as AccessibilityRow;
         SetLastAction(_data.Remove(row)
             ? string.Format(CultureInfo.CurrentCulture, "Removed selected record {0}; the control owns what happens to the selection.", row!.Id)
@@ -361,11 +321,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnMutateLastClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup())
-        {
-            return;
-        }
-
         SetLastAction(_data.Mutate(_data.LastRow)
             ? "Mutated record 24 in place; whether it was realized was not checked."
             : "Record 24 is removed. Restore it first.");
@@ -373,29 +328,13 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnRemoveLastClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup())
-        {
-            return;
-        }
-
         SetLastAction(_data.Remove(_data.LastRow) ? "Removed record 24." : "Record 24 is already removed.");
     }
 
     private void OnRestoreClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup())
-        {
-            return;
-        }
-
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0} original objects in source order; their edited values were kept.", _data.RestoreRemoved()));
     }
-
-    private void OnCommitEditClick(object sender, RoutedEventArgs e) =>
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CommitEdit returned {0}. Leaving the editor may already have committed.", AssessmentTable.CommitEdit()));
-
-    private void OnCancelEditClick(object sender, RoutedEventArgs e) =>
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CancelEdit returned {0}. Use Esc inside the editor to assess rollback.", AssessmentTable.CancelEdit()));
 
     private void OnTemplateContentClick(object sender, RoutedEventArgs e)
     {
@@ -411,21 +350,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         {
             RefreshReadouts();
         }
-    }
-
-    private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args) =>
-        SetLastAction("BeginningEdit raised; this does not mean the edit completed.");
-
-    private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
-    {
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CellEditEnding: {0} (raised before the editor closes).", args.EditAction));
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            if (_listening)
-            {
-                RefreshReadouts();
-            }
-        });
     }
 
     private void OnFixtureRowChanged(object? sender, PropertyChangedEventArgs e)

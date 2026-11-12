@@ -694,38 +694,6 @@ uint32_t TableViewSource::DataRowCount() const
     return rows ? rows.Size() : 0;
 }
 
-bool TableViewSource::ContainsShapedItem(winrt::IInspectable const& item) const
-{
-    if (!item)
-    {
-        return false;
-    }
-
-    // Decided by the published index, not Kind(): a rebuild publishes the index (or releases it)
-    // before raising the Reset that closes the edit, while Kind() is only updated afterwards.
-    if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
-    {
-        // Rows() is only a snapshot of the visible rows here; the index holds every filtered node.
-        return adapter->IndexContainsItem(item);
-    }
-
-    // Rows() is the shaped data without headers and ignores group expansion.
-    auto const rows = m_engine->Rows();
-    if (!rows)
-    {
-        return false;
-    }
-    auto const identity = item.as<winrt::Windows::Foundation::IUnknown>();
-    for (auto const& row : rows)
-    {
-        if (row && row.as<winrt::Windows::Foundation::IUnknown>() == identity)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
 {
     return m_itemsSourceView.get();
@@ -908,13 +876,9 @@ void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
     m_projectionChanged = nullptr;
     m_shapingChanged = nullptr;
     m_shapingTipHandlers.reset();
-    // A restore held for the former owner's editor must not wait on an edit it will no longer
-    // hear the end of.
-    m_engine->SetLiveShapingHold(nullptr);
     m_engine->SetLiveItemChangedHook(nullptr);
     m_engine->SetRowsReleasedHook(nullptr);
     m_engine->SetLiveItemReshapeHandler(nullptr);
-    m_engine->ResumeHeldLiveShaping();
 
     // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
     // it re-enters SetOwningTableView, and one that does not claim must not be retried.
@@ -927,11 +891,6 @@ void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
             waiter.Handler();
         }
     }
-}
-
-void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
-{
-    m_engine->SetLiveShapingHold(std::move(isHeld));
 }
 
 void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
@@ -947,11 +906,6 @@ void TableViewSource::SetLiveItemReshapeHandler(std::function<void()> handler)
 void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)
 {
     m_engine->SetRowsReleasedHook(std::move(hook));
-}
-
-void TableViewSource::ResumeHeldLiveShaping()
-{
-    m_engine->ResumeHeldLiveShaping();
 }
 
 bool TableViewSource::CanApplySort() const

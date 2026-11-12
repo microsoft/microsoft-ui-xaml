@@ -27,6 +27,6 @@ public:
     winrt::FrameworkElement GenerateElementCore(const winrt::IInspectable& dataItem) override;
 
     // CellTemplate routes through here rather than being special-cased by the base class, so a
-    // third-party column can do the same. CellEditingTemplate is handled by the base.
+    // third-party column can do the same.
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 };

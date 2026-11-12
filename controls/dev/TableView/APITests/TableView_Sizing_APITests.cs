@@ -441,17 +441,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 "A tooltip does not change what the cell displays, so the grown Auto width must be kept.");
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies changing a column's editing template while no edit is open does not shrink its grown Auto width.")]
-        public void VerifyCellEditingTemplateChangeKeepsGrownAutoWidth()
-        {
-            VerifyChangeKeepsGrownAutoWidth(
-                t => { },
-                t => t.Columns[0].CellEditingTemplate = (DataTemplate)XamlReader.Load(
-                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""><TextBox /></DataTemplate>"),
-                "An editing template does not change what the cell displays, so the grown Auto width must be kept.");
-        }
-
         private void VerifyChangeKeepsGrownAutoWidth(Action<TableView> setup, Action<TableView> change, string message)
         {
             TableView tableView = null;

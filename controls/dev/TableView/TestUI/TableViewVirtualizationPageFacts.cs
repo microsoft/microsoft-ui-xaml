@@ -12,23 +12,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string RemoveFirstItemButton = "RemoveFirstItemButton";
 
         // Read-only TextBox describing LargeEditableTable, as "key=value" fields joined by ';':
-        //   editing=<True|False>    LargeEditableTable.IsEditing
-        //   beginning=<n>           BeginningEdit count
-        //   ending=<entries|none>   one "<EditAction>/<item Id>" per CellEditEnding, joined by ','
         //   first=<name>            Name of the item that was at source index 0 when the page loaded,
         //                           still tracked after it is removed
         //   modified=<ids|none>     ascending Ids of every item ever created whose values differ from the seed
-        //   editors=<entries|none>  one "<item Id>/<editor text>" per TextBox inside a realized row, joined by ','
         //   visible=<a-b|none>      first and last item Id of the rows intersecting the body viewport
         //   offset=<v>              PART_BodyScroller.VerticalOffset
         internal const string Readout = "VirtualizationReadout";
 
-        internal const string EditingField = "editing";
-        internal const string BeginningEditField = "beginning";
-        internal const string EditEndingField = "ending";
         internal const string FirstItemField = "first";
         internal const string ModifiedField = "modified";
-        internal const string EditorsField = "editors";
         internal const string VisibleField = "visible";
         internal const string OffsetField = "offset";
         internal const string NoneValue = "none";

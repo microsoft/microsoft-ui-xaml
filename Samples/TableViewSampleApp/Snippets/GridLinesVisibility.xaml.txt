@@ -95,8 +95,7 @@
     AutomationProperties.Name="People with grid lines"
     ItemsSource="{x:Bind Source}"
     GridLinesVisibility="All"
-    SelectionMode="Single"
-    IsReadOnly="True">
+    SelectionMode="Single">
     <!-- To hide every header line (column separators and bottom rule), override the brush
          both use; the Header lines option switches this at runtime:
     <tv:TableView.Resources>

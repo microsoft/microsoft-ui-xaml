@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -14,14 +13,11 @@ using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColu
 namespace TableViewSampleApp.Models;
 
 /// <summary>
-/// The person row used by most gallery pages. Implements INotifyPropertyChanged so in-cell
-/// editors (two-way bound) and page actions that mutate a row are reflected by the table.
+/// The person row used by most gallery pages. Implements INotifyPropertyChanged so controls in
+/// template cells (two-way bound) and page actions that mutate a row are reflected by the table.
 /// Shared cell templates for this model live in Templates\PersonCellTemplates.xaml.
-/// INotifyDataErrorInfo is opt-in through <see cref="ValidatesNames"/>, which only the Cell
-/// editing page sets, so every other page edits names without validation (a one-word Name
-/// leaves LastName empty there). With validation on, FullName reports the errors of both parts.
 /// </summary>
-public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
+public sealed class Person : INotifyPropertyChanged
 {
     private string _firstName = string.Empty;
     private string _lastName = string.Empty;
@@ -52,8 +48,8 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
     }
 
     // <snippet Groups Hierarchy>
-    // The Name column binds FullName, so it needs a setter to be editable: the first word becomes
-    // FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+    // The Name column binds FullName. Its setter lets page actions rename a person: the first word
+    // becomes FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
     public string FullName
     {
         get => $"{_firstName} {_lastName}".Trim();
@@ -201,72 +197,6 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    // <snippet CellEditing>
-    // TableView checks INotifyDataErrorInfo when committing a cell: an error keeps the editor open
-    // and writes the previous value back. Set calls ValidateName before raising PropertyChanged.
-    private string? _firstNameError;
-    private string? _lastNameError;
-
-    public bool ValidatesNames { get; set; }
-
-    public bool HasErrors => _firstNameError is not null || _lastNameError is not null;
-
-    public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
-
-    public IEnumerable GetErrors(string? propertyName)
-    {
-        var all = string.IsNullOrEmpty(propertyName);
-        // An edit through FullName writes both parts, so it reports the errors of both.
-        var full = propertyName == nameof(FullName);
-        if ((all || full || propertyName == nameof(FirstName)) && _firstNameError is not null)
-        {
-            yield return _firstNameError;
-        }
-
-        if ((all || full || propertyName == nameof(LastName)) && _lastNameError is not null)
-        {
-            yield return _lastNameError;
-        }
-    }
-
-    // Returns true when the property's errors changed.
-    private bool ValidateName(string? propertyName)
-    {
-        string? Required(string value, string label) =>
-            ValidatesNames && string.IsNullOrWhiteSpace(value) ? label + " is required." : null;
-
-        switch (propertyName)
-        {
-            case nameof(FirstName):
-                var firstError = Required(_firstName, "First name");
-                if (firstError == _firstNameError)
-                {
-                    return false;
-                }
-
-                _firstNameError = firstError;
-                return true;
-            case nameof(LastName):
-                var lastError = Required(_lastName, "Last name");
-                if (lastError == _lastNameError)
-                {
-                    return false;
-                }
-
-                _lastNameError = lastError;
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private void RaiseErrorsChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasErrors)));
-        ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
-    }
-    // </snippet>
-
     private void Set<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (Equals(field, value))
@@ -274,13 +204,7 @@ public sealed class Person : INotifyPropertyChanged, INotifyDataErrorInfo
             return;
         }
         field = value;
-        var errorsChanged = ValidateName(propertyName);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        if (errorsChanged)
-        {
-            RaiseErrorsChanged(propertyName!);
-            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(FullName)));
-        }
         if (propertyName is nameof(FirstName) or nameof(LastName))
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullName)));

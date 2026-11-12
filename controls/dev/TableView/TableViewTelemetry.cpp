@@ -63,9 +63,6 @@ namespace TableViewTelemetry
             case TableViewTip::Operation::Filter: return 4;
             case TableViewTip::Operation::GroupConfiguration: return 5;
             case TableViewTip::Operation::Selection: return 6;
-            case TableViewTip::Operation::BeginEdit: return 7;
-            case TableViewTip::Operation::CommitEdit: return 8;
-            case TableViewTip::Operation::CancelEdit: return 9;
             case TableViewTip::Operation::GroupExpansion: return 10;
             case TableViewTip::Operation::HierarchyExpansion: return 11;
             default: return std::nullopt;

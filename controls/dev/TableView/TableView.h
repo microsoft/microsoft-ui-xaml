@@ -244,7 +244,6 @@ public:
 
     // Property-changed callbacks (from TableViewProperties)
     void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIsReadOnlyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -436,14 +435,13 @@ public:
     // Actionable headers and cells are the only header/body keyboard focus targets.
     bool IsColumnUserSortableInternal(winrt::TableViewColumn const& column);
     bool IsHeaderCellActionableInternal(winrt::FrameworkElement const& header);
-    bool IsColumnCellEditableInternal(winrt::TableViewColumn const& column);
     void RefreshCellFocusLevelsInternal();
     void RefreshHeaderTabStopsInternal();
     // The inactive-header IsTabStop stamp; an app's local IsTabStop value or binding is never ours.
     bool HasHeaderTabStopStampInternal(winrt::FrameworkElement const& header);
     void ClearHeaderTabStopStampInternal(winrt::FrameworkElement const& header);
 
-    // True when handled (menu shown, or suppressed: editing, nested or stale target); false lets the
+    // True when handled (menu shown, or suppressed: nested or stale target); false lets the
     // request bubble to the native ContextFlyout chain.
     bool ProcessContextMenuRequest(
         TableViewDetails::ContextMenuTarget const& target,
@@ -451,33 +449,12 @@ public:
 
     bool FocusContextMenuTargetFromPointer(TableViewDetails::ContextMenuTarget const& target);
 
-    // The one context menu policy check: no TableView menu opens while a cell is editing.
-    bool AreContextMenusSuppressed() const noexcept { return IsEditInProgress(); }
-
-    // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
-    // element that raised it or on any ancestor opens. Hooked below every element that can carry a
-    // TableView menu the request handlers do not reach (group headers, the table itself).
-    void SuppressContextRequestWhileEditing(winrt::ContextRequestedEventArgs const& args);
-
     // A column a context menu request can target: in this table's Columns, owned by it, Visible.
     bool IsContextMenuColumn(winrt::TableViewColumn const& column) const;
 
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
-
-    enum class EditingUnit
-    {
-        Cell,
-        Row,
-    };
-
-    winrt::IInspectable CurrentItem();
-    winrt::TableViewColumn CurrentColumn();
     void SetCurrentCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
-
-
-    // Any edit state but None, including Beginning and Ending. The public IsEditing DP is narrower.
-    bool IsEditInProgress() const noexcept { return m_editState != EditState::None; }
 
     // Measure, arrange and the repeater's element callbacks. App-visible work is posted from here.
     [[nodiscard]] auto BeginLayoutCallbackScope()
@@ -485,7 +462,7 @@ public:
         ++m_layoutCallbackDepth;
         return gsl::finally([this]() { --m_layoutCallbackDepth; });
     }
-    bool IsInLayoutCallback() const noexcept { return m_layoutCallbackDepth > 0 || m_insideLayoutPass || s_elementLayoutDepth > 0; }
+    bool IsInLayoutCallback() const noexcept { return m_layoutCallbackDepth > 0 || s_elementLayoutDepth > 0; }
 
     // Measure/arrange of the control's own elements (cells panels, group headers). Per thread, not
     // per table: any of them can run app code that reaches a table.
@@ -498,82 +475,15 @@ public:
         ElementLayoutScope& operator=(ElementLayoutScope const&) = delete;
     };
 
-    // The editor currently in the tree, or null. Internal: the cell automation peer needs it to
-    // route IValueProvider.SetValue through the public edit lifecycle.
-    winrt::FrameworkElement CurrentEditingElement() const;
-
-    // Turns a row's container-level item into the object an edit writes to. Identity today; the
-    // seam a wrapping layer (grouping) changes in one place. Public so TableViewRow's gesture
-    // handler resolves the edit target exactly the way the control does - when those disagreed,
-    // begin-edit failed on every row.
-    winrt::IInspectable UnwrapEditingDataItem(winrt::IInspectable const& item) const;
+    // Turns a row's container-level item into the data item. Identity today; the seam a wrapping
+    // layer (grouping) changes in one place.
+    winrt::IInspectable UnwrapDataItem(winrt::IInspectable const& item) const;
 
     // Identity comparison that survives boxing and re-projection. Raw IInspectable equality is not
     // reliable for boxed values, so anything comparing data items must use this.
     static bool SameInspectableIdentity(winrt::IInspectable const& lhs, winrt::IInspectable const& rhs);
 
-    bool BeginEdit();
-    bool BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
-    bool CommitEdit();
-    bool CommitEditInternal(EditingUnit unit);
-    bool CancelEdit();
-    bool CancelEditInternal(EditingUnit unit);
-
-    // Forced teardown (source-driven reset / ItemsSource replacement / unload). Cannot be vetoed.
-    // sourceReplaced: the edited item belongs to a data set the control is leaving.
-    bool TerminateEditForReset(bool force, bool sourceReplaced = false);
-    // Same, but leaves the edited row's visuals alone. For callers inside a layout pass, where
-    // restoring the display child would mutate the tree during measure.
-    //
-    // insideLayoutPass additionally defers the app-visible NOTIFICATIONS (CellEditEnding /
-    // EditEnded) onto the dispatcher. Raising them synchronously runs app code inside
-    // ItemsRepeater's measure, and a handler that touches the tree or invalidates layout
-    // re-enters the pass we are standing in and fail-fasts. Pass true only from a genuine layout
-    // pass - the DP-change callers are re-entrant for FOCUS reasons, not layout ones.
-    bool TerminateEditWithoutVisualRestore(bool insideLayoutPass = false, bool sourceReplaced = false);
-
-    // Runs an app-visible notification now, or on the dispatcher when we are inside a layout pass.
-    void PostEditNotification(std::function<void()> notify);
-
-    // Closes an open edit when the column it is on becomes read-only. Called by
-    // TableViewColumn::OnPropertyChanged, which cannot reach the edit state itself.
-    void OnColumnIsReadOnlyChanged(winrt::TableViewColumn const& column);
-    // Control-initiated reshape (sort / group / expand). Stays cancelable.
-    bool TryTerminateEditForControlInitiatedReshape();
-
-    // A source-reshaping operation deferred past an edit close, tagged with what it does for TiP.
-    struct DeferredEditReshape
-    {
-        TableViewTip::Operation operation;
-        std::function<void()> apply;
-    };
-    // Defer a source-reshaping operation until the open edit closes. Opaque action, so editing
-    // needs no compile-time knowledge of sorting, grouping or expansion.
-    void QueueCoalescedEditReshape(TableViewTip::Operation operation, std::function<void()> apply);
-    // Unlike the queue above, survives a vetoed close and replays only once no edit is open.
-    void QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply);
-    void ClearCoalescedEditReshape();
-    void DrainCoalescedEditReshape();
-    void QueueDeferredEditReshapeDrain();
-    void FlushDeferredEditReshapes();
-    // In a catch: reports the deferred reshape that threw as a recovered app fault.
-    void NoteDeferredEditReshapeFault() noexcept;
     bool IsActiveSourceOwnedByOther() const;
-
-    // ----- Editing input gestures (TableView_EditingInput.cpp) -----
-    // The pointer gesture lives on TableViewRow: the row owns its cells, so it is the level that
-    // can resolve which cell a press landed on.
-
-    void OnKeyDownForEditing(
-        const winrt::IInspectable& sender,
-        const winrt::KeyRoutedEventArgs& args);
-    void OnLosingFocusForEditing(
-        const winrt::IInspectable& sender,
-        const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
-    void QueueFocusLossCommit();
-    void CompleteFocusLossCommit();
-    // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
-    void MarkEditorFlyoutClosing();
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
@@ -851,132 +761,17 @@ private:
     winrt::ItemsSourceView m_selectionResetDetectorView{ nullptr };
 
 private:
-    // Explicit edit lifecycle, replacing four independent booleans whose 16 nominal combinations
-    // encoded the real invariants only in the ordering of guards spread across five methods.
-    //
-    //   None      -> no edit open.
-    //   Beginning -> inside BeginningEdit; reentrant edit operations are rejected.
-    //   Editing   -> edit open and interactive.
-    //   Ending    -> inside CellEditEnding/RowEditEnding, or waiting on a deferral one took.
-    //
-    // Legal: None->Beginning->{None, Editing}; Editing->Ending->{Editing, None}, where
-    // Ending->Editing is the veto/validation-failure path that keeps the edit open.
-    enum class EditState
-    {
-        None,
-        Beginning,
-        Editing,
-        Ending,
-    };
-
-    EditState m_editState{ EditState::None };
-
-    // True once this edit has written to the data item. A validation failure keeps the edit open
-    // AFTER the write, so a later cancel has to push the pre-edit value back to the source rather
-    // than only restoring the editor.
-    bool m_editSourceWritten{ false };
-
-    // True while a forced teardown arrived during the Beginning window, where EndCurrentEdit cannot
-    // close the edit. BeginEdit re-checks it and unwinds instead of promoting to Editing over a row
-    // that has already been recycled onto a different item.
-    bool m_abandonPendingBeginEdit{ false };
-
-    // True only while a queued reshape is replaying, so the drain is not re-entered by it.
-    bool m_isApplyingCoalescedEditReshape{ false };
-
-    // Bumped when a forced teardown closes an edit awaiting a deferral, so a late completion can
-    // recognise itself as stale.
-    uint32_t m_editGeneration{ 0 };
-
-    // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
-    // replay order matches arrival order.
-    std::deque<DeferredEditReshape> m_pendingEditReshapes;
-    std::deque<DeferredEditReshape> m_reshapesAfterEditCloses;
-    bool m_editReshapeDrainQueued{ false };
-    TableViewTip::Operation m_failedEditReshapeOperation{ TableViewTip::Operation::Sort };
-
-    // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
-    // inside an EditEnding handler stays valid once the edit closes.
+    // Keyboard/focus position.
     tracker_ref<winrt::IInspectable> m_currentItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentColumn{ this };
 
-    // True while a teardown must not touch the edited row's visuals (recycle / rebuild paths).
-    bool m_suppressEditVisualRestore{ false };
-    // True only while tearing down from inside ItemsRepeater's measure/arrange. Distinct from
-    // m_suppressEditVisualRestore, which is also set by DP-change callbacks where the hazard is
-    // focus re-entrancy rather than layout re-entrancy.
-    bool m_insideLayoutPass{ false };
     uint32_t m_layoutCallbackDepth{ 0 };
-
-    // IsEditing is true from BeginningEdit until the edit closes (any state but None); a cancelled
-    // BeginningEdit reverts it to false.
-    void SyncIsEditingProperty();
-    void OnIsEditingPropertyChanged();
-    bool m_isSettingIsEditing{ false };
-    // Once per closed edit session, after the write and before the queued reshapes. Queued so a
-    // posted raise is flushed before the next session's BeginningEdit and before queued reshapes.
-    void RaiseCellEditEnded(winrt::IInspectable const& item, winrt::TableViewColumn const& column, winrt::TableViewEditAction action);
-    void FlushPendingCellEditEnded();
-    // Posts the pending CellEditEnded and queued-reshape replay; false when nothing could be posted.
-    bool PostDeferredEditWork();
-    struct PendingCellEditEnded
-    {
-        winrt::IInspectable Item{ nullptr };
-        winrt::TableViewColumn Column{ nullptr };
-        winrt::TableViewEditAction Action{ winrt::TableViewEditAction::Cancel };
-    };
-    std::deque<PendingCellEditEnded> m_pendingCellEditEnded;
-    bool m_cellEditEndedFlushPosted{ false };
-
-    // Set when terminating for a reshape closed the edit but a handler opened another.
-    bool m_terminateReopenedEdit{ false };
-    void QueueReshapeBehindEdit(TableViewTip::Operation operation, std::function<void()> apply, bool skipWhileReplaying);
 
     void SetCurrentItem(winrt::IInspectable const& item);
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
 
-    // Shared tail of the synchronous and deferred edit-close paths.
-    bool CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed, ActionTip* tip = nullptr);
-    // The cell being edited. Distinct from m_currentItem/m_currentColumn, which track focus.
-    tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
-    tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
-    tracker_ref<winrt::TableViewRow> m_currentEditRow{ this };
-
-    // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
-    tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };
-
-    bool RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column, ActionTip& tip);
-    // Returns Vetoed or Completed. Synchronous: there is no deferral in this release, so a handler
-    // must set Cancel before it returns.
-    enum class EditEndingResult { Vetoed, Completed };
-    EditEndingResult RaiseEditEnding(
-        EditingUnit unit,
-        winrt::TableViewEditAction action,
-        bool honorCancel,
-        ActionTip* tip);
-
-    bool TryResolveFocusedCell(winrt::IInspectable& item, winrt::TableViewColumn& column);
-    bool TryResolveCurrentCell(winrt::IInspectable& item, winrt::TableViewColumn& column);
-    bool TryResolveCurrentCellForEdit(winrt::IInspectable& item, winrt::TableViewColumn& column);
     bool TryGetItemAtRowIndex(int32_t rowIndex, winrt::IInspectable& item) const;
     winrt::TableViewRow FindRealizedRowForItem(winrt::IInspectable const& item);
-    bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
-    // Beginning -> None without touching the row's visual or the item transaction.
-    void ResetPendingBeginEdit();
-
-    void EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip);
-
-    // Applies the outcome of an edit close: writes or reverts, tears down the visual, clears state.
-    // Shared by the synchronous and deferred paths so they cannot drift.
-    bool FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, ActionTip* tip);
-    bool EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
-
-    // Scoped to the property the edited column writes; falls back to the object-level check only
-    // when the column reports no single editing property path.
-    bool HasBlockingValidationErrors(
-        winrt::IInspectable const& item,
-        winrt::TableViewColumn const& column,
-        ActionTip* tip = nullptr);
 
 private:
     // A synchronous action owns its own operation state (and TiP test, when the operation has one) and shares the
@@ -1033,11 +828,6 @@ private:
     // App code failed (threw, or its write did not land) and TableView carried on without rethrowing.
     void NoteRecoveredAppFault(TableViewTip::Operation operation, TableViewTip::Stage stage,
         TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept;
-    // A column's editing hook threw and TableView carried on. The hooks are TableView's code, so this fails the action
-    // (or, without one, is reported as TableView's recovered failure), unless app code it ran threw (appFault): then it
-    // is recovered as the app's.
-    void NoteColumnFault(ActionTip* tip, TableViewTip::Operation operation, HRESULT error,
-        std::optional<TableViewTip::AppFaultKind> appFault = std::nullopt) noexcept;
     ActionTip* CalloutAction() const noexcept;
     // An app fault ignores the operation; any other failure fails it.
     void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<TableViewTip::Fault> fault) noexcept;
@@ -1298,9 +1088,8 @@ private:
 
     // --- Sorting ---
     //
-    // Re-validated after every point where app code could have run (a Sorting handler, or an
-    // edit-ending handler): the columns collection may have changed underneath the request that is
-    // still in flight.
+    // Re-validated after every point where app code could have run (a Sorting handler): the
+    // columns collection may have changed underneath the request that is still in flight.
     // requireCanSort=false skips the sort-key check; only for clearing a column's own sort.
     bool IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     // explicitClear also counts item sorts declared on the source.
@@ -1389,7 +1178,6 @@ private:
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
     winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
-    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
@@ -1564,7 +1352,7 @@ private:
     void StopAwaitingSource();
 
     bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
-    // IsContextMenuTargetCurrent plus, for body targets, an unchanged source and no edit in progress.
+    // IsContextMenuTargetCurrent plus, for body targets, an unchanged source.
     bool IsContextMenuRequestCurrent(
         TableViewDetails::ContextMenuTarget const& target,
         winrt::IInspectable const& sourceSnapshot);
@@ -1687,18 +1475,6 @@ private:
     // bubbling handlers run.
     winrt::KeyEventHandler m_previewKeyDownHandler{ nullptr };
 
-    winrt::KeyEventHandler m_editingKeyDownHandler{ nullptr };
-    winrt::UIElement::LosingFocus_revoker m_editingLosingFocusRevoker{};
-
-    bool m_focusLossCommitQueued{ false };
-    // Set while a focus-loss commit waits for the editor's own flyout to close.
-    winrt::FlyoutBase::Closed_revoker m_editorFlyoutClosedRevoker{};
-    winrt::FlyoutBase::Closing_revoker m_editorFlyoutClosingRevoker{};
-    // Same, for any other popup that took focus from the editor (a picker, a button flyout).
-    winrt::Popup::Closed_revoker m_editorPopupClosedRevoker{};
-    // True from the editor flyout's Closing until the current input has been dispatched.
-    bool m_editorFlyoutClosing{ false };
-
     int32_t m_navAnchorRow{ -1 };
     int32_t m_navAnchorCellRow{ -1 };
     int32_t m_navAnchorCellColumn{ -1 };
@@ -1747,7 +1523,6 @@ private:
     int32_t GetPageTargetRow(int32_t currentRow, bool pageDown, int32_t rowCount);
     // Focus is exactly on one of this table's rows, group headers or cells, not on hosted content.
     bool IsFocusExactlyOnBodyItem() const;
-    bool IsFocusInsideEditingElement() const;
 
     // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
     bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);

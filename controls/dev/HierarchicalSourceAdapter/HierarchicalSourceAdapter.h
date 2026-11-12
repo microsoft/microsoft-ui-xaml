@@ -95,8 +95,6 @@ public:
     // because an item occupies at most one row. Null if not visible.
     NodeRow const* TryGetNodeRowForItem(winrt::IInspectable const& item) const;
 
-    // True when `item` is a node of the filtered tree, whether or not its ancestors are expanded.
-    bool IndexContainsItem(winrt::IInspectable const& item) const;
     bool HasIndex() const noexcept { return m_index != nullptr; }
     // Every node of the tree, before filtering; 0 with no index.
     uint32_t NodeCount() const noexcept
