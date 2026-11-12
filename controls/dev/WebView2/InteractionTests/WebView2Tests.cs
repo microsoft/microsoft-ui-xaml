@@ -1639,7 +1639,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 */
                 Rectangle bounds = webview.BoundingRectangle;
                 Point center = new Point(bounds.Width / 2 + bounds.X, bounds.Height / 2 + bounds.Y);
-                InputHelper.Pan(webview, center, 250, Direction.West);
+
+                // The page only reports "Far side of page reached." once it has scrolled horizontally by about its own
+                // width (~620px), but a 250px pan only drags it ~250px. A single pan therefore only passed when the fling
+                // that followed it covered the rest, which depends on the release velocity the browser derives from the
+                // timing of the injected touch frames. Keep panning until the page reports the far side instead.
+                var messageReceived = new CheckBox(FindElement.ById("MessageReceived"));
+                const int maxPans = 5;
+                for (int pan = 1; pan <= maxPans && messageReceived.ToggleState != ToggleState.On; pan++)
+                {
+                    using (var waiter = messageReceived.GetToggledWaiter())
+                    {
+                        Log.Comment("Pan {0} of at most {1}.", pan, maxPans);
+                        InputHelper.Pan(webview, center, 250, Direction.West);
+
+                        // Give any fling from this pan time to reach the far side before panning again.
+                        if (messageReceived.ToggleState != ToggleState.On)
+                        {
+                            waiter.TryWait(TimeSpan.FromSeconds(2));
+                        }
+                    }
+                }
 
                 WaitForWebMessageResult("BasicPanTouchTest");
             }
