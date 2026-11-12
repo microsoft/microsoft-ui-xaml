@@ -75,6 +75,12 @@ void RadioButtons::OnApplyTemplate()
     UpdateVisualStateForIsEnabledChange();
 }
 
+static bool IsRealizedItemContainer(const winrt::ItemsRepeater& repeater, const winrt::DependencyObject& element)
+{
+    auto const elementAsUIE = element.try_as<winrt::UIElement>();
+    return elementAsUIE && repeater.GetElementIndex(elementAsUIE) >= 0;
+}
+
 // When focus comes from outside the RadioButtons control we will put focus on the selected radio button.
 void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
@@ -96,8 +102,10 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                 }
             }
 
-            // Selection follows focus unless control is held down.
-            else if ((winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            // Selection follows focus unless control is held down, or focus is only leaving a container that was
+            // recycled because its item was removed or replaced.
+            else if ((winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down &&
+                IsRealizedItemContainer(repeater, oldFocusedElement))
             {
                 if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
@@ -288,7 +296,17 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
         {
             if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
-                Select(-1);
+                if (m_currentlySelecting)
+                {
+                    // Select clears the selection once it finishes. Uncheck the container now: a container from
+                    // the ItemTemplate is recycled as is and would select its next item when it is reused.
+                    elementAsToggle.IsChecked(false);
+                    m_selectedContainerClearedWhileSelecting = true;
+                }
+                else
+                {
+                    Select(-1);
+                }
             }
         }
     }
@@ -331,6 +349,7 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
 
 void RadioButtons::Select(int index)
 {
+    bool clearSelectionAfterwards = false;
     if(!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
     {
         // Calling Select updates the checked state on the radio button being selected
@@ -340,6 +359,7 @@ void RadioButtons::Select(int index)
         auto clearSelecting = gsl::finally([this]()
             {
                 m_currentlySelecting = false;
+                m_selectedContainerClearedWhileSelecting = false;
             });
         m_currentlySelecting = true;
 
@@ -347,7 +367,11 @@ void RadioButtons::Select(int index)
         m_selectedIndex = index;
 
         auto const newSelectedItem = GetDataAtIndex(m_selectedIndex, true);
-        auto const previousSelectedItem = GetDataAtIndex(previousSelectedIndex, false);
+        GetDataAtIndex(previousSelectedIndex, false);
+        // Report the item that was selected, not the one now at its index: the selected item may have been
+        // removed or replaced by the collection change that triggered this selection change.
+        auto const previousSelectedItem = m_selectedItem.get();
+        m_selectedItem.set(newSelectedItem);
 
         SelectedIndex(m_selectedIndex);
         SelectedItem(newSelectedItem);
@@ -366,6 +390,14 @@ void RadioButtons::Select(int index)
             addedItems.Append(newSelectedItem);
         }
         m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(removedItems, addedItems));
+
+        // A SelectionChanged handler removed or replaced the selected item, which recycled its container.
+        clearSelectionAfterwards = m_selectedContainerClearedWhileSelecting;
+    }
+
+    if (clearSelectionAfterwards)
+    {
+        Select(-1);
     }
 }
 
