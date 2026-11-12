@@ -4495,17 +4495,25 @@ _Check_return_
     Selector::InvokeDataSourceClearSelection()
 {
     unsigned int selectedRangesCount = 0;
-    ctl::ComPtr<xaml_data::IItemIndexRange> spItemIndexRange;
     ctl::ComPtr<wfc::IVectorView<xaml_data::ItemIndexRange*>> spSelectedRanges;
+    std::vector<ctl::ComPtr<xaml_data::IItemIndexRange>> rangesToDeselect;
 
     IFC_RETURN(m_tpDataSourceAsSelectionInfo->GetSelectedRanges(&spSelectedRanges));
 
     IFC_RETURN(spSelectedRanges->get_Size(&selectedRangesCount));
 
+    // The data source is free to return a live collection that shrinks as ranges are deselected,
+    // so copy the ranges before calling DeselectRange instead of indexing into that collection.
     for (unsigned int i = 0; i < selectedRangesCount; ++i)
     {
-        IFC_RETURN(spSelectedRanges->GetAt(i, &spItemIndexRange));
+        ctl::ComPtr<xaml_data::IItemIndexRange> spItemIndexRange;
 
+        IFC_RETURN(spSelectedRanges->GetAt(i, &spItemIndexRange));
+        rangesToDeselect.push_back(std::move(spItemIndexRange));
+    }
+
+    for (const auto& spItemIndexRange : rangesToDeselect)
+    {
         IFC_RETURN(m_tpDataSourceAsSelectionInfo->DeselectRange(spItemIndexRange.Get()));
     }
 

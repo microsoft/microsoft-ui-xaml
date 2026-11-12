@@ -82,6 +82,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates using automation to select and deselect actually calls into IISelectionInfo")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateSelectingItemClearsMultipleSelectedRanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that selecting a single item replaces several selected ranges when the data source's GetSelectedRanges returns a live collection that changes as ranges are deselected.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateClearingMultipleSelectedRanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that setting SelectedIndex to -1 deselects every range when the data source's GetSelectedRanges returns a live collection that changes as ranges are deselected.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateClickingSelectedItemClearsOtherSelectedRanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that clicking an item that is already selected, without modifier keys, leaves only that item selected when the data source's GetSelectedRanges returns a live collection that changes as ranges are deselected.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //
@@ -98,6 +111,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         unsigned int m_NumberOfItems;
         Microsoft::UI::Xaml::Tests::Common::DataVirtualizationDataSource^ m_DataSource;
         xaml_controls::ListView^ SetupEnvironment();
+        xaml_controls::ListView^ SetupEnvironment(Platform::Object^ itemsSource);
     };
 
 } } } } } }
