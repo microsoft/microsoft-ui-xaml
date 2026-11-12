@@ -73,7 +73,7 @@ namespace System.Xaml
         {
             get
             {
-                object value = Thread.VolatileRead(ref _value);
+                object value = Volatile.Read(ref _value);
                 return !object.ReferenceEquals(value, null);
             }
         }
@@ -97,7 +97,7 @@ namespace System.Xaml
         public void SetVolatile(T value)
         {
             object newValue = object.ReferenceEquals(value, null) ? s_NullSentinel : value;
-            Thread.VolatileWrite(ref _value, newValue);
+            Volatile.Write(ref _value, newValue);
         }
     }
 }

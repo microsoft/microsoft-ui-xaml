@@ -10,27 +10,12 @@ using System.Globalization;
 using System.Diagnostics;
 using System.Threading;
 
-#if SYSTEM_XAML
 using System.Xaml;
-#endif
 
-#if PBTCOMPILER
-using MS.Utility;
-namespace MS.Internal.Markup
-#elif SYSTEM_XAML
 using System.Windows;
 
 namespace System.Xaml
-#else
-using MS.Internal.WindowsBase;
-using System.Windows;
-
-namespace System.Windows.Markup
-#endif
 {
-#if !PBTCOMPILER && !SYSTEM_XAML
-    [FriendAccessAllowed]
-#endif
 
     // <returns>
     // true if xmlNamespace is recognized
@@ -44,9 +29,6 @@ namespace System.Windows.Markup
     internal delegate bool IsXmlNamespaceSupportedCallback(string xmlNamespace, out string newXmlNamespace);
     delegate void HandleElementCallback(int elementDepth, ref bool more);
     delegate void HandleAttributeCallback(int elementDepth);
-#if !PBTCOMPILER && !SYSTEM_XAML
-    [FriendAccessAllowed]
-#endif
     internal sealed class XmlCompatibilityReader : XmlWrappingReader
     {
         #region Construction
@@ -92,13 +74,11 @@ namespace System.Windows.Markup
             }
         }
 
-#if !PBTCOMPILER
         public XmlCompatibilityReader(XmlReader baseReader,
             IEnumerable<string> supportedNamespaces)
             : this(baseReader, null, supportedNamespaces)
         {
         }
-#endif
         #endregion Construction
 
         #region Public Methods
@@ -720,7 +700,6 @@ namespace System.Windows.Markup
             }
         }
 
-#if !PBTCOMPILER
         /// <summary>
         /// Answer the encoding of the underlying xaml stream
         /// </summary>
@@ -739,7 +718,6 @@ namespace System.Windows.Markup
                 }
             }
         }
-#endif
         #endregion Public Properties
 
         #region Private Methods

@@ -11,6 +11,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
     using System;
     
     /// <summary>
@@ -57,7 +58,7 @@ namespace ");
      var appClassType = Model.CodeInfo.ClassType; 
      if (appClassType != null && appClassType.UnderlyingType != null) 
      { 
-         var ctor = appClassType.UnderlyingType.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); 
+         var ctor = appClassType.UnderlyingType.GetConstructorLmr(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); 
          hasParameterlessCtor = ctor != null; 
      } 
             this.Write("    partial class ");

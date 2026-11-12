@@ -2,6 +2,7 @@
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>
+<#@ import namespace="Microsoft.UI.Xaml.Markup.Compiler.Lmr" #>
 <#  foreach(var pair in Model.XamlFileFullPathAndCheckSums) #>
 <#  {   #>
 #pragma checksum "<#=pair.FileName#>" "<#=Model.ChecksumAlgorithmGuid#>" "<#=pair.Checksum#>"
@@ -28,7 +29,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#     var appClassType = Model.CodeInfo.ClassType; #>
 <#     if (appClassType != null && appClassType.UnderlyingType != null) #>
 <#     { #>
-<#         var ctor = appClassType.UnderlyingType.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); #>
+<#         var ctor = appClassType.UnderlyingType.GetConstructorLmr(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); #>
 <#         hasParameterlessCtor = ctor != null; #>
 <#     } #>
     partial class <#=Model.CodeInfo.ClassName.ShortName#> : <#=Globalize(Model.CodeInfo.BaseTypeName)#>

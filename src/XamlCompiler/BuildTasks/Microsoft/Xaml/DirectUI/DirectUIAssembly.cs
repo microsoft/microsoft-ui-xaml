@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
 {
-    internal class DirectUIAssembly : Assembly
+    internal class DirectUIAssembly : LmrAssemblyBase
     {
         private readonly Assembly _assembly;
         private AssemblyName _assemblyName;
@@ -96,12 +97,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             get { return _assembly.ReflectionOnly; }
         }
 
-        public override Type GetType(string name)
+        internal override Type GetTypeCore(string name)
         {
             Type type = null;
             try
             {
-                type = _assembly.GetType(name);
+                type = _assembly.GetTypeLmr(name);
             }
             catch (TypeLoadException)
             {
@@ -110,9 +111,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             return type;
         }
 
-        public override Type[] GetTypes()
+        internal override Type[] GetTypesCore()
         {
-            return _assembly.GetTypes();
+            return _assembly.GetTypesLmr();
         }
 
         public override string FullName
@@ -120,9 +121,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             get { return _assembly.FullName; }
         }
 
-        public override string Location
+        internal override string LocationCore
         {
-            get { return _assembly.Location; }
+            get { return _assembly.GetLocationLmr(); }
         }
     }
 }

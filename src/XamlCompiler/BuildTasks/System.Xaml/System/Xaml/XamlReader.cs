@@ -66,11 +66,6 @@ namespace System.Xaml
 
         #endregion
 
-        public virtual XamlReader ReadSubtree()
-        {
-            return new XamlSubreader(this);
-        }
-
         // ------ Private methods -------
 
         private void SkipFromTo(XamlNodeType startNodeType, XamlNodeType endNodeType)

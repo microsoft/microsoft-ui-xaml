@@ -41,7 +41,7 @@ namespace Win8Xaml.CompilerProxies
             }
             catch (Exception e)
             {
-                throw e.InnerException;
+                throw e.InnerException ?? e;
             }
         }
 

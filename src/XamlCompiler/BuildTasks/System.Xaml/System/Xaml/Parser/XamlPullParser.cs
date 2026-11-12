@@ -9,7 +9,6 @@ using System.Xml;
 using System.Collections.Generic;
 using System.Diagnostics;
 using MS.Internal.Xaml.Context;
-using System.Xaml.Context;
 using System.Xaml.Schema;
 using System.Xaml.MS.Impl;
 using System.Collections;

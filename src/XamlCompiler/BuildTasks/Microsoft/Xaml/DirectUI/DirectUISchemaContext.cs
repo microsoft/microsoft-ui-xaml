@@ -192,7 +192,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 {
                     return true;
                 }
-                else if (staticLibraryAssemblies != null && staticLibraryAssemblies.Contains(asm.Location))
+                else if (staticLibraryAssemblies != null && staticLibraryAssemblies.Contains(asm.LocationCore))
                 {
                     return true;
                 }
@@ -362,7 +362,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
 
             foreach (DirectUIAssembly asm in this.directUISystem.PlatformAssemblies)
             {
-                Type[] types = asm.GetTypes();
+                Type[] types = asm.GetTypesLmr();
 
                 foreach (Type t in types)
                 {
@@ -569,7 +569,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         private XamlType GetXamlTypeFromAsmAndPath(Assembly asm, string path, string name)
         {
             string fullTypeName = path + "." + name;
-            Type type = asm.GetType(fullTypeName);
+            Type type = asm.GetTypeLmr(fullTypeName);
             if (type != null)
             {
                 if (type.IsPublic || this.IsLocalAssembly(asm as DirectUIAssembly))

@@ -28,7 +28,6 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if !PORTABLE
 
 using Antlr4.Runtime.Sharpen;
 using Encoding = System.Text.Encoding;
@@ -36,9 +35,6 @@ using File = System.IO.File;
 
 namespace Antlr4.Runtime
 {
-#if COMPACT
-    using StreamReader = System.IO.StreamReader;
-#endif
 
     /// <summary>
     /// This is an
@@ -72,17 +68,10 @@ namespace Antlr4.Runtime
             }
 
             string text;
-#if !COMPACT
             if (encoding != null)
                 text = File.ReadAllText(fileName, encoding);
             else
                 text = File.ReadAllText(fileName);
-#else
-            if (encoding != null)
-                text = ReadAllText(fileName, encoding);
-            else
-                text = ReadAllText(fileName);
-#endif
 
             data = text.ToCharArray();
             n = data.Length;
@@ -96,24 +85,6 @@ namespace Antlr4.Runtime
             }
         }
 
-#if COMPACT
-        private static string ReadAllText(string path)
-        {
-            using (var reader = new StreamReader(path))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        private static string ReadAllText(string path, Encoding encoding)
-        {
-            using (var reader = new StreamReader(path, encoding ?? Encoding.Default))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-#endif
     }
 }
 
-#endif

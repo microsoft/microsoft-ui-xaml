@@ -62,6 +62,84 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.RootLog
         public List<RootInterface> Interfaces { get; private set; }
     }
 
+    // Writes the roots log as XAML, the same way that serializing a Roots object with the XAML object reader and writer would (the
+    // log is a file format of its own, that tools read): the default namespace of the classes above, one property element per
+    // non-empty list, and the members of a type as its content. It is written by hand because the object reader needs reflection.
+    static class RootsXmlWriter
+    {
+        public const string Namespace = "clr-namespace:Microsoft.UI.Xaml.Markup.Compiler.RootLog;assembly=Microsoft.UI.Xaml.Markup.Compiler";
+
+        public static void Write(Roots roots, System.Xml.XmlWriter writer)
+        {
+            writer.WriteStartDocument();
+            writer.WriteStartElement("Roots", Namespace);
+            writer.WriteAttributeString("xmlns", Namespace);
+
+            if (roots.Interfaces.Count > 0)
+            {
+                writer.WriteStartElement("Roots.Interfaces", Namespace);
+                foreach (RootInterface rootInterface in roots.Interfaces)
+                {
+                    writer.WriteStartElement("RootInterface", Namespace);
+                    writer.WriteAttributeString("FullName", EscapeValue(rootInterface.FullName));
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
+
+            if (roots.PropertyPathNames.Count > 0)
+            {
+                writer.WriteStartElement("Roots.PropertyPathNames", Namespace);
+                foreach (RootPropertyPathName propertyPathName in roots.PropertyPathNames)
+                {
+                    writer.WriteStartElement("RootPropertyPathName", Namespace);
+                    writer.WriteAttributeString("Name", EscapeValue(propertyPathName.Name));
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
+
+            if (roots.RootTypes.Count > 0)
+            {
+                writer.WriteStartElement("Roots.RootTypes", Namespace);
+                foreach (RootType rootType in roots.RootTypes)
+                {
+                    writer.WriteStartElement("RootType", Namespace);
+                    writer.WriteAttributeString("FullName", EscapeValue(rootType.FullName));
+                    foreach (RootMember member in rootType.Members)
+                    {
+                        writer.WriteStartElement(GetElementName(member), Namespace);
+                        writer.WriteAttributeString("Name", EscapeValue(member.Name));
+                        writer.WriteEndElement();
+                    }
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
+
+            writer.WriteEndElement();
+            writer.WriteEndDocument();
+        }
+
+        // A value that starts with '{' would be read back as a markup extension, so it is escaped as the XAML writer does
+        private static string EscapeValue(string value)
+        {
+            return value != null && value.StartsWith("{", StringComparison.Ordinal) ? "{}" + value : value;
+        }
+
+        private static string GetElementName(RootMember member)
+        {
+            if (member is RootProperty)
+            {
+                return "RootProperty";
+            }
+            if (member is RootEvent)
+            {
+                return "RootEvent";
+            }
+            return "RootMethod";
+        }
+    }
     // ------------------- Builders -------------------
 
     class RootLogBuilder

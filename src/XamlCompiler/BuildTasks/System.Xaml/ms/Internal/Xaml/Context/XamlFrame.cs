@@ -19,20 +19,6 @@ namespace MS.Internal.Xaml.Context
             _depth = -1;
         }
 
-        // Copy constructor
-        protected XamlFrame(XamlFrame source)
-        {
-            _depth = source._depth;
-        }
-
-        public virtual XamlFrame Clone()
-        {
-            // Clone should only be overridden for the classes that really need it
-            // ObjectWriterFrame overrides this so we can reuse the context for 
-            // Templates.  
-            throw new NotImplementedException();
-        }
-
         // Reset the contents of the Frame so it can be reused in a stack without reallocating.
         // Depth and previous do not change when we reuse the Frame.
         public abstract void Reset();

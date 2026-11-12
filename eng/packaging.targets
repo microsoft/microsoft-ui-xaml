@@ -16,13 +16,9 @@
                   - native
             - lib
               -uap10.0
-            - tools
-              - net8.0
-                - x86
-                - x64
-              - net472
-                - x86
-                - x64
+            - tools (XAML compiler tasks: Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll)
+              - win-x64/win-arm64 (XAML compiler: XamlCompiler.exe)
+              - x86/x64/... (GenXbf)
             - build
               - native 
 

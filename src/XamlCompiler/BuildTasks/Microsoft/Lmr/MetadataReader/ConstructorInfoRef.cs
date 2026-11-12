@@ -41,7 +41,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         protected override ConstructorInfo GetResolvedWorker()
         {
-            MethodBase method = m_scope.ResolveMethod(MetadataTokens.GetToken(m_handle));
+            MethodBase method = m_scope.ResolveMethodLmr(MetadataTokens.GetToken(m_handle));
             return (ConstructorInfo)method;
         }
 

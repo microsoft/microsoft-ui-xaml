@@ -21,7 +21,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// <summary>
     /// Represent a System.Reflection.Assembly 
     /// </summary>
-    internal class MetadataOnlyAssembly : Assembly, IAssembly2, IDisposable
+    internal class MetadataOnlyAssembly : LmrAssemblyBase, IAssembly2, IDisposable
     {
         /// <summary>
         /// m_modules[0] is always the manifest module. It's the only module for single-module 
@@ -94,7 +94,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             // Load netmodules that are not passed in (if there are any).
             foreach (string netModuleName in netModuleNames)
             {
-                if (currentModules.Find(i => i.Name.Equals(netModuleName, StringComparison.OrdinalIgnoreCase)) != null)
+                if (currentModules.Find(i => i.GetNameLmr().Equals(netModuleName, StringComparison.OrdinalIgnoreCase)) != null)
                 {
                     // Already loaded - skip.
                     continue;
@@ -346,7 +346,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 var file = reader.GetAssemblyFile(fileHandle);
                 string fileName = reader.GetString(file.Name);
 
-                string path = Path.GetDirectoryName(this.Location);
+                string path = Path.GetDirectoryName(this.LocationCore);
                 string fullFileName = Path.Combine(path, fileName);
                 return new FileStream(fullFileName, FileMode.Open);
             }
@@ -401,7 +401,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        override public string Location
+        internal override string LocationCore
         {
             get { return m_manifestFile; }
         }
@@ -411,10 +411,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             get { return true; }
         }
 
-        override public Type[] GetExportedTypes()
+        internal override Type[] GetExportedTypesCore()
         {
             // Return all visible types.
-            Type[] allTypes = this.GetTypes();
+            Type[] allTypes = this.GetTypesCore();
 
             List<Type> list = new List<Type>();
             foreach (var t in allTypes)
@@ -426,20 +426,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         }
 
-        override public Type GetType(string name)
+        internal override Type GetTypeCore(string name)
         {
-            return this.GetType(name, false, false);
+            return this.GetTypeCore(name, false, false);
         }
 
-        override public Type GetType(string name, bool throwOnError)
+        internal override Type GetTypeCore(string name, bool throwOnError)
         {
-            return this.GetType(name, throwOnError, false);
+            return this.GetTypeCore(name, throwOnError, false);
         }
 
 
         private Dictionary<string, Type> _typeCache = new Dictionary<string, Type>();
 
-        public override Type GetType(string name, bool throwOnError, bool ignoreCase)
+        internal override Type GetTypeCore(string name, bool throwOnError, bool ignoreCase)
         {
             Type type = null;
 
@@ -455,7 +455,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 // no match found since we have other modules to inspect.
                 for (int i = 0; i < m_modules.Length; i++)
                 {
-                    type = m_modules[i].GetType(name, false, ignoreCase);
+                    type = m_modules[i].GetTypeLmr(name, false, ignoreCase);
                     if (type != null)
                     {
                         break;
@@ -490,12 +490,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         /// <summary>
         /// Gets all types on the assembly. 
         /// </summary>
-        override public Type[] GetTypes()
+        internal override Type[] GetTypesCore()
         {
             List<Type> types = new List<Type>();
             foreach (Module module in m_modules)
             {
-                types.AddRange(module.GetTypes());
+                types.AddRange(module.GetTypesLmr());
             }
 
             return types.ToArray();
@@ -544,7 +544,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override string CodeBase 
+        internal override string CodeBaseCore
         {
             get 
             {
@@ -558,7 +558,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         /// </summary>
         internal static string GetCodeBaseFromManifestModule(MetadataOnlyModule manifestModule) 
         {
-            string modulePath = manifestModule.FullyQualifiedName;
+            string modulePath = manifestModule.FullyQualifiedNameCore;
             
             if (!Utility.IsValidPath(modulePath)) 
             {
@@ -604,7 +604,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     case HandleKind.MethodDefinition:
                         {
                             // Token type should be a MethodDef to a MethodInfo (not a ctor).
-                            MethodBase method = this.ManifestModule.ResolveMethod(entryPointToken);
+                            MethodBase method = this.ManifestModule.ResolveMethodLmr(entryPointToken);
                             Debug.Assert(method != null);
                             return (MethodInfo)method;
                         }
@@ -635,13 +635,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         
 
-        public override FileStream[] GetFiles(bool getResourceModules)
+        internal override FileStream[] GetFilesCore(bool getResourceModules)
         {
             List<string> filenames = new List<string>();
             //Return all the module files in the assembly.
             foreach (Module m in m_modules)
             {
-                filenames.Add(m.FullyQualifiedName);
+                filenames.Add(m.GetFullyQualifiedNameLmr());
             }
             if (getResourceModules)
             {
@@ -658,13 +658,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return ConvertFileNamesToStreams(filenames.ToArray());
         }
 
-        public override FileStream GetFile(string name)
+        internal override FileStream GetFileCore(string name)
         {
             Module m = GetModule(name);
             if (m == null)
                 return null;
 
-            return new FileStream(m.FullyQualifiedName,
+            return new FileStream(m.GetFullyQualifiedNameLmr(),
                                   FileMode.Open,
                                   FileAccess.Read, FileShare.Read);
         }
@@ -687,7 +687,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return _customAttributeDataCache;
         }
 
-        public override AssemblyName[] GetReferencedAssemblies()
+        internal override AssemblyName[] GetReferencedAssembliesCore()
         {
             // Get the list of assemblies that this assembly references.
             // The references are just stored in the metadata. The TypeUniverse (fusion) is responsible 

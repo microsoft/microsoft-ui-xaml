@@ -11,6 +11,8 @@ namespace System.Reflection.Adds
     using System.Reflection.Adds;
     using Debug = System.Diagnostics.Debug;
     using System.IO;
+    using System.Diagnostics.CodeAnalysis;
+    using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
     using System.Reflection;  
 
@@ -22,7 +24,7 @@ namespace System.Reflection.Adds
     /// which could throw exceptions when the resolution fails. 
     /// </summary>
     [DebuggerDisplay("AssemblyProxy")]
-    internal abstract class AssemblyProxy : Assembly, IAssembly2, IDisposable
+    internal abstract class AssemblyProxy : LmrAssemblyBase, IAssembly2, IDisposable
     {
         private readonly ITypeUniverse m_universe;
 
@@ -123,14 +125,14 @@ namespace System.Reflection.Adds
             get { return GetResolvedAssembly().FullName; }
         }
 
-        public override string Location
+        internal override string LocationCore
         {
-            get { return GetResolvedAssembly().Location; }
+            get { return GetResolvedAssembly().GetLocationLmr(); }
         }
 
-        public override Type[] GetExportedTypes()
+        internal override Type[] GetExportedTypesCore()
         {
-            return GetResolvedAssembly().GetExportedTypes();
+            return GetResolvedAssembly().GetExportedTypesLmr();
         }
 
         public override bool ReflectionOnly
@@ -138,16 +140,19 @@ namespace System.Reflection.Adds
             get { return true; }
         }
 
-        public override Type[] GetTypes()
+        internal override Type[] GetTypesCore()
         {
-            return GetResolvedAssembly().GetTypes();
+            return GetResolvedAssembly().GetTypesLmr();
         }
 
-        public override string CodeBase 
+        internal override string CodeBaseCore
         {
-            get { return GetResolvedAssembly().CodeBase; }
+            get { return GetResolvedAssembly().GetCodeBaseLmr(); }
         }
 
+        // Not part of LmrAssemblyBase: there is no way to implement Assembly.EscapedCodeBase without the attributes (the LMR
+        // assemblies don't override it). Calling it on the resolved assembly is fine, since this has the same attributes.
+        [RequiresAssemblyFiles(LmrAssemblyBase.RequiresAssemblyFilesMessage)]
         public override string EscapedCodeBase {
             get { return GetResolvedAssembly().EscapedCodeBase; }
         }
@@ -172,9 +177,9 @@ namespace System.Reflection.Adds
             return GetResolvedAssembly().GetCustomAttributes(attributeType, inherit);
         }
 
-        public override Type GetType(String name, bool throwOnError, bool ignoreCase)
+        internal override Type GetTypeCore(String name, bool throwOnError, bool ignoreCase)
         {
-            return GetResolvedAssembly().GetType(name, throwOnError, ignoreCase);
+            return GetResolvedAssembly().GetTypeLmr(name, throwOnError, ignoreCase);
         }
 
         public override Module GetModule(String name)
@@ -200,9 +205,9 @@ namespace System.Reflection.Adds
             }
         }
 
-        public override AssemblyName[] GetReferencedAssemblies()
+        internal override AssemblyName[] GetReferencedAssembliesCore()
         {
-            return GetResolvedAssembly().GetReferencedAssemblies();
+            return GetResolvedAssembly().GetReferencedAssembliesLmr();
         }
 
         public override Assembly GetSatelliteAssembly(System.Globalization.CultureInfo culture)
@@ -252,19 +257,19 @@ namespace System.Reflection.Adds
             return GetResolvedAssembly().GetManifestResourceInfo(resourceName);
         }
 
-        public override FileStream[] GetFiles(bool getResourceModules)
+        internal override FileStream[] GetFilesCore(bool getResourceModules)
         {
-            return GetResolvedAssembly().GetFiles(getResourceModules);
+            return GetResolvedAssembly().GetFilesLmr(getResourceModules);
         }
 
-        public override FileStream[] GetFiles()
+        internal override FileStream[] GetFilesCore()
         {
-            return GetResolvedAssembly().GetFiles();
+            return GetResolvedAssembly().GetFilesLmr();
         }
 
-        public override FileStream GetFile(String name)
+        internal override FileStream GetFileCore(String name)
         {
-            return GetResolvedAssembly().GetFile(name);
+            return GetResolvedAssembly().GetFileLmr(name);
         }
 
 
