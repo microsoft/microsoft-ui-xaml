@@ -53,8 +53,13 @@ class AssessmentRecoveryTests(unittest.TestCase):
                     ), evidence)
                     plan = t.publish(client, result, evidence, self.mapping, write=False)
                     if not human_team:
+                        # needs-triage already exists on the fixture, so it is retained, not re-added.
                         self.assertEqual(plan["add_labels"], sorted([area, team]))
+                        self.assertIn("needs-triage", evidence["existing_labels"])
                         self.assertIn(rule, plan["comment"])
+                        if confidence == "MEDIUM":
+                            decision = t.routing_decision(result, evidence, self.mapping)
+                            self.assertTrue(decision["needs_triage"])
                     else:
                         self.assertNotIn(team, plan["add_labels"])
                         self.assertNotIn(area, plan["add_labels"])
@@ -451,6 +456,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
             title="Custom title bar stays deactivated on a foreground window",
             body="The custom title bar looks inactive while foreground content works. "
                  "The report does not yet isolate the activation-event path.",
+            labels=[{"name": "bug"}],
         )
         evidence = t.prepare(self.client, event(), self.mapping)
         result = t.validate(agent_output(
@@ -460,7 +466,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
                            "but the activation-event path remains unresolved.",
         ), evidence)
         plan = t.publish(self.client, result, evidence, self.mapping, write=False)
-        self.assertEqual(plan["add_labels"], ["area-TitleBar", "team-Controls"])
+        self.assertEqual(plan["add_labels"], ["area-TitleBar", "needs-triage", "team-Controls"])
         self.assertNotIn("No automatic team assignment", plan["comment"])
         self.assertIn("Maintainer review remains required", plan["comment"])
         self.assertEqual(self.client.writes, [])
