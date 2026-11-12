@@ -100,13 +100,13 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | `MinWidth` / `MaxWidth` | `Double`, 20 / ∞ | Clamp every mode. |
 | `ActualWidth` | `Double` (get), 120 | Realized width. |
 | `CanUserResize` | `Boolean`, `true` | User resize (pointer, keyboard, UIA Transform) for this column, ANDed with `TableView.CanUserResizeColumns`. |
-| `FrozenEdge` | `TableViewFrozenEdge`, `None` | `Leading` pins only within the contiguous prefix from column 0. Out-of-range values act as `None`. |
+| Sort members | — | See §2.3. |
 | `Visibility` | `Visibility`, `Visible` | Collapsed columns are absent from layout and from the UIA grid. |
+| `FrozenEdge` | `TableViewFrozenEdge`, `None` | `Leading` pins only within the contiguous prefix from column 0. Out-of-range values act as `None`. |
 | `IsReadOnly` | `Boolean`, `false` | Per-column opt-out; still a valid current cell. |
 | `CellEditingTemplate` | `DataTemplate` | Editor for any column type. |
 | `CellToolTipBinding` | `Binding` (CLR) | Per-cell tooltip content, evaluated against the row item. |
 | `CellContextFlyout`, `HeaderContextFlyout` | `FlyoutBase` | See §2.7. |
-| Sort members | — | See §2.3. |
 | `overridable GenerateElementCore(Object)` | `FrameworkElement` | Creates the cell element. `dataItem` is for initial setup only; content must bind to the inherited `DataContext` because rows recycle. |
 | `overridable CommitCellEditCore(FrameworkElement)` | `Boolean` | Writes the editor's value. Default: built-in recognition of the editor's binding. Return `false` to keep the edit open. An override that throws counts as a failed commit (edit stays open, error logged). |
 | `protected NotifyCellContentChanged()` | `void` | Regenerates realized cells for this column and resets `Auto` width. Queued if called during measure/arrange. |
@@ -124,10 +124,10 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 |---|---|---|
 | `TableView.CanUserSortColumns` | `Boolean`, `true` | Gates **user input only** for the whole table. Turning it off does not clear the active sort. |
 | `TableViewColumn.CanUserSort` | `Boolean`, `true` | Gates **user input only** (pointer, keyboard, UIA Invoke on the header). Turning it off does not clear an active sort on the column. |
-| `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
-| `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()`. |
-| `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
 | `TableViewColumn.SortDirection` | `SortDirection`, `None` | **Display only.** Set by the control on a column sort; settable by the app, including in XAML or before the column is added (honoured when it joins `Columns`; the last added wins). |
+| `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()`. |
+| `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
+| `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
 | `SortByColumn(column, direction)` | `Boolean` | Declares the control's sort axis. `None` clears. |
 | `ToggleSortDirection(column)` | `Boolean` | Advances the column's `SortCycle`. |
 | `TableView.ClearSort()` | `Boolean` | Clears column sorts and item sorts on the effective source; keeps `SortGroups`. `true` if anything was cleared. |

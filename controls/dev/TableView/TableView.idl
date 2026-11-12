@@ -88,10 +88,12 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Object HeaderToolTip { get; set; };
+    Microsoft.UI.Xaml.Style HeaderStyle { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Microsoft.UI.Xaml.Style HeaderStyle { get; set; };
+    Object HeaderToolTip { get; set; };
+
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("c_widthDefault")]
@@ -105,34 +107,35 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_DEFAULT_VALUE("std::numeric_limits<double>::infinity()")]
     Double MaxWidth { get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("true")]
-    Boolean CanUserResize { get; set; };
-
     [MUX_DEFAULT_VALUE("120.0")]
     Double ActualWidth { get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
-    MU_XC_NAMESPACE.TableViewFrozenEdge FrozenEdge { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanUserResize { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanUserSort { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
+    SortDirection SortDirection { get; set; };
+
+    String SortMemberPath { get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::TableViewSortCycle::AscendingDescending")]
+    TableViewSortCycle SortCycle { get; set; };
+
+    ITableViewSortComparer CustomSortComparer { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
     Microsoft.UI.Xaml.Visibility Visibility { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("true")]
-    Boolean CanUserSort { get; set; };
-
-    [MUX_DEFAULT_VALUE("winrt::TableViewSortCycle::AscendingDescending")]
-    TableViewSortCycle SortCycle { get; set; };
-
-    String SortMemberPath { get; set; };
-    ITableViewSortComparer CustomSortComparer { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
-    SortDirection SortDirection { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
+    MU_XC_NAMESPACE.TableViewFrozenEdge FrozenEdge { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("false")]
@@ -143,7 +146,6 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
 
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
-    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
     overridable String GetSortMemberPathCore();
     overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
@@ -153,23 +155,23 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderStyleProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanUserSortProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortDirectionProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
 }
 
 [MUX_PREVIEW]

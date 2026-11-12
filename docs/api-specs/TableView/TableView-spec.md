@@ -718,19 +718,26 @@ Base class for TableView columns.
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
 | `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
-| `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
+| `HeaderToolTip` | `Object` | `null` | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 | `HeaderContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Context flyout for this column's header. Opens at the header cell; it does not receive a row data item. |
 | `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanUserResize="False"`). |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
 | `ActualWidth` | `Double` | `120` | Read-only realized width. |
-| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
-| `Visibility` | `Visibility` | `Visible` | Column visibility. |
 | `CanUserResize` | `Boolean` | `true` | Whether the user can resize this column (pointer, keyboard, UI Automation); also requires `TableView.CanUserResizeColumns`. |
 | `CanUserSort` | `Boolean` | `true` | Whether the user can sort by this column's header. Gates user input only: `SortByColumn` and `ToggleSortDirection` ignore it, and turning it off does not clear an active sort. The table-level `CanUserSortColumns` and `CanUserResizeColumns` follow the same rule. |
 | `SortDirection` | `SortDirection` | `None` | The header's sort arrow. **Display only**: the control sets it when it sorts; an app that sorts itself (for example after cancelling `Sorting`) can set it. Setting it never reshapes data, and a non-`None` value clears the arrow on other columns. If a column's `CustomSortComparer` throws during a header sort or `SortByColumn`, the sort is aborted before commit: the previous sort and arrow stay, and `Sorted` is not raised. A value set in XAML or before the column is added is applied when it joins `Columns`. |
+| `SortMemberPath` | `String` | Empty string | Property path the column sorts by. When empty, `GetSortMemberPathCore()` supplies it (`TableViewTextColumn` derives it from `Binding.Path`). |
+| `SortCycle` | `TableViewSortCycle` | `AscendingDescending` | Order of directions a header click or `ToggleSortDirection` steps through; the `*None` values add a step back to the unsorted order. |
+| `CustomSortComparer` | `ITableViewSortComparer` | `null` | Comparer for this column's sort; wins over `SortMemberPath`. Must be pure. |
+| `Visibility` | `Visibility` | `Visible` | Column visibility. |
+| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
+| `IsReadOnly` | `Boolean` | `false` | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
+| `CellEditingTemplate` | `DataTemplate` | `null` | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
+| `CellToolTipBinding` | `Binding` | `null` | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
 
-Sorting members (`SortCycle`, `SortMemberPath`, `CustomSortComparer`, `GetSortMemberPathCore`) are covered in the [API review](../../design-notes/TabularControls/TableView-API-Review.md#23-sorting).
+More sorting detail, including `GetSortMemberPathCore`, is in the [API review](../../design-notes/TabularControls/TableView-API-Review.md#23-sorting).
 
 Methods:
 
@@ -739,10 +746,6 @@ Methods:
 | `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. |
 | `CommitCellEditCore(FrameworkElement editingElement)` | Overridable. Writes the editor's value to the item; returns `false` to keep the edit open. The default recognizes the built-in editor bindings. Override it for editors it does not recognize (for example `DatePicker`, or `{x:Bind}`). A throwing override counts as a failed commit. |
 | `NotifyCellContentChanged()` | Protected. Regenerates this column's realized cells and resets its `Auto` width; call it when a derived column's own property changes what it generates. Queued if called during layout. |
-| `IsReadOnly` (`Boolean`, default `false`) | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
-| `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
-| `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
-| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
 ### Resizing columns
 
@@ -1306,9 +1309,11 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector { get; set; };
 
+        Microsoft.UI.Xaml.Style HeaderStyle { get; set; };
+
         Object HeaderToolTip { get; set; };
 
-        Microsoft.UI.Xaml.Style HeaderStyle { get; set; };
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
         [MUX_DEFAULT_VALUE("c_widthDefault")]
         Microsoft.UI.Xaml.GridLength Width { get; set; };
@@ -1319,29 +1324,30 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         [MUX_DEFAULT_VALUE("std::numeric_limits<double>::infinity()")]
         Double MaxWidth { get; set; };
 
-        [MUX_DEFAULT_VALUE("true")]
-        Boolean CanUserResize { get; set; };
-
         [MUX_DEFAULT_VALUE("120.0")]
         Double ActualWidth { get; };
 
-        [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
-        Microsoft.UI.Xaml.Visibility Visibility { get; set; };
+        [MUX_DEFAULT_VALUE("true")]
+        Boolean CanUserResize { get; set; };
 
         [MUX_DEFAULT_VALUE("true")]
         Boolean CanUserSort { get; set; };
 
+        [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
+        SortDirection SortDirection { get; set; };
+
+        String SortMemberPath { get; set; };
+
         [MUX_DEFAULT_VALUE("winrt::TableViewSortCycle::AscendingDescending")]
         TableViewSortCycle SortCycle { get; set; };
 
-        String SortMemberPath { get; set; };
         ITableViewSortComparer CustomSortComparer { get; set; };
 
-        [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
-        SortDirection SortDirection { get; set; };
+        [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
+        Microsoft.UI.Xaml.Visibility Visibility { get; set; };
+
+        [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge { get; set; };
 
         [MUX_DEFAULT_VALUE("false")]
         Boolean IsReadOnly { get; set; };
@@ -1350,7 +1356,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
         Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
-        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
         overridable String GetSortMemberPathCore();
         overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
@@ -1360,23 +1365,23 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderStyleProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CanUserSortProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SortDirectionProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     }
 
     [MUX_PREVIEW]
