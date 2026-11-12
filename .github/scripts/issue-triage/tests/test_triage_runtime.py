@@ -314,9 +314,9 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertEqual(inputs["area_confidence"]["description"], description)
         self.assertEqual(confidence["enum"], inputs["area_confidence"]["options"])
         for policy in (
-            "MEDIUM/HIGH can add an area",
-            "new-area and team-only team assignments require HIGH",
-            "LOW/NONE do not add an area",
+            "MEDIUM/HIGH can add the winning area and its configured team",
+            "team-only routes without an area require HIGH",
+            "LOW/NONE add no area or team",
         ):
             self.assertIn(policy, description)
         reason = tool["inputSchema"]["properties"]["routing_reason"]["description"]
@@ -327,7 +327,7 @@ class WorkflowRuntimeTests(unittest.TestCase):
 
         expected = {
             "HIGH": ["area-Expander", "team-Controls"],
-            "MEDIUM": ["area-Expander", "needs-triage"],
+            "MEDIUM": ["area-Expander", "needs-triage", "team-Controls"],
             "LOW": ["needs-triage"],
             "NONE": ["needs-triage"],
         }
@@ -354,8 +354,9 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("A bare label request or unsupported guess is not a technical diagnosis.", routing)
         self.assertIn("If the diagnosis conflicts with the supplied observations, use MEDIUM/LOW", routing)
         self.assertIn("MEDIUM and HIGH", routing)
-        self.assertIn("suggestions can add the winning area label; LOW suggestions remain advisory.", routing)
-        self.assertIn("New team assignment from a suggested area still requires HIGH confidence.", routing)
+        self.assertIn("suggestions can add the winning area label and the configured team for its\nselected routing rule", routing)
+        self.assertIn("LOW suggestions remain advisory and add no area or team.", routing)
+        self.assertNotIn("still requires HIGH confidence", routing)
         self.assertIn("Do not inflate confidence merely to obtain a label.", routing)
         self.assertIn("Existing area and team labels always take", routing)
         self.assertIn("Never emit a team name.", routing)

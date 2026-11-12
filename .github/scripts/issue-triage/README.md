@@ -42,14 +42,14 @@ still rebuilds live evidence independently.
 | Situation | Behavior |
 | --- | --- |
 | Winning primary area at MEDIUM or HIGH confidence, no existing area label | Add one existing `area-*` label, subject to existing human-team compatibility. LOW/NONE confidence does not add an area. |
-| Newly selected area with a configured owner, no existing team label | Derive and add its `team-*` label only at HIGH confidence using the selected configured routing rule. MEDIUM adds the area but leaves team routing for review. |
-| Existing area with a configured owner, no existing team label | An unconditional default can supply the team independently of model confidence. Areas with conditional rules require a matching HIGH-confidence area assessment. |
+| Newly selected area with a configured owner, no existing team label | Derive and add its `team-*` label at MEDIUM or HIGH confidence using the selected configured routing rule. LOW/NONE adds neither area nor team. |
+| Existing area with a configured owner, no existing team label | An unconditional default can supply the team independently of model confidence. Areas with conditional rules require a matching MEDIUM- or HIGH-confidence area assessment. |
 | Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
 | Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
-| HIGH-confidence area assessment clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. MEDIUM may add the area, not the conditional team. |
+| MEDIUM- or HIGH-confidence area assessment meets an area's conditional rule with supporting evidence | Use that rule's configured owner rather than the default; the model cannot invent a team. |
 | No area fits, but evidence clearly meets a configured team-only rule | Add its configured team at HIGH routing confidence without an area; retain `needs-triage`. |
 | LOW-confidence area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
-| Newly selected MEDIUM-confidence area | Apply the area, keep or add `needs-triage`, and do not infer a new team from that suggestion. |
+| Newly selected MEDIUM-confidence area | Apply the area and its configured team, and keep or add `needs-triage` for maintainer confirmation. |
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
@@ -184,9 +184,10 @@ area. Conditional choices require a short evidence-based explanation. The
 default rule requires a supporting explanation for HIGH area confidence.
 An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
 without discarding the summary, reproduction assessment, or duplicate handling.
-The winning MEDIUM area is still eligible for labeling; the downgrade defers
-new team assignment, not the area. Existing human areas and team compatibility
-continue to take precedence. LOW suggestions remain comment-only.
+The winning MEDIUM area and its configured team remain eligible for labeling;
+the downgrade keeps `needs-triage` for confirmation. Existing human areas and
+team compatibility continue to take precedence. LOW suggestions remain
+comment-only.
 This checks for a missing rationale, not its semantic correctness.
 First-level routing does not require independently verifying the root cause.
 A clear reporter diagnosis identifying the failing component, operation, or
@@ -195,7 +196,8 @@ The rationale attributes the diagnosis to the reporter rather than presenting
 it as a verified finding. Unverified root cause alone is not a reason to lower
 routing confidence; contradictory observations or unresolved competing areas
 outside the initial-investigation defaults below still require a lower-confidence
-assessment: MEDIUM can label the winning area, while LOW remains advisory.
+assessment: MEDIUM can label the winning area and its configured team, while
+LOW remains advisory.
 A bare label request or unsupported guess
 is not diagnostic evidence, and human labels and configured routing rules remain
 authoritative. This is model guidance, not a publisher-side confidence promotion.
@@ -256,9 +258,9 @@ publisher fails visibly if a configured team has been removed rather than
 creating or guessing a replacement.
 If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
-Existing-label policy does not distinguish who applied the label: an
-unconditional area added at MEDIUM on an earlier run can supply its default team
-on a later run. This does not promote the model's area confidence.
+Existing-label policy does not distinguish who applied the label. A team removed
+by a maintainer after an earlier run can be re-derived from an unconditional
+existing area; remove or change the area as well to redirect ownership.
 
 ### Learning from human triage
 

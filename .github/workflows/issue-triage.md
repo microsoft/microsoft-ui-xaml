@@ -155,7 +155,7 @@ safe-outputs:
           required: true
           type: string
         area_confidence:
-          description: Confidence in the primary area or a configured team-only rule; MEDIUM/HIGH can add an area, but new-area and team-only team assignments require HIGH. LOW/NONE do not add an area.
+          description: Confidence in the primary area or a configured team-only rule; MEDIUM/HIGH can add the winning area and its configured team; team-only routes without an area require HIGH. LOW/NONE add no area or team.
           required: true
           type: choice
           options: [HIGH, MEDIUM, LOW, NONE]
@@ -301,8 +301,9 @@ Use HIGH when the primary area or an explicit initial-investigation route above
 is clear. For other ambiguity, select the single best-fitting area with MEDIUM
 when there is a reasonable winning initial route, LOW when it remains too
 uncertain, or `None` with NONE confidence when no area fits. MEDIUM and HIGH
-suggestions can add the winning area label; LOW suggestions remain advisory.
-New team assignment from a suggested area still requires HIGH confidence.
+suggestions can add the winning area label and the configured team for its
+selected routing rule; MEDIUM also keeps `needs-triage` for maintainer
+confirmation. LOW suggestions remain advisory and add no area or team.
 Existing human areas and team compatibility continue to take precedence.
 This is separate from the
 mapping's ownership `confidence`; low ownership confidence does not make a

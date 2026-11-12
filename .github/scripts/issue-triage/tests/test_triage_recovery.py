@@ -52,13 +52,12 @@ class AssessmentRecoveryTests(unittest.TestCase):
                         routing_rule=rule, routing_reason=reason,
                     ), evidence)
                     plan = t.publish(client, result, evidence, self.mapping, write=False)
-                    if confidence == "HIGH" and not human_team:
+                    if not human_team:
                         self.assertEqual(plan["add_labels"], sorted([area, team]))
                         self.assertIn(rule, plan["comment"])
                     else:
                         self.assertNotIn(team, plan["add_labels"])
-                        self.assertEqual(area in plan["add_labels"],
-                                         confidence == "MEDIUM" and not human_team)
+                        self.assertNotIn(area, plan["add_labels"])
                     self.assertEqual(client.writes, [])
 
     def test_learned_lifetime_override_does_not_change_default_or_existing_area(self):
@@ -447,7 +446,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
         self.assertIn("needs-triage", plan["comment"])
         self.assertEqual(self.client.writes, [])
 
-    def test_medium_titlebar_diagnosis_adds_area_but_defers_team(self):
+    def test_medium_titlebar_diagnosis_adds_area_and_team_for_review(self):
         self.client.issue.update(
             title="Custom title bar stays deactivated on a foreground window",
             body="The custom title bar looks inactive while foreground content works. "
@@ -461,8 +460,9 @@ class AssessmentRecoveryTests(unittest.TestCase):
                            "but the activation-event path remains unresolved.",
         ), evidence)
         plan = t.publish(self.client, result, evidence, self.mapping, write=False)
-        self.assertEqual(plan["add_labels"], ["area-TitleBar"])
-        self.assertIn("No automatic team assignment", plan["comment"])
+        self.assertEqual(plan["add_labels"], ["area-TitleBar", "team-Controls"])
+        self.assertNotIn("No automatic team assignment", plan["comment"])
+        self.assertIn("Maintainer review remains required", plan["comment"])
         self.assertEqual(self.client.writes, [])
 
     def test_low_titlebar_suggestion_with_no_winning_boundary_adds_no_area(self):

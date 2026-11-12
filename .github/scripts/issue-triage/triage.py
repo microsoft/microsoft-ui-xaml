@@ -576,7 +576,7 @@ def validate(output: dict, evidence: dict) -> dict:
         result["area_confidence"] = "MEDIUM"
         result["review_notes"].append(
             "The area suggestion lacks supporting report evidence. HIGH confidence was "
-            "reduced to MEDIUM; team routing needs maintainer confirmation."
+            "reduced to MEDIUM; area and team routing need maintainer confirmation."
         )
     raw_duplicates = required_string(item, "duplicate_candidates_json", 6000)
     duplicates = json.loads(raw_duplicates)
@@ -722,7 +722,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     entry = mapping.get(effective_area, {})
     if effective_area:
         candidate_team = None
-        if result["area"] == effective_area and result["area_confidence"] == "HIGH":
+        if result["area"] == effective_area and result["area_confidence"] in ("HIGH", "MEDIUM"):
             candidate_team = route_team(mapping, effective_area, result["routing_rule"])
         elif areas and not entry.get("overrides"):
             candidate_team = entry.get("team")
