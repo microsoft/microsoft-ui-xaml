@@ -35,6 +35,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateSelectionAfterMultipleSelectedItemsReorder)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that all selected items stay selected after they are dragged together into a different location")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateSelectAll)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that SelectAll functions properly")
         END_TEST_METHOD()

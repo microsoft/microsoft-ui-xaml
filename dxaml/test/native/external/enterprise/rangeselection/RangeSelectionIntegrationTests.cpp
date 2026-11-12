@@ -114,6 +114,94 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
+    void RangeSelectionIntegrationTests::ValidateSelectionAfterMultipleSelectedItemsReorder()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::ListView^ listView = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ items = nullptr;
+        xaml::FrameworkElement^ draggedContainer = nullptr;
+        Platform::String^ selectedNames[] = { L"Item 1", L"Item 2", L"Item 3" };
+
+        RunOnUIThread([&]()
+        {
+            listView = safe_cast<xaml_controls::ListView^>(xaml_markup::XamlReader::Load(
+                L"<ListView Height='500' Width='200' SelectionMode='Extended' CanDragItems='True' CanReorderItems='True' AllowDrop='True' "
+                L"xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' />"));
+
+            items = ref new Platform::Collections::Vector<Platform::Object^>();
+            for (int i = 0; i < 20; ++i)
+            {
+                items->Append(ref new Platform::String((L"Item " + std::to_wstring(i)).c_str()));
+            }
+
+            listView->ItemsSource = items;
+            TestServices::WindowHelper->WindowContent = listView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            listView->SelectRange(ref new Microsoft::UI::Xaml::Data::ItemIndexRange(1, 3));
+            VERIFY_ARE_EQUAL(3u, listView->SelectedItems->Size);
+
+            draggedContainer = safe_cast<xaml::FrameworkElement^>(listView->ContainerFromIndex(2));
+            VERIFY_IS_NOT_NULL(draggedContainer);
+        });
+
+        LOG_OUTPUT(L"Dragging the three selected items further down the list...");
+        TestServices::InputHelper->DragFromCenter(draggedContainer, 0, 200, 0.1);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto indexOf = [&](Platform::String^ name)
+            {
+                for (unsigned int i = 0; i < items->Size; ++i)
+                {
+                    if (Platform::String::CompareOrdinal(safe_cast<Platform::String^>(items->GetAt(i)), name) == 0)
+                    {
+                        return static_cast<int>(i);
+                    }
+                }
+                return -1;
+            };
+
+            const int firstIndex = indexOf(selectedNames[0]);
+            LOG_OUTPUT(L"The dragged items now start at index %d.", firstIndex);
+            VERIFY_IS_GREATER_THAN(firstIndex, 1);
+
+            // The dragged items keep their relative order and all of them stay selected.
+            VERIFY_ARE_EQUAL(3u, listView->SelectedItems->Size);
+            for (int i = 0; i < 3; ++i)
+            {
+                VERIFY_ARE_EQUAL(firstIndex + i, indexOf(selectedNames[i]));
+
+                bool isInSelectedItems = false;
+                for (unsigned int j = 0; j < listView->SelectedItems->Size; ++j)
+                {
+                    isInSelectedItems |= Platform::String::CompareOrdinal(safe_cast<Platform::String^>(listView->SelectedItems->GetAt(j)), selectedNames[i]) == 0;
+                }
+                VERIFY_IS_TRUE(isInSelectedItems);
+
+                auto container = safe_cast<xaml_controls::ListViewItem^>(listView->ContainerFromIndex(firstIndex + i));
+                VERIFY_IS_NOT_NULL(container);
+                VERIFY_IS_TRUE(container->IsSelected);
+            }
+
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
+            VERIFY_ARE_EQUAL(firstIndex, listView->SelectedRanges->GetAt(0)->FirstIndex);
+            VERIFY_ARE_EQUAL(3u, listView->SelectedRanges->GetAt(0)->Length);
+        });
+
+        // this applies only to Desktop runs
+        if (TestServices::Utilities->IsDesktop)
+        {
+            // Workaround for a known issue
+            TestServices::WindowHelper->RestoreForegroundWindow();
+        }
+    }
+
     void RangeSelectionIntegrationTests::ValidateSelectAll()
     {
         TestCleanupWrapper cleanup;

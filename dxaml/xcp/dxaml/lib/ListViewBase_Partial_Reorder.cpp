@@ -1440,6 +1440,11 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
         // We need this to account for indexes shifting during reorder.
         INT numItemsReorderedSoFar = 0;
 
+        // Re-selecting a moved item must not clear the other selected items when several can be selected,
+        // otherwise only the first re-selected item of a multi-item reorder stays selected.
+        BOOLEAN canSelectMultiple = FALSE;
+        IFC(get_CanSelectMultiple(&canSelectMultiple));
+
         // Increment the Reorder Counter (used for content animations).
         IFC(OnItemsReordered(pReorderItemIndexes->size()));
 
@@ -1504,7 +1509,7 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 if (isCurrentReorderedItemSelected)
                 {
                     // call the Selector::SelectOneItemInternal
-                    IFC(SelectOneItemInternal(insertIndex, spCurrentItem.Get(), TRUE /* clearOldSelection */));
+                    IFC(SelectOneItemInternal(insertIndex, spCurrentItem.Get(), !canSelectMultiple /* clearOldSelection */));
                 }
             }
 
