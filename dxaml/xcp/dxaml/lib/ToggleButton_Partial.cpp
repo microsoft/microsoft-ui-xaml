@@ -2,9 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "ContentPresenter.h"
+#include "TextBlock.h"
 #include "ToggleButton.g.h"
 #include "ToggleButtonAutomationPeer.g.h"
 #include "KeyboardNavigation.h"
+#include <algorithm>
 
 using namespace DirectUI;
 
@@ -29,6 +32,71 @@ ToggleButton::Initialize()
     // Handle the ENTER key by default.
     SetAcceptsReturn(true);
 
+    return S_OK;
+}
+
+_Check_return_ HRESULT ToggleButton::AlignTextLabelGlyph()
+{
+    ctl::ComPtr<xaml::IDependencyObject> glyphPart;
+    IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(L"TextLabelGlyphPanel").Get(), &glyphPart));
+    if (!glyphPart)
+    {
+        return S_OK;
+    }
+
+    auto glyph = do_pointer_cast<CUIElement>(static_cast<DependencyObject*>(glyphPart.Get())->GetHandle());
+    if (!glyph)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<xaml::IDependencyObject> contentPart;
+    IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(L"ContentPresenter").Get(), &contentPart));
+    auto presenter = contentPart
+        ? do_pointer_cast<CContentPresenter>(static_cast<DependencyObject*>(contentPart.Get())->GetHandle())
+        : nullptr;
+
+    float glyphOffset = 0;
+    auto glyphParent = do_pointer_cast<CUIElement>(glyph->GetParentInternal(false));
+    if (glyphParent && presenter && presenter->IsUsingDefaultTemplate() &&
+        presenter->GetParentInternal(false) == glyphParent)
+    {
+        if (auto label = presenter->GetTextBlockNoRef())
+        {
+            float lineTop = 0;
+            float lineHeight = 0;
+            IFC_RETURN(label->GetFirstLineBounds(&lineTop, &lineHeight));
+            if (lineHeight > 0)
+            {
+                float lineCenter = lineTop + lineHeight / 2;
+                auto element = static_cast<CUIElement*>(label);
+                for (; element && element != presenter; element = do_pointer_cast<CUIElement>(element->GetParentInternal(false)))
+                {
+                    lineCenter += element->GetActualOffset().Y;
+                }
+                if (element == presenter)
+                {
+                    lineCenter += presenter->GetActualOffset().Y;
+                    const auto glyphPanelSize = glyph->GetActualSize();
+                    const float parentHeight = glyphParent->GetActualSize().Y;
+                    // The visible glyph is square and centered inside its panel.
+                    const float glyphRadius = glyphPanelSize.X / 2;
+                    if (parentHeight >= glyphPanelSize.X)
+                    {
+                        lineCenter = std::clamp(lineCenter, glyphRadius, parentHeight - glyphRadius);
+                        glyphOffset = lineCenter - glyph->GetActualOffset().Y - glyphPanelSize.Y / 2;
+                    }
+                }
+            }
+        }
+    }
+
+    auto translation = glyph->GetTranslation();
+    if (translation.Y != glyphOffset)
+    {
+        translation.Y = glyphOffset;
+        glyph->SetTranslation(translation);
+    }
     return S_OK;
 }
 

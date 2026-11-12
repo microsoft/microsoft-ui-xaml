@@ -13,6 +13,7 @@
 #include <ControlHelper.h>
 #include <TestEvent.h>
 #include <TestCleanupWrapper.h>
+#include <cmath>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -311,6 +312,75 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(expectedCheckBoxWidth_WithLargeContent, checkBoxWithLargeContent->ActualWidth);
             VERIFY_ARE_EQUAL(expectedCheckBoxHeight_WithLargeContent, checkBoxWithLargeContent->ActualHeight);
         });
+    }
+
+    void CheckBoxIntegrationTests::AlignsSelectionGlyphWithFirstLabelLine()
+    {
+        TestCleanupWrapper cleanup;
+        for (const double fontSize : { 8.0, 14.0, 21.0, 28.0 })
+        {
+            for (const bool multiline : { false, true })
+            {
+                for (const bool radioButton : { false, true })
+                {
+                    xaml_controls::ContentControl^ control = nullptr;
+                    RunOnUIThread([&]()
+                    {
+                        if (radioButton)
+                        {
+                            control = ref new xaml_controls::RadioButton();
+                        }
+                        else
+                        {
+                            control = ref new xaml_controls::CheckBox();
+                        }
+                        control->Width = 320;
+                        control->FontSize = fontSize;
+                        control->IsTextScaleFactorEnabled = false;
+                        if (fontSize == 8.0)
+                        {
+                            control->Padding = { 0, 0, 0, 0 };
+                        }
+                        control->Content = ref new Platform::String(multiline ? L"Choose an option\nwith a second line" : L"Choose an option");
+                        TestServices::WindowHelper->WindowContent = control;
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+
+                    RunOnUIThread([&]()
+                    {
+                        auto root = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(control, 0));
+                        auto glyph = safe_cast<xaml::FrameworkElement^>(root->FindName(radioButton ? L"OuterEllipse" : L"NormalRectangle"));
+                        auto presenter = safe_cast<xaml_controls::ContentPresenter^>(root->FindName(L"ContentPresenter"));
+                        auto labelRoot = xaml_media::VisualTreeHelper::GetChild(presenter, 0);
+                        auto label = dynamic_cast<xaml_controls::TextBlock^>(labelRoot);
+                        if (!label)
+                        {
+                            label = safe_cast<xaml_controls::TextBlock^>(xaml_media::VisualTreeHelper::GetChild(labelRoot, 0));
+                        }
+
+                        const auto firstLine = label->ContentStart->GetCharacterRect(Microsoft::UI::Xaml::Documents::LogicalDirection::Forward);
+                        VERIFY_IS_TRUE(firstLine.Height > 0);
+                        if (multiline)
+                        {
+                            VERIFY_IS_TRUE(label->ActualHeight > firstLine.Height);
+                        }
+                        const auto textCenter = label->TransformToVisual(control)->TransformPoint(
+                            wf::Point(0.0f, firstLine.Y + firstLine.Height / 2)).Y;
+                        const auto glyphCenter = glyph->TransformToVisual(control)->TransformPoint(
+                            wf::Point(0.0f, static_cast<float>(glyph->ActualHeight / 2))).Y;
+                        if (fontSize == 8.0)
+                        {
+                            VERIFY_IS_TRUE(textCenter < glyph->ActualHeight / 2);
+                            VERIFY_IS_TRUE(std::abs(glyphCenter - glyph->ActualHeight / 2) < 0.1);
+                        }
+                        else
+                        {
+                            VERIFY_IS_TRUE(std::abs(textCenter - glyphCenter) < 0.1f);
+                        }
+                    });
+                }
+            }
+        }
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::CheckBox

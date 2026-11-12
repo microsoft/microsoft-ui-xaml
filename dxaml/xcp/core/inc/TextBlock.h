@@ -148,6 +148,7 @@ public:
 
     CFontContext* GetFontContext() const { return m_pFontContext; }
     _Check_return_ HRESULT GetBaselineOffset(_Out_ float* pBaselineOffset);
+    _Check_return_ HRESULT GetFirstLineBounds(_Out_ float* top, _Out_ float* height);
 
     // Called by InlineCollection when it is dirtied.
     _Check_return_ HRESULT OnContentChanged(_In_opt_ const CDependencyProperty* pdp);

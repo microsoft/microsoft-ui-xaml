@@ -99,6 +99,13 @@ IFACEMETHODIMP CheckBox::OnApplyTemplate()
     return S_OK;
 }
 
+IFACEMETHODIMP CheckBox::ArrangeOverride(wf::Size finalSize, _Out_ wf::Size* returnValue)
+{
+    IFC_RETURN(__super::ArrangeOverride(finalSize, returnValue));
+    IFC_RETURN(AlignTextLabelGlyph());
+    return S_OK;
+}
+
 // Create CheckBoxAutomationPeer to represent the CheckBox.
 IFACEMETHODIMP CheckBox::OnCreateAutomationPeer(_Outptr_ xaml_automation_peers::IAutomationPeer** ppAutomationPeer)
 {
