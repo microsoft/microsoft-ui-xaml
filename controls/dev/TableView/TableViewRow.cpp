@@ -2664,7 +2664,11 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     return true;
 }
 
-void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure, bool* applicationFault)
+void TableViewRow::EndCellEdit(
+    winrt::TableViewEditAction action,
+    std::optional<HRESULT>* displayFailure,
+    bool* applicationFault,
+    winrt::TableViewColumn const& focusColumn)
 {
     auto const cellWrapper = m_editingCellWrapper.get();
     auto const weakPeer = m_editingAutomationPeer;
@@ -2727,7 +2731,26 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             // Closing edit returns to cell level, so re-arm cells before restoring focus.
             SetCellLevelInternal(true);
 
-            if (!cellWrapper.Focus(restoreState))
+            // A Tab move to a cell in this row lands there directly, so a screen reader hears one
+            // focus change for the cell instead of a pass through the cell just left.
+            winrt::UIElement handoffCell{ nullptr };
+            if (focusColumn && IsVisibleColumn(focusColumn))
+            {
+                if (auto const host = m_cellsHost.get())
+                {
+                    for (auto const& child : host.Children())
+                    {
+                        if (child && child != cellWrapper && GetCellOwningColumn(child) == focusColumn)
+                        {
+                            handoffCell = child;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const bool handedOff = handoffCell && handoffCell.Focus(restoreState);
+            if (!handedOff && !cellWrapper.Focus(restoreState))
             {
                 SetCellLevelInternal(false);
                 Focus(restoreState);

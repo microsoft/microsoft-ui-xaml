@@ -332,7 +332,14 @@ bool TableView::TryMoveEditToAdjacentCell(bool forward)
     const int32_t editRowIndex = repeater ? repeater.GetElementIndex(editRow) : -1;
 
     // Past the last (first) cell the commit still runs, and a vetoed commit keeps the editor.
-    if (!CommitEditInternal(inRow ? EditingUnit::Cell : EditingUnit::Row))
+    // Within the row, the closing editor hands focus straight to the target cell.
+    bool committed = false;
+    {
+        m_editCloseFocusColumn.set(inRow);
+        auto const clearHandoff = wil::scope_exit([this]() noexcept { m_editCloseFocusColumn.set(nullptr); });
+        committed = CommitEditInternal(inRow ? EditingUnit::Cell : EditingUnit::Row);
+    }
+    if (!committed)
     {
         return true;
     }

@@ -853,6 +853,8 @@ private:
     bool m_tabEditMovePending{ false };
     // Bumped when a pending Tab move ends, so its posted BeginEdit can recognise itself as stale.
     uint32_t m_tabEditMoveGeneration{ 0 };
+    // Set only across a Tab move's commit: the same-row cell the closing editor hands focus to.
+    tracker_ref<winrt::TableViewColumn> m_editCloseFocusColumn{ this };
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
