@@ -1087,6 +1087,250 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        // Scenario: the source holds value-type items (ObservableCollection<int> and ObservableCollection<Symbol>), which
+        //     are boxed again every time the repeater reads them. The item at 2 is selected and replaced, then the
+        //     replacement is selected before the next layout pass: by SelectedItem from outside, or from the
+        //     SelectionChanged handler raised for selecting the item at 2 (by SelectedItem, or SelectedIndex -1 then 2).
+        // Expected: after layout the replacement is selected (SelectedIndex 2) and its container is the only checked one.
+        // Failure means: RadioButtons compared the item shown by the new container with the selected item by reference
+        //     only. Each read returns a new box, so the comparison failed and the container stayed unchecked.
+        [TestMethod]
+        public void VerifySelectingValueTypeReplacementBeforeLayoutChecksItsContainer()
+        {
+            foreach (string mode in new[] { "SelectedItem before layout", "Handler SelectedItem", "Handler SelectedIndex" })
+            {
+                VerifySelectingValueTypeReplacementBeforeLayout(new[] { 0, 1, 2, 3, 4 }, 25, mode);
+                VerifySelectingValueTypeReplacementBeforeLayout(
+                    new[] { Symbol.Accept, Symbol.Add, Symbol.Back, Symbol.Cancel, Symbol.Delete }, Symbol.Edit, mode);
+            }
+        }
+
+        private void VerifySelectingValueTypeReplacementBeforeLayout<T>(T[] initialItems, T replacement, string mode)
+        {
+            Log.Comment($"{typeof(T).Name} items, {mode}");
+            RadioButtons radioButtons = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<T>(initialItems);
+            bool handled = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            // RadioButtons applies SelectedIndex once its repeater is loaded.
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (mode == "SelectedItem before layout")
+                {
+                    radioButtons.SelectedIndex = 2;
+                    Content.UpdateLayout();
+                    items[2] = replacement;
+                    radioButtons.SelectedItem = replacement;
+                }
+                else
+                {
+                    radioButtons.SelectionChanged += (sender, args) =>
+                    {
+                        if (!handled && radioButtons.SelectedIndex == 2)
+                        {
+                            handled = true;
+                            items[2] = replacement;
+                            if (mode == "Handler SelectedItem")
+                            {
+                                radioButtons.SelectedItem = replacement;
+                            }
+                            else
+                            {
+                                radioButtons.SelectedIndex = -1;
+                                radioButtons.SelectedIndex = 2;
+                            }
+                        }
+                    };
+                    radioButtons.SelectedIndex = 2;
+                }
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(mode == "SelectedItem before layout" || handled, "The SelectionChanged handler ran.");
+                Verify.AreEqual(2, radioButtons.SelectedIndex);
+                Verify.IsTrue(replacement.Equals(radioButtons.SelectedItem), $"SelectedItem is {replacement}.");
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                    Verify.IsNotNull(container, $"Container {i} is realized.");
+                    Verify.IsTrue(items[i].Equals(container.Content), $"Content of container {i} is {items[i]}.");
+                    Verify.AreEqual(i == 2, container.IsChecked == true, $"IsChecked of container {i}.");
+                }
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        // Scenario: value-type items {0, 1, 2} (ObservableCollection<int>); a SelectionChanged handler, raised for
+        //     selecting 0 at index 0, inserts 9 at 0. The selected item moves to 1 while RadioButtons is still selecting,
+        //     so its selected index stays 0; the container for 9 is created for index 0 in the next layout pass.
+        // Expected: 0 stays the selected item and its container (index 1) stays the only checked one.
+        // Failure means: RadioButtons checked the container created for the outdated selected index although it shows
+        //     another value (the value comparison used for boxed items must not accept a different value).
+        [TestMethod]
+        public void VerifyContainerPreparedForOutdatedSelectedIndexIsNotCheckedWithValueTypeItems()
+        {
+            RadioButtons radioButtons = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<int>() { 0, 1, 2 };
+            bool inserted = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectionChanged += (sender, args) =>
+                {
+                    if (!inserted)
+                    {
+                        inserted = true;
+                        items.Insert(0, 9);
+                    }
+                };
+                radioButtons.SelectedIndex = 0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(inserted, "The SelectionChanged handler inserted 9.");
+                Verify.IsTrue(0.Equals(radioButtons.SelectedItem), "SelectedItem is 0.");
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                    Verify.IsNotNull(container, $"Container {i} is realized.");
+                    Verify.IsTrue(items[i].Equals(container.Content), $"Content of container {i} is {items[i]}.");
+                    Verify.AreEqual(i == 1, container.IsChecked == true, $"IsChecked of container {i}.");
+                }
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        // Scenario: RadioButtons retemplated with a virtualizing StackLayout in a ScrollViewer (Height 120), 100 string
+        //     items, SelectedIndex 50 (its container is not realized). Scroll item 50 into view, then back to the top,
+        //     then to item 50 again.
+        // Expected (pinned behavior): the container created for item 50 is checked and SelectedIndex stays 50 with no
+        //     SelectionChanged. When it is scrolled out, its container is cleared while checked, so the selection is
+        //     cleared (SelectedIndex -1) with one SelectionChanged that removes "Option 50", as for a selection that was
+        //     visible first. Scrolled in again, the container is not checked.
+        // Failure means: RadioButtons stopped checking the container created for an off-screen selected item, or changed
+        //     how it handles the selected container being virtualized away; update the PR notes if this is intended.
+        [TestMethod]
+        public void VerifyVirtualizingTemplateChecksOffScreenSelectedItemWhenRealized()
+        {
+            RadioButtons radioButtons = null;
+            ScrollViewer scrollViewer = null;
+            var selectionChanges = new List<SelectionChangedEventArgs>();
+            double itemHeight = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var virtualizingTemplate = (ControlTemplate)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                        TargetType='controls:RadioButtons'>
+                        <ScrollViewer Height='120'>
+                            <controls:ItemsRepeater x:Name='InnerRepeater'>
+                                <controls:ItemsRepeater.Layout>
+                                    <controls:StackLayout />
+                                </controls:ItemsRepeater.Layout>
+                            </controls:ItemsRepeater>
+                        </ScrollViewer>
+                    </ControlTemplate>"));
+
+                radioButtons = new RadioButtons
+                {
+                    ItemsSource = Enumerable.Range(0, 100).Select(index => $"Option {index}").ToList(),
+                    SelectedIndex = 50,
+                    Template = virtualizingTemplate
+                };
+                Content = radioButtons;
+                Content.UpdateLayout();
+                scrollViewer = radioButtons.FindVisualChildByType<ScrollViewer>();
+                Verify.IsNotNull(scrollViewer);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(50, radioButtons.SelectedIndex);
+                Verify.IsNull(radioButtons.ContainerFromIndex(50), "Container 50 is not realized at first.");
+                itemHeight = ((FrameworkElement)radioButtons.ContainerFromIndex(0)).ActualHeight;
+                Verify.IsGreaterThan(itemHeight, 0.0);
+                radioButtons.SelectionChanged += (sender, args) => selectionChanges.Add(args);
+            });
+
+            void ScrollTo(double offset)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, offset, null, true);
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            Log.Comment("Scrolling item 50 into view.");
+            ScrollTo(50 * itemHeight);
+            RunOnUIThread.Execute(() =>
+            {
+                var container = radioButtons.ContainerFromIndex(50) as RadioButton;
+                Verify.IsNotNull(container, "Container 50 is realized.");
+                Verify.AreEqual("Option 50", container.Content);
+                Verify.IsTrue(container.IsChecked == true, "Container 50 is checked.");
+                Verify.AreEqual(50, radioButtons.SelectedIndex);
+                Verify.AreEqual(0, selectionChanges.Count, "No SelectionChanged when the selected container is realized.");
+            });
+
+            Log.Comment("Scrolling back to the top.");
+            ScrollTo(0);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(radioButtons.ContainerFromIndex(50), "Container 50 is cleared.");
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+                Verify.IsNull(radioButtons.SelectedItem);
+                Verify.AreEqual(1, selectionChanges.Count, "One SelectionChanged when the checked container is cleared.");
+                Verify.AreEqual(1, selectionChanges[0].RemovedItems.Count);
+                Verify.AreEqual("Option 50", selectionChanges[0].RemovedItems[0]);
+                Verify.AreEqual(0, selectionChanges[0].AddedItems.Count);
+            });
+
+            Log.Comment("Scrolling item 50 into view again.");
+            ScrollTo(50 * itemHeight);
+            RunOnUIThread.Execute(() =>
+            {
+                var container = radioButtons.ContainerFromIndex(50) as RadioButton;
+                Verify.IsNotNull(container, "Container 50 is realized again.");
+                Verify.IsFalse(container.IsChecked == true, "Container 50 is not checked.");
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+                Verify.AreEqual(1, selectionChanges.Count);
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         private static void VerifySingleSelectionChange(List<SelectionChangedEventArgs> selectionChanges, string expectedRemoved, string expectedAdded, string context)
         {
             Verify.AreEqual(1, selectionChanges.Count, context + ": SelectionChanged count");

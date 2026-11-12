@@ -462,7 +462,10 @@ bool RadioButtons::IsSelectedItemAt(int index)
             {
                 if (index >= 0 && index < itemsSourceView.Count())
                 {
-                    return itemsSourceView.GetAt(index) == selectedItem;
+                    // A source of value-type items can return a new boxed value on each read, so compare
+                    // with the source's equality when the references differ.
+                    return itemsSourceView.GetAt(index) == selectedItem ||
+                        itemsSourceView.IndexOf(selectedItem) == index;
                 }
             }
         }
