@@ -186,24 +186,3 @@ These aren't stored, so say so, and don't estimate them from other data:
   with the connection mode **Recorded trace (.etl)**, then **Open trace**, or
   with the WinUI Profiler CLI's
   `record <trace.etl> --pid <pid> --out <session.sqlite>`.
-
-To record a trace, start it before the app, with every XAML provider at
-level 5, as in the WinUI Profiler README; it needs elevation, or the
-Performance Log Users group:
-
-```powershell
-'{531A35AB-63CE-4BCF-AA98-F88C7A89E455} 0xFFFFFFFFFFFFFFFF 5',
-'{59E7A714-73A4-4147-B47E-0957048C75C4} 0xFFFFFFFFFFFFFFFF 5',
-'{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
-'{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
-'{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
-'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5',
-'{8C416C79-D49B-4F01-A467-E56D3AA8234C} 0x2000 4' | Set-Content providers.txt
-logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
-# ... use the app ...
-logman stop XamlTrace -ets
-```
-
-A trace without Microsoft-Windows-XAML at level 5 has no ticks, and one
-without Microsoft-Windows-Win32k (the last line) has no window focus changes,
-so no regions start at one.

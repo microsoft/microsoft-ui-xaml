@@ -16,16 +16,12 @@ internal static partial class ServerTests
     private const int MaxSkillDescriptionLength = 1024;
     private const int MaxSkillLines = 500;
 
-    // The command in the README's and the skills' code blocks that writes the providers a trace is recorded with.
-    private const string ProvidersCommand = "Set-Content providers.txt";
-
     public static IEnumerable<McpTestCase> Tests =>
     [
         new("server.version", _ => Version()),
         new("server.plugin-manifest", _ => PluginManifest()),
         new("server.tools", _ => Tools()),
         new("server.skills", _ => Skills()),
-        new("server.providers", _ => Providers()),
     ];
 
     private static void Version()
@@ -167,60 +163,6 @@ internal static partial class ServerTests
         }
     }
 
-    /// <summary>Checks that each skill that shows how to record a trace enables the same providers as the README.</summary>
-    private static void Providers()
-    {
-        var root = FindPluginRoot()
-            ?? throw Expect.Skip($"No plugin.json named '{ServerVersion.ServerName}' above the current folder or the tests' folder.");
-
-        var readme = Path.Combine(root, "README.md");
-        var expected = File.Exists(readme) ? RecipeProviders(readme) : null;
-        Expect.True(expected is { Count: > 0 }, $"{readme} has a code block that writes providers.txt.");
-
-        var compared = 0;
-        foreach (var file in Directory.GetFiles(Path.Combine(root, SkillsFolder), "*.md", SearchOption.AllDirectories)
-            .Order(StringComparer.Ordinal))
-        {
-            if (RecipeProviders(file) is { } actual)
-            {
-                compared++;
-                Expect.Equal(string.Join(" | ", expected!), string.Join(" | ", actual),
-                    $"The providers {Path.GetRelativePath(root, file).Replace('\\', '/')} records a trace with (keep them equal to " +
-                    "the README's)");
-            }
-        }
-
-        Expect.True(compared > 0, $"A skill under {SkillsFolder} has a code block that writes providers.txt.");
-    }
-
-    /// <summary>The provider lines of a file's code block that writes providers.txt; null when it has no such block.</summary>
-    private static List<string>? RecipeProviders(string file)
-    {
-        var block = new List<string>();
-        var inCodeBlock = false;
-        foreach (var line in File.ReadLines(file))
-        {
-            if (line.TrimStart().StartsWith("```", StringComparison.Ordinal))
-            {
-                if (inCodeBlock && block.Any(text => text.Contains(ProvidersCommand, StringComparison.Ordinal)))
-                {
-                    return block.SelectMany(text => ProviderLine().Matches(text)).Select(match => match.Value).ToList();
-                }
-
-                inCodeBlock = !inCodeBlock;
-                block.Clear();
-                continue;
-            }
-
-            if (inCodeBlock)
-            {
-                block.Add(line);
-            }
-        }
-
-        return null;
-    }
-
     /// <summary>
     /// Reads the "key: value" lines between a skill's two "---" lines. A value of "&gt;-", "&gt;", "|" or "|-"
     /// starts a block of the indented lines that follow, joined with spaces ("&gt;") or line breaks ("|").
@@ -286,10 +228,6 @@ internal static partial class ServerTests
 
     [GeneratedRegex(@"\]\((?<target>[^)\s]+)\)", RegexOptions.CultureInvariant)]
     private static partial Regex Link();
-
-    // A logman provider line: the provider's GUID, its keywords and its level.
-    [GeneratedRegex(@"\{[0-9A-Fa-f-]{36}\} 0x[0-9A-Fa-f]+ \d+", RegexOptions.CultureInvariant)]
-    private static partial Regex ProviderLine();
 
     /// <summary>
     /// Finds the plugin folder: the one Copilot CLI names in PLUGIN_ROOT, or the first folder above
