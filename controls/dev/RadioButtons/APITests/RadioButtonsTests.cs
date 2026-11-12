@@ -674,6 +674,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 radioButtons.ItemsSource = items;
                 Content = radioButtons;
                 Content.UpdateLayout();
+            });
+            // RadioButtons applies SelectedIndex once its repeater is loaded.
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
                 radioButtons.SelectedIndex = 1;
                 Content.UpdateLayout();
                 radioButtons.SelectionChanged += delegate { selectionChanges++; };

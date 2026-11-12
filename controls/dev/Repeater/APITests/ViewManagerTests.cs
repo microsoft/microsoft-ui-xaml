@@ -1420,6 +1420,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                                 {
                                     newCount = 1;
                                 }
+                                if (!allowRemove)
+                                {
+                                    // A count-changing Replace with a virtualizing layout, followed by inserts, breaks
+                                    // the element mapping on main as well (StackLayout and UniformGridLayout seed 3), the
+                                    // same Remove-like class as GH #12496; this fix does not change that path.
+                                    newCount = oldCount;
+                                }
                                 var newItems = Enumerable.Range(0, newCount).Select(i => "v" + nextValue++).ToList();
                                 operation = $"ReplaceRange({index}, {oldCount}, {newCount})";
                                 data.ReplaceRange(index, oldCount, newItems);
