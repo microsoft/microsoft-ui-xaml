@@ -15,6 +15,7 @@ namespace WinUIProfiler.Engine.Target;
 internal static class ProcessParent
 {
     private const int ProcessBasicInformationClass = 0;
+    private const uint QueryLimitedInformation = 0x1000;
 
     // The parent's ID, and its executable name without .exe while it runs; null when the child can't be queried. The ID is
     // returned even when the parent has exited, or another process has its ID now, as the launch events it wrote carry it.
@@ -23,19 +24,33 @@ internal static class ProcessParent
         ArgumentNullException.ThrowIfNull(process);
         try
         {
-            if (NtQueryInformationProcess(process.SafeHandle, ProcessBasicInformationClass, out var information,
-                Marshal.SizeOf<ProcessBasicInformation>(), out _) != 0)
-            {
-                return null;
-            }
-
-            var parentId = (int)information.InheritedFromUniqueProcessId;
-            return (parentId, FindName(parentId, process.StartTime.ToUniversalTime()));
+            return Find(process.SafeHandle, process.StartTime.ToUniversalTime());
         }
         catch (Exception error) when (error is InvalidOperationException or Win32Exception)
         {
             return null;
         }
+    }
+
+    // As Find(Process), for the process instance with this ID and creation time, a UTC FILETIME; null when another
+    // instance has the ID. An exited process can still be queried while a handle to it is open.
+    public static (int ProcessId, string? Name)? Find(int processId, long creationTimeFileTime)
+    {
+        using var process = OpenProcess(QueryLimitedInformation, false, processId);
+        return !process.IsInvalid && GetProcessTimes(process, out var created, out _, out _, out _) &&
+            created == creationTimeFileTime ? Find(process, DateTime.FromFileTimeUtc(created)) : null;
+    }
+
+    private static (int ProcessId, string? Name)? Find(SafeProcessHandle process, DateTime startedUtc)
+    {
+        if (NtQueryInformationProcess(process, ProcessBasicInformationClass, out var information,
+            Marshal.SizeOf<ProcessBasicInformation>(), out _) != 0)
+        {
+            return null;
+        }
+
+        var parentId = (int)information.InheritedFromUniqueProcessId;
+        return (parentId, FindName(parentId, startedUtc));
     }
 
     // Null for a process that started after the child, which only reused the parent's ID.
@@ -56,6 +71,16 @@ internal static class ProcessParent
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern int NtQueryInformationProcess(SafeProcessHandle process, int informationClass,
         out ProcessBasicInformation information, int length, out int returnLength);
+
+    [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern SafeProcessHandle OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inherit, int processId);
+
+    [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetProcessTimes(SafeProcessHandle process, out long created, out long exited,
+        out long kernel, out long user);
 
     // winternl.h's PROCESS_BASIC_INFORMATION; ExitStatus and BasePriority are pointer-sized to keep 64-bit padding.
     private struct ProcessBasicInformation

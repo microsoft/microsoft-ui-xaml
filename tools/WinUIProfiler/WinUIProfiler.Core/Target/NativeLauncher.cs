@@ -24,7 +24,7 @@ public static class NativeLauncher
     private const string Muxc = "Microsoft.UI.Xaml.Controls.dll";
     private static readonly TimeSpan OwnerTimeout = TimeSpan.FromSeconds(15);
 
-    public static async Task<Process> LaunchAsync(TargetLaunchKind kind, string target, string arguments,
+    public static async Task<NativeLaunchSession> LaunchAsync(TargetLaunchKind kind, string target, string arguments,
         PrivateRuntimeLaunch runtime, CancellationToken token)
     {
         string executable;
@@ -67,7 +67,7 @@ public static class NativeLauncher
         var launch = await WaitForResultAsync(result, owner, token).ConfigureAwait(false);
         if (launch.Error != 0)
         {
-            throw new InvalidOperationException(Describe(launch, log));
+            throw new InvalidOperationException(Describe(launch, Path.Combine(directory, NativeLaunchProtocol.LogFileFor(launch))));
         }
 
         if (applicationId is not null &&
@@ -87,12 +87,24 @@ public static class NativeLauncher
                 throw new InvalidOperationException($"PID {launch.ProcessId} is not the launched {executable}.");
             }
 
-            if (owner is not null && !owner.WaitForExit(TimeSpan.FromSeconds(5)))
+            var session = new NativeLaunchSession(process, launch, directory);
+            try
             {
-                Trace.TraceWarning($"The private WinUI launcher (PID {owner.Id}) is still running after its result.");
+                if (launch.ActivationProcessId is not null)
+                {
+                    using var accepted = File.Create(result + NativeLaunchProtocol.AcceptedSuffix);
+                }
+                if (owner is not null && !owner.WaitForExit(TimeSpan.FromSeconds(5)))
+                {
+                    Trace.TraceWarning($"The private WinUI launcher (PID {owner.Id}) is still running after its result.");
+                }
+                return session;
             }
-
-            return process;
+            catch
+            {
+                session.Dispose();
+                throw;
+            }
         }
         catch
         {
@@ -324,7 +336,7 @@ public static class NativeLauncher
                 {
                     using var entry = JsonDocument.Parse(line);
                     if (entry.RootElement.TryGetProperty("event", out var name) && name.GetString() is { } value &&
-                        value is not ("hook_ready" or "redirected") && !failures.Contains(value))
+                        value is not ("hook_ready" or "redirected" or "child_injected") && !failures.Contains(value))
                     {
                         failures.Add(value);
                     }

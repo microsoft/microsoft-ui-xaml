@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
@@ -10,6 +11,13 @@ using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Target;
 using WinUIProfiler.Contracts;
 using XamlTimeline;
+
+if (args is ["--startup-integration", var nativeDirectory])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Startup integration requires Windows.");
+    await StartupIntegration.RunAsync(Path.GetFullPath(nativeDirectory));
+    return;
+}
 
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
@@ -873,11 +881,16 @@ if (OperatingSystem.IsWindows())
             CreateNoWindow = true,
             UseShellExecute = false
         })!;
+    long created;
     try
     {
         using var current = System.Diagnostics.Process.GetCurrentProcess();
+        created = child.StartTime.ToFileTimeUtc();
         Expect(ProcessParent.Find(child) == (Environment.ProcessId, current.ProcessName),
             "A process's parent must be the process that created it, named while it runs.");
+        Expect(ProcessParent.Find(child.Id, created) == (Environment.ProcessId, current.ProcessName) &&
+            ProcessParent.Find(child.Id, created + 1) is null,
+            "A process instance's parent must be found only by that instance's creation time.");
         // A process that started after the child only reused its parent's ID, so it doesn't name the parent.
         Expect(ProcessParent.FindName(Environment.ProcessId, DateTime.UtcNow) == current.ProcessName &&
             ProcessParent.FindName(Environment.ProcessId, DateTime.UnixEpoch) is null,
@@ -888,8 +901,122 @@ if (OperatingSystem.IsWindows())
         child.Kill(entireProcessTree: true);
     }
 
+    // As for a startup's exited bootstrap, which the launch's handles keep.
+    child.WaitForExit();
+    Expect(ProcessParent.Find(child.Id, created)?.ProcessId == Environment.ProcessId,
+        "An exited process's parent must be found while a handle to it is open.");
+
     Console.WriteLine("Passed: a process's parent is the process that created it, and a process that reused its ID doesn't name it.");
 }
+
+const string startupResult = """
+    {"schemaVersion":2,"pid":20,"creationTimeFileTime":200,"error":0,"stage":"ready","activationPid":10,
+     "processes":[
+       {"pid":10,"parentPid":0,"creationTimeFileTime":100,"helperReady":true,"runtimeLoaded":false,"error":0},
+       {"pid":20,"parentPid":10,"creationTimeFileTime":200,"helperReady":true,"runtimeLoaded":true,"error":0}]}
+    """;
+var nativeStartup = NativeLaunchProtocol.ParseResult(startupResult);
+Expect(nativeStartup.ProcessId == 20 && nativeStartup.ActivationProcessId == 10 && nativeStartup.Processes.Count == 2 &&
+    nativeStartup.Processes[1].ParentProcessId == 10 && !nativeStartup.Processes[0].RuntimeLoaded &&
+    NativeLaunchProtocol.LogFileFor(nativeStartup) == "redirect.20.jsonl" &&
+    NativeLaunchProtocol.LogFileFor(nativeStartup, 10) == "redirect.jsonl",
+    "A handoff must retain its bootstrap and select the child's identity and redirect log.");
+Action<JsonNode>[] invalidStartupResults =
+[
+    node => node["processes"]![1]!["pid"] = 10,
+    node => node["processes"]![1]!["parentPid"] = 99,
+    node => node["processes"]![0]!["parentPid"] = 20,
+    node => node["processes"]![1]!["parentPid"] = 0,
+    node => node["processes"]![1]!["creationTimeFileTime"] = 0,
+    node => node["processes"]![1]!["creationTimeFileTime"] = 99,
+    node => node["processes"]![1]!["creationTimeFileTime"] = long.MaxValue,
+    node => node["processes"]![1]!["helperReady"] = false,
+    node => node["processes"]![1]!["runtimeLoaded"] = false,
+    node => node["processes"]![0]!["error"] = 5,
+    node => node["creationTimeFileTime"] = 201,
+    node => node["pid"] = 99,
+    node => node["activationPid"] = 99,
+    node => node["processes"] = new JsonArray(),
+    node => node["processes"] = new JsonArray(Enumerable.Range(0, 9)
+        .Select(_ => node["processes"]![0]!.DeepClone()).ToArray())
+];
+foreach (var mutate in invalidStartupResults)
+{
+    var node = JsonNode.Parse(startupResult)!;
+    mutate(node);
+    ExpectThrows<InvalidDataException>(() => NativeLaunchProtocol.ParseResult(node.ToJsonString()),
+        "Malformed ancestry, reused identities, unready selections and oversized inventories must fail.");
+}
+Expect(NativeLaunchProtocol.ParseResult(startupResult.Replace("\"error\":0,\"stage\":\"ready\"",
+    "\"error\":234,\"stage\":\"runtime_ambiguous\"")).Processes.Count == 2,
+    "A failed launch must retain its process inventory for exact-identity cleanup.");
+Console.WriteLine("Passed: startup ancestry, selected runtime identity, bounded inventories and child logs are validated.");
+
+IReadOnlyDictionary<int, long?> startupIdentities = new Dictionary<int, long?> { [10] = 100, [20] = 200 };
+Expect(XamlEventSubscription.MatchesProcess(startupIdentities, 10, 100) &&
+    XamlEventSubscription.MatchesProcess(startupIdentities, 20, 201) &&
+    !XamlEventSubscription.MatchesProcess(startupIdentities, 20, 199) &&
+    !XamlEventSubscription.MatchesProcess(startupIdentities, 30, 201),
+    "Capture must accept each exact startup lifetime and reject earlier or unrelated same-image events.");
+
+var groupDirectory = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-ProcessIsolation-{Guid.NewGuid():N}");
+var groupPaths = new List<string>();
+try
+{
+    SessionStart[] sources =
+    [
+        new(10, "StartupTests", null, 1_000_000, 0, SessionCoverage.ProcessStart, LauncherProcessId: 99),
+        new(20, "StartupTests", null, 1_000_000, 0, SessionCoverage.ProcessStart, LauncherProcessId: 99),
+        new(40, "StartupTests", null, 1_000_000, 0, SessionCoverage.ProcessStart, LauncherProcessId: 99)
+    ];
+    using var group = new ProcessRecordingGroup(sources, 20, 99, groupDirectory);
+    groupPaths.AddRange(group.Processes.Select(item => item.Recording!.Path));
+    ProfilerEvent ProcessEvent(int pid, string name) =>
+        new(1000, 1, pid, 7, XamlProvider.Xaml, true, "FrameworkElement_ApplyTemplate", 0,
+        [
+            new("ObjectPointer", element), new("Name", name), new("ClassName", name + "Control")
+        ]);
+    group.Post(ProcessEvent(10, "Parent"));
+    group.Post(ProcessEvent(20, "Child"));
+    group.Post(ProcessEvent(30, "Unrelated"));
+    group.Post(new(500, 0.5, 99, 7, XamlProvider.Marker, true, "Launch", 0, [], new("Launcher", Guid.NewGuid())));
+    group.Close("Test complete", 2);
+
+    Expect(group.Primary.Source.ProcessId == 20 && group.Primary.XamlEvents == 1 &&
+        group.Primary.Recording!.StoredEvents == 2 && group.RecordingError is null,
+        "The UI child must remain primary; external launcher markers must not become target XAML.");
+    foreach (var item in group.Processes)
+    {
+        var saved = item.Recording!.Path;
+        var info = SessionFile.ReadInfo(saved);
+        Expect(info.ProcessId == item.Source.ProcessId && info.LostByEtw == 2 && info.DroppedByProfiler == 0,
+            "Each file must preserve its own process scope and capture health.");
+        if (info.ProcessId == 40)
+        {
+            Expect(info.StoredEvents == 0 && item.XamlEvents == 0 && SessionFile.ReadObjects(saved).Count == 0,
+                "A process without telemetry must not inherit UI events or fabricated objects.");
+            continue;
+        }
+        var objects = SessionFile.ReadObjects(saved);
+        var expected = info.ProcessId == 10 ? "Parent" : "Child";
+        Expect(objects.Count == 1 && objects[0].Address == element && objects[0].Name == expected,
+            "Equal process-local addresses must remain distinct in separate recordings.");
+        var events = new List<ProfilerEvent>();
+        SessionFile.Read(saved, events.Add);
+        Expect(events.All(item => item.ProcessId == info.ProcessId ||
+            info.ProcessId == 20 && item.ProcessId == 99 && item.Provider == XamlProvider.Marker),
+            "No startup member or unrelated same-image process may be relabeled as another process's event.");
+    }
+}
+finally
+{
+    foreach (var saved in groupPaths)
+    {
+        foreach (var file in new[] { saved, saved + "-wal", saved + "-shm" }) File.Delete(file);
+    }
+    if (Directory.Exists(groupDirectory)) Directory.Delete(groupDirectory);
+}
+Console.WriteLine("Passed: parent/child recordings, equal addresses, launcher markers and absent telemetry stay process-isolated.");
 
 static void Expect(bool condition, string message)
 {
