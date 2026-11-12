@@ -66,7 +66,6 @@ public:
     winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource ThenSort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     winrt::TableViewSource ThenSort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
-    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     // Internal, for the owning control: makes sortAxisToken the only item sort level in one reshape
     // (None clears every level). SortGroups is kept.
     winrt::TableViewSource SortExclusive(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
@@ -76,11 +75,6 @@ public:
     // Clears every item sort level; SortGroups is kept.
     winrt::TableViewSource ClearSort();
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
-    // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
-    // app declared through the fluent Sort verb (which is untokenized and so unaddressable by
-    // token). Keeps the control's single-axis contract true when both front-ends are used.
-    // SortGroups is kept.
-    winrt::TableViewSource ClearSortsExcept(winrt::hstring const& sortAxisToken);
     void Refresh();
     winrt::Windows::Foundation::IClosable DeferRefresh();
     // Internal: a refresh deferral without an IClosable, for the owning control (UI thread). Each
@@ -110,8 +104,7 @@ public:
     // Internal: throws E_ILLEGAL_METHOD_CALL when ending the outermost deferral now would reshape
     // from inside an app delegate.
     void ThrowIfEndDeferRefreshReentrant() const;
-    // Internal: the SortGroups direction, and whether any item sort level is declared.
-    winrt::SortDirection SortGroupsDirection() const;
+    // Internal: whether any item sort level is declared.
     bool HasItemSort() const;
     // Internal: the active sort axes in precedence order, so the owner can detect an axis it does
     // not own and, when that axis names a property, attribute it to a column. Restated here

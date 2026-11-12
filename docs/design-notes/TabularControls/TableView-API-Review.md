@@ -48,6 +48,8 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 
 ### 2.1 Data and shaping: `TableViewSource`
 
+**Why a separate type (V1 preview).** `CollectionViewSource` cannot carry the shaping: it is sealed and rejects `ICollectionView` sources; WinUI `ICollectionView` is frozen and has no sort/filter/group members; types in the TableView DLL cannot be added to `Microsoft.UI.Xaml.Data` (C# sees them as CS0234), so CVS shaping must live in Microsoft.UI.Xaml.dll; and no platform type models hierarchy (`ParentBy`). The public surface of `TableViewSource` is generic shaping only; table-specific logic (row projection, single owner, expansion, edit holds, header-sort reconciliation) is internal. Plan: TableView also accepts `CollectionViewSource`/`ICollectionView` views; CVS shaping is tracked in the framework behind `Feature_ExperimentalApi`; `TableViewSource` stays preview and is retired or becomes a thin adapter over CVS shaping before TableView is stable (§6).
+
 | Member | Type | Semantics / default |
 |---|---|---|
 | `static From(Object items)` | `TableViewSource` | Wraps `IVector<Object>`, `IBindableVector`, `IIterable<Object>` or `IBindableIterable`. Other types (including a `TableViewSource` or a `CollectionViewSource`) throw `E_INVALIDARG`. An `ICollectionView` is consumed as a flat list; its groups are ignored. |
@@ -86,7 +88,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 - **Key comparison.** WinRT scalars compare by value. Enums compare by underlying value first (signed or unsigned as appropriate), so keys of different enum types interleave by value rather than by type name; group identity still includes the type. Keys that are not `IPropertyValue` compare by `ToString()` text if `IStringable`, otherwise by address; `IComparable` is not used, so .NET-only types (`DateOnly`, `BigInteger`, …) likely sort as text. Use a key selector that returns a WinRT scalar.
 - **Enum group keys cost a class-name lookup.** Grouping (and group identity) by an enum key calls `GetRuntimeClassName` once per key, by design: the identity must include the enum type, and caching by vtable alone is not collision-safe. Group by the underlying integer when this matters for large sources.
 - **Live shaping limits.** Re-evaluates every active callback on any `PropertyChanged`, whatever the property; nested paths (`A.B`) are not tracked. With Filter/GroupBy/ParentBy active, each single-item collection change rebuilds (O(N) per change); batch with `DeferRefresh`.
-- **Callback lifetime.** Callbacks are held strongly by native code. A C# callback capturing its page forms a cycle across the native boundary that the GC may not collect (finding B5, not yet run). Avoid capturing the page.
+- **Callback lifetime.** Callbacks are held through GC-tracked references (`tracker_ref`), so a C# callback that captures its page forms a cycle the GC can collect; the page does not leak.
 - **Row identity** is object reference (node key under `ParentBy`). Selection and focus follow the item across a reshape but not across item re-creation; the same object on two rows fails fast while a verb is active.
 - **Throwing callbacks** are not yet handled uniformly (a throwing filter hides the row, a throwing sort key sorts as null, a throwing group key reports "null key"). See §6.
 
@@ -389,7 +391,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | **Multi-select** | `Multiple`/`Extended`, `SelectedItems`, anchor model. | Append enum values; add `SelectedItems` with them. |
 | **Column reorder** | No `DisplayIndex`; collection order is visual and UIA order. | Lock "collection order = visual order + `MoveColumn`" vs `DisplayIndex` before reorder ships. |
 | **Incremental loading** | No `ISupportIncrementalLoading` story. | Define how the shaped projection interacts with partial data. |
-| **`CollectionViewSource` interop** | `ICollectionView` consumed flat; `CollectionViewSource` throws. | Document migration; decide whether to honour `ICollectionView` groups. |
+| **`CollectionViewSource` interop** | `ICollectionView` consumed flat; `CollectionViewSource` throws. | Accept `CollectionViewSource`/`ICollectionView` views, including groups. Track sort/filter/group descriptors on CVS in the framework behind `Feature_ExperimentalApi`. Keep `TableViewSource` preview; retire it or make it a thin adapter over CVS shaping before stable (§2.1). |
 | **Row identity selector** | Object-reference identity breaks for re-created items and possibly re-boxed primitives (untested). | Optional `getRowId`-style selector. |
 | Declared-state read-back | No way to read the current filter/sort/group declarations. | Descriptor read-back or getters. |
 | Source comparer overloads | §5. | Additive. |
@@ -397,7 +399,6 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Key types | Non-WinRT keys fall back to text/address comparison. | Document; diagnostic on fallback. |
 | Shared source | Single owner is silent. | Debug diagnostic, or allow sharing. |
 | Live shaping cost | Any `PropertyChanged` re-evaluates every callback; single-item changes rebuild under Filter/GroupBy/ParentBy. | Property scoping; incremental paths. |
-| Callback lifetime | Possible page leak through native-held C# callbacks. | GC-tracked references or documentation; lifetime test. |
 | Cell UIA control type | API spec says `Custom` ("cell"); implementation and dev spec use `DataItem`. | Decide with Narrator/Axe evidence. |
 | Peer `ClassName` | Mixed fully qualified vs short names. | Pick one before stabilizing. |
 | Theme keys / template parts | Which `TabularSurface*`/`TableView*` keys and parts are contract. | Publish the supported list. |
