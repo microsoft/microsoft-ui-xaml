@@ -162,9 +162,11 @@ public static class OfflineEtlSource
     // A null processId reads every process. Markers are the marker providers whose events are read too. For one process,
     // processStarted gets the kernel's event for its creation, when the trace has it, and the events of the launcher
     // providers (MarkerProviderSettings.Launcher) of the process that created it are read too, those that are part of the
-    // launch (LaunchWatcher); they come after the process's first event, and some after later ones.
+    // launch (LaunchWatcher); they come after the process's first event, and some after later ones. With cpuSamples, the
+    // process's CPU samples and their stacks are stored there too, with what the sampling recorded (it needs a processId).
     public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
-        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default)
+        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default,
+        SessionWriter? cpuSamples = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         ArgumentNullException.ThrowIfNull(markers);
@@ -177,6 +179,7 @@ public static class OfflineEtlSource
         using var source = new ETWTraceEventSource(path);
         long delivered = 0;
         LaunchWatcher? watcher = null;
+        StackSampleCollector? stacks = null;
         void Deliver(ProfilerEvent profilerEvent)
         {
             delivered++;
@@ -197,6 +200,10 @@ public static class OfflineEtlSource
                     }
                 },
                 launch.OtherProcessEvent);
+            if (cpuSamples is not null)
+            {
+                stacks = new(source, pid => pid == id, sample => cpuSamples.PostSample(sample, wait: true));
+            }
         }
         else
         {
@@ -210,6 +217,13 @@ public static class OfflineEtlSource
 
         cancellationToken.ThrowIfCancellationRequested();
         watcher?.Complete();
+        if (stacks is not null)
+        {
+            stacks.Flush();
+            var sampling = stacks.Summary;
+            cpuSamples!.SetCpuSampling(sampling, StackSampleCollector.TraceNote(sampling));
+        }
+
         return new(delivered, source.EventsLost, source.SessionDuration);
     }
 

@@ -8,6 +8,7 @@ using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Storage;
+using WinUIProfiler.Engine.Symbols;
 using WinUIProfiler.Engine.Target;
 using WinUIProfiler.Contracts;
 using XamlTimeline;
@@ -781,6 +782,11 @@ Expect(packagedCommandLine == new ProfilerCommandLine(TargetLaunchKind.Packaged,
         false, null, false, true) && packagedCommandLine.GetPrivateRuntime(@"C:\Profiler\NativeLauncher") is null &&
     ProfilerCommandLine.Parse([]) == ProfilerCommandLine.Empty,
     "A packaged app, or no app, must be read without private WinUI DLLs.");
+const string wpaSymbolPath = @"srv*C:\symbols*https://msdl.microsoft.com/download/symbols";
+Expect(ProfilerCommandLine.Parse(["--launch-exe", @"C:\Apps\App.exe", "--symbol-path", wpaSymbolPath]).SymbolPath == wpaSymbolPath &&
+    ProfilerCommandLine.Parse(["--symbol-path", @"C:\symbols"]) == ProfilerCommandLine.Empty with { SymbolPath = @"C:\symbols" } &&
+    commandLine.SymbolPath is null,
+    "The symbol path must be read as given, with or without an app.");
 string[] privateFolders = ["--private-runtime", @"C:\Private\runtime", "--runtime-source", @"C:\Apps", "--launch-directory", @"C:\L"];
 string[][] invalidCommandLines =
 [
@@ -793,7 +799,11 @@ string[][] invalidCommandLines =
     ["--launch-exe", @"C:\Apps\A.exe", "--private-runtime", @"C:\Private\runtime"],
     ["--launch-exe", @"C:\Apps\A.exe", "--private-runtime", "runtime", "--runtime-source", @"C:\Apps", "--launch-directory", @"C:\L"],
     ["--launch-exe", @"C:\Apps\A.exe", "--redirect-controls"],
-    ["--launch-aumid", "Fabrikam.App_8wekyb3d8bbwe!App", "--arguments", "x", .. privateFolders]
+    ["--launch-aumid", "Fabrikam.App_8wekyb3d8bbwe!App", "--arguments", "x", .. privateFolders],
+    ["--symbol-path"],
+    ["--symbol-path", ";"],
+    ["--symbol-path", @"srv*https://cache.example*https://msdl.microsoft.com/download/symbols"],
+    ["--symbol-path", @"C:\symbols", "--connect"]
 ];
 foreach (var arguments in invalidCommandLines)
 {
@@ -1020,6 +1030,309 @@ Console.WriteLine("Passed: parent/child recordings, equal addresses, launcher ma
 
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
+
+{
+    const string testCache = @"C:\cache";
+    const string msdl = "https://msdl.microsoft.com/download/symbols";
+    Expect(SymbolPaths.Normalize(@"C:\syms", testCache) == @"C:\syms;srv*C:\syms*C:\syms",
+        "A directory must be searched as it is and as a symbol store.");
+    Expect(SymbolPaths.Normalize(msdl + "/", testCache) == $@"srv*C:\cache*{msdl}",
+        "A bare symbol server URL must download into the default cache.");
+    Expect(SymbolPaths.Normalize($@"srv*C:\c*{msdl}", testCache) == $@"srv*C:\c*{msdl}",
+        "A WPA srv*cache*server element must be kept as it is.");
+    Expect(SymbolPaths.Normalize($@"srv*C:\c*\\server\share*{msdl}", testCache) ==
+        $@"srv*C:\c*\\server\share;srv*C:\c*{msdl}",
+        "Each server of a srv element must be searched in order, with the element's cache.");
+    Expect(SymbolPaths.Normalize($@"cache*C:\c;srv*{msdl}", testCache) == $@"srv*C:\c*C:\c;srv*C:\c*{msdl}",
+        "cache*dir must be searched, and must hold what servers without their own cache download.");
+    Expect(SymbolPaths.Normalize("http://symweb", testCache) == @"srv*C:\cache*https://symweb.azurefd.net",
+        "http://symweb must become the symweb server that an Azure sign-in reaches.");
+    Environment.SetEnvironmentVariable("WINUIPROFILER_TEST_SYMBOLS", @"C:\syms");
+    Expect(SymbolPaths.Normalize(@" ""%WINUIPROFILER_TEST_SYMBOLS%\"" ; C:\syms ;", testCache) == @"C:\syms;srv*C:\syms*C:\syms",
+        "Quotes, environment variables, trailing separators and repeated locations must be handled.");
+    foreach (var malformed in new[] { "", ";", "a*b", "srv*", $"srv*https://x.example*{msdl}" })
+    {
+        ExpectThrows<ArgumentException>(() => SymbolPaths.Normalize(malformed, testCache),
+            $"The symbol path '{malformed}' must be rejected.");
+    }
+}
+Console.WriteLine("Passed: symbol paths keep only the locations given, in WPA's forms.");
+
+{
+    const ulong kernelLeaf = 0xFFFFF800_00001000, kernelRoot = 0xFFFFF800_00002000;
+    const ulong userLeaf = 0x7FF6_0000_1000, userRoot = 0x7FF6_0000_2000;
+    var mergedSamples = new List<MergedSample>();
+    var stackMerger = new StackSampleMerger(mergedSamples.Add);
+
+    // Samples in kernel code wait for the user part the kernel walks once the thread returns to user mode.
+    stackMerger.OnSample(100, 1, 7, kernelLeaf);
+    stackMerger.OnStack(101, 100, 1, 7, [kernelLeaf, kernelRoot], 8);
+    Expect(mergedSamples.Count == 0, "A sample in kernel code must wait for its user part.");
+    stackMerger.OnSample(110, 1, 7, kernelLeaf);
+    stackMerger.OnStack(111, 110, 1, 7, [kernelLeaf, kernelRoot], 8);
+    stackMerger.OnStack(120, 120, 1, 7, [userLeaf, userRoot], 8);
+    Expect(mergedSamples.Count == 2 && mergedSamples[0].Qpc == 100 && mergedSamples[1].Qpc == 110 &&
+        mergedSamples.All(sample => sample is { ProcessId: 1, ThreadId: 7, Frames: [kernelLeaf, kernelRoot, userLeaf, userRoot] }),
+        "Each sample waiting for its user part must get the thread's user stack after its kernel part.");
+
+    mergedSamples.Clear();
+    stackMerger.OnSample(130, 1, 7, userLeaf);
+    stackMerger.OnStack(131, 130, 1, 7, [userLeaf, userRoot], 8);
+    Expect(mergedSamples is [{ Qpc: 130, Frames: [userLeaf, userRoot] }], "A sample in user code must get its whole stack.");
+
+    mergedSamples.Clear();
+    stackMerger.OnSample(140, 1, 8, 0x1000);
+    stackMerger.OnSample(150, 1, 8, 0x2000);
+    Expect(mergedSamples is [{ Qpc: 140, ThreadId: 8, Frames: [0x1000] }],
+        "A sample without a stack by its thread's next sample must keep its instruction pointer.");
+
+    stackMerger.OnSample(160, 4, 9, kernelLeaf);
+    stackMerger.OnStack(161, 160, 4, 9, [kernelLeaf, kernelRoot], 8);
+    stackMerger.OnStack(162, 162, 1, 99, [userLeaf], 8);
+    Expect(mergedSamples.Count == 2 && mergedSamples[1] is { Qpc: 160, ProcessId: 4, Frames: [kernelLeaf, kernelRoot] },
+        "A System process sample must not wait for a user part, and an unknown thread's stack must be ignored.");
+
+    stackMerger.OnSample(170, 1, 10, kernelLeaf);
+    stackMerger.OnStack(171, 170, 1, 10, [kernelLeaf, kernelRoot], 8);
+    stackMerger.OnSample(180, 2, 11, 0x3000);
+    stackMerger.OnSample(190, 3, 11, 0x4000);
+    Expect(mergedSamples.Count == 3 && mergedSamples[2] is { Qpc: 180, ProcessId: 2, Frames: [0x3000] },
+        "A thread ID another process reuses must end the earlier thread's samples.");
+    stackMerger.Flush();
+    Expect(mergedSamples.Count == 6 &&
+        mergedSamples.Any(sample => sample is { Qpc: 150, ThreadId: 8, Frames: [0x2000] }) &&
+        mergedSamples.Any(sample => sample is { Qpc: 170, ThreadId: 10, Frames: [kernelLeaf, kernelRoot] }) &&
+        mergedSamples.Any(sample => sample is { Qpc: 190, ProcessId: 3, Frames: [0x4000] }),
+        "Flush must emit every incomplete sample with what it has.");
+}
+Console.WriteLine("Passed: sampled stacks join their kernel and user parts as TraceLog does.");
+
+var cpuPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Cpu-{Guid.NewGuid():N}.sqlite");
+var cpuIdentityPath = Path.ChangeExtension(cpuPath, "identity.sqlite");
+var cpuEmptyPath = Path.ChangeExtension(cpuPath, "empty.sqlite");
+var cpuLivePath = Path.ChangeExtension(cpuPath, "live.sqlite");
+var cpuSymbols = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Symbols-{Guid.NewGuid():N}");
+try
+{
+    const ulong cpuBase = 0x7FF0_0000_0000;
+    SampledModule CpuModule() => new(1, @"C:\WinUIProfilerTests\Missing\Test.dll", cpuBase, 0x10000, 0);
+    void WriteCpuSession(string file, SampledModule module)
+    {
+        using var writer = SessionWriter.Create(file, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace));
+        CodeFrame At(ulong rva) => new(module, cpuBase + rva);
+        writer.PostSample(new(1_000, 1, 5, [At(0x1100), At(0x1000)]), wait: true);
+        writer.PostSample(new(2_000, 1, 5, [At(0x1100), At(0x1000)]), wait: true);
+        writer.PostSample(new(3_000, 1, 6, [At(0x1200), At(0x1300), At(0x1300), At(0x1000)]), wait: true);
+        writer.PostSample(new(4_000, 1, 7, [new(null, 0xABC0), At(0x1000)]), wait: true);
+        writer.SetCpuSampling(new(1.0, false, 4, [module]), null);
+    }
+
+    WriteCpuSession(cpuPath, CpuModule());
+    var cpuProfile = CpuProfileReader.Read(cpuPath, top: 10);
+    Expect(cpuProfile is { Samples: 4, ThreadId: null, Sampling: { IntervalMs: 1.0, Samples: 4, Dropped: 0, SymbolPath: null } },
+        "The CPU sampling row and every stored sample must be read back.");
+    Expect(cpuProfile!.Threads.Select(thread => (thread.ThreadId, thread.Samples)).SequenceEqual([(5, 2L), (6, 1L), (7, 1L)]),
+        "Threads must be listed by their samples, most first.");
+    Expect(cpuProfile.Exclusive.Select(frame => (frame.Frame, frame.Samples)).SequenceEqual(
+        [("Test.dll!0x1100", 2L), ("?!0xABC0", 1L), ("Test.dll!0x1200", 1L)]) && cpuProfile.Exclusive[0].Ms == 2.0,
+        "Exclusive samples must go to each stack's leaf frame, most first, named by RVA until symbolized.");
+    Expect(cpuProfile.Inclusive.Select(frame => (frame.Frame, frame.Samples)).SequenceEqual(
+        [("Test.dll!0x1000", 4L), ("Test.dll!0x1100", 2L), ("?!0xABC0", 1L), ("Test.dll!0x1200", 1L), ("Test.dll!0x1300", 1L)]),
+        "Inclusive samples must count each frame once per stack, even when it recurses.");
+    Expect(cpuProfile.Modules is [{ Name: "Test.dll", Status: null, Addresses: 4 }],
+        "The sampled module must be listed with its code addresses.");
+    Expect(CpuProfileReader.Read(cpuPath, threadId: 6) is { ThreadId: 6, Samples: 1, Exclusive: [{ Frame: "Test.dll!0x1200" }] },
+        "A thread's profile must keep only its own samples.");
+    using (var cpuConnection = SessionFile.Open(cpuPath))
+    {
+        Expect(Sql.Scalar(cpuConnection, "SELECT Samples FROM HotFunctions WHERE ThreadId = 5 AND Frame = 'Test.dll!0x1100'") == 2 &&
+            Sql.Scalar(cpuConnection, "SELECT COUNT(*) FROM CpuSampleDetails") == 4,
+            "The CPU views must show each sample's frame.");
+    }
+
+    Expect(cpuProfile.Threads.All(thread => !thread.UiThread), "A thread without frames must not be a UI thread.");
+    using (var cpuConnection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={cpuPath};Pooling=False"))
+    {
+        cpuConnection.Open();
+        using var tick = cpuConnection.CreateCommand();
+        tick.CommandText = "INSERT INTO Frames (FrameId, ThreadId, FrameNumber, StartQpc, EndQpc) VALUES (1, 6, 1, 2500, 3500)";
+        tick.ExecuteNonQuery();
+    }
+
+    Expect(CpuProfileReader.Read(cpuPath)?.Threads.Select(thread => (thread.ThreadId, thread.UiThread)).SequenceEqual(
+        [(5, false), (6, true), (7, false)]) == true,
+        "The thread XAML ticked frames on must be the UI thread.");
+
+    // The same samples as call trees: from the stacks' root frames down, and up to or down from one function.
+    (string Frame, long Samples, long? Self) TreeNode(CpuCallTreeNode node) => (node.Frame, node.Samples, node.Self);
+    var cpuStacks = CpuProfileReader.ReadStacks(cpuPath);
+    var topDown = cpuStacks?.TopDown();
+    Expect(cpuStacks is { Samples: 4, ThreadId: null, Threads.Count: 3 } && cpuStacks.Ms(2) == 2.0 &&
+        topDown is { FrameIndex: -1, Samples: 4, Self: 0, HasChildren: true, Children: [{ Frame: "Test.dll!0x1000", Samples: 4, Self: 0 }] },
+        "The call tree's root must have every sample, by the stacks' root frames.");
+    var rootFrame = topDown!.Children[0];
+    Expect(rootFrame.Children.Select(TreeNode).SequenceEqual(
+        [("Test.dll!0x1100", 2L, (long?)2), ("?!0xABC0", 1L, (long?)1), ("Test.dll!0x1300", 1L, (long?)0)]),
+        "A node's children must be the functions its stacks called next, most samples first, each with the samples it ran.");
+    Expect(rootFrame.Children[2].Children is
+        [{ Frame: "Test.dll!0x1300", Self: 0, Children: [{ Frame: "Test.dll!0x1200", Samples: 1, Self: 1, HasChildren: false }] }],
+        "A recursive call must nest under its caller, down to the frame that ran.");
+    var functions = cpuStacks!.Functions();
+    Expect(functions.Select(function => (function.Frame, function.Self, function.Total)).SequenceEqual(
+        [("Test.dll!0x1100", 2L, 2L), ("?!0xABC0", 1L, 1L), ("Test.dll!0x1200", 1L, 1L), ("Test.dll!0x1000", 0L, 4L), ("Test.dll!0x1300", 0L, 1L)]) &&
+        functions.All(function => !function.Named),
+        "Functions must be listed by the samples they ran, then by the samples they were on the stack, once per sample.");
+    int FrameOf(string frame) => functions.Single(function => function.Frame == frame).FrameIndex;
+    Expect(cpuStacks.Callers(FrameOf("Test.dll!0x1100")) is
+        { Frame: "Test.dll!0x1100", Samples: 2, Self: 2, Children: [{ Frame: "Test.dll!0x1000", Samples: 2, Self: null, HasChildren: false }] },
+        "A function's callers must have the samples it was on the stack, up to the stacks' root frames.");
+    Expect(cpuStacks.Callers(FrameOf("Test.dll!0x1300")) is { Samples: 1, Self: 0, Children: [{ Frame: "Test.dll!0x1000", Samples: 1 }] },
+        "A recursive function's callers must be those of its outermost call.");
+    var callees = cpuStacks.Callees(FrameOf("Test.dll!0x1000"));
+    Expect(callees is { Samples: 4, Self: 0 } && callees.Children.Select(TreeNode).SequenceEqual(rootFrame.Children.Select(TreeNode)),
+        "A function's callees must be the functions it called, down to the frames that ran.");
+    ExpectThrows<ArgumentOutOfRangeException>(() => cpuStacks.Callers(topDown.FrameIndex), "The root of all samples must not be taken for a function.");
+    Expect(CpuProfileReader.ReadStacks(cpuPath, threadId: 6) is { ThreadId: 6, Samples: 1, Threads.Count: 3 } threadStacks &&
+        threadStacks.TopDown().Children is [{ Frame: "Test.dll!0x1000", Samples: 1 }],
+        "A thread's call tree must keep only its own samples.");
+
+    // The module's binary is gone and the trace didn't name its PDB: nothing can be searched for.
+    Directory.CreateDirectory(cpuSymbols);
+    var symbolized = SessionSymbolizer.Symbolize(cpuPath, cpuSymbols);
+    Expect(symbolized is { Modules: 1, NoIdentity: 1, Resolved: 0, Failed: 0, Named: 0 } &&
+        CpuProfileReader.Read(cpuPath) is { Modules: [{ Status: "NoIdentity" }], Sampling: { SymbolPath: not null, SymbolizedUtc: not null } },
+        "A module without a PDB identity must be reported, not fail symbolizing.");
+
+    // The trace named a PDB that isn't on the symbol path, and only the symbol path is searched.
+    var identified = CpuModule();
+    identified.PdbName = "Test.pdb";
+    identified.PdbGuid = Guid.Parse("0f6b9c1e-8d3a-4a5b-9c7d-2e1f3a4b5c6d");
+    identified.PdbAge = 1;
+    WriteCpuSession(cpuIdentityPath, identified);
+    Expect(SessionSymbolizer.Symbolize(cpuIdentityPath, cpuSymbols) is { Modules: 1, NotFound: 1, Failed: 0, Named: 0 } &&
+        CpuProfileReader.Read(cpuIdentityPath) is { Modules: [{ Status: "NotFound" }] },
+        "A PDB that isn't on the symbol path must be reported as not found.");
+
+    SessionWriter.Create(cpuEmptyPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)).Dispose();
+    Expect(CpuProfileReader.Read(cpuEmptyPath) is null && CpuProfileReader.ReadStacks(cpuEmptyPath) is null,
+        "A session that didn't sample CPU must have no CPU profile.");
+
+    // A recording's samples are read before it ends, while it has no CpuSampling row yet.
+    using (var liveWriter = SessionWriter.Create(cpuLivePath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+    {
+        var liveModule = CpuModule();
+        CodeFrame LiveAt(ulong rva) => new(liveModule, cpuBase + rva);
+        liveWriter.PostSample(new(1_000, 1, 5, [LiveAt(0x1100), LiveAt(0x1000)]), wait: true);
+        liveWriter.PostSample(new(2_000, 1, 6, [LiveAt(0x1200), LiveAt(0x1000)]), wait: true);
+        liveWriter.PostSample(new(3_000, 1, 6, [LiveAt(0x1200), LiveAt(0x1000)]), wait: true);
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (CpuProfileReader.ReadSampling(cpuLivePath)?.Samples != 3 && DateTime.UtcNow < deadline)
+        {
+            Thread.Sleep(50);
+        }
+
+        Expect(CpuProfileReader.ReadSampling(cpuLivePath) is { IntervalMs: null, Samples: 3, SymbolizedUtc: null } &&
+            CpuProfileReader.ReadStacks(cpuLivePath) is { Samples: 3, Threads.Count: 2, Sampling: { IntervalMs: null, Samples: 3 } } liveStacks &&
+            liveStacks.TopDown().Children is [{ Frame: "Test.dll!0x1000", Samples: 3 }] &&
+            CpuProfileReader.Read(cpuLivePath) is { Samples: 3, Exclusive: [{ Frame: "Test.dll!0x1200", Samples: 2, Ms: null }, ..] },
+            "A recording's stored samples must be read before it ends, without a sampling interval.");
+        liveWriter.SetCpuSampling(new(1.0, false, 3, [liveModule]), null);
+    }
+
+    Expect(CpuProfileReader.ReadSampling(cpuLivePath) is { IntervalMs: 1.0, Samples: 3 },
+        "The recording's end must write its sampling row.");
+
+    // While a session records, its functions are named in memory rather than in the file.
+    Expect(CpuProfileReader.ReadStacks(cpuLivePath, functionName: address => $"F{address}")?.Functions() is { Count: 3 } namedFunctions &&
+        namedFunctions.All(function => function.Named && function.Frame.StartsWith("Test.dll!F", StringComparison.Ordinal)),
+        "functionName must name the frames the file doesn't name yet.");
+    ExpectThrows<ArgumentException>(() => new LiveSymbolNamer(cpuLivePath, "srv*").Dispose(),
+        "A live namer must reject a malformed symbol path.");
+    using (var liveNamer = new LiveSymbolNamer(cpuLivePath, cpuSymbols))
+    {
+        Expect(!liveNamer.Requested && CpuProfileReader.ReadStacks(cpuLivePath, functionName: liveNamer.Request) is { Samples: 3 } &&
+            liveNamer.Requested,
+            "Reading with Request must ask for the frames that aren't named.");
+        Expect(liveNamer.Name() == 0 && !liveNamer.Requested &&
+            CpuProfileReader.ReadStacks(cpuLivePath, functionName: liveNamer.NameOf)!.Functions().All(function => !function.Named),
+            "A module without a PDB identity must stay unnamed, not fail naming.");
+        Expect(CpuProfileReader.ReadStacks(cpuLivePath, functionName: liveNamer.Request) is not null && liveNamer.Requested,
+            "A module whose PDB identity isn't known yet must be asked for again, as the recording may still find it.");
+    }
+
+    using (var identityNamer = new LiveSymbolNamer(cpuIdentityPath, cpuSymbols))
+    {
+        _ = CpuProfileReader.ReadStacks(cpuIdentityPath, functionName: identityNamer.Request);
+        Expect(identityNamer.Requested && identityNamer.Name() == 0 && !identityNamer.Requested &&
+            CpuProfileReader.ReadStacks(cpuIdentityPath, functionName: identityNamer.Request) is not null && !identityNamer.Requested,
+            "Addresses whose PDB isn't on the symbol path, or outside any module, must be looked up once, not on every read.");
+        identityNamer.Dispose();
+        ExpectThrows<ObjectDisposedException>(() => identityNamer.Name(), "A disposed live namer must not name.");
+    }
+}
+finally
+{
+    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath }.SelectMany(cpuSession =>
+        new[] { cpuSession, cpuSession + "-wal", cpuSession + "-shm" }))
+    {
+        File.Delete(cpuFile);
+    }
+
+    if (Directory.Exists(cpuSymbols))
+    {
+        Directory.Delete(cpuSymbols, recursive: true);
+    }
+}
+Console.WriteLine("Passed: CPU samples read back by thread, frame and call tree, symbolizing reports modules it can't name, and live naming names only what was asked for.");
+
+// The live kernel session keeps the samples from before it's read, and gives the sink the target's complete samples.
+KernelSampleSession? liveCpu = null;
+try
+{
+    liveCpu = KernelSampleSession.Start();
+}
+catch (UnauthorizedAccessException)
+{
+}
+
+if (liveCpu is null)
+{
+    Console.WriteLine("Skipped: live CPU sampling needs an elevated test run.");
+}
+else
+{
+    var liveSamples = new List<CompletedSample>();
+    long liveSpins = 0;
+    void SpinCpu()
+    {
+        var spinEnd = Environment.TickCount64 + 400;
+        while (Environment.TickCount64 < spinEnd)
+        {
+            liveSpins++;
+        }
+    }
+
+    using (liveCpu)
+    {
+        SpinCpu();
+        liveCpu.StartReading(processId => processId == Environment.ProcessId, sample =>
+        {
+            lock (liveSamples)
+            {
+                liveSamples.Add(sample);
+            }
+        });
+        SpinCpu();
+        var liveSummary = liveCpu.Stop();
+        Expect(liveSpins > 0 && liveCpu.Failure is null && liveSummary is { Samples: > 0, IntervalMilliseconds: > 0 } &&
+            liveSamples.Count == liveSummary.Samples && liveSamples.All(sample => sample.ProcessId == Environment.ProcessId) &&
+            liveSamples.Any(sample => sample.Frames.Length > 1 && sample.Frames.Any(frame => frame.Module is not null)),
+            "A live session must sample this process's stacks in its modules.");
+        Expect(liveCpu.Stop() == liveSummary, "Stopping the live session again must return the same summary.");
+    }
+
+    Console.WriteLine($"Passed: the live kernel session sampled this process {liveSamples.Count} times, with stacks.");
+}
 
 static void Expect(bool condition, string message)
 {

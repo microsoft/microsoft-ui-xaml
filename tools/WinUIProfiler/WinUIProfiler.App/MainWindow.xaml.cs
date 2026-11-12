@@ -15,6 +15,7 @@ using WinUIProfiler.App.Views;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
+using WinUIProfiler.Engine.Symbols;
 using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.App;
@@ -61,9 +62,11 @@ public sealed partial class MainWindow : Window
         AppWindow.Closing += AppWindow_Closing;
         FramesPanel.Owner = AppWindow.Id;
         ObjectsPanel.Owner = AppWindow.Id;
+        CpuPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
         ObjectsPanel.Source = session;
         LaunchPanel.Source = session;
+        CpuPanel.Source = session;
         FramesPanel.ObjectRequested += (_, mention) =>
         {
             Tabs.SelectedItem = ObjectsTab;
@@ -90,6 +93,11 @@ public sealed partial class MainWindow : Window
     public void ApplyCommandLine(ProfilerCommandLine value)
     {
         ArgumentNullException.ThrowIfNull(value);
+        if (value.SymbolPath is { } symbolPath)
+        {
+            SymbolPathText.Text = symbolPath;
+        }
+
         if (value.Kind is not { } kind)
         {
             return;
@@ -142,6 +150,7 @@ public sealed partial class MainWindow : Window
         model.PropertyChanged -= Model_PropertyChanged;
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
         foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
+        model.CancelSymbols();
         await model.DisconnectAsync();
         closeAllowed = true;
         Close();
@@ -162,6 +171,58 @@ public sealed partial class MainWindow : Window
         {
             ToolTipService.SetToolTip(line, details);
         }
+    }
+
+    // The session's CPU samples and how many of their functions the symbol path named. Sampling errors and trace notes
+    // come from the engine as whole sentences, so they're shown as they are.
+    private (string Text, string? Details) CpuLine()
+    {
+        if (model.CpuSampling is not { } sampling)
+        {
+            return (model.CpuSamplingError ?? string.Empty, null);
+        }
+
+        if (sampling.Samples == 0)
+        {
+            return ((sampling.Note ?? model.CpuSamplingError) ?? Text("CpuNoSamples"), null);
+        }
+
+        string text;
+        var details = Text("CpuSamplesDetails");
+        if (model.Symbolizing && model.SymbolsFrom is { } from)
+        {
+            text = Format("SymbolsPending", sampling.Samples, from);
+        }
+        else if (model.SymbolsError is { } error)
+        {
+            text = Format("SymbolsFailed", sampling.Samples, error);
+        }
+        else if (model.Symbols is { } symbols)
+        {
+            text = Format("SymbolsFormat", sampling.Samples, symbols.Resolved + symbols.Skipped, symbols.Modules, symbols.Named,
+                symbols.Addresses);
+            details = Format("SymbolsDetailsFormat", symbols.SymbolPath, symbols.NotFound, symbols.NoIdentity, symbols.Portable,
+                symbols.Failed) + "\n" + details;
+        }
+        else
+        {
+            text = Format("CpuSamplesFormat", sampling.Samples);
+        }
+
+        return (text, sampling.Note is { } note ? details + "\n" + note : details);
+    }
+
+    // Checks the symbol path's form before the session starts, so a typo fails now instead of after the recording.
+    private string? ReadSymbolPath()
+    {
+        var text = SymbolPathText.Text.Trim();
+        if (text.Length == 0)
+        {
+            return null;
+        }
+
+        _ = SymbolPaths.Normalize(text);
+        return text;
     }
     // Not used in trace mode.
     private TargetLaunchKind Kind => Mode.SelectedIndex switch
@@ -195,6 +256,7 @@ public sealed partial class MainWindow : Window
             (WorkingDirectoryText, "DirectoryAutomation"),
             (Endpoint, "EndpointAutomation"),
             (Trust, "TrustAutomation"),
+            (SymbolPathText, "SymbolPathAutomation"),
             (TraceProcessList, "TraceProcessAutomation"),
             (TraceProgress, "TraceProgressAutomation"),
             (SnapshotButton, "SnapshotAutomation"),
@@ -202,7 +264,8 @@ public sealed partial class MainWindow : Window
             (ConnectionStatus, "StatusAutomation"),
             (ConnectionIdentity, "IdentityAutomation"),
             (EtwSummary, "EtwAutomation"),
-            (RecordingSummary, "RecordingAutomation")
+            (RecordingSummary, "RecordingAutomation"),
+            (CpuSummary, "CpuAutomation")
         })
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
@@ -279,7 +342,8 @@ public sealed partial class MainWindow : Window
                 TargetText,
                 Browse,
                 Endpoint,
-                Trust
+                Trust,
+                SymbolPathText
             })
             {
                 control.IsEnabled = idle;
@@ -408,6 +472,15 @@ public sealed partial class MainWindow : Window
                         recording.LimitBytes / 1024 / 1024, recording.CompleteFromSeconds ?? 0),
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
             }
+
+            var (cpuText, cpuDetails) = CpuLine();
+            CpuSummary.Visibility = cpuText.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+            SetLine(CpuSummary, cpuText, cpuDetails);
+
+            // The CPU tab names a recording's functions from the symbol path while it records, and reads the session file
+            // again once the symbol path has named them in it.
+            CpuPanel.SymbolPath = model.SymbolPath;
+            CpuPanel.Symbolizing = model.Symbolizing;
 
             // A trace's session file grows while it is read, so the tabs follow it as they follow a connection's.
             session.ShowRecording(recording?.Path, model.State is "Connected" or "TraceReading" or "TraceStopping");
@@ -599,6 +672,7 @@ public sealed partial class MainWindow : Window
                 throw new ArgumentException(Text("InvalidEndpoint"));
             }
 
+            model.SymbolPath = ReadSymbolPath();
             var options = new TargetConnectionOptions(Kind,
 TargetText.Text.Trim(),
 ArgumentsText.Text,
@@ -645,9 +719,10 @@ PrivateRuntime);
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
         Tabs.SelectedItem = FramesTab;
-        session.BeginRecording();
         try
         {
+            model.SymbolPath = ReadSymbolPath();
+            session.BeginRecording();
             await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
         catch (Exception error)

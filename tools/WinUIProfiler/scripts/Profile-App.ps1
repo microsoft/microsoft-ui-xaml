@@ -12,8 +12,8 @@ deletes the staged DLLs and returns.
 Before it builds the profiler, it runs Install-Prerequisites.ps1, which checks the build tools and offers to install
 the missing ones.
 
-The script asks for administrator rights, which live ETW and the runtime links need. The app still runs without
-them. Exit codes: 0 when the app was launched with the private DLLs and the staging was removed, 4 when the UAC
+The script asks for administrator rights, which live ETW, CPU sampling and the runtime links need. The app still runs
+without them. Exit codes: 0 when the app was launched with the private DLLs and the staging was removed, 4 when the UAC
 prompt was declined, 1 otherwise.
 
 .PARAMETER MuxPath
@@ -42,11 +42,19 @@ built by Build-App.ps1 when it is missing.
 .PARAMETER Build
 Rebuilds the profiler with Build-App.ps1 first.
 
+.PARAMETER SymbolPath
+Where the profiler resolves the recording's CPU sample stacks from, as WPA's symbol path: local or network folders and
+symbol servers, separated by semicolons, for example srv*C:\Symbols*https://msdl.microsoft.com/download/symbols. Only
+this path is searched; _NT_SYMBOL_PATH is not read. Without it, the samples are recorded but not symbolized.
+
 .EXAMPLE
 .\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe
 
 .EXAMPLE
 .\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -Aumid 'Microsoft.WinUI3ControlsGallery_8wekyb3d8bbwe!App'
+
+.EXAMPLE
+.\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe -SymbolPath 'D:\out;srv*C:\Symbols*https://msdl.microsoft.com/download/symbols'
 #>
 [CmdletBinding(DefaultParameterSetName = 'Exe')]
 param(
@@ -58,6 +66,7 @@ param(
     [string] $MuxResourceDirectory,
     [string] $ProfilerPath,
     [switch] $Build,
+    [string] $SymbolPath,
     # Set when the script relaunches itself with administrator rights.
     [Parameter(DontShow)][string] $ElevatedLogPath
 )
@@ -692,6 +701,7 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
         if ($Arguments) { $profilerArguments += '--arguments', $Arguments }
         $profilerArguments += '--private-runtime', $runtime, '--runtime-source', $original, '--redirect-controls',
             '--launch-directory', $launches, '--trust-local-binaries', '--connect'
+        if ($SymbolPath) { $profilerArguments += '--symbol-path', $SymbolPath }
         foreach ($argument in $profilerArguments) { $start.ArgumentList.Add($argument) }
         $started = Get-Date
         $profilerProcess = [Diagnostics.Process]::Start($start)

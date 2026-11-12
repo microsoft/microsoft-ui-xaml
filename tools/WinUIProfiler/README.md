@@ -55,8 +55,9 @@ GPU memory and window focus events for it, to a session file. It can also read
 them from a recorded trace (`.etl`) into a session file. The Launch tab shows
 the launch's milestones, including an app's own (see
 [Launch timeline](#launch-timeline)), the Frames tab its UI-thread ticks and
-the regions of interest in them, and the Objects tab its UI elements and
-composition visuals.
+the regions of interest in them, the Objects tab its UI elements and
+composition visuals, and the CPU tab its sampled call stacks (see
+[CPU sampling and symbols](#cpu-sampling-and-symbols)).
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime. It
 replaces the target's WinUI runtime only when it launches the target with
@@ -133,7 +134,10 @@ PowerShell 7.4 or later:
 ```
 
 Use `-ExePath`, with optional `-Arguments`, for an unpackaged app, and `-Aumid`
-for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
+for a full-trust packaged app (`Get-StartApps` lists AUMIDs). `-SymbolPath`,
+such as `'D:\out;srv*C:\Symbols*https://msdl.microsoft.com/download/symbols'`,
+names the functions in the sampled CPU call stacks when each session ends (see
+[CPU sampling and symbols](#cpu-sampling-and-symbols)). The script:
 
 1. Builds the profiler with `Build-App.ps1` (Release, for this machine's
    architecture) when this checkout has no build. It first runs
@@ -191,6 +195,7 @@ directly:
 | `--redirect-controls` | Also load MUXC from the staged runtime. |
 | `--launch-directory <folder>` | Where each launch writes its results, in `<n>` subfolders. |
 | `--trust-local-binaries` | Checks the trust box. |
+| `--symbol-path <path>` | Fills in **Symbol path**. It can be used alone, with any connection mode. |
 | `--connect` | Connects once the window opens. |
 
 `--private-runtime`, `--runtime-source` and `--launch-directory` go together,
@@ -397,7 +402,8 @@ session file, with no events lost or dropped.
 
 Reading ETW live, or recording a trace, needs an elevated process, or
 membership in the local Performance Log Users group. Reading a trace file does
-not.
+not. Live CPU sampling needs an elevated process; see
+[CPU sampling and symbols](#cpu-sampling-and-symbols).
 
 ### Live, from the app
 
@@ -521,6 +527,9 @@ Times are in ms from the start of the recording.
 | `InterestingRowEvents` | The events of each interesting row | Agents |
 | `FrameList` | The Frames tab's list in order, with what each Show choice keeps (`InInteresting`, `InSlow`) | The Frames tab, `frames --list` |
 | `LaunchSummary` | When the first 10 ticks that drew ended, from process start or recording start | The Frames tab |
+| `CpuSampleDetails` | Every CPU sample of the target's threads: its time, thread and the frame it was in | `cpu`, agents |
+| `HotFunctions` | Each thread's CPU samples by the frame they were in, most first, with the time they stand for | `cpu`, agents |
+| `CpuFrames` | Every node of the sampled call stacks, with its frame and its caller's node | `cpu`, agents |
 | `QueryCatalog` | The views and an example query each | Agents |
 
 ```sql
@@ -777,7 +786,7 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli processes xaml.etl                      # event counts of the processes with XAML events, to find the PID
 & $cli summary xaml.etl --pid <pid>            # event counts for that process
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
-& $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
+& $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500] [--symbol-path <path>]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
 & $cli objects session.sqlite --type Button    # UI elements and visuals (--kind element|visual), with first/last seen and event counts
 & $cli timeline session.sqlite --object <id>   # the events that mention one object, with their frames (or --address 0x...)
@@ -788,7 +797,12 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli interesting session.sqlite --region <id> --json   # one region and its rows, as JSON
 & $cli launch xaml.etl --pid <pid> [--markers markers.json]   # the launch timeline, as in the Launch tab
 & $cli launch session.sqlite                   # the same, from a session file
+& $cli symbolize session.sqlite --symbol-path <path> [--force]   # names the functions in the CPU call stacks
+& $cli cpu session.sqlite [--thread <tid>] [--top 30] [--json]   # the hottest functions, per thread and in all
 ```
+
+A `logman` trace of these providers has no CPU samples; see
+[CPU sampling and symbols](#cpu-sampling-and-symbols) for a trace that has them.
 
 The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
 trace (.etl)** as the connection mode, then type the trace's path or browse for
@@ -1091,6 +1105,119 @@ wpr -stop launch.etl
 & $cli processes launch.etl                    # to find the app's PID
 & $cli launch launch.etl --pid <pid>
 ```
+
+## CPU sampling and symbols
+
+Session files also hold the target's sampled CPU call stacks, as WPA's
+**CPU Usage (Sampled)** shows them. The functions in them are named from a
+symbol path you give.
+
+Where the samples come from:
+
+- **Live:** while connected, the profiler runs its own real-time kernel session.
+  It samples every processor's call stack every millisecond, as WPR's CPU
+  profile does, and keeps the target's samples. The kernel allows this only to
+  an elevated (administrator) profiler. Unelevated, the profiler says so and
+  records events only.
+- **From a trace file:** `record` and the App's trace import keep the target's
+  samples when the trace has them. That takes a CPU profile with stacks, such
+  as WPR's `GeneralProfile` or `CPU`, started with a file-mode WPR profile of
+  the providers in `providers.txt`, say `xaml.wprp`, from an elevated prompt:
+  `wpr -start CPU -start xaml.wprp -filemode`. Give that profile's collector
+  large buffers, as the `logman` command's `-bs` and `-nb` do, or ETW loses
+  events. The `logman` trace above has no samples. A trace whose stacks were
+  compressed (stack keys) keeps only each sample's leaf frame.
+
+A module's PDB identity (PDB name, GUID and age) is the one the trace recorded.
+When it recorded none, it's read from the module's file, if that is still the
+image that was loaded (same time stamp and size). The samples are stored in:
+
+| Table or view | What it holds |
+| --- | --- |
+| `CpuSampling` | One row: the time each sample stands for (`IntervalMs`), the `Samples` and `Dropped` counts, whether stacks were compressed, the last symbol path, and why samples are missing or partial (`Note`) |
+| `CpuSamples` | Each sample's time, process, thread and call stack (`StackId`, its leaf frame) |
+| `CallStacks`, `CodeAddresses` | The call stacks as a tree from their root frames, and each frame's address, offset in its module (`Rva`) and `Function` |
+| `Modules` | The images and drivers the stacks ran in (`ProcessId` -1 for a driver), their PDB identity, and `SymbolStatus`: `Resolved`, `NotFound` (no location in the path has the PDB), `NoIdentity` (no PDB identity was recorded or read), `Portable` (managed code, whose portable PDBs have no native function names) or `Error`. `SymbolFile` is the PDB used, or why none was found. |
+| `CpuFrames`, `CpuSampleDetails`, `HotFunctions` | The [shared views](#shared-queries-views). A frame is `Module!Function`, or `Module!0xRva` until it's named. |
+
+The symbol path takes WPA's forms, separated by `;`. Only the locations in it
+are searched: `_NT_SYMBOL_PATH` is never read, and no server is added.
+
+| Element | Searches |
+| --- | --- |
+| `D:\out\bin` or `\\server\share\symbols` | The folder, flat and as a symbol store |
+| `srv*C:\Symbols*https://msdl.microsoft.com/download/symbols` | The server, downloading into `C:\Symbols` |
+| `srv*https://msdl.microsoft.com/download/symbols` | The server, downloading into the path's cache: the first `cache*dir` or `srv*dir*server`, else the first local `srv*dir`, else `%TEMP%\SymbolCache` |
+| `srv*C:\Symbols*\\server\share*https://server` | Each location in turn, downloading into `C:\Symbols` |
+| `cache*C:\Symbols` | The folder as a symbol store; it's also the path's cache |
+| `https://server/symbols` | The server |
+
+`http://symweb` is read as `https://symweb.azurefd.net`, which needs an Azure
+CLI sign-in (`az login`): the profiler gets its token from
+`az account get-access-token`. Other servers get your Windows credentials. A
+server that doesn't answer within 30 seconds, or a share within 10, isn't asked
+again. The first run downloads the PDBs and can take minutes; the cache makes
+later runs fast.
+
+To name the functions:
+
+- **App:** fill in **Symbol path** before connecting or opening a trace, or
+  pass `--symbol-path`. While the session records, or the trace is read, the
+  **CPU** tab names the functions of the stacks it shows, in memory, as their
+  PDBs are found (see [CPU tab](#cpu-tab)). When the session or the trace's
+  reading ends, the functions are named in the session file in the background.
+  The **CPU** line shows the samples and how many modules and code addresses
+  were named, and its tooltip has the details. Closing the window stops naming;
+  modules already done stay named.
+- **Script:** `Profile-App.ps1 -SymbolPath <path>` passes the path to the App.
+  Include the folder with your private DLLs' PDBs, such as `D:\out`.
+- **CLI:** `record --symbol-path <path>` names them once the session file is
+  written. `symbolize session.sqlite --symbol-path <path>` names them in an
+  existing session file. Run again, it skips the modules already named, so
+  another path can fill in the rest; `--force` names them all again.
+  `cpu session.sqlite` prints the threads by samples, the functions with the
+  most samples, exclusive (running) and inclusive (anywhere on the stack), and
+  each module's PDB: its name, GUID and age, or, once symbols were looked up,
+  the PDB used or why none was found. The UI thread, the one XAML ticked
+  frames on, is marked. `--thread <tid>` keeps one thread,
+  `--top <count>` sets the length of each list (30), and `--json` prints JSON.
+
+### CPU tab
+
+The App's **CPU** tab (`Views\CpuView.xaml`) shows the session file's call
+stacks, as WPA's CPU Usage (Sampled) does. While a session records, or a trace
+is read, it shows the stacks saved so far; it counts the saved samples every 5
+seconds, showing the first ones as they come and offering newer ones in the
+notice, so the lists don't change while they're read. With a symbol path, it
+names their functions meanwhile, module by module, the module with the most
+samples first, and shows the names as they're found; there's no need to
+disconnect. The names are kept in memory, since the recording writes the file
+meanwhile, and the downloaded PDBs stay in the path's cache, so naming them in
+the file when the session ends is quick. Without a symbol path, the functions
+show as `Module!0xRva`. It reads the stacks again when the recording or the
+trace's reading ends, and once the functions are named in the file.
+**Open session file...** shows a saved one, and **Refresh** reads it again,
+say after the CLI's `symbolize` or for a recording's newer samples, whose
+functions are then named.
+
+- The left list has the sampled functions, hottest first. **Self** is the share
+  of the samples running the function itself (exclusive), **Total** the share
+  with it anywhere on the stack (inclusive). The search box filters it by
+  function or module, and the order is by self or total. Addresses the symbol
+  path didn't name (`Module!0xRva`) are dimmed.
+- The right tree is the **call tree** of all the samples, from the threads'
+  outermost frames down, or, for the function selected on the left, its
+  **callers** (what called it, out to the thread's start) or **callees** (what
+  it called), merged over all its calls. Selecting a function shows its
+  callers. Each node has its total and self share and the CPU milliseconds its
+  samples stand for. The heaviest path, the children with at least half of the
+  samples, opens with the tree; a node's children past 300 are summed into one
+  row.
+- The thread list keeps one thread's samples, busiest first. The UI thread,
+  the one XAML ticked frames on, is listed as **UI thread**.
+- The notice above the lists says why there are no stacks, that a recording
+  has newer samples than those shown, or that the functions are addresses
+  until a symbol path names them.
 
 ## Copilot plugin
 

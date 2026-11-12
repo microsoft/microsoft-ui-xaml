@@ -4,6 +4,7 @@ using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Storage;
+using WinUIProfiler.Engine.Symbols;
 using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.App.ViewModels;
@@ -23,6 +24,11 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private string? finalEtwError;
     private RecordingStatus? finalRecording;
     private string? finalRecordingError;
+    private string? finalCpuSamplingError;
+    // The symbolizing of the last session file, which starts once its connection or trace reading has ended and closed it.
+    private CancellationTokenSource? symbolizing;
+    private string? symbolizedPath;
+    private bool symbolsStopped;
     public event PropertyChangedEventHandler? PropertyChanged;
     public MetricHistory? History
     {
@@ -43,6 +49,34 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     public string? EtwError => connection?.EtwError ?? finalEtwError;
     public RecordingStatus? Recording => connection?.Recording ?? replay?.Recording ?? finalRecording;
     public string? RecordingError => connection?.RecordingError ?? replay?.RecordingError ?? finalRecordingError;
+    // Why a connection records no CPU samples, or only some.
+    public string? CpuSamplingError => connection?.CpuSamplingError ?? finalCpuSamplingError;
+    // The symbol path that the functions of the next session's CPU call stacks are named from: in memory by the CPU tab
+    // while it records, and in its file once it ends; null to not name them. Only this path is searched (never
+    // _NT_SYMBOL_PATH).
+    public string? SymbolPath
+    {
+        get; set;
+    }
+    // What the ended session's file recorded of CPU sampling, once read; null when it did not sample CPU.
+    public CpuSamplingInfo? CpuSampling
+    {
+        get; private set;
+    }
+    public bool Symbolizing => symbolizing is not null;
+    // The symbol path of the symbolizing that is running or ended, and how it ended.
+    public string? SymbolsFrom
+    {
+        get; private set;
+    }
+    public SymbolizeResult? Symbols
+    {
+        get; private set;
+    }
+    public string? SymbolsError
+    {
+        get; private set;
+    }
     // The trace being read, or the last one read, until the next connection.
     public string? TracePath
     {
@@ -79,6 +113,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalTrace = null;
         TracePath = null;
         TraceTarget = null;
+        ResetSymbols();
         using var cancellation = new CancellationTokenSource();
         operation = cancellation;
         Notify();
@@ -156,6 +191,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalTrace = null;
         TracePath = etlPath;
         TraceTarget = process;
+        ResetSymbols();
         Notify();
         try
         {
@@ -217,8 +253,10 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalEtwError = owned.EtwError;
         finalRecording = owned.Recording;
         finalRecordingError = owned.RecordingError;
+        finalCpuSamplingError = owned.CpuSamplingError;
         connection = null;
         Notify();
+        _ = SymbolizeAsync(finalRecording?.Path);
     }
 
     private void Replay_Changed(object? sender, EventArgs args)
@@ -251,6 +289,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalRecordingError = owned.RecordingError;
         replay = null;
         Notify();
+        _ = SymbolizeAsync(finalRecording?.Path);
     }
 
     private void History_Changed(object? sender, EventArgs args)
@@ -311,9 +350,88 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
             finalEtwError = owned.EtwError;
             finalRecording = owned.Recording;
             finalRecordingError = owned.RecordingError;
+            finalCpuSamplingError = owned.CpuSamplingError;
             connection = null;
             IsBusy = false;
             Notify();
+            _ = SymbolizeAsync(finalRecording?.Path);
+        }
+    }
+
+    // Stops symbolizing for good, as the window closes; the modules already done stay named in the session file.
+    public void CancelSymbols()
+    {
+        symbolsStopped = true;
+        symbolizing?.Cancel();
+    }
+
+    private void ResetSymbols()
+    {
+        symbolizing?.Cancel();
+        symbolizing = null;
+        symbolizedPath = null;
+        finalCpuSamplingError = null;
+        CpuSampling = null;
+        SymbolsFrom = null;
+        Symbols = null;
+        SymbolsError = null;
+    }
+
+    // Reads what an ended session's file recorded of CPU sampling and, given a symbol path, names the functions of its
+    // samples, on a worker thread. Both ways a connection ends call it, so each file is done once.
+    private async Task SymbolizeAsync(string? path)
+    {
+        if (symbolsStopped || string.IsNullOrEmpty(path) || string.Equals(path, symbolizedPath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        symbolizedPath = path;
+        symbolizing?.Cancel();
+        using var cancellation = new CancellationTokenSource();
+        symbolizing = cancellation;
+        var symbolPath = SymbolPath;
+        try
+        {
+            var sampling = await Task.Run(() => File.Exists(path) ? CpuProfileReader.ReadSampling(path) : null, cancellation.Token);
+            if (!ReferenceEquals(symbolizing, cancellation))
+            {
+                return;
+            }
+
+            CpuSampling = sampling;
+            if (sampling is not { Samples: > 0 } || string.IsNullOrWhiteSpace(symbolPath))
+            {
+                return;
+            }
+
+            SymbolsFrom = symbolPath;
+            Notify();
+            var symbols = await Task.Run(
+                () => SessionSymbolizer.Symbolize(path, symbolPath, cancellationToken: cancellation.Token), cancellation.Token);
+            if (ReferenceEquals(symbolizing, cancellation))
+            {
+                Symbols = symbols;
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning("Naming the functions of the CPU samples in {0} failed: {1}", path, error);
+            if (ReferenceEquals(symbolizing, cancellation))
+            {
+                SymbolsError = error.Message;
+            }
+        }
+        finally
+        {
+            if (ReferenceEquals(symbolizing, cancellation))
+            {
+                symbolizing = null;
+                Notify();
+            }
         }
     }
 

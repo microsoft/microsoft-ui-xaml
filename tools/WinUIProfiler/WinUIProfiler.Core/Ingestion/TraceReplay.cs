@@ -50,6 +50,7 @@ public sealed class TraceReplay : IAsyncDisposable
     private readonly Timer changed;
     private readonly double durationMilliseconds;
     private readonly LaunchWatcher launch;
+    private readonly StackSampleCollector stacks;
 
     // Used only on the reader thread.
     private long lastQpc = long.MinValue;
@@ -88,6 +89,8 @@ public sealed class TraceReplay : IAsyncDisposable
                 }
             }, PostLauncherEvent);
             XamlEventSubscription.Match(source, processId, markers, OnEvent, OnOtherProcessEvent);
+            // The process's sampled CPU stacks, when the trace has them (a WPR CPU profile).
+            stacks = new(source, id => id == processId, OnSample);
             changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
             new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
         }
@@ -225,6 +228,8 @@ public sealed class TraceReplay : IAsyncDisposable
             {
                 // The launcher's events that waited for whether they are part of the launch.
                 launch.Complete();
+                // The samples whose stacks were still awaited.
+                stacks.Flush();
             }
 
             // The trace was read to its end unless Stop, damage or a failure ended the reading.
@@ -320,6 +325,25 @@ public sealed class TraceReplay : IAsyncDisposable
         }
     }
 
+    // A CPU sample of the process with its stack. Waits while the writer is behind, as events do.
+    private void OnSample(CompletedSample sample)
+    {
+        if (halted)
+        {
+            return;
+        }
+
+        try
+        {
+            writer.PostSample(sample, wait: true);
+        }
+        catch (Exception error)
+        {
+            failure ??= error;
+            Halt();
+        }
+    }
+
     // Waits while the pipeline is full, also after Stop: the events already queued are processed before the file is
     // closed anyway. An event that could not be processed or stored ends the reading.
     private void Post(ProfilerEvent profilerEvent)
@@ -363,6 +387,8 @@ public sealed class TraceReplay : IAsyncDisposable
         var final = failure is not null ? TraceReplayState.Failed : readAll ? TraceReplayState.Finished : TraceReplayState.Stopped;
         try
         {
+            var sampling = stacks.Summary;
+            writer.SetCpuSampling(sampling, StackSampleCollector.TraceNote(sampling));
             writer.Close(final switch
             {
                 TraceReplayState.Finished => "End of trace",

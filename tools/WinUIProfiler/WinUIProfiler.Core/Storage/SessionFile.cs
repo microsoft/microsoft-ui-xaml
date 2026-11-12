@@ -657,7 +657,9 @@ public static class SessionFile
 
         return command;
     }
-    private static SqliteConnection Open(string path)
+
+    // Opens a session file read-only, checking it is one this version reads.
+    internal static SqliteConnection Open(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         if (!File.Exists(path))

@@ -20,6 +20,8 @@
   <data name="WorkingDirectory.Header" xml:space="preserve"><value>Working directory (optional; unpackaged only)</value></data>
   <data name="Endpoint.Header" xml:space="preserve"><value>Diagnostics endpoint</value></data>
   <data name="Trust.Content" xml:space="preserve"><value>Trust local injector and TAP binaries (executes native code in the target)</value></data>
+  <data name="SymbolPath.Header" xml:space="preserve"><value>Symbol path for CPU call stacks (optional): folders, shares or srv*cache*url, separated by ;</value></data>
+  <data name="SymbolPath.PlaceholderText" xml:space="preserve"><value>srv*C:\Symbols*https://msdl.microsoft.com/download/symbols</value></data>
   <data name="TraceProcess.Header" xml:space="preserve"><value>Process</value></data>
   <data name="TraceProcess.PlaceholderText" xml:space="preserve"><value>Select a process with XAML events</value></data>
   <data name="TraceProcessFormat" xml:space="preserve"><value>{0} (PID {1}) | {2:N0} events | {3:F1} s to {4:F1} s</value></data>
@@ -215,6 +217,13 @@
   <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
   <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>
   <data name="RecordingDetailsFormat" xml:space="preserve"><value>{0}&#10;Limit {1:N0} MB: the oldest events are removed to stay within it.</value></data>
+  <data name="CpuNoSamples" xml:space="preserve"><value>CPU: no samples of the process were recorded</value></data>
+  <data name="CpuSamplesFormat" xml:space="preserve"><value>CPU: {0:N0} samples with call stacks | set a symbol path before starting to name their functions</value></data>
+  <data name="CpuSamplesDetails" xml:space="preserve"><value>The CPU tab shows the hottest functions and their call stacks. The session file's HotFunctions, CpuSampleDetails and CpuFrames views have the samples; the CLI's cpu command lists the hottest functions, and its symbolize command names them from a symbol path.</value></data>
+  <data name="SymbolsPending" xml:space="preserve"><value>CPU: {0:N0} samples | naming their functions from {1}...</value></data>
+  <data name="SymbolsFormat" xml:space="preserve"><value>CPU: {0:N0} samples | symbols for {1:N0} of {2:N0} sampled modules | {3:N0} of {4:N0} code addresses named</value></data>
+  <data name="SymbolsDetailsFormat" xml:space="preserve"><value>Searched: {0}&#10;{1:N0} modules had no PDB on the symbol path, {2:N0} had no recorded PDB identity, {3:N0} have portable (managed) PDBs, which have no native names, and {4:N0} failed.</value></data>
+  <data name="SymbolsFailed" xml:space="preserve"><value>CPU: {0:N0} samples | naming their functions failed: {1}</value></data>
   <data name="ModeAutomation" xml:space="preserve"><value>Launch, attach, or trace mode</value></data>
   <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
   <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>
@@ -234,6 +243,8 @@
   <data name="IdentityAutomation" xml:space="preserve"><value>Connected target identity</value></data>
   <data name="EtwAutomation" xml:space="preserve"><value>XAML ETW event counts</value></data>
   <data name="RecordingAutomation" xml:space="preserve"><value>Session file</value></data>
+  <data name="SymbolPathAutomation" xml:space="preserve"><value>Symbol path for CPU call stacks</value></data>
+  <data name="CpuAutomation" xml:space="preserve"><value>CPU sampling and symbols</value></data>
   <data name="UtilizationHeading" xml:space="preserve"><value>CPU and GPU utilization</value></data>
   <data name="MemoryHeading" xml:space="preserve"><value>Process memory</value></data>
   <data name="UtilizationAutomation" xml:space="preserve"><value>CPU and GPU usage graph</value></data>
@@ -421,4 +432,41 @@
   <data name="SnapshotVisualNotFoundFormat" xml:space="preserve"><value>{0} isn't in this session file. The recording may have started after it was inserted, or its events were trimmed.</value></data>
   <data name="SnapshotXamlTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its element's history in the Objects tab.</value></data>
   <data name="SnapshotCompositionTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its visual's history in the Objects tab.</value></data>
+  <data name="CpuTab.Header" xml:space="preserve"><value>CPU</value></data>
+  <data name="CpuViewThreads.AutomationProperties.Name" xml:space="preserve"><value>Thread</value></data>
+  <data name="CpuViewRefresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="CpuViewRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the session file's call stacks again.</value></data>
+  <data name="CpuViewSearch.PlaceholderText" xml:space="preserve"><value>Search functions or modules</value></data>
+  <data name="CpuViewSearch.AutomationProperties.Name" xml:space="preserve"><value>Search functions or modules</value></data>
+  <data name="CpuViewSort.AutomationProperties.Name" xml:space="preserve"><value>Order functions by</value></data>
+  <data name="CpuViewSortSelf.Content" xml:space="preserve"><value>By self</value></data>
+  <data name="CpuViewSortTotal.Content" xml:space="preserve"><value>By total</value></data>
+  <data name="CpuViewHeaderSelf.Text" xml:space="preserve"><value>Self</value></data>
+  <data name="CpuViewHeaderSelf.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The share of the samples that were running the function itself (exclusive).</value></data>
+  <data name="CpuViewHeaderTotal.Text" xml:space="preserve"><value>Total</value></data>
+  <data name="CpuViewHeaderTotal.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The share of the samples that had the function anywhere on the call stack: running it or a function it called (inclusive).</value></data>
+  <data name="CpuViewHeaderFunction.Text" xml:space="preserve"><value>Function</value></data>
+  <data name="CpuViewHeaderMs.Text" xml:space="preserve"><value>CPU (ms)</value></data>
+  <data name="CpuViewHeaderMs.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The CPU time the node's samples stand for: their count times the sampling interval.</value></data>
+  <data name="CpuViewFunctions.AutomationProperties.Name" xml:space="preserve"><value>Sampled functions</value></data>
+  <data name="CpuViewTreeMode.AutomationProperties.Name" xml:space="preserve"><value>Call tree</value></data>
+  <data name="CpuViewTopDown.Content" xml:space="preserve"><value>Call tree of all samples</value></data>
+  <data name="CpuViewCallers.Content" xml:space="preserve"><value>Callers of the selected function</value></data>
+  <data name="CpuViewCallees.Content" xml:space="preserve"><value>Callees of the selected function</value></data>
+  <data name="CpuViewCallTree.AutomationProperties.Name" xml:space="preserve"><value>Call stacks</value></data>
+  <data name="CpuViewSelectFunction.Text" xml:space="preserve"><value>Select a function on the left to see its callers or callees.</value></data>
+  <data name="CpuViewAllThreadsFormat" xml:space="preserve"><value>All threads ({0:N0} samples)</value></data>
+  <data name="CpuViewThreadFormat" xml:space="preserve"><value>Thread {0} ({1:N0} samples)</value></data>
+  <data name="CpuViewUiThreadFormat" xml:space="preserve"><value>UI thread {0} ({1:N0} samples)</value></data>
+  <data name="CpuViewAllSamples" xml:space="preserve"><value>All samples</value></data>
+  <data name="CpuViewMoreFormat" xml:space="preserve"><value>{0:N0} more functions</value></data>
+  <data name="CpuViewSummaryFormat" xml:space="preserve"><value>{0} | {1:N0} samples</value></data>
+  <data name="CpuViewSymbolsFormat" xml:space="preserve"><value>{0} | {1:N0} samples | functions named from {2}</value></data>
+  <data name="CpuViewLive" xml:space="preserve"><value>These are the call stacks saved so far, and Refresh reads newer ones. Their functions are named from the symbol path as their PDBs are found; without one, they show as module!0xaddress.</value></data>
+  <data name="CpuViewLiveChangedFormat" xml:space="preserve"><value>{0:N0} samples are saved now and {1:N0} are shown: Refresh to show the new ones. Their functions are named from the symbol path as their PDBs are found; without one, they show as module!0xaddress.</value></data>
+  <data name="CpuViewSymbolizing" xml:space="preserve"><value>Naming the sampled functions from the symbol path. The call stacks are shown when it's done.</value></data>
+  <data name="CpuViewNoSampling" xml:space="preserve"><value>This session file has no CPU samples. Live sampling needs the profiler to run as administrator, and a trace needs a CPU profile with stacks, such as WPR's CPU profile.</value></data>
+  <data name="CpuViewNotSymbolized" xml:space="preserve"><value>Functions are shown as module!0xaddress. To name them, fill in Symbol path (a folder, a share, or srv*C:\Symbols*https://msdl.microsoft.com/download/symbols) before connecting or opening the trace, or run: WinUIProfiler.Cli symbolize &lt;session.sqlite&gt; --symbol-path &lt;path&gt;, then Refresh.</value></data>
+  <data name="CpuViewFunctionToolTipFormat" xml:space="preserve"><value>{0}&#10;Self: {1:N0} samples ({2})&#10;Total: {3:N0} samples ({4})</value></data>
+  <data name="CpuViewNodeToolTipFormat" xml:space="preserve"><value>{0}&#10;{1:N0} samples ({2})</value></data>
 </root>
