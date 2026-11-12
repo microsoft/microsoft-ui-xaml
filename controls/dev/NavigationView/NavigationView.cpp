@@ -283,15 +283,19 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 {
     auto selectedItem = selectionModel.SelectedItem();
 
-    // Ignore this callback if:
-    // 1. the SelectedItem property of NavigationView is already set to the item
-    //    being passed in this callback. This is because the item has already been selected
-    //    via API and we are just updating the m_selectionModel state to accurately reflect the new selection.
-    // 2. Template has not been applied yet. SelectionModel's selectedIndex state will get properly updated
-    //    after the repeater finishes loading.
-    // TODO: Update SelectedItem comparison to work for the exact same item datasource scenario
-    if (m_shouldIgnoreNextSelectionChange || selectedItem == SelectedItem() || !m_appliedTemplate)
+    // SelectionModel's state is updated after the repeater finishes loading.
+    if (m_shouldIgnoreNextSelectionChange || !m_appliedTemplate)
     {
+        return;
+    }
+
+    if (selectedItem == SelectedItem())
+    {
+        // Collection changes can move the selected item without changing its identity.
+        UpdateIsChildSelected(selectionModel.SelectedIndex());
+        // The model can receive the collection change before the repeaters remap their indices.
+        m_isAncestorRefreshPendingAfterLayout = true;
+        InvalidateMeasure();
         return;
     }
 
@@ -1005,7 +1009,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
                     // Clear the parent chain too: the next selection's SelectAt can no longer see this item as the previous one.
                     // IsChildSelected callbacks can start a new selection, which then owns the selection model.
                     const auto generation = m_selectionChangeGeneration;
-                    UpdateIsChildSelected(indexPath, nullptr);
+                    UpdateIsChildSelected(nullptr);
                     if (generation == m_selectionChangeGeneration)
                     {
                         m_selectionModel.DeselectAt(indexPath);
@@ -1013,7 +1017,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
                 }
                 else if (!IsPaneOpen() && indexPath.GetSize() == 0)
                 {
-                    UpdateIsChildSelected(indexPathFromModel, nullptr); // Update IsChildSelected Property of Parent Chain
+                    UpdateIsChildSelected(nullptr);
                     if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
                     {
                         // Remove selection indication if we are not in the middle of an ongoing animation
@@ -1339,14 +1343,18 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             auto item = MenuItemFromContainer(nvi);
 
-            if (SelectedItem() == item && IsVisible(nvi))
+            if (item && SelectedItem() == item)
             {
-                if (m_isSelectionChangedPending && m_pendingSelectionChangedItem)
+                nvi.IsSelected(true);
+                if (IsVisible(nvi))
                 {
-                    MUX_ASSERT(m_pendingSelectionChangedItem == item);
-                }
+                    if (m_isSelectionChangedPending && m_pendingSelectionChangedItem)
+                    {
+                        MUX_ASSERT(m_pendingSelectionChangedItem == item);
+                    }
 
-                m_selectedItemLayoutUpdatedRevoker = nvi.LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnSelectedItemLayoutUpdated });
+                    m_selectedItemLayoutUpdatedRevoker = nvi.LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnSelectedItemLayoutUpdated });
+                }
             }
         }
     }
@@ -1453,6 +1461,12 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 {
     // We only need to handle once after MeasureOverride, so revoke the token.
     m_layoutUpdatedToken.revoke();
+
+    if (m_isAncestorRefreshPendingAfterLayout)
+    {
+        m_isAncestorRefreshPendingAfterLayout = false;
+        UpdateIsChildSelected(SelectedItem() ? m_selectionModel.SelectedIndex() : nullptr, false /* forceUpdate */);
+    }
 
     // In topnav, when an item in overflow menu is clicked, the animation is delayed because that item is not move to primary list yet.
     // And it depends on LayoutUpdated to re-play the animation. m_lastSelectedItemPendingAnimationInTopNav is the last selected overflow item.
@@ -2497,7 +2511,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 }
             });
             m_shouldIgnoreNextSelectionChange = true;
-            UpdateIsChildSelected(selectedIndexPath, nullptr);
+            UpdateIsChildSelected(nullptr);
             if (selectionOwnershipLost())
             {
                 return;
@@ -2613,7 +2627,7 @@ void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::I
         indexPath = GetIndexPathOfItem(selectedItem);
     }
 
-    if (indexPath && indexPath.GetSize() > 0)
+    if (!selectedItem || (indexPath && indexPath.GetSize() > 0))
     {
         // The SelectedItem property has already been updated. So we want to block any logic from executing
         // in the SelectionModel selection changed callback.
@@ -2622,57 +2636,97 @@ void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::I
                 m_shouldIgnoreNextSelectionChange = false;
             });
         m_shouldIgnoreNextSelectionChange = true;
-        UpdateSelectionModelSelection(indexPath);
+        if (selectedItem)
+        {
+            UpdateSelectionModelSelection(indexPath);
+        }
+        else
+        {
+            UpdateIsChildSelected(nullptr);
+        }
     }
 }
 
 void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 {
-    auto const prevIndexPath = m_selectionModel.SelectedIndex();
     m_selectionModel.SelectAt(ip);
     // SelectAt raises SelectionChanged synchronously, and handlers there can change the selection or remove the item.
-    UpdateIsChildSelected(prevIndexPath, m_selectionModel.SelectedIndex());
+    UpdateIsChildSelected(m_selectionModel.SelectedIndex());
 }
 
-void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP)
+void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& indexPath, bool forceUpdate)
 {
-    // IsChildSelected is public, so its callbacks can start a new selection, which updates the parent chain itself.
-    const auto generation = m_selectionChangeGeneration;
-    if (prevIP && prevIP.GetSize() > 0)
+    m_pendingAncestorIndexPath = indexPath;
+    m_isChildSelectedUpdatePending = true;
+    if (m_updatingIsChildSelected)
     {
-        UpdateIsChildSelectedForIndexPath(prevIP, false /*isChildSelected*/);
+        return;
     }
 
-    if (generation == m_selectionChangeGeneration && nextIP && nextIP.GetSize() > 0)
+    m_updatingIsChildSelected = true;
+    auto scopeGuard = gsl::finally([this]()
     {
-        UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
-    }
-}
+        m_updatingIsChildSelected = false;
+        m_pendingAncestorIndexPath = nullptr;
+    });
 
-void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected)
-{
-    const auto generation = m_selectionChangeGeneration;
-    // Update the isChildSelected property for every container on the IndexPath (with the exception of the actual container pointed to by the indexpath)
-    auto container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
-    if (!container)
+    auto const getAncestors = [this]()
     {
-        if (auto const source = m_selectionModelSource.GetAt(ip.GetAt(0)))
+        auto const currentIndexPath = m_pendingAncestorIndexPath ? m_selectionModel.SelectedIndex() : nullptr;
+        std::vector<winrt::NavigationViewItem> ancestors;
+        if (currentIndexPath && currentIndexPath.GetSize() > 2)
         {
-            auto const items = winrt::ItemsSourceView(source);
-            if (ip.GetAt(1) < items.Count())
+            auto container = GetContainerForIndex(currentIndexPath.GetAt(1), currentIndexPath.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
+            if (!container)
             {
-                container = items.GetAt(ip.GetAt(1)).try_as<winrt::UIElement>();
+                if (auto const source = m_selectionModelSource.GetAt(currentIndexPath.GetAt(0)))
+                {
+                    auto const items = winrt::ItemsSourceView(source);
+                    if (currentIndexPath.GetAt(1) < items.Count())
+                    {
+                        container = items.GetAt(currentIndexPath.GetAt(1)).try_as<winrt::UIElement>();
+                    }
+                }
+            }
+            auto index = 2;
+            while (container)
+            {
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+                {
+                    ancestors.push_back(nvi);
+                    if (index < currentIndexPath.GetSize() - 1)
+                    {
+                        container = nullptr;
+                        if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+                        {
+                            container = nextIR.TryGetElement(currentIndexPath.GetAt(index));
+                        }
+                        if (!container)
+                        {
+                            if (auto const children = GetChildren(nvi))
+                            {
+                                auto items = children.try_as<winrt::ItemsSourceView>();
+                                if (!items)
+                                {
+                                    items = winrt::ItemsSourceView(children);
+                                }
+                                if (currentIndexPath.GetAt(index) < items.Count())
+                                {
+                                    container = items.GetAt(currentIndexPath.GetAt(index)).try_as<winrt::UIElement>();
+                                }
+                            }
+                        }
+                        index++;
+                        continue;
+                    }
+                }
+                container = nullptr;
             }
         }
-    }
-    // first index is fo mainmenu or footer
-    // second is index of item in mainmenu or footer
-    // next in menuitem children
-    auto index = 2;
-    bool reconcileWithCurrentSelection = false;
-    // IsChildSelected is public, so an app callback can select another container (e.g. C.IsSelected = true). That selection
-    // reaches NavigationView only through the SelectionModel, so don't let a suppression set by an outer internal update
-    // (UnselectPrevItem, UpdateSelectionModelSelectionForSelectedItem, ...) drop it: it must take ownership of the selection.
+        return ancestors;
+    };
+
+    // Container-level selection in an application callback must not inherit internal suppression.
     const auto setIsChildSelected = [this](const winrt::NavigationViewItem& nvi, bool value)
     {
         auto scopeGuard = gsl::finally([this, ignoreNextSelectionChange = m_shouldIgnoreNextSelectionChange]()
@@ -2682,65 +2736,47 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
         m_shouldIgnoreNextSelectionChange = false;
         nvi.IsChildSelected(value);
     };
-    while (container)
+
+    while (m_isChildSelectedUpdatePending)
     {
-        if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+        m_isChildSelectedUpdatePending = false;
+        if (!forceUpdate)
         {
-            if (reconcileWithCurrentSelection)
+            auto const ancestors = getAncestors();
+            if (ancestors.size() == m_selectedAncestorContainers.size() &&
+                std::equal(ancestors.begin(), ancestors.end(), m_selectedAncestorContainers.begin(),
+                    [](auto const& ancestor, auto const& previous) { return ancestor == previous.get() && ancestor.IsChildSelected(); }))
             {
-                // The container at this level owns the first `index` entries of ip. It has a selected child
-                // only if the current selection lies beneath it.
-                bool hasSelectedChild = false;
-                if (auto const selectedIndex = m_selectionModel.SelectedIndex())
-                {
-                    if (selectedIndex.GetSize() > index)
-                    {
-                        hasSelectedChild = true;
-                        for (int i = 0; i < index && hasSelectedChild; i++)
-                        {
-                            hasSelectedChild = selectedIndex.GetAt(i) == ip.GetAt(i);
-                        }
-                    }
-                }
-                setIsChildSelected(nvi, hasSelectedChild);
-            }
-            else
-            {
-                setIsChildSelected(nvi, isChildSelected);
-                if (generation != m_selectionChangeGeneration)
-                {
-                    // A callback started a new selection. Don't abandon the rest of this chain: the new selection
-                    // only updated its own previous and next paths, so bring the remaining levels in line with it.
-                    reconcileWithCurrentSelection = true;
-                }
-            }
-            if (index < ip.GetSize() - 1)
-            {
-                container = nullptr;
-                if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
-                {
-                    container = nextIR.TryGetElement(ip.GetAt(index));
-                }
-                if (!container)
-                {
-                    if (auto const children = GetChildren(nvi))
-                    {
-                        auto items = children.try_as<winrt::ItemsSourceView>();
-                        if (!items)
-                        {
-                            items = winrt::ItemsSourceView(children);
-                        }
-                        if (ip.GetAt(index) < items.Count())
-                        {
-                            container = items.GetAt(ip.GetAt(index)).try_as<winrt::UIElement>();
-                        }
-                    }
-                }
-                index++;
                 continue;
             }
         }
-        container = nullptr;
+        forceUpdate = true;
+
+        // Finish all cleanup even when an application callback requests a newer selection.
+        auto previousAncestors = std::move(m_selectedAncestorContainers);
+        m_selectedAncestorContainers.clear();
+        for (auto const& ancestor : previousAncestors)
+        {
+            if (auto const container = ancestor.get())
+            {
+                setIsChildSelected(container, false);
+            }
+        }
+
+        if (m_isChildSelectedUpdatePending)
+        {
+            continue;
+        }
+
+        for (auto const& ancestor : getAncestors())
+        {
+            m_selectedAncestorContainers.push_back(winrt::make_weak(ancestor));
+            setIsChildSelected(ancestor, true);
+            if (m_isChildSelectedUpdatePending)
+            {
+                break;
+            }
+        }
     }
 }
 
