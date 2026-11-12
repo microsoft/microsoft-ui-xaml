@@ -24,10 +24,41 @@
 #include "TemplateContent.h"
 #include "MultiParentShareableDependencyObject.h"
 #include "xamldiagnostics\inc\RuntimeObject.h"
+#include <array>
 
 namespace Diagnostics
 {
     constexpr size_t c_maxResourceDependenciesToInspectPerRegistration = 4;
+
+    // Like PruneExpiredResourceDependencies, for maps keyed by weak references.
+    template <typename Map>
+    static void PruneDeletedKeys(Map& map, typename Map::key_type& nextToInspect)
+    {
+        // Destroyed after the loop: a value can release objects whose destruction changes this map.
+        std::array<typename Map::node_type, c_maxResourceDependenciesToInspectPerRegistration> removed;
+        size_t removedCount = 0;
+
+        auto iter = map.lower_bound(nextToInspect);
+        const size_t entriesToInspect = std::min(c_maxResourceDependenciesToInspectPerRegistration, map.size());
+        for (size_t inspected = 0; inspected < entriesToInspect && !map.empty(); ++inspected)
+        {
+            if (iter == map.end())
+            {
+                iter = map.begin();
+            }
+
+            if (iter->first.expired())
+            {
+                removed[removedCount++] = map.extract(iter++);
+            }
+            else
+            {
+                ++iter;
+            }
+        }
+
+        nextToInspect = (iter != map.end()) ? iter->first : typename Map::key_type();
+    }
 
     ResourceGraphKeyWithParent::ResourceGraphKeyWithParent(
         _In_ CResourceDictionary* dictionary,
@@ -175,6 +206,7 @@ namespace Diagnostics
             _In_ CResourceDictionary* pResourceDictionary,
             const xstring_ptr& resourceKey)
     {
+        PruneDeletedKeys(m_preResolveDictionaryMap, m_nextPreResolvedTemplateToInspect);
         m_preResolveDictionaryMap.emplace(xref::get_weakref(templateContent), ResourceGraphKey(pResourceDictionary, resourceKey));
     }
 
@@ -323,6 +355,7 @@ namespace Diagnostics
 
     void ResourceGraph::CacheRuntimeContext(_In_ CStyle* style, _In_ std::shared_ptr<CustomWriterRuntimeContext> context)
     {
+        PruneDeletedKeys(m_styleContext, m_nextStyleContextToInspect);
         m_styleContext.emplace(xref::get_weakref<CStyle>(style), StyleContext(std::move(context)));
     }
 
@@ -521,6 +554,7 @@ namespace Diagnostics
 
     void ResourceGraph::CacheMarkupExtensionToTarget(_In_ CMarkupExtensionBase* ext, _In_ KnownPropertyIndex targetProp, _In_ CDependencyObject* targetObj)
     {
+        PruneDeletedKeys(m_markupExtensionMap, m_nextMarkupExtensionToInspect);
         // First try to remove current one
         RemoveMarkupExtensionToTarget(targetObj, targetProp);
         m_markupExtensionMap.emplace(xref::get_weakref(ext), std::make_pair(targetProp, xref::get_weakref(targetObj)));
@@ -570,6 +604,7 @@ namespace Diagnostics
 
     void ResourceGraph::AddStyleContext(_In_ CStyle* style, _In_ CDependencyObject* owner, bool isImplicit)
     {
+        PruneDeletedKeys(m_styleContext, m_nextStyleContextToInspect);
         auto result = m_styleContext.emplace(xref::get_weakref(style), StyleContext(owner, isImplicit));
         if (!result.second && isImplicit)
         {

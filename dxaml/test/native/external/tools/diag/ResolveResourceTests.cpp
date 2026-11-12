@@ -95,6 +95,52 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 #endif
         }
 
+        // Each generation records a template that pre-resolves a resource, and instantiates it with markup extensions.
+        // Uses no Control, because every styled element adds to CCoreServices::m_appliedStyleTables, which isn't pruned.
+        void ResolveResourceTests::ExpiredTemplateEntriesDoNotAccumulate()
+        {
+            constexpr unsigned int generationCount = 64;
+            Platform::String^ markup =
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"<Grid.Resources><SolidColorBrush x:Key='brush' Color='Red'/>"
+                L"<DataTemplate x:Key='template'><Border Background='{StaticResource brush}' BorderBrush='{ThemeResource brush}'>"
+                L"<TextBlock Text='{Binding}'/></Border></DataTemplate></Grid.Resources></Grid>";
+
+            RunOnUIThread([&]
+            {
+                const auto createGenerations = [&]
+                {
+                    for (unsigned int generation = 0; generation < generationCount; ++generation)
+                    {
+                        auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(markup));
+                        safe_cast<xaml::DataTemplate^>(root->Resources->Lookup(L"template"))->LoadContent();
+                    }
+                };
+                const auto outstanding = []
+                {
+                    return static_cast<int64_t>(TestServices::WindowHelper->GetAllocationCount()) -
+                        static_cast<int64_t>(TestServices::WindowHelper->GetDeallocationCount());
+                };
+
+                // Release builds count allocations only while the XAML profiler provider is enabled.
+                const auto allocationsBefore = TestServices::WindowHelper->GetAllocationCount();
+                createGenerations();
+                if (TestServices::WindowHelper->GetAllocationCount() == allocationsBefore)
+                {
+                    WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"Allocation counting is off.");
+                    return;
+                }
+
+                const auto outstandingBefore = outstanding();
+                createGenerations();
+                const auto growth = outstanding() - outstandingBefore;
+
+                LOG_OUTPUT(L"Outstanding allocation growth: %lld", growth);
+                VERIFY_IS_LESS_THAN(growth, static_cast<int64_t>(generationCount / 2));
+            });
+        }
+
         void ResolveResourceTests::ResolveThemeResource()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;

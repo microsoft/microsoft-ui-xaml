@@ -145,6 +145,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(ExpiredGenerationsDoNotAccumulate)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
+            BEGIN_TEST_METHOD(ExpiredTemplateEntriesDoNotAccumulate)
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
         private:
             //Helper method for creating a Style
             Microsoft::UI::Xaml::Tests::Common::TestCleanupWrapper LoadXamlFromFunction(const std::function<UIElement ^ ()> func, wrl::ComPtr<Microsoft::UI::Xaml::Tests::Common::VisualTreeServiceCallback>& callback);
