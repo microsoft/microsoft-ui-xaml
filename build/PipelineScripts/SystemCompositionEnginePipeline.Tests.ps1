@@ -703,5 +703,26 @@ Add-Content -LiteralPath (Join-Path $PSScriptRoot 'core-invoked.txt') -Value 'in
                 Should Be 1
             $pipelineContent | Should Match $expectedStagePattern
         }
+
+        It 'includes system composition validation in Official runs' {
+            $pipelinePath = Join-Path `
+                (Split-Path -Parent $PSScriptRoot) `
+                'WinUI-Official.yml'
+            $pipelineContent = Get-Content -LiteralPath $pipelinePath -Raw
+            $expectedStagePattern = (
+                'template:\s+AzurePipelinesTemplates\\' +
+                'WinUI-RunSystemCompositionEngineTests-Stage\.yml\s*' +
+                '\r?\n\s*parameters:\s*' +
+                '\r?\n\s*pipelineKind:\s+Nightly\s*' +
+                '\r?\n\s*MUXFinalRelease:\s+' +
+                '\$\{\{\s*parameters\.MUXFinalRelease\s*\}\}'
+            )
+
+            [regex]::Matches(
+                $pipelineContent,
+                'WinUI-RunSystemCompositionEngineTests-Stage\.yml').Count |
+                Should Be 1
+            $pipelineContent | Should Match $expectedStagePattern
+        }
     }
 }
