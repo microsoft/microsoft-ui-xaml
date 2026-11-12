@@ -116,9 +116,9 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "f2120228-0659-4f89-9357-91ac7daa0dff")]
-    public sealed class LoopingSelectorPanel : Controls.Canvas
+    public class LoopingSelectorPanel : Controls.Canvas
     {
-        internal LoopingSelectorPanel() { }
+        public LoopingSelectorPanel() { }
     }
 
     [DXamlIdlGroup("Phone")]
