@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <optional>
+
 class NavigationViewItem;
 struct bringintoview_event_revoker;
 
@@ -73,7 +75,7 @@ public:
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
-    void TopNavigationViewItemContentChanged();
+    void TopNavigationViewItemContentChanged(bool forceInvalidateWidthCache = false);
 
     void CoerceToGreaterThanZero(double& value);
 
@@ -95,6 +97,8 @@ public:
 
     // Selection handling functions
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
+    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    bool UpdateSelectedItemFromMenuItems(const winrt::ItemsSourceView& menuItems, bool foundFirstSelected = false);
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
@@ -106,7 +110,6 @@ private:
     void OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     // Selection handling functions
-    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
@@ -127,6 +130,7 @@ private:
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data, bool isFooterRepeater);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
+    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::IInspectable& items, const winrt::IInspectable& data, const winrt::IndexPath& ip);
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
@@ -134,7 +138,6 @@ private:
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
     bool DoesRepeaterHaveRealizedContainers(const winrt::ItemsRepeater& ir);
     bool IsSettingsItem(winrt::IInspectable const& item);
-    bool IsSelectionSuppressed(const winrt::IInspectable& item);
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
     bool IsTopLevelItem(const winrt::NavigationViewItemBase& nvib);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
@@ -170,7 +173,6 @@ private:
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
-    void UndoSelectionAndRevertSelectionTo(winrt::IInspectable const& prevSelectedItem, winrt::IInspectable const& nextItem);
     void CloseTopNavigationViewFlyout();
     void UpdateVisualState(bool useTransitions = false);
     void UpdateVisualStateForOverflowButton();
@@ -255,7 +257,6 @@ private:
     void UpdateTopNavOverflowRepeaterItemsSource(const winrt::IInspectable& items);
     static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
-    bool UpdateSelectedItemFromMenuItems(const winrt::impl::com_ref<winrt::IVector<winrt::IInspectable>>& menuItems, bool foundFirstSelected = false);
     bool m_InitialNonForcedModeUpdate{ true };
 
     void UpdateRepeaterItemsSource(bool forceSelectionModelUpdate);
@@ -294,7 +295,6 @@ private:
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
-    void AnimateSelectionChangedToItem(const winrt::IInspectable& selectedItem);
     void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
     void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
     void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
@@ -502,6 +502,11 @@ private:
     bool m_selectionChangeFromOverflowMenu{ false };
     // Flag indicating whether selection change should raise item invoked. This is needed to be able to raise ItemInvoked before SelectionChanged while SelectedItem should point to the clicked item
     bool m_shouldRaiseItemInvokedAfterSelection{ false };
+    // A reentrant selection consumes this item before notifying selection changes.
+    // An engaged null value also tracks invocation without a previous selection.
+    std::optional<winrt::IInspectable> m_itemPendingUnselection;
+    // Incremented by every ChangeSelection so an outer call can detect that a reentrant one completed the selection.
+    uint32_t m_selectionChangeGeneration{ 0 };
 
     TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::Uninitialized };
 
@@ -527,4 +532,3 @@ private:
 
     double m_OpenPaneLength{ 320.0 };
 };
-

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.App.ViewModels;
 
@@ -56,6 +57,7 @@ public sealed class SnapshotDiffData
     public SnapshotViewerData After { get; }
     public SnapshotTreeDiff Xaml { get; }
     public SnapshotTreeDiff Composition { get; }
+    public SnapshotResourceComparison Resources { get; }
 
     private SnapshotDiffData(SnapshotViewerData before, SnapshotViewerData after, CancellationToken token)
     {
@@ -64,6 +66,7 @@ public sealed class SnapshotDiffData
             throw new InvalidDataException("Snapshots must belong to the same process ID and creation time.");
         Before = before;
         After = after;
+        Resources = new(before.Document.ResourceSnapshot, after.Document.ResourceSnapshot);
         Xaml = CompareTree(before.Xaml, after.Xaml, before.Document.Roots, after.Document.Roots, token);
         Composition = CompareTree(before.Composition, after.Composition, before.Document.Roots, after.Document.Roots, token);
     }

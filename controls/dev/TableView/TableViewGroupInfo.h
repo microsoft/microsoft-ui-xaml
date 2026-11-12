@@ -12,9 +12,9 @@
 // remains the internal source of truth for kind / level / expansion; this exposes the group key
 // plus the metadata a header template needs.
 //
-// Updated IN PLACE by PrepareGroupHeaderElement rather than re-created per render: a template
-// binding IsExpanded or ItemCount must observe changes, and re-pointing Content at a fresh
-// instance every render would re-evaluate every binding in the content template.
+// Updated in place while the header represents the same group, so template bindings observe
+// metadata changes. Recycling to another group creates a new projection; references retained
+// by an open context menu must never change group identity.
 //
 // Deliberately a plain implementation<> rather than a ReferenceTracker, and not using the
 // generated properties base: this is a leaf value object with no outbound references to XAML
@@ -25,7 +25,7 @@
 bool SameGroupKey(winrt::IInspectable const& left, winrt::IInspectable const& right) noexcept;
 
 class TableViewGroupInfo :
-    public winrt::implementation::TableViewGroupInfoT<TableViewGroupInfo>
+    public winrt::implementation::TableViewGroupInfoT<TableViewGroupInfo, winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider, winrt::Windows::Foundation::IStringable>
 {
 public:
     TableViewGroupInfo(
@@ -46,6 +46,14 @@ public:
 
     winrt::event_token PropertyChanged(winrt::PropertyChangedEventHandler const& value);
     void PropertyChanged(winrt::event_token const& token);
+
+    // {Binding} resolves the properties here when the app's metadata can't describe this type (trimmed or AOT apps).
+    // Not [bindable]: that adds it to every C++ app's generated XamlTypeInfo, which then needs the Tabular projection header.
+    winrt::TypeName Type();
+    winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetCustomProperty(winrt::hstring const& name);
+    winrt::Microsoft::UI::Xaml::Data::ICustomProperty GetIndexedProperty(winrt::hstring const& name, winrt::TypeName const& type);
+    winrt::hstring GetStringRepresentation();
+    winrt::hstring ToString();
 
     // Internal: refresh identity/metadata in place, raising PropertyChanged only for what
     // actually changed. Expansion is NOT set here -- see SetExpansionInternal.

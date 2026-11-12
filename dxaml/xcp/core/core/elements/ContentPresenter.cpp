@@ -1274,7 +1274,7 @@ bool CContentPresenter::IsMaskDirty(
         || pHwShapeRealization->MaskNeedsUpdate(
             renderCollapsedMask,
             GetBackgroundBrush().get(), m_fNWBackgroundDirty, isFillBrushAnimated, pIsFillForHitTestOnly,
-            GetBorderBrush().get(), m_fNWBorderBrushDirty, isStrokeBrushAnimated, pIsStrokeForHitTestOnly);
+            CBorder::HasNonZeroThickness(GetBorderThickness()) ? GetBorderBrush().get() : nullptr, m_fNWBorderBrushDirty, isStrokeBrushAnimated, pIsStrokeForHitTestOnly);
 }
 
 

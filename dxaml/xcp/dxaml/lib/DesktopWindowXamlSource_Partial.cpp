@@ -241,18 +241,7 @@ _Check_return_ HRESULT DesktopWindowXamlSource::Initialize()
     // as it has thread-local variables and needs to be disposed off by the same thread
     AddToReferenceTrackingList();
 
-    // Create and configure focus navigation controller
-    ctl::ComPtr<IInspectable> spInsp;
-    IFC_RETURN(m_spXamlIslandRoot->get_FocusController(&spInsp));
-    IFC_RETURN(spInsp.As(&m_spFocusController));
-    IFC_RETURN(m_spFocusController->add_GotFocus(
-        Microsoft::WRL::Callback<xaml_hosting::FocusNavigatedEventHandler>(
-            this, &DesktopWindowXamlSource::OnFocusControllerGotFocus).Get(),
-        &m_gotFocusEventCookie));
-    IFC_RETURN(m_spFocusController->add_LosingFocus(
-        Microsoft::WRL::Callback<xaml_hosting::FocusDepartingEventHandler>(
-            this, &DesktopWindowXamlSource::OnFocusControllerLosingFocus).Get(),
-        &m_losingFocusEventCookie));
+    IFC_RETURN(InitializeFocusController());
 
     ctl::ComPtr<XamlIslandRoot> xamlIslandRoot = m_spXamlIslandRoot.Cast<XamlIslandRoot>();
     CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(xamlIslandRoot->GetHandle());
@@ -439,6 +428,45 @@ IFACEMETHODIMP DesktopWindowXamlSource::Close()
     m_desktopBridge = nullptr;
     m_contentBridgeDW = nullptr;
 
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowXamlSource::UpdateContentIsland(bool initialize)
+{
+    if (!initialize)
+    {
+        IFC_RETURN(ReleaseFocusController());
+    }
+
+    IFC_RETURN(m_xamlIsland->UpdateContentIsland(initialize));
+
+    if (initialize)
+    {
+        IFC_RETURN(InitializeFocusController());
+
+        if (m_desktopBridge)
+        {
+            auto pXamlIslandCore = static_cast<CXamlIslandRoot*>(m_spXamlIslandRoot.Cast<XamlIslandRoot>()->GetHandle());
+            IFC_RETURN(m_desktopBridge->Connect(pXamlIslandCore->GetContentIsland()));
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowXamlSource::InitializeFocusController()
+{
+    ctl::ComPtr<IInspectable> spInsp;
+    IFC_RETURN(m_spXamlIslandRoot->get_FocusController(&spInsp));
+    IFC_RETURN(spInsp.As(&m_spFocusController));
+    IFC_RETURN(m_spFocusController->add_GotFocus(
+        Microsoft::WRL::Callback<xaml_hosting::FocusNavigatedEventHandler>(
+            this, &DesktopWindowXamlSource::OnFocusControllerGotFocus).Get(),
+        &m_gotFocusEventCookie));
+    IFC_RETURN(m_spFocusController->add_LosingFocus(
+        Microsoft::WRL::Callback<xaml_hosting::FocusDepartingEventHandler>(
+            this, &DesktopWindowXamlSource::OnFocusControllerLosingFocus).Get(),
+        &m_losingFocusEventCookie));
     return S_OK;
 }
 

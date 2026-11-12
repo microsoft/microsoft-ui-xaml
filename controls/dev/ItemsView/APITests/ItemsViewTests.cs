@@ -1006,6 +1006,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Timeout", "0:0:30")]
+        [TestProperty("Description", "A target recycled during synchronous bring-into-view layout must not cause an endless ancestor search.")]
+        public void CanRecoverBringItemIntoViewTargetRecycledDuringLayout()
+        {
+            ItemsView itemsView = null;
+            ItemsRepeater repeater = null;
+            bool recycleTarget = false;
+            int recycledTargets = 0;
+            using (var loaded = new AutoResetEvent(false))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var layout = new RepeaterTests.Common.Mocks.MockVirtualizingLayout()
+                    {
+                        MeasureLayoutFunc = (availableSize, context) =>
+                        {
+                            if (recycleTarget)
+                            {
+                                var target = repeater.TryGetElement(0);
+                                Verify.IsNotNull(target);
+                                recycleTarget = false;
+                                context.RecycleElement(target);
+                                recycledTargets++;
+                                Verify.AreEqual(-1, repeater.GetElementIndex(target));
+                            }
+                            return new Size(200, 400);
+                        }
+                    };
+                    itemsView = new ItemsView()
+                    {
+                        Layout = layout,
+                        ItemsSource = new[] { "Target" },
+                        ItemTemplate = XamlReader.Load(
+                            @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                                <ItemContainer><TextBlock Text='{Binding}'/></ItemContainer>
+                              </DataTemplate>") as DataTemplate
+                    };
+                    SetupDefaultUI(itemsView, loaded);
+                });
+
+                WaitForEvent("Waiting for Loaded event", loaded);
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    repeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+                    recycleTarget = true;
+                    itemsView.StartBringItemIntoView(0, new BringIntoViewOptions() { AnimationDesired = false });
+                    Verify.AreEqual(1, recycledTargets, "The cached target must have been recycled during UpdateLayout.");
+                    Verify.IsNotNull(repeater.TryGetElement(0), "The bring request must reacquire its target.");
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Collapses the target of a pending ItemsView.StartBringItemIntoView operation and verifies that the ensuing layout pass does not throw.")]
         public void CanCollapsePendingBringItemIntoViewTarget()
         {
@@ -1112,6 +1167,127 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment("Done");
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Brings the last child of a non-virtualizing ScrollView content into view right after the content was reset, before the new content was laid out, and verifies the ScrollView reaches the bottom.")]
+        public void CanBringLastElementIntoViewAfterContentReset()
+        {
+            // Regression coverage for ScrollPresenter bringing the view to the wrong place - and still reporting
+            // the scroll as completed - when the InteractionTracker position boundaries still reflect the previous
+            // content size. Reproduced here without ItemsView so that only ScrollPresenter is in the picture.
+            // The animated counterpart of this scenario is not covered on purpose: it goes through
+            // InteractionTracker.TryUpdatePositionWithAnimation, which re-evaluates the position boundaries over
+            // several frames and is therefore unaffected by momentarily stale ones. It is also unreachable through
+            // ItemsView, since ItemsRepeater forces AnimationDesired=false whenever the bring-into-view anchor is
+            // outside the realized range (ViewportManager::OnBringIntoViewRequested).
+            int[] childCounts = new int[] { 240, 180, 220 };
+
+            ScrollView scrollView = null;
+            StackPanel stackPanel = null;
+            AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewScrollCompletedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                stackPanel = new StackPanel() { Spacing = 4.0 };
+                scrollView = new ScrollView()
+                {
+                    Name = "scrollView",
+                    Width = c_defaultUIItemsViewWidth,
+                    Height = c_defaultUIItemsViewHeight,
+                    Content = stackPanel
+                };
+
+                scrollView.Loaded += (object sender, RoutedEventArgs e) =>
+                {
+                    Log.Comment("ScrollView.Loaded event handler");
+                    scrollViewLoadedEvent.Set();
+                };
+
+                Content = scrollView;
+                Content.UpdateLayout();
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollView.BringingIntoView += (sender, args) =>
+                {
+                    Log.Comment("ScrollView.BringingIntoView - TargetVerticalOffset=" + args.TargetVerticalOffset);
+                };
+
+                scrollView.ScrollCompleted += (sender, args) =>
+                {
+                    Log.Comment("ScrollView.ScrollCompleted raised - CorrelationId=" + args.CorrelationId + ", VerticalOffset=" + scrollView.VerticalOffset);
+
+                    scrollViewScrollCompletedEvent.Set();
+                };
+            });
+
+            for (int iteration = 1; iteration <= childCounts.Length; iteration++)
+            {
+                int childCount = childCounts[iteration - 1];
+
+                RunOnUIThread.Execute(() =>
+                {
+                    stackPanel.Children.Clear();
+                    stackPanel.Children.Add(new Border() { Height = 167.0 });
+                });
+
+                WaitForIdle("Iteration " + iteration + ": waiting for the UI thread to settle after the placeholder child.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Iteration " + iteration + ": resetting the content with " + childCount + " children without waiting for a layout pass.");
+
+                    stackPanel.Children.Clear();
+
+                    for (int index = 0; index < childCount; index++)
+                    {
+                        stackPanel.Children.Add(new Border() { Height = 167.0 });
+                    }
+
+                    Verify.IsTrue(scrollView.DispatcherQueue.TryEnqueue(
+                        Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
+                        () =>
+                        {
+                            Log.Comment("Iteration " + iteration + ": invoking StartBringIntoView on the last child.");
+
+                            // ItemsView realizes and synchronously lays out the target before calling
+                            // StartBringIntoView. Mirror that here, so that the ScrollPresenter's extent is
+                            // up to date and only the InteractionTracker's boundaries can be stale.
+                            stackPanel.UpdateLayout();
+
+                            stackPanel.Children[childCount - 1].StartBringIntoView(new BringIntoViewOptions()
+                            {
+                                AnimationDesired = false,
+                                VerticalAlignmentRatio = 1.0
+                            });
+                        }));
+                });
+
+                WaitForEvent("Waiting for ScrollView.ScrollCompleted event", scrollViewScrollCompletedEvent);
+
+                WaitForIdle("Iteration " + iteration + ": waiting for the UI thread to settle after the scroll.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Iteration " + iteration + ": ScrollView.ExtentHeight=" + scrollView.ExtentHeight + ", ViewportHeight=" + scrollView.ViewportHeight + ", ScrollableHeight=" + scrollView.ScrollableHeight + ", VerticalOffset=" + scrollView.VerticalOffset);
+
+                    Verify.IsGreaterThan(scrollView.ScrollableHeight, 0.0, "The content must be taller than the viewport.");
+
+                    Verify.IsLessThanOrEqual(
+                        Math.Abs(scrollView.VerticalOffset - scrollView.ScrollableHeight),
+                        1.0,
+                        "Iteration " + iteration + ": ScrollView.VerticalOffset must have reached ScrollView.ScrollableHeight.");
+                });
+            }
+
+            Log.Comment("Done");
         }
 
         [TestMethod]
@@ -2623,6 +2799,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 throw new Exception("Timeout expiration in WaitForEvent.");
             }
+        }
+
+        private void WaitForIdle(string logComment)
+        {
+            Log.Comment(logComment);
+
+            IdleSynchronizer.Wait();
         }
     }
 }

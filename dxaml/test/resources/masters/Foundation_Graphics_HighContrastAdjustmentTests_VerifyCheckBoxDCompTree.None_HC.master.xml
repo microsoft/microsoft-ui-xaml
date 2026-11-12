@@ -561,20 +561,6 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="120" SizeY="32" BorderMode="Soft">
-                          <MaskBrush>
-                            <Source>
-                              <ColorBrush Color="#ff000000" />
-                            </Source>
-                            <Mask>
-                              <NineGridBrush LeftInset="4" TopInset="4" RightInset="4" BottomInset="4" isCenterHollow="True">
-                                <Source>
-                                  <SurfaceBrush Stretch="Fill" Transform="Identity" />
-                                </Source>
-                              </NineGridBrush>
-                            </Mask>
-                          </MaskBrush>
-                        </wucSpriteVisual>
                       </Visual>
                     </Visual>
                   </Visual>
@@ -1097,20 +1083,6 @@
                             </Source>
                             <Mask>
                               <SurfaceBrush Stretch="Fill" Transform="Identity" />
-                            </Mask>
-                          </MaskBrush>
-                        </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="120" SizeY="32" BorderMode="Soft">
-                          <MaskBrush>
-                            <Source>
-                              <ColorBrush Color="#ff000000" />
-                            </Source>
-                            <Mask>
-                              <NineGridBrush LeftInset="4" TopInset="4" RightInset="4" BottomInset="4" isCenterHollow="True">
-                                <Source>
-                                  <SurfaceBrush Stretch="Fill" Transform="Identity" />
-                                </Source>
-                              </NineGridBrush>
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>

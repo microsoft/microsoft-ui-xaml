@@ -13,6 +13,7 @@ namespace WinUIProfiler.Engine.Target;
 public sealed class TapClient : IAsyncDisposable
 {
     private const string Prefix = "WinUIProfiler-";
+    private const int ErrorSemaphoreTimeout = 121;
     private readonly NamedPipeClientStream pipe;
     private readonly ProcessInstanceKey target;
     private readonly SemaphoreSlim requests = new(1, 1);
@@ -26,6 +27,10 @@ public sealed class TapClient : IAsyncDisposable
         this.target = target;
     }
     public static string CreatePipeName() => Prefix + Guid.NewGuid().ToString("N");
+
+    // True once the TAP has created the pipe. WaitNamedPipe doesn't connect, so the pipe's one instance stays free.
+    public static bool PipeExists(string pipeName) =>
+        WaitNamedPipe(@"\\.\pipe\" + pipeName, 1) || Marshal.GetLastWin32Error() == ErrorSemaphoreTimeout;
 
     public static async Task<TapClient> ConnectAsync(string pipeName,
 SessionScope scope,
@@ -52,13 +57,14 @@ CancellationToken cancellationToken)
         var pipe = new NamedPipeClientStream(".",
 pipeName,
 PipeDirection.InOut,
-            PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly,
+            PipeOptions.Asynchronous,
 TokenImpersonationLevel.Identification);
         TapClient? client = null;
         var connected = false;
         try
         {
             await pipe.ConnectAsync(deadline.Token).ConfigureAwait(false);
+            VerifyOwner(pipe);
             VerifyServer(pipe, scope.Process);
             client = new(pipe, scope.Process);
             await client.Exchange(TapMessageType.Handshake,
@@ -280,6 +286,19 @@ deadline.Token).ConfigureAwait(false);
         }
     }
 
+    // The pipe must be this user's. PipeOptions.CurrentUserOnly compares its owner with this token's default owner, which
+    // is BUILTIN\Administrators when the profiler is elevated, while a target that is not elevated, such as an app
+    // launched with private WinUI DLLs, owns its pipe as the user.
+    private static void VerifyOwner(NamedPipeClientStream pipe)
+    {
+        var owner = pipe.GetAccessControl().GetOwner(typeof(SecurityIdentifier));
+        using var identity = WindowsIdentity.GetCurrent();
+        if (owner is null || (!owner.Equals(identity.User) && !owner.Equals(identity.Owner)))
+        {
+            throw new UnauthorizedAccessException("The TAP pipe is not owned by the current user.");
+        }
+    }
+
     private static void VerifyServer(NamedPipeClientStream pipe, ProcessInstanceKey expected)
     {
         if (!GetNamedPipeServerProcessId(pipe.SafePipeHandle, out var pid))
@@ -328,4 +347,9 @@ deadline.Token).ConfigureAwait(false);
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetNamedPipeServerProcessId(SafePipeHandle pipe, out uint serverProcessId);
+
+    [DllImport("kernel32.dll", EntryPoint = "WaitNamedPipeW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool WaitNamedPipe(string name, uint timeout);
 }

@@ -1678,7 +1678,8 @@ int ItemsView::GetElementIndex(
 
                 if (index == -1)
                 {
-                    itemContainer = SharedHelpers::GetAncestorOfType<winrt::ItemContainer>(itemContainer);
+                    itemContainer = SharedHelpers::GetAncestorOfType<winrt::ItemContainer>(
+                        winrt::VisualTreeHelper::GetParent(itemContainer));
                 }
             }
             while (index == -1 && itemContainer != nullptr);

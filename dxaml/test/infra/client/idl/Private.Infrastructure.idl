@@ -314,6 +314,9 @@ namespace Private.Infrastructure
 
         // XamlOptionalChanges test hooks
         HRESULT ResetOptionalChanges();
+
+        // Positive values limit texture size; zero or negative values restore the device limit.
+        HRESULT SetMaxTextureSizeOverride([in] int maxTextureSize);
    }
 
     [version(NTDDI_WINTHRESHOLD)]
@@ -1014,6 +1017,7 @@ namespace Private.Infrastructure
         HRESULT Stop(GUID providerGuid, unsigned long eventId);
         HRESULT GetActiveWaiterCount([out] unsigned int *waiterCount);
         HRESULT StopTaskName(GUID providerGuid, [in] HSTRING taskName);
+        HRESULT StartWithTaskNameAndPayload(GUID providerGuid, [in] HSTRING taskName, [in] HSTRING payloadCriteria);
     }
 
     [version(NTDDI_WINTHRESHOLD)]
