@@ -315,6 +315,8 @@ Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme 
 
 XAML resources are authoritative for visual metrics. `TableViewFallbackMetrics.h` centralizes native density, typography, hierarchy and header-size defaults used when resources are missing or unusable. A text column without an owning table uses Standard density's Medium fallback metrics for generated display text and editors. The High Contrast gridline fallback honors the system-color resource first and otherwise reads the current system GrayText color, never a fixed palette color.
 
+Unsuffixed sizing keys are intentionally unsupported; Standard density reads the explicit Medium keys, not unsuffixed aliases. Apps must migrate existing overrides using the [API spec's density metric migration table](../../api-specs/TableView/TableView-spec.md#migrating-density-metric-overrides). The unsuffixed cell/header font-size keys remain supported for Standard and Comfortable.
+
 The built-in section count uses `TabularSurfaceGroupHeaderCountOpacity` while enabled and opacity 1 while disabled, since its inherited disabled foreground already supplies the disabled appearance. This applies when loaded disabled and after template replacement, independently of count-visibility tracking. Custom content templates retain their own opacity.
 
 Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the

@@ -754,21 +754,18 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     SampleInstanceTelemetry();
 
     auto xamlRoot = XamlRoot();
-    if (xamlRoot)
+    if (!xamlRoot)
     {
-        m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { get_weak(), &TableView::OnXamlRootChanged });
-        OnXamlRootChanged(xamlRoot, nullptr);
+        return;
     }
+
+    m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { get_weak(), &TableView::OnXamlRootChanged });
+    OnXamlRootChanged(xamlRoot, nullptr);
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
     {
         return; // already created for this hosting session
-    }
-
-    if (!xamlRoot)
-    {
-        return;
     }
 
     try

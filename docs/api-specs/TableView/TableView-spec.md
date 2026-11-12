@@ -179,6 +179,28 @@ and Comfortable uses `Large`. Metric resources use these explicit suffixes, for 
 `TableViewRowMinHeightMedium` and `TableViewCellTextPaddingSmall`. Theme-independent
 metrics are defined once outside the theme dictionaries.
 
+#### Migrating density metric overrides
+
+The former unsuffixed sizing keys are no longer read. Apps overriding them must
+rename their resource keys to the explicit `Medium` keys to retain their Standard
+density customizations:
+
+| Former resource key | Replacement for Standard density |
+|---|---|
+| `TableViewRowMinHeight` | `TableViewRowMinHeightMedium` |
+| `TableViewCellPadding` | `TableViewCellPaddingMedium` |
+| `TableViewHeaderCellPadding` | `TableViewHeaderCellPaddingMedium` |
+| `TableViewGroupHeaderPadding` | `TableViewGroupHeaderPaddingMedium` |
+
+Use the corresponding `Small` or `Large` keys to customize Compact or Comfortable
+density. An override applies only to its matching density; define all three keys
+when the customization should apply at every density.
+This migration does not apply to `TableViewCellFontSize` or
+`TableViewHeaderFontSize`: those unsuffixed typography keys remain supported for
+Standard and Comfortable, with the `Small` font-size keys used for Compact.
+
+### Density example
+
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
