@@ -11,8 +11,8 @@ namespace WinUIProfiler.Engine.Ingestion;
 
 // A real-time ETW session that reads selected processes' events from the XAML providers and the marker providers, and the
 // graphics resource/device events and the kernel's GPU memory, allocation and window focus events for them, while
-// the profiler is connected. For a launch, the launcher
-// providers' (MarkerProviderSettings.Launcher) events of the profiler, which launches the target, are read too.
+// the profiler is connected. For a launch, the launcher providers' (MarkerProviderSettings.Launcher) events of the
+// process that created the target, such as the profiler, are read too.
 public sealed class LiveEtwSource : IDisposable
 {
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
@@ -24,6 +24,8 @@ public sealed class LiveEtwSource : IDisposable
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
     private const string SessionPrefix = "WinUIProfiler-";
+    // Win32kTraceLogging, a provider of the default marker configuration.
+    private static readonly Guid Win32kTraceLogging = new("487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53");
 
     private readonly object gate = new();
     private readonly TraceEventSession session;
@@ -89,25 +91,24 @@ public sealed class LiveEtwSource : IDisposable
     // For a launch: call before the process is created, then call StartReading with its ID. The process has
     // no ID yet, so until then ETW filters on the executable name and keeps the events in the session's
     // buffers. The launched process is not delayed or suspended. The launcher providers are enabled for the
-    // profiler's executable too, so the session has the events the profiler writes as it launches the target.
+    // profiler's executable and launcherExecutableNames too, so the session has the events the process that creates
+    // the target writes as it launches it.
     public static LiveEtwSource StartBeforeLaunch(IReadOnlyCollection<string> executableNames,
-        IReadOnlyCollection<MarkerProviderSettings> markers)
+        IReadOnlyCollection<string> launcherExecutableNames, IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         ArgumentNullException.ThrowIfNull(executableNames);
+        ArgumentNullException.ThrowIfNull(launcherExecutableNames);
         ArgumentOutOfRangeException.ThrowIfZero(executableNames.Count);
-        List<string> launcherNames = [.. executableNames];
-        if (Path.GetFileName(Environment.ProcessPath) is { Length: > 0 } profiler &&
-            !launcherNames.Contains(profiler, StringComparer.OrdinalIgnoreCase))
-        {
-            launcherNames.Add(profiler);
-        }
-
+        var launchers = Path.GetFileName(Environment.ProcessPath) is { Length: > 0 } profiler
+            ? launcherExecutableNames.Append(profiler)
+            : launcherExecutableNames;
+        List<string> launcherNames = [.. executableNames.Concat(launchers).Distinct(StringComparer.OrdinalIgnoreCase)];
         return Create(new TraceEventProviderOptions { ProcessNameFilter = [.. executableNames] },
             new TraceEventProviderOptions { ProcessNameFilter = launcherNames }, markers);
     }
 
     // Narrows the session to the launched processes and delivers their events, including those buffered since
-    // the session started, and the events of launcherProcessId, the process that launched it, from the launcher
+    // the session started, and the events of launcherProcessId, the process that created them, from the launcher
     // providers: those written before the session was narrowed. The same session keeps running, so nothing is lost
     // while the filter changes.
     public void StartReading(int processId, int? launcherProcessId, Action<ProfilerEvent> sink) =>
@@ -127,7 +128,7 @@ public sealed class LiveEtwSource : IDisposable
                 throw new InvalidOperationException("The session is already reading.");
             }
 
-            // Other processes with the same executable name, and the profiler, stop writing to the session.
+            // Other processes with the same executable name, and the launchers, stop writing to the session.
             var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
             EnableProviders(session, options, options, markers);
             XamlEventSubscription.SubscribeProcesses(session.Source, selected, markers, sink, launcherProcessId);
@@ -187,8 +188,11 @@ public sealed class LiveEtwSource : IDisposable
     // and keeps setters and resource references for XAML diagnostics, at some cost in memory and CPU time. Only XAML
     // parsed while it is enabled has positions, so a launch has them from the start.
     // The marker providers get the level and keywords their configuration names, and the same process filter, or for a
-    // launcher provider launcherOptions. ETW enables a provider that has not registered yet when it does, so an app's
-    // provider needs no special order.
+    // launcher provider launcherOptions. Except Win32kTraceLogging, which win32k registers in the kernel: ETW doesn't
+    // enable a provider registered in the kernel for a session that filters by process (see EVENT_FILTER_DESCRIPTOR),
+    // so it is enabled for every process, and XamlEventSubscription keeps the target's events, and for a launcher
+    // provider the launcher's. ETW enables a provider that has not registered yet when it does, so an app's provider
+    // needs no special order.
     private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
         TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers)
     {
@@ -209,7 +213,7 @@ public sealed class LiveEtwSource : IDisposable
         foreach (var marker in markers)
         {
             session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
-                marker.Launcher ? launcherOptions : options);
+                marker.Provider.Id == Win32kTraceLogging ? null : marker.Launcher ? launcherOptions : options);
         }
     }
 

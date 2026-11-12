@@ -203,7 +203,7 @@ public sealed class TargetConnection : IAsyncDisposable
         var markers = options.MarkerProviders ?? [];
         if (launchExecutables.Count > 0)
         {
-            PrepareEtw(launchExecutables, markers);
+            PrepareEtw(launchExecutables, GetLauncherExecutables(options), markers);
         }
 
         if (options.PrivateRuntime is { } privateRuntime)
@@ -327,13 +327,20 @@ History);
         }
     }
 
-    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<MarkerProviderSettings> markers)
+    // The executables, other than the profiler's, of a process that can create the launched one, so ETW has its launcher
+    // events. With private WinUI DLLs, ProfilerLauncher.exe activates a packaged app through a COM surrogate,
+    // dllhost.exe, which creates the app's process.
+    private static IReadOnlyList<string> GetLauncherExecutables(TargetConnectionOptions options) =>
+        options is { PrivateRuntime: not null, Kind: TargetLaunchKind.Packaged } ? ["dllhost.exe"] : [];
+
+    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<string> launcherExecutables,
+        IReadOnlyList<MarkerProviderSettings> markers)
     {
         try
         {
             etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
             etwListeningSinceQpc = Stopwatch.GetTimestamp();
-            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, markers);
+            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, launcherExecutables, markers);
         }
         catch (Exception error)
         {
@@ -349,6 +356,7 @@ History);
             return;
         }
 
+        (int ProcessId, string? Name)? launcher = null;
         try
         {
             if (etw is not null)
@@ -366,12 +374,21 @@ History);
                         ? $"Launched {process.ProcessName}, expected {string.Join(", ", launchExecutables)}; ETW starts now."
                         : "The activated application was already running; ETW starts now.");
                 }
+                else
+                {
+                    // The launcher is the process that created the launch, which is not always the profiler.
+                    launcher = FindLauncher(process);
+                    if (launcher is null)
+                    {
+                        Trace.TraceWarning("The process that created the target is unknown, so the launch has no launcher events.");
+                    }
+                }
             }
 
             IReadOnlyList<SessionStart> sources = nativeLaunch?.Result.Processes is { Count: > 0 } group
-                ? group.Select(entry => CreateSessionStart(entry.ProcessId, process.ProcessName, entry.CreationTimeFileTime)).ToArray()
-                : [CreateSessionStart(process.Id, process.ProcessName, creationTimeFileTime)];
-            recordings = new(sources, process.Id, etwFromProcessStart ? Environment.ProcessId : null, sessionDirectory);
+                ? group.Select(entry => CreateSessionStart(entry.ProcessId, process.ProcessName, entry.CreationTimeFileTime, launcher)).ToArray()
+                : [CreateSessionStart(process.Id, process.ProcessName, creationTimeFileTime, launcher)];
+            recordings = new(sources, process.Id, launcher?.ProcessId, sessionDirectory);
             var identities = sources.ToDictionary(source => source.ProcessId, source => source.ProcessCreatedUtc?.ToFileTimeUtc());
             if (etw is null)
             {
@@ -380,8 +397,8 @@ History);
             }
             else
             {
-                // The profiler launched the process, so its launcher providers' events are the launch's too.
-                etw.StartReading(identities, etwFromProcessStart ? Environment.ProcessId : null, recordings.Post);
+                // The launcher's events from the launcher providers are the launch's too.
+                etw.StartReading(identities, launcher?.ProcessId, recordings.Post);
             }
             SaveStartupRecordings("Recording");
         }
@@ -394,6 +411,21 @@ History);
             SetEtwStartError(error);
             SaveStartupRecordings("ETW could not start");
         }
+    }
+
+    // The process that created the launch. In a startup handoff, the target's parent is the bootstrap, another process of
+    // the launch, so the launcher is the parent of the launch's first process. A process of the launch is never the
+    // launcher, which ProcessRecordingGroup would otherwise route the launcher's events to.
+    private (int ProcessId, string? Name)? FindLauncher(Process process)
+    {
+        if (nativeLaunch?.Result is not { ActivationProcessId: { } root } result)
+        {
+            return ProcessParent.Find(process);
+        }
+
+        var launcher = result.Processes.FirstOrDefault(entry => entry.ProcessId == root) is { } activation
+            ? ProcessParent.Find(activation.ProcessId, activation.CreationTimeFileTime) : null;
+        return launcher is { } found && result.Processes.All(entry => entry.ProcessId != found.ProcessId) ? launcher : null;
     }
 
     private void SaveStartupRecordings(string status)
@@ -434,13 +466,14 @@ History);
         }
     }
 
-    private SessionStart CreateSessionStart(int processId, string processName, long? creationTimeFileTime) =>
+    // Time zero of the recording is when ETW started listening. For a launch, launcher is the process that created it.
+    private SessionStart CreateSessionStart(int processId, string processName, long? creationTimeFileTime,
+        (int ProcessId, string? Name)? launcher) =>
         new(processId, processName, creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null,
             Stopwatch.Frequency, etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
             etwFromProcessStart && creationTimeFileTime >= etwListeningSinceFileTime
                 ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
-            LauncherProcessId: etwFromProcessStart ? Environment.ProcessId : null,
-            LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null);
+            LauncherProcessId: launcher?.ProcessId, LauncherName: launcher?.Name);
 
     private void SetEtwStartError(Exception error)
     {

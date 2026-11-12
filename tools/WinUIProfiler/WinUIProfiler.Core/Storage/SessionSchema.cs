@@ -34,7 +34,7 @@ internal static class SessionSchema
             LostByEtw INTEGER,
             DroppedByProfiler INTEGER,
             ProcessStartQpc INTEGER,   -- a recorded trace's process creation, from the kernel's process start event, if recorded
-            LauncherProcessId INTEGER, -- the process that launched the target, when known: the profiler for a launch from
+            LauncherProcessId INTEGER, -- the process that created the target, when known: its parent for a launch from
                                        -- the app, or for a recorded trace the parent the kernel's process start event names
             LauncherName TEXT);        -- its executable name without .exe, when known
         CREATE TABLE EventTypes (
