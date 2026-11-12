@@ -1041,6 +1041,13 @@ ListViewBaseItemPresenter::VisitAnimationCommand(_In_ ListViewBaseItemAnimationC
             pCommand = nullptr;
         }
 
+        // Unhook completion like the other paths that clear this animation. A Completed event that was already
+        // queued would otherwise still reach OnSelectionIndicatorCompleted and remove the indicator a second time.
+        if (m_selectionIndicatorAnimation.tpStoryboard)
+        {
+            IFC(m_selectionIndicatorAnimation.tpStoryboard.Cast<Storyboard>()->remove_Completed(m_selectionIndicatorCompletedToken));
+        }
+
         IFC(ClearAnimation(&m_selectionIndicatorAnimation));
 
         if (wasHiding)
