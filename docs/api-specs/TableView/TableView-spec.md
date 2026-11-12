@@ -485,6 +485,37 @@ Expansion is remembered as intent about a **group identity**, not as state on a 
 
 One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Use `IndexOf(item)` to get an item's index in that space. Headers themselves are never selectable — `Select(index)` on a header index is a no-op that keeps the current selection, `IsSelected` on it is `false`, and keyboard selection-follows-focus leaves the selection alone while focus is on a header. `StartBringItemIntoView` does accept a header index and brings the band into view.
 
+### Using a CollectionViewSource
+
+`ItemsSource` also accepts an `ICollectionView`, such as the `View` of a `CollectionViewSource`, so markup written for `ListView`/`GridView` (or ported from WPF) can feed a `TableView` unchanged. The table shows the view **as the view shapes it**: rows follow the view's order and, when the view is grouped (`IsSourceGrouped="True"`, or any view whose `CollectionGroups` is not null), each group becomes a group header over its items, in the view's group order:
+
+```xaml
+<Page.Resources>
+    <CollectionViewSource x:Name="PeopleByTeam" Source="{x:Bind Teams}" IsSourceGrouped="True" />
+</Page.Resources>
+
+<tabular:TableView ItemsSource="{x:Bind PeopleByTeam.View}">
+    <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+        <tabular:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+            </DataTemplate>
+        </tabular:TableViewTemplateColumn.CellTemplate>
+    </tabular:TableViewTemplateColumn>
+    <tabular:TableViewTemplateColumn Header="Role" SortMemberPath="Role">
+        <tabular:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Role}" Style="{StaticResource TableCellTextStyle}" />
+            </DataTemplate>
+        </tabular:TableViewTemplateColumn.CellTemplate>
+    </tabular:TableViewTemplateColumn>
+</tabular:TableView>
+```
+
+`TableViewGroupInfo.Key` is the group object (`ICollectionViewGroup.Group`), so `ExpandGroup`/`CollapseGroup` take that object, and `GroupHeaderTemplate` binds to it as usual. Adding or removing items and groups in the source updates the table.
+
+The view stays in charge of its shape: TableView does not sort, filter or regroup it. A column-header sort raises `Sorting` and then leaves the rows alone, without lighting an arrow or raising `Sorted`; sort the view's source in the handler and set `TableViewColumn.SortDirection` to show the arrow. For sorting, filtering and grouping done by the table, use `TableViewSource`. Current-item synchronization (`ICollectionView.CurrentItem`) is not supported.
+
 ### Editing cells
 
 TableView has no edit mode in this release: no `IsReadOnly`, edit gestures, edit events, or `CellEditingTemplate`. Controls inside a `TableViewTemplateColumn.CellTemplate` are always live and two-way bound by the app. For rename-in-place and similar single-field edits, see [Rename-in-place guidance](#rename-in-place-guidance); full editing is [deferred to V2 / a future DataGrid](#deferred-to-v2--future-datagrid).
@@ -547,7 +578,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `ItemsSource` | `Object` | `null` | Source collection for table rows. |
+| `ItemsSource` | `Object` | `null` | Source collection for table rows. An `ICollectionView` (for example `CollectionViewSource.View`) is shown read-only, including its `CollectionGroups`; see [Using a CollectionViewSource](#using-a-collectionviewsource). |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |

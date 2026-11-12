@@ -39,6 +39,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
 - Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
+- `ICollectionView` / `CollectionViewSource.View` as `ItemsSource`, shown read-only as the view shapes it, including `CollectionGroups` (see [Grouping](#grouping)). — **implemented**
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
@@ -94,6 +95,25 @@ the source publishes, so the same engine serves an app that never touches `Table
   non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
 - Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
   group-level aggregates/summaries. — *deferred*
+- Pre-grouped data from an `ICollectionView`: when `ItemsSource` is a view with non-null
+  `CollectionGroups` (for example a `CollectionViewSource` with `IsSourceGrouped="True"`), each
+  `ICollectionViewGroup` becomes a group header over its `GroupItems`, in the view's order, and
+  item and group changes are followed. The view owns its shaping: TableView does not sort, filter
+  or regroup it, and a column sort raises `Sorting` only so the app can sort the view.
+  Current-item synchronization is out of scope. — **implemented**
+
+  ```xml
+  <CollectionViewSource x:Name="PeopleByTeam" Source="{x:Bind ViewModel.Teams}" IsSourceGrouped="True"/>
+  <tabular:TableView ItemsSource="{x:Bind PeopleByTeam.View}">
+      <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+          <tabular:TableViewTemplateColumn.CellTemplate>
+              <DataTemplate>
+                  <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+              </DataTemplate>
+          </tabular:TableViewTemplateColumn.CellTemplate>
+      </tabular:TableViewTemplateColumn>
+  </tabular:TableView>
+  ```
 - Incremental (non-rebuild) maintenance of a grouped projection: a source change under grouping
   currently rebuilds rather than splicing. Correct, but O(N) per change. — *deferred*
 

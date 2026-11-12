@@ -920,10 +920,178 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region 2.7 CollectionViewSource and ICollectionView
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an ungrouped CollectionViewSource.View renders one row per item in view order, without group headers, and follows changes to its source.")]
+        public void VerifyCollectionViewSourceViewRendersFlat()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var cvs = new CollectionViewSource { Source = items };
+                Verify.IsNull(cvs.View.CollectionGroups, "An ungrouped CollectionViewSource view has no CollectionGroups.");
+
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowItems(tableView, items.ToList(), "ungrouped CollectionViewSource view");
+                Verify.AreEqual(0, GroupHeaderCount(tableView), "An ungrouped view must not produce group headers.");
+
+                items.Insert(1, new ShapedPerson("Zoe", "Engineer", "Platform"));
+                items.RemoveAt(items.Count - 1);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyRowItems(tableView, items.ToList(), "after changes to the view's source"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped CollectionViewSource.View (IsSourceGrouped) renders a header per CollectionGroups entry over its GroupItems, in the view's group order.")]
+        public void VerifyGroupedCollectionViewSourceRendersGroupsInViewOrder()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakePersonGroups(), IsSourceGrouped = true };
+                Verify.AreEqual(3, cvs.View.CollectionGroups.Count, "The grouped view exposes one CollectionGroups entry per group.");
+
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Studio before Platform: the view's order, not key order.
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei" },
+                    "grouped CollectionViewSource view");
+                Verify.AreEqual(3, GroupHeaderCount(tableView), "One header per group.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped CollectionViewSource.View follows item adds, group adds and group removes.")]
+        public void VerifyGroupedCollectionViewSourceFollowsGroupChanges()
+        {
+            TableView tableView = null;
+            ObservableCollection<PersonGroup> groups = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                groups = MakePersonGroups();
+                var cvs = new CollectionViewSource { Source = groups, IsSourceGrouped = true };
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                groups[1].Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+                groups.Add(new PersonGroup("Legal") { new ShapedPerson("Kai", "Counsel", "Legal") });
+                groups.RemoveAt(2);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(4)", "Diego", "Rafa", "Owen", "Zoe", "#Legal(1)", "Kai" },
+                    "after an item add, a group add and a group remove");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column sort over an ICollectionView raises Sorting only: the view keeps its order and Sorted is not raised.")]
+        public void VerifyColumnSortOnCollectionViewRaisesSortingOnly()
+        {
+            TableView tableView = null;
+            int sorting = 0;
+            int sorted = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakePersonGroups(), IsSourceGrouped = true };
+                tableView = CreateBindingTable(cvs.View);
+                tableView.Sorting += (sender, args) => sorting++;
+                tableView.Sorted += (sender, args) => sorted++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending),
+                    "The control does not sort a view it does not own.");
+                Verify.IsFalse(tableView.ToggleSortDirection(tableView.Columns[0]),
+                    "A header toggle does not sort the view either.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, sorting, "Each request raises Sorting so the app can sort its view.");
+                Verify.AreEqual(0, sorted, "Nothing was sorted, so Sorted is not raised.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "No arrow is lit for a sort that did not happen.");
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei" },
+                    "the view's order stands");
+            });
+        }
+
+        #endregion
+    }
+
+    // A CollectionViewSource group: the group object is itself the item list (no ItemsPath).
+    internal sealed class PersonGroup : ObservableCollection<ShapedPerson>
+    {
+        public PersonGroup(string key)
+        {
+            Key = key;
+        }
+
+        public string Key { get; }
+
+        public override string ToString() => Key;
     }
 
     internal static class TableViewBindingTestHelpers
     {
+        // MakeShapedPeople bucketed by department, in an order that is not key order.
+        internal static ObservableCollection<PersonGroup> MakePersonGroups()
+        {
+            var groups = new ObservableCollection<PersonGroup>();
+            foreach (var person in MakeShapedPeople())
+            {
+                var group = groups.FirstOrDefault(g => g.Key == person.DepartmentName);
+                if (group == null)
+                {
+                    group = new PersonGroup(person.DepartmentName);
+                    groups.Add(group);
+                }
+                group.Add(person);
+            }
+            return groups;
+        }
+
         // Two text template columns over Name and Role, tall enough that the six-item fixtures fully realize.
         internal static TableView CreateBindingTable(object itemsSource)
             => CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 500, height: 700);

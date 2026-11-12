@@ -9,6 +9,7 @@
 #include <deque>
 #include <functional>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -201,6 +202,7 @@ struct TableViewResourceCache
 
 namespace ShapingHelpers { class CustomSortRankAdapter; }
 class GroupedEntry;
+class TableViewCollectionViewGroups;
 
 struct TableViewSourceSortBinding
 {
@@ -983,6 +985,12 @@ private:
     // back-pointer to the owner, so this is not a hard cycle. Reassigned exclusively by
     // AdoptItemsSource, so every other path reads it as a stable answer rather than re-deriving it.
     tracker_ref<winrt::TableViewSource> m_activeSource{ this };
+
+    // The ItemsSource is an ICollectionView the control projected itself. The view owns its order and
+    // grouping, so control-initiated sorts raise Sorting and leave the rows as the view has them.
+    bool m_itemsSourceIsCollectionView{ false };
+    // Mirrors the view's CollectionGroups onto m_activeSource; null for an ungrouped view.
+    std::shared_ptr<TableViewCollectionViewGroups> m_collectionViewGroups{};
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
