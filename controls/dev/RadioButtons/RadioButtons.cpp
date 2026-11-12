@@ -273,6 +273,12 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             {
                 Select(args.Index());
             }
+            // Check the container of the selected item. Select could not check it when the item was selected before
+            // its container was created, for example right after the item replaced another one.
+            else if (args.Index() == m_selectedIndex && IsSelectedItemAt(args.Index()))
+            {
+                toggleButton.IsChecked(true);
+            }
         }
         if (auto const repeater = m_repeater.get())
         {
@@ -442,6 +448,26 @@ int RadioButtons::GetIndexSetBySelectionChangedHandler()
     default:
         return -1;
     }
+}
+
+// Whether the item at index is the item selected by the last Select call. m_selectedIndex is not updated when the
+// collection changes while Select raises SelectionChanged, so it can point to another item.
+bool RadioButtons::IsSelectedItemAt(int index)
+{
+    if (auto const selectedItem = m_selectedItem.get())
+    {
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                if (index >= 0 && index < itemsSourceView.Count())
+                {
+                    return itemsSourceView.GetAt(index) == selectedItem;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 winrt::IInspectable RadioButtons::GetDataAtIndex(int index, bool containerIsChecked)

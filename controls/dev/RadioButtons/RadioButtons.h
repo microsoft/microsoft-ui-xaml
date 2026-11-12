@@ -73,6 +73,7 @@ private:
 
     void Select(int index, bool selectedItemMoved = false);
     int GetIndexSetBySelectionChangedHandler();
+    bool IsSelectedItemAt(int index);
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
 
     void UpdateItemTemplate();
