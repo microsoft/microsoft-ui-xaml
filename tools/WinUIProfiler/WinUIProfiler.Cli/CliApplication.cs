@@ -594,7 +594,7 @@ internal static class CliApplication
             output.WriteLine();
             output.WriteLine("Note: " + note switch
             {
-                LaunchNotes.Attached => "the profiler connected to the running process, so the first frame drawn and the milestones before the recording started are missing.",
+                LaunchNotes.Attached => "the profiler connected to the running process, so the milestones before the recording started are missing, as are the first frame drawn and the milestones whose event repeats, such as First frame start.",
                 LaunchNotes.NoProcessStart => "when the process was created is not known; a trace has it when it has the kernel's process events.",
                 _ => "the session file deleted its oldest events to stay within its size limit before they were read, so milestones among them may be missing or show a later event."
             });

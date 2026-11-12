@@ -473,7 +473,7 @@ recorded-ETL replay remains supported as before.
 
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that created it, when known: its parent for a launch from the app, such as the profiler, or for a trace, the parent the kernel's event for the process's creation names |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
@@ -849,8 +849,10 @@ command prints the same timeline for a trace or a session file.
 - The first frame drawn is when the first tick that drew on the first UI thread
   ended, the first of the ticks the Frames tab gives for a launch.
 - Attached to a running process, the recording starts after the launch: the
-  tab says when, from the process's creation, and the milestones before it,
-  and the first frame drawn, are missing.
+  tab says when, from the process's creation, and the milestones before it
+  are missing, as are the first frame drawn and the milestones whose event
+  repeats (`repeats`), such as **First frame start**: the first such event
+  the recording saw need not be the launch's.
 - When the session file has deleted its oldest events to stay within its size
   limit before the tab read them, as when **Reload** reads a long recording
   again, milestones among them may be missing or show a later event, and the
@@ -862,24 +864,47 @@ command prints the same timeline for a trace or a session file.
 The marker configuration is a JSON file, which can have comments and trailing
 commas: the providers to record along with the XAML providers, and the
 milestones. The profiler uses `%LOCALAPPDATA%\WinUIProfiler\markers.json` when
-it exists, and otherwise the default, `Launch\markers.json`: Windows' launch
-events (see [Launcher milestones](#launcher-milestones)), the process's
-creation, the first UI thread frame (`Microsoft.UI.Xaml`'s
-`FirstUiThreadFrameEnd`), the first frame drawn, Windows' measures of when the
-app's UI responded and was complete, which some apps log, such as Paint, and
-the Microsoft Store's launch scenarios. **Edit markers** in the Launch tab
-creates the file from the default the first time and opens it; once it is
-saved, **Reload** reads it again and shows its milestones. When the file is
-not valid, the tab says why and uses the default, so a mistake in it never
-stops a connection. The CLI does the same, with a warning; it reads another
-file with `--markers`, and stops with exit code 3 when that file is not valid.
+it exists, and otherwise the default, `Launch\markers.json`, whose milestones
+are the steps a WinUI app's launch goes through:
+
+| Milestone | Event |
+| --- | --- |
+| User click, Activation requested, ShellExecute | Windows' launch events, from the launcher (see [Launcher milestones](#launcher-milestones)) |
+| Process created | Built in |
+| XAML init | Microsoft-Windows-XAML `InitializeCore/Start`: WinUI starts initializing on the app's UI thread |
+| First XAML load | Microsoft-Windows-XAML `ApplicationLoadComponent/Start`: the first XAML the app loads, usually its `App.xaml` |
+| Window creation | Microsoft-Windows-XAML `CreateWindow/Start` |
+| Root visual set | Microsoft-Windows-XAML `PutRootVisual/Start` |
+| Window shown | Win32kTraceLogging `FirstMainWindowShownForProcess`: Windows first shows the app's main window |
+| First frame start | Microsoft-Windows-XAML `Frame/Start`: the first UI thread frame starts |
+| First layout done | Microsoft-Windows-XAML `Layout/Stop` |
+| Loaded events | Microsoft-Windows-XAML `RaiseAllLoadedEvents/Stop` |
+| First UI thread frame | Microsoft.UI.Xaml `FirstUiThreadFrameEnd`: the first UI thread frame ends, whether or not it drew |
+| First frame drawn | Built in |
+| UI responsive, Visible complete | Microsoft.Windows.AppLifeCycle `ModernAppLaunch_UIResponsive/Stop` and `ModernAppLaunch_VisibleComplete/Stop`: Windows' measures of when the app's UI responded and was complete, which some apps log, such as Paint |
+
+No event marks an app's `WinMain`; the nearest is **XAML init**. The tab
+shows the milestones in time order, which can differ from the table's: an app
+can draw its first frame before Windows shows its window, so **Window shown**
+can come after **First frame drawn**. **Edit markers** in the Launch tab
+creates the file from the default the first time and opens it in Notepad, or
+in the app that opens `.json` files if Notepad can't start; once it is saved,
+**Reload** reads it again and shows its milestones. The file is a copy, so it
+doesn't get the default's later changes, such as new milestones; delete it to
+use the default again. When the file is not valid, the tab says why and uses
+the default, so a mistake in it never stops a connection. The CLI does the
+same, with a warning; it reads another file with `--markers`, and stops with
+exit code 3 when that file is not valid.
 
 The configuration's providers are recorded for the same process as the XAML
 providers, live at their level and keywords, and from a trace as the trace has
 them; those a launcher milestone names are recorded for the launcher too.
-Their events are saved to the session file. A provider added to the
-configuration is recorded from the next connection or trace read; a milestone
-added for a provider already recorded shows at once.
+Their events are saved to the session file. Live, Win32kTraceLogging is
+enabled for every process, because Windows registers it in the kernel, and ETW
+doesn't enable a provider registered in the kernel for a session that filters
+by process; the events of other processes are skipped as they are read. A
+provider added to the configuration is recorded from the next connection or
+trace read; a milestone added for a provider already recorded shows at once.
 
 An app marks a milestone by writing an event, such as with an `EventSource` in
 C#:
@@ -924,12 +949,13 @@ them without listing them. A milestone has:
 | Property | Meaning |
 | --- | --- |
 | `builtin` | `ProcessCreated` or `FirstFrameDrawn`, labelled "Process created" and "First frame drawn" unless it has a `label` |
-| `provider`, `event` | Instead of `builtin`: the first event of this name from this provider marks the milestone. The provider is one in `providers`, or one the profiler always records, such as `Microsoft.UI.Xaml` |
+| `provider`, `event` | Instead of `builtin`: the first event of this name from this provider marks the milestone. The provider is one in `providers`, or one the profiler always records, such as `Microsoft.UI.Xaml` or `Microsoft-Windows-XAML` |
 | `where` | Field values the event needs, such as `{ "Items": 200 }`. A number matches a numeric field with that value; a string, `true` or `false` matches the field's value as text, case-insensitively |
 | `label` | The milestone's name |
-| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, as the Store's `PerfMetrics` events name each launch scenario in `scenario` |
+| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, for an app that writes one event for all its milestones and names each in a field |
 | `process` | An executable name, with or without `.exe`: the milestone is only for that app, and for a session whose process name is not known |
 | `from` | `app`, the default, or `launcher`: an event of the process that launched the app marks the milestone (see [Launcher milestones](#launcher-milestones)). Its provider is one in `providers`; a built-in milestone has no `from` |
+| `repeats` | `true` for an event the app writes again after its launch, such as once a frame or once a UI thread, as the default's XAML events are. A session attached to a running app doesn't reach the milestone, as the first such event it records need not be the launch's. A built-in or launcher milestone has no `repeats` |
 
 Provider, event and field names match case-insensitively. Property names are
 case-sensitive, and an unknown one is an error. An EventSource method named
@@ -944,27 +970,28 @@ PowerShell gives an EventSource's:
 ### Launcher milestones
 
 A milestone with `"from": "launcher"` is marked by an event of the target's
-launcher, the process that launched it: the profiler for a launch from the
-app, or in a trace, the process that created it, such as File Explorer or
-PowerShell. The default configuration has three, from Windows' launch events:
-**User click** (`AppLaunch_UserClick`), which the shell writes for a user's
-click that launches an app, but not for a launch by UI Automation,
+launcher, the process that created it: for a launch from the app, the
+profiler, or with private WinUI DLLs, the process that starts the app for it;
+in a trace, such as File Explorer or PowerShell. The default configuration has
+three, from Windows' launch events: **User click** (`AppLaunch_UserClick`),
+which the shell writes for a user's click that launches an app, but not for a
+launch from the profiler or by UI Automation,
 **Activation requested** (`TryActivateDesktopAppXApplication/Start`), when a
 packaged desktop app is activated, and **ShellExecute**
 (`ShellExecuteExW/Start`). The times are from the earliest of them before the
 process's creation, so the timeline starts where the launch did; the summary
 says which, and names the launcher.
 
-- The session knows the launcher for a launch from the app, the profiler, and
-  for a trace with the kernel's process events, from the event for the
-  process's creation, which names its parent. An attach, or a trace without
-  those events, has no launcher milestones, and doesn't list them as not
-  reached.
+- The session knows the launcher for a launch from the app, the process's
+  parent, and for a trace with the kernel's process events, from the event for
+  the process's creation, which names its parent. An attach, or a trace
+  without those events, has no launcher milestones, and doesn't list them as
+  not reached.
 - A launcher can launch other apps, so only its events within 10 seconds of
   the process's creation count, and the one nearest the creation marks the
   milestone. A start event after the creation started something else, such as
-  the profiler's `ShellExecuteExW/Start` when **Edit markers** opens the
-  configuration, and doesn't count.
+  a `ShellExecuteExW/Start` when the launcher opens another file, and doesn't
+  count.
 - In a trace, only the launcher's events that are part of the launch count, so
   each app a script launches gets its own:
   - An event with an activity ID, as the start and stop events of
@@ -1008,7 +1035,11 @@ says which, and names the launcher.
 - For a launch from the app, the profiler activates a packaged app itself, so
   the launch has **Activation requested** and **ShellExecute**, but creates an
   unpackaged app's process directly, which writes neither. With private WinUI
-  DLLs, `ProfilerLauncher.exe` starts the app, so the launch has neither.
+  DLLs, `ProfilerLauncher.exe` starts the app: it activates a packaged app
+  through a COM surrogate, `dllhost.exe`, which creates the process and is its
+  launcher, so the launch has both; it creates an unpackaged app's process
+  directly, so the launch has neither, and has exited by the time the profiler
+  looks, so the summary shows only its process ID.
 - A UWP app's process is created by a Windows service, svchost.exe, rather
   than by the process that launched it, so its launcher is that service.
 
@@ -1019,11 +1050,12 @@ launches apart with the kernel's thread events. The `logman` commands of
 kernel's process and thread events. WPR can record them in one file with the
 providers: use a profile with the kernel's process and thread events, the
 providers in `providers.txt`, and the configuration's providers, such as an
-app's own. Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k write from
-the kernel, so only to a session in nonpaged memory, which WPR uses only for a
-provider with `NonPagedMemory="true"`: give them that, in a small collector of
-their own, or their GPU memory and window focus events are lost. The default
-configuration's providers are:
+app's own. Microsoft-Windows-DxgKrnl, Microsoft-Windows-Win32k and
+Win32kTraceLogging write from the kernel, so only to a session in nonpaged
+memory, which WPR uses only for a provider with `NonPagedMemory="true"`: give
+them that, in a small collector of their own, or their GPU memory, window
+focus and window shown events are lost. The default configuration's providers
+are:
 
 | Provider | GUID |
 | --- | --- |
@@ -1031,7 +1063,10 @@ configuration's providers are:
 | Microsoft.Windows.ApplicationModel.DesktopAppx | `5526aed1-f6e5-5896-cbf0-27d9f59b6be7` |
 | Microsoft.Windows.ShellExecute | `382b5e24-181e-417f-a8d6-2155f749e724` |
 | Microsoft.Windows.AppLifeCycle | `ef00584a-2655-462c-bc24-e7de630e7fbf` |
-| Microsoft-Windows-Store | `9c2a37f3-e5fd-5cae-bcd1-43dafeee1ff0` |
+| Win32kTraceLogging | `487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53` |
+
+Record Win32kTraceLogging with keywords `0x400000000000`, as the configuration
+does, which keeps it to a few events.
 
 Then, with the profile in `launch.wprp` and `$cli` as above:
 

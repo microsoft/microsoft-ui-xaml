@@ -28,7 +28,8 @@ public enum LaunchNotes
 {
     None = 0,
     // The profiler connected to a running process, so the milestones before the recording started were not recorded. The
-    // first frame drawn is not reached: the first frame the recording saw need not be the process's first.
+    // first frame drawn, and a milestone whose event repeats (MilestoneDefinition.Repeats), are not reached: the first such
+    // event the recording saw need not be the launch's.
     Attached = 1,
     // The process's creation is not known, as in a recorded trace without the kernel's process events.
     NoProcessStart = 2,
@@ -160,6 +161,8 @@ public sealed class LaunchTimelineReader
                     }
 
                     break;
+                case null when attached && definition.Repeats:
+                    break;
                 case null:
                     milestones.AddRange(reached
                         .Where(entry => entry.Key.Definition == index)
@@ -277,8 +280,8 @@ public sealed class LaunchTimelineReader
     }
 
     // Whether the launcher's event at milliseconds, a start event or not, can be part of the launch of the process it
-    // created at launched: within LauncherWindow of the creation, and not a start event after it, such as the profiler's
-    // ShellExecuteExW/Start when Edit markers opens the configuration.
+    // created at launched: within LauncherWindow of the creation, and not a start event after it, such as the launcher's
+    // ShellExecuteExW/Start when it opens another file.
     private static bool PartOfLaunch(double milliseconds, bool start, double launched) =>
         Math.Abs(milliseconds - launched) <= LauncherWindow && !(start && milliseconds > launched);
 
