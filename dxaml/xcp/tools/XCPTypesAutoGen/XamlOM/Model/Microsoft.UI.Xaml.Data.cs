@@ -592,7 +592,8 @@ namespace Microsoft.UI.Xaml.Data
         }
     }
 
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum ListSortDirection
@@ -612,7 +613,8 @@ namespace Microsoft.UI.Xaml.Data
     [ClassFlags(IsFreeThreaded = true)]
     [ThreadingModel(ThreadingModel.Both)]
     [FrameworkTypePattern]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
     [Guids(ClassGuid = "cb728e57-5e5e-48ee-8eb9-ec1fde42d732")]
     public sealed class SortDescription
         : Windows.Foundation.Object
@@ -640,7 +642,8 @@ namespace Microsoft.UI.Xaml.Data
     [ClassFlags(IsFreeThreaded = true)]
     [ThreadingModel(ThreadingModel.Both)]
     [FrameworkTypePattern]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
     [Guids(ClassGuid = "b161bc24-b3b5-4e1a-93e7-4174c0db7990")]
     public sealed class PropertyGroupDescription
         : Windows.Foundation.Object

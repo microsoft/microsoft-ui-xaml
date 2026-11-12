@@ -30,7 +30,7 @@ HRESULT DirectUI::PropertyGroupDescription::QueryInterfaceImpl(_In_ REFIID iid, 
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription)) && Feature_ExperimentalApi::IsEnabled())
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription*>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription>(this);
     }
 #endif
     else
@@ -43,18 +43,20 @@ HRESULT DirectUI::PropertyGroupDescription::QueryInterfaceImpl(_In_ REFIID iid, 
 }
 
 // Properties.
-IFACEMETHODIMP DirectUI::PropertyGroupDescription::get_PropertyName(_Out_ HSTRING* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get_PropertyName(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
-    IFC(m_pPropertyName.CopyTo(pValue));
+    
+    IFC(m_propertyName.CopyTo(pValue));
 Cleanup:
     RRETURN(hr);
 }
 _Check_return_ HRESULT DirectUI::PropertyGroupDescription::put_PropertyName(_In_opt_ HSTRING value)
 {
     HRESULT hr = S_OK;
-    IFC(m_pPropertyName.Set(value));
+    
+    IFC(m_propertyName.Set(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -82,11 +84,16 @@ HRESULT DirectUI::PropertyGroupDescriptionFactory::QueryInterfaceImpl(_In_ REFII
 #endif
 }
 
+_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionFactory::CheckActivationAllowed()
+{
+    RRETURN(S_OK);
+}
 
 // Factory methods.
 IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstance(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance)
 {
     HRESULT hr = S_OK;
+    
     ARG_VALIDRETURNPOINTER(ppInstance);
     IFC(CreateInstanceImpl(propertyName, ppInstance));
 Cleanup:

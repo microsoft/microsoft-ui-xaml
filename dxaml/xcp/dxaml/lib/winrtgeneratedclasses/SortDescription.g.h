@@ -12,12 +12,28 @@
 #pragma once
 
 #include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
 #define FEATURE_EXPERIMENTALAPI_OVERRIDE override
 #else
 #define FEATURE_EXPERIMENTALAPI_OVERRIDE
 #endif
 #define __SortDescription_GUID "cb728e57-5e5e-48ee-8eb9-ec1fde42d732"
+
+#pragma region forwarders
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+namespace ctl
+{
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::ISortDescription, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::ISortDescription, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue) override { return This()->get_Direction(pValue); }
+        IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) override { return This()->get_PropertyName(pValue); }
+    };
+}
+#endif
+#pragma endregion
 
 namespace DirectUI
 {
@@ -26,7 +42,7 @@ namespace DirectUI
     class __declspec(novtable) __declspec(uuid(__SortDescription_GUID)) SortDescription:
         public ctl::WeakReferenceSource
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ABI::Microsoft::UI::Xaml::Data::ISortDescription
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::ISortDescription, SortDescription >
 #endif
     {
 
@@ -48,9 +64,9 @@ namespace DirectUI
 
 
         // Properties.
-        IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue);
         _Check_return_ HRESULT put_Direction(ABI::Microsoft::UI::Xaml::Data::ListSortDirection value);
-        IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_PropertyName(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_PropertyName(_In_opt_ HSTRING value);
 
         // Events.
@@ -68,7 +84,7 @@ namespace DirectUI
 
         // Fields.
         ABI::Microsoft::UI::Xaml::Data::ListSortDirection m_direction;
-        Microsoft::WRL::Wrappers::HString m_pPropertyName;
+        Microsoft::WRL::Wrappers::HString m_propertyName;
     };
 }
 
@@ -113,6 +129,7 @@ namespace DirectUI
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
 
+        _Check_return_ HRESULT CheckActivationAllowed() override;
 
     private:
         _Check_return_ HRESULT CreateInstanceImpl(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::ListSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance);

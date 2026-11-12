@@ -10,9 +10,7 @@
 //------------------------------------------------------------------------
 
 #include "CollectionViewSource.g.h"
-#include "PropertyGroupDescription.g.h"
 #include "PropertyPath.g.h"
-#include "SortDescription.g.h"
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
@@ -63,7 +61,7 @@ Cleanup:
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_Filter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue)
 {
     HRESULT hr = S_OK;
-
+    
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionViewSource*>(this)->put_FilterImpl(pValue));
@@ -133,7 +131,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated
     {
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionViewSource_Refresh", 0);
     }
-
+    
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionViewSource*>(this)->RefreshImpl());
