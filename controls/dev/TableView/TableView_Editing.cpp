@@ -602,7 +602,8 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
         {
             std::optional<HRESULT> displayFailure;
             bool applicationFault = false;
-            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, tip ? &displayFailure : nullptr, &applicationFault);
+            winrt::get_self<TableViewRow>(row)->EndCellEdit(
+                action, tip ? &displayFailure : nullptr, &applicationFault, m_editCloseFocusColumn.get());
             if (displayFailure && tip)
             {
                 // The edit already landed and the row fell back to its parked element.
