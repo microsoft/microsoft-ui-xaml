@@ -343,13 +343,6 @@
                                                         <wucSpriteVisual SizeX="56" SizeY="48" BorderMode="Soft" OffsetX="6" OffsetY="6" OffsetZ="0">
                                                           <ColorBrush Color="Argb {0, 1, 1, 1}" />
                                                         </wucSpriteVisual>
-                                                        <wucSpriteVisual SizeX="56" SizeY="48" BorderMode="Soft" OffsetX="6" OffsetY="6" OffsetZ="0">
-                                                          <NineGridBrush LeftInset="4" TopInset="4" RightInset="4" BottomInset="4" isCenterHollow="True">
-                                                            <Source>
-                                                              <ColorBrush Color="Argb {0, 1, 1, 1}" />
-                                                            </Source>
-                                                          </NineGridBrush>
-                                                        </wucSpriteVisual>
                                                         <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" ScaleX="0.8" ScaleY="0.8" OffsetX="26" OffsetY="13" OffsetZ="0">
                                                           <ColorBrush Color="#00000000" />
                                                         </wucSpriteVisual>
@@ -396,13 +389,6 @@
                                                                       <SurfaceBrush Stretch="Fill" Transform="Identity" />
                                                                     </Mask>
                                                                   </MaskBrush>
-                                                                </wucSpriteVisual>
-                                                                <wucSpriteVisual SizeX="36" SizeY="54" BorderMode="Soft">
-                                                                  <NineGridBrush LeftInset="4" TopInset="4" RightInset="4" BottomInset="4" isCenterHollow="True">
-                                                                    <Source>
-                                                                      <ColorBrush Color="Argb {0, 1, 1, 1}" />
-                                                                    </Source>
-                                                                  </NineGridBrush>
                                                                 </wucSpriteVisual>
                                                               </Visual>
                                                             </Visual>

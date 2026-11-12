@@ -976,7 +976,8 @@ BaseContentRenderer::BorderHWRenderHelper(
     }
 
     // Draw the border as a hollow ninegrid if we're not using the background as the border.
-    if (!canUseBackgroundAsBorder && borderBrush != nullptr)
+    // Check the thickness directly, because rounded corners make the nine grid insets non-zero.
+    if (!canUseBackgroundAsBorder && borderBrush != nullptr && CBorder::HasNonZeroThickness(pFrameworkElement->GetBorderThickness()))
     {
         //
         // Don't ask for a layout rounded ceiling operation at the end of nine grid inset calculation. Here we're
