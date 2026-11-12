@@ -593,7 +593,7 @@ void ViewManager::OnItemsReplacedForNonVirtualizingLayout(int startIndex, int ol
         const auto element = children.GetAt(i);
         const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
         const int dataIndex = virtInfo->Index();
-        if (virtInfo->IsHeldByLayout() && virtInfo->AutoRecycleCandidate() && startIndex <= dataIndex && dataIndex < oldEndIndex)
+        if (virtInfo->IsHeldByLayout() && startIndex <= dataIndex && dataIndex < oldEndIndex)
         {
             replacedElements.push_back(element);
         }

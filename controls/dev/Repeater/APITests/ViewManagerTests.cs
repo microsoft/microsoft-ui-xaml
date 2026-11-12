@@ -788,36 +788,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             repeater = SetupRepeater(dataSource, "<Button Content='{Binding}' Height='10'/>");
 
+            // Each step waits until the item has focus before it removes items, so that the result does not depend on
+            // where an earlier test left focus.
             // dataSource: 0 1 2 3 4 
             // Index 0 deleted, focus should be on the new element which has index 0
-            SharedHelpers.RunActionsWithWait(
-                new Action[]
-                {
-                    () => { MoveFocusToIndex(repeater, 0); },
-                    () => { dataSource.Remove(0 /* index */, 1 /* count */, false /* reset*/); },
-                    () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "1" /* expectedContent */); }
-                });
+            FocusItem(repeater, 0);
+            RunOnUIThread.Execute(() => { dataSource.Remove(0 /* index */, 1 /* count */, false /* reset*/); });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "1" /* expectedContent */); });
 
             // dataSource: 1 2 3 4 
             // Last element deleted, focus should move to the previous element
             int lastIndex = dataSource.Inner.Count - 1;
-            SharedHelpers.RunActionsWithWait(
-                new Action[]
-                {
-                    () => { MoveFocusToIndex(repeater, lastIndex); },
-                    () => { dataSource.Remove(lastIndex /* index */, 1 /* count */, false /* reset*/); },
-                    () => { ValidateCurrentFocus(repeater, 2 /*expectedIndex */, "3" /* expectedContent */); }
-                });
+            FocusItem(repeater, lastIndex);
+            RunOnUIThread.Execute(() => { dataSource.Remove(lastIndex /* index */, 1 /* count */, false /* reset*/); });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => { ValidateCurrentFocus(repeater, 2 /*expectedIndex */, "3" /* expectedContent */); });
 
             // dataSource: 1 2 3 
             // Remove multiple elements
-            SharedHelpers.RunActionsWithWait(
-                new Action[]
-                {
-                    () => { MoveFocusToIndex(repeater, 0); },
-                    () => { dataSource.Remove(0 /* index */, 2 /* count */, false /* reset*/); },
-                    () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); }
-                });
+            FocusItem(repeater, 0);
+            RunOnUIThread.Execute(() => { dataSource.Remove(0 /* index */, 2 /* count */, false /* reset*/); });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); });
         }
 
         [TestMethod] //Issue 1018
@@ -930,7 +923,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         private void ValidateCurrentFocus(ItemsRepeater repeater, int expectedIndex, string expectedContent)
         {
-            var currentFocus = FocusManager.GetFocusedElement(repeater.XamlRoot) as ContentControl;
+            var focusedElement = FocusManager.GetFocusedElement(repeater.XamlRoot);
+            var currentFocus = focusedElement as ContentControl;
+            Log.Comment("Focused element: " + (focusedElement?.GetType().Name ?? "null"));
+            Verify.IsNotNull(currentFocus, "A ContentControl has focus.");
             var currentFocusedIndex = repeater.GetElementIndex(currentFocus);
             Log.Comment("expectedIndex: " + expectedIndex + " actual : " + currentFocusedIndex);
             Verify.AreEqual(expectedIndex, currentFocusedIndex);
@@ -1973,6 +1969,146 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(1, indexChanges.Count(change => change.StartsWith("e4:")), "e4 moves once.");
                 Verify.IsTrue(indexChanges.Contains("e4:4->5"), "e4 moves to 5.");
                 Verify.IsTrue(indexChanges.Contains("e5:5->6"), "e5 moves to 6.");
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreSame(data[i], repeater.TryGetElement(i), $"Element at index {i}");
+                    Verify.AreEqual(i, repeater.GetElementIndex(data[i]), $"Index of item {i}");
+                }
+                Content = null;
+            });
+        }
+
+        // Scenario: a UIElement items source e0..e5 without an ItemTemplate and a non-virtualizing layout; items 1..3
+        //           are replaced by {e3} in one notification (the count shrinks by two and e3 is reused at index 1).
+        // Expected: e1 and e2 are cleared; e3 moves from 3 to 1, e4 from 4 to 2 and e5 from 5 to 3, each once; every
+        //           ElementIndexChanged handler finds the moved element at its new index.
+        // A failure means: the elements that follow the range were moved before the reused element, so e5 took index 3
+        //                  while e3 still had it, and the index-changed handler of e5 found e3 at index 3.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a shrinking Replace of UIElement items that reuses a replaced element: the reused element moves before the following elements.")]
+        public void VerifyShrinkingReplaceMovesReusedUIElementItemBeforeFollowingItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var elements = Enumerable.Range(0, 6).Select(i => (UIElement)new TextBlock() { Text = "e" + i, Height = 20 }).ToList();
+                var data = new RangeReplaceCollection<UIElement>(elements);
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    Layout = new NonVirtualStackLayout(),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var cleared = new List<UIElement>();
+                var lookupFailures = new List<string>();
+                var indexChanges = new List<string>();
+                repeater.ElementClearing += (sender, args) => cleared.Add(args.Element);
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    indexChanges.Add($"{((TextBlock)args.Element).Text}:{args.OldIndex}->{args.NewIndex}");
+                    var found = repeater.TryGetElement(args.NewIndex);
+                    if (found != args.Element)
+                    {
+                        lookupFailures.Add($"TryGetElement({args.NewIndex}) returned {(found as TextBlock)?.Text ?? "null"} instead of {((TextBlock)args.Element).Text}");
+                    }
+                };
+
+                data.ReplaceRange(1, 3, new UIElement[] { elements[3] });
+                Content.UpdateLayout();
+
+                Log.Comment("Index changes: " + string.Join(", ", indexChanges));
+                Verify.AreEqual(0, lookupFailures.Count, string.Join("; ", lookupFailures));
+                Verify.AreEqual(2, cleared.Count, "e1 and e2 are cleared.");
+                Verify.IsTrue(cleared.Contains(elements[1]) && cleared.Contains(elements[2]), "The cleared elements are e1 and e2.");
+                Verify.AreEqual(3, indexChanges.Count, "e3, e4 and e5 move once each.");
+                Verify.IsTrue(indexChanges.Contains("e3:3->1"), "e3 moves to 1.");
+                Verify.IsTrue(indexChanges.Contains("e4:4->2"), "e4 moves to 2.");
+                Verify.IsTrue(indexChanges.Contains("e5:5->3"), "e5 moves to 3.");
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreSame(data[i], repeater.TryGetElement(i), $"Element at index {i}");
+                    Verify.AreEqual(i, repeater.GetElementIndex(data[i]), $"Index of item {i}");
+                }
+                Content = null;
+            });
+        }
+
+        // Scenario: a non-virtualizing layout with a TextBlock template over "Item #0".."Item #4"; item 1 is replaced by
+        //           {X, Y} in one notification (the count grows by one).
+        // Expected: only the element of "Item #1" is cleared and only X and Y get new elements; the elements of
+        //           "Item #2".."Item #4" are the same instances, now at indices 3..5.
+        // A failure means: the elements of the items that follow the range did not move with their items, so they were
+        //                  cleared and new elements were created for those items.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a growing Replace with a non-virtualizing layout keeps the elements of the following items.")]
+        public void VerifyGrowingNonVirtualReplaceKeepsElementsOfFollowingItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new RangeReplaceCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+                var repeater = CreateTextRepeater(data, new NonVirtualStackLayout());
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var elementsBefore = Enumerable.Range(0, 5).Select(i => repeater.TryGetElement(i)).ToList();
+                var cleared = new List<UIElement>();
+                var prepared = new List<int>();
+                repeater.ElementClearing += (sender, args) => cleared.Add(args.Element);
+                repeater.ElementPrepared += (sender, args) => prepared.Add(args.Index);
+
+                data.ReplaceRange(1, 1, new[] { "X", "Y" });
+                Content.UpdateLayout();
+
+                Log.Comment("Prepared indices: " + string.Join(", ", prepared) + "; cleared: " + cleared.Count);
+                Verify.AreEqual(1, cleared.Count, "Only the element of item 1 is cleared.");
+                Verify.AreSame(elementsBefore[1], cleared[0]);
+                Verify.AreEqual(2, prepared.Count, "Only X and Y get elements.");
+                Verify.IsTrue(prepared.Contains(1) && prepared.Contains(2), "X and Y are prepared at 1 and 2.");
+                for (int i = 2; i < 5; i++)
+                {
+                    Verify.AreSame(elementsBefore[i], repeater.TryGetElement(i + 1), $"Item #{i} keeps its element at index {i + 1}.");
+                }
+                VerifyElementMapping(repeater, data, "after the growing Replace");
+                Content = null;
+            });
+        }
+
+        // Scenario: a UIElement items source e0..e3 without an ItemTemplate and a non-virtualizing layout, laid out once;
+        //           items 0 and 1 are replaced by {e1} in one notification. Clearing e0 shrinks the realized range that
+        //           ItemsRepeater caches for lookups to 1..3, and e1 then moves to index 0, below that range.
+        // Expected: e0 is cleared; e1, e2 and e3 keep their elements at 0, 1 and 2; layout prepares no element.
+        // A failure means: the realized range cached before the Replace was kept, so the layout's lookup of index 0 did not
+        //                  find e1 and asked the element factory for it again (ownership assert on checked builds, or a
+        //                  second ElementPrepared for e1).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Replace that moves a reused UIElement item below the cached realized range finds it on the next layout.")]
+        public void VerifyReplaceMovingReusedUIElementItemToClearedFirstIndex()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var elements = Enumerable.Range(0, 4).Select(i => (UIElement)new TextBlock() { Text = "e" + i, Height = 20 }).ToList();
+                var data = new RangeReplaceCollection<UIElement>(elements);
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    Layout = new NonVirtualStackLayout(),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var cleared = new List<UIElement>();
+                var prepared = new List<string>();
+                repeater.ElementClearing += (sender, args) => cleared.Add(args.Element);
+                repeater.ElementPrepared += (sender, args) => prepared.Add($"{((TextBlock)args.Element).Text}@{args.Index}");
+
+                data.ReplaceRange(0, 2, new UIElement[] { elements[1] });
+                Content.UpdateLayout();
+
+                Log.Comment("Prepared: " + string.Join(", ", prepared));
+                Verify.AreEqual(1, cleared.Count, "Only e0 is cleared.");
+                Verify.AreSame(elements[0], cleared[0]);
+                Verify.AreEqual(0, prepared.Count, "Layout prepares no element.");
                 for (int i = 0; i < data.Count; i++)
                 {
                     Verify.AreSame(data[i], repeater.TryGetElement(i), $"Element at index {i}");
