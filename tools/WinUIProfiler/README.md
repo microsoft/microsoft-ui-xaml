@@ -64,13 +64,24 @@ private WinUI DLLs (see "Profile an app with private WinUI DLLs").
 
 ## Build and run
 
-Requires Windows 11, .NET SDK 10.0.403, Windows SDK 10.0.26100.0 and Visual Studio
-with MSBuild plus the x64 and ARM64 C++ toolchains. This tool has a standalone
-build boundary and does not require a WinUI product build or product initialization.
+Requires Windows 11, Visual Studio 2022 or 2026 (any edition, including Build
+Tools) with MSBuild and the x64 and ARM64 C++ build tools, Windows SDK
+10.0.26100.0, .NET SDK 10.0.403 or a later 10.0 SDK, and Git. This tool has a
+standalone build boundary and does not require a WinUI product build or product
+initialization.
+
+`scripts\Install-Prerequisites.ps1` checks these and lists the missing ones.
+When you approve, it installs them all and asks for administrator rights once:
+the .NET SDK and Git with winget, and the C++ build tools and Windows SDK with
+the Visual Studio Installer, or as Visual Studio Build Tools 2022 from winget
+when no Visual Studio can take them. `-WhatIf` only lists them; `-Force`
+installs them without asking. Like `Profile-App.ps1`, it needs PowerShell 7.4
+or later.
 
 Run from this directory:
 
 ```powershell
+.\scripts\Install-Prerequisites.ps1
 .\scripts\Build-App.ps1 -Configuration Release -Platform x64
 $output = (Get-Content .\WinUIProfiler.App\obj\ProfilerAppOutput.x64.Release.txt -Raw).Trim()
 & (Join-Path $output 'WinUIProfiler.App.exe')
@@ -125,8 +136,10 @@ Use `-ExePath`, with optional `-Arguments`, for an unpackaged app, and `-Aumid`
 for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
 
 1. Builds the profiler with `Build-App.ps1` (Release, for this machine's
-   architecture) when this checkout has no build. `-Build` rebuilds it;
-   `-ProfilerPath` uses another `WinUIProfiler.App.exe`.
+   architecture) when this checkout has no build. It first runs
+   `Install-Prerequisites.ps1`, which offers to install the missing build tools
+   (see "Build and run"). `-Build` rebuilds it; `-ProfilerPath` uses another
+   `WinUIProfiler.App.exe`.
 2. Asks for administrator rights with a UAC prompt, because reading ETW live
    and creating the links below need them. The app runs without them.
 3. Checks that the DLLs are MUX and MUXC builds for the app's architecture,
@@ -145,17 +158,22 @@ for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
    (see `WinUIProfiler.Launcher\README.md`) so that it loads the private DLLs,
    and connects from process start. The connection fails if the app loaded
    another `Microsoft.UI.Xaml.dll`. Each Connect launches the app again with
-   the same DLLs.
-7. Waits for you to close the profiler. Then it closes the app if it is
+   the same DLLs. For a same-executable startup handoff, such as Notepad's,
+   the helper propagates to validated startup descendants and the connection
+   selects the process that loads private WinUI.
+7. Waits for you to close the profiler. Then it closes only the exact launched
+   process instances if they are
    running, deletes the staged runtime (the links, not the files they point
    to), and prints each launch's process ID, the private DLLs it loaded and the
    session files saved. `<run>\launch\<n>` keeps each launch's `launch.json`
-   and `redirect.jsonl`.
+   and per-process redirect logs. `recordings.json` maps startup processes to
+   their separate SQLite recordings. The UI child remains the displayed
+   process; other processes' samples, objects and frames are not combined with it.
 
 It exits with 0 when the app ran with the private DLLs and the staged runtime
-was deleted, 4 when the UAC prompt was declined and 1 otherwise. A runtime
-that cannot be deleted, for example because the app is still running, is kept
-and reported.
+was deleted, 4 when the UAC prompt in step 2 was declined and 1 otherwise. A
+runtime that cannot be deleted, for example because the app is still running,
+is kept and reported.
 
 The private DLLs must match the app's Windows App SDK version: the launcher
 replaces the two DLLs, not the rest of the runtime. UWP (AppContainer) apps are
@@ -396,6 +414,15 @@ The app reads ETW with one real-time session per connection
   executable name are skipped. The target is launched normally, not suspended,
   so its launch timing is unchanged. With private WinUI DLLs, the launcher
   creates it suspended to add its helper first, which adds to the launch time.
+- **Private-runtime startup handoff:** the same session keeps all validated
+  startup process IDs enabled, up to eight, not only the activation or UI PID.
+  Each process has its own queue, counters and SQLite writer. Retained process
+  handles prevent PID reuse during recording, and the consumer rejects events
+  predating each instance. Unrelated same-image processes are excluded.
+  TAP, live process metrics and the default displayed recording stay attached
+  to the selected UI child; the connection UI is unchanged. `recordings.json`
+  and the capture script list the other session paths and identify processes
+  with no observed XAML telemetry.
 - **Attach:** the session filters on the process ID from the start and reads
   from the time of connection.
 
@@ -418,7 +445,8 @@ the events 1, 2, 3... Today the processors count events
 The connection panel shows the event counts, events lost by ETW, and events
 dropped because the queue was full. When the queue is full, new events are
 dropped and counted rather than stopping the session. The session stops when
-the connection ends; the last counts stay visible. If the session cannot start,
+the connection ends; its reader drains the final ETW buffers before the
+recordings close, and the last counts stay visible. If the session cannot start,
 the panel shows why and the metrics keep working.
 
 An ETW session outlives a profiler that crashes or is killed, and keeps the
@@ -430,11 +458,19 @@ whose profiler process no longer exists. To stop one by hand, find it with
 ### Session files
 
 While connected, or while it reads a trace, the app saves every event it
-receives to a SQLite file, one per connection or trace read, in
+receives to a SQLite file, one per process in a connection or one per trace read, in
 `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
 `<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
+
+Startup members share one ETW session, but not process-local object/frame
+indexes or metric histories. The ETW lost-event count describes the shared
+session; queue drops and stored-event counts are per process. A bootstrap that
+does not load WinUI can have no XAML events without invalidating the UI capture.
+Analyze a particular startup process by passing its own session file to the
+existing CLI commands. Live collection writes SQLite, not a raw `.etl` file;
+recorded-ETL replay remains supported as before.
 
 | Table | Contents |
 | --- | --- |
