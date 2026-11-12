@@ -1279,6 +1279,13 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(LineStackingStrategy);
 
+    enum class ListSortDirection : uint8_t
+    {
+        Ascending = 0,
+        Descending = 1,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(ListSortDirection);
+
     enum class ListViewItemPresenterCheckMode : uint8_t
     {
         Inline = 0,

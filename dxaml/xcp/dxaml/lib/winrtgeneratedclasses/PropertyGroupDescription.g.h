@@ -12,12 +12,27 @@
 #pragma once
 
 #include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
 #define FEATURE_EXPERIMENTALAPI_OVERRIDE override
 #else
 #define FEATURE_EXPERIMENTALAPI_OVERRIDE
 #endif
 #define __PropertyGroupDescription_GUID "b161bc24-b3b5-4e1a-93e7-4174c0db7990"
+
+#pragma region forwarders
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+namespace ctl
+{
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) override { return This()->get_PropertyName(pValue); }
+    };
+}
+#endif
+#pragma endregion
 
 namespace DirectUI
 {
@@ -26,7 +41,7 @@ namespace DirectUI
     class __declspec(novtable) __declspec(uuid(__PropertyGroupDescription_GUID)) PropertyGroupDescription:
         public ctl::WeakReferenceSource
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription, PropertyGroupDescription >
 #endif
     {
 
@@ -48,7 +63,7 @@ namespace DirectUI
 
 
         // Properties.
-        IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_PropertyName(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_PropertyName(_In_opt_ HSTRING value);
 
         // Events.
@@ -65,7 +80,7 @@ namespace DirectUI
         // Customized methods.
 
         // Fields.
-        Microsoft::WRL::Wrappers::HString m_pPropertyName;
+        Microsoft::WRL::Wrappers::HString m_propertyName;
     };
 }
 
@@ -110,6 +125,7 @@ namespace DirectUI
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
 
+        _Check_return_ HRESULT CheckActivationAllowed() override;
 
     private:
         _Check_return_ HRESULT CreateInstanceImpl(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);

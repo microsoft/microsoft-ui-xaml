@@ -343,10 +343,12 @@ namespace
     template <typename T>
     _Check_return_ HRESULT CreateShapingDescriptionCollection(
         _In_ CollectionViewSource* pOwner,
-        _Outptr_ ctl::ComPtr<ShapingDescriptionCollection<T>>* pspCollection)
+        _Outptr_ ShapingDescriptionCollection<T>** ppCollection)
     {
-        IFC_RETURN(ctl::ComObject<ShapingDescriptionCollection<T>>::CreateInstance(pspCollection->ReleaseAndGetAddressOf()));
-        IFC_RETURN((*pspCollection)->SetOwner(pOwner));
+        ctl::ComPtr<ShapingDescriptionCollection<T>> spCollection;
+        IFC_RETURN(ctl::ComObject<ShapingDescriptionCollection<T>>::CreateInstance(spCollection.ReleaseAndGetAddressOf()));
+        IFC_RETURN(spCollection->SetOwner(pOwner));
+        *ppCollection = spCollection.Detach();
         return S_OK;
     }
 }
@@ -384,7 +386,7 @@ _Check_return_ HRESULT CollectionViewSource::get_SortDescriptionsImpl(_Outptr_ w
     if (!m_tpSortDescriptions)
     {
         ctl::ComPtr<ShapingDescriptionCollection<xaml_data::SortDescription*>> spCollection;
-        IFC_RETURN(CreateShapingDescriptionCollection(this, &spCollection));
+        IFC_RETURN(CreateShapingDescriptionCollection(this, spCollection.ReleaseAndGetAddressOf()));
         SetPtrValue(m_tpSortDescriptions, spCollection.Get());
     }
 
@@ -397,7 +399,7 @@ _Check_return_ HRESULT CollectionViewSource::get_GroupDescriptionsImpl(_Outptr_ 
     if (!m_tpGroupDescriptions)
     {
         ctl::ComPtr<ShapingDescriptionCollection<xaml_data::PropertyGroupDescription*>> spCollection;
-        IFC_RETURN(CreateShapingDescriptionCollection(this, &spCollection));
+        IFC_RETURN(CreateShapingDescriptionCollection(this, spCollection.ReleaseAndGetAddressOf()));
         SetPtrValue(m_tpGroupDescriptions, spCollection.Get());
     }
 

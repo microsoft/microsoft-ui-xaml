@@ -546,11 +546,11 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Data::ISelectionInfo ISelectionInfo;
     typedef ABI::Microsoft::UI::Xaml::Data::ISupportIncrementalLoading ISupportIncrementalLoading;
     typedef ABI::Microsoft::UI::Xaml::Data::IItemIndexRange IItemIndexRange;
-    typedef ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription IPropertyGroupDescription;
-    typedef ABI::Microsoft::UI::Xaml::Data::ISortDescription ISortDescription;
     typedef ABI::Microsoft::UI::Xaml::Data::IValueConverter IValueConverter;
     typedef ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgs IPropertyChangedEventArgs;
+    typedef ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription IPropertyGroupDescription;
     typedef ABI::Microsoft::UI::Xaml::Data::IRelativeSource IRelativeSource;
+    typedef ABI::Microsoft::UI::Xaml::Data::ISortDescription ISortDescription;
     typedef ABI::Microsoft::UI::Xaml::Documents::IBlock IBlock;
     typedef ABI::Microsoft::UI::Xaml::Documents::IBold IBold;
     typedef ABI::Microsoft::UI::Xaml::Documents::IGlyphs IGlyphs;
