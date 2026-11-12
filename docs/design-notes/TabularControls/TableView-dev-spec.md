@@ -45,7 +45,7 @@ ShapedItemsSource                                  observes the source; builds s
 TableViewSource                                    exposes public shaping verbs
 ```
 
-Arrows show data flow, not ownership: `TableView` holds a `TableViewSource`, which owns a `ShapedItemsSource`, which creates the adapter for the active shape. `TabularShaping` (`ShapingPipeline`, `RowExpansionModel`, `ParentKeyIndex`, `SortDirection`) provides the headless algorithms used below `TableView` and has no dependency on the control; the adapters depend only on it. An `ItemsSource` that is not a `TableViewSource` is wrapped in one internally, so sorting works over any supported collection.
+Arrows show data flow, not ownership: `TableView` holds a `TableViewSource`, which owns a `ShapedItemsSource`, which creates the adapter for the active shape. `TabularShaping` (`ShapingPipeline`, `RowExpansionModel`, `ParentKeyIndex`, `SortDirection`) provides the headless algorithms used below `TableView` and has no dependency on the control; the adapters depend only on it. An `ItemsSource` that is not a `TableViewSource` is wrapped in one internally, so sorting works over any supported collection. The exception is an `ICollectionView`, which owns its shape: it is wrapped the same way, but `TableViewCollectionViewGroups` declares a `GroupBy` that maps each item to its `ICollectionViewGroup` when `CollectionGroups` is non-null, and control-initiated sorts stop after raising `Sorting`.
 
 ## Key public components
 
@@ -74,6 +74,7 @@ The full surface, including event args and enums, is in `TableView.idl`, `TableV
 | `SortMemberPathResolver` | One binding-based path evaluator for both sort front-ends, so a path that displays also sorts. |
 | `GridCoordinateHelper` | Row/column ↔ index math for keyboard navigation. Not projected. |
 | `TableView_ContextMenu.cpp`, `TableViewToolTipHelpers.h` | Context-flyout resolution and cell tooltips. |
+| `TableViewCollectionViewGroups` | Projects an `ICollectionView`'s `CollectionGroups` through `GroupBy`: item → owning group (map validated by slot, rebuilt on a miss) and group identity by object address; regroups on `CollectionGroups` changes. |
 | `ResizeGripper` | Framework-internal drag primitive (see [Column resize](#column-resize)). |
 | `ShapedItemsSource` | Live projection: rows, group buckets (`ShapedGroup`), identity index (`RowIdentity`), item subscriptions (`LiveShapingTracker`). |
 | `GroupedSourceAdapter`, `HierarchicalSourceAdapter` | Materialize groups or a tree into one flat row list. |

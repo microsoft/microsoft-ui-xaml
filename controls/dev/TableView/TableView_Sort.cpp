@@ -280,7 +280,7 @@ bool TableView::ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& c
 
 bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
 {
-    if (!column || column.SortDirection() == winrt::SortDirection::None)
+    if (!column || column.SortDirection() == winrt::SortDirection::None || m_itemsSourceIsCollectionView)
     {
         return false;
     }
@@ -321,6 +321,12 @@ bool TableView::SortByColumnInternal(
     }
 
     if (RaiseSortingAndCheckCanceled(column, direction))
+    {
+        return false;
+    }
+
+    // An ICollectionView source owns its order: the Sorting handler is where the app sorts it.
+    if (m_itemsSourceIsCollectionView)
     {
         return false;
     }
@@ -385,6 +391,11 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
     }
 
     if (RaiseSortingAndCheckCanceled(column, next))
+    {
+        return false;
+    }
+
+    if (m_itemsSourceIsCollectionView)
     {
         return false;
     }
@@ -670,7 +681,7 @@ bool TableView::SyncTableViewSourceSort(
     bool explicitClear)
 {
     auto tableViewSource = ShapingSourceInternal();
-    if (!tableViewSource)
+    if (!tableViewSource || m_itemsSourceIsCollectionView)
     {
         return false;
     }

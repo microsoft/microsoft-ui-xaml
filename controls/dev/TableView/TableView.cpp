@@ -12,6 +12,7 @@
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewSource.h"
+#include "TableViewCollectionViewGroups.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
@@ -1815,6 +1816,8 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     {
         tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
         m_telemetrySourceKinds = tableViewSource ? TableViewTelemetry::SourceKind::AppSupplied : 0u;
+        m_itemsSourceIsCollectionView = false;
+        m_collectionViewGroups = nullptr;
     }
 
     // Normalize the source. When the app hands us a plain collection, project it through a
@@ -1833,6 +1836,27 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         // ItemsRepeater raises that as an error rather than degrading. Let it surface.
         tableViewSource = winrt::TableViewSource::From(itemsSource);
         m_telemetrySourceKinds = TableViewTelemetry::SourceKind::Projected;
+
+        // An ICollectionView (e.g. CollectionViewSource.View) keeps its order and, when it has
+        // CollectionGroups, its grouping: groups become group header rows over their GroupItems.
+        if (auto const view = itemsSource.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionView>())
+        {
+            m_itemsSourceIsCollectionView = true;
+            if (auto groups = TableViewCollectionViewGroups::TryCreate(view))
+            {
+                try
+                {
+                    groups->Attach(tableViewSource);
+                    m_collectionViewGroups = std::move(groups);
+                }
+                catch (...)
+                {
+                    // For example one item in two groups, which the grouped projection cannot show.
+                    TVDiag::LogRetailF(L"[TableView] The ICollectionView's groups could not be projected (HRESULT 0x%08X); showing its items ungrouped.",
+                        static_cast<unsigned int>(winrt::to_hresult()));
+                }
+            }
+        }
     }
 
     StopAwaitingSource();
