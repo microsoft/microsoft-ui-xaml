@@ -97,15 +97,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) GlyphsFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Documents::IGlyphsFactory
         , public ABI::Microsoft::UI::Xaml::Documents::IGlyphsStatics
     {
-        BEGIN_INTERFACE_MAP(GlyphsFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(GlyphsFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(GlyphsFactory, ABI::Microsoft::UI::Xaml::Documents::IGlyphsFactory)
             INTERFACE_ENTRY(GlyphsFactory, ABI::Microsoft::UI::Xaml::Documents::IGlyphsStatics)
-        END_INTERFACE_MAP(GlyphsFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(GlyphsFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::IGlyphs** ppInstance);
 
         // Static properties.
 
