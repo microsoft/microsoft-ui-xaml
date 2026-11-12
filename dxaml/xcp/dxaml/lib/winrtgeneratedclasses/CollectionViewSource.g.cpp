@@ -10,7 +10,9 @@
 //------------------------------------------------------------------------
 
 #include "CollectionViewSource.g.h"
+#include "PropertyGroupDescription.g.h"
 #include "PropertyPath.g.h"
+#include "SortDescription.g.h"
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
@@ -32,6 +34,12 @@ HRESULT DirectUI::CollectionViewSourceGenerated::QueryInterfaceImpl(_In_ REFIID 
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi>(this);
+    }
+#endif
     else
     {
         RRETURN(DirectUI::DependencyObject::QueryInterfaceImpl(iid, ppObject));
@@ -42,6 +50,36 @@ HRESULT DirectUI::CollectionViewSourceGenerated::QueryInterfaceImpl(_In_ REFIID 
 }
 
 // Properties.
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_Filter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_FilterImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_Filter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue)
+{
+    HRESULT hr = S_OK;
+
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->put_FilterImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_GroupDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_GroupDescriptionsImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_IsSourceGrouped(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, pValue));
@@ -60,6 +98,16 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::put_ItemsPath(_In_opt_ A
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_ItemsPath, pValue));
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_SortDescriptionsImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_Source(_Outptr_result_maybenull_ IInspectable** ppValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_Source, ppValue));
@@ -77,6 +125,26 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_View(_Outptr_result_
 // Events.
 
 // Methods.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::Refresh()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionViewSource_Refresh", 0);
+    }
+
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->RefreshImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "CollectionViewSource_Refresh", hr);
+    }
+    RRETURN(hr);
+}
+#endif
 
 HRESULT DirectUI::CollectionViewSourceFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
