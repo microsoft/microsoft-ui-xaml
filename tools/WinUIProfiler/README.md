@@ -50,8 +50,8 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-While connected, the app saves the target's XAML ETW events, and the kernel's
-GPU memory and window focus events for it, to a session file. It can also read
+While connected, the app saves the target's XAML and Direct3D11 ETW events, and
+the kernel's GPU memory, allocation and window focus events for it, to a session file. It can also read
 them from a recorded trace (`.etl`) into a session file. The Launch tab shows
 the launch's milestones, including an app's own (see
 [Launch timeline](#launch-timeline)), the Frames tab its UI-thread ticks and
@@ -95,7 +95,7 @@ the launcher with git (see `WinUIProfiler.Launcher\README.md`). The host's nativ
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
-Run the event compatibility and snapshot resource regression checks from this directory:
+Run the event compatibility, DirectX capture/storage and snapshot resource regression checks from this directory:
 
 ```powershell
 dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
@@ -106,6 +106,25 @@ and verify that migrated performance regions distinguish Start/Stop without
 also matching legacy manifest events. Snapshot checks cover allocator deltas,
 named graphics resources, untracked versus observed lifetimes, four-group
 classification, missing captures and full-range 64-bit graphics comparisons.
+DirectX checks cover device/resource event selection, allocation ownership,
+process isolation, original ETW IDs/versions, and lossless 64-bit handles in
+stored payloads and readable JSON. Processed-index checks cover lifetimes,
+rundown and missing endpoints, correlations in either observation order,
+multiple allocations, handle reuse, delayed observations, ambiguous/changed
+bridge handles, zero/missing handles, adapter scoping and rolling retention.
+
+For an opt-in live DirectX smoke test, run:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --graphics-integration
+```
+
+This needs ETW permissions (elevation or Performance Log Users membership).
+It creates and releases a D3D11 device, a buffer, all three texture
+dimensions and a shared texture, then checks real provider decoding, creation
+phases, processed lifetimes and kernel-allocation links.
+It owns and stops only its unique test ETW session
+and deletes its temporary recording.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -314,7 +333,8 @@ errors and scope limitations are included in the JSON rather than fabricated val
 ## XAML events
 
 `WinUIProfiler.Core` reads all the events of the XAML providers for one process,
-and the kernel's GPU memory and window focus events for it, live or from a
+selected Direct3D11 device/resource events, and the kernel's GPU memory,
+allocation and window focus events for it, live or from a
 recorded `.etl` file. Each event becomes a `ProfilerEvent`
 (`Events\ProfilerEvent.cs`).
 
@@ -325,7 +345,8 @@ recorded `.etl` file. Each event becomes a `ProfilerEvent`
 | Microsoft-Windows-XAML-Profiler | `a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d` | Tree, composition and graphics events |
 | Microsoft.UI.Xaml | `2dc72f6e-e4d1-5f58-3245-09a4243799dd` | The runtime's telemetry events, such as the first UI thread frame (`FirstUiThreadFrameEnd`), D3D device sharing and loss, XAML islands, GC durations and fail-fasts |
 | Microsoft.UI.Xaml.Controls | `21e0ae07-56a7-55b5-12f9-011e6bc08cca` | The controls' telemetry events, such as NavigationView, ink, WebView2 and TableView usage and errors |
-| Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local) |
+| Microsoft-Windows-Direct3D11 | `db6f6ddb-ac77-4e88-8253-819df9bbf140` | Devices/resources, keywords `0x6`: `Device/Start`, `/Stop`, `/DCStart` (3-5); `Buffer` and `Texture1D/2D/3D` Start/Stop/DCStart (6-17); `D3D11CoreCreateDevice` Start/Stop (20-21), `KMDDeviceCreate` Start/Stop (22-23), and `UMDDeviceCreate` Start/Stop (24-25) |
+| Microsoft-Windows-DxgKrnl | `802ec45a-1e99-4b83-9920-87c98277ba9d` | GPU memory, keyword `0x4`: `VidMmProcessUsageChange` (367) and `VidMmProcessBudgetChange` (366), the process's usage and budget per adapter and memory segment group (`MemorySegmentGroup` 0 is local, 1 is non-local). Allocations, keyword `0x40`: `AdapterAllocation` Start/Stop/DCStart (33-35) and `DeviceAllocation` Start/Stop/DCStart (36-38). Combined keywords: `0x44` |
 | Microsoft-Windows-Win32k | `8c416c79-d49b-4f01-a467-e56d3aa8234c` | Window focus changes, keyword `0x2000` at level 4: event 2, the only event with that keyword, once per focus change. Its fields are the thread that lost focus and the thread that got it |
 
 Layout, focus, virtualization, navigation, hit-testing and PasswordBox TraceLogging
@@ -348,6 +369,15 @@ process opens a GPU adapter and when a session requests capture state. The
 System process writes some of them, such as those written when the process
 exits, which bring the usage down to 0. So they are matched to the process by
 their `ProcessId` field, which becomes the event's process ID.
+
+D3D11 events use the event header's process ID. Kernel allocation events use
+their payload's `hProcessId`, not the header PID, which can be System.
+Missing or invalid owners are discarded, not attributed to the writer.
+Both graphics providers are requested to capture state on attach and after
+launch selection, so existing devices, resources and allocations can emit
+DCStart rundown. Rundown identifies existing objects; it does not recover
+their creation times. `Device/Stop` ends a device lifetime, whereas
+`D3D11CoreCreateDevice/Stop` only ends device creation. No DXGI provider is enabled.
 
 The focus events also come from Windows, for every process with windows. They
 are matched to the process by the event header, and only start the Frames
@@ -463,7 +493,7 @@ receives to a SQLite file, one per process in a connection or one per trace read
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
 
-Startup members share one ETW session, but not process-local object/frame
+Startup members share one ETW session, but not process-local object/frame/graphics
 indexes or metric histories. The ETW lost-event count describes the shared
 session; queue drops and stored-event counts are per process. A bootstrap that
 does not load WinUI can have no XAML events without invalidating the UI capture.
@@ -474,20 +504,76 @@ recorded-ETL replay remains supported as before.
 | Table | Contents |
 | --- | --- |
 | `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names |
-| `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
+| `EventTypes` | One row per provider, event name, opcode, original ETW ID/version, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `EventId` and `Version` retain the original ETW identity, independently of the database-local `TypeId`; they are null when unknown. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
 | `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
 | `Frames` | One row per tick on a UI thread: thread, frame number, start and end (see below) |
 | `FrameEvents` | One row per UI-thread event: `Seq`, the `FrameId` of its tick, and its bucket: `Xaml`, `Composition` or `Other` |
+| `GraphicsObjects` | Process-local device, buffer, texture and allocation lifetimes: surrogate `GraphicsObjectId`, kind, original handle/qualifier, observations, nullable Start/Stop, end bound/reason and `Trimmed`. Also holds kind-specific device/resource/allocation handles, optional owning `DeviceId`, and exact unsigned decimal-text `SizeBytes` |
+| `GraphicsObjectEvents` | Raw-event evidence for each graphics lifetime: `Seq`, `GraphicsObjectId`, and Start/Stop/Rundown/Reference role |
+| `GraphicsLinks` | Resource-to-device-allocation and device-allocation-to-adapter-allocation relationships, their original bridge handle/qualifier, observed interval `[StartSeq, EndSeq)`, end reason and `Trimmed` |
 
 JSON has no Infinity or NaN, so those values are stored as the strings
 `"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
 
+DirectX events remain in `Events`/`EventTypes`; `GraphicsIndex` additionally
+maintains the three graphics tables in the same transaction. The existing
+`Objects`/`ObjectEvents` and `Frames`/`FrameEvents` retain their XAML/Composition
+and UI-tick meanings. Original graphics IDs retain their field names and integer widths:
+`pID3D11Device` is a runtime device pointer, `pID3D11Resource` a resource
+pointer, `hKMResource` a kernel resource handle, and `hVidMmGlobalAlloc` a
+global allocation handle. They are distinct identity domains, not XAML
+`ObjectId`s, graphics surrogate IDs or event `TypeId`s. Processed handles are
+exact, fixed-width hexadecimal text (`0x` plus 16 digits), so SQLite cannot
+round large unsigned values. A device allocation is identified by its
+`hVidMmAlloc` and `hDevice`; an adapter allocation by `hVidMmGlobalAlloc` and
+`pDxgAdapter`. Runtime device/resource pointers use separate identity domains.
+In particular, D3D11 `hKMDevice` is not equated with DxgKrnl `hDevice`.
+Kind-specific metadata stays on the same lifetime row, using the original ETW
+handle field names; fields unrelated to that kind remain null. A resource's
+`DeviceId` references a `GraphicsObjects` row of kind `Device`. Devices,
+resources and allocations remain distinct lifetimes, not separate metadata
+tables. `GraphicsObjectEvents` links them to raw evidence; `GraphicsLinks`
+instead records relationships between lifetime IDs, including multiple
+allocations and changes over time.
+
+The index matches a resource's `hKMResource` with a device allocation's
+`hThunkResource` within the recording's process, then its `hVidMmGlobalAlloc`
+with an adapter allocation's on the same adapter. Multiple allocations per
+resource are supported. Ambiguous resource claims do not create links.
+Private resources can report zero `hKMResource`/`hThunkResource` handles;
+these stay unattributed rather than being matched by timing or thread.
+Relationships retain their original bridge values and close on Stop, reuse,
+ambiguity or identity changes; equal handles are not permanent mappings.
+Unobserved shared/global allocations remain absent, rather than borrowing
+another process's ownership.
+The relationship view leaves an unobserved adapter allocation's bridge fields
+null; the latest declared kernel handles remain in `GraphicsObjects`,
+separate from historical correlation intervals.
+
+Only actual Start/Stop events establish creation/destruction times.
+Rundown identifies an existing object, a resource can establish a
+reference-only device, and a Stop without a Start has unknown creation.
+Reuse creates a new surrogate and bounds the old lifetime without fabricating
+a destruction. An unknown end does not prove that the object is still alive.
+`GraphicsLifetimes` exposes endpoint availability, trimming and capture-loss
+counts; complete durations require ordered observed Start and Stop events.
+Device-creation call phases (IDs 20–25) remain raw timing events because their
+payloads do not identify a device; their Stops are not destruction events.
+These tables/views are available to SQLite analysis without adding UI panels.
+
+`EventDetails.Fields` preserves full-width
+unsigned JSON numbers too. When querying a handle, use JSON's `->` operator
+to retain its exact JSON text; `json_extract`/`->>` can round integers above
+SQLite's signed 64-bit range.
+
 A session file is limited to 500 MB. Before a batch would take it past the
 limit, the oldest events are deleted, `SessionInfo.CompleteFromSeq` records the
 first event still stored, and the connection panel says from when the file is
-complete. While recording, the file is in WAL mode, so it can be read at the
+complete. Closed graphics history leaves with its raw evidence; open graphics
+lifetimes and referenced parent devices retain continuity and are marked
+`Trimmed` when evidence has been removed. While recording, the file is in WAL mode, so it can be read at the
 same time, for example with the CLI; when the session ends, it is left as a
 single `.sqlite` file. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
@@ -520,12 +606,16 @@ Times are in ms from the start of the recording.
 | `InterestingRowEvents` | The events of each interesting row | Agents |
 | `FrameList` | The Frames tab's list in order, with what each Show choice keeps (`InInteresting`, `InSlow`) | The Frames tab, `frames --list` |
 | `LaunchSummary` | When the first 10 ticks that drew ended, from process start or recording start | The Frames tab |
+| `GraphicsLifetimes` | Process-local graphics lifetimes, observed/unknown endpoints, reuse bounds, trimming and capture-loss counts | SQLite analysis |
+| `GraphicsResourceAllocations` | Resource → device allocation → optional adapter allocation, restricted to overlapping observed link intervals | SQLite analysis |
 | `QueryCatalog` | The views and an example query each | Agents |
 
 ```sql
 SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex;                 -- the tab with Show = Regions of interest
 SELECT * FROM InterestingRows WHERE RegionId = :region ORDER BY StartSeq;       -- a region and the rows in it
 SELECT Seq, Ms, Name, Bucket, Fields FROM TickEvents WHERE TickId = :tick ORDER BY Seq;   -- a tick's events
+SELECT * FROM GraphicsLifetimes WHERE Kind = 'Texture2D' ORDER BY FirstSeq;      -- observed texture lifetimes
+SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY StartSeq;
 ```
 
 `InterestingRows` uses the `EventsByType` index. On a 148 MB file, it takes
@@ -752,7 +842,8 @@ from a trace. Run from this directory:
 '{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D} 0xFFFFFFFFFFFFFFFF 5',
 '{2DC72F6E-E4D1-5F58-3245-09A4243799DD} 0xFFFFFFFFFFFFFFFF 5',
 '{21E0AE07-56A7-55B5-12F9-011E6BC08CCA} 0xFFFFFFFFFFFFFFFF 5',
-'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x4 5',
+'{DB6F6DDB-AC77-4E88-8253-819DF9BBF140} 0x6 5',
+'{802EC45A-1E99-4B83-9920-87C98277BA9D} 0x44 5',
 '{8C416C79-D49B-4F01-A467-E56D3AA8234C} 0x2000 4' | Set-Content providers.txt
 logman create trace XamlTrace -o xaml.etl -pf providers.txt -bs 1024 -nb 16 256 -ets
 # ... use the target app ...
@@ -917,7 +1008,7 @@ has:
 | `level` | From 1 (critical) to 5 (verbose, the default), or a provider's own higher level |
 | `keywords` | A number, or a string such as `"0x400000000000"`; all by default |
 
-The XAML providers, Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k,
+The XAML providers, Microsoft-Windows-Direct3D11, Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k,
 which the profiler always records, can't be in `providers`; milestones name
 them without listing them. A milestone has:
 

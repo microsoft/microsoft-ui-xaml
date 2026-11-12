@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
@@ -16,6 +17,13 @@ if (args is ["--startup-integration", var nativeDirectory])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Startup integration requires Windows.");
     await StartupIntegration.RunAsync(Path.GetFullPath(nativeDirectory));
+    return;
+}
+
+if (args is ["--graphics-integration"])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");
+    GraphicsCaptureIntegration.Run();
     return;
 }
 
@@ -863,11 +871,25 @@ try
     group.Post(ProcessEvent(10, "Parent"));
     group.Post(ProcessEvent(20, "Child"));
     group.Post(ProcessEvent(30, "Unrelated"));
+    foreach (var pid in new[] { 10, 20, 30 })
+    {
+        group.Post(new(1000, 1, pid, 7, XamlProvider.Direct3D11, false, "Texture2D/Start", 1,
+            [new("pID3D11Resource", 0xfedcba9876543210UL), new("hKMResource", 0xf1234567U)],
+            EventId: 12, Version: 0));
+        var ownerPid = XamlEventSubscription.ProcessIdFromPayload((ulong)pid)!.Value;
+        group.Post(new(1000, 1, ownerPid, 70, XamlProvider.DxgKrnl, false, "DeviceAllocation/Start", 1,
+        [
+            new("hProcessId", (ulong)pid), new("hThunkResource", 0xf1234567UL), new("hVidMmGlobalAlloc", 0xffff800000001234UL),
+            new("hVidMmAlloc", 0xffff800000005678UL), new("hDevice", 0xffff900000001234UL),
+            new("pDxgAdapter", 0xffffa00000001234UL)
+        ],
+            EventId: 36, Version: 2));
+    }
     group.Post(new(500, 0.5, 99, 7, XamlProvider.Marker, true, "Launch", 0, [], new("Launcher", Guid.NewGuid())));
     group.Close("Test complete", 2);
 
-    Expect(group.Primary.Source.ProcessId == 20 && group.Primary.XamlEvents == 1 &&
-        group.Primary.Recording!.StoredEvents == 2 && group.RecordingError is null,
+    Expect(group.Primary.Source.ProcessId == 20 && group.Primary.XamlEvents == 1 && group.Primary.GpuMemoryEvents == 1 &&
+        group.Primary.Recording!.StoredEvents == 4 && group.RecordingError is null,
         "The UI child must remain primary; external launcher markers must not become target XAML.");
     foreach (var item in group.Processes)
     {
@@ -890,6 +912,17 @@ try
         Expect(events.All(item => item.ProcessId == info.ProcessId ||
             info.ProcessId == 20 && item.ProcessId == 99 && item.Provider == XamlProvider.Marker),
             "No startup member or unrelated same-image process may be relabeled as another process's event.");
+        Expect(events.Single(item => item.Provider == XamlProvider.Direct3D11).Fields[0].Value is 0xfedcba9876543210UL &&
+            events.Single(item => item.Provider == XamlProvider.DxgKrnl).Fields[0].Value is ulong ownerPid &&
+            ownerPid == (ulong)info.ProcessId,
+            "Equal graphics IDs must stay process-local and allocation payload ownership must survive storage.");
+        using var graphicsConnection = new SqliteConnection($"Data Source={saved};Pooling=False");
+        graphicsConnection.Open();
+        Expect(Sql.Scalar(graphicsConnection, "SELECT COUNT(*) FROM GraphicsLifetimes WHERE ProcessId = $pid", null,
+            ("$pid", info.ProcessId)) == 2 &&
+            Sql.Scalar(graphicsConnection, "SELECT COUNT(*) FROM GraphicsResourceAllocations WHERE ProcessId = $pid", null,
+                ("$pid", info.ProcessId)) == 1,
+            "Derived graphics lifetimes and equal-handle allocation links must remain isolated in each process's file.");
     }
 }
 finally
@@ -901,6 +934,138 @@ finally
     if (Directory.Exists(groupDirectory)) Directory.Delete(groupDirectory);
 }
 Console.WriteLine("Passed: parent/child recordings, equal addresses, launcher markers and absent telemetry stay process-isolated.");
+
+int[] direct3D11Events = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25];
+Expect(Enumerable.Range(0, 40).Where(XamlEventSubscription.IsDirect3D11Event).SequenceEqual(direct3D11Events) &&
+    !XamlEventSubscription.IsDirect3D11Event(-1) && !XamlEventSubscription.IsDirect3D11Event(65535),
+    "D3D11 capture must retain device/resource lifetimes, rundown and creation phases, not unrelated events.");
+foreach (var id in new[] { 33, 34, 35, 36, 37, 38 })
+{
+    Expect(XamlEventSubscription.DxgKrnlProcessField(id) == "hProcessId",
+        "Allocation starts, stops and rundown must use the payload owner, not the event-header process.");
+}
+Expect(XamlEventSubscription.DxgKrnlProcessField(366) == "ProcessId" &&
+    XamlEventSubscription.DxgKrnlProcessField(367) == "ProcessId" &&
+    XamlEventSubscription.DxgKrnlProcessField(32) is null && XamlEventSubscription.DxgKrnlProcessField(39) is null,
+    "Existing GPU budget/usage ownership must remain unchanged and unrelated kernel events must be ignored.");
+foreach (var pid in new object[] { 10, 10U, 10L, 10UL, int.MaxValue })
+{
+    Expect(XamlEventSubscription.ProcessIdFromPayload(pid) == Convert.ToInt32(pid),
+        "Manifest UInt32 and pointer-sized process IDs must decode without changing their identity.");
+}
+foreach (var invalidPid in new object?[] { null, 0, -1, uint.MaxValue, long.MaxValue, ulong.MaxValue, 0x10000000aUL, "10", 10.0 })
+{
+    Expect(XamlEventSubscription.ProcessIdFromPayload(invalidPid) is null,
+        "Missing, invalid or oversized payload PIDs must not wrap or fall back to the event-header process.");
+}
+Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation/budget/usage ownership filters.");
+
+var graphicsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsIdentity-{Guid.NewGuid():N}.sqlite");
+try
+{
+    const ulong resourceId = 0xffff800000001234;
+    const ulong deviceId = 0xfedcba9876543210;
+    const uint kernelResource = 0xf1234567;
+    const ulong allocationId = 0xffff900000005678;
+    ProfilerEvent Texture(ulong resource, int version = 0, int eventId = 12) =>
+        new(1000, 1, 10, 7, XamlProvider.Direct3D11, false, "Texture2D/Start", 1,
+        [
+            new("pID3D11Resource", resource), new("pID3D11Device", deviceId), new("hKMResource", kernelResource),
+            new("Width", 64U), new("Label", "quoted \"texture\""), new("Shared", true), new("Missing", null)
+        ], EventId: eventId, Version: version);
+    ProfilerEvent[] graphics =
+    [
+        Texture(resourceId),
+        Texture(resourceId + 1),
+        Texture(resourceId, version: 1),
+        Texture(resourceId, eventId: 112),
+        new(2000, 2, 10, 70, XamlProvider.DxgKrnl, false, "DeviceAllocation/Start", 1,
+        [
+            new("hProcessId", 10UL), new("hThunkResource", (ulong)kernelResource),
+            new("hVidMmGlobalAlloc", allocationId), new("pDxgAdapter", 0xffffa00000001234UL)
+        ], EventId: 36, Version: 2),
+        new(3000, 3, 10, 70, XamlProvider.DxgKrnl, false, "AdapterAllocation/Start", 1,
+        [
+            new("hProcessId", 10UL), new("hVidMmGlobalAlloc", allocationId), new("allocSize", ulong.MaxValue)
+        ], EventId: 33, Version: 3),
+        new(4000, 4, 10, 7, XamlProvider.Direct3D11, false, "D3D11CoreCreateDevice/Stop", 2, [], EventId: 21, Version: 0),
+        new(5000, 5, 10, 7, XamlProvider.Direct3D11, false, "Device/Stop", 2,
+            [new("pID3D11Device", deviceId)], EventId: 4, Version: 0)
+    ];
+    using (var writer = SessionWriter.Create(graphicsPath, new(10, "GraphicsTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+    {
+        for (var i = 0; i < graphics.Length; i++) writer.Process(i + 1, graphics[i]);
+        writer.Close("Test complete");
+        Expect(writer.Failure is null, "Graphics event recording must complete without a writer error.");
+    }
+    var restored = new List<ProfilerEvent>();
+    SessionFile.Read(graphicsPath, restored.Add);
+    Expect(restored.Count == graphics.Length && restored.Zip(graphics).All(pair =>
+        pair.First.ProcessId == pair.Second.ProcessId && pair.First.ProviderId == pair.Second.ProviderId &&
+        pair.First.EventId == pair.Second.EventId && pair.First.Version == pair.Second.Version &&
+        pair.First.Name == pair.Second.Name && pair.First.Opcode == pair.Second.Opcode &&
+        pair.First.Fields.SequenceEqual(pair.Second.Fields)),
+        "Provider/ETW identities and original resource, device, kernel-resource and allocation IDs must round-trip exactly.");
+    Expect(SessionFile.ReadObjects(graphicsPath).Count == 0,
+        "Graphics device/resource pointers must not be indexed as XAML elements.");
+    using var connection = new SqliteConnection($"Data Source={graphicsPath};Pooling=False");
+    connection.Open();
+    using (var command = connection.CreateCommand())
+    {
+        command.CommandText = "SELECT Fields, EventId, Version FROM EventDetails ORDER BY Seq";
+        using var rows = command.ExecuteReader();
+        for (var i = 0; i < graphics.Length; i++)
+        {
+            Expect(rows.Read() && rows.GetInt32(1) == graphics[i].EventId && rows.GetInt32(2) == graphics[i].Version,
+                "Readable events must retain their original ETW ID and version.");
+            var fields = JsonNode.Parse(rows.GetString(0))!;
+            if (i < 4)
+            {
+                Expect(fields["pID3D11Resource"]!.GetValue<ulong>() == (i == 1 ? resourceId + 1 : resourceId) &&
+                    fields["pID3D11Device"]!.GetValue<ulong>() == deviceId &&
+                    fields["hKMResource"]!.GetValue<uint>() == kernelResource &&
+                    fields["Label"]!.GetValue<string>() == "quoted \"texture\"" &&
+                    fields["Shared"]!.GetValue<bool>() && fields["Missing"] is null,
+                    "Readable JSON must preserve adjacent 64-bit handles, numeric domains, strings, Booleans and nulls.");
+            }
+            if (i == 5)
+            {
+                Expect(fields["hVidMmGlobalAlloc"]!.GetValue<ulong>() == allocationId &&
+                    fields["allocSize"]!.GetValue<ulong>() == ulong.MaxValue,
+                    "Readable allocation fields must retain full-width unsigned IDs and sizes.");
+            }
+        }
+    }
+    Expect(Sql.Scalar(connection,
+        "SELECT COUNT(*) FROM EventTypes WHERE Provider = 'Direct3D11' AND Name = 'Texture2D/Start'") == 3,
+        "Events with the same name/layout but different ETW IDs or versions must not share a database type.");
+
+    // A legacy recording has neither identity column. Reading it must leave the identity unknown.
+    var legacyViews = new List<(string Name, string Sql)>();
+    using (var command = connection.CreateCommand())
+    {
+        command.CommandText = "SELECT name, sql FROM sqlite_master WHERE type = 'view'";
+        using var rows = command.ExecuteReader();
+        while (rows.Read()) legacyViews.Add((rows.GetString(0), rows.GetString(1)));
+    }
+    foreach (var view in legacyViews) Sql.Execute(connection, $"DROP VIEW \"{view.Name}\"");
+    Sql.Execute(connection, "ALTER TABLE EventTypes DROP COLUMN EventId; ALTER TABLE EventTypes DROP COLUMN Version;");
+    foreach (var view in legacyViews)
+    {
+        Sql.Execute(connection, view.Sql.Replace("t.EventId, t.Version,", "").Replace("d.EventId, d.Version,", ""));
+    }
+    restored.Clear();
+    SessionFile.Read(graphicsPath, restored.Add);
+    Expect(restored.Count == graphics.Length && restored.All(item => item.EventId is null && item.Version is null),
+        "Existing recordings without ETW identity columns must remain readable without inventing identities.");
+}
+finally
+{
+    foreach (var file in new[] { graphicsPath, graphicsPath + "-wal", graphicsPath + "-shm" }) File.Delete(file);
+}
+Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
+
+GraphicsIndexTests.Run();
 
 static void Expect(bool condition, string message)
 {

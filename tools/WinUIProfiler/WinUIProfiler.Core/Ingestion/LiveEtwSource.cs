@@ -10,12 +10,17 @@ using WinUIProfiler.Engine.Target;
 namespace WinUIProfiler.Engine.Ingestion;
 
 // A real-time ETW session that reads selected processes' events from the XAML providers and the marker providers, and the
-// kernel's GPU memory and window focus events for it, while the profiler is connected. For a launch, the launcher
+// graphics resource/device events and the kernel's GPU memory, allocation and window focus events for them, while
+// the profiler is connected. For a launch, the launcher
 // providers' (MarkerProviderSettings.Launcher) events of the profiler, which launches the target, are read too.
 public sealed class LiveEtwSource : IDisposable
 {
     // Microsoft-Windows-DxgKrnl keyword of the per-process GPU memory usage and budget events.
     private const ulong GpuMemoryKeyword = 0x4;
+    // Microsoft-Windows-DxgKrnl Resource: device and adapter allocation lifetimes and rundown.
+    private const ulong GpuResourceKeyword = 0x40;
+    // Microsoft-Windows-Direct3D11 Devices (0x2) and Resources (0x4).
+    private const ulong Direct3D11Keywords = 0x6;
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
     private const string SessionPrefix = "WinUIProfiler-";
@@ -69,7 +74,7 @@ public sealed class LiveEtwSource : IDisposable
         try
         {
             XamlEventSubscription.SubscribeProcesses(source.session.Source, selected, source.markers, sink, null);
-            source.CaptureGpuMemoryState();
+            source.CaptureGraphicsState();
             source.reader.Start();
             source.reading = true;
             return source;
@@ -126,7 +131,7 @@ public sealed class LiveEtwSource : IDisposable
             var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
             EnableProviders(session, options, options, markers);
             XamlEventSubscription.SubscribeProcesses(session.Source, selected, markers, sink, launcherProcessId);
-            CaptureGpuMemoryState();
+            CaptureGraphicsState();
             reader.Start();
             reading = true;
         }
@@ -192,6 +197,15 @@ public sealed class LiveEtwSource : IDisposable
             session.EnableProvider(provider, TraceEventLevel.Verbose, ulong.MaxValue, options);
         }
 
+        try
+        {
+            session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not enable Direct3D11 device and resource events: {error.Message}");
+        }
+
         foreach (var marker in markers)
         {
             session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
@@ -201,17 +215,17 @@ public sealed class LiveEtwSource : IDisposable
 
     // The System process writes some of the target's GPU memory events (such as those written when it exits), so
     // the provider is enabled for every process and XamlEventSubscription keeps the target's by their ProcessId
-    // field. A kernel provider writes only to sessions in nonpaged memory, which TraceEventSession uses. Best
-    // effort: without these events the session still reads the XAML events.
+    // or hProcessId field. A kernel provider writes only to sessions in nonpaged memory, which TraceEventSession uses.
+    // Best effort: without these events the session still reads the XAML events.
     private static void EnableGpuMemory(TraceEventSession session)
     {
         try
         {
-            session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, GpuMemoryKeyword);
+            session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, GpuMemoryKeyword | GpuResourceKeyword);
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
-            Trace.TraceWarning($"Could not enable the kernel's GPU memory events: {error.Message}");
+            Trace.TraceWarning($"Could not enable the kernel's GPU memory and allocation events: {error.Message}");
         }
     }
 
@@ -231,16 +245,24 @@ public sealed class LiveEtwSource : IDisposable
 
     // The kernel writes a process's current GPU memory usage and budget when the process opens a GPU adapter, and
     // for every process when a session requests capture state. Request it, so a process that opened its adapter
-    // before the session started also gets its current values.
-    private void CaptureGpuMemoryState()
+    // before the session started also gets its current values. D3D11 devices/resources and kernel allocations have
+    // rundown events too. They identify existing objects, not their original creation times.
+    private void CaptureGraphicsState()
     {
-        try
+        foreach (var (provider, keywords) in new[]
         {
-            session.CaptureState(XamlProviders.DxgKrnl, GpuMemoryKeyword);
-        }
-        catch (Exception error) when (error is not OutOfMemoryException)
+            (XamlProviders.Direct3D11, Direct3D11Keywords),
+            (XamlProviders.DxgKrnl, GpuMemoryKeyword | GpuResourceKeyword)
+        })
         {
-            Trace.TraceWarning($"Could not request the kernel's GPU memory state: {error.Message}");
+            try
+            {
+                session.CaptureState(provider, keywords);
+            }
+            catch (Exception error) when (error is not OutOfMemoryException)
+            {
+                Trace.TraceWarning($"Could not request graphics state from {provider}: {error.Message}");
+            }
         }
     }
 

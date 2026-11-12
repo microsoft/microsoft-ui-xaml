@@ -537,9 +537,10 @@ public static class SessionFile
         var marker = HasColumn(connection, transaction, "EventTypes", "ProviderId") ? "ProviderName, ProviderId" : "NULL, NULL";
         // Files written before launcher events were added have none.
         var launcher = HasColumn(connection, transaction, "EventTypes", "Launcher") ? "Launcher" : "0";
+        var identity = HasColumn(connection, transaction, "EventTypes", "EventId") ? "EventId, Version" : "NULL, NULL";
         var types = new Dictionary<long, StoredType>();
         using (var command = Command(connection, transaction,
-            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher} FROM EventTypes"))
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher}, {identity} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -557,7 +558,8 @@ public static class SessionFile
                     ? new MarkerProvider(reader.GetString(7), Guid.Parse(reader.GetString(8)))
                     : null;
                 types[reader.GetInt64(0)] = new(provider, markerProvider, reader.GetBoolean(6), reader.GetString(2),
-                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9));
+                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9),
+                    reader.IsDBNull(10) ? null : reader.GetInt32(10), reader.IsDBNull(11) ? null : reader.GetInt32(11));
             }
         }
 
@@ -575,7 +577,7 @@ public static class SessionFile
                 var type = types[reader.GetInt64(2)];
                 sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, type.Launcher ? launcherProcessId : info.ProcessId,
                     reader.GetInt32(1), type.Provider, type.TraceLogging, type.Name, type.Opcode,
-                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker), reader);
+                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker, type.EventId, type.Version), reader);
                 delivered++;
             }
         }
@@ -585,7 +587,7 @@ public static class SessionFile
 
     // An EventTypes row.
     private sealed record StoredType(XamlProvider Provider, MarkerProvider? Marker, bool TraceLogging, string Name, int Opcode,
-        string[] Names, FieldType[] Types, bool Launcher)
+        string[] Names, FieldType[] Types, bool Launcher, int? EventId, int? Version)
     {
         public Guid ProviderId => Marker?.Id ?? XamlProviders.IdOf(Provider);
     }

@@ -235,7 +235,8 @@ public static class OfflineEtlSource
                     GpuMemoryEvents++;
                     break;
                 case XamlProvider.Win32k:
-                    // Every process with windows has focus events; they don't make it a XAML process.
+                case XamlProvider.Direct3D11:
+                    // Focus and D3D events alone don't make this a XAML process.
                     return;
                 default:
                     XamlEvents++;

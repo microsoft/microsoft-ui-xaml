@@ -40,7 +40,7 @@ public sealed record TraceProcessStart(long Qpc, string? Name, int LauncherProce
 public sealed record RecordingStatus(string Path, long StoredEvents, long FileBytes, long LimitBytes, double? CompleteFromSeconds);
 
 // Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the object index
-// (ObjectIndex) and the frame index (FrameIndex) in the same transactions. Process waits while the writer is
+// (ObjectIndex), the frame index (FrameIndex) and graphics lifetimes (GraphicsIndex) in the same transactions. Process waits while the writer is
 // behind, so the ETW reader's queue stays the only place events are dropped. An event of another process than the
 // target's is the launcher's: it is stored as one, and not indexed.
 public sealed class SessionWriter : IEventProcessor, IDisposable
@@ -64,10 +64,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly SqliteCommand insertType;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
+    private readonly GraphicsIndex graphics;
     private readonly int processId;
-    // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode and
-    // whether the launcher wrote them. Usually one layout each; a field that is sometimes null gives a second.
-    private readonly Dictionary<(XamlProvider, Guid, bool, string, int, bool), List<EventLayout>> types = [];
+    // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode,
+    // launcher, ETW ID and version. Usually one layout each; a field that is sometimes null gives a second.
+    private readonly Dictionary<(XamlProvider, Guid, bool, string, int, bool, int?, int?), List<EventLayout>> types = [];
     private long typeCount;
     private readonly ArrayBufferWriter<byte> payload = new();
     private readonly Utf8JsonWriter json;
@@ -103,16 +104,19 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             ("$payload", SqliteType.Text));
         insertType = Sql.Prepare(connection, """
             INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, ProviderName, ProviderId,
-                Launcher)
-            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging, $providerName, $providerId, $launcher)
+                Launcher, EventId, Version)
+            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging, $providerName, $providerId, $launcher,
+                $eventId, $version)
             """, ("$id", SqliteType.Integer), ("$provider", SqliteType.Text), ("$name", SqliteType.Text), ("$opcode", SqliteType.Integer),
             ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer),
-            ("$providerName", SqliteType.Text), ("$providerId", SqliteType.Text), ("$launcher", SqliteType.Integer));
+            ("$providerName", SqliteType.Text), ("$providerId", SqliteType.Text), ("$launcher", SqliteType.Integer),
+            ("$eventId", SqliteType.Integer), ("$version", SqliteType.Integer));
 
         // The payload is never embedded in HTML, so only the escaping JSON requires is applied and type names stay readable.
         json = new(payload, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         objects = new(connection);
         frames = new(connection);
+        graphics = new(connection);
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
     }
@@ -278,7 +282,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             EventPayload.Write(json, batch[i].Event.Fields);
             json.Flush();
             payloads[i] = Encoding.UTF8.GetString(payload.WrittenSpan);
-            incomingBytes += payload.WrittenCount + RowOverheadBytes;
+            incomingBytes += payload.WrittenCount + RowOverheadBytes + GraphicsIndex.EstimatedBytes(batch[i].Event);
         }
 
         TrimIfNeeded(incomingBytes);
@@ -302,6 +306,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 {
                     objects.Add(sequence, typeId, profilerEvent, transaction);
                     frames.Add(sequence, typeId, profilerEvent, transaction);
+                    graphics.Add(sequence, typeId, profilerEvent, transaction);
                 }
             }
 
@@ -322,7 +327,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     {
         var fields = profilerEvent.Fields;
         var key = (profilerEvent.Provider, profilerEvent.Marker?.Id ?? Guid.Empty, profilerEvent.TraceLogging, profilerEvent.Name,
-            profilerEvent.Opcode, launcher);
+            profilerEvent.Opcode, launcher, profilerEvent.EventId, profilerEvent.Version);
         if (!types.TryGetValue(key, out var layouts))
         {
             types[key] = layouts = [];
@@ -348,6 +353,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         insertType.Parameters["$providerName"].Value = profilerEvent.ProviderName;
         insertType.Parameters["$providerId"].Value = profilerEvent.ProviderId.ToString();
         insertType.Parameters["$launcher"].Value = launcher;
+        insertType.Parameters["$eventId"].Value = profilerEvent.EventId ?? (object)DBNull.Value;
+        insertType.Parameters["$version"].Value = profilerEvent.Version ?? (object)DBNull.Value;
         insertType.ExecuteNonQuery();
         layouts.Add(layout);
         typeCount = layout.Id;
@@ -443,6 +450,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             {
                 objects.Trim(cutoff, transaction);
                 frames.Trim(cutoff, transaction);
+                graphics.Trim(cutoff, transaction);
                 Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
                 // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
                 // process's first event from the cutoff, or else the cutoff's.
@@ -497,6 +505,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             json.Dispose();
             objects.Dispose();
             frames.Dispose();
+            graphics.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();
