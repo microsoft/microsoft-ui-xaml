@@ -342,6 +342,7 @@ winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector con
 
 winrt::TableViewSource TableViewSource::ClearParentBy()
 {
+    m_engine->ThrowIfReentrant();
     m_engine->ClearParentBy();
     return *this;
 }
@@ -359,14 +360,6 @@ winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxis
     m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
-    return *this;
-}
-
-winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
-{
-    m_engine->ThrowIfReentrant();
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortOtherThan(sortAxisToken) };
-    tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
 }
 
@@ -477,11 +470,6 @@ std::vector<TableViewSource::GroupInfo> TableViewSource::CurrentGroups() const
 void TableViewSource::ThrowIfEndDeferRefreshReentrant() const
 {
     m_engine->ThrowIfEndDeferRefreshReentrant();
-}
-
-winrt::SortDirection TableViewSource::SortGroupsDirection() const
-{
-    return m_engine->GroupSortDirection();
 }
 
 bool TableViewSource::HasItemSort() const
@@ -617,11 +605,6 @@ winrt::TableViewSource TableViewSource::ThenSortCore(winrt::hstring const& sortA
             direction);
     });
     return *this;
-}
-
-winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
-{
-    return SortCore(previousSortAxisToken, sortAxisToken, key, sortMemberPath, direction);
 }
 
 winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
