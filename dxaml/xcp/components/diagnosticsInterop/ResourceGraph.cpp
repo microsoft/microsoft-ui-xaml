@@ -53,7 +53,8 @@ namespace Diagnostics
             }
             else
             {
-                ++iter;
+                // Skips every entry of a live key, so that a multimap key with many entries can't hold the cursor.
+                iter = map.upper_bound(iter->first);
             }
         }
 
