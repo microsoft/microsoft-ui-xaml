@@ -6,7 +6,7 @@ Window placement persistence
   - [1.1. Guiding principles](#11-guiding-principles)
 - [2. Conceptual pages](#2-conceptual-pages)
   - [2.1. Let WinUI remember and restore your window's placement](#21-let-winui-remember-and-restore-your-windows-placement)
-  - [2.2. How WinUI applies window placement data to a new window](#22-how-winui-applies-window-placement-data-to-a-new-window)
+  - [2.2. How WinUI applies window placement data](#22-how-winui-applies-window-placement-data)
   - [2.3. Customize placement before showing the window](#23-customize-placement-before-showing-the-window)
   - [2.4. Capture and apply placement yourself](#24-capture-and-apply-placement-yourself)
   - [2.5. Special considerations for app launch and restart](#25-special-considerations-for-app-launch-and-restart)
@@ -19,16 +19,16 @@ Window placement persistence
   - [3.6. Start a new window in full-screen mode](#36-start-a-new-window-in-full-screen-mode)
 - [4. API reference](#4-api-reference)
   - [4.1. Window.PlacementId](#41-windowplacementid)
-  - [4.2. Window.ApplyInitialPlacement](#42-windowapplyinitialplacement)
+  - [4.2. Window.ApplyPlacement](#42-windowapplyplacement)
   - [4.3. Window.Activate](#43-windowactivate)
   - [4.4. Window.TryGetPlacement](#44-windowtrygetplacement)
-  - [4.5. WindowInitialPlacementOptions](#45-windowinitialplacementoptions)
+  - [4.5. WindowActivateOptions](#45-windowactivateoptions)
   - [4.6. WindowPlacementInfo](#46-windowplacementinfo)
-  - [4.7. WindowPlacementInfo.TryLoadForPlacementId](#47-windowplacementinfotryloadforplacementid)
+  - [4.7. WindowPlacementInfo.TryLoadForPlacementId and TryCreateCascadedForPlacementId](#47-windowplacementinfotryloadforplacementid-and-trycreatecascadedforplacementid)
   - [4.8. WindowPlacementInfo.TryGetDisplayArea](#48-windowplacementinfotrygetdisplayarea)
   - [4.9. WindowPlacementInfo.MoveToDisplayArea](#49-windowplacementinfomovetodisplayarea)
   - [4.10. WindowPlacementState](#410-windowplacementstate)
-  - [4.11. WindowPlacementReason](#411-windowplacementreason)
+  - [4.11. WindowInitialPlacementReason](#411-windowinitialplacementreason)
 - [5. API details](#5-api-details)
 - [Appendix](#appendix)
 
@@ -52,9 +52,12 @@ These principles explain the API shape:
   code to let WinUI manage the window placement automatically.
 - **Let `Window.Activate()` still do the work.** Existing WinUI apps already call `Window.Activate()`
   to show their windows.  For the common case, don't make app devs write more code.
+- **Layer automatic placement on top of explicit APIs.** Setting `PlacementId` and calling
+  `Activate()` builds directly on `WindowPlacementInfo` and `Window.ApplyPlacement`, so apps
+  can dip down to the explicit APIs whenever they need custom behavior.
 - **Let apps adjust the window before showing it.**
 - **Let apps capture and apply placement.** Apps can capture placement data and supply it
-  when placing a new window.
+  when placing a new or existing window.
 - **Support apps with and without package identity.**
 - **Do no harm.**  
   - UWP apps can move to WinUI without regressions in this area.
@@ -115,7 +118,7 @@ WinUI may evict older placement entries.
 
 > _Spec note: The ApplicationData APIs discussed above are still in progress, see [ApplicationData.GetForUnpackaged() API spec](https://github.com/microsoft/WindowsAppSDK/pull/6946)_
 
-### 2.2. How WinUI applies window placement data to a new window
+### 2.2. How WinUI applies window placement data
 
 `WindowPlacementInfo` records the following information about your window:
 
@@ -130,17 +133,17 @@ WinUI may evict older placement entries.
 - **Display scale (`Dpi`).** WinUI remembers the display's dots per inch so it can adjust
   the window's size when scaling changes.
 - **Display name (`DisplayDeviceName`).** WinUI uses the name to try to find the same
-  display when your app creates the window again.
+  display when your app applies the placement later.
 - **Virtual desktop (`VirtualDesktopId`).** WinUI remembers the virtual desktop the
   window was on (this is only used for restart scenarios).
 
 WinUI does not capture visibility, activation, presenter kind, or Z-order.
 
-The following table shows how WinUI adjusts a new window's position and size when the
+The following table shows how WinUI adjusts a window's position and size when the
 display configuration has changed since its `WindowPlacementInfo` snapshot was captured or
 saved. The goal is that the window appears where the user expects it.
 
-| Display configuration when your app creates the window again | How WinUI adjusts saved bounds |
+| Display configuration when your app applies the placement | How WinUI adjusts saved bounds |
 | --- | --- |
 | The display configuration is unchanged | Apply the saved normal size and position. |
 | The saved position would be off-screen | Move the window and reduce its normal size to fit the selected display's work area. |
@@ -154,11 +157,12 @@ Additional notes:
 - WinUI doesn't save or load information about the `AppWindow`'s current presenter.
   Your app chooses full-screen or compact-overlay mode separately. See
   [Start a new window in full-screen mode](#36-start-a-new-window-in-full-screen-mode).
-- You can set `Window.Width`, `Window.Height`, or both to choose a fallback size. Saved
-  placement, custom placement, and cascading override these values (see
-  [ApplyInitialPlacement](#42-windowapplyinitialplacement)).
-- WinUI can cascade a new window from an open, visible window with the same `PlacementId`,
-  rather than placing both windows at the exact same position.
+- You can set `Window.Width`, `Window.Height`, or both to choose a fallback size before
+  showing the window. Saved placement, custom placement, and cascading override these values
+  (see [ApplyPlacement](#42-windowapplyplacement)).
+- When placing a window before it has been shown, WinUI can cascade it from an open, visible
+  window with the same `PlacementId`, rather than placing both windows at the exact same
+  position.
 
 ### 2.3. Customize placement before showing the window
 
@@ -166,14 +170,15 @@ In some cases you may not want to use WinUI's placement logic for handling displ
 might have some particular rules about its window placement you want to enforce.
 
 You can customize the way your window is shown by running WinUI's window placement logic before
-calling `Activate()`:
+calling `Activate`:
 
-- **Call `Window.ApplyInitialPlacement` to run WinUI's window placement logic.** This will
-  modify the underlying windowing object (the Windows App SDK `AppWindow`), but not show it yet.
+- **Load or create a `WindowPlacementInfo` and call `Window.ApplyPlacement`.** This runs
+  WinUI's window placement logic and modifies the underlying windowing object (the Windows App
+  SDK `AppWindow`), without showing it yet.
 - **Modify bounds, state, or presenter as needed.** Use the `Window` or `AppWindow` APIs.
-- **Call `Window.Activate()` to show the prepared window.** WinUI does not rerun the
-  placement logic if you previously called `ApplyInitialPlacement` (and it didn't fail with an error).
-  The window retains all the information it needs to open in the correct state.
+- **Call `Window.Activate` with `SkipAutomaticPlacement = true` to show the prepared window.**
+  Setting `SkipAutomaticPlacement = true` tells `Activate` not to run automatic `PlacementId`
+  placement on top of your changes.
 
 See [Center a window in the work area of its last-used display using AppWindow APIs](#33-center-a-window-in-the-work-area-of-its-last-used-display-using-appwindow-apis)
 for an example of preparing placement, adjusting position, and then activating the window.
@@ -183,9 +188,9 @@ for an example of preparing placement, adjusting position, and then activating t
 You can capture a window's position, size, state, and display information in a
 `WindowPlacementInfo` object by calling `Window.TryGetPlacement`.
 
-To use a snapshot when creating a new window, set `WindowInitialPlacementOptions.CustomPlacement`
-(and set `AllowCascading = false` if you do not want cascading to override it) and call
-`Window.ApplyInitialPlacement` before calling `Window.Activate()`.
+To apply a snapshot to a new or existing window, pass it to `Window.ApplyPlacement`.
+If `PlacementId` is also set on a new window, pass `SkipAutomaticPlacement = true` when
+calling `Window.Activate` so automatic placement does not overwrite the snapshot.
 
 > _Spec note: WinUI does not currently expose `WM_DESTROY` or `WM_ENDSESSION` as public
 > `Window` events. Windows may end a session without destroying each window. Complete
@@ -194,16 +199,17 @@ To use a snapshot when creating a new window, set `WindowInitialPlacementOptions
 
 ### 2.5. Special considerations for app launch and restart
 
-WinUI's placement logic works best if you give extra context about why the window is opening.
-Set `WindowInitialPlacementOptions.Reason` to give this context:
+WinUI's initial placement logic works best if you give extra context about why a new window
+is opening. Set `WindowActivateOptions.InitialReason` when calling `Activate` (or pass
+`initialReason` to `ApplyPlacement` before the window is shown) to give this context:
 
 - **Your window is being opened as part of your app's launch:** Set `ApplicationLaunch`.
   See [Tell WinUI your window is part of the app's launch process](#32-tell-winui-your-window-is-part-of-the-apps-launch-process).
 - **Your window is being recreated after an app or system restart:** Your app detects the
-  restart, recreates its windows, and calls `ApplyInitialPlacement` with
-  `Reason = ApplicationRestart` before calling `Window.Activate()`. WinUI attempts to return
-  each window to its previous virtual desktop, keeps minimized windows minimized, and shows
-  each window without requesting activation.
+  restart, recreates its windows, and calls `Window.Activate` with
+  `InitialReason = ApplicationRestart`. WinUI attempts to
+  return each window to its previous virtual desktop, keeps minimized windows minimized, and
+  shows each window without requesting activation.
   See [Recreate windows after an app or system restart](#35-recreate-windows-after-an-app-or-system-restart).
 
 ## 3. Examples
@@ -241,9 +247,18 @@ Window window = new MainWindow
 window.Activate();
 ```
 
+If your app does not have package identity, call `ApplicationData.SetContextForUnpackaged`
+before activating your window:
+
+```csharp
+// If your app doesn't have package identity, you need to tell ApplicationData your app's context,
+// WinUI uses it for its data store.
+Microsoft.Windows.Storage.ApplicationData.SetContextForUnpackaged("Contoso", "Editor");
+```
+
 ### 3.2. Tell WinUI your window is part of the app's launch process
 
-Set `Reason` to `ApplicationLaunch` to tell WinUI to use extra startup information from the OS when
+Set `InitialReason` to `ApplicationLaunch` to tell WinUI to use extra startup information from the OS when
 determining how to place the window (this is in the Win32 `STARTUPINFO` struct).
 
 If the app was launched from the taskbar, WinUI will prefer the display on which that taskbar is open.
@@ -255,21 +270,19 @@ private Window? _window;
 protected override void OnLaunched(LaunchActivatedEventArgs args)
 {
     _window = new MainWindow();
-    _window.ApplyInitialPlacement(new WindowInitialPlacementOptions
+    _window.Activate(new WindowActivateOptions
     {
-        Reason = WindowPlacementReason.ApplicationLaunch,
+        InitialReason = WindowInitialPlacementReason.ApplicationLaunch,
     });
-    // The first Activate remembers the state we set when calling ApplyInitialPlacement.
-    _window.Activate();
 }
 ```
 
 ### 3.3. Center a window in the work area of its last-used display using AppWindow APIs
 
 Suppose you want to open a normal window centered in the work area of the display where it was
-last used, even if the saved window was maximized or snapped. You can use the `ApplyInitialPlacement` API to run WinUI's
+last used, even if the saved window was maximized or snapped. You can use the `ApplyPlacement` API to run WinUI's
 window placement logic without making the window visible.  This allows you to make modifications
-before calling `Window.Activate()` to show it.
+before calling `Window.Activate` to show it.
 
 ```csharp
 using System;
@@ -290,14 +303,8 @@ WindowPlacementInfo? placement =
 if (placement is not null)
 {
     placement.State = WindowPlacementState.Normal;
+    window.ApplyPlacement(placement);
 }
-
-// Apply placement while the window remains hidden.
-window.ApplyInitialPlacement(new WindowInitialPlacementOptions
-{
-    CustomPlacement = placement,
-    AllowCascading = false,
-});
 
 AppWindow appWindow = window.AppWindow;
 DisplayArea display = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest)
@@ -305,14 +312,20 @@ DisplayArea display = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallb
 
 // WorkArea and AppWindow APIs use physical pixels
 RectInt32 workArea = display.WorkArea;
-SizeInt32 size = appWindow.Size;
+int widthInPixels = 600;
+int heightInPixels = 600;
 
-appWindow.Move(new PointInt32(
-    workArea.X + (workArea.Width - size.Width) / 2,
-    workArea.Y + (workArea.Height - size.Height) / 2));
+appWindow.MoveAndResize(new RectInt32(
+    workArea.X + (workArea.Width - widthInPixels) / 2,
+    workArea.Y + (workArea.Height - heightInPixels) / 2,
+    widthInPixels,
+    heightInPixels));
 
-// Activate does not apply placement again or undo the move.
-window.Activate();
+// Skip automatic placement so Activate does not undo the move.
+window.Activate(new WindowActivateOptions
+{
+    SkipAutomaticPlacement = true,  // we already applied placement, don't do it again
+});
 ```
 
 ### 3.4. Move saved placement to another display
@@ -334,6 +347,10 @@ WindowPlacementInfo? placement =
 
 if (placement is not null)
 {
+    // When the previous display isn't available, WinUI falls back to the display nearest
+    // to the physical screen location.
+    // In this example, we override this behavior by using our own logic to fall back to the
+    // primary display instead.
     DisplayArea? savedDisplay = placement.TryGetDisplayArea();
     if (savedDisplay is null)
     {
@@ -341,14 +358,13 @@ if (placement is not null)
         placement.MoveToDisplayArea(DisplayArea.Primary);
     }
 
-    window.ApplyInitialPlacement(new WindowInitialPlacementOptions
-    {
-        CustomPlacement = placement,
-        AllowCascading = false,
-    });
+    window.ApplyPlacement(placement);
 }
 
-window.Activate();
+window.Activate(new WindowActivateOptions
+{
+    SkipAutomaticPlacement = true,  // we already applied placement, don't do it again
+});
 ```
 
 ### 3.5. Recreate windows after an app or system restart
@@ -363,7 +379,7 @@ position, size, and state. Unlike an ordinary launch, a restart should:
 - Use each window's saved placement rather than cascading from another open, visible window or
   preferring the display associated with the original launch.
 
-Prepare each window with `ApplicationRestart`, then call `Window.Activate()`.
+Activate each recreated window with `InitialReason = ApplicationRestart`.
 Your app must detect the restart and load its window inventory and contents. This example
 registers for Windows restart and recognizes the relaunched process through an app-defined argument.
 
@@ -402,12 +418,11 @@ public partial class App : Application
             };
 
             // Load document contents or other app state here, before showing.
-            window.ApplyInitialPlacement(new WindowInitialPlacementOptions
-            {
-                Reason = WindowPlacementReason.ApplicationRestart,
-            });
             // Honors ApplicationRestart option by NOT requesting activation.
-            window.Activate();
+            window.Activate(new WindowActivateOptions
+            {
+                InitialReason = WindowInitialPlacementReason.ApplicationRestart,
+            });
         }
 
         return true;
@@ -442,17 +457,24 @@ For more information about how to properly support restart scenarios:
 Suppose you want to use automatic placement persistence, but your app also has a user setting
 to start the app in full-screen mode.
 
-To support this, call `ApplyInitialPlacement` with default options to prepare the window.
-Then call `AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen)` before calling `Activate()`.
+To support this, load and apply the window's placement to prepare its windowed bounds,
+call `AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen)`, and then call `Activate`
+with `SkipAutomaticPlacement = true`.
 
 ```csharp
 Window window = new MainWindow
 {
     PlacementId = "Contoso.Editor",
 };
-window.ApplyInitialPlacement(new WindowInitialPlacementOptions());
+WindowPlacementInfo? placement =
+    WindowPlacementInfo.TryCreateCascadedForPlacementId(window.PlacementId)
+    ?? WindowPlacementInfo.TryLoadForPlacementId(window.PlacementId);
+window.ApplyPlacement(placement);
 window.AppWindow.SetPresenter(Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen);
-window.Activate();
+window.Activate(new WindowActivateOptions
+{
+    SkipAutomaticPlacement = true,  // we already applied placement, don't do it again
+});
 ```
 
 When your app selects the overlapped presenter again, the window returns to its prepared
@@ -476,105 +498,77 @@ Set this property to a non-empty string ID to enable:
   session ends) and restoring of its position, size, and state. Reuse the same ID when you
   recreate a window so WinUI can find its saved placement.
 - **Cascading:** WinUI also uses this identifier to find open, visible windows
-  to cascade from.
+  to cascade from when placing a window before it has been shown.
 
-WinUI automatically restores initial placement only when you call `Window.Activate()` or
-`Window.ApplyInitialPlacement()`; calling `AppWindow.Show()` alone does not apply initial
-placement.
+When `PlacementId` is set, WinUI applies automatic placement on the first call to
+`Window.Activate` (unless `SkipAutomaticPlacement` is `true` or the window has already been shown). When the window closes, if `PlacementId`
+is set, WinUI will save the window's placement data.
 
-If your app does not have package identity, it must first call `ApplicationData.SetContextForUnpackaged()`
-to enable placement persistence.  This is how WinUI knows where to store the placement data.
-
-See `ApplyInitialPlacement` for more information.
-
-### 4.2. Window.ApplyInitialPlacement
-
-Call this method to set the window's position, size, and state before showing it.
-
-```cs but actually midl3
-Boolean ApplyInitialPlacement(WindowInitialPlacementOptions options);
-```
-
-Call this method on the window's UI thread before calling `Window.Activate`.
-
-`ApplyInitialPlacement` returns true if WinUI successfully cascaded the window, applied custom
-placement for the window, or applied saved placement for the window.  Otherwise, it returns false.
-
-WinUI chooses placement in this order:
-
-- **Cascading:** WinUI looks for an open, visible window with the same non-empty
-  `PlacementId`, if `AllowCascading` is `true` and the reason is not `ApplicationRestart`.
-- **Custom placement:** WinUI uses `CustomPlacement` if your app supplies a non-null value.
-- **Saved placement:** WinUI looks for saved placement under `PlacementId`.
-- **OS defaults:** WinUI keeps the window's existing bounds and state, which may be OS defaults.
-
-
-Normally, the first call to [Window.Activate](#43-windowactivate) runs initial placement
-automatically when `PlacementId` is set. Call `ApplyInitialPlacement` directly when you want
-to pass options (such as `Reason` or `CustomPlacement`) or adjust the window before showing
-it:
-
-1. Call `Window.ApplyInitialPlacement` to run WinUI's placement logic while the window is hidden.
-2. Adjust the window's bounds, state, or presenter if needed.
-3. Call `Window.Activate` to show the window. Because `ApplyInitialPlacement` already
-   completed without an error, `Activate` will not run placement again (even if
-   `ApplyInitialPlacement` returned `false`).
-
-You can call `ApplyInitialPlacement` multiple times before calling `Window.Activate`. Each call
-re-runs WinUI's placement logic. See
-[How WinUI applies window placement data to a new window](#22-how-winui-applies-window-placement-data-to-a-new-window)
-for how WinUI adapts saved or custom bounds to the current display configuration.
+If you show the window a different way, for example if you call `AppWindow.Show()`, WinUI will not apply placement.
+In this case you may manually call `Window.ApplyPlacement` to place the window.
 
 If your app does not have package identity, it must first call `ApplicationData.SetContextForUnpackaged`
 to enable placement persistence.  This is how WinUI knows where to store the placement data.
 
-**Additional behavior and errors**
+See `Activate` and `ApplyPlacement` for more information.
 
-- This method does not show the window or request activation.
-- WinUI sets the window's presenter to `OverlappedPresenter` if needed, even when no saved
-  placement is available. This also applies when the first `Activate()` runs initial placement
-  automatically. To use another presenter for first presentation, select it after calling
-  `ApplyInitialPlacement` and before calling `Activate()`.
-- WinUI reports an error before applying placement if your app calls from the wrong thread,
-  the window is closed, or the options are null or contain invalid values.
-- WinUI reports `E_ILLEGAL_METHOD_CALL` if `Window.Activate` has already been called on this
-  window or another `ApplyInitialPlacement` call is in progress.
+### 4.2. Window.ApplyPlacement
+
+Call this method to set the window's position, size, and state before or after showing it.
+
+```cs but actually midl3
+Boolean ApplyPlacement(WindowPlacementInfo placement);
+Boolean ApplyPlacement(WindowPlacementInfo placement, WindowInitialPlacementReason initialReason);
+```
+
+Calling `ApplyPlacement(placement)` is equivalent to calling
+`ApplyPlacement(placement, WindowInitialPlacementReason.Default)`.
+
+When called, `ApplyPlacement`:
+- Immediately updates the window's position, size, and state using [WinUI's placement rules](#22-how-winui-applies-window-placement-data), while preserving its current visibility (it does not show a hidden window) and without requesting activation.
+- Applies the provided `WindowPlacementInfo` snapshot when `placement` is non-null, or keeps the window's existing bounds and state when `placement` is null (applying only `initialReason` launch hints if applicable). `ApplyPlacement` never cascades automatically.
+- Sets the window's presenter to `OverlappedPresenter` if needed when placement is applied.
+- Returns `true` if WinUI applied `placement` or launch hints from `initialReason`; otherwise returns `false` (and leaves the window's presenter unchanged).
+
+You can call `ApplyPlacement` multiple times before or after the window is shown. If you call `ApplyPlacement` before showing a window that has `PlacementId` set, pass `SkipAutomaticPlacement = true` when calling [Window.Activate](#43-windowactivate) so `Activate` does not overwrite your placement.
+
+**Errors**
+
+- Call this method on the window's UI thread. WinUI reports an error before applying placement if your app calls from the wrong thread, the window is closed, or `placement` contains invalid values.
+- WinUI reports `E_ILLEGAL_METHOD_CALL` if `initialReason` is not `Default` after the window has already been shown (see [Window.Activate](#43-windowactivate) for how WinUI determines whether a window has been shown), or if another `ApplyPlacement` call is in progress.
 
 ### 4.3. Window.Activate
 
-> _Spec note: This is an existing method_
+> _Spec note: `Activate()` is an existing method; `Activate(WindowActivateOptions)` is a new overload._
 
 Call this method to show a new window according to its initial placement, or to restore
 and request activation of a window that has already been shown.
 
 ```cs but actually midl3
-void Activate();
+void Activate(); // existing
+void Activate(WindowActivateOptions options);
 ```
 
-**Call Activate to show a new, hidden window**
+This method has different behavior depending on whether the window has previously been shown:
 
-On the first call to `Activate` for a window:
+**If the window has _not_ been shown:**
+- Calling `Activate()` is equivalent to calling `Activate(new WindowActivateOptions())`.
+- If `options.SkipAutomaticPlacement` is `false`:
+  - If `PlacementId` is set, WinUI first calls `WindowPlacementInfo.TryCreateCascadedForPlacementId(PlacementId)` (if `options.AllowCascading` is `true` and `options.InitialReason` is not `ApplicationRestart`).
+  - If `PlacementId` is set and no window was found to cascade from, WinUI calls `WindowPlacementInfo.TryLoadForPlacementId(PlacementId)`.
+  - WinUI calls `ApplyPlacement(placement, options.InitialReason)` to place the window (`placement` is `null` if `PlacementId` is not set or no placement data was found).
+- WinUI shows and activates the window (unless prohibited by `WindowInitialPlacementReason`).
 
-1. **Apply initial placement (if needed):** If `PlacementId` is set and your app hasn't
-   already called `ApplyInitialPlacement` without an error, WinUI calls
-   `ApplyInitialPlacement` with default options.
-2. **Show and activate the window:**
-   - If initial placement ran (either in step 1 or from an earlier call to
-     `ApplyInitialPlacement`), WinUI shows the window using the `Reason` from that
-     placement call (see table below).
-   - Otherwise, WinUI shows the window, restores it if minimized, and requests activation.
+**If the window _has_ previously been shown:**
+- Only the parameterless `Activate()` is valid.  Calling `Activate(WindowActivateOptions)` returns an error.
+- If the window is minimized, WinUI restores the window.
+- WinUI requests window activation for the window.
 
-| `WindowPlacementReason` | First `Activate()` |
-| --- | --- |
-| `Default` | Show the window and request activation. If minimized, restore it to its restore state from `WindowPlacementInfo`. |
-| `ApplicationLaunch` | Honor Windows requests to start minimized or maximized. Will request activation unless it starts minimized. |
-| `ApplicationRestart` | Show the window without requesting activation. Keep it minimized if it is minimized. |
-
-**Call Activate on an already-shown window to request activation and restore from minimized**
-
-If you've previously successfully called `Activate` on your window:
-- WinUI restores the window if it's minimized.
-- WinUI requests activation for the window.
+WinUI considers the window to have been "shown" if it has previously received a `WM_SHOWWINDOW` message for it
+(where `wParam` is `TRUE`).  Here are some ways this can happen:
+- The `Window.Activate()` method has been called on the window.
+- The `AppWindow.Show()` method has been called on the window.
+- The win32 `ShowWindow()` function has been called for the window.
 
 **Requesting Activation**
 
@@ -588,14 +582,14 @@ See `SetActiveWindow` for more information and restrictions.
 **Errors**
 
 - Call this method on the window's UI thread. WinUI reports an error if your app calls
-  from the wrong thread or the window is closed.
-- WinUI reports `E_ILLEGAL_METHOD_CALL` if an `ApplyInitialPlacement` call is in progress.
+  from the wrong thread, the window is closed, or `options` is null or contains invalid values.
+- WinUI reports `E_ILLEGAL_METHOD_CALL` if `Activate(WindowActivateOptions)` is called after
+  the window has already been shown, or if an `ApplyPlacement` call is in progress.
 
 ### 4.4. Window.TryGetPlacement
 
 Call this method to capture a window's placement in a `WindowPlacementInfo` object.
-Your app can pass the snapshot to `ApplyInitialPlacement` through
-`WindowInitialPlacementOptions.CustomPlacement` when creating a new window.
+Your app can pass the snapshot to `ApplyPlacement` when placing a new or existing window.
 
 ```cs but actually midl3
 WindowPlacementInfo TryGetPlacement();
@@ -621,28 +615,29 @@ first time or after hiding it.
 - If the window is closed, WinUI reports `E_INVALID_OPERATION`.
 - If the window type is unsupported, WinUI reports `E_NOTIMPL`.
 
-### 4.5. WindowInitialPlacementOptions
+### 4.5. WindowActivateOptions
 
-Use this object to choose how WinUI places a window when you call `ApplyInitialPlacement`.
+Use this object to configure automatic placement and initial presentation when calling
+`Window.Activate` before the window has been shown.
 
 ```cs but actually midl3
-runtimeclass WindowInitialPlacementOptions
+runtimeclass WindowActivateOptions
 {
-    WindowInitialPlacementOptions();
+    WindowActivateOptions();
 
-    WindowPlacementInfo CustomPlacement;
-    WindowPlacementReason Reason;
+    Boolean SkipAutomaticPlacement;
     Boolean AllowCascading;
+    WindowInitialPlacementReason InitialReason;
 };
 ```
 
 | Property | Default | Meaning |
 | --- | --- | --- |
-| `CustomPlacement` | `null` | Supply a specific placement to apply. This does not disable cascading; set `AllowCascading` to false to prevent cascading. |
-| `Reason` | `Default` | Choose placement and first-presentation behavior. See [WindowPlacementReason](#411-windowplacementreason). |
-| `AllowCascading` | `true` | When set to true (the default), WinUI's placement logic will first try to find another open, visible window from the same app with the same `PlacementId` (including in other processes) and cascade from that window if it finds one. WinUI never cascades when `Reason = ApplicationRestart`. |
+| `SkipAutomaticPlacement` | `false` | When `true`, `Activate` skips automatic `PlacementId` cascading and loading. Set this to `true` when you have already positioned the window before showing it (for example via `ApplyPlacement` or `AppWindow` APIs). |
+| `AllowCascading` | `true` | When `true` (the default) and automatic placement runs on `Activate`, WinUI first tries to find another open, visible window from the same app with the same `PlacementId` (including in other processes) and cascade from it. WinUI never cascades when `InitialReason = ApplicationRestart`. |
+| `InitialReason` | `Default` | Choose initial placement and first-presentation behavior before the window has been shown. See [WindowInitialPlacementReason](#411-windowinitialplacementreason). |
 
-For more information about WinUI's placement logic, see [ApplyInitialPlacement](#42-windowapplyinitialplacement).
+For more information about how `Activate` uses these options, see [Window.Activate](#43-windowactivate).
 
 You can read and edit the options and placement objects on any thread.
 
@@ -657,6 +652,7 @@ runtimeclass WindowPlacementInfo
     WindowPlacementInfo();
 
     static WindowPlacementInfo TryLoadForPlacementId(String placementId);
+    static WindowPlacementInfo TryCreateCascadedForPlacementId(String placementId);
 
     Microsoft.UI.Windowing.DisplayArea TryGetDisplayArea();
     void MoveToDisplayArea(Microsoft.UI.Windowing.DisplayArea displayArea);
@@ -686,7 +682,7 @@ all displays.
 WinUI treats null display name as empty, and an empty GUID as no virtual-desktop ID.
 
 A newly constructed object is not ready to apply. Set `NormalRect`, `WorkArea`, and `Dpi`
-to valid values before passing it to `ApplyInitialPlacement`.
+to valid values before passing it to `ApplyPlacement`.
 
 | Data | Requirement |
 | --- | --- |
@@ -697,20 +693,27 @@ to valid values before passing it to `ApplyInitialPlacement`.
 | `State` | A defined value; snapped states require a non-null snap rectangle. |
 | `DisplayDeviceName` | Empty or at most 31 UTF-16 characters, without embedded null. |
 
-### 4.7. WindowPlacementInfo.TryLoadForPlacementId
+### 4.7. WindowPlacementInfo.TryLoadForPlacementId and TryCreateCascadedForPlacementId
 
-Load the placement WinUI saved for a window into a new `WindowPlacementInfo` instance.
+Load the placement WinUI saved for a window, or create a cascaded placement from an open
+window with the same `PlacementId`, into a new `WindowPlacementInfo` instance.
 
 ```cs but actually midl3
 static WindowPlacementInfo TryLoadForPlacementId(String placementId);
+static WindowPlacementInfo TryCreateCascadedForPlacementId(String placementId);
 ```
 
-You can call this synchronous method on any thread to read your app's placement store.
-WinUI returns a copy of the stored data without adjusting it for the currently available
-displays.
+You can call `TryLoadForPlacementId` synchronously on any thread to read your app's
+placement store. WinUI returns a copy of the stored data without adjusting it for the
+currently available displays.
 
-WinUI may return null when storage is unavailable or inaccessible, a record is missing or evicted,
-or saved data is invalid or uses an unsupported version.
+WinUI may return null from `TryLoadForPlacementId` when storage is unavailable or
+inaccessible, a record is missing or evicted, or saved data is invalid or uses an
+unsupported version.
+
+`TryCreateCascadedForPlacementId` looks for an open, visible window from the same app with
+the specified `PlacementId` (including in other processes) and returns a new
+`WindowPlacementInfo` cascaded from that window, or `null` if no candidate window exists.
 
 ### 4.8. WindowPlacementInfo.TryGetDisplayArea
 
@@ -738,8 +741,8 @@ the one it's currently targeting.  WinUI will update other `WindowPlacementInfo`
 as necessary to represent a consistent, user-friendly location on the new display.
 
 This method changes only the `WindowPlacementInfo` object. It does not move a live `Window`.
-To place a new window from the updated snapshot, assign it to
-`WindowInitialPlacementOptions.CustomPlacement` and call `Window.ApplyInitialPlacement`.
+To apply the updated snapshot to a new or existing window, pass it to
+`Window.ApplyPlacement`.
 
 The target `DisplayArea` must be non-null and represent a currently connected display. If it
 is null, disconnected, or stale, WinUI reports `E_INVALIDARG` and leaves the placement
@@ -770,13 +773,13 @@ enum WindowPlacementState
 | `MinimizedFromMaximized` | 4 | Yes | Maximized |
 | `MinimizedFromSnapped` | 5 | Yes | Snapped |
 
-### 4.11. WindowPlacementReason
+### 4.11. WindowInitialPlacementReason
 
-Use this enum to give WinUI context about why the window is being created. WinUI uses it
-when applying initial window placement.
+Use this enum to give WinUI context about why a new window is being created. WinUI uses it
+when applying initial window placement before the window has been shown.
 
 ```cs but actually midl3
-enum WindowPlacementReason
+enum WindowInitialPlacementReason
 {
     Default = 0,
     ApplicationLaunch = 1,
@@ -784,13 +787,14 @@ enum WindowPlacementReason
 };
 ```
 
-Set `WindowInitialPlacementOptions.Reason` to one of these values:
+Set `WindowActivateOptions.InitialReason` (or pass `initialReason` to `Window.ApplyPlacement`)
+before the window is shown:
 
 | Value | Behavior |
 | --- | --- |
-| `Default` | Use the standard placement rules without process-launch hints or restart-specific behavior. On first `Activate()`, WinUI restores any minimized window and requests activation. |
+| `Default` | Use the standard placement rules without process-launch hints or restart-specific behavior. When used, WinUI restores any minimized window. |
 | `ApplicationLaunch` | Use any configuration specified by the OS for the window. For example, Windows might request the app start minimized or maximized. It might also have a hint that the app start on a specific monitor. If there are no special requests from the OS, this has the same behavior as `Default`. |
-| `ApplicationRestart` | If the window was minimized, keep it minimized. If it was saved to a particular virtual desktop, attempt to move it to that virtual desktop without switching the user's active desktop. Do not cascade windows. On first `Activate()`, do not request window activation. |
+| `ApplicationRestart` | If the window was minimized, keep it minimized. If it was saved to a particular virtual desktop, attempt to move it to that virtual desktop without switching the user's active desktop. Do not cascade windows. On first `Activate`, do not request window activation. |
 
 ## 5. API details
 
@@ -815,7 +819,7 @@ namespace Microsoft.UI.Xaml
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [webhosthidden]
-    enum WindowPlacementReason
+    enum WindowInitialPlacementReason
     {
         Default = 0,
         ApplicationLaunch = 1,
@@ -831,6 +835,7 @@ namespace Microsoft.UI.Xaml
         WindowPlacementInfo();
 
         static WindowPlacementInfo TryLoadForPlacementId(String placementId);
+        static WindowPlacementInfo TryCreateCascadedForPlacementId(String placementId);
 
         Microsoft.UI.Windowing.DisplayArea TryGetDisplayArea();
         void MoveToDisplayArea(Microsoft.UI.Windowing.DisplayArea displayArea);
@@ -848,13 +853,13 @@ namespace Microsoft.UI.Xaml
     [webhosthidden]
     [threading(both)]
     [marshaling_behavior(agile)]
-    runtimeclass WindowInitialPlacementOptions
+    runtimeclass WindowActivateOptions
     {
-        WindowInitialPlacementOptions();
+        WindowActivateOptions();
 
-        WindowPlacementInfo CustomPlacement;
-        WindowPlacementReason Reason;
+        Boolean SkipAutomaticPlacement;
         Boolean AllowCascading;
+        WindowInitialPlacementReason InitialReason;
     };
 
     [webhosthidden]
@@ -863,8 +868,10 @@ namespace Microsoft.UI.Xaml
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         {
             String PlacementId;
+            void Activate(WindowActivateOptions options);
             WindowPlacementInfo TryGetPlacement();
-            Boolean ApplyInitialPlacement(WindowInitialPlacementOptions options);
+            Boolean ApplyPlacement(WindowPlacementInfo placement);
+            Boolean ApplyPlacement(WindowPlacementInfo placement, WindowInitialPlacementReason initialReason);
         }
     };
 }
