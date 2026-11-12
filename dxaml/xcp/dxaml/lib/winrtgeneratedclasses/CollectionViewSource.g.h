@@ -11,8 +11,30 @@
 
 #pragma once
 
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __CollectionViewSource_GUID "a7dfaf16-d646-4018-99b6-a35729153b5f"
+
+#pragma region forwarders
+namespace ctl
+{
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue) override { return This()->get_Filter(ppValue); }
+        IFACEMETHOD(put_Filter)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue) override { return This()->put_Filter(pValue); }
+        IFACEMETHOD(get_GroupDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue) override { return This()->get_GroupDescriptions(ppValue); }
+        IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
+        IFACEMETHOD(Refresh)() override { return This()->Refresh(); }
+    };
+}
+#pragma endregion
 
 namespace DirectUI
 {
@@ -22,6 +44,9 @@ namespace DirectUI
     class __declspec(novtable) CollectionViewSourceGenerated:
         public DirectUI::DependencyObject
         , public ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, CollectionViewSourceGenerated >
+#endif
     {
         friend class DirectUI::CollectionViewSource;
 
@@ -29,6 +54,9 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(CollectionViewSourceGenerated, DirectUI::DependencyObject)
             INTERFACE_ENTRY(CollectionViewSourceGenerated, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(CollectionViewSourceGenerated, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(CollectionViewSourceGenerated, DirectUI::DependencyObject)
 
     public:
@@ -48,10 +76,14 @@ namespace DirectUI
         }
 
         // Properties.
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Filter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Filter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_GroupDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue);
         IFACEMETHOD(get_IsSourceGrouped)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_IsSourceGrouped)(BOOLEAN value) override;
         IFACEMETHOD(get_ItemsPath)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IPropertyPath** ppValue) override;
         IFACEMETHOD(put_ItemsPath)(_In_opt_ ABI::Microsoft::UI::Xaml::IPropertyPath* pValue) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue);
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Source)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_View)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppValue) override;
@@ -59,6 +91,9 @@ namespace DirectUI
         // Events.
 
         // Methods.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE Refresh();
+#endif
 
 
     protected:

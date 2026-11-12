@@ -522,6 +522,7 @@ namespace Microsoft.UI.Xaml.Data
     [CodeGen(partial: true)]
     [NativeName("CCollectionViewSource")]
     [Guids(ClassGuid = "a7dfaf16-d646-4018-99b6-a35729153b5f")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public sealed class CollectionViewSource
      : Microsoft.UI.Xaml.DependencyObject
     {
@@ -554,7 +555,105 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
+        // Opt-in shaping; see docs\design-notes\CollectionViewSourceShaping-POC.md.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewFilter Filter
+        {
+            get;
+            set;
+        }
+
         public CollectionViewSource() { }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void Refresh()
+        {
+        }
+    }
+
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [DXamlIdlGroup("coretypes2")]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    public enum ListSortDirection
+    {
+        Ascending = 0,
+        Descending = 1,
+    }
+
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("accepted")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Windows.Foundation.Boolean CollectionViewFilter(Windows.Foundation.Object item);
+
+    [DXamlIdlGroup("coretypes2")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [ClassFlags(IsFreeThreaded = true)]
+    [ThreadingModel(ThreadingModel.Both)]
+    [FrameworkTypePattern]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [Guids(ClassGuid = "cb728e57-5e5e-48ee-8eb9-ec1fde42d732")]
+    public sealed class SortDescription
+        : Windows.Foundation.Object
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.String PropertyName
+        {
+            get;
+            private set;
+        }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.ListSortDirection Direction
+        {
+            get;
+            private set;
+        }
+
+        [FactoryMethodName("CreateInstance")]
+        public SortDescription([Optional] Windows.Foundation.String propertyName, Microsoft.UI.Xaml.Data.ListSortDirection direction) { }
+    }
+
+    [DXamlIdlGroup("coretypes2")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [ClassFlags(IsFreeThreaded = true)]
+    [ThreadingModel(ThreadingModel.Both)]
+    [FrameworkTypePattern]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [Guids(ClassGuid = "b161bc24-b3b5-4e1a-93e7-4174c0db7990")]
+    public sealed class PropertyGroupDescription
+        : Windows.Foundation.Object
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.String PropertyName
+        {
+            get;
+            private set;
+        }
+
+        [FactoryMethodName("CreateInstance")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName) { }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]

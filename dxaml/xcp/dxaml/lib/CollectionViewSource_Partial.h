@@ -31,6 +31,14 @@ namespace DirectUI
         _Check_return_ HRESULT GetValue(_In_ const CDependencyProperty* pProperty, _Out_ IInspectable** ppValue) override;
         _Check_return_ HRESULT GetCVSViewChangedSource(_Outptr_ ICVSViewChangedEventSource **ppSource);
 
+        _Check_return_ HRESULT get_SortDescriptionsImpl(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue);
+        _Check_return_ HRESULT get_GroupDescriptionsImpl(_Outptr_ wfc::IObservableVector<xaml_data::PropertyGroupDescription*>** ppValue);
+        _Check_return_ HRESULT get_FilterImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewFilter** ppValue);
+        _Check_return_ HRESULT put_FilterImpl(_In_opt_ xaml_data::ICollectionViewFilter* pValue);
+        _Check_return_ HRESULT RefreshImpl();
+
+        _Check_return_ HRESULT OnShapingDescriptionsChanged();
+
     private:
 
         _Check_return_ HRESULT OnSourceChanged(_In_ IInspectable *pOldSource, _In_ IInspectable *pNewSource);
@@ -40,6 +48,13 @@ namespace DirectUI
 
         static bool IsSourceValid(_In_ IInspectable *pSource);
 
+        // Implemented in CollectionViewSource_Shaping.cpp.
+        _Check_return_ HRESULT IsShapingRequested(_In_ IInspectable *pSource, _Out_ bool *pIsRequested);
+        _Check_return_ HRESULT CreateShapedView(_In_ IInspectable *pSource, _Outptr_ xaml_data::ICollectionView **ppView);
+        _Check_return_ HRESULT ComputeShapedOutput();
+        _Check_return_ HRESULT RefreshShapedView();
+        void DetachShapedSource();
+
     protected:
 
         void OnReferenceTrackerWalk(INT walkType ) final;
@@ -47,5 +62,17 @@ namespace DirectUI
     private:
 
         CVSViewChangedEventSource *m_pCVSViewChangedEventSource;
+
+        TrackerPtr<wfc::IObservableVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
+        TrackerPtr<wfc::IObservableVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
+        TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
+
+        // Non-null only while View is a shaped view.
+        TrackerPtr<wfc::IVector<IInspectable*>> m_tpShapedSource;
+        TrackerPtr<wfc::IObservableVector<IInspectable*>> m_tpShapedSourceObservable;
+        TrackerPtr<wfc::IVector<IInspectable*>> m_tpShapedOutput;
+        ctl::EventPtr<VectorChangedEventCallback> m_epShapedSourceVectorChangedHandler;
+        bool m_isShapedOutputGrouped = false;
+        bool m_isComputingShape = false;
     };
 }

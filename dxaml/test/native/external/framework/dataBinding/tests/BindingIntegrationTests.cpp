@@ -3551,6 +3551,81 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CollectionViewSourceShaping()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto makeItem = [](Platform::String^ name, int32 group)
+            {
+                auto item = ref new InpcDataSource;
+                item->StringProperty = name;
+                item->Int32Property = group;
+                return item;
+            };
+
+            auto namesOf = [](::Windows::Foundation::Collections::IVector<Object^>^ items)
+            {
+                Platform::String^ result = L"";
+                for (unsigned int i = 0; i < items->Size; i++)
+                {
+                    result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+                }
+                return result;
+            };
+
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(makeItem(L"b", 1));
+            source->Append(makeItem(L"d", 2));
+            source->Append(makeItem(L"a", 1));
+            source->Append(makeItem(L"c", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+
+            LOG_OUTPUT(L"No descriptors: View is the unshaped source.");
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", namesOf(cvs->View)->Data());
+            VERIFY_IS_NULL(cvs->View->CollectionGroups);
+
+            LOG_OUTPUT(L"Filter removes items without touching the source.");
+            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", namesOf(cvs->View)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", namesOf(source)->Data());
+
+            LOG_OUTPUT(L"SortDescriptions order the view by property path.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", namesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"Source changes refresh the view and keep the current item.");
+            VERIFY_IS_TRUE(cvs->View->MoveCurrentToPosition(1));
+            source->Append(makeItem(L"e", 2));
+            VERIFY_ARE_STRINGS_EQUAL(L"edba", namesOf(cvs->View)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"b", safe_cast<InpcDataSource^>(cvs->View->CurrentItem)->StringProperty->Data());
+
+            LOG_OUTPUT(L"GroupDescriptions produce ICollectionViewGroup entries in first-appearance order.");
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_ARE_STRINGS_EQUAL(L"edba", namesOf(cvs->View)->Data());
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_IS_NOT_NULL(groups);
+            VERIFY_ARE_EQUAL(2u, groups->Size);
+
+            auto firstGroup = safe_cast<ICollectionViewGroup^>(groups->GetAt(0));
+            auto keyProvider = safe_cast<ICustomPropertyProvider^>(firstGroup->Group);
+            VERIFY_ARE_EQUAL(2, safe_cast<int32>(keyProvider->GetCustomProperty(L"Key")->GetValue(firstGroup->Group)));
+            VERIFY_ARE_STRINGS_EQUAL(L"ed", namesOf(firstGroup->GroupItems)->Data());
+
+            LOG_OUTPUT(L"Removing all descriptors restores the unshaped view.");
+            cvs->GroupDescriptions->Clear();
+            cvs->SortDescriptions->Clear();
+            cvs->Filter = nullptr;
+            VERIFY_ARE_STRINGS_EQUAL(L"bdace", namesOf(cvs->View)->Data());
+            VERIFY_IS_NULL(cvs->View->CollectionGroups);
+        });
+    }
+
     void BindingIntegrationTests::VerifyBoolToVisibilityConverter()
     {
         TestCleanupWrapper cleanup;
