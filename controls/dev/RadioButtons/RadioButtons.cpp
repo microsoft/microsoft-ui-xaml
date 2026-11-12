@@ -323,7 +323,7 @@ void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, co
         {
             if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
-                Select(args.NewIndex());
+                Select(args.NewIndex(), args.OldIndex() == m_selectedIndex /* selectedItemMoved */);
             }
         }
     }
@@ -347,9 +347,10 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
     }
 }
 
-void RadioButtons::Select(int index)
+void RadioButtons::Select(int index, bool selectedItemMoved)
 {
-    bool clearSelectionAfterwards = false;
+    bool selectedContainerCleared = false;
+    int indexToSelectAfterwards = -1;
     if(!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
     {
         // Calling Select updates the checked state on the radio button being selected
@@ -359,7 +360,9 @@ void RadioButtons::Select(int index)
         auto clearSelecting = gsl::finally([this]()
             {
                 m_currentlySelecting = false;
+                m_raisingSelectionChanged = false;
                 m_selectedContainerClearedWhileSelecting = false;
+                m_selectionSetBySelectionChangedHandler = SelectionSetBySelectionChangedHandler::None;
             });
         m_currentlySelecting = true;
 
@@ -367,6 +370,7 @@ void RadioButtons::Select(int index)
         m_selectedIndex = index;
 
         auto const newSelectedItem = GetDataAtIndex(m_selectedIndex, true);
+        // Uncheck the container at the previous index.
         GetDataAtIndex(previousSelectedIndex, false);
         // Report the item that was selected, not the one now at its index: the selected item may have been
         // removed or replaced by the collection change that triggered this selection change.
@@ -389,15 +393,54 @@ void RadioButtons::Select(int index)
         {
             addedItems.Append(newSelectedItem);
         }
-        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(removedItems, addedItems));
+
+        // When the selected item only moved to another index (items were inserted or removed before it), the
+        // selection did not change: like Selector, update SelectedIndex without raising SelectionChanged.
+        if (!selectedItemMoved)
+        {
+            m_raisingSelectionChanged = true;
+            m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(removedItems, addedItems));
+            m_raisingSelectionChanged = false;
+        }
 
         // A SelectionChanged handler removed or replaced the selected item, which recycled its container.
-        clearSelectionAfterwards = m_selectedContainerClearedWhileSelecting;
+        if (m_selectedContainerClearedWhileSelecting)
+        {
+            selectedContainerCleared = true;
+            indexToSelectAfterwards = GetIndexSetBySelectionChangedHandler();
+        }
     }
 
-    if (clearSelectionAfterwards)
+    if (selectedContainerCleared)
     {
-        Select(-1);
+        // Select the item that the handler selected, if any (SelectedIndex and SelectedItem are not applied while
+        // selecting), otherwise clear the selection. The selected index has no container anymore, so it is cleared
+        // first when the handler selected the item now at that index.
+        if (indexToSelectAfterwards == m_selectedIndex)
+        {
+            Select(-1);
+        }
+        Select(indexToSelectAfterwards);
+    }
+}
+
+int RadioButtons::GetIndexSetBySelectionChangedHandler()
+{
+    switch (m_selectionSetBySelectionChangedHandler)
+    {
+    case SelectionSetBySelectionChangedHandler::Index:
+        return SelectedIndex();
+    case SelectionSetBySelectionChangedHandler::Item:
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                return itemsSourceView.IndexOf(SelectedItem());
+            }
+        }
+        return -1;
+    default:
+        return -1;
     }
 }
 
@@ -565,6 +608,10 @@ void RadioButtons::UpdateSelectedIndex()
     {
         Select(SelectedIndex());
     }
+    else if (m_raisingSelectionChanged)
+    {
+        m_selectionSetBySelectionChangedHandler = SelectionSetBySelectionChangedHandler::Index;
+    }
 }
 
 void RadioButtons::UpdateSelectedItem()
@@ -578,6 +625,10 @@ void RadioButtons::UpdateSelectedItem()
                 Select(itemsSourceView.IndexOf(SelectedItem()));
             }
         }
+    }
+    else if (m_raisingSelectionChanged)
+    {
+        m_selectionSetBySelectionChangedHandler = SelectionSetBySelectionChangedHandler::Item;
     }
 }
 

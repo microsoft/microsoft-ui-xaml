@@ -452,8 +452,10 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     case winrt::NotifyCollectionChangedAction::Replace:
     {
         // Requirement: oldStartIndex == newStartIndex. It is not a replace if this is not true.
-        // Two cases here for virtualizing layouts, which are notified of the change and recycle the replaced
-        // elements themselves (non-virtualizing layouts are handled in OnItemsReplacedForNonVirtualizingLayout)
+        // Two cases here for virtualizing layouts. They are notified through OnItemsChangedCore: StackLayout,
+        // UniformGridLayout and FlowLayout recycle the replaced elements there (ElementManager), while the base
+        // VirtualizingLayout implementation only invalidates measure. Non-virtualizing layouts are handled in
+        // OnItemsReplacedForNonVirtualizingLayout.
         // case 1: oldCount == newCount 
         //         indices are not affected. nothing to do here.  
         // case 2: oldCount != newCount
@@ -582,8 +584,9 @@ void ViewManager::OnItemsReplacedForNonVirtualizingLayout(int startIndex, int ol
     const int countChange = newCount - oldCount;
     const auto children = m_owner->Children();
 
-    // Elements held by the layout for the replaced items. Elements in the pinned pool or with the animator are left
-    // to them.
+    // Elements held by the layout for the replaced items. Elements with the animator are left to it. Elements in the
+    // pinned pool are not retired either: a pinned element keeps its index and shows the old item, and a layout that
+    // asks for that index again gets it back from the pinned pool (a known limitation, as for Remove).
     std::vector<winrt::UIElement> replacedElements;
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
@@ -638,6 +641,14 @@ void ViewManager::OnItemsReplacedForNonVirtualizingLayout(int startIndex, int ol
     // replaced element at an index that a moved element now uses. A handler of the events raised while clearing can
     // itself clear elements (for example by setting ItemTemplate, ItemsSource or Layout), so each element is checked
     // again right before it is cleared.
+    // The focused element is cleared last, so that focus moves once, past the replaced range, instead of moving to
+    // another replaced element that is cleared next.
+    if (const auto lastFocusedElement = m_lastFocusedElement.get())
+    {
+        std::stable_partition(replacedElements.begin(), replacedElements.end(),
+            [&lastFocusedElement](const winrt::UIElement& element) { return element != lastFocusedElement; });
+    }
+
     for (const auto& element : replacedElements)
     {
         const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);

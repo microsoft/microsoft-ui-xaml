@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -512,7 +512,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Scenario: items {A, B, C, D, E}; X is inserted at 0 (its container is appended after the others, so container
         //     order no longer matches index order), E is selected, then A and B are replaced by Y in one notification.
         // Expected: E stays selected at its new index 4, only its container is checked, every container shows its item,
-        //     and one SelectionChanged reports E moving.
+        //     and no SelectionChanged is raised because E only moves.
         // Failure means: a container of a replaced item stayed realized, or RadioButtons checked a container that was
         //     about to be cleared while E's container moved.
         [TestMethod]
@@ -550,7 +550,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(4, radioButtons.SelectedIndex);
                 Verify.AreEqual("E", radioButtons.SelectedItem);
                 VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: 4);
-                Verify.AreEqual(1, selectionChanges.Count, "One SelectionChanged as E moves.");
+                Verify.AreEqual(0, selectionChanges.Count, "No SelectionChanged as E only moves.");
                 Content = null;
             });
         }
@@ -697,10 +697,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Scenario: items {A, B, C} with B selected; X is inserted at 0, then A is removed, then the selected item B is
         //     removed.
-        // Expected: while B moves, each SelectionChanged reports B as both added and removed (it is still selected,
-        //     at a new index); when B is removed, SelectionChanged reports B as removed and nothing as added.
-        // Failure means: RemovedItems reported the item now at the previously selected index instead of the item that
-        //     was selected.
+        // Expected: while B only moves, SelectedIndex follows it and no SelectionChanged is raised (like Selector: the
+        //     selection did not change); when B is removed, SelectionChanged reports B as removed and nothing as added.
+        // Failure means: an index-only move raised SelectionChanged, or RemovedItems reported the item now at the
+        //     previously selected index instead of the item that was selected.
         [TestMethod]
         public void VerifySelectionChangedReportsPreviouslySelectedItemAfterCollectionChanges()
         {
@@ -726,12 +726,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 items.Insert(0, "X");
                 Content.UpdateLayout();
                 Verify.AreEqual(2, radioButtons.SelectedIndex, "B moves to 2.");
-                VerifySingleSelectionChange(selectionChanges, expectedRemoved: "B", expectedAdded: "B", context: "Insert(0)");
+                Verify.AreEqual("B", radioButtons.SelectedItem);
+                VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: 2);
+                Verify.AreEqual(0, selectionChanges.Count, "Insert(0): no SelectionChanged when B only moves.");
 
                 items.RemoveAt(1);
                 Content.UpdateLayout();
                 Verify.AreEqual(1, radioButtons.SelectedIndex, "B moves to 1.");
-                VerifySingleSelectionChange(selectionChanges, expectedRemoved: "B", expectedAdded: "B", context: "RemoveAt(1)");
+                Verify.AreEqual("B", radioButtons.SelectedItem);
+                VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: 1);
+                Verify.AreEqual(0, selectionChanges.Count, "RemoveAt(1): no SelectionChanged when B only moves.");
 
                 items.RemoveAt(1);
                 Content.UpdateLayout();
@@ -739,6 +743,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySingleSelectionChange(selectionChanges, expectedRemoved: "B", expectedAdded: null, context: "RemoveAt(1) of B");
                 Content = null;
             });
+        }
+
+        // Scenario: items {A, B, C, D, E}; a SelectionChanged handler, raised for selecting C, removes C (or replaces it
+        //     with Z) and then selects A, by SelectedIndex = 0 or by SelectedItem = "A".
+        // Expected: A ends up selected (SelectedIndex 0, SelectedItem "A", only container 0 checked), and the last
+        //     SelectionChanged reports C as removed and A as added.
+        // Failure means: clearing the selection after the selected container was recycled discarded the selection that
+        //     the handler made.
+        [TestMethod]
+        public void VerifySelectionSetBySelectionChangedHandlerAfterRemovingSelectedItemIsKept()
+        {
+            foreach (string variant in new[] { "RemoveAt, SelectedIndex", "Replace, SelectedIndex", "RemoveAt, SelectedItem", "Replace, SelectedItem" })
+            {
+                Log.Comment(variant);
+                RadioButtons radioButtons = null;
+                var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
+                var selectionChanges = new List<SelectionChangedEventArgs>();
+                bool handled = false;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons = new RadioButtons();
+                    radioButtons.ItemsSource = items;
+                    Content = radioButtons;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons.SelectionChanged += (sender, args) =>
+                    {
+                        selectionChanges.Add(args);
+                        if (!handled && radioButtons.SelectedIndex == 2)
+                        {
+                            handled = true;
+                            if (variant.StartsWith("Replace"))
+                            {
+                                items[2] = "Z";
+                            }
+                            else
+                            {
+                                items.RemoveAt(2);
+                            }
+
+                            if (variant.EndsWith("SelectedIndex"))
+                            {
+                                radioButtons.SelectedIndex = 0;
+                            }
+                            else
+                            {
+                                radioButtons.SelectedItem = "A";
+                            }
+                        }
+                    };
+                    radioButtons.SelectedIndex = 2;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(handled, "The SelectionChanged handler ran.");
+                    Verify.AreEqual(0, radioButtons.SelectedIndex);
+                    Verify.AreEqual("A", radioButtons.SelectedItem);
+                    VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: 0);
+                    Verify.AreEqual(2, selectionChanges.Count, "Selecting C, then selecting A.");
+                    var last = selectionChanges[1];
+                    Verify.AreEqual(1, last.RemovedItems.Count);
+                    Verify.AreEqual("C", last.RemovedItems[0]);
+                    Verify.AreEqual(1, last.AddedItems.Count);
+                    Verify.AreEqual("A", last.AddedItems[0]);
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
         }
 
         private static void VerifySingleSelectionChange(List<SelectionChangedEventArgs> selectionChanges, string expectedRemoved, string expectedAdded, string context)

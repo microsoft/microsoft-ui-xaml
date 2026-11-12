@@ -71,7 +71,8 @@ private:
     void UpdateSelectedIndex();
     void UpdateSelectedItem();
 
-    void Select(int index);
+    void Select(int index, bool selectedItemMoved = false);
+    int GetIndexSetBySelectionChangedHandler();
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
 
     void UpdateItemTemplate();
@@ -89,8 +90,12 @@ private:
     // the Selected Index/Item which in turn calls select.
     bool m_currentlySelecting{ false };
     // Set when the selected container is cleared while Select raises SelectionChanged (a handler removed or
-    // replaced the selected item); the selection is cleared once Select finishes.
+    // replaced the selected item); once Select finishes, it applies the handler's selection or clears it.
     bool m_selectedContainerClearedWhileSelecting{ false };
+    // Set while Select raises SelectionChanged, to record whether a handler set SelectedIndex or SelectedItem.
+    bool m_raisingSelectionChanged{ false };
+    enum class SelectionSetBySelectionChangedHandler { None, Index, Item };
+    SelectionSetBySelectionChangedHandler m_selectionSetBySelectionChangedHandler{ SelectionSetBySelectionChangedHandler::None };
     // We block selection before the control has loaded.
     // This is to ensure that we do not overwrite a provided Selected Index/Item value.
     bool m_blockSelecting{ true };

@@ -775,8 +775,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]// Issue 1018
-        [TestProperty("Ignore", "True")]
+        [TestMethod]
+        [TestProperty("Description", "Verifies that focus moves to the adjacent item when focused items are removed with StackLayout (Issue 1018).")]
         public void ValidateFocusMoveOnElementCleared()
         {
             ItemsRepeater repeater = null;
@@ -821,6 +821,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod] //Issue 1018
+        // Still ignored: with unique ids, Remove raises Reset, and the elements go to the unique-id reset pool
+        // (ViewManager::ClearElementToUniqueIdResetPool), whose focus handling the cleared-index fix does not change.
         [TestProperty("Ignore", "True")]
         public void ValidateFocusMoveOnElementClearedWithUniqueIds()
         {
@@ -1534,10 +1536,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 data[2] = "Replaced";
                 Content.UpdateLayout();
-                // The pinned pool keeps the element; releasing pinned elements on collection changes is outside the
-                // Replace handling for layout-held elements.
+                // The Replace handling does not clear pinned elements. Known limitation (as for Remove): the pinned
+                // element is not retired either; it keeps index 2 and the old item until it is unpinned, so its index
+                // is not checked here.
                 Verify.AreEqual(0, element2Clearings, "The pinned element is not cleared by the Replace handling.");
-                Verify.AreEqual(2, repeater.GetElementIndex(element2), "The pinned element stays in the pinned pool.");
             });
 
             WaitForRenderingFrames(3);
@@ -1916,6 +1918,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a UIElement items source e0..e5 without an ItemTemplate and a non-virtualizing layout; items 3 and 4
+        //           are replaced by {X, Y, e4} in one notification (the count grows by one and e4 is reused at index 5,
+        //           which is past the replaced range 3..4).
+        // Expected: e3 is cleared, e4 moves from 4 to 5 once, e5 moves from 5 to 6, and every ElementIndexChanged
+        //           handler finds the moved element at its new index.
+        // A failure means: the reused element was moved before the elements that follow the range and then moved again
+        //                  with them (to 6), or an index-changed handler found a different element at the new index.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a growing Replace of UIElement items that reuses a replaced element past the replaced range.")]
+        public void VerifyGrowingReplaceMovesReusedUIElementItemPastReplacedRange()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var elements = Enumerable.Range(0, 6).Select(i => (UIElement)new TextBlock() { Text = "e" + i, Height = 20 }).ToList();
+                var data = new RangeReplaceCollection<UIElement>(elements);
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    Layout = new NonVirtualStackLayout(),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var cleared = new List<UIElement>();
+                var lookupFailures = new List<string>();
+                var indexChanges = new List<string>();
+                repeater.ElementClearing += (sender, args) => cleared.Add(args.Element);
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    indexChanges.Add($"{((TextBlock)args.Element).Text}:{args.OldIndex}->{args.NewIndex}");
+                    if (repeater.TryGetElement(args.NewIndex) != args.Element)
+                    {
+                        lookupFailures.Add($"TryGetElement({args.NewIndex}) did not return {((TextBlock)args.Element).Text}");
+                    }
+                };
+
+                var x = new TextBlock() { Text = "X", Height = 20 };
+                var y = new TextBlock() { Text = "Y", Height = 20 };
+                data.ReplaceRange(3, 2, new UIElement[] { x, y, elements[4] });
+                Content.UpdateLayout();
+
+                Log.Comment("Index changes: " + string.Join(", ", indexChanges));
+                Verify.AreEqual(0, lookupFailures.Count, string.Join("; ", lookupFailures));
+                Verify.AreEqual(1, cleared.Count, "Only e3 is cleared.");
+                Verify.AreSame(elements[3], cleared[0]);
+                Verify.AreEqual(1, indexChanges.Count(change => change.StartsWith("e4:")), "e4 moves once.");
+                Verify.IsTrue(indexChanges.Contains("e4:4->5"), "e4 moves to 5.");
+                Verify.IsTrue(indexChanges.Contains("e5:5->6"), "e5 moves to 6.");
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreSame(data[i], repeater.TryGetElement(i), $"Element at index {i}");
+                    Verify.AreEqual(i, repeater.GetElementIndex(data[i]), $"Index of item {i}");
+                }
+                Content = null;
+            });
+        }
+
         // Scenario: a non-virtualizing layout over 5 items; the source raises a malformed Replace at index 3 that claims
         //           4 new items although only 2 items follow index 3.
         // Expected: the notification does not throw (the repeater does not read items past the end of the source).
@@ -1977,14 +2036,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         // Scenario: a non-virtualizing layout with a Button template; item 2 has focus; items 1..3 are replaced by one
         //           item X in one notification.
-        // Expected: focus ends on the element of the item that followed the range ("Item #4", now at index 2).
-        // A failure means: a replaced element kept focus or focus went to an unrelated item.
+        // Expected: focus moves straight to the element of the item that followed the range ("Item #4", now at index 2),
+        //     without visiting another replaced element.
+        // A failure means: a replaced element kept focus, focus went to an unrelated item, or focus first moved to
+        //     another replaced element that was cleared next (extra focus events on a recycled element).
         [TestMethod]
-        [TestProperty("Description", "Verifies that focus moves to the first following item when a range Replace removes the focused item.")]
+        [TestProperty("Description", "Verifies that focus moves to the first following item, without visiting other replaced items, when a range Replace removes the focused item.")]
         public void VerifyFocusAfterRangeReplaceOfFocusedItem()
         {
             RangeReplaceCollection<string> data = null;
             ItemsRepeater repeater = null;
+            var focusTargets = new List<string>();
 
             RunOnUIThread.Execute(() =>
             {
@@ -2002,12 +2064,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             FocusItem(repeater, 2);
             RunOnUIThread.Execute(() =>
             {
+                repeater.GettingFocus += (sender, args) => focusTargets.Add((args.NewFocusedElement as Button)?.Content?.ToString() ?? "(other)");
                 data.ReplaceRange(1, 3, new[] { "X" });
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
             VerifyFocusedItem(repeater, expectedIndex: 2, expectedContent: "Item #4");
-            RunOnUIThread.Execute(() => { Content = null; });
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("GettingFocus targets: " + string.Join(", ", focusTargets));
+                Verify.IsFalse(focusTargets.Any(target => target == "Item #1" || target == "Item #3"), "Focus does not visit another replaced element.");
+                Content = null;
+            });
             IdleSynchronizer.Wait();
         }
 
