@@ -256,10 +256,10 @@
             <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="35" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="60" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Transform="1112_2122 dxdy {0.6667, 0, 0, 0.6667, 0, -1.907e-06}" Surface="36" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0.6667, 0, 0, 0.6667, 0, -1.192e-06}" Surface="36" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="15" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
-            <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 0, -7.823e-07}" Surface="37" />
+            <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 0, -5.96e-07}" Surface="37" />
           </wucSpriteVisual>
           <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="2" OffsetY="2" OffsetZ="0">
             <SurfaceBrush Transform="1112_2122 dxdy {0.6522, 0, 0, 0.6667, 7.5, 0}" Surface="37" />
