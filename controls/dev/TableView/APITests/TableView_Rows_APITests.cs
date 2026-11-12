@@ -122,6 +122,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // A column far wider than its short text leaves a large slice of the wrapper with no
                 // TextBlock over it, which is exactly the area that used to be dead.
                 tableView = CreateTableViewWithColumns(columns: new[] { ("Name", new GridLength(320.0, GridUnitType.Pixel)) });
+                // Left-aligned so the TextBlock is only as wide as its text, as the former text column's was.
+                ((TableViewTemplateColumn)tableView.Columns[0]).CellTemplate = (DataTemplate)XamlReader.Load(
+                    "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                    "<TextBlock Text='{Binding Name}' HorizontalAlignment='Left' VerticalAlignment='Center' Padding='8,4,8,4'/>" +
+                    "</DataTemplate>");
                 LoadContent(tableView);
             });
 
@@ -131,8 +136,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var row = RequireFirstRow(tableView);
                 var wrapper = GetRowCell(row, 0);
-                var text = GetCellContent(wrapper) as FrameworkElement;
-                Verify.IsNotNull(text, "The cell wrapper should host a generated cell element.");
+                var text = FindVisualChildrenByType<TextBlock>(wrapper).FirstOrDefault();
+                Verify.IsNotNull(text, "The cell wrapper should host the template's TextBlock.");
 
                 Verify.IsGreaterThan(wrapper.ActualWidth, text.ActualWidth + 40.0,
                     "Precondition: the cell must be meaningfully wider than its text, or there is no dead area to probe.");
