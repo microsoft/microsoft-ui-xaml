@@ -25,15 +25,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         {
             if (m_tracing)
             {
-                test_infra::TraceConsumer::Stop();
+                m_tracing = false;
+                // A destructor mustn't throw, and this one can run while another exception unwinds the stack. Stop
+                // logs its failures as errors, so the test still fails if it throws here.
+                try
+                {
+                    test_infra::TraceConsumer::Stop();
+                }
+                catch (...)
+                {
+                }
             }
         }
 
         void Stop()
         {
             assert(m_tracing);
-            test_infra::TraceConsumer::Stop();
+            // Clear the flag first, so the destructor doesn't run Stop again if this Stop throws.
             m_tracing = false;
+            test_infra::TraceConsumer::Stop();
         }
 
         TraceConsumerSession(const TraceConsumerSession&) = delete;

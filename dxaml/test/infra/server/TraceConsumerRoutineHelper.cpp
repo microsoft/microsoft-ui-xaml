@@ -57,11 +57,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         std::mutex TraceConsumerRoutineHelper::s_eventMutex;
         TraceEventScope TraceConsumerRoutineHelper::s_eventScope;
 
-        // Process thread sync event
-        Event TraceConsumerRoutineHelper::s_syncEvent(L"TraceConsumerRoutineSync");
-        // Set by the process task right before it calls ProcessTrace
-        Event TraceConsumerRoutineHelper::s_processTraceStartedEvent(L"TraceConsumerProcessTraceStarted");
-        HRESULT TraceConsumerRoutineHelper::s_processTraceResult = S_OK;
+        // State shared with the task that runs ProcessTrace. The task keeps its own reference, so a task that
+        // outlives its session can't affect the next session.
+        struct TraceConsumerRoutineHelper::ProcessTraceTask
+        {
+            Event returned{ EventOptions::ManualReset, L"TraceConsumerProcessTraceReturned" };
+            HRESULT result = S_OK;
+        };
+        std::shared_ptr<TraceConsumerRoutineHelper::ProcessTraceTask> TraceConsumerRoutineHelper::s_processTraceTask;
+
+        // Set by the event callback when it receives a processing check event
+        Event TraceConsumerRoutineHelper::s_processingConfirmedEvent(L"TraceConsumerProcessingConfirmed");
+
+        // Private provider that Start writes check events to, to confirm that ProcessTrace is delivering events
+        // {F8160829-0C71-4D52-B555-B6D94CB7D089}
+        const GUID TraceConsumerRoutineHelper::s_processingCheckProviderGuid = { 0xf8160829, 0x0c71, 0x4d52, { 0xb5, 0x55, 0xb6, 0xd9, 0x4c, 0xb7, 0xd0, 0x89 } };
+        REGHANDLE TraceConsumerRoutineHelper::s_processingCheckProvider = 0;
         void TraceConsumerRoutineHelper::EnableTracingByEventId(int eventId)
         {
             std::lock_guard<std::mutex> lock(s_eventMutex);
@@ -97,6 +108,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             }
             // set processing flag
             s_processing = true;
+
+            try
+            {
+                StartProcessing();
+            }
+            catch (...)
+            {
+                // Undo the partial start, so later tests in this server can still trace.
+                StopProcessing();
+                s_processing = false;
+                s_guidProvided = false;
+                throw;
+            }
+        }
+
+        void TraceConsumerRoutineHelper::StartProcessing()
+        {
             // ensure s_events is cleared before starting.
             {
                 std::lock_guard<std::mutex> lock(s_eventMutex);
@@ -104,7 +132,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 s_events.clear();
                 s_IdCountMap.clear();
             }
-            s_syncEvent.Reset();
+            s_processingConfirmedEvent.Reset();
+
+            if (s_processingCheckProvider == 0)
+            {
+                LogThrow_IfFailed(HRESULT_FROM_WIN32(EventRegister(&s_processingCheckProviderGuid, nullptr, nullptr, &s_processingCheckProvider)));
+            }
 
             ++s_traceCounter;
             wchar_t traceName[100];
@@ -130,6 +163,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 }
                 LogThrow_IfFailed(enableResult);
             }
+            LogThrow_IfFailed(s_consumer->EnableProvider(s_processingCheckProviderGuid));
 
             s_consumer->SetEventRecordCallback(
                 [](PEVENT_RECORD pevent_record)
@@ -140,26 +174,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 {
                     DecodeEtwEvents(pevent_record);
                 }
+                else if (header.ProviderId == s_processingCheckProviderGuid)
+                {
+                    s_processingConfirmedEvent.Set();
+                }
             },
                 nullptr);
 
             LogThrow_IfFailed(s_consumer->OpenTrace());
 
-            // create task to process the event traces. ProcessTrace will block until CloseTrace is called.
-            // Don't return until the task is about to call ProcessTrace: a short test can otherwise call Stop
-            // first, and ProcessTrace then fails on the closed handle with ERROR_INVALID_HANDLE. The task must
-            // not throw, because an unobserved task exception takes down the test host, so it records the
-            // result for Stop to report, uses the consumer it was created for, and always signals s_syncEvent.
-            s_processTraceResult = S_OK;
-            s_processTraceStartedEvent.Reset();
+            // create task to process the event traces. ProcessTrace will block until CloseTrace is called. The task
+            // must not throw, because an unobserved task exception takes down the test host. It only uses the
+            // consumer and the state it was created with, and records ProcessTrace's result for Stop to report.
             auto consumer = s_consumer.get();
-            create_task([consumer]
+            auto processTraceTask = std::make_shared<ProcessTraceTask>();
+            create_task([consumer, processTraceTask]
             {
-                s_processTraceStartedEvent.Set();
-                s_processTraceResult = consumer->ProcessTrace();
-                s_syncEvent.Set();
+                processTraceTask->result = consumer->ProcessTrace();
+                processTraceTask->returned.Set();
             });
-            s_processTraceStartedEvent.WaitForDefault();
+            s_processTraceTask = processTraceTask;
+
+            WaitUntilProcessingEvents();
             // need to unregister event on close
         }
 
@@ -173,10 +209,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TraceConsumerRoutineHelper::Stop()
         {
             Throw::IfFalse(s_processing, E_FAIL, L"TraceConsumer::Start was never called");
+            bool eventListMissing = false;
             {
                 std::lock_guard<std::mutex> lock(s_eventMutex);
-                Throw::If(s_IdCountMap.size() == 0 && s_guidProvided, E_FAIL,
-                    L"If not using telemetry provider, must call TraceConsumer::AddEventToList to add events to test before stopping trace");
+                eventListMissing = s_IdCountMap.size() == 0 && s_guidProvided;
             }
             // todo: [investigate] right now close trace needs to be called before s_consumer->SetEventRecordCallback is raised.
             //       this does not seem right. i expected s_consumer->SetEventRecordCallback to be raised as events are fired
@@ -186,11 +222,76 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             s_processing = false;
             s_guidProvided = false;
 
-            LogThrow_IfFailed(s_consumer->CloseTrace());
-            s_syncEvent.WaitForDefault();
+            // Finish tearing the session down before reporting any failure, so the next Start works even when this
+            // Stop fails.
+            const HRESULT stopResult = StopProcessing();
+            Throw::If(eventListMissing, E_FAIL,
+                L"If not using telemetry provider, must call TraceConsumer::AddEventToList to add events to test before stopping trace");
+            LogThrow_IfFailed(stopResult);
+        }
+
+        // Returns once ProcessTrace is delivering events. Waiting for the task to start isn't enough: it can be paused
+        // before it enters ProcessTrace, and a short test's Stop then closes the trace first, so ProcessTrace fails on
+        // the closed handle with ERROR_INVALID_HANDLE. Instead, keep writing check events from a private provider
+        // enabled on the session until the event callback, which runs inside ProcessTrace, receives one.
+        void TraceConsumerRoutineHelper::WaitUntilProcessingEvents()
+        {
+            const auto deadline = std::chrono::steady_clock::now() + s_processingConfirmedEvent.Timeout;
+            while (true)
+            {
+                EventWriteString(s_processingCheckProvider, 0, 0, L"TraceConsumer processing check");
+                s_consumer->Flush();
+                if (s_processingConfirmedEvent.WaitForNoThrow(std::chrono::milliseconds(100)))
+                {
+                    return;
+                }
+
+                if (s_processTraceTask->returned.WaitForNoThrow(std::chrono::milliseconds(0)))
+                {
+                    LogThrow_IfFailed(s_processTraceTask->result);
+                    Throw::Exception(E_UNEXPECTED, L"ProcessTrace returned before it delivered any events");
+                }
+
+                Throw::If(std::chrono::steady_clock::now() >= deadline, HRESULT_FROM_WIN32(WAIT_TIMEOUT),
+                    L"ProcessTrace didn't start delivering events in time");
+            }
+        }
+
+        // Closes the trace, waits for the processing task and disables the providers. It doesn't throw, so Stop and a
+        // failed Start always finish tearing the session down, and it returns the first failure for them to report.
+        HRESULT TraceConsumerRoutineHelper::StopProcessing()
+        {
+            if (!s_consumer)
+            {
+                return S_OK;
+            }
+
+            HRESULT result = S_OK;
+            bool taskSettled = true;
+            if (s_processTraceTask)
+            {
+                // CloseTrace makes ProcessTrace return
+                result = s_consumer->CloseTrace();
+                taskSettled = s_processTraceTask->returned.WaitForNoThrow();
+                if (SUCCEEDED(result))
+                {
+                    result = taskSettled ? s_processTraceTask->result : HRESULT_FROM_WIN32(WAIT_TIMEOUT);
+                }
+                s_processTraceTask.reset();
+            }
+
             // disable provide and clear callback
             s_consumer->DisableProvider(s_xamlProviderGuid);
-            LogThrow_IfFailed(s_processTraceResult);
+            s_consumer->DisableProvider(s_processingCheckProviderGuid);
+
+            if (!taskSettled)
+            {
+                // The task can still use the consumer, so leak the consumer rather than free it under the task.
+                LOG_OUTPUT(L"ProcessTrace didn't return after CloseTrace, so its consumer is leaked rather than freed.");
+                (void)s_consumer.release();
+            }
+
+            return result;
         }
 
         void TraceConsumerRoutineHelper::VerifyEventTraced(int eventId, unsigned int count)
