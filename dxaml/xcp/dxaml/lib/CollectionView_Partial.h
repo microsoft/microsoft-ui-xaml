@@ -10,9 +10,22 @@
 
 namespace DirectUI
 {
-    PARTIAL_CLASS(CollectionView)
+    class CollectionViewSource;
+
+    // ICollectionViewShaping is answered only by a view a CollectionViewSource shapes; see SetShapingOwner.
+    PARTIAL_CLASS(CollectionView),
+        public xaml_data::ICollectionViewShaping
     {
     public:
+        // ICollectionViewShaping, forwarded to the owning CollectionViewSource (CollectionViewSource_Shaping.cpp).
+        IFACEMETHOD(get_SortDescriptions)(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue) override;
+        IFACEMETHOD(get_GroupDescriptions)(_Outptr_ wfc::IObservableVector<xaml_data::PropertyGroupDescription*>** ppValue) override;
+        IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ xaml_data::ICollectionViewFilter** ppValue) override;
+        IFACEMETHOD(put_Filter)(_In_opt_ xaml_data::ICollectionViewFilter* pValue) override;
+        IFACEMETHOD(Refresh)() override;
+
+        _Check_return_ HRESULT SetShapingOwner(_In_ CollectionViewSource* pOwner);
+
         typedef CFrameworkEventSource<ICurrentChangedEventSource, wf::IEventHandler<IInspectable*>, IInspectable, IInspectable> CurrentChangedEventSourceType;
         typedef CFrameworkEventSource<ICurrentChangingEventSource, xaml_data::ICurrentChangingEventHandler, IInspectable, xaml_data::ICurrentChangingEventArgs> CurrentChangingEventSourceType;
 
@@ -85,7 +98,11 @@ namespace DirectUI
 
         void OnReferenceTrackerWalk(INT walkType) final;
 
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+
     private:
+        _Check_return_ HRESULT GetShapingOwner(_Outptr_ CollectionViewSource** ppOwner);
+
         _Check_return_ HRESULT GetCurrentChangedEventSource(_Outptr_ CurrentChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT GetCurrentChangingEventSource(_Outptr_ CurrentChangingEventSourceType** ppEventSource);
 
@@ -120,5 +137,7 @@ namespace DirectUI
         // This will get cleaned up when we move event sources in general to be managed using std::shared_ptr<> - see TFS 993969.
         ctl::ComPtr<CurrentChangingEventSourceType> m_spCurrentChangingEventSource;
         ctl::ComPtr<CurrentChangedEventSourceType> m_spCurrentChangedEventSource;
+
+        ctl::WeakRefPtr m_shapingOwnerRef;
     };
 }

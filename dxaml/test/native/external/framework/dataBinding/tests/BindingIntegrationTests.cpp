@@ -3617,12 +3617,108 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_EQUAL(2, safe_cast<int32>(keyProvider->GetCustomProperty(L"Key")->GetValue(firstGroup->Group)));
             VERIFY_ARE_STRINGS_EQUAL(L"ed", namesOf(firstGroup->GroupItems)->Data());
 
-            LOG_OUTPUT(L"Removing all descriptors restores the unshaped view.");
+            LOG_OUTPUT(L"Removing all descriptors restores the source order and drops the groups.");
             cvs->GroupDescriptions->Clear();
             cvs->SortDescriptions->Clear();
             cvs->Filter = nullptr;
             VERIFY_ARE_STRINGS_EQUAL(L"bdace", namesOf(cvs->View)->Data());
             VERIFY_IS_NULL(cvs->View->CollectionGroups);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewShapingInterface()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto makeItem = [](Platform::String^ name, int32 group)
+            {
+                auto item = ref new InpcDataSource;
+                item->StringProperty = name;
+                item->Int32Property = group;
+                return item;
+            };
+
+            auto namesOf = [](::Windows::Foundation::Collections::IVector<Object^>^ items)
+            {
+                Platform::String^ result = L"";
+                for (unsigned int i = 0; i < items->Size; i++)
+                {
+                    result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+                }
+                return result;
+            };
+
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(makeItem(L"b", 1));
+            source->Append(makeItem(L"d", 2));
+            source->Append(makeItem(L"a", 1));
+            source->Append(makeItem(L"c", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+
+            LOG_OUTPUT(L"An unshaped view does not offer ICollectionViewShaping.");
+            VERIFY_IS_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
+
+            LOG_OUTPUT(L"A shaped view does, and shares the CollectionViewSource's descriptors.");
+            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            auto view = cvs->View;
+            auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
+            VERIFY_IS_NOT_NULL(shaping);
+            VERIFY_IS_TRUE(shaping->SortDescriptions == cvs->SortDescriptions);
+            VERIFY_IS_TRUE(shaping->GroupDescriptions == cvs->GroupDescriptions);
+            VERIFY_IS_NOT_NULL(shaping->Filter);
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Sorting through the view reshapes the same view in place.");
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", namesOf(view)->Data());
+            VERIFY_ARE_EQUAL(1u, cvs->SortDescriptions->Size);
+
+            shaping->SortDescriptions->Clear();
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Filter set through the view applies to the CollectionViewSource.");
+            shaping->Filter = nullptr;
+            VERIFY_IS_NULL(cvs->Filter);
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"dcba", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Refresh re-reads property values that changed without a collection change.");
+            safe_cast<InpcDataSource^>(source->GetAt(2))->StringProperty = L"z";
+            VERIFY_ARE_STRINGS_EQUAL(L"dcbz", namesOf(view)->Data());
+            shaping->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"zdcb", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Clearing every descriptor keeps the shaped view, in source order.");
+            shaping->SortDescriptions->Clear();
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
+            VERIFY_ARE_STRINGS_EQUAL(L"bdzc", namesOf(view)->Data());
+
+            LOG_OUTPUT(L"Grouping through the view switches View to a grouped view that is also shapeable.");
+            shaping->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            auto groupedView = cvs->View;
+            VERIFY_IS_FALSE(groupedView == view);
+            VERIFY_IS_NOT_NULL(groupedView->CollectionGroups);
+            VERIFY_ARE_EQUAL(3u, groupedView->CollectionGroups->Size);
+            auto groupedShaping = dynamic_cast<ICollectionViewShaping^>(groupedView);
+            VERIFY_IS_NOT_NULL(groupedShaping);
+
+            groupedShaping->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property == 1;
+            });
+            VERIFY_IS_TRUE(cvs->View == groupedView);
+            VERIFY_ARE_EQUAL(1u, groupedView->CollectionGroups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"bz", namesOf(groupedView)->Data());
         });
     }
 
