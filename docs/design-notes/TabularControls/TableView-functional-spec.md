@@ -11,6 +11,14 @@ Windows Shell surfaces (DUI → WinUI 3) and targets parity with **Task Manager*
 **File Explorer** details view. It is a **read-only-first** presentation control — **not** a
 full `DataGrid` replacement.
 
+**Definition: a ListView with real columns.** TableView renders and navigates tabular data; it
+does not shape or edit it as a DataGrid would. Shaping (filter, sort rules, grouping, tree
+construction) is declared on the data layer (`TableViewSource`) and only rendered by the control.
+Edit transactions, validation UI, add/delete rows, cell selection, clipboard/export, filter UI,
+aggregates, and row headers/details are non-goals, not deferred work. The goals, non-goals,
+control-choice table and the bar for adding features are in
+[API spec: Definition and scope](../../api-specs/TableView/TableView-spec.md#definition-and-scope).
+
 ## Goals
 
 - Row/column layout over an `ObservableCollection`-backed model with live, incremental
@@ -25,7 +33,7 @@ full `DataGrid` replacement.
 |---|---|
 | PR 1 | Empty `Microsoft.UI.Xaml.Controls.Tabular.dll` scaffolding |
 | **PR 2 (this)** | Display-only baseline: columns/cells/headers, gridlines, density, row virtualization, leading-frozen columns, keyboard row-focus nav, read-only UIA peers |
-| PR 3 | Selection, single-column sort, filtering, grouping, hierarchical rows, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
+| PR 3 | Selection, single-column sort, filtering, grouping, hierarchical rows, column resize, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
 | PR 4 | Tests + `TableViewSamples` e2e app |
 
 ## Functional requirements
@@ -37,25 +45,26 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
 - Read-only: cells are display-only and there is no edit mode in V1 (see [Editing](#editing)). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
-- Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
+- Template-free read-only text cells via `TableViewColumn.DisplayMemberBinding` (WPF `GridViewColumn.DisplayMemberBinding` precedent; takes precedence over `CellTemplate`; its `Path` is the sort key when `SortMemberPath` is empty). — **v1**
+- Built-in editable text column (`TableViewTextColumn`). — *deferred to V2*
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
-- Reorder (drag + `MoveColumn`). — **PR3**
+- Reorder. — *deferred*: no `MoveColumn` or `DisplayIndex` in the IDL; `Columns` collection order is visual and UIA order.
 - Show/hide via `Visibility`. — **PR2**
 - Sticky (always-visible) header. — **PR2**
 - Single-column sort (`SortByColumn` / header invoke). — **PR3**
 - Gridlines via `GridLinesVisibility` (theme-resource driven). — **PR2**
 - Leading-prefix frozen columns; trailing reserved. — **PR2** (leading) · trailing deferred
-- Multi-column sort. — *deferred (P2 / vNext)*
+- Multi-column header sort. — *out of scope*; `TableViewSource.ThenSort` sorts multi-level from code.
 
 ### Row & hierarchy
-- Single + multi selection (Ctrl/Shift). — **PR3**
+- Single selection (`TableViewSelectionMode` `None`/`Single`). — **PR3** · multiple/extended (Ctrl/Shift) *deferred*: appended enum values plus `SelectedItems`
 - Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
-- Checkbox selection (File-Explorer-specific). — **PR3** / surface
+- Checkbox selection (File-Explorer-specific). — *deferred* with multiple selection; not in the IDL
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
-- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
+- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit (the renderer nests as deep as the parent keys go; `TableViewRow.Level` is 1-based); row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. Rendering nested rows is the control's job; building the tree is the data layer's. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
 - Opt-in live shaping (`TableViewSource.IsLiveShaping`): reshapes when an item's `PropertyChanged` moves a sort, filter, group or parent value. — **PR3**
 - Row drag-drop, marquee selection. — *out of scope*
 
@@ -88,12 +97,14 @@ the source publishes, so the same engine serves an app that never touches `Table
   inherit the current default rather than an intent nobody expressed. — **shipped**
 - Header presentation: `TableView.GroupHeaderTemplate` fills the content region of the
   control-owned `TableViewGroupHeader`, which keeps the chevron and the themed band. The template
-  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `Level`, `IsExpandable`,
+  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `IsExpandable`,
   `IsExpanded`, and the culture-formatted `KeyText` / `ItemCountText`). — **shipped**
 - Accessibility: `TableViewGroupHeaderAutomationPeer` exposes `ExpandCollapse` and `GridItem`; a
   non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
-- Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
-  group-level aggregates/summaries. — *deferred*
+- Per-group programmatic expand/collapse by key: `ExpandGroup(key)` / `CollapseGroup(key)`, with
+  `GroupExpanding` / `GroupCollapsed` raised for every group state change. — **shipped**
+- Multi-level grouping. — *deferred*
+- Group-level aggregates/summaries. — *out of scope* (DataGrid territory)
 - Incremental (non-rebuild) maintenance of a grouped projection: a source change under grouping
   currently rebuilds rather than splicing. Correct, but O(N) per change. — *deferred*
 
@@ -102,7 +113,8 @@ the source publishes, so the same engine serves an app that never touches `Table
 Deferred to V2 / future DataGrid. TableView V1 has no editing API and no edit mode: no
 `IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/
 `CellEditEnded` (and their args and `TableViewEditAction`), `CellEditingTemplate` or
-`CommitCellEditCore`, and no built-in text column or `TextBox` editor. The named
+`CommitCellEditCore`, and no editable text column or `TextBox` editor (`DisplayMemberBinding`
+text cells are read-only). The named
 scenarios need at most an app-owned rename of one field, which composes from a
 `TableViewTemplateColumn` and app code; see
 [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance).
@@ -121,7 +133,7 @@ scenarios need at most an app-owned rename of one field, which composes from a
 
 ### Styling & theming
 - Light / Dark / High Contrast theme tokens + inline fallbacks (`DividerStrokeColorDefault` gridlines, `CardStrokeColorDefault` outer border). — **PR2** (full self-themed Theme-XBF emission deferred)
-- Cell-level styling: cells via `TableViewTemplateColumn`; text cells use an app `TextBlock` style (left, vertically centered, trimmed). A public per-column alignment/weight API — **deferred (PR3+)**.
+- Cell-level styling: a `DisplayMemberBinding` text cell is left-aligned, vertically centered, padded for `Density` and trimmed; a `TableViewTemplateColumn` text cell uses an app `TextBlock` style for the same look. A public per-column alignment/weight API — **deferred (PR3+)**.
 
 ### Tooltips
 - Cell: opt-in via `TableViewColumn.CellToolTipBinding`; the binding is evaluated against each row's data item and its value is the tooltip content. No binding means no tooltip and no per-cell cost. Needed because text cells typically render with `CharacterEllipsis` and no wrapping, so over-wide values are otherwise unreadable. — **PR3**

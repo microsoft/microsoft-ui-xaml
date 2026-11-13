@@ -4,7 +4,7 @@ TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource`
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
 
-This API is intentionally small: **single row selection** and **single-level grouping** on top of the read-only data presentation. Additional interactive features — multiple/extended selection, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort from the column headers, column virtualization, and row headers remain out of scope for v1 (`TableViewSource.ThenSort` provides multi-level sort from code).
+This API is intentionally small (see [Definition and scope](#definition-and-scope)): **single row selection**, **single-level grouping**, and **hierarchical rows** (`TableViewSource.ParentBy`) on top of the read-only data presentation, with cell value automation added to the grid/table peers. Cell editing is deferred to V2 / a future DataGrid. Multiple/extended selection and column reorder are planned separately. Marquee selection, multi-column sort from the column headers, column virtualization, and row headers remain out of scope for v1 (`TableViewSource.ThenSort` provides multi-level sort from code).
 
 The API proposed for stabilization, with its behavioural contracts, parity analysis and open questions, is reviewed in [TableView API review](../../design-notes/TabularControls/TableView-API-Review.md). Where this spec and the review differ, the review and the IDLs are current.
 
@@ -13,6 +13,59 @@ TableView types are in the preview namespace:
 ```xaml
 xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
 ```
+
+# Definition and scope
+
+**TableView is a ListView with real columns.** It shows a collection of homogeneous items as a virtualized, column-aligned table: one item per row, and one column per declared projection of the item (a binding or a template) under a header. It **renders and navigates** tabular data. It does **not shape or edit** it the way a DataGrid does. Filtering, sort rules, grouping rules and tree construction are data-layer concerns, declared on `TableViewSource` or in the app's view model. TableView renders whatever shape the source publishes.
+
+## Goals (v1)
+
+- **Bind and render.** `ItemsSource`, explicit `Columns` (read-only text cells via `DisplayMemberBinding`, custom cells via template columns), and incremental add, remove and replace without a full re-render.
+- **Column layout.** `Pixel`/`Auto`/`*` widths with min and max, user resize, show/hide, a sticky header, and leading frozen columns.
+- **Basic styling.** Header style and template, gridlines, density, row and alternating-row backgrounds, an empty-state template, and Light, Dark and High Contrast themes.
+- **Scale.** Row virtualization at ≥30 FPS for about 500 rows.
+- **Row interaction.** Single selection, keyboard navigation, bring into view, single-column header sort, context menus and tooltips.
+- **Render the source's shape.** Single-level group bands and nested rows, with expand/collapse.
+- **Accessibility.** UIA Grid/Table peers, header association, Narrator table navigation, and one tab stop.
+
+## Non-goals: DataGrid territory
+
+These are out of scope for TableView, not deferred. A scenario that needs them needs a DataGrid.
+
+- **Edit transactions.** Row editing, multi-cell commit or rollback, and `IEditableObject`-style item transactions. V1 has no cell editing either; single-cell editing is deferred to V2 / a future DataGrid (see [Editing cells](#editing-cells) and [Deferred to V2 / future DataGrid](#deferred-to-v2--future-datagrid)).
+- **Validation UI.** Error templates, row validation rules and `INotifyDataErrorInfo`-driven edit blocking.
+- **Adding and deleting rows** from the UI.
+- **Cell and range selection.** Selection is row-based.
+- **Clipboard and export.** Copy/paste of cells or rows, and CSV or Excel export.
+- **Filter UI and multi-column header sort.** Filtering and multi-level sort are data-layer verbs on `TableViewSource`.
+- **Aggregates and summaries.**
+- **Row headers, row details and master-detail.**
+- **Spreadsheet-scale layout and interaction.** Column virtualization, 100+ columns, marquee selection, and row drag-drop.
+
+## Which control to use
+
+| | ListView / ItemsView | TableView | DataGrid (not in WinUI 3) |
+|---|---|---|---|
+| **Use when** | Each item reads as one unit | Users compare items across rows by attribute | Users enter or change data as the main task |
+| **Layout** | One template per item; may wrap or flow | Aligned columns with headers, resize, show/hide, header sort | Many columns, frozen panes, row details |
+| **Data** | Grouping from `CollectionViewSource` | Grouping and nesting come from the source and are only rendered | Edit transactions, validation, add/delete rows |
+| **Interaction** | Item selection | Row selection and navigation, context menus | Cell selection, clipboard, filter UI, aggregates, export |
+| **Examples** | Settings lists, Mail, Photos | File Explorer details view, File Properties, Task Manager processes | Line-of-business data entry |
+
+## Bar for adding features
+
+A feature is added to TableView only if all of these hold:
+
+1. A named first-party or top-developer scenario can't ship without it. Parity with a DataGrid isn't a reason by itself.
+2. It changes how data is shown or navigated, not which data is shown. Shaping belongs to the data layer.
+3. It isn't one of the non-goals above.
+4. Existing primitives (`ContextFlyout`, `ToolTip`, `DataTemplate`, `TableViewSource`) can't already express it.
+5. It is pay-for-play and additive: no cost when unused, and no change to existing behavior.
+6. It is accessible when it ships (UIA, keyboard, Narrator).
+
+## Hierarchy
+
+**Rendering nested rows is in scope. Building the tree is not.** TableView renders indentation, expand/collapse by pointer, keyboard and UIA `ExpandCollapse`, `TableViewRow.Level`, and `ExpandAllRows`/`CollapseAllRows`. How a flat list becomes a tree (`TableViewSource.ParentBy`), and how a tree is filtered or sorted, belong to the data layer. The renderer imposes **no depth limit**: rows nest as deep as the source's parent keys go. Grouping follows the same rule: the group band is presentation, and `GroupBy` is data.
 
 # Conceptual pages (How To)
 
@@ -1746,7 +1799,7 @@ The display-only base delivered previously:
 These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Column resize and reorder.
+- Column reorder.
 
 ## TableViewTextColumn (deferred)
 
@@ -1771,12 +1824,14 @@ Cut from V1 and deferred to V2; it can return additively:
 
 ## Non-goals (out of scope for v1)
 
+See [Non-goals: DataGrid territory](#non-goals-datagrid-territory) for the full list.
+
 - Replacing DataGrid.
 - Marquee selection.
 - Multi-column sort from the column headers (TableViewSource.ThenSort provides multi-level sort from code).
 - Column virtualization.
 - Row headers.
-- Hierarchy deeper than two levels; row drag-drop.
+- Row drag-drop. (Hierarchy has no depth limit; see [Hierarchy](#hierarchy).)
 - Spreadsheet-like interaction.
 - Spreadsheet-scale column counts (100+) — `TableView` realizes a cell per visible column per row and targets ~5–50 columns.
 
