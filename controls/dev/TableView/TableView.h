@@ -830,6 +830,16 @@ private:
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
 
+    int32_t GetVisibleColumnIndex(winrt::TableViewColumn const& column);
+    // True when Tab is consumed, including by a vetoed commit.
+    bool TryMoveEditToAdjacentCell(bool forward);
+    bool IsBodyFocusOnItem(winrt::IInspectable const& item);
+    bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
+
+    // A Tab target outside the viewport: BeginEdit runs once the pending body focus lands on it.
+    tracker_ref<winrt::IInspectable> m_beginEditAfterBodyFocusItem{ this };
+    tracker_ref<winrt::TableViewColumn> m_beginEditAfterBodyFocusColumn{ this };
+
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
     std::deque<DeferredEditReshape> m_pendingEditReshapes;

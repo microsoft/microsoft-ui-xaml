@@ -6,6 +6,7 @@
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
+#include "TableViewAutomationHelpers.h"
 #include "TableViewFocusHelpers.h"
 #include "TVDiag.h"
 
@@ -171,9 +172,19 @@ namespace
         return false;
     }
 
+    bool IsKeyDown(winrt::VirtualKey key)
+    {
+        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
+            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    }
+
+    bool IsSelfOrDescendant(winrt::DependencyObject const& element, winrt::DependencyObject const& ancestor)
+    {
+        return element && (element == ancestor || SharedHelpers::IsAncestor(element, ancestor));
+    }
 }
 
-// F2 / Enter / Escape. Registered WITH handledEventsToo, because a single-line TextBox reports Enter
+// F2 / Enter / Escape / Tab. Registered WITH handledEventsToo, because a single-line TextBox reports Enter
 // as handled and the commit must still run. Each case therefore owns its own Handled policy
 // explicitly: F2 and Escape defer to an editor that genuinely consumed the key, Enter does not.
 void TableView::OnKeyDownForEditing(
@@ -215,8 +226,181 @@ void TableView::OnKeyDownForEditing(
         }
         break;
 
+    case winrt::Windows::System::VirtualKey::Tab:
+        // An editor that consumes Tab marks it handled first.
+        if (!args.Handled() && IsEditing() &&
+            !IsKeyDown(winrt::VirtualKey::Control) && !IsKeyDown(winrt::VirtualKey::Menu) &&
+            TryMoveEditToAdjacentCell(!IsKeyDown(winrt::VirtualKey::Shift)))
+        {
+            args.Handled(true);
+        }
+        break;
+
     default:
         break;
+    }
+}
+
+int32_t TableView::GetVisibleColumnIndex(winrt::TableViewColumn const& target)
+{
+    auto const columns = Columns();
+    if (!columns)
+    {
+        return -1;
+    }
+    int32_t visible = 0;
+    for (auto const& column : columns)
+    {
+        if (IsVisibleColumn(column))
+        {
+            if (column == target)
+            {
+                return visible;
+            }
+            ++visible;
+        }
+    }
+    return -1;
+}
+
+// False leaves Tab to XAML: focus is in an editor popup or between controls of a multi-control
+// editor, or no editable cell follows.
+bool TableView::TryMoveEditToAdjacentCell(bool forward)
+{
+    auto const editRow = m_currentEditRow.get();
+    auto const editItem = m_currentEditItem.get();
+    auto const editColumn = m_currentEditColumn.get();
+    auto const root = XamlRoot();
+    auto const editingElement = editRow ? winrt::get_self<TableViewRow>(editRow)->GetEditingElement() : nullptr;
+    auto const columns = Columns();
+    if (m_editState != EditState::Editing || !editItem || !editColumn || !root || !editingElement || !columns ||
+        !IsSelfOrDescendant(winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>(), editingElement) ||
+        HasTabStopAfterFocusInEditor(root, editingElement, forward))
+    {
+        return false;
+    }
+
+    // One pass in logical order: the next (previous) editable cell in this row, else the first
+    // (last) one for the adjacent row.
+    const int32_t sourceColumn = GetVisibleColumnIndex(editColumn);
+    winrt::TableViewColumn inRow{ nullptr };
+    winrt::TableViewColumn wrap{ nullptr };
+    int32_t visible = 0;
+    for (auto const& column : columns)
+    {
+        if (!IsVisibleColumn(column))
+        {
+            continue;
+        }
+        if (IsColumnCellEditableInternal(column))
+        {
+            if (!forward || !wrap)
+            {
+                wrap = column;
+            }
+            if (forward ? (visible > sourceColumn && !inRow) : visible < sourceColumn)
+            {
+                inRow = column;
+            }
+        }
+        ++visible;
+    }
+
+    auto const repeater = m_rowsRepeater.get();
+    const int32_t editRowIndex = repeater ? repeater.GetElementIndex(editRow) : -1;
+
+    // Past the last (first) cell the commit still runs, and a vetoed commit keeps the editor.
+    if (!CommitEditInternal(inRow ? EditingUnit::Cell : EditingUnit::Row))
+    {
+        return true;
+    }
+
+    // A CellEditEnding handler may have moved focus off the record, or re-sorted it. Only the
+    // re-sort's restore of the edited row's own position counts as staying on the record.
+    const int32_t focusedRow = GetFocusedRowIndex();
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    const bool onRecord = IsBodyFocusOnItem(editItem);
+    const bool restoringToBody = m_pendingReshapeFocusRow >= 0 && m_pendingReshapeFocusRow == editRowIndex &&
+        (!focused || IsElementInBody(focused));
+    if (!onRecord && !restoringToBody)
+    {
+        return true;
+    }
+
+    int32_t row = onRecord ? focusedRow : FindEntryIndexForDataItem(editItem);
+    auto column = inRow;
+    if (!inRow && row >= 0 && wrap)
+    {
+        const int32_t rowCount = GetItemsSourceCount();
+        do
+        {
+            row += forward ? 1 : -1;
+        } while (row >= 0 && row < rowCount && IsGroupHeaderRow(row));
+        column = wrap;
+        if (row >= rowCount)
+        {
+            row = -1;
+        }
+    }
+
+    if (row < 0 || !column)
+    {
+        // Leave the table as Tab from the focused cell does.
+        if (auto const cellRow = repeater && focusedRow >= 0 ? repeater.TryGetElement(focusedRow).try_as<winrt::TableViewRow>() : nullptr)
+        {
+            winrt::get_self<TableViewRow>(cellRow)->PrepareTabWalkFromCellInternal();
+        }
+        return false;
+    }
+
+    // The commit's handlers can hide, lock or move the chosen column.
+    const int32_t columnIndex = GetVisibleColumnIndex(column);
+    auto const item = UnwrapEditingDataItem(GetRowsSourceItemAt(row));
+    if (columnIndex < 0 || !IsColumnCellEditableInternal(column) || !FocusCell(row, columnIndex))
+    {
+        return true;
+    }
+    if (!inRow)
+    {
+        SelectRowIndexFromKeyboardFocus(row);
+    }
+
+    if (IsKeyboardBodyFocusPending())
+    {
+        m_beginEditAfterBodyFocusItem.set(item);
+        m_beginEditAfterBodyFocusColumn.set(column);
+    }
+    else if (IsBodyFocusOnItem(item))
+    {
+        BeginEdit(item, column);
+    }
+    return true;
+}
+
+bool TableView::IsBodyFocusOnItem(winrt::IInspectable const& item)
+{
+    const int32_t focusedRow = GetFocusedRowIndex();
+    return item && focusedRow >= 0 && SameInspectableIdentity(UnwrapEditingDataItem(GetRowsSourceItemAt(focusedRow)), item);
+}
+
+bool TableView::HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward)
+{
+    // Searched from XamlRoot.Content so a search that wraps cannot keep Tab in the editor.
+    try
+    {
+        winrt::FindNextElementOptions options;
+        options.SearchRoot(root.Content());
+        auto const next = winrt::FocusManager::FindNextElement(
+            forward ? winrt::FocusNavigationDirection::Next : winrt::FocusNavigationDirection::Previous, options);
+        return IsSelfOrDescendant(next, editingElement);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        auto const edge = forward
+            ? winrt::FocusManager::FindLastFocusableElement(editingElement)
+            : winrt::FocusManager::FindFirstFocusableElement(editingElement);
+        auto const focused = winrt::FocusManager::GetFocusedElement(root);
+        return edge && focused && edge != focused.try_as<winrt::DependencyObject>();
     }
 }
 

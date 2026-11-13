@@ -2091,6 +2091,8 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
+    m_beginEditAfterBodyFocusItem.set(nullptr);
+    m_beginEditAfterBodyFocusColumn.set(nullptr);
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
     m_requestedBodyVerticalOffset.reset();
@@ -2166,7 +2168,29 @@ void TableView::OnReshapeFocusAttempt()
 
     if (landed)
     {
+        auto const editItem = m_beginEditAfterBodyFocusItem.get();
+        auto const editColumn = m_beginEditAfterBodyFocusColumn.get();
         CancelReshapeFocusRestore();
+        // Posted: inside LayoutUpdated a CellEditingTemplate editor cannot be realized and focused.
+        auto const queue = editItem && editColumn ? DispatcherQueue() : nullptr;
+        if (queue)
+        {
+            queue.TryEnqueue([weakThis = get_weak(), editItem, editColumn]()
+            {
+                auto const strongThis = weakThis.get();
+                try
+                {
+                    if (strongThis && !strongThis->IsEditing() && strongThis->IsBodyFocusOnItem(editItem))
+                    {
+                        strongThis->BeginEdit(editItem, editColumn);
+                    }
+                }
+                catch (...)
+                {
+                    // Best-effort; never fail-fast the dispatcher.
+                }
+            });
+        }
         return;
     }
 
