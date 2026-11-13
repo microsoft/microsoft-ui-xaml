@@ -5,7 +5,7 @@
 #include "common.h"
 #include "GroupedEntry.h"
 #include "TableView.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 #include "TableViewRow.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
@@ -27,13 +27,13 @@ namespace
     class GroupExpansionDeferral
     {
     public:
-        explicit GroupExpansionDeferral(winrt::TableViewSource const& source) noexcept
+        explicit GroupExpansionDeferral(winrt::com_ptr<::TableViewShapingSource> const& source) noexcept
         {
             if (source)
             {
                 try
                 {
-                    winrt::get_self<::TableViewSource>(source)->BeginDeferRefresh();
+                    source.get()->BeginDeferRefresh();
                     m_source = source;
                 }
                 catch (...)
@@ -50,7 +50,7 @@ namespace
         {
             if (auto const source = std::exchange(m_source, nullptr))
             {
-                auto* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+                auto* const sourceImpl = source.get();
                 // Refused while re-entrant, before the deferral is consumed: end it on a later turn.
                 try
                 {
@@ -75,7 +75,7 @@ namespace
         }
 
     private:
-        winrt::TableViewSource m_source{ nullptr };
+        winrt::com_ptr<::TableViewShapingSource> m_source{ nullptr };
     };
 
     void LogGroupHandlerThrow(wchar_t const* eventName)
@@ -115,7 +115,7 @@ namespace
 // ---------------------------------------------------------------------------------------------
 // Grouped-projection rendering.
 //
-// A grouped TableViewSource projects group headers and data rows into one flat row list, so the
+// A grouped TableViewShapingSource projects group headers and data rows into one flat row list, so the
 // repeater realizes two container types from one source. TableViewRowTemplateSelector picks
 // between them using GetRowKindForItem; everything a group header needs that a TableViewRow would
 // otherwise have pushed during cell rebuild is pushed from PrepareGroupHeaderElement instead.
@@ -142,10 +142,10 @@ TableViewRowKind TableView::GetRowKindForItem(winrt::IInspectable const& item) c
         return TableViewRowKind::Data;
     }
 
-    // Only a grouped TableViewSource produces GroupedEntry rows, and only for headers. A flat
+    // Only a grouped TableViewShapingSource produces GroupedEntry rows, and only for headers. A flat
     // source hands the app's item straight through, and an app item must never be shaped into a
     // group header just because it happens to satisfy the probe.
-    if (!IsTableViewSourceGrouped())
+    if (!IsTableViewShapingSourceGrouped())
     {
         return TableViewRowKind::Data;
     }
@@ -153,7 +153,7 @@ TableViewRowKind TableView::GetRowKindForItem(winrt::IInspectable const& item) c
     return TryGetGroupedEntry(item) ? TableViewRowKind::GroupHeader : TableViewRowKind::Data;
 }
 
-bool TableView::TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const
+bool TableView::TryGetTableViewShapingSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const
 {
     if (!m_tableViewSourceRowMetadata || rowIndex < 0)
     {
@@ -171,11 +171,11 @@ bool TableView::TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo&
     }
 }
 
-bool TableView::IsTableViewSourceGrouped() const
+bool TableView::IsTableViewShapingSourceGrouped() const
 {
     if (auto const source = m_activeSource.get())
     {
-        return winrt::get_self<::TableViewSource>(source)->IsGrouped();
+        return source.get()->IsGrouped();
     }
 
     return false;
@@ -184,7 +184,7 @@ bool TableView::IsTableViewSourceGrouped() const
 bool TableView::IsGroupHeaderRow(int32_t index) const
 {
     TableViewRowInfo rowInfo{};
-    return TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
+    return TryGetTableViewShapingSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
 }
 
 int32_t TableView::GetDataRowPositionInSetInternal(int32_t rowIndex) const
@@ -194,7 +194,7 @@ int32_t TableView::GetDataRowPositionInSetInternal(int32_t rowIndex) const
         return 0;
     }
 
-    if (!IsTableViewSourceGrouped())
+    if (!IsTableViewShapingSourceGrouped())
     {
         return rowIndex + 1;
     }
@@ -203,7 +203,7 @@ int32_t TableView::GetDataRowPositionInSetInternal(int32_t rowIndex) const
     for (int32_t index = 0; index <= rowIndex; ++index)
     {
         TableViewRowInfo rowInfo{};
-        if (!TryGetTableViewSourceRowInfo(index, rowInfo))
+        if (!TryGetTableViewShapingSourceRowInfo(index, rowInfo))
         {
             return rowIndex + 1;
         }
@@ -220,7 +220,7 @@ int32_t TableView::GetDataRowPositionInSetInternal(int32_t rowIndex) const
 int32_t TableView::GetDataRowSizeOfSetInternal() const
 {
     const auto rowCount = GetRowCountInternal();
-    if (!IsTableViewSourceGrouped())
+    if (!IsTableViewShapingSourceGrouped())
     {
         return rowCount;
     }
@@ -229,7 +229,7 @@ int32_t TableView::GetDataRowSizeOfSetInternal() const
     for (int32_t index = 0; index < rowCount; ++index)
     {
         TableViewRowInfo rowInfo{};
-        if (!TryGetTableViewSourceRowInfo(index, rowInfo))
+        if (!TryGetTableViewShapingSourceRowInfo(index, rowInfo))
         {
             return rowCount;
         }
@@ -274,7 +274,7 @@ bool TableView::TryFocusParentRow(winrt::UIElement const& container)
     const auto index = repeater.GetElementIndex(container);
     TableViewRowInfo info{};
     int32_t parentIndex = -1;
-    if (index < 0 || !TryGetTableViewSourceRowInfo(index, info) || info.ParentIdentity.empty() ||
+    if (index < 0 || !TryGetTableViewShapingSourceRowInfo(index, info) || info.ParentIdentity.empty() ||
         !m_tableViewSourceRowMetadata->TryGetIndexForIdentity(info.ParentIdentity, parentIndex))
     {
         return false;
@@ -746,7 +746,7 @@ void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
         int32_t index = -1;
         TableViewRowInfo info{};
         if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) ||
-            !TryGetTableViewSourceRowInfo(index, info) ||
+            !TryGetTableViewShapingSourceRowInfo(index, info) ||
             info.Kind != TableViewRowKind::Data || !info.IsExpandable)
         {
             return;
@@ -876,7 +876,7 @@ bool TableView::FocusContainerByIdentity(
 
     // Data row: a splice keeps focus in place; restore only if the Reset recycled the container.
     TableViewRowInfo info{};
-    if (TryGetTableViewSourceRowInfo(index, info) && info.Kind == TableViewRowKind::Data)
+    if (TryGetTableViewShapingSourceRowInfo(index, info) && info.Kind == TableViewRowKind::Data)
     {
         if (auto const root = XamlRoot())
         {
@@ -988,7 +988,7 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
     // A documented no-op when the axis is absent.
     const bool hasAxis = (axis == BulkExpansionAxis::Rows)
         ? m_tableViewSourceRowMetadata->IsHierarchicalSource()
-        : IsTableViewSourceGrouped();
+        : IsTableViewShapingSourceGrouped();
     if (!hasAxis)
     {
         return;
@@ -1027,7 +1027,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
-    if (!((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewSourceGrouped()))
+    if (!((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewShapingSourceGrouped()))
     {
         return;
     }
@@ -1148,7 +1148,7 @@ void TableView::SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool
 {
     auto const provider = m_tableViewSourceRowMetadata;
     auto const source = m_activeSource.get();
-    if (!provider || !source || !IsTableViewSourceGrouped())
+    if (!provider || !source || !IsTableViewShapingSourceGrouped())
     {
         return;
     }
@@ -1170,7 +1170,7 @@ void TableView::SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool
         }
     }
 
-    auto* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    auto* const sourceImpl = source.get();
     auto const groupIdentity = sourceImpl->TryGetGroupIdentityForKey(groupKey);
     if (!groupIdentity)
     {
@@ -1417,7 +1417,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     // entry's own state in that window; the repeater re-prepares this position with the right
     // container type immediately after.
     const bool hasRowInfo =
-        TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
+        TryGetTableViewShapingSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
 
     auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
     headerImpl->SetOwningTableViewInternal(*this);
@@ -1610,7 +1610,7 @@ void TableView::ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGr
 
 void TableView::RefreshRealizedGroupHeadersAfterExpansion()
 {
-    if (!IsTableViewSourceGrouped())
+    if (!IsTableViewShapingSourceGrouped())
     {
         return;
     }
