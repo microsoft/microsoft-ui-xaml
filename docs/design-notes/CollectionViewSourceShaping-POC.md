@@ -1,7 +1,8 @@
 # CollectionViewSource shaping (sort, filter, group): proof of concept
 
-Status: **POC, experimental (`Feature_ExperimentalApi`), not built or run yet.** Branch
-`user/hik/tableview/cvs-shaping-poc`, based on `e38939f26`.
+Status: **POC, experimental (`Feature_ExperimentalApi`).** Built (amd64chk) and run on a test VM. Branches
+`user/hik/tableview/cvs-shaping-poc` (framework) and `user/hik/tableview/cvs-shaping-poc-e2e` (framework plus
+TableView consuming it end to end).
 
 This answers the 2026-11-11 TableView API review feedback: *"CollectionViewSource should be beefed up (to do
 filter, sort, group) bringing it closer to WPF"*. It is also what GitHub issue
@@ -54,6 +55,17 @@ runtimeclass CollectionViewSource : DependencyObject
         void Refresh();
     }
 };
+
+// Optional capability of an ICollectionView, like ICollectionViewFactory or ISupportIncrementalLoading.
+// A View that a CollectionViewSource shapes implements it and forwards every member to that CVS.
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+interface ICollectionViewShaping
+{
+    IObservableVector<SortDescription> SortDescriptions { get; };
+    IObservableVector<PropertyGroupDescription> GroupDescriptions { get; };
+    CollectionViewFilter Filter;
+    void Refresh();
+};
 ```
 
 | WPF | This POC | Note |
@@ -62,7 +74,8 @@ runtimeclass CollectionViewSource : DependencyObject
 | `ListSortDirection` | `ListSortDirection` | Same names and values. |
 | `CollectionViewSource.GroupDescriptions` (`GroupDescription` base) | `IObservableVector<PropertyGroupDescription>` | Only property grouping. See risks for the base-class decision. |
 | `CollectionViewSource.Filter` **event** + `ICollectionView.Filter` (`Predicate<object>`) | `Filter` property of type `CollectionViewFilter` | See decision 3. |
-| `ICollectionView.Refresh()` | `CollectionViewSource.Refresh()` | `ICollectionView` is frozen, so the verb lives on CVS. |
+| `ICollectionView.Refresh()` | `CollectionViewSource.Refresh()` and `ICollectionViewShaping.Refresh()` | `ICollectionView` is frozen, so the verb lives on CVS and on the opt-in view interface. |
+| `ICollectionView.SortDescriptions` / `GroupDescriptions` / `Filter` | `ICollectionViewShaping` on the shaped `View` | Same objects as the CVS's: one set of descriptors, reachable from `ItemsSource` alone. |
 | `CollectionViewGroup.Name` | `Key` and `Name` on the group object | `Key` matches the `IGrouping<K,T>` idiom WinUI samples already use. |
 
 ## Usage
@@ -117,8 +130,11 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 - **Source changes.** `IObservableVector` sources and `IBindableVector` + `INotifyCollectionChanged` sources (for
   example `ObservableCollection<T>`) trigger a **full recompute** and one `Reset`. `Refresh()` does the same on
   demand. Plain `IVector` sources need `Refresh()`. `IIterable`-only sources are snapshotted, so re-set `Source`.
-- **Descriptor changes.** Each change to `SortDescriptions`, `GroupDescriptions` or `Filter` rebuilds `View`, the
-  same way changing `IsSourceGrouped` does today.
+- **Descriptor changes.** A change to `SortDescriptions`, `GroupDescriptions` or `Filter` reshapes an already
+  shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. A new `View` is created
+  only when shaping first starts, or when output switches between flat and grouped (a different view class), the
+  same way changing `IsSourceGrouped` does today. Clearing every descriptor of a flat shaped view keeps that view, in
+  source order; clearing the last `GroupDescription` returns a new `View` (unshaped if no sort or filter remains).
 - **Currency.** After a source-driven refresh, the previous `CurrentItem` is restored if it is still in the view.
   Otherwise the view moves to the first item. A rebuilt `View` starts at the first item, as today.
 
@@ -161,7 +177,14 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 7. **Property paths use the framework's `PropertyPathListener`**, the same way `GroupedDataCollectionView` resolves
    `ItemsPath` (`GroupedDataCollectionView_Partial.cpp:302-323`). Paths therefore resolve exactly like `{Binding}`.
 8. **Rebuild on descriptor change** copies `OnIsSourceGroupedChanged` → `EnsureView`
-   (`CollectionViewSource_Partial.cpp:73`, `:122`).
+   (`CollectionViewSource_Partial.cpp:73`, `:122`), but only to start shaping or to switch between flat and grouped
+   output. Otherwise the shaped view is reshaped in place.
+9. **`ICollectionViewShaping` is an optional interface on the view**, not a change to the frozen `ICollectionView`.
+   It follows the `ICollectionViewFactory` / `ISupportIncrementalLoading` pattern of QI-able capabilities. The
+   existing `CollectionView` base implements it, and `QueryInterfaceImpl` answers it only when a CVS has set itself
+   as the view's shaping owner (`CollectionView::SetShapingOwner`, a weak reference). An unshaped view, or a view
+   created any other way, does not offer it. Every member forwards to the owning CVS, so the view and the CVS share
+   one set of descriptor collections.
 
 ## How controls consume it
 
@@ -171,13 +194,54 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   `{Binding Key}` works.
 - **SemanticZoom.** The zoomed-out view reads the same `CollectionGroups`
   (`ListViewBase_Partial_SemanticZoomInformation.cpp:386`).
-- **TableView.**
-  - Consume `cvs.View` as `ICollectionView`, reading `CollectionGroups` / `ICollectionViewGroup` for group rows. Row
-    metadata already reads groups through `ICollectionViewGroup`.
-  - For header-click sort, TableView edits the owning CVS's `SortDescriptions` when the app gave it a CVS. Otherwise
-    the click is display-only, which is today's contract for app-owned sorting.
-  - Productizing needs a QI-able view-level shaping interface (for example `ICollectionViewShaping`), so a control
-    can reach the descriptors from `ItemsSource` alone.
+- **TableView.** See the end-to-end story below.
+
+## End to end: TableView on a shaped CollectionViewSource
+
+The app gives TableView `cvs.View` as `ItemsSource` and no `TableViewSource`:
+
+```csharp
+var cvs = new CollectionViewSource { Source = processes };
+cvs.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
+table.ItemsSource = cvs.View;                       // grouped, shapeable view
+
+cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow the view
+((ICollectionViewShaping)cvs.View).Refresh();                    // after property edits
+```
+
+- **Rows and groups.** TableView projects the view read-only. `CollectionGroups` become group rows
+  (`TableViewCollectionViewGroups`), in the view's order. TableView never reorders, filters or groups the rows
+  itself.
+- **Header sort.** When `ItemsSource` implements `ICollectionViewShaping`, a header click, `SortByColumn`,
+  `ToggleSortDirection` and `ClearSort` write the column's `SortMemberPath` to the view's `SortDescriptions` (the
+  column's sort replaces the previous one, as with a `TableViewSource`), and `Sorting` / `Sorted` are raised. A column
+  without a `SortMemberPath` (a `CustomSortComparer` column) cannot sort the view.
+- **Sort arrow.** The arrow follows the view's primary `SortDescription`, including a sort the app or another
+  consumer applies to the view directly (`TableView` listens to `SortDescriptions.VectorChanged`).
+- **Plain `ICollectionView`.** A view without `ICollectionViewShaping` keeps today's contract: the header click raises
+  `Sorting` only, and the app sorts the view.
+- **Group identity.** A CVS recomputes its group objects on every `Refresh` or source change, so TableView keys a
+  group by its key **value** (the group's `Key` property, else `ICollectionViewGroup.Group`; scalars compare by type
+  and value), not by the group object's address. Expansion state therefore survives a recompute: a collapsed group
+  stays collapsed after a source change or `Refresh()`.
+- **Sample.** `Samples\TableViewSampleApp`, page "CollectionViewSource shaping" (`CollectionViewShapingPage`):
+  Task Manager-style flat data, grouped by `GroupDescriptions`, a filter box using `Filter`, `Refresh()` after a
+  value update, and header sort through the view.
+
+### Known gap: hierarchy
+
+`TableViewSource.ParentBy` (tree rows) and grouped hierarchy have **no CVS or WPF equivalent**. It is not just one
+more descriptor: in tree mode filter must keep ancestors, sort applies per sibling set, and grouping buckets roots
+only, and `ICollectionViewGroup` has no notion of depth. Task Manager's expandable Apps rows need it.
+
+The recommended end state (investigation report 11, option (a)) is:
+
+- CVS owns sort, filter and group for flat and grouped data, as in WPF, reached through `ICollectionViewShaping`.
+- Hierarchy is declared on TableView (for example `TableView.ParentBy(key, parentKey)`), and TableView's internal
+  engine reads the CVS descriptors through `ICollectionViewShaping` and applies them tree-aware. In tree mode the CVS
+  `View` order and TableView's row order differ, which must be documented.
+- Do not add hierarchy to CVS (option (b)): no WPF precedent, and ListView, GridView and SemanticZoom gain nothing.
+- `TableViewSource` stays a `[MUX_PREVIEW]` bridge until this lands.
 
 ## Out of scope for the POC
 
@@ -187,16 +251,19 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   selection (WPF `CollectionViewSource.Culture`).
 - Multi-level grouping (only the first `GroupDescription` is used; `ICollectionViewGroup` is single level),
   `GroupDescription` subclasses, and group sorting.
-- `DeferRefresh()`. Each descriptor edit rebuilds immediately.
+- `DeferRefresh()`. Each descriptor edit reshapes immediately.
 - XAML-declared descriptors (needs DP-backed collection properties and type-table entries).
-- A view-level shaping interface, `CanSort` / `CanFilter` / `CanGroup`.
+- `CanSort` / `CanFilter` / `CanGroup` on `ICollectionViewShaping`.
+- Hierarchy (see "Known gap: hierarchy").
 - Performance work: incremental updates, virtualization, hashed group lookup. The POC is O(n log n) per refresh,
   plus O(n × groups) for grouping.
 
 ## Known risks
 
-- **Not compiled.** No MIDL or razzle environment was available. Generated files were hand-written from the generator's
-  patterns. See "Regeneration" below.
+- **Codegen.** Generated outputs were first hand-written, then regenerated with `dxaml\xcp\runcodegen.cmd`
+  (`a78612b94`, and again for `ICollectionViewShaping`). See "Regeneration" below.
+- **Flat/grouped switch.** Adding the first or removing the last `GroupDescription` gives the CVS a new `View`, so a
+  control bound to the old `View` must be given the new one (the sample reassigns `ItemsSource`).
 - **Reorder.** `ListViewBase` drag-reorder calls `RemoveAt` / `InsertAt` on the items source
   (`ListViewBase_Partial_Reorder.cpp:1498-1499`). Shaped views are read-only, the same as `IsSourceGrouped` views
   today, so set `CanReorderItems="False"`. WPF also blocks reorder on sorted views.
@@ -225,14 +292,15 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/SortDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/PropertyGroupDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/Factories.g.cpp` | 2 forward declarations + 2 activation entries | Yes (ordering) |
-| `dxaml/xcp/dxaml/lib/synonyms.g.h` | 3 typedefs | Yes |
+| `dxaml/xcp/dxaml/lib/synonyms.g.h` | 4 typedefs (with `ICollectionViewShaping`) | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/Aggregate.g.cpp` | 2 includes | Yes |
 | `dxaml/xcp/components/metadata/*`, `dxaml/xcp/core/metadata/*`, XBF indexes | None expected (PropertyOnly members, `IsCreateableFromXAML = false` classes, enum excluded from type tables) | Verify no diff |
 | `dxaml/xcp/dxaml/idl/winrt/main/microsoft.ui.xaml.idl` | None | Add `declare` entries only if MIDL does not emit `IVector`/`IIterable` of the descriptor types |
 | `packaging/Intellisense/*` | None | Regenerate docs XML when promoting |
 
 Hand-written files: `CollectionViewSource_Partial.h/.cpp` (hook in `EnsureView`), `CollectionViewSource_Shaping.cpp`
-(engine and descriptor factories), and `wrtdxamlfoundation.vcxproj`.
+(engine, descriptor factories and the `ICollectionViewShaping` forwarders), `CollectionView_Partial.h`
+(`ICollectionViewShaping` on the view base), and `wrtdxamlfoundation.vcxproj`.
 
 ## Test
 
@@ -246,6 +314,19 @@ Hand-written files: `CollectionViewSource_Partial.h/.cpp` (hook in `EnsureView`)
 - grouping (`CollectionGroups`, `Key`, `GroupItems`);
 - returning to the unshaped view.
 
+`BindingIntegrationTests::CollectionViewShapingInterface` covers `ICollectionViewShaping`: not offered by an unshaped
+view; offered by flat and grouped shaped views; shared descriptor collections; sort, `Filter` and `Refresh()` through
+the view reshaping the same view in place; and the grouped-view switch.
+
+`TableView_DataBinding_APITests` (`controls\dev\TableView\APITests`) covers the end-to-end story:
+
+- `VerifyHeaderSortOnShapingCollectionViewSortsTheView`: header click, `ToggleSortDirection`, `SortByColumn` and
+  `ClearSort` write `SortDescriptions`; the arrow follows a sort applied to the view; `Sorting` / `Sorted` are raised.
+- `VerifyFilterAndRefreshOnShapingCollectionViewUpdateRows`: `Filter`, `Refresh()` after an edit, source add.
+- `VerifyGroupDescriptionsOnShapingCollectionViewRenderGroups`: group rows keyed by value, sort within groups.
+- `VerifyCollapsedCollectionViewGroupSurvivesRecompute`: a collapsed group stays collapsed after a source change and
+  after `Refresh()`.
+
 ## Effort to productize
 
 These are rough estimates for one engineer who knows dxaml.
@@ -257,9 +338,9 @@ These are rough estimates for one engineer who knows dxaml.
 | Live shaping (property-change tracking) | 1–2 weeks |
 | Custom comparer / key selector (AOT-safe), culture | 1 week |
 | XAML-declarable descriptors (DP collections, type tables) | 1 week |
-| View-level shaping interface for TableView header sort; TableView adapter | 1–2 weeks |
+| View-level shaping interface: `CanSort` / `CanFilter` / `CanGroup`, API review (the POC interface exists) | 0.5–1 week |
 | API review, docs, perf and back-compat tests | 1–2 weeks |
-| **Total** | **≈ 7–11 engineer-weeks** |
+| **Total** | **≈ 6.5–10 engineer-weeks** |
 
 Porting the existing TableView shaping engine (identity-preserving reshapes, coalesced live shaping) into dxaml
 instead of extending this POC is the main lever on the upper half of that range.
