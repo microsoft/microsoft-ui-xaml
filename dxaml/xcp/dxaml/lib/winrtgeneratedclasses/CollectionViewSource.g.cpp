@@ -48,6 +48,26 @@ HRESULT DirectUI::CollectionViewSourceGenerated::QueryInterfaceImpl(_In_ REFIID 
 }
 
 // Properties.
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_CustomSortImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->put_CustomSortImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_Filter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue)
 {
     HRESULT hr = S_OK;

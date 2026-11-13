@@ -1855,6 +1855,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         m_itemsSourceIsCollectionView = false;
         m_collectionViewGroups = nullptr;
         m_collectionViewShaping = nullptr;
+        m_collectionViewCustomSort = nullptr;
         m_collectionViewSortChangedRevoker.revoke();
     }
 

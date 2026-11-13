@@ -1152,6 +1152,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSortComparer column sorts an ICollectionViewShaping view through its CustomSort, a path column's sort replaces it, and a comparer fault leaves the view's previous sort.")]
+        public void VerifyCustomSortComparerColumnSortsShapingCollectionView()
+        {
+            TableView tableView = null;
+            ICollectionViewShaping shaping = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out _);
+                shaping = (ICollectionViewShaping)cvs.View;
+                tableView = CreateBindingTable(cvs.View);
+                tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(shaping.CustomSort, "The comparer column sorts the view through its CustomSort.");
+                Verify.AreEqual(0, shaping.SortDescriptions.Count);
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Mei", "Asha", "Ines", "Owen", "Rafa", "Diego" }, "comparer ascending");
+
+                Verify.IsTrue(tableView.ToggleSortDirection(tableView.Columns[0]));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "The arrow stays on the comparer column.");
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen", "Ines", "Asha", "Mei" }, "comparer descending");
+
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(shaping.CustomSort, "A SortDescription replaces the CustomSort.");
+                Verify.AreEqual("Role", shaping.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+
+                tableView.Columns[0].CustomSortComparer = new ThrowingSortComparer();
+                var returned = true;
+                Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(
+                    () => returned = tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending)),
+                    "A comparer fault must not escape SortByColumn.");
+                Verify.IsFalse(returned, "SortByColumn reports that the sort was not applied.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(shaping.CustomSort, "The view's previous sort is put back.");
+                Verify.AreEqual(1, shaping.SortDescriptions.Count);
+                Verify.AreEqual("Role", shaping.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The previous arrow stays.");
+                Verify.AreEqual("Architect", Person(GetProjectedItems(tableView).First()).Role);
+
+                Verify.IsTrue(tableView.ClearSort());
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(shaping.CustomSort);
+                Verify.AreEqual(0, shaping.SortDescriptions.Count);
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "after ClearSort");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a Filter set through ICollectionViewShaping and a Refresh after an item edit update the TableView's rows.")]
         public void VerifyFilterAndRefreshOnShapingCollectionViewUpdateRows()
         {
