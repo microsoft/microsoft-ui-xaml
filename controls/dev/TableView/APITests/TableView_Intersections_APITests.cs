@@ -652,9 +652,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var headers = table.GetColumnHeaders();
                 Verify.AreEqual(2, headers == null ? 0 : headers.Length, "GetColumnHeaders must return one provider per visible column.");
 
-                var aliasPeer = new TableViewColumnHeaderAutomationPeer(tableView, aliasColumn);
-                var namePeer = new TableViewColumnHeaderAutomationPeer(tableView, nameColumn);
-                var rolePeer = new TableViewColumnHeaderAutomationPeer(tableView, roleColumn);
+                var aliasPeer = CreateColumnHeaderPeer(tableView, aliasColumn);
+                var namePeer = CreateColumnHeaderPeer(tableView, nameColumn);
+                var rolePeer = CreateColumnHeaderPeer(tableView, roleColumn);
 
                 Verify.AreEqual("Alias", aliasPeer.GetName(), "The first header peer must name the moved column.");
                 Verify.AreEqual(1, aliasPeer.GetPositionInSet(), "The moved column must be the first visible header.");

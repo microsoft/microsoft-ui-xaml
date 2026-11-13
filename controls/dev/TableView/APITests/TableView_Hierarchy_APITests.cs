@@ -611,8 +611,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort under grouping keeps the header order of plain GroupBy, for either verb order.")]
-        public void VerifyGroupedPostSortKeepsHeaderOrder()
+        [TestProperty("Description", "Verifies an item sort under grouping orders the headers by first item for either verb order, and SortGroups(Ascending) pins key order, with or without ParentBy.")]
+        public void VerifyGroupedSortHeaderOrderIgnoresParentBy()
         {
             Func<ObservableCollection<TreeEmployee>> pair = () => new ObservableCollection<TreeEmployee>(new[]
             {
@@ -624,11 +624,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var flatPost = PlacedNames(() => TableViewSource.From(pair()).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending));
             var hierPre = PlacedNames(() => TableViewSource.From(pair()).ParentBy(ById, ByManager).Sort(ByName, SortDirection.Ascending).GroupBy(ByDept));
             var flatPre = PlacedNames(() => TableViewSource.From(pair()).Sort(ByName, SortDirection.Ascending).GroupBy(ByDept));
+            var hierGroups = PlacedNames(() => TableViewSource.From(pair()).ParentBy(ById, ByManager).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending).SortGroups(SortDirection.Ascending));
+            var flatGroups = PlacedNames(() => TableViewSource.From(pair()).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending).SortGroups(SortDirection.Ascending));
 
-            Verify.AreEqual("Zulu Alpha", flatPost, "Plain GroupBy then Sort.");
+            // SortGroups(None): Alpha sorts first, so its Dept B group leads, whichever verb came first.
+            Verify.AreEqual("Alpha Zulu", flatPost, "GroupBy then Sort orders the groups by first item.");
             Verify.AreEqual(flatPost, hierPost, "ParentBy must not change header order when GroupBy precedes Sort.");
-            Verify.AreEqual("Alpha Zulu", flatPre, "Plain Sort then GroupBy.");
+            Verify.AreEqual("Alpha Zulu", flatPre, "Sort then GroupBy orders the groups by first item too.");
             Verify.AreEqual(flatPre, hierPre, "ParentBy must not change header order when Sort precedes GroupBy.");
+            Verify.AreEqual("Zulu Alpha", flatGroups, "SortGroups(Ascending) puts Dept A first despite the item sort.");
+            Verify.AreEqual(flatGroups, hierGroups, "ParentBy must not change the SortGroups header order.");
         }
 
         [TestMethod]
@@ -870,7 +875,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 3.7 Re-entrancy and robustness
 
         [TestMethod]
-        [TestProperty("Description", "Verifies app code may call ClearParentBy or ParentBy from inside a rebuild (ExpandAllRows, key or sort selector) without a crash.")]
+        [TestProperty("Description", "Verifies ClearParentBy from a presented change is honoured, while ParentBy or ClearParentBy from inside a key or sort selector is refused with E_ILLEGAL_METHOD_CALL and leaves the source coherent.")]
         public void VerifyReentrantClearParentFromSelector()
         {
             // ClearParentBy inside ExpandAllRows' presented change.
@@ -894,7 +899,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyTree(tableView, Flat, "ClearParentBy during ExpandAllRows");
             });
 
-            // A key selector re-declares the relation on its first call.
+            // A key selector re-declares the relation on its first call. The refused inner ParentBy
+            // surfaces as a null key, so the outer ParentBy fails with E_INVALIDARG and is rolled back.
             string redeclareThrown = null;
             RunOnUIThread.Execute(() =>
             {
@@ -919,12 +925,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("no exception", redeclareThrown, "The obsolete build is discarded.");
-                VerifyTree(tableView, FullTree, "the latest relation is projected");
+                Verify.AreEqual(nameof(ArgumentException), redeclareThrown, "The outer ParentBy must fail on the null key.");
+                VerifyTree(tableView, Flat, "the failed ParentBy is rolled back");
             });
 
             // ClearParentBy inside a sort key selector.
             var armed = false;
+            Exception inner = null;
             RunOnUIThread.Execute(() =>
             {
                 TableViewSource sorted = null;
@@ -933,7 +940,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     if (armed)
                     {
                         armed = false;
-                        sorted.ClearParentBy();
+                        try
+                        {
+                            sorted.ClearParentBy();
+                        }
+                        catch (Exception ex)
+                        {
+                            inner = ex;
+                        }
                     }
 
                     return e.Name;
@@ -950,8 +964,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("no exception", sortThrown, "The pass is dropped as obsolete.");
-                VerifyTree(tableView, Flat, "ClearParentBy from a sort selector");
+                Verify.AreEqual(unchecked((int)0x8000000E), inner?.HResult ?? 0, "ClearParentBy from a sort selector must throw E_ILLEGAL_METHOD_CALL.");
+                Verify.AreEqual("no exception", sortThrown, "The outer Filter must complete.");
+                VerifyTree(tableView, Roots, "the refused ClearParentBy leaves the relation in place");
             });
         }
 

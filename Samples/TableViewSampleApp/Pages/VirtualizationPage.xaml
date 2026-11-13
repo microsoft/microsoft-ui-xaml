@@ -27,12 +27,12 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}" CanSort="False"/>
-                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn Header="Name" Width="200" Binding="{Binding FullName}" CanSort="False"/>
-                <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" CanSort="False"/>
-                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}" CanSort="False"/>
+                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}" CanUserSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="200" Binding="{Binding FullName}" CanUserSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" CanUserSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanUserSort="False"/>
+                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}" CanUserSort="False"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

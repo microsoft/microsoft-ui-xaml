@@ -52,7 +52,7 @@
     <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="170" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate"/>
     <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="150" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff"/>
     <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="110" Visibility="Collapsed" IsReadOnly="True" Binding="{Binding NextMatchText}"/>
-    <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="48" IsReadOnly="True" CanSort="False" Binding="{Binding Played}"/>
+    <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="48" IsReadOnly="True" CanUserSort="False" Binding="{Binding Played}"/>
     <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="48" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
     <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="48" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
     <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="48" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>

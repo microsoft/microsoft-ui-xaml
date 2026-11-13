@@ -37,7 +37,7 @@ void TableView::SampleInstanceTelemetry() noexcept
             {
                 if (!column) { continue; }
                 sample.columnKinds |= ColumnKindOf(column);
-                anySortable = anySortable || column.CanSort();
+                anySortable = anySortable || column.CanUserSort();
                 anyEditable = anyEditable || !column.IsReadOnly();
             }
         }
