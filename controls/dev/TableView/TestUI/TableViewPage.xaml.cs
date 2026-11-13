@@ -120,7 +120,7 @@ namespace MUXControlsTestApp
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _cellControlsItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
-        private TableViewSource _groupedSource;
+        private CollectionViewSource _groupedSource;
         private int _addedColumnCount;
         private TableViewRow _disabledRow;
         private object _disabledRowItem;
@@ -159,22 +159,21 @@ namespace MUXControlsTestApp
                 _groupedItems.Add(new TableViewTestPerson(i, Facts.GroupedName(i), Facts.GroupedAge(i), Facts.CityOf(i)));
             }
 
-            _groupedSource = TableViewSource.From(_groupedItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            _groupedSource = new CollectionViewSource { Source = _groupedItems };
+            _groupedSource.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TableViewTestPerson.City)));
 
             var groupedPagingItems = new ObservableCollection<TableViewTestPerson>();
             for (int i = 0; i < Facts.GroupedPagingItemCount; i++)
             {
                 groupedPagingItems.Add(new TableViewTestPerson(i, Facts.GroupedPagingName(i), Facts.GroupedAge(i), Facts.GroupedPagingSection(i)));
             }
-            GroupedPagingTableView.ItemsSource = TableViewSource.From(groupedPagingItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            GroupedPagingTableView.ItemsSource = GroupedByCity(groupedPagingItems);
 
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
             CellControlsTableView.ItemsSource = _cellControlsItems;
-            GroupedTableView.ItemsSource = _groupedSource;
+            GroupedTableView.ItemsSource = _groupedSource.View;
 
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
@@ -476,13 +475,18 @@ namespace MUXControlsTestApp
             return null;
         }
 
+        internal static object GroupedByCity(object items)
+        {
+            var source = new CollectionViewSource { Source = items };
+            source.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TableViewTestPerson.City)));
+            return source.View;
+        }
+
         // ---------- Hierarchy pivot ----------
 
-        private TableViewSource _hierarchySource;
-        private TableViewSource _hierarchyRtlSource;
         private bool _hierarchyRefreshQueued;
 
-        private static TableViewSource CreateHierarchySource()
+        private static ObservableCollection<HierarchyTestEmployee> CreateHierarchySource()
         {
             var items = new ObservableCollection<HierarchyTestEmployee>();
             for (int i = 0; i < Facts.HierarchyIds.Length; i++)
@@ -495,9 +499,7 @@ namespace MUXControlsTestApp
                     Facts.HierarchyScores[i]));
             }
 
-            return TableViewSource.From(items).ParentBy(
-                new TableViewKeySelector(item => ((HierarchyTestEmployee)item).Id),
-                new TableViewKeySelector(item => ((HierarchyTestEmployee)item).ManagerId));
+            return items;
         }
 
         private void HookHierarchyTables()
@@ -514,10 +516,8 @@ namespace MUXControlsTestApp
         // A fresh source per table: every test starts from the same all-collapsed, unshaped, unselected state.
         private void ResetHierarchy()
         {
-            _hierarchySource = CreateHierarchySource();
-            _hierarchyRtlSource = CreateHierarchySource();
-            HierarchyTable.ItemsSource = _hierarchySource;
-            HierarchyRtlTable.ItemsSource = _hierarchyRtlSource;
+            HierarchyTable.ItemsSource = CreateHierarchySource();
+            HierarchyRtlTable.ItemsSource = CreateHierarchySource();
             if (HierarchyTable.IsLoaded)
             {
                 HierarchyTable.DeselectAll();
@@ -693,8 +693,7 @@ namespace MUXControlsTestApp
         // Groups ContextMenuTable by City; Reset ungroups it.
         private void OnGroupContextMenuTableClick(object sender, RoutedEventArgs e)
         {
-            ContextMenuTable.ItemsSource = TableViewSource.From(_contextMenuItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            ContextMenuTable.ItemsSource = GroupedByCity(_contextMenuItems);
         }
 
         // Mirrors ContextMenuTable; Reset restores left to right.
@@ -1274,17 +1273,17 @@ namespace MUXControlsTestApp
 
         private void OnFilterSourceClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter(item => ((TableViewTestPerson)item).City != "Seattle");
+            _groupedSource.Filter = item => ((TableViewTestPerson)item).City != "Seattle";
         }
 
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.ClearFilter();
+            _groupedSource.Filter = null;
         }
 
         private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
+            _groupedSource.Filter = item => ((TableViewTestPerson)item).Id == 0;
         }
 
         private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)

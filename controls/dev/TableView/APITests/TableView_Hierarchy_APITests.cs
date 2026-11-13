@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -23,10 +24,10 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpe
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Hierarchical rows: TableViewSource.ParentBy / ClearParentBy, TableView.ExpandAllRows /
+    // Hierarchical rows: TableView.ItemKeyPath / ParentKeyPath, TableView.ExpandAllRows /
     // CollapseAllRows and TableViewRow.Level / IsExpandable / IsExpanded.
     //
-    // Fixture (MakeTree, ParentBy(Id, ManagerId)):
+    // Fixture (MakeTree, ItemKeyPath="Id", ParentKeyPath="ManagerId"):
     //   Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus (ManagerId 99 matches nobody, so a root).
     // Projections are asserted as TreeLabels strings; see TableView_Hierarchy_APITests_Common.cs.
     [TestClass]
@@ -45,12 +46,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 3.1 Projection basics
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the first projection of a ParentBy source shows only roots, collapsed.")]
-        public void VerifyParentByProjectsRootsCollapsed()
+        [TestProperty("Description", "Verifies the first projection of a table with ItemKeyPath and ParentKeyPath shows only roots, collapsed.")]
+        public void VerifyKeyPathsProjectRootsCollapsed()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "first projection"));
         }
@@ -59,9 +58,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a null parent key, or one that matches no item, makes the row a root and no row is dropped.")]
         public void VerifyRootsAndOrphansAreRoots()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             // Ada and Eve have a null ManagerId; Gus's ManagerId (99) matches nobody.
             RunOnUIThread.Execute(() =>
@@ -82,21 +79,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies an empty-string parent key means no parent, not a key lookup.")]
         public void VerifyEmptyStringParentIsRoot()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-                source = TableViewSource.From(MakeTree()).ParentBy(EmpKey(e => e.Code), EmpKey(e => e.ParentCode)));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree(), "Code", "ParentCode");
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "ParentCode \"\" on Ada and Eve"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the key paths can be set before or after ItemsSource, and either path empty means flat rows.")]
+        public void VerifyKeyPathsApplyInAnyOrder()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateTreeTable(MakeTree());
+                tableView.ItemKeyPath = IdPath;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, Flat, "ItemKeyPath alone");
+                tableView.ParentKeyPath = ManagerPath;
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, Roots, "both paths set after ItemsSource");
+                tableView.ItemsSource = MakeTree();
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "a new ItemsSource keeps the relation"));
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies TableViewRow Level, IsExpandable and IsExpanded reflect node state after ExpandAllRows.")]
         public void VerifyLevelAndExpandableDPs()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             RunOnUIThread.Execute(() => tableView.ExpandAllRows());
             SettleLayout(tableView);
@@ -118,9 +138,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies ExpandAllRows and CollapseAllRows touch every node.")]
         public void VerifyExpandAllCollapseAll()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             RunOnUIThread.Execute(() => tableView.ExpandAllRows());
             SettleLayout(tableView);
@@ -137,9 +155,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies expansion intent is per node: collapsing and re-expanding a parent keeps its descendants' state.")]
         public void VerifyNestedReexpandKeepsState()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             Toggle(tableView, "Ada", true);
             Toggle(tableView, "Ben", true);
@@ -154,20 +170,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies ClearParentBy restores the flat projection in source order at Level 0.")]
-        public void VerifyClearParentByReturnsFlat()
+        [TestProperty("Description", "Verifies clearing ParentKeyPath restores the flat projection in source order at Level 0.")]
+        public void VerifyClearingParentKeyPathReturnsFlat()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => source.ClearParentBy());
+            RunOnUIThread.Execute(() => tableView.ParentKeyPath = "");
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
             {
-                VerifyTree(tableView, Flat, "after ClearParentBy");
+                VerifyTree(tableView, Flat, "after clearing ParentKeyPath");
                 foreach (var row in GetProjectedElements(tableView).OfType<TableViewRow>())
                 {
                     Verify.AreEqual(0, row.Level, $"Row {NameOf(row.DataContext)} is not in a hierarchy.");
@@ -176,28 +190,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies ClearParentBy drops every reference the hierarchy held to the items.")]
-        public void VerifyClearParentByReleasesRows()
+        [TestProperty("Description", "Verifies clearing the relation drops every reference the hierarchy held to the items.")]
+        public void VerifyClearingParentKeyPathReleasesRows()
         {
             RunOnUIThread.Execute(() =>
             {
-                TableViewSource source;
+                TableView tableView;
                 ObservableCollection<TreeEmployee> list;
                 List<WeakReference> weak;
-                RetractAndEmpty(out source, out list, out weak);
+                RetractAndEmpty(out tableView, out list, out weak);
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 
-                Verify.AreEqual(0, weak.Count(w => w.IsAlive), "No item may stay alive after ClearParentBy and Clear.");
-                GC.KeepAlive(source);
+                Verify.AreEqual(0, weak.Count(w => w.IsAlive), "No item may stay alive after clearing the relation and the list.");
+                GC.KeepAlive(tableView);
                 GC.KeepAlive(list);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies two TableViewSources over one collection keep independent trees.")]
+        [TestProperty("Description", "Verifies two TableViews over one collection keep independent trees.")]
         public void VerifyTwoRelationsOneSource()
         {
             TableView managerTable = null;
@@ -207,8 +221,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 EnsureTabularControlsResources();
                 var list = MakeTree();
-                managerTable = CreateTreeTable(TableViewSource.From(list).ParentBy(ById, ByManager));
-                mentorTable = CreateTreeTable(TableViewSource.From(list).ParentBy(ById, ByMentor));
+                managerTable = CreateTreeTable(list, IdPath, ManagerPath);
+                mentorTable = CreateTreeTable(list, IdPath, "MentorId");
                 managerTable.Width = 200;
                 mentorTable.Width = 200;
 
@@ -237,18 +251,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a second ParentBy replaces the relation and resets expansion.")]
+        [TestProperty("Description", "Verifies clearing and re-declaring the relation resets expansion.")]
         public void VerifyRedeclareClearsIntent()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => source.ParentBy(ById, ByManager));
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.ParentKeyPath = "";
+                tableView.ParentKeyPath = ManagerPath;
+            });
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "after re-declaring ParentBy"));
+            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "after re-declaring the relation"));
         }
 
         #endregion
@@ -259,48 +275,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies keys compare by type and value: Int32 ids never link to Int64 parent keys.")]
         public void VerifyInt32VsInt64KeysDoNotLink()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-                source = TableViewSource.From(MakeTree()).ParentBy(ById, EmpKey(e => e.BigManagerId)));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree(), IdPath, "BigManagerId");
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, AllRoots, "Int32 keys, Int64 parent keys"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies WinRT enum keys, boxed afresh on every call, link by value.")]
-        public void VerifyEnumKeys()
+        [TestProperty("Description", "Verifies a dotted ParentKeyPath reads the parent key through a reference, and a null link is a root.")]
+        public void VerifyDottedParentKeyPath()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-                source = TableViewSource.From(MakeTree()).ParentBy(
-                    EmpKey(e => (global::Windows.System.VirtualKey)e.Id),
-                    EmpKey(e => e.ManagerId.HasValue ? (object)(global::Windows.System.VirtualKey)e.ManagerId.Value : null)));
-            var tableView = Place(source);
-
-            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => VerifyTree(tableView, FullTree, "VirtualKey keys"));
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies reference-type keys link by identity, and fresh objects per call never link or collide.")]
-        public void VerifyObjectKeysLinkByIdentity()
-        {
-            TableViewSource shared = null;
-            RunOnUIThread.Execute(() =>
-                shared = TableViewSource.From(MakeTree()).ParentBy(EmpKey(e => e), EmpKey(e => e.Manager)));
-            var tableView = Place(shared);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "shared instances link"));
-
-            TableViewSource fresh = null;
-            RunOnUIThread.Execute(() =>
-                fresh = TableViewSource.From(MakeTree()).ParentBy(
-                    EmpKey(e => new object()),
-                    EmpKey(e => e.ManagerId == null ? null : new object())));
-            tableView = Place(fresh);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, AllRoots, "fresh instances never link"));
+            var tableView = Place(MakeTree(), "Code", "Manager.Code");
+            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "dotted parent path"));
         }
 
         [TestMethod]
@@ -308,13 +293,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyKeySurvivesRecreate()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => list[0] = new TreeEmployee { Id = 1, Name = "Ada", Dept = "Eng" });
@@ -328,102 +308,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 3.3 Error contract
 
         [TestMethod]
-        [TestProperty("Description", "Verifies ParentBy rejects a null key or parent key selector.")]
-        public void VerifyNullSelectorThrows()
-        {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.Throws<ArgumentException>(() => source.ParentBy(null, ByManager), "ParentBy(null, parent) must throw.");
-                Verify.Throws<ArgumentException>(() => source.ParentBy(ById, null), "ParentBy(key, null) must throw.");
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "after the rejected calls"));
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies duplicate node keys throw, name the duplicate value, and leave the projection unchanged.")]
+        [TestProperty("Description", "Verifies duplicate node keys throw from the setter and leave the projection unchanged.")]
         public void VerifyDuplicateKeyThrows()
         {
-            VerifyThrowsKeepsProjection(_ => { }, s => s.ParentBy(EmpKey(e => 1), ByManager), "duplicate key");
-
-            RunOnUIThread.Execute(() =>
-            {
-                var message = ThrownMessage(() => TableViewSource.From(MakeTree()).ParentBy(
-                    EmpKey(e => (global::Windows.System.VirtualKey)(e.Id == 7 ? 3 : e.Id)), ByManager));
-                Verify.IsTrue(message.Contains("duplicate key '3'"), $"The message should name the duplicate value: {message}");
-            });
+            VerifyThrowsKeepsProjection(_ => { }, t => t.ItemKeyPath = "Dept", "duplicate key");
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies a null node key throws and leaves the projection unchanged.")]
         public void VerifyNullKeyThrows()
         {
-            VerifyThrowsKeepsProjection(_ => { }, s => s.ParentBy(EmpKey(e => e.Id == 7 ? null : (object)e.Id), ByManager), "null key");
+            VerifyThrowsKeepsProjection(_ => { }, t => t.ItemKeyPath = "MentorId", "null key");
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies an item cannot be its own parent.")]
         public void VerifySelfParentThrows()
         {
-            VerifyThrowsKeepsProjection(l => l[0].ManagerId = 1, s => s.ParentBy(ById, ByManager), "self parent");
+            VerifyThrowsKeepsProjection(l => l[0].BossId = 1, t => t.ParentKeyPath = "BossId", "self parent");
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a cycle throws, names a cycle member even when a descendant is visited first, and leaves the projection unchanged.")]
+        [TestProperty("Description", "Verifies a cycle throws and leaves the projection unchanged.")]
         public void VerifyCycleThrows()
         {
             // Ada <-> Dan via Ben.
-            VerifyThrowsKeepsProjection(l => l[0].ManagerId = 4, s => s.ParentBy(ById, ByManager), "cycle");
-
-            RunOnUIThread.Execute(() =>
-            {
-                // Ada's subtree hangs below the Eve <-> Fay cycle and precedes it in source order.
-                var list = MakeTree();
-                list[0].ManagerId = 5;
-                list[4].ManagerId = 6;
-                var message = ThrownMessage(() => TableViewSource.From(list).ParentBy(ById, ByManager));
-                Verify.IsTrue(message.Contains("involving key '5'") || message.Contains("involving key '6'"),
-                    $"The message should name a member of the cycle: {message}");
-            });
+            VerifyThrowsKeepsProjection(l => l[0].BossId = 4, t => t.ParentKeyPath = "BossId", "cycle");
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a failed pass is not poisoned: data fixed during the failing pass is projected by the replayed refresh.")]
-        public void VerifyRecoverAfterFix()
+        [TestProperty("Description", "Verifies an invalid relation present when ItemsSource is assigned shows the rows flat instead of failing the assignment.")]
+        public void VerifyInvalidRelationAtAssignmentShowsFlatRows()
         {
-            TableViewSource source = null;
+            TableView tableView = null;
             string thrown = null;
-
             RunOnUIThread.Execute(() =>
             {
+                EnsureTabularControlsResources();
                 var list = MakeTree();
-                var dup = new TreeEmployee { Id = 1, Name = "Dup", Dept = "Eng" };
-                list.Add(dup);
-                source = TableViewSource.From(list);
-                var fixedOnce = false;
-                var key = new TableViewKeySelector(o =>
-                {
-                    if (!fixedOnce)
-                    {
-                        fixedOnce = true;
-                        list.Remove(dup);
-                    }
-
-                    return ((TreeEmployee)o).Id;
-                });
-                thrown = ThrownTypeName(() => source.ParentBy(key, ByManager));
+                list[0].ManagerId = 4;
+                tableView = CreateTreeTable(null, IdPath, ManagerPath);
+                thrown = ThrownTypeName(() => tableView.ItemsSource = list);
+                LoadContent(tableView);
             });
-            var tableView = Place(source);
+            SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("ArgumentException", thrown, "The pass that saw the duplicate fails.");
-                VerifyTree(tableView, Roots, "the fixed data projects");
+                Verify.AreEqual("no exception", thrown, "Assigning ItemsSource must not throw.");
+                VerifyTree(tableView, Flat, "a cycle at assignment");
             });
         }
 
@@ -432,187 +365,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 3.4 Composition with sort, filter and group
 
         [TestMethod]
-        [TestProperty("Description", "Verifies sort orders each sibling set and children stay under their parent.")]
+        [TestProperty("Description", "Verifies a header sort orders each sibling set and children stay under their parent.")]
         public void VerifySortWithinSiblings()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => source.Sort(ByName, SortDirection.Descending));
+            RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending));
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, "Gus1 Eve1+ Ada1- Cy2 Ben2+", "Name descending"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort reshape keeps expansion intent.")]
+        [TestProperty("Description", "Verifies a header sort keeps expansion intent.")]
         public void VerifySortKeepsExpansion()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             Toggle(tableView, "Ada", true);
             Toggle(tableView, "Ben", true);
-            RunOnUIThread.Execute(() => source.Sort(ByName, SortDirection.Ascending));
+            RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, AdaBenExpanded, "after sort"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a deep filter match brings its ancestor chain, auto-expanded.")]
-        public void VerifyFilterKeepsAncestors()
+        [TestProperty("Description", "Verifies a CollectionViewSource sort orders each sibling set, since siblings follow the view's order.")]
+        public void VerifyCollectionViewSortOrdersSiblings()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2- Dan3", "filter Dan"));
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies matches pull in ancestors, not descendants, and an empty result is valid.")]
-        public void VerifyFilterParentMatchExcludesUnmatchedChildren()
-        {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Ada")));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "Ada1", "filter Ada, then ExpandAllRows");
-                source.Filter(o => false);
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(0, GetProjectedCount(tableView), "A filter matching nothing projects zero rows.");
-                VerifyTree(tableView, "", "filter matching nothing");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies the filter auto-expand overlay is temporary: clearing the filter restores prior intent.")]
-        public void VerifyFilterClearRestoresIntent()
-        {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            Toggle(tableView, "Eve", true);
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => source.ClearFilter());
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1+ Eve1- Fay2 Gus1", "after ClearFilter"));
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies collapsing a context row while filtered is overlay-only, while CollapseAllRows under a filter persists.")]
-        public void VerifyFilteredTogglesAreOverlayOnly()
-        {
-            // Context collapse and re-expand within the filter.
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-            Toggle(tableView, "Ada", false);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1+", "context Ada collapsed"));
-            Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2- Dan3", "context Ada re-expanded"));
-
-            // Context collapse does not write through to intent.
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            tableView = Place(source);
-            Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-            Toggle(tableView, "Ada", false);
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "Ada1+", "context Ada collapsed");
-                source.ClearFilter();
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2+ Cy2 Eve1+ Gus1", "original intent after ClearFilter"));
-
-            // CollapseAllRows under a filter persists: clearing the filter shows the tree collapsed.
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            tableView = Place(source);
-            Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => tableView.CollapseAllRows());
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => source.ClearFilter());
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, Roots, "CollapseAllRows under a filter, then ClearFilter"));
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies changing the filter discards context-row collapses and rebuilds the overlay.")]
-        public void VerifyFilterReplaceAfterContextCollapse()
-        {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeShapingView(MakeTree(), sortPath: "Name", direction: Microsoft.UI.Xaml.Data.ListSortDirection.Descending).View);
 
             Toggle(tableView, "Ada", true);
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-            Toggle(tableView, "Ada", false);
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "Ada1+", "context Ada collapsed");
-                source.Filter(NameIs("Cy"));
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Cy2", "new filter"));
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Gus1 Eve1+ Ada1- Cy2 Ben2+", "view sorted by Name descending"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies grouping buckets roots only and descendants follow their root.")]
-        public void VerifyGroupByBucketsRootsOnly()
+        [TestProperty("Description", "Verifies a CollectionViewSource filter applies before the tree is built: a kept row whose parent is filtered out becomes a root.")]
+        public void VerifyCollectionViewFilterPromotesOrphansToRoots()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()).GroupBy(ByDept));
-            var tableView = Place(source);
+            CollectionViewSource cvs = null;
+            RunOnUIThread.Execute(() =>
+            {
+                cvs = MakeShapingView(MakeTree());
+                cvs.Filter = o => ((TreeEmployee)o).Name != "Ada";
+            });
+            var tableView = Place(cvs.View);
+
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ben1+ Cy1 Eve1+ Gus1", "Ada filtered out"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies CollectionViewSource grouping buckets roots only and descendants follow their root.")]
+        public void VerifyGroupingBucketsRootsOnly()
+        {
+            var tableView = PlaceGrouped(MakeTree());
 
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => VerifyTree(tableView, "[Eng] Ada1- Ben2+ Cy2 [Ops] Eve1+ Gus1", "grouped by Dept"));
 
             // Ben's own Dept is ignored: he stays under Ada, and header counts are root counts.
+            ObservableCollection<TreeEmployee> list = null;
             RunOnUIThread.Execute(() =>
             {
-                var list = MakeTree();
+                list = MakeTree();
                 list[1].Dept = "Ops";
-                source = Tree(list).GroupBy(ByDept);
             });
-            tableView = Place(source);
+            tableView = PlaceGrouped(list);
             Toggle(tableView, "Ada", true);
 
             RunOnUIThread.Execute(() =>
-                Verify.AreEqual("[Eng 1] Ada1- Ben2+ Cy2 [Ops 2] Eve1+ Gus1", HeaderLabels(tableView), "Ben in Ops, grouped by Dept"));
+                Verify.AreEqual("[Eng 1] Ada1- Cy2 Ben2+ [Ops 2] Eve1+ Gus1", HeaderLabels(tableView), "Ben in Ops, grouped by Dept"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an item sort under grouping orders the headers by first item for either verb order, and SortGroups(Ascending) pins key order, with or without ParentBy.")]
-        public void VerifyGroupedSortHeaderOrderIgnoresParentBy()
+        [TestProperty("Description", "Verifies a CollectionViewSource sort under grouping gives the same header order with or without a hierarchy.")]
+        public void VerifyGroupedSortHeaderOrderIgnoresHierarchy()
         {
             Func<ObservableCollection<TreeEmployee>> pair = () => new ObservableCollection<TreeEmployee>(new[]
             {
@@ -620,42 +449,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 new TreeEmployee { Id = 2, Dept = "B", Name = "Alpha" },
             });
 
-            var hierPost = PlacedNames(() => TableViewSource.From(pair()).ParentBy(ById, ByManager).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending));
-            var flatPost = PlacedNames(() => TableViewSource.From(pair()).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending));
-            var hierPre = PlacedNames(() => TableViewSource.From(pair()).ParentBy(ById, ByManager).Sort(ByName, SortDirection.Ascending).GroupBy(ByDept));
-            var flatPre = PlacedNames(() => TableViewSource.From(pair()).Sort(ByName, SortDirection.Ascending).GroupBy(ByDept));
-            var hierGroups = PlacedNames(() => TableViewSource.From(pair()).ParentBy(ById, ByManager).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending).SortGroups(SortDirection.Ascending));
-            var flatGroups = PlacedNames(() => TableViewSource.From(pair()).GroupBy(ByDept).Sort(ByName, SortDirection.Ascending).SortGroups(SortDirection.Ascending));
+            var hier = PlacedNames(() => MakeShapingView(pair(), "Dept", "Name").View, IdPath, ManagerPath);
+            var flat = PlacedNames(() => MakeShapingView(pair(), "Dept", "Name").View, null, null);
 
-            // SortGroups(None): Alpha sorts first, so its Dept B group leads, whichever verb came first.
-            Verify.AreEqual("Alpha Zulu", flatPost, "GroupBy then Sort orders the groups by first item.");
-            Verify.AreEqual(flatPost, hierPost, "ParentBy must not change header order when GroupBy precedes Sort.");
-            Verify.AreEqual("Alpha Zulu", flatPre, "Sort then GroupBy orders the groups by first item too.");
-            Verify.AreEqual(flatPre, hierPre, "ParentBy must not change header order when Sort precedes GroupBy.");
-            Verify.AreEqual("Zulu Alpha", flatGroups, "SortGroups(Ascending) puts Dept A first despite the item sort.");
-            Verify.AreEqual(flatGroups, hierGroups, "ParentBy must not change the SortGroups header order.");
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies grouping and ungrouping an expanded tree keeps expansion.")]
-        public void VerifyRegroupExpandedTree()
-        {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            Toggle(tableView, "Ada", true);
-            Toggle(tableView, "Ben", true);
-            RunOnUIThread.Execute(() => source.GroupBy(ByDept));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual("[Eng 1] Ada1- Ben2- Dan3 Cy2 [Ops 2] Eve1+ Gus1", HeaderLabels(tableView), "Grouped.");
-                source.ClearGroupBy();
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => VerifyTree(tableView, AdaBenExpanded, "ungrouped"));
+            Verify.AreEqual("Alpha Zulu", flat, "Groups follow their first item.");
+            Verify.AreEqual(flat, hier, "The hierarchy must not change header order.");
         }
 
         #endregion
@@ -667,13 +465,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyAddRoot()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             RunOnUIThread.Execute(() => list.Add(new TreeEmployee { Id = 8, Name = "Hal", Dept = "Ops" }));
             SettleLayout(tableView);
@@ -686,13 +479,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyAddChildUnderLeaf()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             RunOnUIThread.Execute(() => list.Add(new TreeEmployee { Id = 9, ManagerId = 7, Name = "Ivy", Dept = "Ops" }));
             SettleLayout(tableView);
@@ -707,13 +495,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyRemoveParentOrphansChildren()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => list.RemoveAt(0));
@@ -727,13 +510,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyReplaceReparents()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => list[2] = new TreeEmployee { Id = 3, ManagerId = 5, Name = "Cy", Dept = "Eng" });
@@ -748,13 +526,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyMoveKeepsSiblingOrderBySource()
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             RunOnUIThread.Execute(() => list.Move(6, 0));
             SettleLayout(tableView);
@@ -767,13 +540,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyResetKeepsIntent()
         {
             ResettableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = new ResettableCollection<TreeEmployee>(MakeTree());
-                source = TableViewSource.From(list).ParentBy(ById, ByManager);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = new ResettableCollection<TreeEmployee>(MakeTree()));
+            var tableView = Place(list);
 
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => list.ReplaceAll(list.ToList()));
@@ -790,9 +558,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies collapsing the parent of the selected row clears selection, and re-expanding does not restore it.")]
         public void VerifyCollapseDropsSelectionOfHiddenRow()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
+            var tableView = Place(MakeTree());
 
             Toggle(tableView, "Ada", true);
             Toggle(tableView, "Ben", true);
@@ -820,7 +586,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.ExpandAllRows();
             });
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() => source.Sort(ByName, SortDirection.Ascending));
+            RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
@@ -830,159 +596,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies a grouped-tree regroup that moves the selected root into a later group keeps it selected without raising SelectionChanged.")]
-        public void VerifyGroupedTreeSelectionSurvivesRegroupWhenKeyChanges()
-        {
-            ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                list.Add(new TreeEmployee { Id = 8, Name = "Hal", Dept = "Eng" });
-                source = Tree(list).GroupBy(ByDept);
-            });
-            var tableView = Place(source);
-
-            var changes = 0;
-            TreeEmployee hal = null;
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "[Eng] Ada1+ Hal1 [Ops] Eve1+ Gus1", "baseline");
-                tableView.Select(GetProjectedElements(tableView).FindIndex(el => el is TableViewRow r && NameOf(r.DataContext) == "Hal"));
-                Verify.AreEqual("Hal", SelectedName(tableView), "Precondition: Hal is selected.");
-
-                tableView.SelectionChanged += (s, e) => changes++;
-                // Eng is bucketed before Ops, so the old group is refilled before the new one.
-                hal = list.First(employee => employee.Name == "Hal");
-                hal.Dept = "Ops";
-                source.GroupBy(ByDept);
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "[Eng] Ada1+ [Ops] Eve1+ Gus1 Hal1", "Hal moved to Ops");
-                Verify.AreSame(hal, tableView.SelectedItem, "The moved root must stay selected.");
-                Verify.AreEqual(GetProjectedItems(tableView).IndexOf(hal), tableView.SelectedIndex,
-                    "SelectedIndex must follow the root to its new position.");
-                Verify.AreEqual(0, changes, "The selected item did not change, so no SelectionChanged may be raised.");
-            });
-        }
-
         #endregion
 
         #region 3.7 Re-entrancy and robustness
 
         [TestMethod]
-        [TestProperty("Description", "Verifies ClearParentBy from a presented change is honoured, while ParentBy or ClearParentBy from inside a key or sort selector is refused with E_ILLEGAL_METHOD_CALL and leaves the source coherent.")]
-        public void VerifyReentrantClearParentFromSelector()
+        [TestProperty("Description", "Verifies clearing ParentKeyPath during an incremental add does not crash and ends flat.")]
+        public void VerifyReentrantClearParentDuringAdd()
         {
-            // ClearParentBy inside ExpandAllRows' presented change.
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var tableView = Place(source);
-
-            var fired = false;
-            string thrown = null;
-            RunOnUIThread.Execute(() =>
-                thrown = OnFirstPresentedChange(tableView, () =>
-                {
-                    fired = true;
-                    source.ClearParentBy();
-                }, () => tableView.ExpandAllRows()));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(fired, "The presented change fired.");
-                Verify.IsNull(thrown, "ExpandAllRows must not throw.");
-                VerifyTree(tableView, Flat, "ClearParentBy during ExpandAllRows");
-            });
-
-            // A key selector re-declares the relation on its first call. The refused inner ParentBy
-            // surfaces as a null key, so the outer ParentBy fails with E_INVALIDARG and is rolled back.
-            string redeclareThrown = null;
-            RunOnUIThread.Execute(() =>
-            {
-                TableViewSource redeclared = null;
-                redeclared = TableViewSource.From(MakeTree());
-                var once = false;
-                var redeclaring = new TableViewKeySelector(o =>
-                {
-                    if (!once)
-                    {
-                        once = true;
-                        redeclared.ParentBy(ById, ByManager);
-                    }
-
-                    return 1;
-                });
-                redeclareThrown = ThrownTypeName(() => redeclared.ParentBy(redeclaring, ByManager));
-                source = redeclared;
-            });
-            tableView = Place(source);
-            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(nameof(ArgumentException), redeclareThrown, "The outer ParentBy must fail on the null key.");
-                VerifyTree(tableView, Flat, "the failed ParentBy is rolled back");
-            });
-
-            // ClearParentBy inside a sort key selector.
-            var armed = false;
-            Exception inner = null;
-            RunOnUIThread.Execute(() =>
-            {
-                TableViewSource sorted = null;
-                sorted = Tree(MakeTree()).Sort(EmpKey(e =>
-                {
-                    if (armed)
-                    {
-                        armed = false;
-                        try
-                        {
-                            sorted.ClearParentBy();
-                        }
-                        catch (Exception ex)
-                        {
-                            inner = ex;
-                        }
-                    }
-
-                    return e.Name;
-                }), SortDirection.Ascending);
-                source = sorted;
-            });
-            tableView = Place(source);
-            string sortThrown = null;
-            RunOnUIThread.Execute(() =>
-            {
-                armed = true;
-                sortThrown = ThrownTypeName(() => source.Filter(o => true));
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(unchecked((int)0x8000000E), inner?.HResult ?? 0, "ClearParentBy from a sort selector must throw E_ILLEGAL_METHOD_CALL.");
-                Verify.AreEqual("no exception", sortThrown, "The outer Filter must complete.");
-                VerifyTree(tableView, Roots, "the refused ClearParentBy leaves the relation in place");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies ClearParentBy during an incremental add or filter refresh does not crash and ends flat.")]
-        public void VerifyReentrantClearParentDuringRefresh()
-        {
-            // During an incremental add.
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             var fired = false;
             string thrown = null;
@@ -990,265 +614,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 thrown = OnFirstPresentedChange(tableView, () =>
                 {
                     fired = true;
-                    source.ClearParentBy();
+                    tableView.ParentKeyPath = "";
                 }, () => list.Add(new TreeEmployee { Id = 8, Name = "Hal", Dept = "Ops" })));
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(fired, "The presented change fired (add).");
                 Verify.IsNull(thrown, "The add must not throw.");
-                VerifyTree(tableView, Flat + " Hal", "ClearParentBy during an add");
-            });
-
-            // During a filter refresh.
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            tableView = Place(source);
-            fired = false;
-            thrown = null;
-            RunOnUIThread.Execute(() =>
-                thrown = OnFirstPresentedChange(tableView, () =>
-                {
-                    fired = true;
-                    source.ClearParentBy();
-                }, () => source.Filter(o => ((TreeEmployee)o).Name != "Cy")));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(fired, "The presented change fired (filter).");
-                Verify.IsNull(thrown, "The filter must not throw.");
-                VerifyTree(tableView, "Ada Ben Dan Eve Fay Gus", "ClearParentBy during a filter");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies adding a root in a new group during a grouped expand shows the new group without a crash.")]
-        public void VerifyReentrantAddNewGroupRootDuringExpand()
-        {
-            ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list).GroupBy(ByDept);
-            });
-            var tableView = Place(source);
-
-            var fired = false;
-            string thrown = null;
-            ItemsSourceView view = null;
-            NotifyCollectionChangedEventHandler handler = (sender, args) =>
-            {
-                if (fired)
-                {
-                    return;
-                }
-
-                fired = true;
-                list.Add(new TreeEmployee { Id = 8, Name = "Hal", Dept = "Qa" });
-            };
-
-            RunOnUIThread.Execute(() =>
-            {
-                view = GetRowsRepeater(tableView).ItemsSourceView;
-                view.CollectionChanged += handler;
-                thrown = ThrownTypeName(() => ToggleTreeRow(tableView, "Ada", true));
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => view.CollectionChanged -= handler);
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(fired, "The presented change fired.");
-                Verify.AreEqual("no exception", thrown, "The expand must not throw.");
-                VerifyTree(tableView, "[Eng] Ada1- Ben2+ Cy2 [Ops] Eve1+ Gus1 [Qa] Hal1", "Hal added in a new group");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a throwing reshape during ClearParentBy (flat, grouped, publication) surfaces once, leaves rows flat and inert, and the next call succeeds.")]
-        public void VerifyClearParentTeardownSurvivesFailingReshape()
-        {
-            // Flat: a duplicate added during the teardown fails the flat refresh.
-            ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
-
-            var fired = false;
-            string thrown = null;
-            RunOnUIThread.Execute(() =>
-                thrown = OnFirstPresentedChange(tableView, () =>
-                {
-                    fired = true;
-                    source.ClearParentBy();
-                    list.Add(list[0]);
-                }, () => source.Filter(o => true)));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(fired, "Flat: the presented change fired.");
-                Verify.AreEqual("ArgumentException", thrown, "Flat: the failure surfaces once.");
-                VerifyTree(tableView, Flat, "flat: after the failed refresh keeps collapsed descendants");
-                Verify.AreEqual("none none none none none none none", ExpandStates(tableView), "Flat: rows are inert.");
-                source.ClearParentBy();
-                tableView.ExpandAllRows();
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, Flat, "flat: again");
-                list.RemoveAt(list.Count - 1);
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, Flat, "flat: duplicate removed"));
-
-            // Grouped: group keys valid only on roots break the flat rebuild after ClearParentBy.
-            var badDescendantKeys = true;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list).GroupBy(EmpKey(e =>
-                    badDescendantKeys && (e.Name == "Ben" || e.Name == "Cy" || e.Name == "Dan" || e.Name == "Fay")
-                        ? new object()
-                        : (object)e.Dept));
-            });
-            tableView = Place(source);
-
-            fired = false;
-            thrown = null;
-            RunOnUIThread.Execute(() =>
-                thrown = OnFirstPresentedChange(tableView, () =>
-                {
-                    fired = true;
-                    source.ClearParentBy();
-                }, () => source.Filter(o => true)));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(fired, "Grouped: the presented change fired.");
-                Verify.AreEqual("ArgumentException", thrown, "Grouped: the failure surfaces once.");
-                VerifyTree(tableView, "[Eng] Ada [Ops] Eve Gus", "grouped: after the failed refresh");
-                Verify.AreEqual("none none none", ExpandStates(tableView), "Grouped: rows are inert.");
-                source.ClearParentBy();
-                tableView.ExpandAllRows();
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "[Eng] Ada [Ops] Eve Gus", "grouped: again");
-                badDescendantKeys = false;
-                source.Filter(o => true);
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, "[Eng] Ada Ben Cy Dan [Ops] Eve Fay Gus", "grouped: keys fixed"));
-
-            // Publication: a SelectionChanged handler throws during the flat publication.
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            tableView = Place(source);
-            RunOnUIThread.Execute(() => source.Filter(NameIs("Dan")));
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyTree(tableView, "Ada1- Ben2- Dan3", "publication: before");
-                tableView.Select(0);
-            });
-            SettleLayout(tableView);
-
-            fired = false;
-            thrown = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var table = tableView;
-                global::Windows.Foundation.TypedEventHandler<TableView, SelectionChangedEventArgs> onSelectionChanged = null;
-                onSelectionChanged = (s, e) =>
-                {
-                    table.SelectionChanged -= onSelectionChanged;
-                    fired = true;
-                    throw new InvalidOperationException("publication handler");
-                };
-                table.SelectionChanged += onSelectionChanged;
-                thrown = ThrownTypeName(() => source.ClearParentBy());
-                table.SelectionChanged -= onSelectionChanged;
-            });
-            SettleLayout(tableView);
-
-            string again = null;
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(fired, "Publication: the handler ran.");
-                Verify.AreEqual("InvalidOperationException", thrown, "Publication: the failure surfaces once.");
-                VerifyTree(tableView, "Dan", "publication: after the failed publication");
-                Verify.AreEqual("none", ExpandStates(tableView), "Publication: rows are inert.");
-                again = ThrownTypeName(() => source.ClearParentBy());
-                tableView.ExpandAllRows();
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual("no exception", again, "Publication: the next ClearParentBy succeeds.");
-                VerifyTree(tableView, "Dan", "publication: again");
-                source.ClearFilter();
-            });
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyTree(tableView, Flat, "publication: filter cleared"));
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a request queued during a failed incremental change is posted, runs once, and the hierarchy returns.")]
-        public void VerifyDeferredRequestSurvivesFailingIncrementalChange()
-        {
-            ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-
-                // A verb in force, or the unshaped flat mirror would tolerate the duplicate.
-                source = Tree(list).Filter(o => true);
-            });
-            var tableView = Place(source);
-
-            var callbacks = 0;
-            var armed = false;
-            ItemsRepeater repeater = null;
-            long token = 0;
-            RunOnUIThread.Execute(() =>
-            {
-                repeater = GetRowsRepeater(tableView);
-                token = repeater.RegisterPropertyChangedCallback(ItemsRepeater.ItemsSourceProperty, (s, dp) =>
-                {
-                    if (!armed)
-                    {
-                        return;
-                    }
-
-                    armed = false;
-                    ++callbacks;
-                    list.RemoveAt(list.Count - 1);
-                    source.ParentBy(ById, ByManager);
-                });
-
-                // The engine error does not surface through list.Add; only the outcome is asserted.
-                OnFirstPresentedChange(tableView, () =>
-                {
-                    armed = true;
-                    source.ClearParentBy();
-                    list.Add(list[0]);
-                }, () => list.Add(new TreeEmployee { Id = 8, Name = "Hal", Dept = "Ops" }));
-            });
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                repeater.UnregisterPropertyChangedCallback(ItemsRepeater.ItemsSourceProperty, token);
-                Verify.AreEqual(1, callbacks, "The deferred request runs exactly once.");
-                Verify.AreEqual(8, list.Count, "The duplicate is gone and Hal stays.");
-                VerifyTree(tableView, Roots + " Hal1", "the hierarchy returns");
+                VerifyTree(tableView, Flat + " Hal", "ParentKeyPath cleared during an add");
             });
         }
 
@@ -1324,9 +697,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                var source = TableViewSource.From(list).ParentBy(LiveById, LiveByParent);
-                source.IsLiveShaping = true;
-                tableView = CreateTreeTable(source);
+                tableView = CreateTreeTable(list, IdPath, ParentIdPath);
                 tableView.Columns[0].CellContextFlyout = recorder.Create("CellMenu");
                 tableView.Resources[typeof(TableViewRow)] = new Style(typeof(TableViewRow))
                 {
@@ -1415,9 +786,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a grouped root row is indented by the group header's expander gutter plus its spacing.")]
         public void VerifyGroupedRootIndentMatchesGroupHeaderGutterAndSpacing()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()).GroupBy(ByDept));
-            var tableView = Place(source);
+            var tableView = PlaceGrouped(MakeTree());
 
             RunOnUIThread.Execute(() =>
             {
@@ -1441,27 +810,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #region Helpers
 
-        private static readonly TableViewKeySelector ByName = EmpKey(e => e.Name);
-        private static readonly TableViewKeySelector ByDept = EmpKey(e => e.Dept);
-
-        private static TableViewSource Tree(ObservableCollection<TreeEmployee> list)
-            => TableViewSource.From(list).ParentBy(ById, ByManager);
-
-        private static TableViewPredicate NameIs(string name)
-            => new TableViewPredicate(o => ((TreeEmployee)o).Name == name);
-
-        // Loads a tree table over source as the test content and settles it. Call off the UI thread.
-        private TableView Place(object source)
+        // Loads a tree table over items as the test content and settles it. Call off the UI thread.
+        private TableView Place(object items, string itemKeyPath = IdPath, string parentKeyPath = ManagerPath)
         {
             TableView tableView = null;
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                tableView = CreateTreeTable(source);
+                tableView = CreateTreeTable(items, itemKeyPath, parentKeyPath);
                 LoadContent(tableView);
             });
             SettleLayout(tableView);
             return tableView;
+        }
+
+        // A tree over a CollectionViewSource view grouped by Dept.
+        private TableView PlaceGrouped(ObservableCollection<TreeEmployee> list)
+        {
+            object view = null;
+            RunOnUIThread.Execute(() => view = MakeShapingView(list, "Dept").View);
+            return Place(view);
         }
 
         private static void Toggle(TableView tableView, string name, bool expand)
@@ -1471,11 +839,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Data-row names of a freshly placed table over the source, header rows skipped.
-        private string PlacedNames(Func<TableViewSource> makeSource)
+        private string PlacedNames(Func<object> makeSource, string itemKeyPath, string parentKeyPath)
         {
-            TableViewSource source = null;
+            object source = null;
             RunOnUIThread.Execute(() => source = makeSource());
-            var tableView = Place(source);
+            var tableView = Place(source, itemKeyPath, parentKeyPath);
 
             string names = null;
             RunOnUIThread.Execute(() => names = string.Join(" ",
@@ -1498,27 +866,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static string SelectedName(TableView tableView)
             => tableView.SelectedItem == null ? "null" : NameOf(tableView.SelectedItem);
-
-        // ExpandCollapse state of each projected row's peer, or "none" when the pattern is absent.
-        private static string ExpandStates(TableView tableView)
-            => string.Join(" ", GetProjectedElements(tableView).OfType<TableViewRow>().Select(row =>
-            {
-                IExpandCollapseProvider provider = GetRowExpandCollapse(row);
-                return provider == null ? "none" : provider.ExpandCollapseState.ToString();
-            }));
-
-        private static string ThrownMessage(Action action)
-        {
-            try
-            {
-                action();
-                return "no exception";
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-        }
 
         // Runs act with a one-shot handler on the presented row view's CollectionChanged. Returns the
         // exception type name if act threw, else null.
@@ -1556,43 +903,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Declares a relation, retracts it, then empties the source. Not inlined, so no local here
         // keeps an item alive for the caller's GC.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void RetractAndEmpty(out TableViewSource source, out ObservableCollection<TreeEmployee> list, out List<WeakReference> weak)
+        private static void RetractAndEmpty(out TableView tableView, out ObservableCollection<TreeEmployee> list, out List<WeakReference> weak)
         {
             list = MakeTree();
             weak = list.Select(e => new WeakReference(e)).ToList();
-            source = Tree(list);
-            source.ClearParentBy();
+            tableView = CreateTreeTable(list, IdPath, ManagerPath);
+            tableView.ParentKeyPath = "";
             list.Clear();
         }
 
-        // On a table showing Roots: mutate the data, declare a throwing relation, and verify the throw
-        // is ArgumentException and the projection is unchanged.
+        // On a table showing Roots: mutate the data, set a key path that makes the relation invalid,
+        // and verify the setter throws ArgumentException and the projection is unchanged.
         private void VerifyThrowsKeepsProjection(
             Action<ObservableCollection<TreeEmployee>> mutate,
-            Func<TableViewSource, TableViewSource> declare,
+            Action<TableView> declare,
             string context)
         {
             ObservableCollection<TreeEmployee> list = null;
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() =>
-            {
-                list = MakeTree();
-                source = Tree(list);
-            });
-            var tableView = Place(source);
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
 
             string thrown = null;
             RunOnUIThread.Execute(() =>
             {
                 VerifyTree(tableView, Roots, $"{context}: before");
                 mutate(list);
-                thrown = ThrownTypeName(() => declare(source));
+                thrown = ThrownTypeName(() => declare(tableView));
             });
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("ArgumentException", thrown, $"{context}: ParentBy must throw E_INVALIDARG.");
+                Verify.AreEqual("ArgumentException", thrown, $"{context}: the key path setter must throw E_INVALIDARG.");
                 VerifyTree(tableView, Roots, $"{context}: unchanged after the throw");
             });
         }
@@ -1607,7 +949,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 var list = MakeTree();
                 list.Add(new TreeEmployee { Id = 8, ManagerId = 4, Name = "Hal", Dept = "Eng", Code = "H", ParentCode = "D", Score = 5 });
-                tableView = CreateTreeTable(Tree(list));
+                tableView = CreateTreeTable(list, IdPath, ManagerPath);
                 tableView.Columns[0].Width = new GridLength(30);
                 tableView.Columns.Add(MakeTextTemplateColumn("Dept", "Dept", new GridLength(1, GridUnitType.Star)));
                 LoadContent(tableView);

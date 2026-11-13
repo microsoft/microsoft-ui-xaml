@@ -22,6 +22,7 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestHelpers;
 
@@ -33,14 +34,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // headers bind to, header content templating, the expand/collapse verbs, GroupExpanding/GroupCollapsed, and
     // the header's visual states.
     //
-    // NOT THE SUBJECT. §8 already owns the grouping algebra on TableViewSource (one header per key,
-    // group order, ClearGroupBy, add-creates-group, key changes), and §12 owns the group header's
+    // NOT THE SUBJECT. The grouping algebra belongs to CollectionViewSource (one header per key,
+    // group order, add-creates-group, key changes), and §12 owns the group header's
     // automation peer (ExpandCollapse, GridItem spanning, name, control type). Plan section 9.0
     // writes the split up.
     //
     // FIXTURE. Six people over three roles, deliberately uneven: Designer x2, Engineer x3 and a
     // single-member Architect group, so group-boundary handling is exercised at both ends. Group
-    // order follows first appearance, which §8 already pinned: Designer, Engineer, Architect.
+    // order follows first appearance: Designer, Engineer, Architect.
     [TestClass]
     public class TableViewGroupingTests : TableViewApiTestBase
     {
@@ -194,7 +195,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupInfoItemCountUpdatesInPlaceWithNotification()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             ObservableCollection<ShapedPerson> items = null;
             TableViewGroupInfo captured = null;
             var raised = new List<string>();
@@ -202,10 +203,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
+                source = MakeShapingView(items, "Role");
 
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -309,9 +309,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(info?.IsExpandable == true && info?.IsExpanded == false, "Precondition: the group must be expandable but collapsed, so the two getters differ.");
                 VerifyCustomProperties(info, "collapsed group");
 
-                var source = TableViewSource.From(MakeShapedPeople());
-                source.GroupBy(o => Person(o).Name.Length);
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(MakeShapingView(MakeShapedPeople(), "NameLength").View);
                 LoadContent(tableView);
             });
 
@@ -378,9 +376,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
-                tableView = CreateGroupedTable(source);
+                var source = MakeShapingView(items, "Role");
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -430,9 +427,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                        </DataTemplate>");
 
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
-                tableView = CreateGroupedTable(source);
+                var source = MakeShapingView(items, "Role");
+                tableView = CreateGroupedTable(source.View);
                 tableView.GroupHeaderTemplate = template;
                 LoadContent(tableView);
             });
@@ -751,10 +747,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
+                var source = MakeShapingView(items, "Role");
 
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -828,15 +823,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupCollapseDropsSelectionOfHiddenRow()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             var changes = 0;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople());
-                source.GroupBy(o => Person(o).Role);
+                source = MakeShapingView(MakeShapedPeople(), "Role");
 
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -869,7 +863,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             // A Reset-driven reshape must not resurrect the selection the collapse cleared.
-            RunOnUIThread.Execute(() => source.Sort(o => Person(o).Name, SortDirection.Ascending));
+            RunOnUIThread.Execute(() => source.SortDescriptions.Add(new SortDescription("Name", Microsoft.UI.Xaml.Data.ListSortDirection.Ascending)));
 
             SettleLayout(tableView);
 
@@ -899,9 +893,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
 
-                var source = TableViewSource.From(people);
-                source.GroupBy(o => Person(o).Role);
-                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 600, height: 300);
+                tableView = CreateTableView(MakeShapingView(people, "Role").View, headers: new[] { "Name", "Role" }, width: 600, height: 300);
                 LoadContent(tableView);
             });
 
@@ -1017,9 +1009,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
 
-                var source = TableViewSource.From(people);
-                source.GroupBy(o => Person(o).Role);
-                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 600, height: 300);
+                tableView = CreateTableView(MakeShapingView(people, "Role").View, headers: new[] { "Name", "Role" }, width: 600, height: 300);
                 tableView.GotFocus += (s, e) =>
                 {
                     if (!toggling)
@@ -1286,10 +1276,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
+                var source = MakeShapingView(items, "Role");
 
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -1511,7 +1500,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                tableView = CreateGroupedTable(TableViewSource.From(items).GroupBy(o => Person(o).Role));
+                tableView = CreateGroupedTable(MakeShapingView(items, "Role").View);
                 LoadContent(tableView);
             });
 
@@ -1727,7 +1716,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     if (!swapped)
                     {
                         swapped = true;
-                        tableView.ItemsSource = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                        tableView.ItemsSource = MakeShapingView(MakeShapedPeople(), "Role").View;
                     }
                 };
                 tableView.GroupCollapsed += (s, e) => events++;
@@ -1776,7 +1765,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     swapped = true;
-                    tableView.ItemsSource = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
+                    tableView.ItemsSource = MakeShapingView(MakeShapedPeople(), "Role").View;
                     tableView.UpdateLayout();
                     // Same identity, new source: the re-entrancy guard for the old source must not drop these.
                     tableView.CollapseGroup("Designer");
@@ -1801,13 +1790,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyBulkExpandWithRegroupingHandlerRaisesOnlyForChangedGroups()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             var events = new List<string>();
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople()).GroupBy(o => Person(o).Role);
-                tableView = CreateGroupedTable(source);
+                source = MakeShapingView(MakeShapedPeople(), "Role");
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -1822,7 +1811,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.GroupExpanding += (s, e) =>
                 {
                     events.Add("E:" + e.GroupKey);
-                    source.GroupBy(o => Person(o).Role);
+                    source.Refresh();
                 };
                 tableView.GroupCollapsed += (s, e) => events.Add("C:" + e.GroupKey);
                 tableView.ExpandAllGroups();
@@ -1837,53 +1826,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies ExpandGroup/CollapseGroup match keys by group identity: a new key instance under an identity selector, and a boxed enum key.")]
-        [TestProperty("data:Key", "{Identity, Enum}")]
-        public void VerifyExpandCollapseGroupMatchesByIdentity()
-        {
-            var keyKind = ((string)TestContext.DataRow["Key"]).Trim();
-            TableView tableView = null;
-            Func<object> key = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                var source = TableViewSource.From(MakeShapedPeople());
-                if (keyKind == "Identity")
-                {
-                    source.GroupBy(o => Person(o).Department, k => ((Department)k).Name);
-                    key = () => new Department { Name = "Platform" };
-                }
-                else
-                {
-                    source.GroupBy(o => Person(o).Role == "Engineer" ? TableViewDensity.Compact : TableViewDensity.Standard);
-                    key = () => TableViewDensity.Compact;
-                }
-
-                tableView = CreateGroupedTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => tableView.CollapseGroup(key()));
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                var labels = GetProjectedLabels(tableView, includeCount: false);
-                Verify.IsFalse(labels.Contains("Diego"), $"{keyKind}: the matching group must collapse.");
-                Verify.IsTrue(labels.Contains("Asha"), $"{keyKind}: other groups must stay expanded.");
-                tableView.ExpandGroup(key());
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-                Verify.IsTrue(GetProjectedLabels(tableView, includeCount: false).Contains("Diego"), $"{keyKind}: the matching group must expand again."));
-        }
-
         #endregion
 
         #region 9.6 Selection across a regroup
@@ -1893,7 +1835,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectionSurvivesRegroupWhenKeyChanges()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             ShapedPerson ines = null;
             var changes = 0;
 
@@ -1901,10 +1843,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var people = MakeShapedPeople();
                 ines = people.First(person => person.Name == "Ines");
-                source = TableViewSource.From(people);
-                source.GroupBy(o => Person(o).Role);
+                source = MakeShapingView(people, "Role");
 
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -1924,8 +1865,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView.SelectionChanged += (s, e) => changes++;
-                // GroupBy takes a delegate, so the app re-declares it after a key change.
-                source.GroupBy(o => Person(o).Role);
+                // A property edit is not a collection change; the app refreshes the view.
+                source.Refresh();
             });
 
             SettleLayout(tableView);
@@ -1950,9 +1891,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         internal static TableView CreateGroupedTable()
         {
-            var source = TableViewSource.From(MakeShapedPeople());
-            source.GroupBy(o => Person(o).Role);
-            return CreateGroupedTable(source);
+            return CreateGroupedTable(MakeShapingView(MakeShapedPeople(), "Role").View);
         }
 
         // Tall enough that every header and row in these fixtures realizes, so TryGetElement never
