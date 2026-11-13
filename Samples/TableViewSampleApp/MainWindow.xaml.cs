@@ -36,6 +36,7 @@ public sealed partial class MainWindow : Window
         ["ColumnLayout"] = typeof(ColumnLayoutPage),
         ["Sort"] = typeof(SortPage),
         ["Filter"] = typeof(FilterPage),
+        ["CollectionViewShaping"] = typeof(CollectionViewShapingPage),
         ["Groups"] = typeof(GroupsPage),
         ["ToolTips"] = typeof(ToolTipsPage),
         ["ContextMenus"] = typeof(ContextMenusPage),
