@@ -17,6 +17,13 @@ internal sealed class GraphicsIndex : IDisposable
     private readonly record struct Identity(IdentitySpace Space, ulong Handle, ulong Qualifier = 0);
     private readonly record struct GlobalIdentity(ulong Adapter, ulong Allocation);
 
+    private sealed class GlobalHistory
+    {
+        internal long? EndQpc { get; set; }
+        internal long LastSeq { get; set; }
+        internal int References { get; set; }
+    }
+
     private sealed record Shape(Kind Kind, Phase Phase, Dictionary<string, int> Fields)
     {
         internal object? Value(ProfilerEvent data, string name) =>
@@ -55,8 +62,7 @@ internal sealed class GraphicsIndex : IDisposable
         internal GlobalIdentity Global { get; set; }
         internal ulong RegisteredResource { get; set; }
         internal GlobalIdentity RegisteredGlobal { get; set; }
-        internal bool GlobalCorrelatable { get; set; } = true;
-        internal long? GlobalInvalidatedQpc { get; set; }
+        internal Dictionary<GlobalIdentity, (GlobalHistory History, long? StartQpc, long? ConfirmedQpc)>? GlobalObservations { get; set; }
     }
 
     // Exactly one runtime resource may claim a kernel resource handle, or exactly one adapter allocation a global
@@ -75,15 +81,19 @@ internal sealed class GraphicsIndex : IDisposable
     private readonly SqliteConnection connection;
     private readonly Dictionary<long, Shape?> shapes = [];
     private readonly Dictionary<Identity, Lifetime> active = [];
+    private readonly Dictionary<long, Lifetime> activeDevices = [];
     private readonly Dictionary<ulong, Correlations> resources = [];
     private readonly Dictionary<GlobalIdentity, Correlations> globals = [];
+    private readonly Dictionary<GlobalIdentity, GlobalHistory> globalHistory = [];
     private readonly Dictionary<Correlations, string> pending = [];
     private readonly SqliteCommand insertObject;
     private readonly SqliteCommand observeObject;
     private readonly SqliteCommand endObject;
     private readonly SqliteCommand history;
+    private readonly SqliteCommand globalEnds;
     private readonly SqliteCommand insertEvent;
     private readonly SqliteCommand device;
+    private readonly SqliteCommand deviceReference;
     private readonly SqliteCommand resource;
     private readonly SqliteCommand allocation;
     private readonly SqliteCommand insertLink;
@@ -119,13 +129,15 @@ internal sealed class GraphicsIndex : IDisposable
             WHERE GraphicsObjectId = $id
             """, ("$id", SqliteType.Integer), ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer),
             ("$reason", SqliteType.Text), ("$stopSeq", SqliteType.Integer), ("$stopQpc", SqliteType.Integer));
+        // Keep Stop-only histories ambiguous when no earlier existence evidence rules out the incoming Start.
         history = Sql.Prepare(connection, """
             SELECT g.GraphicsObjectId, g.Kind, g.FirstSeq, g.FirstQpc, g.LastQpc, g.FirstObservation, g.StartQpc,
                 g.EndSeq, g.EndQpc, g.DeviceId, g.StopQpc,
                 CASE WHEN $earlier AND g.StartQpc IS NULL AND $qpc <= g.KnownFromQpc THEN (SELECT MAX(p.LastQpc) FROM GraphicsObjects p
                     WHERE p.Kind IN ($kind1, $kind2, $kind3, $kind4) AND p.Handle = g.Handle AND p.Qualifier = g.Qualifier
                         AND p.GraphicsObjectId <> g.GraphicsObjectId AND p.KnownFromQpc < g.KnownFromQpc
-                        AND (p.StartQpc IS NOT NULL OR p.Kind <> g.Kind OR p.DeviceId <> COALESCE(g.DeviceId, $device))) END,
+                        AND (p.StartQpc IS NOT NULL OR (p.StopQpc IS NOT NULL AND p.KnownFromQpc < $qpc)
+                            OR p.Kind <> g.Kind OR p.DeviceId <> COALESCE(g.DeviceId, $device))) END,
                 g.KnownFromSeq, g.KnownFromQpc
             FROM GraphicsObjects g
             WHERE g.Kind IN ($kind1, $kind2, $kind3, $kind4) AND g.Handle = $handle AND g.Qualifier = $qualifier
@@ -135,9 +147,18 @@ internal sealed class GraphicsIndex : IDisposable
             ("$kind4", SqliteType.Text), ("$handle", SqliteType.Text), ("$qualifier", SqliteType.Text),
             ("$qpc", SqliteType.Integer), ("$device", SqliteType.Integer), ("$earlier", SqliteType.Integer),
             ("$candidate", SqliteType.Integer));
+        globalEnds = Sql.Prepare(connection, """
+            SELECT MAX(EndQpc) FROM GraphicsObjects
+            WHERE Kind = 'AdapterAllocation' AND Handle = $handle AND Qualifier = $adapter
+            """, ("$handle", SqliteType.Text), ("$adapter", SqliteType.Text));
         insertEvent = Sql.Prepare(connection,
             "INSERT INTO GraphicsObjectEvents (Seq, GraphicsObjectId, Role) VALUES ($seq, $id, $role)",
             ("$seq", SqliteType.Integer), ("$id", SqliteType.Integer), ("$role", SqliteType.Text));
+        deviceReference = Sql.Prepare(connection, """
+            SELECT 1 FROM GraphicsObjects
+            WHERE GraphicsObjectId = $id AND Kind = 'Device' AND $qpc >= COALESCE(StartQpc, KnownFromQpc)
+                AND (EndQpc IS NULL OR $qpc <= EndQpc)
+            """, ("$id", SqliteType.Integer), ("$qpc", SqliteType.Integer));
         device = Sql.Prepare(connection, """
             UPDATE GraphicsObjects SET pIDXGIDevice = NULLIF(COALESCE($dxgiDevice, pIDXGIDevice), '0x0000000000000000'),
                 pIDXGIAdapter = NULLIF(COALESCE($dxgiAdapter, pIDXGIAdapter), '0x0000000000000000'),
@@ -178,7 +199,7 @@ internal sealed class GraphicsIndex : IDisposable
             WHERE SourceId = $source AND TargetId = $target AND Kind = $kind AND StartSeq = $start
             """, ("$source", SqliteType.Integer), ("$target", SqliteType.Integer), ("$kind", SqliteType.Text),
             ("$start", SqliteType.Integer), ("$seq", SqliteType.Integer), ("$reason", SqliteType.Text));
-        commands = [insertObject, observeObject, endObject, history, insertEvent, device, resource, allocation, insertLink, endLink];
+        commands = [insertObject, observeObject, endObject, history, globalEnds, insertEvent, device, deviceReference, resource, allocation, insertLink, endLink];
     }
 
     internal void Add(long sequence, long typeId, ProfilerEvent data, SqliteTransaction transaction)
@@ -213,7 +234,14 @@ internal sealed class GraphicsIndex : IDisposable
             }
             else if (parent is null && tracked.DeviceId is { } parentId)
             {
-                Record(parentId, Phase.Reference, sequence, data.TimestampQpc);
+                Set(deviceReference, ("$id", parentId), ("$qpc", data.TimestampQpc));
+                if (deviceReference.ExecuteScalar() is not null)
+                {
+                    if (activeDevices.TryGetValue(parentId, out var owner))
+                        Record(owner, Phase.Reference, sequence, data.TimestampQpc);
+                    else
+                        Record(parentId, Phase.Reference, sequence, data.TimestampQpc);
+                }
             }
             Set(resource, ("$id", tracked.Id), ("$device", tracked.DeviceId),
                 ("$kernel", latest ? shape.HandleText(data, "hKMResource") : null),
@@ -230,28 +258,32 @@ internal sealed class GraphicsIndex : IDisposable
             allocation.ExecuteNonQuery();
         }
 
-        if (latest && tracked.EndQpc is null)
+        if (tracked.EndQpc is null)
         {
-            var bridge = shape.Kind == Kind.DeviceAllocation ? "hThunkResource" : "hKMResource";
-            if (shape.OptionalHandle(data, bridge) is { } resourceHandle) tracked.Resource = resourceHandle;
+            // Earlier evidence can refine eligibility, but cannot borrow or replace newer bridge handles.
             var global = new GlobalIdentity(
-                shape.OptionalHandle(data, "pDxgAdapter") ?? tracked.Global.Adapter,
-                shape.OptionalHandle(data, "hVidMmGlobalAlloc") ?? tracked.Global.Allocation);
-            if (global != tracked.Global)
+                shape.OptionalHandle(data, "pDxgAdapter") ?? (latest ? tracked.Global.Adapter : 0),
+                shape.OptionalHandle(data, "hVidMmGlobalAlloc") ?? (latest ? tracked.Global.Allocation : 0));
+            if (shape.Kind == Kind.DeviceAllocation && global.Adapter != 0 && global.Allocation != 0)
             {
-                tracked.GlobalInvalidatedQpc = null;
-                tracked.GlobalCorrelatable = true;
+                var observations = tracked.GlobalObservations ??= [];
+                if (!observations.TryGetValue(global, out var observation))
+                {
+                    observation = (GlobalHistoryOf(global, sequence), null, null);
+                    observation.History.References++;
+                }
+                if (shape.Phase == Phase.Start) observation.StartQpc = data.TimestampQpc;
+                if (shape.Phase is Phase.Start or Phase.Rundown &&
+                    shape.OptionalHandle(data, "hVidMmGlobalAlloc") is not null)
+                    observation.ConfirmedQpc = Math.Max(observation.ConfirmedQpc ?? long.MinValue, data.TimestampQpc);
+                observations[global] = observation;
             }
-            tracked.Global = global;
-            if (!tracked.GlobalCorrelatable && globals.TryGetValue(global, out var bucket))
-                foreach (var target in bucket.Targets)
-                    tracked.GlobalInvalidatedQpc = Math.Max(tracked.GlobalInvalidatedQpc ?? long.MinValue, target.KnownFromQpc);
-            if (shape.Phase is Phase.Start or Phase.Rundown &&
-                shape.OptionalHandle(data, "hVidMmGlobalAlloc") is not null &&
-                data.TimestampQpc > (tracked.GlobalInvalidatedQpc ?? long.MinValue) &&
-                (tracked.GlobalInvalidatedQpc is null ||
-                    globals.TryGetValue(global, out var current) && current.Targets.Count == 1))
-                tracked.GlobalCorrelatable = true;
+            if (latest)
+            {
+                var bridge = shape.Kind == Kind.DeviceAllocation ? "hThunkResource" : "hKMResource";
+                if (shape.OptionalHandle(data, bridge) is { } resourceHandle) tracked.Resource = resourceHandle;
+                tracked.Global = global;
+            }
             RefreshCorrelations(tracked);
         }
         if (shape.Phase == Phase.Stop) End(tracked, sequence, data.TimestampQpc, "Stop");
@@ -323,7 +355,11 @@ internal sealed class GraphicsIndex : IDisposable
                 ("$qualifier", Hex(identity.Qualifier) ?? ""), ("$seq", sequence), ("$qpc", qpc), ("$phase", phase.ToString()),
                 ("$startSeq", phase == Phase.Start ? sequence : null), ("$startQpc", phase == Phase.Start ? qpc : null));
             insertObject.ExecuteNonQuery();
-            if (!detached) active[identity] = tracked;
+            if (!detached)
+            {
+                active[identity] = tracked;
+                if (kind == Kind.Device) activeDevices.Add(tracked.Id, tracked);
+            }
             else if (phase == Phase.Stop) End(tracked, sequence, qpc, "Stop");
             else End(tracked, boundary!.Value.Seq, boundary.Value.Qpc, "HandleReuse");
         }
@@ -376,6 +412,20 @@ internal sealed class GraphicsIndex : IDisposable
         return match;
     }
 
+    private GlobalHistory GlobalHistoryOf(GlobalIdentity identity, long sequence)
+    {
+        if (!globalHistory.TryGetValue(identity, out var retained))
+        {
+            Set(globalEnds, ("$handle", Hex(identity.Allocation)), ("$adapter", Hex(identity.Adapter)));
+            globalHistory[identity] = retained = new()
+            {
+                EndQpc = globalEnds.ExecuteScalar() is long end ? end : null
+            };
+        }
+        retained.LastSeq = sequence;
+        return retained;
+    }
+
     private void Record(Lifetime tracked, Phase phase, long sequence, long qpc)
     {
         tracked.LastQpc = Math.Max(tracked.LastQpc, qpc);
@@ -411,21 +461,24 @@ internal sealed class GraphicsIndex : IDisposable
     {
         tracked.EndQpc = qpc;
         if (active.GetValueOrDefault(tracked.Identity) == tracked) active.Remove(tracked.Identity);
+        if (tracked.Kind == Kind.Device) activeDevices.Remove(tracked.Id);
         Set(endObject, ("$id", tracked.Id), ("$seq", sequence), ("$qpc", qpc), ("$reason", reason),
             ("$stopSeq", reason == "Stop" ? sequence : null), ("$stopQpc", reason == "Stop" ? qpc : null));
         endObject.ExecuteNonQuery();
-        if (tracked.Kind == Kind.AdapterAllocation && globals.TryGetValue(tracked.RegisteredGlobal, out var bucket))
+        if (tracked.GlobalObservations is { } observations)
         {
-            // Do not join surviving, unclosed device-allocation records to a later reuse of this global pointer.
-            foreach (var child in bucket.Sources.ToArray())
-            {
-                child.GlobalCorrelatable = false;
-                child.GlobalInvalidatedQpc = Math.Max(child.GlobalInvalidatedQpc ?? long.MinValue, qpc);
-                RemoveGlobal(child, "GlobalAllocationEnded");
-            }
+            foreach (var (retained, _, _) in observations.Values) retained.References--;
+            tracked.GlobalObservations = null;
         }
         RemoveResource(tracked, reason);
         RemoveGlobal(tracked, reason);
+        if (tracked.Kind == Kind.AdapterAllocation && tracked.Identity.Qualifier != 0)
+        {
+            var identity = new GlobalIdentity(tracked.Identity.Qualifier, tracked.Identity.Handle);
+            var retained = GlobalHistoryOf(identity, sequence);
+            retained.EndQpc = Math.Max(retained.EndQpc ?? long.MinValue, qpc);
+            if (globals.TryGetValue(identity, out var bucket)) pending[bucket] = reason;
+        }
     }
 
     private void RefreshCorrelations(Lifetime tracked)
@@ -435,7 +488,7 @@ internal sealed class GraphicsIndex : IDisposable
         {
             RemoveResource(tracked, "IdentityChanged");
         }
-        if (tracked.RegisteredGlobal != default && (tracked.RegisteredGlobal != tracked.Global || !tracked.GlobalCorrelatable))
+        if (tracked.RegisteredGlobal != default && tracked.RegisteredGlobal != tracked.Global)
         {
             RemoveGlobal(tracked, "IdentityChanged");
         }
@@ -448,14 +501,17 @@ internal sealed class GraphicsIndex : IDisposable
             tracked.RegisteredResource = tracked.Resource;
             pending.TryAdd(bucket, "AmbiguousIdentity");
         }
-        if (tracked.RegisteredGlobal == default && tracked.Global.Adapter != 0 && tracked.Global.Allocation != 0 && tracked.GlobalCorrelatable &&
+        if (tracked.Global.Adapter != 0 && tracked.Global.Allocation != 0 &&
             tracked.Kind is Kind.DeviceAllocation or Kind.AdapterAllocation)
         {
             if (!globals.TryGetValue(tracked.Global, out var bucket))
                 globals[tracked.Global] = bucket = new("AllocationGlobal", uniqueSource: false,
                     tracked.Global.Allocation, tracked.Global.Adapter);
-            (tracked.Kind == Kind.DeviceAllocation ? bucket.Sources : bucket.Targets).Add(tracked);
-            tracked.RegisteredGlobal = tracked.Global;
+            if (tracked.RegisteredGlobal == default)
+            {
+                (tracked.Kind == Kind.DeviceAllocation ? bucket.Sources : bucket.Targets).Add(tracked);
+                tracked.RegisteredGlobal = tracked.Global;
+            }
             pending.TryAdd(bucket, "AmbiguousIdentity");
         }
     }
@@ -490,7 +546,19 @@ internal sealed class GraphicsIndex : IDisposable
         var wanted = new HashSet<(long Source, long Target)>();
         if ((bucket.UniqueSource ? bucket.Sources.Count : bucket.Targets.Count) == 1)
             foreach (var source in bucket.Sources)
-                foreach (var target in bucket.Targets) wanted.Add((source.Id, target.Id));
+                foreach (var target in bucket.Targets)
+                {
+                    if (!bucket.UniqueSource)
+                    {
+                        var (retained, start, confirmed) = source.GlobalObservations![new(bucket.Qualifier, bucket.Handle)];
+                        // A new source creation after the old end is independent of the target's observation order.
+                        // Otherwise a surviving source needs explicit confirmation newer than the replacement.
+                        if (retained.EndQpc is { } end && (start is null || start <= end) &&
+                            (confirmed is null || confirmed <= Math.Max(end, target.KnownFromQpc)))
+                            continue;
+                    }
+                    wanted.Add((source.Id, target.Id));
+                }
         foreach (var (pair, start) in bucket.Open.ToArray())
         {
             if (wanted.Contains(pair)) continue;
@@ -523,6 +591,10 @@ internal sealed class GraphicsIndex : IDisposable
                     WHERE l.SourceId = GraphicsObjects.GraphicsObjectId OR l.TargetId = GraphicsObjects.GraphicsObjectId)
                 AND NOT EXISTS (SELECT 1 FROM GraphicsObjects r WHERE r.DeviceId = GraphicsObjects.GraphicsObjectId);
             """, transaction, ("$cutoff", cutoff));
+        foreach (var (identity, retained) in globalHistory.ToArray())
+            if (retained.References == 0 && retained.LastSeq < cutoff &&
+                !active.ContainsKey(new(IdentitySpace.AdapterAllocation, identity.Allocation, identity.Adapter)))
+                globalHistory.Remove(identity);
     }
 
     private static string? Hex(ulong value) => value == 0 ? null : $"0x{value:x16}";

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
@@ -12,17 +13,25 @@ internal static class GraphicsIndexTests
 
     internal static void Run()
     {
+        UnsignedHandleSearch();
         KindChangingStops();
         HistoricalObservations();
         PromotedDeviceBounds();
+        ImplicitDeviceReferences();
+        ImplicitDeviceLifetimeBounds();
         PartialDeviceBounds();
         RundownStartPromotion();
         HistoricalRundownEvidence();
         HistoricalDeviceReferences();
         HistoricalStartBounds();
+        StoppedPartialHistoryBounds();
         ResourceDeviceReuse();
         StaleMappings();
         DelayedGlobalStops();
+        ReusedGlobalBridges();
+        DelayedGlobalSources();
+        PromotedGlobalEvidence();
+        StopOnlyGlobalBridges();
         ClearedBridges();
         IndependentAllocationLinks();
         PartialAllocationIntervals();
@@ -33,6 +42,51 @@ internal static class GraphicsIndexTests
         DelayedObservations();
         AmbiguousAndChangingBridges();
         TrimmedLifetimes();
+    }
+
+    private static void UnsignedHandleSearch()
+    {
+        ProfilerEvent Value(string name, object value) => new(0, 0, 10, 7, XamlProvider.Xaml, false, name, 0, [new("Value", value)]);
+        ProfilerEvent[] events =
+        [
+            Direct3D(12, ulong.MaxValue),
+            Direct3D(12, ulong.MaxValue - 1),
+            Direct3D(12, 1UL << 63),
+            Value("SignedAddress", -1L),
+            Value("SignedMinimum", long.MinValue),
+            Value("NumericText", ulong.MaxValue.ToString(CultureInfo.InvariantCulture)),
+            Value("RealValue", 64.0)
+        ];
+        WithRecording(events, connection =>
+        {
+            (string Filter, int[] Matches)[] cases =
+            [
+                (Hex(ulong.MaxValue), [0, 3]),
+                ("0XFFFFFFFFFFFFFFFF", [0, 3]),
+                (ulong.MaxValue.ToString(CultureInfo.InvariantCulture), [0]),
+                (" +018446744073709551615 ", [0]),
+                (Hex(ulong.MaxValue - 1), [1]),
+                ((ulong.MaxValue - 1).ToString(CultureInfo.InvariantCulture), [1]),
+                ((ulong.MaxValue - 2).ToString(CultureInfo.InvariantCulture), []),
+                (Hex(1UL << 63), [2, 4]),
+                ((1UL << 63).ToString(CultureInfo.InvariantCulture), [2]),
+                ("-1", [3]),
+                (long.MinValue.ToString(CultureInfo.InvariantCulture), [4]),
+                ("NumericText", [5]),
+                ("64", [6])
+            ];
+            foreach (var (filter, expected) in cases)
+            {
+                var matches = new List<ProfilerEvent>();
+                var count = SessionFile.CountSpanEvents(connection.DataSource, 7, 1, events.Length, null, filter);
+                var read = SessionFile.ReadSpanEvents(connection.DataSource, 7, 1, events.Length, null, filter, 0, -1,
+                    (data, _, _) => matches.Add(data));
+                Expect(count == expected.Length && read == count &&
+                    matches.Select(data => data.Fields[0].Value).SequenceEqual(expected.Select(index => events[index].Fields[0].Value)),
+                    $"Numeric search '{filter}' must distinguish unsigned neighbors, preserve signed addresses and exclude numeric strings.");
+            }
+        });
+        Console.WriteLine("Passed: hex/decimal searches preserve full-width unsigned handles, signed addresses and numeric precision.");
     }
 
     private static void KindChangingStops()
@@ -135,6 +189,116 @@ internal static class GraphicsIndexTests
                 "Resources between a promoted device's actual Start and its first reference must use that device lifetime.");
         });
         Console.WriteLine("Passed: promoted device creation bounds apply to earlier resource lifetimes.");
+    }
+
+    private static void ImplicitDeviceReferences()
+    {
+        foreach (var explicitParent in new[] { false, true })
+        {
+            foreach (var stopQpc in new[] { 2_000L, 4_000L })
+            {
+                var resourceStop = Direct3D(13, 1, Device) with { TimestampQpc = 3_000 };
+                if (!explicitParent)
+                    resourceStop = resourceStop with
+                    {
+                        Fields = resourceStop.Fields.Where(field => field.Name != "pID3D11Device").ToArray()
+                    };
+                WithRecording(
+                [
+                    Direct3D(3, Device) with { TimestampQpc = 100 },
+                    Direct3D(12, 1, Device) with { TimestampQpc = 1_000 },
+                    resourceStop,
+                    Direct3D(4, Device) with { TimestampQpc = stopQpc }
+                ], connection =>
+                {
+                    var complete = stopQpc > 3_000;
+                    Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == (complete ? 1 : 2) &&
+                        Count(connection, "GraphicsLifetimes", "Kind = 'Device' AND DurationMs IS NOT NULL") == (complete ? 1 : 0),
+                        "A device Stop must respect its latest resource reference even when the owning-device field is omitted.");
+                    Expect(Count(connection, "GraphicsObjects",
+                        $"Kind = 'Device' AND StartQpc = 100 AND LastQpc = {(complete ? stopQpc : 3_000)}") == 1 &&
+                        Count(connection, "GraphicsObjectEvents", """
+                            Seq = 3 AND Role = 'Reference' AND GraphicsObjectId =
+                                (SELECT GraphicsObjectId FROM GraphicsObjects WHERE Kind = 'Device' AND StartQpc = 100)
+                            """) == 1 &&
+                        Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND DurationMs = 2") == 1 &&
+                        Count(connection, "Events") == 4,
+                        "Implicit references must preserve parent evidence, complete resources and raw events without suppressing valid device Stops.");
+                });
+            }
+        }
+        foreach (var replacement in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Direct3D(3, Device) with { TimestampQpc = 100 },
+                Direct3D(4, Device) with { TimestampQpc = 4_000 }
+            ];
+            if (replacement) events.Add(Direct3D(3, Device) with { TimestampQpc = 5_000 });
+            var resourceStop = Direct3D(13, 1) with { TimestampQpc = 3_000 };
+            events.AddRange(
+            [
+                Direct3D(12, 1, Device) with { TimestampQpc = 2_000 },
+                resourceStop with { Fields = resourceStop.Fields.Where(field => field.Name != "pID3D11Device").ToArray() }
+            ]);
+            WithRecording(events, connection =>
+            {
+                Expect(Sql.Scalar(connection, """
+                    SELECT COUNT(*) FROM GraphicsLifetimes r JOIN GraphicsObjects d ON d.GraphicsObjectId = r.DeviceId
+                    WHERE r.Kind = 'Texture2D' AND r.StartQpc = 2000 AND r.StopQpc = 3000
+                        AND d.StartQpc = 100 AND d.StopQpc = 4000 AND d.LastQpc = 4000
+                    """) == 1 &&
+                    Count(connection, "GraphicsObjects", "Kind = 'Device'") == (replacement ? 2 : 1) &&
+                    (!replacement || Count(connection, "GraphicsObjects",
+                        "Kind = 'Device' AND StartQpc = 5000 AND KnownFromQpc = 5000 AND LastQpc = 5000 AND EndSeq IS NULL") == 1),
+                    "Implicit historical references must stay on the original device and leave its active replacement untouched.");
+            });
+        }
+        Console.WriteLine("Passed: implicit resource references maintain device bounds without changing historical owners or replacements.");
+    }
+
+    private static void ImplicitDeviceLifetimeBounds()
+    {
+        foreach (var startKnown in new[] { false, true })
+        {
+            foreach (var stopped in new[] { false, true })
+            {
+                foreach (var (phase, qpc) in new[] { (13, 4_000L), (13, 3_000L), (12, 500L), (12, 1_000L) })
+                {
+                    List<ProfilerEvent> events =
+                    [
+                        Direct3D(startKnown ? 3 : 5, Device) with { TimestampQpc = 1_000 },
+                        Direct3D(14, 1, Device) with { TimestampQpc = 2_000 },
+                        Direct3D(stopped ? 4 : 3, Device) with { TimestampQpc = 3_000 }
+                    ];
+                    var observation = Direct3D(phase, 1) with { TimestampQpc = qpc };
+                    events.Add(observation with
+                    {
+                        Fields = observation.Fields.Where(field => field.Name != "pID3D11Device").ToArray()
+                    });
+                    WithRecording(events, connection =>
+                    {
+                        var valid = qpc is >= 1_000 and <= 3_000;
+                        var last = Math.Max(stopped ? 3_000 : 2_000, valid ? qpc : 0);
+                        Expect(Count(connection, "GraphicsObjects", $"""
+                            Kind = 'Device' AND FirstQpc = 1000 AND KnownFromQpc = 1000 AND LastQpc = {last}
+                                AND EndQpc = 3000 AND {(startKnown ? "StartQpc = 1000" : "StartQpc IS NULL")}
+                            """) == 1 &&
+                            Count(connection, "GraphicsObjectEvents", """
+                                Seq = 4 AND Role = 'Reference' AND GraphicsObjectId =
+                                    (SELECT GraphicsObjectId FROM GraphicsObjects WHERE Kind = 'Device' AND FirstQpc = 1000)
+                                """) == (valid ? 1 : 0),
+                            "Implicit references must stay within the retained parent's known bounds, including exact endpoint timestamps.");
+                        Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == (stopped ? 1 : 2) &&
+                            (stopped || Count(connection, "GraphicsObjects",
+                                "Kind = 'Device' AND StartQpc = 3000 AND KnownFromQpc = 3000 AND LastQpc = 3000 AND EndSeq IS NULL") == 1) &&
+                            Count(connection, "Events") == events.Count,
+                            "Rejected parent references must preserve the resource event and leave any reused-pointer device untouched.");
+                    });
+                }
+            }
+        }
+        Console.WriteLine("Passed: implicit references respect stopped/reused device bounds without extending partial or complete parents.");
     }
 
     private static void HistoricalDeviceReferences()
@@ -447,6 +611,49 @@ internal static class GraphicsIndexTests
         Console.WriteLine("Passed: delayed Starts respect intervening lifetimes, resource kinds and qualified identity spaces.");
     }
 
+    private static void StoppedPartialHistoryBounds()
+    {
+        (ProfilerEvent Start, ProfilerEvent Stop, ProfilerEvent Rundown)[] identities =
+        [
+            (Direct3D(3, Device), Direct3D(4, Device), Direct3D(5, Device)),
+            (Direct3D(12, 1), Direct3D(13, 1), Direct3D(14, 1)),
+            (Allocation(33, 2, 3, 100), Allocation(34, 2, 3, 100), Allocation(35, 2, 3, 100)),
+            (Allocation(36, 2, 3, 100), Allocation(37, 2, 3, 100), Allocation(38, 2, 3, 100))
+        ];
+        foreach (var (start, stop, rundown) in identities)
+        {
+            foreach (var closed in new[] { false, true })
+            {
+                foreach (var qpc in new[] { 500L, 2_000L, 5_000L, 5_500L })
+                {
+                    List<ProfilerEvent> events =
+                    [
+                        rundown with { TimestampQpc = 1_000 },
+                        stop with { TimestampQpc = 5_000 },
+                        rundown with { TimestampQpc = 6_000 }
+                    ];
+                    if (closed) events.Add(stop with { TimestampQpc = 7_000 });
+                    events.Add(start with { TimestampQpc = qpc });
+                    if (!closed) events.Add(stop with { TimestampQpc = 7_000 });
+                    WithRecording(events, connection =>
+                    {
+                        var blocked = qpc < 5_000;
+                        Expect(Count(connection, "GraphicsObjects") == (blocked ? 3 : 2) &&
+                            Count(connection, "GraphicsLifetimes", "FirstQpc = 1000 AND StartQpc IS NULL AND StopQpc = 5000") == 1 &&
+                            Count(connection, "GraphicsLifetimes",
+                                $"FirstQpc = 6000 AND {(blocked ? "StartQpc IS NULL" : $"StartQpc = {qpc}")} AND StopQpc = 7000") == 1 &&
+                            Count(connection, "GraphicsLifetimes", "DurationMs IS NOT NULL") == (blocked ? 0 : 1),
+                            "A delayed Start must not cross a stopped partial lifetime, but may follow its Stop, including the exact timestamp.");
+                        Expect(Count(connection, "Events") == events.Count &&
+                            Count(connection, "GraphicsObjectEvents", "Role <> 'Reference'") == events.Count,
+                            "Partial-history bounds must preserve every raw event and its lifecycle evidence.");
+                    });
+                }
+            }
+        }
+        Console.WriteLine("Passed: stopped partial history bounds active and closed candidates without rejecting valid late creation.");
+    }
+
     private static void ResourceDeviceReuse()
     {
         foreach (var samePointer in new[] { false, true })
@@ -614,6 +821,349 @@ internal static class GraphicsIndexTests
             });
         }
         Console.WriteLine("Passed: delayed adapter Stops cannot carry stale allocation bridges into replacement targets.");
+    }
+
+    private static void ReusedGlobalBridges()
+    {
+        foreach (var field in new[] { "pDxgAdapter", "hVidMmGlobalAlloc" })
+        {
+            foreach (var clear in new[] { false, true })
+            {
+                foreach (var awayFirst in new[] { false, true })
+                {
+                    foreach (var stopped in new[] { false, true })
+                    {
+                        var original = field == "pDxgAdapter" ? Adapter : 3;
+                        ProfilerEvent Bridge(ulong value, long qpc)
+                        {
+                            var data = Allocation(38, 2, 3, 100) with { TimestampQpc = qpc };
+                            return data with
+                            {
+                                Fields = data.Fields.Where(item => field != "pDxgAdapter" || item.Name != "hVidMmGlobalAlloc")
+                                    .Select(item => item.Name == field ? new EventField(field, value) : item).ToArray()
+                            };
+                        }
+                        List<ProfilerEvent> events =
+                        [
+                            Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 500 },
+                            Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                            Allocation(36, 2, 3, 100) with { TimestampQpc = 2_000 }
+                        ];
+                        if (awayFirst) events.Add(Bridge(clear ? 0 : original + 1, 2_500));
+                        if (stopped) events.Add(Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 });
+                        events.Add(Allocation(33, 2, 3, 100) with { TimestampQpc = 6_000 });
+                        if (!awayFirst) events.Add(Bridge(clear ? 0 : original + 1, 4_000));
+                        events.AddRange(
+                        [
+                            Bridge(original, 5_000),
+                            Allocation(38, 2, 3, 100) with { TimestampQpc = 5_500 },
+                            Allocation(38, 2, 3, 100) with { TimestampQpc = 6_000 },
+                            Allocation(38, 2, 3, 100) with { TimestampQpc = 7_000 }
+                        ]);
+                        WithRecording(events, connection =>
+                        {
+                            Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal'") == 2 &&
+                                Count(connection, "GraphicsLinks", $"""
+                                    Kind = 'AllocationGlobal' AND StartSeq = {events.Count} AND EndSeq IS NULL
+                                    AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects
+                                        WHERE Kind = 'AdapterAllocation' AND StartQpc = 6000)
+                                    """) == 1,
+                                "Bridge changes must retain reuse protection until explicit confirmation newer than the replacement.");
+                            Expect(Count(connection, "GraphicsLinks",
+                                "Kind = 'ResourceAllocation' AND StartSeq = 3 AND EndSeq IS NULL") == 1 &&
+                                Count(connection, "Events") == events.Count,
+                                "Global bridge changes must preserve independent resource links and every raw observation.");
+                        });
+                    }
+                }
+            }
+        }
+        WithRecording(
+        [
+            Allocation(36, 2, 3, 100),
+            Allocation(34, 2, 3, 100),
+            Allocation(33, 2, 3, 100),
+            Allocation(38, 2, 3, 100, Adapter + 1) with
+            {
+                Fields = Allocation(38, 2, 3, 100, Adapter + 1).Fields.Where(field => field.Name != "hVidMmGlobalAlloc").ToArray()
+            },
+            Allocation(38, 2, 3, 100) with
+            {
+                Fields = Allocation(38, 2, 3, 100).Fields.Where(field => field.Name != "hVidMmGlobalAlloc").ToArray()
+            },
+            Allocation(38, 2, 3, 100)
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal'") == 1 &&
+                Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal' AND StartSeq = 6 AND EndSeq IS NULL") == 1,
+                "A Stop-only global lifetime must retain its invalidation guard even when no earlier link could be created.");
+        });
+        WithRecording(
+        [
+            Allocation(33, 2, 3, 100),
+            Allocation(36, 2, 3, 100),
+            Allocation(38, 2, 3, 100, Adapter + 1) with
+            {
+                Fields = Allocation(38, 2, 3, 100, Adapter + 1).Fields.Where(field => field.Name != "hVidMmGlobalAlloc").ToArray()
+            },
+            Allocation(38, 2, 3, 100) with
+            {
+                Fields = Allocation(38, 2, 3, 100).Fields.Where(field => field.Name != "hVidMmGlobalAlloc").ToArray()
+            }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal' AND StartSeq = 4 AND EndSeq IS NULL") == 1,
+                "Returning to the same unended global allocation must not require an unnecessary new handle confirmation.");
+        });
+        foreach (var targetFirst in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                Allocation(36, 2, 3, 100) with { TimestampQpc = 2_000 },
+                Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 }
+            ];
+            var source = Allocation(38, 2, 4, 100) with { TimestampQpc = 4_000 };
+            var target = Allocation(33, 2, 4, 100) with { TimestampQpc = 5_000 };
+            events.AddRange(targetFirst ? [target, source] : [source, target]);
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsLinks", $"""
+                    Kind = 'AllocationGlobal' AND Handle = '{Hex(4)}' AND StartSeq = 5 AND EndSeq IS NULL
+                    """) == 1,
+                    "Invalidation of one identity must not block a genuinely new global allocation in either arrival order.");
+            });
+        }
+        Console.WriteLine("Passed: global reuse guards survive adapter/zero-handle changes while healthy and new identities remain correlatable.");
+    }
+
+    private static void DelayedGlobalSources()
+    {
+        foreach (var stopped in new[] { false, true })
+        {
+            foreach (var sourceFirst in new[] { false, true })
+            {
+                foreach (var phase in new[] { 36, 38 })
+                {
+                    foreach (var confirmed in new[] { false, true })
+                    {
+                        List<ProfilerEvent> events =
+                        [
+                            Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 }
+                        ];
+                        if (stopped) events.Add(Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 });
+                        events.Add(Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 1_500 });
+                        var source = Allocation(phase, 2, 3, 100) with { TimestampQpc = 2_000 };
+                        if (sourceFirst) events.Add(source);
+                        var replacement = Allocation(33, 2, 3, 100) with { TimestampQpc = 5_000 };
+                        events.Add(replacement with
+                        {
+                            Fields = replacement.Fields.Select(field =>
+                                field.Name == "allocSize" ? new EventField(field.Name, 8192UL) : field).ToArray()
+                        });
+                        if (!sourceFirst) events.Add(source);
+                        if (confirmed) events.Add(Allocation(38, 2, 3, 100) with { TimestampQpc = 6_000 });
+                        var confirmation = events.Count;
+                        events.Add(Allocation(37, 2, 3, 100) with { TimestampQpc = confirmed ? 6_500 : 2_500 });
+                        events.Add(Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = confirmed ? 7_000 : 2_800 });
+                        WithRecording(events, connection =>
+                        {
+                            var replacementLinks = """
+                                Kind = 'AllocationGlobal' AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects
+                                    WHERE Kind = 'AdapterAllocation' AND StartQpc = 5000)
+                                """;
+                            Expect(Count(connection, "GraphicsLinks", replacementLinks) == (confirmed ? 1 : 0) &&
+                                Count(connection, "GraphicsLinks", $"{replacementLinks} AND StartSeq < {confirmation}") == 0,
+                                "A delayed allocation must not borrow a reused global target before fresh explicit confirmation.");
+                            Expect(Count(connection, "GraphicsResourceAllocations", "AdapterAllocationId IS NULL AND SizeBytes IS NULL") >= 1 &&
+                                Count(connection, "GraphicsResourceAllocations", "SizeBytes = '8192'") == (confirmed ? 1 : 0) &&
+                                Count(connection, "Events") == events.Count,
+                                "Delayed global attribution must retain raw evidence and independent resource intervals with unknown sizes.");
+                        });
+                    }
+                }
+            }
+        }
+        foreach (var sourceFirst in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 },
+                Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 3_500 }
+            ];
+            var source = Allocation(36, 2, 3, 100) with { TimestampQpc = 4_000 };
+            var target = Allocation(33, 2, 3, 100) with { TimestampQpc = 5_000 };
+            events.AddRange(sourceFirst ? [source, target] : [target, source]);
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsResourceAllocations", "AdapterAllocationId IS NOT NULL AND StartSeq = 5") == 1,
+                    "A genuinely new allocation created after the previous global end must correlate in either observation order.");
+            });
+        }
+        Console.WriteLine("Passed: delayed Start/rundown allocations cannot borrow reused global targets in either observation order.");
+    }
+
+    private static void PromotedGlobalEvidence()
+    {
+        foreach (var sourceFirst in new[] { false, true })
+        {
+            foreach (var stale in new[] { false, true })
+            {
+                List<ProfilerEvent> events =
+                [
+                    Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                    Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 },
+                    Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 3_500 }
+                ];
+                var source = Allocation(38, 2, 3, 100) with { TimestampQpc = 4_500 };
+                var target = Allocation(33, 2, 3, 100) with { TimestampQpc = 5_000 };
+                events.AddRange(sourceFirst ? [source, target] : [target, source]);
+                var start = stale ? 2_000 : 4_000;
+                events.Add(Allocation(36, 2, 3, 101) with { TimestampQpc = start });
+                WithRecording(events, connection =>
+                {
+                    Expect(Count(connection, "GraphicsObjects", $"""
+                        Kind = 'DeviceAllocation' AND FirstObservation = 'Rundown' AND StartQpc = {start}
+                            AND hThunkResource = '{Hex(100)}'
+                        """) == 1 &&
+                        Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND EndSeq IS NULL") == 1,
+                        "A delayed allocation Start must promote the same lifetime without replacing newer resource metadata.");
+                    Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal'") == (stale ? 0 : 1) &&
+                        Count(connection, "GraphicsResourceAllocations", "AdapterAllocationId IS NOT NULL AND StartSeq = 6") == (stale ? 0 : 1),
+                        "Promoted creation must refresh global eligibility in either order, without admitting creation before the previous end.");
+                });
+            }
+        }
+        foreach (var phase in new[] { 33, 35 })
+        {
+            var target = Allocation(35, 2, 3, 100) with { TimestampQpc = 6_000 };
+            WithRecording(
+            [
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 1_500 },
+                Allocation(36, 2, 3, 100) with { TimestampQpc = 2_000 },
+                Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 },
+                target with
+                {
+                    Fields = target.Fields.Select(field =>
+                        field.Name == "allocSize" ? new EventField(field.Name, 8192UL) : field).ToArray()
+                },
+                Allocation(38, 2, 3, 100) with { TimestampQpc = 5_000 },
+                Allocation(phase, 2, 3, 100) with { TimestampQpc = 4_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects", """
+                    Kind = 'AdapterAllocation' AND FirstObservation = 'Rundown' AND FirstQpc = 6000
+                        AND KnownFromQpc = 4000 AND SizeBytes = '8192'
+                    """) == 1 &&
+                    Count(connection, "GraphicsResourceAllocations", "StartSeq = 7 AND SizeBytes = '8192'") == 1,
+                    "Earlier target Start or rundown evidence must refresh global links without overwriting newer size metadata.");
+                Expect(Count(connection, "GraphicsLinks", """
+                    Kind = 'AllocationGlobal' AND StartSeq < 7 AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects
+                        WHERE Kind = 'AdapterAllocation' AND FirstQpc = 6000)
+                    """) == 0,
+                    "Confirmation before the target's known existence must remain unattributed until earlier evidence arrives.");
+            });
+        }
+        var incomplete = Allocation(38, 2, 3, 100) with { TimestampQpc = 6_000 };
+        WithRecording(
+        [
+            Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+            Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 1_500 },
+            Allocation(36, 2, 3, 100) with { TimestampQpc = 2_000 },
+            Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 },
+            Allocation(33, 2, 3, 100) with { TimestampQpc = 4_000 },
+            incomplete with { Fields = incomplete.Fields.Where(field => field.Name != "hVidMmGlobalAlloc").ToArray() },
+            Allocation(38, 2, 3, 101) with { TimestampQpc = 5_000 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", $"Kind = 'DeviceAllocation' AND hThunkResource = '{Hex(100)}'") == 1 &&
+                Count(connection, "GraphicsResourceAllocations", "AdapterAllocationId IS NOT NULL AND StartSeq = 7") == 1,
+                "Accepted delayed confirmation must refresh global evidence without rolling back newer resource bridges.");
+        });
+        foreach (var returning in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 },
+                Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 3_500 },
+                Allocation(38, 2, 3, 100) with { TimestampQpc = 4_500 },
+                Allocation(38, 2, 3, 100, Adapter + 1) with { TimestampQpc = 4_700 },
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 5_000 },
+                Allocation(36, 2, 3, 101) with { TimestampQpc = 4_000 }
+            ];
+            if (returning) events.Add(Allocation(38, 2, 3, 100) with { TimestampQpc = 4_800 });
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects", $"""
+                    Kind = 'DeviceAllocation' AND pDxgAdapter = '{Hex(returning ? Adapter : Adapter + 1)}'
+                        AND hThunkResource = '{Hex(100)}'
+                    """) == 1 &&
+                    Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal'") == (returning ? 1 : 0),
+                    "Delayed creation evidence must not restore an older adapter, but must remain usable after a genuine return.");
+            });
+        }
+        Console.WriteLine("Passed: delayed source/target evidence refreshes global links without replacing current bridges.");
+    }
+
+    private static void StopOnlyGlobalBridges()
+    {
+        foreach (var field in new[] { "pDxgAdapter", "hVidMmGlobalAlloc" })
+        {
+            foreach (var observed in new[] { false, true })
+            {
+                foreach (var awayFirst in new[] { false, true })
+                {
+                    foreach (var clear in new[] { false, true })
+                    {
+                        var original = field == "pDxgAdapter" ? Adapter : 3;
+                        ProfilerEvent Bridge(ulong value, long qpc)
+                        {
+                            var data = Allocation(38, 2, 3, 100) with { TimestampQpc = qpc };
+                            return data with
+                            {
+                                Fields = data.Fields.Select(item =>
+                                    item.Name == field ? new EventField(field, value) : item).ToArray()
+                            };
+                        }
+                        List<ProfilerEvent> events = [Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 500 }];
+                        if (observed) events.Add(Allocation(33, 2, 3, 100) with { TimestampQpc = 500 });
+                        events.Add(Allocation(36, 2, 3, 100) with { TimestampQpc = 1_000 });
+                        if (awayFirst) events.Add(Bridge(clear ? 0 : original + 1, 2_000));
+                        events.Add(Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 });
+                        events.Add(Allocation(33, 2, 3, 100) with { TimestampQpc = 4_000 });
+                        if (!awayFirst) events.Add(Bridge(clear ? 0 : original + 1, 2_000));
+                        events.Add(Bridge(original, 2_500));
+                        events.Add(Bridge(original, 4_000));
+                        events.Add(Bridge(original, 5_000));
+                        var confirmation = events.Count;
+                        events.Add(Bridge(clear ? 0 : original + 1, 6_000));
+                        var returning = Bridge(original, 7_000);
+                        events.Add(field == "pDxgAdapter" ? returning with
+                        {
+                            Fields = returning.Fields.Where(item => item.Name != "hVidMmGlobalAlloc").ToArray()
+                        } : returning);
+                        WithRecording(events, connection =>
+                        {
+                            var replacementLinks = """
+                                Kind = 'AllocationGlobal' AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects
+                                    WHERE Kind = 'AdapterAllocation' AND StartQpc = 4000)
+                                """;
+                            Expect(Count(connection, "GraphicsLinks", replacementLinks) == 2 &&
+                                Count(connection, "GraphicsLinks", $"{replacementLinks} AND StartSeq < {confirmation}") == 0 &&
+                                Count(connection, "GraphicsLinks", $"{replacementLinks} AND StartSeq = {events.Count} AND EndSeq IS NULL") == 1,
+                                "Stop-only reuse must survive an absent source; only newer confirmation may rejoin, and that proof must survive a healthy return.");
+                            Expect(Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND EndSeq IS NULL") == 1 &&
+                                Count(connection, "Events") == events.Count,
+                                "Stop-only global invalidation must preserve resource links and every raw event.");
+                        });
+                    }
+                }
+            }
+        }
+        Console.WriteLine("Passed: Stop-only global reuse is retained across adapter, global-handle and cleared-bridge excursions.");
     }
 
     private static void IndependentAllocationLinks()
@@ -934,7 +1484,11 @@ internal static class GraphicsIndexTests
         ];
         events.AddRange(Enumerable.Range(0, 6_000).Select(_ =>
             new ProfilerEvent(0, 0, 10, 7, XamlProvider.Xaml, false, "UnrelatedEvent", 0, [new("Value", new string('x', 256))])));
-        events.Add(Direct3D(7, 4, Device, 101));
+        var resourceStop = Direct3D(7, 4, Device, 101);
+        events.Add(resourceStop with
+        {
+            Fields = resourceStop.Fields.Where(field => field.Name != "pID3D11Device").ToArray()
+        });
         events.Add(Direct3D(4, Device));
         WithRecording(events, connection =>
         {
@@ -949,6 +1503,35 @@ internal static class GraphicsIndexTests
                 Count(connection, "GraphicsObjects", "Kind = 'Device'") == 1,
                 "Closed graphics history and its metadata must leave together, without dangling device references.");
         }, limitBytes: 1024 * 1024);
+        foreach (var sourceObserved in new[] { false, true })
+        {
+            List<ProfilerEvent> delayed =
+            [
+                Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 500 }
+            ];
+            if (sourceObserved)
+            {
+                delayed.Add(Allocation(36, 2, 3, 100) with { TimestampQpc = 1_000 });
+                delayed.Add(Allocation(38, 2, 3, 100, Adapter + 1) with { TimestampQpc = 2_000 });
+            }
+            delayed.Add(Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 });
+            if (!sourceObserved) delayed.Add(Allocation(33, 2, 3, 100) with { TimestampQpc = 4_000 });
+            delayed.AddRange(Enumerable.Range(0, 6_000).Select(_ =>
+                new ProfilerEvent(0, 0, 10, 7, XamlProvider.Xaml, false, "UnrelatedEvent", 0, [new("Value", new string('x', 256))])));
+            if (sourceObserved) delayed.Add(Allocation(33, 2, 3, 100) with { TimestampQpc = 4_000 });
+            delayed.Add(Allocation(sourceObserved ? 38 : 36, 2, 3, 100) with { TimestampQpc = 2_500 });
+            delayed.Add(Allocation(37, 2, 3, 100) with { TimestampQpc = 6_000 });
+            delayed.Add(Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 7_000 });
+            WithRecording(delayed, connection =>
+            {
+                Expect(Sql.Scalar(connection, "SELECT CompleteFromSeq FROM SessionInfo") > 5 &&
+                    Count(connection, "GraphicsObjects", "Kind = 'AdapterAllocation' AND StopQpc = 3000") == 0,
+                    "The global-retention fixture must discard the Stop-only adapter lifetime.");
+                Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal'") == 0 &&
+                    Count(connection, "GraphicsResourceAllocations", "AdapterAllocationId IS NULL AND SizeBytes IS NULL") == 1,
+                    "Trimming must retain reuse protection for an active target or a surviving source, including while its bridge is away.");
+            }, limitBytes: 1024 * 1024);
+        }
         Console.WriteLine("Passed: rolling retention prunes closed graphics history and preserves open lifetime continuity.");
     }
 

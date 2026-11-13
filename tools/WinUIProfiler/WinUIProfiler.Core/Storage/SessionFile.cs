@@ -517,21 +517,26 @@ public static class SessionFile
         string? filter)
     {
         filter = string.IsNullOrWhiteSpace(filter) ? null : filter.Trim();
-        long? number = filter is null ? null
-            : filter.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                ? ulong.TryParse(filter.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex)
-                    ? unchecked((long)hex) : null
+        var isHex = filter?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) == true;
+        ulong? unsigned = filter is null ? null
+            : ulong.TryParse(isHex ? filter.AsSpan(2) : filter.AsSpan(),
+                isHex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var handle)
+                ? handle : null;
+        long? number = isHex ? unsigned is { } hex ? unchecked((long)hex) : null
+            : filter is null ? null
                 : long.TryParse(filter, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
+        // json_each rounds large unsigned integers to REAL; compare their original JSON tokens instead.
         return ($"""
             FROM {scope.From}
             WHERE {scope.Where} AND ($bucket IS NULL OR d.Bucket = $bucket)
                 AND ($like IS NULL OR d.Name LIKE $like ESCAPE '\' OR EXISTS (
                     SELECT 1 FROM json_each(d.Payload) v
-                    WHERE ($number IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
-                        OR (v.type IN ('integer', 'real') AND v.value = $number)))
+                    WHERE ($number IS NULL AND $unsigned IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
+                        OR (v.type IN ('integer', 'real') AND v.value = $number)
+                        OR ($unsigned IS NOT NULL AND v.type = 'integer' AND (d.Payload -> v.key) = $unsigned)))
             """, [.. scope.Parameters, ("$bucket", bucket),
                 ("$like", filter is null ? null : $"%{filter.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_")}%"),
-                ("$number", number)]);
+                ("$number", number), ("$unsigned", unsigned is > long.MaxValue ? unsigned.Value.ToString(CultureInfo.InvariantCulture) : null)]);
     }
 
     // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and then any others, which the sink reads from the

@@ -1019,7 +1019,7 @@ try
     group.Post(new(500, 0.5, 99, 7, XamlProvider.Marker, true, "Launch", 0, [], new("Launcher", Guid.NewGuid())));
     group.Close("Test complete", 2);
 
-    Expect(group.Primary.Source.ProcessId == 20 && group.Primary.XamlEvents == 1 && group.Primary.GpuMemoryEvents == 1 &&
+    Expect(group.Primary.Source.ProcessId == 20 && group.Primary.XamlEvents == 1 && group.Primary.GpuMemoryEvents == 0 &&
         group.Primary.Recording!.StoredEvents == 4 && group.RecordingError is null,
         "The UI child must remain primary; external launcher markers must not become target XAML.");
     foreach (var item in group.Processes)
@@ -1090,6 +1090,31 @@ foreach (var invalidPid in new object?[] { null, 0, -1, uint.MaxValue, long.MaxV
         "Missing, invalid or oversized payload PIDs must not wrap or fall back to the event-header process.");
 }
 Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation/budget/usage ownership filters.");
+
+{
+    var counter = new EventCounter();
+    var tally = new OfflineEtlSource.ProcessTally(10, null, 0);
+    foreach (var id in Enumerable.Range(33, 6))
+    {
+        counter.Process(id, new(id, id, 10, 7, XamlProvider.DxgKrnl, false, "Allocation", 0, [], EventId: id));
+        tally.Count(XamlProvider.DxgKrnl, id, id);
+    }
+    Expect(counter.GpuMemoryEvents == 0 && tally.GpuMemoryEvents == 0 && tally.XamlEvents == 0 && tally.ProfilerEvents == 0,
+        "Allocation-only capture must not report GPU usage/budget events or turn allocations into XAML events.");
+    foreach (var id in new int?[] { 366, 367, null })
+    {
+        counter.Process(40, new(40, 40, 10, 7, XamlProvider.DxgKrnl, false, "GpuMemory", 0, [], EventId: id));
+        tally.Count(XamlProvider.DxgKrnl, 40, id);
+    }
+    counter.Process(41, new(41, 41, 10, 7, XamlProvider.Xaml, false, "Xaml", 0, []));
+    tally.Count(XamlProvider.Xaml, 41, null);
+    counter.Process(42, new(42, 42, 10, 7, XamlProvider.XamlProfiler, false, "Profiler", 0, []));
+    tally.Count(XamlProvider.XamlProfiler, 42, null);
+    Expect(counter.GpuMemoryEvents == 3 && tally.GpuMemoryEvents == 3 &&
+        counter.XamlEvents == 1 && tally.XamlEvents == 1 && counter.ProfilerEvents == 1 && tally.ProfilerEvents == 1,
+        "Live/offline counters must preserve budget, usage, legacy unidentified memory events and XAML provider totals.");
+}
+Console.WriteLine("Passed: live/offline memory counters exclude allocations without losing budget, usage or legacy counts.");
 
 foreach (var failure in new[] { false, true })
 {

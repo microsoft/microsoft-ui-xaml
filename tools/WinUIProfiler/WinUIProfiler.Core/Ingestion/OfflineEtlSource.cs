@@ -119,7 +119,7 @@ public static class OfflineEtlSource
                 order.Add(tally);
             }
 
-            tally.Count(provider, time);
+            tally.Count(provider, time, (int)data.ID);
         });
         var lastMilliseconds = 0.0;
         source.AllEvents += data =>
@@ -213,7 +213,7 @@ public static class OfflineEtlSource
         return new(delivered, source.EventsLost, source.SessionDuration);
     }
 
-    private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
+    internal sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
     {
         public int ProcessId { get; } = processId;
         public string? Name { get; } = name;
@@ -224,7 +224,7 @@ public static class OfflineEtlSource
         public long GpuMemoryEvents { get; private set; }
 
         // Grouped as EventCounter groups them.
-        public void Count(XamlProvider provider, double milliseconds)
+        public void Count(XamlProvider provider, double milliseconds, int? eventId)
         {
             switch (provider)
             {
@@ -232,7 +232,7 @@ public static class OfflineEtlSource
                     ProfilerEvents++;
                     break;
                 case XamlProvider.DxgKrnl:
-                    GpuMemoryEvents++;
+                    if (eventId is not (>= 33 and <= 38)) GpuMemoryEvents++;
                     break;
                 case XamlProvider.Win32k:
                 case XamlProvider.Direct3D11:
