@@ -10,18 +10,19 @@
     <RuntimeIdentifier>win10-$(WindowsSDKArch.ToLowerInvariant())</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC'">win10-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
+    <PublishAot Condition="'$(UseCsWinRT3)' == 'true'">false</PublishAot>
+    <CsWinRTGenerateInteropAssembly Condition="'$(UseCsWinRT3)' == 'true'">false</CsWinRTGenerateInteropAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- This project does NOT use Central Package Versions (no Microsoft.Build.CentralPackageVersions Sdk),
-         so the version must be specified explicitly; a versionless reference floors to CsWinRT 0.1.0 and feeds
-         garbage to the .NET SDK's RunCsWinRTGenerator task. Select by TFM: net10 -> CsWinRT 3.0, else 2.x. -->
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net10.0'))" />
+         so the version must be specified explicitly. The v3 runtime consumes the existing net10 package assets. -->
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net11.0'))" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net11.0'))" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Platform)' != 'ARM64'" >
-    <BinplaceItem Include="$(MSBuildThisFileDirectory)WinRT.Host.runtimeconfig.json" /> 
+    <BinplaceItem Include="$(MSBuildThisFileDirectory)WinRT.Host.runtimeconfig.json" Condition="'$(UseCsWinRT3)' != 'true'" />
     <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(WinUIConsumerCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\WinRT.Host.dll" />
     <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(WinUIConsumerCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\en-us\WinRT.Host.dll.mui" />
     <!--

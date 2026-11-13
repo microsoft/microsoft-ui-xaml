@@ -6,7 +6,7 @@
        ReferenceCopyLocalPaths remains unchanged so only the runtime forwarder is deployed. -->
   <Target Name="_UseAppTestAutomationHelpersReferenceProjectionForCompile"
           AfterTargets="ResolveReferences"
-          Condition="$(TargetFramework.StartsWith('net10.0'))">
+          Condition="$(TargetFramework.StartsWith('net11.0'))">
     <ItemGroup>
       <_AppTestAutomationHelpersForwarder Include="@(ReferencePath)"
           Condition="'%(FileName)%(Extension)' == 'AppTestAutomationHelpers.Projection.dll' and '%(ReferencePath.ReferenceAssembly)' != ''" />

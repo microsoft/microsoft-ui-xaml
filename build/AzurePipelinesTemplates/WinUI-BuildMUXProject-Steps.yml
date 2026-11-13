@@ -594,6 +594,15 @@ steps:
 
   # Run the second pass after staging shipping packaging and symbols.
   - ${{ if and(eq(parameters.buildCsWinRT3Tests, true), eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
+    - task: CmdLine@2
+      displayName: 'Select .NET 11 runtime for CsWinRT 3.0 scenarios'
+      inputs:
+        script: |
+          call $(Build.SourcesDirectory)\init.cmd /pipeline $(buildOutput)$(normalizedConfiguration) net11
+    - task: PowerShell@2
+      displayName: 'Download .NET 11 Windows Desktop runtime installer'
+      inputs:
+        filePath: 'build\DownloadDotNetRuntimeInstaller.ps1'
     - template: WinUI-BuildProject-Steps.yml
       parameters:
         solutionName: Microsoft.UI.Xaml.sln

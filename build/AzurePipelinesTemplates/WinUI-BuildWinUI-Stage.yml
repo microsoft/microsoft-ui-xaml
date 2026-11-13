@@ -49,7 +49,7 @@ stages:
       # hostVersion REPLACES featureFlags.WindowsHostVersion, so Version/Network are restated.
       ${{ if ne(parameters.buildHostSku, '') }}:
         hostVersion:
-          Version: 2022
+          Version: 2025
           Network: KS3
           SKU: ${{ parameters.buildHostSku }}
     timeoutInMinutes: 500

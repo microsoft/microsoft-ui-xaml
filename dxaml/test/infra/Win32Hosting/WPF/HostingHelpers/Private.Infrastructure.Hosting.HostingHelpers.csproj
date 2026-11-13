@@ -19,13 +19,10 @@
     <CsWinRTEnableLogging>true</CsWinRTEnableLogging>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <!-- Generate runtime projections for activation by native TAEF through WinRT.Host.
-         Exclude ARM64, where the required project references below are unavailable. -->
-    <CsWinRTBuildForNativeConsumer Condition="'$(UseCsWinRT3)'=='true' and '$(Platform)'!='ARM64'">true</CsWinRTBuildForNativeConsumer>
-    <SharedTestProjectionConsumer Condition="'$(UseCsWinRT3)'=='true'">true</SharedTestProjectionConsumer>
-
-    <!-- Root TypeMap discovery when WinRT.Host loads WinRT.Component.dll. -->
-    <CsWinRTEmitEntryPointInitializer Condition="'$(UseCsWinRT3)'=='true' and '$(Platform)'!='ARM64'">true</CsWinRTEmitEntryPointInitializer>
+    <!-- Preserve authoring/WinMD exports; the aggregate generates native activation sidecars. -->
+    <CsWinRTGenerateInteropAssembly Condition="'$(UseCsWinRT3)'=='true'">false</CsWinRTGenerateInteropAssembly>
+    <CsWinRTBuildForNativeConsumer Condition="'$(UseCsWinRT3)'=='true'">false</CsWinRTBuildForNativeConsumer>
+    <CsWinRTEmitEntryPointInitializer Condition="'$(UseCsWinRT3)'=='true'">false</CsWinRTEmitEntryPointInitializer>
 
     <!-- Use WebView2's WinRT projection; its desktop wrappers depend on an older WinRT.Runtime. -->
     <WebView2UseWinRT Condition="'$(UseCsWinRT3)'=='true'">true</WebView2UseWinRT>
@@ -45,34 +42,20 @@
 
   <!-- Merged WinUI generation also needs the Resources reference projection,
        which does not flow transitively from the WinUI project. -->
-  <ItemGroup Condition="'$(CsWinRTBuildForNativeConsumer)'=='true'">
+  <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
       <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
 
-  <!-- Copy runtime projections beside HostingHelpers for native activation; ReferenceOutputAssembly=false
-       prevents transitive deployment. Do not use Exists guards: these files are generated during Build. -->
-  <ItemGroup Condition="'$(CsWinRTBuildForNativeConsumer)'=='true'">
-    <BinplaceItem Include="$(OutDir)WinRT.Projection.dll">
-      <Destination>$(TestBinplaceDestinationPath)</Destination>
-    </BinplaceItem>
-    <BinplaceItem Include="$(OutDir)WinRT.Component.dll">
-      <Destination>$(TestBinplaceDestinationPath)</Destination>
-    </BinplaceItem>
-    <BinplaceItem Include="$(OutDir)WinRT.Interop.dll">
-      <Destination>$(TestBinplaceDestinationPath)</Destination>
-    </BinplaceItem>
-    <BinplaceItem Include="$(OutDir)WinRT.Sdk.Projection.dll">
-      <Destination>$(TestBinplaceDestinationPath)</Destination>
-    </BinplaceItem>
+  <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
     <!-- Native activation also needs the WebView2 runtime forwarder. -->
-    <BinplaceItem Include="$(NuGetPackageRoot)\microsoft.web.webview2\$(WebView2PackageVersion)\lib\$(TargetFramework)\Microsoft.Web.WebView2.Core.Projection.dll">
+    <BinplaceItem Include="$(NuGetPackageRoot)\microsoft.web.webview2\$(WebView2PackageVersion)\lib\net10.0-windows$(WindowsAppSdkTargetPlatformVersion_v3)\Microsoft.Web.WebView2.Core.Projection.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
     <!-- Deploy Foundation's runtime projections from lib, not its compile-time references from ref. -->
-    <BinplaceItem Include="$(LiftedMRTLibPath)\$(TargetFramework)\*.Projection.dll">
+    <BinplaceItem Include="$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker_v3)\*.Projection.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
   </ItemGroup>

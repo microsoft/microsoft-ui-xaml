@@ -324,14 +324,14 @@ if ($UseSharedTestProjections -and ($Mode -eq "DevTestSuite" -or $Mode -eq "Scen
     Copy-Item -LiteralPath $muxTestInfraSource -Destination "$managedTestRoot\MUXTestInfra.dll" -Force -ErrorAction Stop
 
     $sharedProjectionRoot = "$binpath\Test\SharedTestProjections"
-    foreach ($assemblyName in "WinRT.Interop.dll", "WinRT.Sdk.Projection.dll")
+    foreach ($assemblyName in "SharedTestProjections.dll", "WinRT.Interop.dll", "WinRT.Sdk.Projection.dll", "WinRT.Host.runtimeconfig.json")
     {
         if (!(Test-Path -LiteralPath "$sharedProjectionRoot\$assemblyName" -PathType Leaf))
         {
             throw "Shared TAEF projection '$assemblyName' not found under '$sharedProjectionRoot'. Build SharedTestProjections first."
         }
     }
-    foreach ($assemblyName in "WinRT.Interop.dll", "WinRT.Projection.dll", "WinRT.Component.dll", "WinRT.Sdk.Projection.dll")
+    foreach ($assemblyName in "SharedTestProjections.dll", "SharedTestProjections.runtimeconfig.json", "WinRT.Interop.dll", "WinRT.Projection.dll", "WinRT.Component.dll", "WinRT.Sdk.Projection.dll", "WinRT.Host.runtimeconfig.json")
     {
         $source = Join-Path $sharedProjectionRoot $assemblyName
         $destination = Join-Path $managedTestRoot $assemblyName

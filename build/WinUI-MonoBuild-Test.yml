@@ -55,6 +55,8 @@ parameters: # parameters are shown up in ADO UI at build queue time
 variables:
 - template: AzurePipelinesTemplates\WinUI-Versions.yml
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- name: WindowsContainerImage
+  value: 'onebranch.azurecr.io/windows/ltsc2025/vse2026:latest'
 # eng\Versions.props infers an internal build from the presence of a .azuredevops folder,
 # which the public GitHub mirror does not carry. Left unset, the OSS pins further down that
 # file override the mono-build component versions and swap the transport package names.
@@ -96,7 +98,7 @@ extends:
     featureFlags:
       EnableCDPxPAT: false
       WindowsHostVersion:
-        Version: 2022
+        Version: 2025
         Network: KS3
     platform:
       name: 'windows_undocked' # windows undocked

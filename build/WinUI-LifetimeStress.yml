@@ -33,6 +33,8 @@ parameters: # parameters show up in the ADO UI at build-queue time
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- name: WindowsContainerImage
+  value: 'onebranch.azurecr.io/windows/ltsc2025/vse2026:latest'
 - group: WinUI-Variable-Library
 # Soak mode: each scenario loops until this many minutes elapse instead of the default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
@@ -63,7 +65,7 @@ extends:
     featureFlags:
       EnableCDPxPAT: false
       WindowsHostVersion:
-        Version: 2022
+        Version: 2025
         Network: KS3
     platform:
       name: 'windows_undocked' # windows undocked

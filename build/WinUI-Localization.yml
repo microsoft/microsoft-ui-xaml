@@ -6,6 +6,8 @@ trigger: none
 variables:
 - template: AzurePipelinesTemplates\WinUI-Versions.yml
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- name: WindowsContainerImage
+  value: 'onebranch.azurecr.io/windows/ltsc2025/vse2026:latest'
 - group: WinUITeamKeyVault-Secrets
 - group: WinUI-Variable-Library
 
@@ -26,7 +28,7 @@ extends:
     featureFlags:
       EnableCDPxPAT: false
       WindowsHostVersion:
-        Version: 2022
+        Version: 2025
         Network: KS3
     platform:
       name: 'windows_undocked' # windows undocked

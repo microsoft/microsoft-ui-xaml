@@ -45,7 +45,7 @@ variables:
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
 - name: WindowsContainerImage
-  value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+  value: 'onebranch.azurecr.io/windows/ltsc2025/vse2026:latest'
 # Run the LifetimeStressTestSuite native scenarios in their aggressive repro variant on the PR gate.
 # An unfixed native lifetime bug can fault the test host and fail this shared gate.
 - name: WINUI_LIFETIME_STRESS_NATIVE
@@ -72,7 +72,7 @@ extends:
     featureFlags:
       EnableCDPxPAT: false
       WindowsHostVersion:
-        Version: 2022
+        Version: 2025
         Network: KS3
     platform:
       name: 'windows_undocked'

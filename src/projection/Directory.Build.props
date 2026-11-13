@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <!-- Both TFMs compile, but only the projection selected by UseCsWinRT3 is copied to the shared test directory. -->
-  <PropertyGroup Condition="'$(TargetFramework)' != '' and (('$(UseCsWinRT3)' != 'true' and $(TargetFramework.StartsWith('net10'))) or ('$(UseCsWinRT3)' == 'true' and !$(TargetFramework.StartsWith('net10'))))">
+  <PropertyGroup Condition="'$(TargetFramework)' != '' and (('$(UseCsWinRT3)' != 'true' and $(_IsCsWinRTv3)) or ('$(UseCsWinRT3)' == 'true' and !$(_IsCsWinRTv3)))">
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
   </PropertyGroup>
 

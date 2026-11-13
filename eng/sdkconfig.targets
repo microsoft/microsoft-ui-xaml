@@ -1,6 +1,6 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project>
-  <PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0'))">
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net11.0'))">
     <DefineConstants>$(DefineConstants);CSWINRT3_0</DefineConstants>
     <UsingCSWinRT3>true</UsingCSWinRT3>
     <WindowsSdkPackageVersion>$(WindowsAppSdkWindowsSdkPackageVersion_v3)</WindowsSdkPackageVersion>

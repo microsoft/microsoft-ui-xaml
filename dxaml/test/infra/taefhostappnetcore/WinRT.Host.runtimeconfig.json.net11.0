@@ -1,0 +1,20 @@
+{
+  "runtimeOptions": {
+    "tfm": "net11.0",
+    "rollForward": "LatestMinor",
+    "frameworks": [
+      {
+        "name": "Microsoft.NETCore.App",
+        "version": "11.0.0"
+      },
+      {
+        "name": "Microsoft.WindowsDesktop.App",
+        "version": "11.0.0"
+      }
+    ],
+    "configProperties": {
+      "System.Runtime.InteropServices.TypeMappingEntryAssembly": "SharedTestProjections",
+      "CSWINRT_LOAD_COMPONENTS_IN_DEFAULT_ALC": true
+    }
+  }
+}

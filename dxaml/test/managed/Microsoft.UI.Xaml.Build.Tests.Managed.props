@@ -14,30 +14,24 @@
     <TestCode>true</TestCode>
   </PropertyGroup>
 
-  <!-- Generate module inputs locally; SharedTestProjections combines their maps for flat TAEF deployment. -->
+  <!-- The aggregate owns sidecars; TAEF loads these consumers as ordinary managed libraries. -->
   <PropertyGroup Condition="'$(UseCsWinRT3)'=='true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'">
-    <CsWinRTGenerateInteropAssembly>true</CsWinRTGenerateInteropAssembly>
-    <SharedTestProjectionConsumer>true</SharedTestProjectionConsumer>
-
-    <!-- TAEF loads these DLLs directly, not through WinRT.Host; AssemblySetup sets the TypeMap entry assembly.
-         They consume WinRT types but do not author components, so do not enable CsWinRTComponent. -->
-    <CsWinRTBuildForNativeConsumer>true</CsWinRTBuildForNativeConsumer>
-
-    <!-- Exe roots the generated TypeMap; CustomNativeMain keeps the output loadable as a TAEF DLL.
-         AssemblySetup supplies the required but unused Main method. -->
-    <OutputType>Exe</OutputType>
-    <CustomNativeMain>true</CustomNativeMain>
+    <CsWinRTGenerateInteropAssembly>false</CsWinRTGenerateInteropAssembly>
+    <OutputType>Library</OutputType>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(XamlSourcePath)\test\managed\common\AssemblySetup.cs" />
+    <Compile Include="$(ProjectRoot)test\SharedTestProjections\CsWinRT3Bootstrap.cs"
+             Condition="'$(UseCsWinRT3)' == 'true' and '$(MSBuildProjectName)' != 'Microsoft.UI.Xaml.Tests.Managed.Common'" />
   </ItemGroup>
 
   <Import Project="taef.managed.props"/>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net10.0'))" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net10.0'))" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" Condition="!$(TargetFramework.StartsWith('net11.0'))" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" Condition="$(TargetFramework.StartsWith('net11.0'))" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,7 +59,7 @@
         <Destination>$(TargetDestination)</Destination>
       </BinplaceItem>
       <!-- Deploy Foundation's runtime projections from lib, not its compile-time references from ref. -->
-      <BinplaceItem Include="$(LiftedMRTLibPath)\$(TargetFramework)\*.Projection.dll">
+      <BinplaceItem Include="$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker_v3)\*.Projection.dll">
         <Destination>$(TargetDestination)</Destination>
       </BinplaceItem>
       <!-- Keep the test DLL and resources in the same folder. Omit .deps.json/.runtimeconfig.json:

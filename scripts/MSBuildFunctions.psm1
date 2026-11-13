@@ -4,7 +4,7 @@
 # isn't the correct one, this will download MSBuild to the .buildtools directory. The
 # version can be as precise as we need it to be (i.e. 16.8.0.45203), but we should
 # be as flexible as we can
-[version]$MSBuildVer = "16.9"
+[version]$MSBuildVer = "18.7"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $vsconfigPath = "$repoRoot\.vsconfig_buildtools"
 
@@ -37,13 +37,15 @@ $VSInstallURIs.BuildTools169 = 'https://download.visualstudio.microsoft.com/down
 $VSInstallURIs.Latest16x = 'https://aka.ms/vs/16/release/vs_buildtools.exe'
 $VSInstallURIs.Release17x = 'https://aka.ms/vs/17/release/vs_community.exe'
 $VSInstallURIs.Preview17x = 'https://aka.ms/vs/17/pre/vs_community.exe'
+$VSInstallURIs.Release18x = 'https://aka.ms/vs/18/release/vs_community.exe'
+$VSInstallURIs.Preview18x = 'https://aka.ms/vs/18/pre/vs_community.exe'
 
 if ( [string]::IsNullOrEmpty( $VsVersionToInstall ))
 {
-    $VsVersionToInstall = $VSInstallURIs.Release17x
+    $VsVersionToInstall = 'Release18x'
 }
 
-$MSBuildInstallURI = $VsVersionToInstall
+$MSBuildInstallURI = $VSInstallURIs[$VsVersionToInstall]
 
 $MSBuildInstallParams = "--norestart --quiet --force --installPath ""{0}"" {1} --config $vsconfigPath"
 $MSBuildUninstallParams = "uninstall --norestart --quiet --force --installPath ""{0}"" {1}"

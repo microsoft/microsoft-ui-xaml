@@ -14,7 +14,7 @@
       <PrivateWinUIProjectionAssembly>$(ArtifactsObjDir)src\projection\private\$(_WinUIProjectionTFM)\Microsoft.WinUI.dll</PrivateWinUIProjectionAssembly>
       <!-- Compile CsWinRT 3.0 against the generated reference projection in ref, not the runtime forwarder
            or its empty C# TargetRefPath. CsWinRT 2.x uses the primary output for both purposes. -->
-      <_IsV3ProjectionConsumer Condition="$(_WinUIProjectionTFM.StartsWith('net10'))">true</_IsV3ProjectionConsumer>
+      <_IsV3ProjectionConsumer Condition="$(_WinUIProjectionTFM.StartsWith('net11.0'))">true</_IsV3ProjectionConsumer>
       <PrivateWinUIProjectionCompileAssembly>$(PrivateWinUIProjectionAssembly)</PrivateWinUIProjectionCompileAssembly>
       <PrivateWinUIProjectionCompileAssembly Condition="'$(_IsV3ProjectionConsumer)' == 'true'">$(ArtifactsObjDir)src\projection\private\$(_WinUIProjectionTFM)\ref\Microsoft.WinUI.dll</PrivateWinUIProjectionCompileAssembly>
       <AdditionalExplicitAssemblyReferences>$(PrivateWinUIProjectionCompileAssembly);$(AdditionalExplicitAssemblyReferences)</AdditionalExplicitAssemblyReferences>
@@ -58,7 +58,7 @@
        Only the runtime forwarder should be deployed as Microsoft.WinUI.dll. -->
   <Target Name="RemovePrivateWinUIReferenceAssemblyFromCopyLocal"
           AfterTargets="ResolveAssemblyReferences"
-          Condition="'$(IncludePrivateMetadata)' == 'true' and '$(MSBuildProjectExtension)'=='.csproj' and '$(UsingMicrosoftNETSdk)' == 'true' and $(WinUIProjectionConsumerTFM.StartsWith('net10'))">
+          Condition="'$(IncludePrivateMetadata)' == 'true' and '$(MSBuildProjectExtension)'=='.csproj' and '$(UsingMicrosoftNETSdk)' == 'true' and $(WinUIProjectionConsumerTFM.StartsWith('net11.0'))">
     <ItemGroup>
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
                                Condition="'%(Filename)%(Extension)' == 'Microsoft.WinUI.dll' and $([System.String]::Copy('%(FullPath)').Replace('/','\').Contains('\ref\'))" />

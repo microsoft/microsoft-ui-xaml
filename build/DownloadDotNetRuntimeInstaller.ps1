@@ -30,6 +30,12 @@ if (([string]::IsNullOrEmpty($downloadurlx86)) -or ([string]::IsNullOrEmpty($dow
     # Find .NET runtime direct download links at https://dotnet.microsoft.com/en-us/download/dotnet
     switch($env:_DotNetMoniker)
     {
+        "net11.0"
+        {
+            $downloadurlx86 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/11.0.0/windowsdesktop-runtime-11.0.0-win-x86.exe"
+            $downloadurlx64 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/11.0.0/windowsdesktop-runtime-11.0.0-win-x64.exe"
+            $downloadurlarm64 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/11.0.0/windowsdesktop-runtime-11.0.0-win-arm64.exe"
+        }
         "net10.0"
         {
             $downloadurlx86 = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.14/windowsdesktop-runtime-10.0.14-win-x86.exe"
@@ -82,12 +88,5 @@ else
 }
 
 
-if(!(Test-Path $outputPath))
-{
-    Write-Host "Downloading .NET Desktop runtime installer for $arch from $downloadurl to $outputPath"
-    Invoke-WebRequest $downloadurl -OutFile $outputPath
-}
-else
-{
-    Write-Host ".NET Desktop runtime installer for $arch is already available at $outputPath."
-}
+Write-Host "Downloading .NET Desktop runtime installer for $arch from $downloadurl to $outputPath"
+Invoke-WebRequest $downloadurl -OutFile $outputPath -ErrorAction Stop

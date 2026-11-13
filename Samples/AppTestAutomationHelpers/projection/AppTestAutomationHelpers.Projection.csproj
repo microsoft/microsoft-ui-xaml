@@ -7,7 +7,7 @@
   <PropertyGroup>
     <!-- Use the lowest common consumer TFM, including .NET 6 samples in the 2.x build. -->
     <TargetFramework>$(WinUIProjectionConsumerTFM)</TargetFramework>
-    <TargetPlatformVersion Condition="!$(TargetFramework.StartsWith('net10.0'))">$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformVersion Condition="!$(TargetFramework.StartsWith('net11.0'))">$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
     <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
     <RootNamespace>AppTestAutomationHelpers</RootNamespace>
     <Platforms>x64;x86;ARM64</Platforms>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <!-- Select using the resolved TFM, after the early central properties have been evaluated. -->
-  <PropertyGroup Condition="$(TargetFramework.StartsWith('net10'))">
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net11.0'))">
     <CsWinRTGenerateReferenceProjection>true</CsWinRTGenerateReferenceProjection>
   </PropertyGroup>
 

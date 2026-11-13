@@ -1,0 +1,26 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project>
+  <!-- This preview omits implementation inputs. Invalidate before any sidecar checks, excluding outputs
+       so regenerated component assemblies cannot continually invalidate their own generator cache. -->
+  <Target Name="ComputeSharedInteropImplementationSet"
+          Condition="'$(UseCsWinRT3)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(MicrosoftCsWinRTv3PackageVersion)' == '3.0.0-preview.261104.1'">
+    <ItemGroup>
+      <_SharedInteropImplementation Include="@(ReferencePath)"
+          Condition="'%(Filename)' != 'WinRT.Interop' and '%(Filename)' != 'WinRT.Component' and '%(Filename)' != 'WinRT.Projection' and '%(Filename)' != 'WinRT.Sdk.Projection'" />
+    </ItemGroup>
+    <Hash ItemsToHash="@(_SharedInteropImplementation->'%(FullPath)')">
+      <Output TaskParameter="HashResult" PropertyName="_SharedImplementationSetHash" />
+    </Hash>
+    <WriteLinesToFile File="$(IntermediateOutputPath)shared-interop.set" Lines="$(_SharedImplementationSetHash)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)shared-interop.set;$(IntermediateOutputPath)shared-interop.seen" />
+    </ItemGroup>
+  </Target>
+  <Target Name="InvalidateSharedInteropForImplementationChanges"
+          BeforeTargets="_RunCsWinRTSdkProjectionGenerator" DependsOnTargets="ComputeSharedInteropImplementationSet"
+          Inputs="@(_SharedInteropImplementation);@(IntermediateAssembly);$(IntermediateOutputPath)shared-interop.set"
+          Outputs="$(IntermediateOutputPath)shared-interop.seen"
+          Condition="'$(UseCsWinRT3)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(MicrosoftCsWinRTv3PackageVersion)' == '3.0.0-preview.261104.1'">
+    <Touch Files="$(_RunCsWinRTGeneratorPropertyInputsCachePath);$(IntermediateOutputPath)shared-interop.seen" AlwaysCreate="true" ForceTouch="true" />
+  </Target>
+</Project>

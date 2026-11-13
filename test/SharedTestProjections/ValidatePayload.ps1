@@ -46,6 +46,12 @@ function Test-Staging([string]$Mode, [bool]$UseSharedTestProjections, [bool]$sdk
             if ($file -ne $missing -and (!$sdkOnly -or $file -in @('WinRT.Interop.dll', 'WinRT.Sdk.Projection.dll'))) {
                 [IO.File]::WriteAllText("$binpath\Test\SharedTestProjections\$file", 'shared-' + $file)
             }
+            foreach ($file in 'SharedTestProjections.dll', 'SharedTestProjections.runtimeconfig.json', 'WinRT.Host.runtimeconfig.json') {
+                [IO.File]::WriteAllText("$outpath\Test\$file", 'obsolete-flat')
+                if ($file -ne $missing) {
+                    [IO.File]::WriteAllText("$binpath\Test\SharedTestProjections\$file", 'shared-' + $file)
+                }
+            }
         }
         [IO.File]::WriteAllText("$binpath\Test\MUXTestInfra\MUXTestInfra.dll", 'v3-helper')
         [IO.File]::WriteAllText("$outpath\Test\MUXTestInfra.dll", 'stale-helper')
@@ -80,6 +86,9 @@ function Test-Staging([string]$Mode, [bool]$UseSharedTestProjections, [bool]$sdk
             if ((Get-Content -LiteralPath "$outpath\Test\$module.dll" -Raw) -ne 'current-module') { throw 'Flat test removed' }
         }
         if ($active) {
+            foreach ($file in 'SharedTestProjections.dll', 'SharedTestProjections.runtimeconfig.json', 'WinRT.Host.runtimeconfig.json') {
+                if ((Get-Content -LiteralPath "$outpath\Test\$file" -Raw) -ne 'shared-' + $file) { throw "Wrong aggregate artifact: $file" }
+            }
             if ((Get-Content -LiteralPath "$outpath\Test\MUXTestInfra.dll" -Raw) -ne 'v3-helper') { throw 'Stale helper selected' }
             foreach ($file in 'WinRT.Interop.dll', 'WinRT.Projection.dll', 'WinRT.Component.dll') {
                 if (Test-Path -LiteralPath "$outpath\localDotNet\$file") { throw 'App map contaminated shared runtime' }
@@ -105,3 +114,5 @@ Test-Staging DevTestSuite $false $false
 Test-Staging PGO $true $false
 Test-Staging DevTestSuite $true $false 'WinRT.Interop.dll'
 Test-Staging ScenarioTestSuite $true $true 'WinRT.Sdk.Projection.dll'
+Test-Staging DevTestSuite $true $false 'SharedTestProjections.dll'
+Test-Staging DevTestSuite $true $false 'WinRT.Host.runtimeconfig.json'

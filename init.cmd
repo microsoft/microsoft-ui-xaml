@@ -133,6 +133,8 @@ if /i "%1"=="" (
     set _DotNetMoniker=net8.0
 ) else if /i "%1"=="net10" (
     set _DotNetMoniker=net10.0
+) else if /i "%1"=="net11" (
+    set _DotNetMoniker=net11.0
 ) else if /i "%1"=="/nopgo" (
     set _noPgo=1
 )  else (

@@ -28,24 +28,24 @@ variables:
   _useBuildOutputFromPipeline: $[coalesce(variables.useBuildOutputFromPipeline, variables['System.DefinitionId'] )]
   _useBuildOutputFromBuildId: $[coalesce(variables.useBuildOutputFromBuildId, variables['Build.BuildId'] )]
 
-  # By default we use the VS install from the build machine.
+  # By default use VS 2026 preinstalled on the build image.
   _enableVsBuildTools: $[coalesce(variables.enableVsBuildTools, 'false' )]
-  #Visual Studio version to install. Options include: {BuildTools169, Latest16x, Release17x, Preview17x}
-  _VsVersionToInstall: $[coalesce(variables.VsVersionToInstall,'Release17x')]
+  # .NET 11 requires MSBuild 18.7 or newer.
+  _VsVersionToInstall: $[coalesce(variables.VsVersionToInstall,'Release18x')]
   _buildToolsDirectory: $[replace(replace(lower(variables._enableVsBuildTools),
     'true','$(Build.SourcesDirectory)\.buildtools'),
-    'false','C:\Program Files\Microsoft Visual Studio\2022\Enterprise')]
+    'false','C:\Program Files\Microsoft Visual Studio\18\Enterprise')]
   _buildToolsInstallLogsDirectory: $[replace(replace(lower(variables._enableVsBuildTools),
     'true','$(Build.SourcesDirectory)\msbuild-install-logs'),
     'false','')]
 
   # Convert the dotNetFrameworkVersion variable to the parameter passed to init.cmd to specify what .NET version to target.
-  # Can be blank, and init.cmd will use its default behavior of targeting .NET 5.  Possible values for dotNetFrameworkVersion are "net5","net6" or "net7".
+  # Can be blank for the existing runtime default, or select net6/net7/net8/net10/net11.
   _dotNetFrameworkVersionInitParam: $[lower(coalesce(variables.dotNetFrameworkVersion, ''))]
 
   rerunPassesRequiredToAvoidFailure: 5
 
-  # Pipeline image defaults
+  # General pipeline image default; .NET 11 build pipelines override this with VS 2026.
   WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
   Codeql.Enabled: true #  CodeQL once every 3 days on the default branch for all language
 
