@@ -1209,10 +1209,10 @@ functions are then named.
   outermost frames down, or, for the function selected on the left, its
   **callers** (what called it, out to the thread's start) or **callees** (what
   it called), merged over all its calls. Selecting a function shows its
-  callers. Each node has its total and self share and the CPU milliseconds its
-  samples stand for. The heaviest path, the children with at least half of the
-  samples, opens with the tree; a node's children past 300 are summed into one
-  row.
+  callers. Each node has its total and self share and, once the recording or
+  the trace's reading ends, the CPU milliseconds its samples stand for. The
+  heaviest path, the children with at least half of the samples, opens with
+  the tree; a node's children past 300 are summed into one row.
 - The thread list keeps one thread's samples, busiest first. The UI thread,
   the one XAML ticked frames on, is listed as **UI thread**.
 - The notice above the lists says why there are no stacks, that a recording
