@@ -146,7 +146,8 @@ internal static class SessionSchema
             t.EventId, t.Version,
             -- Keep the original JSON tokens: converting a UInt64 handle through a SQLite value can round it to REAL.
             (SELECT json_group_object(n.value, json(e.Payload -> n.key))
-                FROM json_each('["' || replace(t.FieldNames, ',', '","') || '"]') n) AS Fields,
+                FROM json_each(e.Payload) p
+                JOIN json_each('["' || replace(t.FieldNames, ',', '","') || '"]') n ON n.key = p.key) AS Fields,
             r.FrameId AS TickId, COALESCE(r.Bucket, 'Other') AS Bucket,
             (SELECT json_group_array(json_object('ObjectId', m.ObjectId, 'Kind', o.Kind, 'Type', o.Type, 'Name', o.Name, 'Field',
                     CASE WHEN m.Field >= 0 THEN json_extract('["' || replace(t.FieldNames, ',', '","') || '"]', '$[' || m.Field || ']')
@@ -421,24 +422,40 @@ internal static class SessionSchema
         -- Resource -> device allocation -> adapter allocation, only while the observed links overlap. A missing adapter
         -- allocation stays null (for example a shared allocation owned by another process); it is not fabricated.
         -- Historical bridge values come from links, not the objects' mutable latest metadata.
+        WITH ResourceLinks AS (
+            SELECT * FROM GraphicsLinks WHERE Kind = 'ResourceAllocation' AND (EndSeq IS NULL OR StartSeq < EndSeq)),
+        Boundaries AS (
+            SELECT SourceId, TargetId, StartSeq AS ResourceStart, StartSeq AS Seq FROM ResourceLinks
+            UNION
+            SELECT rd.SourceId, rd.TargetId, rd.StartSeq, da.StartSeq
+            FROM ResourceLinks rd JOIN GraphicsLinks da ON da.SourceId = rd.TargetId AND da.Kind = 'AllocationGlobal'
+            WHERE (da.EndSeq IS NULL OR da.StartSeq < da.EndSeq)
+                AND da.StartSeq > rd.StartSeq AND (rd.EndSeq IS NULL OR da.StartSeq < rd.EndSeq)
+            UNION
+            SELECT rd.SourceId, rd.TargetId, rd.StartSeq, da.EndSeq
+            FROM ResourceLinks rd JOIN GraphicsLinks da ON da.SourceId = rd.TargetId AND da.Kind = 'AllocationGlobal'
+            WHERE da.StartSeq < da.EndSeq
+                AND da.EndSeq > rd.StartSeq AND (rd.EndSeq IS NULL OR da.EndSeq < rd.EndSeq)),
+        Intervals AS (
+            SELECT b.SourceId, b.TargetId, b.ResourceStart, b.Seq AS StartSeq,
+                LEAD(b.Seq, 1, rd.EndSeq) OVER (PARTITION BY b.SourceId, b.TargetId, b.ResourceStart ORDER BY b.Seq) AS EndSeq
+            FROM Boundaries b JOIN ResourceLinks rd
+                ON rd.SourceId = b.SourceId AND rd.TargetId = b.TargetId AND rd.StartSeq = b.ResourceStart)
         SELECT s.ProcessId, r.GraphicsObjectId AS ResourceId, r.DeviceId, r.Kind AS ResourceKind, r.Handle AS ResourceHandle,
             rd.Handle AS KernelResource, d.GraphicsObjectId AS DeviceAllocationId, d.Handle AS DeviceAllocationHandle,
             d.hDevice AS KernelDevice, da.Handle AS GlobalAllocation, da.Qualifier AS Adapter,
             a.GraphicsObjectId AS AdapterAllocationId, a.SizeBytes,
-            MAX(rd.StartSeq, COALESCE(da.StartSeq, rd.StartSeq)) AS StartSeq,
-            CASE WHEN rd.EndSeq IS NULL THEN da.EndSeq WHEN da.EndSeq IS NULL THEN rd.EndSeq
-                ELSE MIN(rd.EndSeq, da.EndSeq) END AS EndSeq,
+            i.StartSeq, i.EndSeq,
             rd.Trimmed OR COALESCE(da.Trimmed, 0) OR r.Trimmed OR d.Trimmed OR COALESCE(a.Trimmed, 0) AS Trimmed
-        FROM GraphicsObjects r
-        JOIN GraphicsLinks rd ON rd.SourceId = r.GraphicsObjectId AND rd.Kind = 'ResourceAllocation'
+        FROM Intervals i
+        JOIN ResourceLinks rd ON rd.SourceId = i.SourceId AND rd.TargetId = i.TargetId AND rd.StartSeq = i.ResourceStart
+        JOIN GraphicsObjects r ON r.GraphicsObjectId = rd.SourceId
         JOIN GraphicsObjects d ON d.GraphicsObjectId = rd.TargetId AND d.Kind = 'DeviceAllocation'
         LEFT JOIN GraphicsLinks da ON da.SourceId = d.GraphicsObjectId AND da.Kind = 'AllocationGlobal'
-            AND (da.EndSeq IS NULL OR da.StartSeq < da.EndSeq)
-            AND (rd.EndSeq IS NULL OR da.StartSeq < rd.EndSeq) AND (da.EndSeq IS NULL OR rd.StartSeq < da.EndSeq)
+            AND da.StartSeq <= i.StartSeq AND (da.EndSeq IS NULL OR i.StartSeq < da.EndSeq)
         LEFT JOIN GraphicsObjects a ON a.GraphicsObjectId = da.TargetId AND a.Kind = 'AdapterAllocation'
         CROSS JOIN SessionInfo s
-        WHERE r.Kind IN ('Buffer', 'Texture1D', 'Texture2D', 'Texture3D')
-            AND (rd.EndSeq IS NULL OR rd.StartSeq < rd.EndSeq);
+        WHERE r.Kind IN ('Buffer', 'Texture1D', 'Texture2D', 'Texture3D');
         CREATE VIEW QueryCatalog (Name, Shows, RowsAreIdentifiedBy, Example) AS
         -- What each view shows, how its rows are identified, and an example. Start here.
         VALUES

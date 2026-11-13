@@ -12,6 +12,13 @@ internal static class GraphicsIndexTests
 
     internal static void Run()
     {
+        KindChangingStops();
+        HistoricalObservations();
+        PromotedDeviceBounds();
+        StaleMappings();
+        ClearedBridges();
+        IndependentAllocationLinks();
+        PartialAllocationIntervals();
         CompleteLifetimes(reverse: false);
         CompleteLifetimes(reverse: true);
         IncompleteLifetimes();
@@ -19,6 +26,253 @@ internal static class GraphicsIndexTests
         DelayedObservations();
         AmbiguousAndChangingBridges();
         TrimmedLifetimes();
+    }
+
+    private static void KindChangingStops()
+    {
+        WithRecording(
+        [
+            Direct3D(12, 101, kernelResource: 700),
+            Allocation(36, 201, 900, 700),
+            Direct3D(6, 102, kernelResource: 700),
+            Direct3D(13, 102, kernelResource: 700),
+            new(0, 0, 10, 7, XamlProvider.Xaml, false, "AfterGraphicsStop", 0, [])
+        ], connection =>
+        {
+            Expect(Count(connection, "Events") == 5 && Count(connection, "EventDetails", "Name = 'AfterGraphicsStop'") == 1,
+                "A kind-changing Stop must not abort the raw batch or stop subsequent XAML recording.");
+            Expect(Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND StartSeq = 4 AND EndSeq IS NULL") == 1 &&
+                Count(connection, "GraphicsLinks", "EndSeq = StartSeq") == 0,
+                "Relationships must reflect final membership once per event, without transient zero-length intervals.");
+        });
+        Console.WriteLine("Passed: ambiguous, kind-changing Stops preserve graphics links and subsequent XAML recording.");
+    }
+
+    private static void HistoricalObservations()
+    {
+        WithRecording(
+        [
+            Direct3D(12, 1, kernelResource: 100),
+            Direct3D(12, 1, kernelResource: 101) with { TimestampQpc = 3_000 },
+            Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 2_000 },
+            Allocation(36, 2, 3, 101)
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Texture2D'") == 2 &&
+                Count(connection, "GraphicsLifetimes", "StartSeq = 1 AND StopSeq = 3 AND DurationMs = 1") == 1,
+                "A delayed Stop must complete its unique historical lifetime instead of creating a third object.");
+            Expect(Count(connection, "GraphicsObjects", "StartSeq = 2 AND EndSeq IS NULL") == 1 &&
+                Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND StartSeq = 4 AND EndSeq IS NULL") == 1,
+                "Completing historical evidence must not close or remap the replacement lifetime.");
+        });
+        foreach (var phase in new[] { 12, 14 })
+        {
+            WithRecording(
+            [
+                Direct3D(12, 1, kernelResource: 100),
+                Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 3_000 },
+                Direct3D(phase, 1, kernelResource: 100) with { TimestampQpc = phase == 12 ? 1_000 : 2_000 },
+                Allocation(36, 2, 3, 100),
+                Direct3D(12, 4, kernelResource: 100)
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects", $"Kind = 'Texture2D' AND Handle = '{Hex(1)}'") == 1 &&
+                    Count(connection, "GraphicsObjectEvents", """
+                        Seq = 3 AND GraphicsObjectId = (SELECT GraphicsObjectId FROM GraphicsObjects WHERE StartSeq = 1)
+                        """) == 1,
+                    "Late Start/rundown must attach to retained closed history, not resurrect an open resource.");
+                Expect(Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND StartSeq = 5 AND EndSeq IS NULL") == 1,
+                    "Old evidence must not make a replacement resource's bridge ambiguous.");
+            });
+        }
+        WithRecording(
+        [
+            Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 3_000 },
+            Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 1_000 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsLifetimes", "StartSeq = 2 AND StopSeq = 1 AND DurationMs = 2") == 1 &&
+                Count(connection, "GraphicsObjects") == 1,
+                "A delayed creation can complete a unique stop-only lifetime without reopening it.");
+        });
+        WithRecording(
+        [
+            Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 3_000 },
+            Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 4_000 },
+            Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 1_000 },
+            Allocation(36, 2, 3, 100)
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Texture2D'") == 3 &&
+                Count(connection, "GraphicsObjects", "Kind = 'Texture2D' AND EndSeq IS NULL") == 0 &&
+                Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation'") == 0,
+                "An observation with multiple possible historical matches must remain separate and non-correlatable.");
+        });
+        Console.WriteLine("Passed: delayed endpoints match unique retained lifetimes; ambiguous history never resurrects mappings.");
+    }
+
+    private static void PromotedDeviceBounds()
+    {
+        WithRecording(
+        [
+            Direct3D(12, 1, Device),
+            Direct3D(3, Device) with { TimestampQpc = 500 },
+            Direct3D(6, 2, Device) with { TimestampQpc = 700 },
+            Direct3D(7, 2, Device) with { TimestampQpc = 800 },
+            Direct3D(13, 1, Device),
+            Direct3D(4, Device)
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == 1 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Buffer' AND DeviceId IS NOT NULL AND DurationMs = 0.1") == 1,
+                "Resources between a promoted device's actual Start and its first reference must use that device lifetime.");
+        });
+        Console.WriteLine("Passed: promoted device creation bounds apply to earlier resource lifetimes.");
+    }
+
+    private static void StaleMappings()
+    {
+        WithRecording(
+        [
+            Direct3D(12, 1, kernelResource: 100),
+            Allocation(36, 2, 3, 100),
+            Allocation(38, 2, 4, 101) with { TimestampQpc = 4_000 },
+            Direct3D(14, 1, kernelResource: 101) with { TimestampQpc = 5_000 },
+            Allocation(38, 2, 3, 100) with { TimestampQpc = 3_000 },
+            Direct3D(14, 1, kernelResource: 100) with { TimestampQpc = 2_500 },
+            Allocation(33, 2, 4, 101)
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", $"Kind = 'Texture2D' AND hKMResource = '{Hex(101)}' AND LastQpc = 5000") == 1 &&
+                Count(connection, "GraphicsObjects", $"Kind = 'DeviceAllocation' AND hThunkResource = '{Hex(101)}' AND hVidMmGlobalAlloc = '{Hex(4)}'") == 1,
+                "Older rundown must not overwrite newer resource/allocation metadata or move last observation backwards.");
+            Expect(Count(connection, "GraphicsLinks", $"Kind = 'ResourceAllocation' AND Handle = '{Hex(101)}' AND StartSeq = 4 AND EndSeq IS NULL") == 1 &&
+                Count(connection, "GraphicsResourceAllocations", $"GlobalAllocation = '{Hex(4)}' AND EndSeq IS NULL") == 1,
+                "Older raw evidence must not revert the currently observed allocation chain.");
+        });
+        foreach (var stopFirst in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Allocation(33, 2, 3, 100),
+                Allocation(36, 2, 3, 100),
+                Direct3D(12, 1, kernelResource: 100)
+            ];
+            if (stopFirst) events.Add(Allocation(34, 2, 3, 100));
+            events.Add(Allocation(33, 2, 3, 100) with { TimestampQpc = 6_000 });
+            events.Add(Allocation(38, 2, 3, 100) with { TimestampQpc = 5_000 });
+            events.Add(Allocation(38, 2, 3, 100) with { TimestampQpc = 7_000 });
+            WithRecording(events, connection =>
+            {
+                var replacement = stopFirst ? 5 : 4;
+                Expect(Count(connection, "GraphicsLinks", $"""
+                    Kind = 'AllocationGlobal'
+                    AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects WHERE Kind = 'AdapterAllocation' AND StartSeq = {replacement})
+                    AND StartSeq = {events.Count} AND EndSeq IS NULL
+                    """) == 1 &&
+                    Count(connection, "GraphicsLinks", $"Kind = 'AllocationGlobal' AND StartSeq = {events.Count - 1}") == 0,
+                    "Rundown older than global reuse must not re-enable a mapping; a newer confirmation may do so.");
+                Expect(Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND StartSeq = 3 AND EndSeq IS NULL") == 1,
+                    "Global invalidation must not interrupt the independent resource bridge.");
+            });
+        }
+        Console.WriteLine("Passed: stale rundown preserves newer metadata and cannot bypass global-reuse invalidation.");
+    }
+
+    private static void ClearedBridges()
+    {
+        foreach (var field in new[] { "hKMResource", "hThunkResource", "hVidMmGlobalAlloc", "pDxgAdapter" })
+        {
+            var runtime = field == "hKMResource";
+            var observation = runtime ? Direct3D(14, 1, kernelResource: 100) : Allocation(38, 2, 3, 100);
+            var missing = observation with { Fields = observation.Fields.Where(item => item.Name != field).ToArray() };
+            var unknown = observation with
+            {
+                Fields = observation.Fields.Select(item => item.Name == field ? new EventField(field, null) : item).ToArray()
+            };
+            var cleared = observation with
+            {
+                Fields = observation.Fields.Select(item => item.Name == field ? new EventField(field, 0UL) : item).ToArray()
+            };
+            WithRecording(
+            [
+                Direct3D(12, 1, kernelResource: 100),
+                Allocation(36, 2, 3, 100),
+                Allocation(33, 2, 3, 100),
+                missing,
+                unknown,
+                cleared,
+                missing
+            ], connection =>
+            {
+                var link = field is "hKMResource" or "hThunkResource" ? "ResourceAllocation" : "AllocationGlobal";
+                var kind = runtime ? "Texture2D" : "DeviceAllocation";
+                Expect(Count(connection, "GraphicsLinks", $"Kind = '{link}' AND EndSeq = 6") == 1 &&
+                    Count(connection, "GraphicsLinks", $"Kind = '{link}' AND EndSeq IS NULL") == 0 &&
+                    Count(connection, "GraphicsObjects", $"Kind = '{kind}' AND {field} IS NULL") == 1,
+                    $"A missing {field} must preserve its bridge, but explicit zero must close it and clear latest metadata.");
+                Expect(Count(connection, "GraphicsLinks", $"Kind <> '{link}' AND EndSeq IS NULL") == 1,
+                    "Clearing one bridge must preserve the allocation's independent relationship.");
+            });
+        }
+        Console.WriteLine("Passed: missing bridge fields preserve mappings while explicit zero clears only the reported bridge.");
+    }
+
+    private static void IndependentAllocationLinks()
+    {
+        WithRecording(
+        [
+            Direct3D(12, 1, kernelResource: 100),
+            Allocation(36, 2, 3, 100),
+            Allocation(33, 2, 3, 100),
+            Allocation(34, 2, 3, 100),
+            Allocation(37, 2, 3, 100)
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal' AND EndSeq = 4") == 1 &&
+                Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND EndSeq = 5") == 1,
+                "An adapter Stop must end only the global link, leaving the resource bridge until its own endpoint ends.");
+            Expect(Count(connection, "GraphicsResourceAllocations", "StartSeq = 4 AND EndSeq = 5 AND AdapterAllocationId IS NULL") == 1,
+                "The remaining resource interval must stay queryable with an unknown adapter.");
+        });
+        Console.WriteLine("Passed: resource and global allocation links close independently.");
+    }
+
+    private static void PartialAllocationIntervals()
+    {
+        foreach (var open in new[] { false, true })
+        {
+            WithRecording(
+            [
+                Direct3D(12, 1, kernelResource: 100),
+                Allocation(36, 2, 3, 100),
+                Allocation(33, 2, 3, 100)
+            ], connection =>
+            {
+                Sql.Execute(connection, $"""
+                    UPDATE GraphicsLinks SET EndSeq = {(open ? "NULL" : "12")} WHERE Kind = 'ResourceAllocation';
+                    UPDATE GraphicsLinks SET StartSeq = 5, EndSeq = 7 WHERE Kind = 'AllocationGlobal';
+                    INSERT INTO GraphicsLinks (SourceId, TargetId, Kind, Handle, Qualifier, StartSeq, EndSeq)
+                    SELECT SourceId, TargetId, Kind, Handle, Qualifier, 9, 11 FROM GraphicsLinks WHERE Kind = 'AllocationGlobal';
+                    """);
+                using var command = connection.CreateCommand();
+                command.CommandText = """
+                    SELECT StartSeq, EndSeq, AdapterAllocationId, GlobalAllocation, Adapter, SizeBytes
+                    FROM GraphicsResourceAllocations ORDER BY StartSeq
+                    """;
+                using var rows = command.ExecuteReader();
+                (long Start, long? End, bool Known)[] expected = [(2, 5, false), (5, 7, true), (7, 9, false), (9, 11, true), (11, open ? null : 12, false)];
+                foreach (var item in expected)
+                {
+                    Expect(rows.Read() && rows.GetInt64(0) == item.Start &&
+                        (rows.IsDBNull(1) ? (long?)null : rows.GetInt64(1)) == item.End &&
+                        Enumerable.Range(2, 4).All(column => rows.IsDBNull(column) != item.Known),
+                        "Allocation views must preserve leading, middle and trailing unknown-adapter intervals, including an open tail.");
+                }
+                Expect(!rows.Read(), "Allocation interval partitioning must not duplicate or overlap segments.");
+            });
+        }
+        Console.WriteLine("Passed: allocation views retain complete coverage across known chains and unknown adapter gaps.");
     }
 
     private static void CompleteLifetimes(bool reverse)

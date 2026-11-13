@@ -112,12 +112,19 @@ stored payloads and readable JSON. Processed-index checks cover lifetimes,
 rundown and missing endpoints, correlations in either observation order,
 multiple allocations, handle reuse, delayed observations, ambiguous/changed
 bridge handles, zero/missing handles, adapter scoping and rolling retention.
+Review regressions also cover late endpoints in closed history, promoted device
+creation bounds, stale rundown, explicit bridge clearing, independent allocation
+links, partial correlation intervals, fieldless JSON and CLI provider labels.
 
 For an opt-in live DirectX smoke test, run:
 
 ```powershell
 dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --graphics-integration
 ```
+
+The smoke test also starts a separate D3D11-only probe process to verify that
+capture-state requests preserve the selected PID filter on success and failure,
+and that CLI trace discovery does not list graphics-only processes as XAML apps.
 
 This needs ETW permissions (elevation or Performance Log Users membership).
 It creates and releases a D3D11 device, a buffer, all three texture

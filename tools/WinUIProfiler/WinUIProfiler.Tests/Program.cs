@@ -11,6 +11,7 @@ using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Target;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Cli;
 using XamlTimeline;
 
 if (args is ["--startup-integration", var nativeDirectory])
@@ -24,6 +25,13 @@ if (args is ["--graphics-integration"])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");
     GraphicsCaptureIntegration.Run();
+    return;
+}
+
+if (args is ["--graphics-probe"])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");
+    GraphicsCaptureIntegration.ExerciseDirect3D();
     return;
 }
 
@@ -56,6 +64,13 @@ try
         writer.Process(6, Event("VirtualizationIsEnabledByLayout", false, observation,
             provider: XamlProvider.XamlDiagnostics));
         writer.Process(7, Event("VirtualizationIsEnabledByLayout", false, observation));
+    }
+
+    using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
+    {
+        connection.Open();
+        Expect(Sql.Scalar(connection, "SELECT COUNT(*) FROM EventDetails WHERE Seq = 1 AND Fields = '{}'") == 1,
+            "Fieldless XAML events must retain an empty JSON object rather than an empty-named null field.");
     }
 
     var objects = SessionFile.ReadObjects(path);
@@ -1076,6 +1091,22 @@ foreach (var invalidPid in new object?[] { null, 0, -1, uint.MaxValue, long.MaxV
 }
 Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation/budget/usage ownership filters.");
 
+foreach (var failure in new[] { false, true })
+{
+    List<string> calls = [];
+    LiveEtwSource.CaptureGraphicsState((provider, _) =>
+    {
+        calls.Add(provider == XamlProviders.Direct3D11 ? "D3D11" : "DxgKrnl");
+        if (failure && provider == XamlProviders.Direct3D11) throw new InvalidOperationException("Capture state failed after enabling.");
+    }, () => calls.Add("Restore"));
+    Expect(calls.SequenceEqual(["D3D11", "Restore", "DxgKrnl"]),
+        "D3D11 filters must be restored immediately after capture state, including failure, before kernel rundown.");
+}
+ExpectThrows<InvalidOperationException>(() => LiveEtwSource.CaptureGraphicsState((_, _) => { },
+    () => throw new InvalidOperationException("Filter restoration failed.")),
+    "A failed filter restoration must propagate rather than leave an apparently successful unfiltered capture.");
+Console.WriteLine("Passed: graphics capture-state restores selected filters on success and failure.");
+
 var graphicsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsIdentity-{Guid.NewGuid():N}.sqlite");
 try
 {
@@ -1150,11 +1181,31 @@ try
                     fields["allocSize"]!.GetValue<ulong>() == ulong.MaxValue,
                     "Readable allocation fields must retain full-width unsigned IDs and sizes.");
             }
+            if (i == 6)
+            {
+                Expect(fields.AsObject().Count == 0,
+                    "Fieldless device-creation phases must expose an empty JSON object.");
+            }
         }
     }
     Expect(Sql.Scalar(connection,
         "SELECT COUNT(*) FROM EventTypes WHERE Provider = 'Direct3D11' AND Name = 'Texture2D/Start'") == 3,
         "Events with the same name/layout but different ETW IDs or versions must not share a database type.");
+
+    using (var output = new StringWriter())
+    using (var error = new StringWriter())
+    {
+        Expect(CliApplication.Run(["processes", graphicsPath], output, error, CancellationToken.None) == 0,
+            "The CLI must list a recorded graphics session successfully.");
+        var columns = output.ToString().Split(Environment.NewLine)[0].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        Expect(columns.Count(column => column == "Direct3D11") == 1 && columns.Count(column => column == "DxgKrnl") == 1,
+            "CLI summaries must label Direct3D11 separately rather than duplicate the DxgKrnl column.");
+        output.GetStringBuilder().Clear();
+        Expect(CliApplication.Run(["dump", graphicsPath, "--max", "1"], output, error, CancellationToken.None) == 0 &&
+            output.ToString().Contains("Direct3D11", StringComparison.Ordinal) &&
+            output.ToString().Contains("Texture2D/Start", StringComparison.Ordinal),
+            "CLI event output must retain the runtime provider name.");
+    }
 
     // A legacy recording has neither identity column. Reading it must leave the identity unknown.
     var legacyViews = new List<(string Name, string Sql)>();

@@ -76,7 +76,7 @@ public sealed class LiveEtwSource : IDisposable
         try
         {
             XamlEventSubscription.SubscribeProcesses(source.session.Source, selected, source.markers, sink, null);
-            source.CaptureGraphicsState();
+            source.CaptureGraphicsState(options);
             source.reader.Start();
             source.reading = true;
             return source;
@@ -132,7 +132,7 @@ public sealed class LiveEtwSource : IDisposable
             var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
             EnableProviders(session, options, options, markers);
             XamlEventSubscription.SubscribeProcesses(session.Source, selected, markers, sink, launcherProcessId);
-            CaptureGraphicsState();
+            CaptureGraphicsState(options);
             reader.Start();
             reading = true;
         }
@@ -251,7 +251,11 @@ public sealed class LiveEtwSource : IDisposable
     // for every process when a session requests capture state. Request it, so a process that opened its adapter
     // before the session started also gets its current values. D3D11 devices/resources and kernel allocations have
     // rundown events too. They identify existing objects, not their original creation times.
-    private void CaptureGraphicsState()
+    private void CaptureGraphicsState(TraceEventProviderOptions options) =>
+        CaptureGraphicsState((provider, keywords) => session.CaptureState(provider, keywords),
+            () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options));
+
+    internal static void CaptureGraphicsState(Action<Guid, ulong> request, Action restoreDirect3D)
     {
         foreach (var (provider, keywords) in new[]
         {
@@ -261,11 +265,16 @@ public sealed class LiveEtwSource : IDisposable
         {
             try
             {
-                session.CaptureState(provider, keywords);
+                request(provider, keywords);
             }
             catch (Exception error) when (error is not OutOfMemoryException)
             {
                 Trace.TraceWarning($"Could not request graphics state from {provider}: {error.Message}");
+            }
+            finally
+            {
+                // CaptureState re-enables its provider without filters, even when the subsequent state request fails.
+                if (provider == XamlProviders.Direct3D11) restoreDirect3D();
             }
         }
     }

@@ -93,6 +93,12 @@
         "resolved": "4.7.0",
         "contentHash": "VybpaOQQhqE6siHppMktjfGBw1GCwvCqiufqmP8F1nj7fTUNtW35LOEt3UZTEsECfo+ELAl/9o9nJx3U91i7vA=="
       },
+      "winuiprofiler.cli": {
+        "type": "Project",
+        "dependencies": {
+          "WinUIProfiler.Core": "[1.0.0, )"
+        }
+      },
       "winuiprofiler.core": {
         "type": "Project",
         "dependencies": {

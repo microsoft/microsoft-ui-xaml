@@ -8,6 +8,7 @@ using System.Runtime.Versioning;
 using Microsoft.Data.Sqlite;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Session;
+using WinUIProfiler.Cli;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
@@ -106,9 +107,73 @@ internal static class GraphicsCaptureIntegration
         {
             foreach (var file in new[] { path, path + "-wal", path + "-shm" }) File.Delete(file);
         }
+        CaptureStateFilters(failure: false);
+        CaptureStateFilters(failure: true);
     }
 
-    private static void ExerciseDirect3D()
+    private static void CaptureStateFilters(bool failure)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsFilter-{Guid.NewGuid():N}.etl");
+        try
+        {
+            int otherProcess;
+            using (var session = new TraceEventSession($"WinUIProfiler-GraphicsFilter-{Environment.ProcessId}-{Guid.NewGuid():N}", path))
+            {
+                var options = new TraceEventProviderOptions { ProcessIDFilter = [Environment.ProcessId] };
+                session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, 0x6, options);
+                LiveEtwSource.CaptureGraphicsState((provider, keywords) =>
+                {
+                    if (provider != XamlProviders.Direct3D11) return;
+                    session.CaptureState(provider, keywords);
+                    if (failure) throw new InvalidOperationException("Capture state failed after enabling.");
+                }, () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, 0x6, options));
+                var start = new ProcessStartInfo(Environment.ProcessPath!)
+                {
+                    UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true
+                };
+                if (string.Equals(Path.GetFileNameWithoutExtension(Environment.ProcessPath), "dotnet", StringComparison.OrdinalIgnoreCase))
+                    start.ArgumentList.Add(typeof(GraphicsCaptureIntegration).Assembly.Location);
+                start.ArgumentList.Add("--graphics-probe");
+                using var probe = Process.Start(start) ?? throw new InvalidOperationException("Could not start the graphics filter probe.");
+                otherProcess = probe.Id;
+                if (!probe.WaitForExit(TimeSpan.FromSeconds(30)))
+                {
+                    probe.Kill(entireProcessTree: true);
+                    probe.WaitForExit();
+                    throw new TimeoutException("The graphics filter probe did not exit.");
+                }
+                Expect(probe.ExitCode == 0,
+                    $"The graphics filter probe failed: {probe.StandardOutput.ReadToEnd()} {probe.StandardError.ReadToEnd()}");
+                ExerciseDirect3D();
+                session.Stop();
+            }
+            var selectedEvents = 0;
+            var otherEvents = 0;
+            using (var source = new ETWTraceEventSource(path))
+            {
+                source.AllEvents += data =>
+                {
+                    if (data.ProviderGuid != XamlProviders.Direct3D11) return;
+                    if (data.ProcessID == Environment.ProcessId) selectedEvents++;
+                    if (data.ProcessID == otherProcess) otherEvents++;
+                };
+                source.Process();
+            }
+            Expect(selectedEvents > 0 && otherEvents == 0,
+                $"Capture state must retain the selected PID filter (selected: {selectedEvents}; unrelated: {otherEvents}; failure: {failure}).");
+            using var output = new StringWriter();
+            using var error = new StringWriter();
+            Expect(CliApplication.Run(["processes", path], output, error, CancellationToken.None) == 0,
+                $"The CLI must read the D3D-only trace: {error}");
+            Expect(!output.ToString().Split('\n').Any(line =>
+                int.TryParse(line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(), out _)),
+                "The CLI must not list D3D-only processes as XAML processes.");
+            Console.WriteLine($"Passed: live PID filtering after {(failure ? "failed" : "successful")} capture state; D3D-only CLI discovery stays empty.");
+        }
+        finally { File.Delete(path); }
+    }
+
+    internal static void ExerciseDirect3D()
     {
         var result = D3D11CreateDevice(0, 1, 0, 0, 0, 0, 7, out var device, out _, out var context);
         if (result < 0)
