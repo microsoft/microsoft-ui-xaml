@@ -667,6 +667,11 @@ namespace Microsoft.UI.Xaml.Data
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
+    delegate Int32 CollectionViewComparer(Object x, Object y);
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
     delegate Boolean CollectionViewFilter(Object item);
 
 }
@@ -2015,6 +2020,7 @@ namespace Microsoft.UI.Xaml.Data
         Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
         void Refresh();
         Windows.Foundation.IClosable DeferRefresh();
+        Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2085,6 +2091,7 @@ namespace Microsoft.UI.Xaml.Data
             Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions{ get; };
             Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions{ get; };
             Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
+            Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
             void Refresh();
             Windows.Foundation.IClosable DeferRefresh();
         }

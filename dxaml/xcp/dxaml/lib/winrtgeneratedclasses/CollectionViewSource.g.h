@@ -27,6 +27,8 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_CustomSort)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue) override { return This()->get_CustomSort(ppValue); }
+        IFACEMETHOD(put_CustomSort)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue) override { return This()->put_CustomSort(pValue); }
         IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue) override { return This()->get_Filter(ppValue); }
         IFACEMETHOD(put_Filter)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue) override { return This()->put_Filter(pValue); }
         IFACEMETHOD(get_GroupDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue) override { return This()->get_GroupDescriptions(ppValue); }
@@ -77,6 +79,8 @@ namespace DirectUI
         }
 
         // Properties.
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Filter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Filter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_GroupDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue);
