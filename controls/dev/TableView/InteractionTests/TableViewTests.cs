@@ -141,7 +141,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Contract: adding or removing a column changes the SHAPE of the grid - the column count, and the
             //   set of children every row exposes. A UIA client that has cached the tree has no way to learn
             //   that except from a StructureChanged event. The product already accepts this obligation for
-            //   other shape changes: TableView::OnTableViewSourceShapingChanged raises it for shaping
+            //   other shape changes: TableView::OnTableViewShapingSourceShapingChanged raises it for shaping
             //   (TableView.cpp:1021-1046) and TableViewAutomationPeer::RaiseStructureChangedForGroupExpansion
             //   for group expansion (TableViewAutomationPeer.cpp:119).
             // Why this tier: API §12.6 records that automation EVENTS are not API-testable - an in-proc peer

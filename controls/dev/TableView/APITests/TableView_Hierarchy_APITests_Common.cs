@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,12 +20,14 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // A non-notifying employee for hierarchy tests. ParentBy(Id, ManagerId) gives:
+    // A non-notifying employee for hierarchy tests. ItemKeyPath="Id", ParentKeyPath="ManagerId" gives:
     //   Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus (ManagerId 99 matches nobody, so a root).
     internal sealed class TreeEmployee
     {
         public int Id { get; set; }
         public int? ManagerId { get; set; }
+        // Starts equal to ManagerId; lets a test declare a second relation over edited data.
+        public int? BossId { get; set; }
         public int? MentorId { get; set; }
         public long? BigManagerId { get; set; }
         public string Code { get; set; } = "";
@@ -105,21 +108,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewTreeTestHelpers
     {
-        internal static TableViewKeySelector EmpKey(Func<TreeEmployee, object> f) => new TableViewKeySelector(o => f((TreeEmployee)o));
-        internal static TableViewKeySelector LiveKey(Func<LiveRow, object> f) => new TableViewKeySelector(o => f((LiveRow)o));
-
-        internal static readonly TableViewKeySelector ById = EmpKey(e => e.Id);
-        internal static readonly TableViewKeySelector ByManager = EmpKey(e => e.ManagerId);
-        internal static readonly TableViewKeySelector ByMentor = EmpKey(e => e.MentorId);
-
-        internal static readonly TableViewKeySelector LiveById = LiveKey(r => r.Id);
-        internal static readonly TableViewKeySelector LiveByParent = LiveKey(r => r.ParentId);
-        internal static readonly TableViewKeySelector LiveByScore = LiveKey(r => r.Score);
-        internal static readonly TableViewKeySelector LiveByTeam = LiveKey(r => r.Team);
-        internal static readonly TableViewKeySelector LiveByObject = LiveKey(r => r);
-        internal static readonly TableViewKeySelector LiveByParentObject = LiveKey(r => r.ParentRow);
-
-        internal static TableViewPredicate MinScore(int min) => new TableViewPredicate(o => ((LiveRow)o).Score >= min);
+        // The default relation: ItemKeyPath="Id", ParentKeyPath="ManagerId".
+        internal const string IdPath = "Id";
+        internal const string ManagerPath = "ManagerId";
+        internal const string ParentIdPath = "ParentId";
 
         // Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus. Ada and her reports are Eng; the rest Ops.
         // Mentor relation: Ben > Eve, Fay > Ada.
@@ -136,6 +128,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             foreach (var e in all)
             {
                 e.BigManagerId = e.ManagerId;
+                e.BossId = e.ManagerId;
             }
 
             ben.MentorId = 5;
@@ -189,15 +182,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // A single Name text template column over the source, loaded and settled.
-        internal static TableView CreateTreeTable(object source)
+        // A single Name text template column over the source. With paths, the rows form a tree.
+        internal static TableView CreateTreeTable(object source, string itemKeyPath = null, string parentKeyPath = null)
         {
             var column = MakeTextTemplateColumn("Name", width: new GridLength(1, GridUnitType.Star));
 
             var tableView = new TableView { Width = 400, Height = 600 };
             tableView.Columns.Add(column);
+            if (itemKeyPath != null)
+            {
+                tableView.ItemKeyPath = itemKeyPath;
+                tableView.ParentKeyPath = parentKeyPath;
+            }
+
             tableView.ItemsSource = source;
             return tableView;
+        }
+
+        // A CollectionViewSource over items, optionally grouped by groupPath and sorted by sortPath.
+        // Bind its View; the view keeps the CollectionViewSource alive.
+        internal static CollectionViewSource MakeShapingView(object items, string groupPath = null, string sortPath = null,
+            Microsoft.UI.Xaml.Data.ListSortDirection direction = Microsoft.UI.Xaml.Data.ListSortDirection.Ascending)
+        {
+            var cvs = new CollectionViewSource { Source = items };
+            if (groupPath != null)
+            {
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription(groupPath));
+            }
+
+            if (sortPath != null)
+            {
+                cvs.SortDescriptions.Add(new Microsoft.UI.Xaml.Data.SortDescription(sortPath, direction));
+            }
+
+            return cvs;
         }
 
         // Projected rows as one space-separated string. Data row: Name, then Level and a state mark

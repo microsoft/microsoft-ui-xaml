@@ -7351,7 +7351,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var tableView = CreateThemingTable();
             tableView.Height = 400;
-            tableView.ItemsSource = TableViewSource.From(MakeItems()).GroupBy(item => (object)((Person)item).Role);
+            tableView.ItemsSource = TableViewTreeTestHelpers.MakeShapingView(MakeItems(), "Role").View;
             return tableView;
         }
 

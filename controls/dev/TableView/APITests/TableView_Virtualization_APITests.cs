@@ -306,9 +306,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeManyItems(300);
-                var source = TableViewSource.From(items).GroupBy(o => (object)(int.Parse(((Person)o).Name.Substring("Person ".Length)) % 3));
+                for (var i = 0; i < items.Count; i++)
+                {
+                    items[i].Role = $"Mod {i % 3}";
+                }
+
                 tableView = CreateVirtualizationTable(new List<Person>());
-                tableView.ItemsSource = source;
+                tableView.ItemsSource = TableViewTreeTestHelpers.MakeShapingView(items, "Role").View;
                 LoadContent(tableView);
             });
 
