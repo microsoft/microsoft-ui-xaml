@@ -401,8 +401,9 @@ void TreeView::OnApplyTemplate()
         }
         viewModel->PrepareView(m_rootNode.get());
         viewModel->SetOwners(listControl, *this);
-        viewModel->NodeExpanding({ this, &TreeView::OnNodeExpanding });
-        viewModel->NodeCollapsed({ this, &TreeView::OnNodeCollapsed });
+        // Weak, because the flat list can outlive this TreeView and still raise these events.
+        viewModel->NodeExpanding({ get_weak(), &TreeView::OnNodeExpanding });
+        viewModel->NodeCollapsed({ get_weak(), &TreeView::OnNodeCollapsed });
 
         const auto selectionMode = SelectionMode();
         if (selectionMode == winrt::TreeViewSelectionMode::Single)

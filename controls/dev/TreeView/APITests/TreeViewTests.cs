@@ -2571,6 +2571,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode, Multiple selection, P(A(A0)),Q with P and A expanded and P selected. The test keeps the
+        //   TreeView's flat list (the inner list control's ItemsSource) and SelectedNodes, removes the TreeView from the
+        //   window, and lets the TreeView and its list control be collected. Then it edits the nodes and SelectedNodes.
+        // Expected: no crash, and the flat list still follows the node edits.
+        // Failure means: the flat list (ViewModel) uses its list control or TreeView through a weak reference without
+        //   checking that the target is still alive, or it calls the TreeView's NodeExpanding/NodeCollapsed handlers
+        //   after the TreeView is gone. In an app, the flat list outlives its list control only between a garbage
+        //   collection and the release of the list control, so the crash is intermittent. Keeping the flat list here
+        //   makes it happen every time.
+        [TestMethod]
+        public void TreeViewNodeEditsAfterTheTreeViewIsCollectedDoNotCrash()
+        {
+            TreeViewNode p = null, q = null;
+            object flatList = null;
+            IList<TreeViewNode> selectedNodes = null;
+            WeakReference treeViewReference = null, listControlReference = null;
+            var unloaded = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                p = new TreeViewNode() { Content = "P", IsExpanded = true };
+                var a = new TreeViewNode() { Content = "A", IsExpanded = true };
+                q = new TreeViewNode() { Content = "Q" };
+                a.Children.Add(new TreeViewNode() { Content = "A0" });
+                p.Children.Add(a);
+                ShowAndRemoveTreeView(unloaded, new[] { p, q }, out treeViewReference, out listControlReference, out flatList, out selectedNodes);
+            });
+            Verify.IsTrue(unloaded.WaitOne(TimeSpan.FromSeconds(10)), "The TreeView is unloaded");
+
+            for (int attempt = 0; attempt < 10 && (treeViewReference.IsAlive || listControlReference.IsAlive); attempt++)
+            {
+                IdleSynchronizer.Wait();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            Verify.IsFalse(treeViewReference.IsAlive, "The TreeView is collected");
+            Verify.IsFalse(listControlReference.IsAlive, "The list control is collected");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = flatList as IObservableVector<object>;
+                Verify.AreEqual("P,A,A0,Q", String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string)));
+
+                p.Children.Add(new TreeViewNode() { Content = "P1" }); // A new child of a selected node is selected too.
+                q.Children.Add(new TreeViewNode() { Content = "Q0" }); // Q.HasChildren changes.
+                p.IsExpanded = false;                                  // Raises NodeCollapsed.
+                p.IsExpanded = true;                                   // Raises NodeExpanding.
+                selectedNodes.Remove(p);                               // Updates the selection state of P and its children.
+                p.Children.Clear();                                    // P.HasChildren changes.
+
+                Verify.IsFalse(selectedNodes.Contains(p));
+                Verify.AreEqual("P,Q", String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string)));
+            });
+            GC.KeepAlive(flatList);
+        }
+
+        // Shows a Multiple selection TreeView with the given root nodes and the first root selected, then removes it from
+        // the window. Returns weak references to the TreeView and its list control, and strong references to its flat
+        // list and SelectedNodes. Must be called on the UI thread.
+        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private void ShowAndRemoveTreeView(AutoResetEvent unloaded, TreeViewNode[] rootNodes, out WeakReference treeViewReference,
+            out WeakReference listControlReference, out object flatList, out IList<TreeViewNode> selectedNodes)
+        {
+            var treeView = new TreeView() { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Multiple };
+            foreach (var node in rootNodes)
+            {
+                treeView.RootNodes.Add(node);
+            }
+            treeView.Unloaded += (sender, args) => unloaded.Set();
+            Content = treeView;
+            Content.UpdateLayout();
+            treeView.SelectedNodes.Add(rootNodes[0]);
+
+            var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+            flatList = listControl.ItemsSource;
+            selectedNodes = treeView.SelectedNodes;
+            treeViewReference = new WeakReference(treeView);
+            listControlReference = new WeakReference(listControl);
+            Content = null;
+        }
+
         // Reads the glyph text, font size and foreground from a TreeViewItem chevron glyph template part, which is a
         // TextBlock (Text) today and may be a FontIcon (Glyph); fails clearly for any other part type.
         private static (string Glyph, double FontSize, Brush Foreground) ReadGlyphPart(FrameworkElement part, string partName)

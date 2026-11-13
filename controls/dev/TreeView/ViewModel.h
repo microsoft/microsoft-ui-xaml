@@ -90,6 +90,7 @@ private:
     winrt::weak_ref<winrt::TreeView> m_TreeView{ nullptr };
     tracker_ref<winrt::TreeViewNode> m_originNode{ this };
     bool m_isContentMode{ false };
+    bool m_isInSingleSelectionMode{ true };
     tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{ this };
     std::vector<winrt::weak_ref<winrt::IInspectable>> m_addedSelectedItems;
     std::vector<winrt::IInspectable> m_removedSelectedItems;

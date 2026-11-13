@@ -366,7 +366,11 @@ void ViewModel::EndSelectionChanges()
     {
         m_selectionTrackingCounter--;
         if (m_selectionTrackingCounter == 0 && (m_addedSelectedItems.size() > 0 || m_removedSelectedItems.size() > 0)) {
-            auto treeView = winrt::get_self<TreeView>(m_TreeView.get());
+            const auto treeView = m_TreeView.get();
+            if (!treeView)
+            {
+                return;
+            }
 
             auto added = winrt::make<Vector<winrt::IInspectable>>();
             for (unsigned int i = 0; i < m_addedSelectedItems.size(); i++)
@@ -378,7 +382,7 @@ void ViewModel::EndSelectionChanges()
             {
                 removed.Append(m_removedSelectedItems.at(i));
             }
-            treeView->RaiseSelectionChanged(added, removed);
+            winrt::get_self<TreeView>(treeView)->RaiseSelectionChanged(added, removed);
         }
     }
 }
@@ -569,7 +573,13 @@ winrt::TreeViewList ViewModel::ListControl()
 
 bool ViewModel::IsInSingleSelectionMode()
 {
-    return m_TreeViewList.get().SelectionMode() == winrt::ListViewSelectionMode::Single;
+    // The list control can be gone while nodes still raise events, for example after the TreeView is collected.
+    // Keep the last known mode then, so that BeginSelectionChanges and EndSelectionChanges stay balanced.
+    if (const auto listControl = m_TreeViewList.get())
+    {
+        m_isInSingleSelectionMode = listControl.SelectionMode() == winrt::ListViewSelectionMode::Single;
+    }
+    return m_isInSingleSelectionMode;
 }
 
 // Private helpers
@@ -862,9 +872,9 @@ TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewN
 
 void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState)
 {
-    if (m_TreeViewList)
+    if (const auto listControl = m_TreeViewList.get())
     {
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
+        auto container = winrt::get_self<TreeViewList>(listControl)->ContainerFromNode(targetNode);
         if (container)
         {
             winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
@@ -1155,10 +1165,11 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
 
 void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const& sender, winrt::IDependencyPropertyChangedEventArgs const& args)
 {
-    if (m_TreeViewList)
+    // The list control can be gone while nodes still raise events, for example after the TreeView is collected.
+    if (const auto listControl = m_TreeViewList.get())
     {
         auto targetNode = sender.as<winrt::TreeViewNode>();
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
+        auto container = winrt::get_self<TreeViewList>(listControl)->ContainerFromNode(targetNode);
         if (container)
         {
             winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
