@@ -29,6 +29,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD(IsConstructible)
             TEST_METHOD(BaseTypes)
             TEST_METHOD(ValidateISupportInitializeFlagOnTypes)
+            TEST_METHOD(ValidateISupportInitializeFlagOnCustomTypes)
             TEST_METHOD(DependencyObjectIsInGoodState)
             TEST_METHOD(GetPrimitiveClassInfo)
             TEST_METHOD(CanExtractNamespaceNameAndShortName)
