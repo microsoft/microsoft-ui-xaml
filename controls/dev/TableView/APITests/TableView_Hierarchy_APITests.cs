@@ -193,13 +193,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies clearing the relation drops every reference the hierarchy held to the items.")]
         public void VerifyClearingParentKeyPathReleasesRows()
         {
+            TableView tableView = null;
+            ObservableCollection<TreeEmployee> list = null;
+            List<WeakReference> weak = null;
+            RunOnUIThread.Execute(() => RetractAndEmpty(out tableView, out list, out weak));
+
+            // The table applies source changes on a later dispatcher turn.
+            IdleSynchronizer.Wait();
+
             RunOnUIThread.Execute(() =>
             {
-                TableView tableView;
-                ObservableCollection<TreeEmployee> list;
-                List<WeakReference> weak;
-                RetractAndEmpty(out tableView, out list, out weak);
-
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
@@ -395,7 +398,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a CollectionViewSource sort orders each sibling set, since siblings follow the view's order.")]
         public void VerifyCollectionViewSortOrdersSiblings()
         {
-            var tableView = Place(MakeShapingView(MakeTree(), sortPath: "Name", direction: Microsoft.UI.Xaml.Data.ListSortDirection.Descending).View);
+            object view = null;
+            RunOnUIThread.Execute(() => view = MakeShapingView(MakeTree(), sortPath: "Name", direction: Microsoft.UI.Xaml.Data.ListSortDirection.Descending).View);
+            var tableView = Place(view);
 
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => VerifyTree(tableView, "Gus1 Eve1+ Ada1- Cy2 Ben2+", "view sorted by Name descending"));
@@ -405,13 +410,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a CollectionViewSource filter applies before the tree is built: a kept row whose parent is filtered out becomes a root.")]
         public void VerifyCollectionViewFilterPromotesOrphansToRoots()
         {
-            CollectionViewSource cvs = null;
+            object view = null;
             RunOnUIThread.Execute(() =>
             {
-                cvs = MakeShapingView(MakeTree());
+                var cvs = MakeShapingView(MakeTree());
                 cvs.Filter = o => ((TreeEmployee)o).Name != "Ada";
+                view = cvs.View;
             });
-            var tableView = Place(cvs.View);
+            var tableView = Place(view);
 
             RunOnUIThread.Execute(() => VerifyTree(tableView, "Ben1+ Cy1 Eve1+ Gus1", "Ada filtered out"));
         }
