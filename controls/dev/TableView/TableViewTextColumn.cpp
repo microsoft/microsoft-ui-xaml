@@ -6,6 +6,7 @@
 #include "TableViewTextColumn.h"
 #include "TableView.h"
 #include "TableViewAutomationHelpers.h"
+#include "SharedHelpers.h"
 
 TableViewTextColumn::TableViewTextColumn()
 {
@@ -79,9 +80,55 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     // text or resize the row as the edit opens.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
     textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    textBox.Padding(owner
+    auto const cellPadding = owner
         ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
-        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
+        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4);
+    textBox.Padding(cellPadding);
+
+    // The template insets the text by BorderThickness, so subtract it to keep the editor as tall as the
+    // cell. It also top-aligns the line in a content area that MinHeight stretches, so pad the line
+    // into the middle of a fixed target height to keep it where the display text was.
+    textBox.Loaded([cellPadding, hooked = false](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&) mutable
+    {
+        auto const textBox = sender.as<winrt::TextBox>();
+        textBox.ApplyTemplate();
+        auto const border = textBox.BorderThickness();
+        auto const padTop = std::max(0.0, cellPadding.Top - border.Top);
+        auto const padBottom = std::max(0.0, cellPadding.Bottom - border.Bottom);
+        textBox.Padding(winrt::ThicknessHelper::FromLengths(
+            std::max(0.0, cellPadding.Left - border.Left), padTop,
+            std::max(0.0, cellPadding.Right - border.Right), padBottom));
+
+        auto const contentElement = SharedHelpers::FindInVisualTreeByName(textBox, L"ContentElement");
+        auto const scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
+        auto const textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
+        if (!textView)
+        {
+            return;
+        }
+        auto const centerLine = [weakTextBox = winrt::make_weak(textBox), padTop, padBottom, border](winrt::IInspectable const& sender, auto const&)
+        {
+            auto const textBox = weakTextBox.get();
+            if (!textBox)
+            {
+                return;
+            }
+            double const line = sender.as<winrt::UIElement>().DesiredSize().Height;
+            auto const target = std::max(textBox.MinHeight() - border.Top - border.Bottom, line + padTop + padBottom);
+            auto const leftover = std::max(0.0, target - line);
+            auto const extra = (leftover - padTop - padBottom) / 2;
+            auto padding = textBox.Padding();
+            padding.Top = padTop + extra;
+            padding.Bottom = padBottom + extra;
+            textBox.Padding(padding);
+        };
+        if (!hooked)
+        {
+            textView.SizeChanged(centerLine);
+            hooked = true;
+        }
+        centerLine(textView, nullptr);
+    });
 
     // The shipping TextBox style carries its own MinHeight (32px), which is taller than a Compact
     // TableView row (30px). Left alone, opening an editor grows the row and shifts the rows below

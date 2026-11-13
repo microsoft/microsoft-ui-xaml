@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Processing;
@@ -24,7 +25,9 @@ string PayloadDirectory,
 bool TrustLocalBinaries,
     ushort EndpointNumber = 1,
 long? ExpectedCreationTimeFileTime = null,
-    string? SessionDirectory = null);
+    string? SessionDirectory = null,
+    IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null,
+    PrivateRuntimeLaunch? PrivateRuntime = null);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -39,18 +42,17 @@ public sealed class TargetConnection : IAsyncDisposable
     private readonly SemaphoreSlim targetCommands = new(1, 1);
     private readonly IProgress<ConnectionProgress>? progress;
     private Process? target;
+    private NativeLaunchSession? nativeLaunch;
     private TapClient? tap;
     private ProcessMetricSession? sampling;
     // Kept after cleanup so the final counts stay visible.
     private LiveEtwSource? etw;
-    private EventPipeline? pipeline;
-    private EventCounter? eventCounter;
-    private SessionWriter? recorder;
+    private ProcessRecordingGroup? recordings;
     private bool etwFromProcessStart;
     private long etwListeningSinceFileTime;
     private long etwListeningSinceQpc;
     private string? etwStartError;
-    private string? recordingStartError;
+    private string? startupCatalogError;
     private Task? lifetime;
     private Task? disposal;
     private volatile string state = "Preparing";
@@ -75,9 +77,9 @@ public sealed class TargetConnection : IAsyncDisposable
     public DateTime? LastHelloUtc => Interlocked.Read(ref lastHelloTicks) is var ticks && ticks > 0
         ? new DateTime(ticks, DateTimeKind.Utc) : null;
     public Task Completion => lifetime ?? Task.CompletedTask;
-    public EtwStatus? Etw => eventCounter is { } counter && etw is { } source && pipeline is { } events
-        ? new(etwFromProcessStart, counter.XamlEvents, counter.ProfilerEvents, counter.GpuMemoryEvents, source.EventsLost,
-            events.DroppedEvents) : null;
+    public EtwStatus? Etw => recordings?.Primary is { } primary && etw is { } source
+        ? new(etwFromProcessStart, primary.XamlEvents, primary.ProfilerEvents, primary.GpuMemoryEvents, source.EventsLost,
+            primary.DroppedEvents) : null;
     // Set when the ETW session could not start or stopped with an error; process metrics keep working.
     public string? EtwError
     {
@@ -88,14 +90,13 @@ public sealed class TargetConnection : IAsyncDisposable
                 return etwStartError;
             }
 
-            var failure = etw?.Failure ?? pipeline?.Failure;
+            var failure = etw?.Failure ?? recordings?.Failure;
             return failure is null ? null : $"ETW reading stopped: {failure.Message}";
         }
     }
     // The session file the events are saved to; null when this connection does not record. Kept after cleanup.
-    public RecordingStatus? Recording => recorder?.Status;
-    public string? RecordingError => recordingStartError ??
-        (recorder?.Failure is { } failure ? $"Recording stopped: {failure.Message}" : null);
+    public RecordingStatus? Recording => recordings?.Primary.Recording;
+    public string? RecordingError => recordings?.RecordingError ?? startupCatalogError;
     private TargetConnection(IProgress<ConnectionProgress>? progress) => this.progress = progress;
 
     public static void ValidateOptions(TargetConnectionOptions options)
@@ -132,6 +133,31 @@ public sealed class TargetConnection : IAsyncDisposable
         pid == Environment.ProcessId))
         {
             throw new ArgumentException("Select another running process using its positive PID.");
+        }
+
+        if (options.PrivateRuntime is { } runtime)
+        {
+            if (options.Kind == TargetLaunchKind.Attach)
+            {
+                throw new ArgumentException("Private WinUI DLLs can be loaded only into an app the profiler launches.");
+            }
+
+            if (!string.IsNullOrEmpty(options.WorkingDirectory))
+            {
+                throw new ArgumentException("An app launched with private WinUI DLLs starts in its own folder.");
+            }
+
+            if (options.Kind == TargetLaunchKind.Packaged && !string.IsNullOrWhiteSpace(options.Arguments))
+            {
+                throw new ArgumentException("A packaged app launched with private WinUI DLLs is activated without arguments.");
+            }
+
+            if ((options.Kind == TargetLaunchKind.Unpackaged && !Path.IsPathFullyQualified(options.Target)) ||
+                !new[] { runtime.RuntimeDirectory, runtime.SourceDirectory, runtime.LaunchDirectory, runtime.LauncherDirectory }
+                    .All(path => !string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path)))
+            {
+                throw new ArgumentException("The target and the private WinUI folders must be full paths.");
+            }
         }
     }
 
@@ -174,25 +200,35 @@ public sealed class TargetConnection : IAsyncDisposable
         token.ThrowIfCancellationRequested();
         Report("Launching", options.Target);
         var launchExecutables = GetLaunchExecutables(options);
+        var markers = options.MarkerProviders ?? [];
         if (launchExecutables.Count > 0)
         {
-            PrepareEtw(launchExecutables);
+            PrepareEtw(launchExecutables, GetLauncherExecutables(options), markers);
         }
 
-        target = options.Kind switch
+        if (options.PrivateRuntime is { } privateRuntime)
         {
-            TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
-            TargetLaunchKind.Packaged => TargetLauncher.LaunchPackaged(options.Target, options.Arguments),
-            TargetLaunchKind.Attach => Process.GetProcessById(int.Parse(options.Target, CultureInfo.InvariantCulture)),
-            _ => throw new ArgumentOutOfRangeException(nameof(options))
-        };
+            nativeLaunch = await NativeLauncher.LaunchAsync(options.Kind, options.Target, options.Arguments, privateRuntime, token)
+                .ConfigureAwait(false);
+            target = nativeLaunch.Process;
+        }
+        else
+        {
+            target = options.Kind switch
+            {
+                TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
+                TargetLaunchKind.Packaged => TargetLauncher.LaunchPackaged(options.Target, options.Arguments),
+                TargetLaunchKind.Attach => Process.GetProcessById(int.Parse(options.Target, CultureInfo.InvariantCulture)),
+                _ => throw new ArgumentOutOfRangeException(nameof(options))
+            };
+        }
         Scope = new(Guid.NewGuid(), Identify(target));
         if (options.ExpectedCreationTimeFileTime is { } selected && selected != Scope.Process.CreationTimeFileTime)
         {
             throw new InvalidOperationException("The selected PID was reused. Refresh the process list and select again.");
         }
 
-        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory);
+        StartEtw(target, Scope.Process.CreationTimeFileTime, launchExecutables, options.SessionDirectory, markers);
         var payloads = ConnectionPayloadCatalog.Resolve(options.PayloadDirectory, InjectorResolver.GetArchitecture(Scope.Process));
         Report("Waiting for XAML", $"PID {target.Id}; waiting for the WinUI diagnostics endpoint.");
         string? runtime = null;
@@ -223,6 +259,11 @@ public sealed class TargetConnection : IAsyncDisposable
                 await Task.Delay(100, token).ConfigureAwait(false);
             }
         }
+        if (options.PrivateRuntime is { } loadedRuntime)
+        {
+            NativeLauncher.VerifyModules(target, loadedRuntime);
+        }
+
         RuntimePath = runtime;
         var resolved = InjectorResolver.Resolve(Scope.Process, new(payloads.Helper, payloads.Tap, runtime, udk), true);
         var pipe = TapClient.CreatePipeName();
@@ -230,7 +271,20 @@ public sealed class TargetConnection : IAsyncDisposable
         using var current = Process.GetCurrentProcess();
         var bootstrap = InjectorResolver.CreateBootstrap(pipe, Scope, Identify(current), nonce);
         Report("Injecting TAP", $"PID {target.Id}; endpoint {options.EndpointNumber}.");
-        await InjectAsync(resolved.Payloads, options.EndpointNumber, bootstrap, token).ConfigureAwait(false);
+        // InitializeXamlDiagnosticsEx drops the request and returns ERROR_NOT_FOUND when the target's UI thread doesn't
+        // take it within about a second, as in a busy startup. Retry with the same bootstrap until the deadline, unless
+        // the TAP's pipe shows that the target took a request after all.
+        while (!await InjectAsync(resolved.Payloads, options.EndpointNumber, bootstrap, token).ConfigureAwait(false) &&
+            !TapClient.PipeExists(pipe))
+        {
+            if (target.HasExited)
+            {
+                throw new IOException("The target exited before the TAP was injected.");
+            }
+
+            Report("Injecting TAP", $"PID {target.Id}; endpoint {options.EndpointNumber}; the target's UI thread is busy, retrying.");
+            await Task.Delay(250, token).ConfigureAwait(false);
+        }
         Report("Authenticating pipe", "Verifying target identity, session and nonce.");
         tap = await TapClient.ConnectAsync(pipe, Scope, nonce, TimeSpan.FromSeconds(10), token).ConfigureAwait(false);
         Report("Verifying hello", "Sending hello and waiting for the native TAP hello reply.");
@@ -273,13 +327,20 @@ History);
         }
     }
 
-    private void PrepareEtw(IReadOnlyList<string> launchExecutables)
+    // The executables, other than the profiler's, of a process that can create the launched one, so ETW has its launcher
+    // events. With private WinUI DLLs, ProfilerLauncher.exe activates a packaged app through a COM surrogate,
+    // dllhost.exe, which creates the app's process.
+    private static IReadOnlyList<string> GetLauncherExecutables(TargetConnectionOptions options) =>
+        options is { PrivateRuntime: not null, Kind: TargetLaunchKind.Packaged } ? ["dllhost.exe"] : [];
+
+    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<string> launcherExecutables,
+        IReadOnlyList<MarkerProviderSettings> markers)
     {
         try
         {
             etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
             etwListeningSinceQpc = Stopwatch.GetTimestamp();
-            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables);
+            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, launcherExecutables, markers);
         }
         catch (Exception error)
         {
@@ -288,15 +349,14 @@ History);
     }
 
     private void StartEtw(Process process, long? creationTimeFileTime, IReadOnlyList<string> launchExecutables,
-        string? sessionDirectory)
+        string? sessionDirectory, IReadOnlyList<MarkerProviderSettings> markers)
     {
         if (etwStartError is not null)
         {
             return;
         }
 
-        var counter = new EventCounter();
-        EventPipeline? events = null;
+        (int ProcessId, string? Name)? launcher = null;
         try
         {
             if (etw is not null)
@@ -314,58 +374,106 @@ History);
                         ? $"Launched {process.ProcessName}, expected {string.Join(", ", launchExecutables)}; ETW starts now."
                         : "The activated application was already running; ETW starts now.");
                 }
+                else
+                {
+                    // The launcher is the process that created the launch, which is not always the profiler.
+                    launcher = FindLauncher(process);
+                    if (launcher is null)
+                    {
+                        Trace.TraceWarning("The process that created the target is unknown, so the launch has no launcher events.");
+                    }
+                }
             }
 
-            recorder = CreateRecorder(sessionDirectory, process, creationTimeFileTime);
-            events = new EventPipeline(recorder is null ? [counter] : [counter, recorder]);
+            IReadOnlyList<SessionStart> sources = nativeLaunch?.Result.Processes is { Count: > 0 } group
+                ? group.Select(entry => CreateSessionStart(entry.ProcessId, process.ProcessName, entry.CreationTimeFileTime, launcher)).ToArray()
+                : [CreateSessionStart(process.Id, process.ProcessName, creationTimeFileTime, launcher)];
+            recordings = new(sources, process.Id, launcher?.ProcessId, sessionDirectory);
+            var identities = sources.ToDictionary(source => source.ProcessId, source => source.ProcessCreatedUtc?.ToFileTimeUtc());
             if (etw is null)
             {
                 etwListeningSinceQpc = Stopwatch.GetTimestamp();
-                etw = LiveEtwSource.Start(process.Id, events.Post);
+                etw = LiveEtwSource.Start(identities, markers, recordings.Post);
             }
             else
             {
-                etw.StartReading(process.Id, events.Post);
+                // The launcher's events from the launcher providers are the launch's too.
+                etw.StartReading(identities, launcher?.ProcessId, recordings.Post);
             }
-
-            pipeline = events;
-            eventCounter = counter;
+            SaveStartupRecordings("Recording");
         }
         catch (Exception error)
         {
-            events?.Dispose();
-            recorder?.Close("ETW could not start");
-            recorder = null;
             etw?.Dispose();
             etw = null;
+            recordings?.Close("ETW could not start");
             etwFromProcessStart = false;
             SetEtwStartError(error);
+            SaveStartupRecordings("ETW could not start");
         }
     }
 
-    // One file per connection; time zero of the recording is when ETW started listening.
-    private SessionWriter? CreateRecorder(string? directory, Process process, long? creationTimeFileTime)
+    // The process that created the launch. In a startup handoff, the target's parent is the bootstrap, another process of
+    // the launch, so the launcher is the parent of the launch's first process. A process of the launch is never the
+    // launcher, which ProcessRecordingGroup would otherwise route the launcher's events to.
+    private (int ProcessId, string? Name)? FindLauncher(Process process)
     {
-        if (directory is null)
+        if (nativeLaunch?.Result is not { ActivationProcessId: { } root } result)
         {
-            return null;
+            return ProcessParent.Find(process);
         }
 
+        var launcher = result.Processes.FirstOrDefault(entry => entry.ProcessId == root) is { } activation
+            ? ProcessParent.Find(activation.ProcessId, activation.CreationTimeFileTime) : null;
+        return launcher is { } found && result.Processes.All(entry => entry.ProcessId != found.ProcessId) ? launcher : null;
+    }
+
+    private void SaveStartupRecordings(string status)
+    {
+        if (nativeLaunch is null || recordings is null) return;
         try
         {
-            var path = Path.Combine(directory, $"{DateTime.Now:yyyyMMdd-HHmmss}-{process.ProcessName}-{process.Id}.sqlite");
-            return SessionWriter.Create(path, new(process.Id, process.ProcessName,
-                creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null, Stopwatch.Frequency,
-                etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
-                etwFromProcessStart ? SessionCoverage.ProcessStart : SessionCoverage.Connection));
+            var path = Path.Combine(nativeLaunch.Directory, "recordings.json");
+            var text = JsonSerializer.Serialize(new
+            {
+                schemaVersion = 1,
+                primaryProcessId = nativeLaunch.Result.ProcessId,
+                activationProcessId = nativeLaunch.Result.ActivationProcessId,
+                status,
+                recordings = recordings.Processes.Select(recording => new
+                {
+                    pid = recording.Source.ProcessId,
+                    creationTimeFileTime = recording.Source.ProcessCreatedUtc?.ToFileTimeUtc(),
+                    isPrimary = recording.IsPrimary,
+                    sessionFile = recording.Recording?.Path,
+                    coverage = recording.Source.Coverage.ToString(),
+                    storedEvents = recording.Recording?.StoredEvents,
+                    xamlEvents = recording.XamlEvents,
+                    profilerEvents = recording.ProfilerEvents,
+                    gpuMemoryEvents = recording.GpuMemoryEvents,
+                    droppedEvents = recording.DroppedEvents,
+                    error = recording.Error
+                })
+            }, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(path + ".tmp", text);
+            File.Move(path + ".tmp", path, overwrite: true);
+            startupCatalogError = null;
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
-            recordingStartError = $"The session file could not be created: {error.Message}";
+            startupCatalogError = $"The startup recording inventory could not be saved: {error.Message}";
             Trace.TraceWarning(error.ToString());
-            return null;
         }
     }
+
+    // Time zero of the recording is when ETW started listening. For a launch, launcher is the process that created it.
+    private SessionStart CreateSessionStart(int processId, string processName, long? creationTimeFileTime,
+        (int ProcessId, string? Name)? launcher) =>
+        new(processId, processName, creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null,
+            Stopwatch.Frequency, etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
+            etwFromProcessStart && creationTimeFileTime >= etwListeningSinceFileTime
+                ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
+            LauncherProcessId: launcher?.ProcessId, LauncherName: launcher?.Name);
 
     private void SetEtwStartError(Exception error)
     {
@@ -450,6 +558,7 @@ History);
                 var completed = await Task.WhenAny(delay, exited, sampling!.Completion).ConfigureAwait(false);
                 if (completed == exited || completed == sampling.Completion && target.HasExited)
                 {
+                    await exited.ConfigureAwait(false);
                     targetExited = true;
                     break;
                 }
@@ -504,7 +613,6 @@ History);
             // Stop the source before the pipeline so nothing is posted to a finished queue, and the pipeline before the
             // recorder so every processed event is stored.
             etw?.Dispose();
-            pipeline?.Dispose();
         }
         catch (Exception error)
         {
@@ -513,14 +621,15 @@ History);
 
         try
         {
-            recorder?.Close(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected",
-                etw?.EventsLost, pipeline?.DroppedEvents);
+            recordings?.Close(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected",
+                etw?.EventsLost);
         }
         catch (Exception error)
         {
             errors.Add(error);
         }
 
+        SaveStartupRecordings(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected");
         if (sampling is not null)
         {
             try
@@ -569,7 +678,8 @@ History);
                 tap = null;
             }
         }
-        target?.Dispose();
+        if (nativeLaunch is not null) nativeLaunch.Dispose();
+        else target?.Dispose();
         if (errors.Count > 0)
         {
             if (Failure is not null)
@@ -633,7 +743,8 @@ History);
         }
     }
 
-    private static async Task InjectAsync(InjectorPayloads payloads, ushort endpoint, string bootstrap, CancellationToken token)
+    // False when the target's UI thread didn't take the request (HRESULT_FROM_WIN32(ERROR_NOT_FOUND)).
+    private static async Task<bool> InjectAsync(InjectorPayloads payloads, ushort endpoint, string bootstrap, CancellationToken token)
     {
         var start = new ProcessStartInfo(payloads.Helper)
         {
@@ -667,6 +778,11 @@ History);
             }
             var text = await output.ConfigureAwait(false);
             var error = await errors.ConfigureAwait(false);
+            if (helper.ExitCode == unchecked((int)0x80070490))
+            {
+                return false;
+            }
+
             if (helper.ExitCode != 0)
             {
                 throw new IOException($"TAP injection failed (0x{unchecked((uint)helper.ExitCode):X8}). {error}");
@@ -679,6 +795,8 @@ History);
             {
                 throw new InvalidDataException("Injector returned an invalid acceptance result.");
             }
+
+            return true;
         }
         finally
         {

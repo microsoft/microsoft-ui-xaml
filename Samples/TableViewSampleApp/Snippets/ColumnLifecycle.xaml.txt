@@ -6,7 +6,7 @@
     SelectionMode="Single">
     <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="56"
                                  CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="160"
+    <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120"
                              Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>

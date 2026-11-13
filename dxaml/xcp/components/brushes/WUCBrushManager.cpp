@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "WUCBrushManager.h"
 #include <DCompSurface.h>
 #include <HWTextureMgr.h>
@@ -211,6 +213,10 @@ wrl::ComPtr<WUComp::ICompositionMaskBrush> WUCBrushManager::GetMaskBrush(
     if (maskBrush == nullptr)
     {
         IFCFAILFAST(m_compositor2->CreateMaskBrush(&maskBrush));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush);
+        }
     }
 
     if (nineGrid != nullptr)
@@ -312,6 +318,10 @@ wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush
     if (nineGridBrush == nullptr)
     {
         IFCFAILFAST(m_compositor2->CreateNineGridBrush(&nineGridBrush));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
+        }
     }
 
     float inverseRealizationScaleX = (maskRealizationScaleX == 0 ? 0 : 1.0f / maskRealizationScaleX);
@@ -346,6 +356,10 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetSurfaceBrush(
     if (surfaceBrush == nullptr)
     {
         IFCFAILFAST(m_compositor->CreateSurfaceBrush(&surfaceBrush));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+        }
 
         // Reset the default alignment properties to what we need them to be
         IFCFAILFAST(surfaceBrush->put_HorizontalAlignmentRatio(0));
@@ -414,6 +428,10 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetColorBrush(_In_ CSoli
                 {
                     wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
                     IFCFAILFAST(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+                    if (XamlProfilerTracing::IsProfilerEnabled())
+                    {
+                        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                    }
                     transition.m_wucBrush = colorBrush;
                 }
 

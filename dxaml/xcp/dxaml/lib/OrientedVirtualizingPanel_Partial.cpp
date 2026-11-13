@@ -14,6 +14,7 @@
 //      - Implements IOrientedPanel interface for logical and physical Orientation
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "OrientedVirtualizingPanel.g.h"
 #include "ScrollViewer.g.h"
 #include "ScrollContentPresenter.g.h"
@@ -1149,19 +1150,11 @@ OrientedVirtualizingPanel::UpdateLogicalScrollData(
     wf::Size viewport = constraint;
     ScrollVector offset = m_ScrollData.get_Offset();
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::UpdateLogicalScrollDataBegin(GetHandle());
-#else
-    TraceUpdateLogicalScrollDataBegin();
-#endif
+    XamlTelemetry::UpdateLogicalScrollDataBegin(GetHandle());
 
     auto guard = wil::scope_exit([&]()
     {
-#ifdef XAMLPROFILER_ENABLED
-        XamlElementTracing::UpdateLogicalScrollDataEnd(GetHandle());
-#else
-        TraceUpdateLogicalScrollDataEnd();
-#endif
+        XamlTelemetry::UpdateLogicalScrollDataEnd(GetHandle());
     });
 
     IFC_RETURN(get_RealizedChildren(&spRealizedChildren));
@@ -1482,11 +1475,7 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     _In_ BOOLEAN newlyRealized,
     _Inout_ BOOLEAN& visualOrderChanged)
 {
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::VirtualizationAddBegin(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
-#else
-    TraceVirtualizationAddBegin();
-#endif
+    XamlTelemetry::VirtualizationAddBegin(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spChildren;
     ctl::ComPtr<xaml::IUIElement> spChildAtPosition;
@@ -1564,11 +1553,7 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     }
 
 Cleanup:
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::VirtualizationAddEnd(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
-#else
-    TraceVirtualizationAddEnd();
-#endif
+    XamlTelemetry::VirtualizationAddEnd(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
     RRETURN(hr);
 }
 
@@ -1988,19 +1973,11 @@ OrientedVirtualizingPanel::CleanupContainers(
     _In_ xaml_controls::IItemsControl* pItemsControl,
     _In_ wf::Size constraint)
 {
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::VirtualizationCleanupBegin(GetHandle());
-#else
-    TraceVirtualizationCleanupBegin();
-#endif
+    XamlTelemetry::VirtualizationCleanupBegin(GetHandle());
 
     auto guard = wil::scope_exit([&]()
     {
-#ifdef XAMLPROFILER_ENABLED
-        XamlElementTracing::VirtualizationCleanupEnd(GetHandle());
-#else
-        TraceVirtualizationCleanupEnd();
-#endif
+        XamlTelemetry::VirtualizationCleanupEnd(GetHandle());
     });
 
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spRealizedChildren;
@@ -2690,11 +2667,7 @@ OrientedVirtualizingPanel::MeasureChild(
     _In_ wf::Size layoutSlotSize,
     _Out_opt_ wf::Size* returnValue)
 {
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::MeasureChildBegin(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
-#else
-    TraceMeasureChildBegin();
-#endif
+    XamlTelemetry::MeasureChildBegin(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
 
     HRESULT hr = S_OK;
     wf::Size childDesiredSize = {};
@@ -2721,11 +2694,7 @@ OrientedVirtualizingPanel::MeasureChild(
     }
 
 Cleanup:
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::MeasureChildEnd(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
-#else
-    TraceMeasureChildEnd();
-#endif
+    XamlTelemetry::MeasureChildEnd(pChild ? static_cast<UIElement*>(pChild)->GetHandle() : nullptr);
     RRETURN(hr);
 }
 

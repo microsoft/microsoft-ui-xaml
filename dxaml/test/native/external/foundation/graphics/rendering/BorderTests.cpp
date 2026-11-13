@@ -543,6 +543,116 @@ void BorderTests::RoundedCornersWithNoChildren()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
 }
 
+void BorderTests::RoundedCornersZeroBorderThickness()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    xaml_controls::Border^ border;
+    xaml_controls::Border^ borderWithChild;
+    xaml_controls::Border^ borderWithBackground;
+    xaml_controls::Grid^ grid;
+    xaml_controls::ContentPresenter^ contentPresenter;
+
+    auto setBorderThickness = [&](double value)
+    {
+        const xaml::Thickness thickness = xaml::ThicknessHelper::FromUniformLength(value);
+        border->BorderThickness = thickness;
+        borderWithChild->BorderThickness = thickness;
+        borderWithBackground->BorderThickness = thickness;
+        grid->BorderThickness = thickness;
+        contentPresenter->BorderThickness = thickness;
+    };
+
+    LOG_OUTPUT(L"[A BorderBrush and rounded corners with a zero BorderThickness: the outline draws nothing and gets no visual. "
+        L"Backgrounds and children still render.]");
+    RunOnUIThread([&]()
+    {
+        auto makeChild = []()
+        {
+            auto rectangle = ref new xaml_shapes::Rectangle();
+            rectangle->Width = 40;
+            rectangle->Height = 40;
+            rectangle->Fill = ref new xaml_media::SolidColorBrush(ColorHelper::FromArgb(255, 0, 255, 0));
+            return rectangle;
+        };
+        auto borderBrush = ref new xaml_media::SolidColorBrush(ColorHelper::FromArgb(255, 255, 0, 0));
+        auto background = ref new xaml_media::SolidColorBrush(ColorHelper::FromArgb(255, 0, 0, 255));
+        const auto cornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(8);
+
+        border = ref new xaml_controls::Border();
+        border->Width = 100;
+        border->Height = 100;
+        border->BorderBrush = borderBrush;
+        border->CornerRadius = cornerRadius;
+
+        borderWithChild = ref new xaml_controls::Border();
+        borderWithChild->Width = 100;
+        borderWithChild->Height = 100;
+        borderWithChild->BorderBrush = borderBrush;
+        borderWithChild->CornerRadius = cornerRadius;
+        borderWithChild->Child = makeChild();
+        Canvas::SetLeft(borderWithChild, 120);
+
+        borderWithBackground = ref new xaml_controls::Border();
+        borderWithBackground->Width = 100;
+        borderWithBackground->Height = 100;
+        borderWithBackground->BorderBrush = borderBrush;
+        borderWithBackground->Background = background;
+        borderWithBackground->CornerRadius = cornerRadius;
+        Canvas::SetLeft(borderWithBackground, 240);
+
+        grid = ref new xaml_controls::Grid();
+        grid->Width = 100;
+        grid->Height = 100;
+        grid->BorderBrush = borderBrush;
+        grid->Background = background;
+        grid->CornerRadius = cornerRadius;
+        grid->Children->Append(makeChild());
+        Canvas::SetLeft(grid, 360);
+
+        contentPresenter = ref new xaml_controls::ContentPresenter();
+        contentPresenter->Width = 100;
+        contentPresenter->Height = 100;
+        contentPresenter->BorderBrush = borderBrush;
+        contentPresenter->Background = background;
+        contentPresenter->CornerRadius = cornerRadius;
+        contentPresenter->Content = makeChild();
+        Canvas::SetLeft(contentPresenter, 480);
+
+        setBorderThickness(0);
+
+        Canvas^ rootCanvas = ref new Canvas();
+        rootCanvas->Children->Append(border);
+        rootCanvas->Children->Append(borderWithChild);
+        rootCanvas->Children->Append(borderWithBackground);
+        rootCanvas->Children->Append(grid);
+        rootCanvas->Children->Append(contentPresenter);
+
+        TestServices::WindowHelper->WindowContent = rootCanvas;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"ZeroThickness");
+
+    LOG_OUTPUT(L"[A non-zero BorderThickness draws the outlines.]");
+    RunOnUIThread([&]()
+    {
+        setBorderThickness(2);
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"NonZeroThickness");
+
+    LOG_OUTPUT(L"[Back to a zero BorderThickness: the outline visuals are removed, and the tree matches the first one.]");
+    RunOnUIThread([&]()
+    {
+        setBorderThickness(0);
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"ZeroThickness");
+}
+
 void BorderTests::RasterizationScale()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);

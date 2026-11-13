@@ -74,7 +74,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <Visual Tag="PrependVisual" SizeX="400" SizeY="44">
+                      <Visual Tag="PrependVisual">
                         <Visual Tag="PrimaryVisual" SizeX="400" SizeY="44">
                           <Opacity>
                             <KeyFrameAnimation Duration="1000">
@@ -103,7 +103,7 @@
                           </Visual>
                         </Visual>
                       </Visual>
-                      <Visual Tag="PrependVisual" SizeX="400" SizeY="44">
+                      <Visual Tag="PrependVisual">
                         <Visual Tag="PrimaryVisual" SizeX="400" SizeY="44" OffsetX="0" OffsetY="44" OffsetZ="0">
                           <Opacity>
                             <KeyFrameAnimation Duration="1000">
@@ -132,7 +132,7 @@
                           </Visual>
                         </Visual>
                       </Visual>
-                      <Visual Tag="PrependVisual" SizeX="400" SizeY="44">
+                      <Visual Tag="PrependVisual">
                         <Visual Tag="PrimaryVisual" SizeX="400" SizeY="44" OffsetX="0" OffsetY="88" OffsetZ="0">
                           <Opacity>
                             <KeyFrameAnimation Duration="1000">

@@ -59,6 +59,9 @@ public:
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
 
+    using TableViewColumnProperties::MinWidth;
+    void MinWidth(double value);
+
     // Internal — stable, non-address token used by column-header automation peers.
     uint32_t AutomationIdentity();
 
@@ -136,6 +139,7 @@ private:
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
+    int64_t m_cellContextFlyoutToken{ 0 };
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
     uint32_t m_automationIdentity{ 0 };
 };
