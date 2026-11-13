@@ -1,10 +1,10 @@
-Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
 ApplyGroupHeaderTemplate();
 
 public ObservableCollection<Person> People { get; }
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void ApplyGroupHeaderTemplate()
 {
@@ -30,10 +30,30 @@ private void SetFirstColumn(bool photoFirst)
 }
 
 // From Controls\ShapingOptions.xaml.cs
-// The key selector receives the ROW and the identity selector the KEY. GroupBy takes a delegate,
-// so call it again after a row's grouped-on value changes.
-private static void GroupRows(TableViewSource source, Func<object?, object> groupKeyOf) =>
-    source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+// A PropertyGroupDescription names the property to group by. Grouping reads the value when the
+// view refreshes, so call Refresh() after a row's grouped-on value changes.
+private static void GroupRows(CollectionViewSource source, string groupPath)
+{
+    var description = new PropertyGroupDescription(groupPath);
+    if (source.GroupDescriptions.Count == 1)
+    {
+        source.GroupDescriptions[0] = description;
+    }
+    else
+    {
+        source.GroupDescriptions.Clear();
+        source.GroupDescriptions.Add(description);
+    }
+}
+
+// Turning grouping on or off gives the CollectionViewSource a new View, so show the current one.
+private static void ShowView(TableView table, CollectionViewSource source)
+{
+    if (!ReferenceEquals(table.ItemsSource, source.View))
+    {
+        table.ItemsSource = source.View;
+    }
+}
 
 // From Controls\ShapingOptions.xaml.cs
 // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
@@ -69,10 +89,14 @@ private static void CollapseEvery(TableView table, bool grouped, bool hierarchic
 public const string NoneKey = "(none)";
 
 // From Helpers\SampleShaping.cs
-// GroupBy identity selector: it receives the group key (never the row) and must not return an
-// empty string, because TableViewSource fails fast on an empty identity.
-public static string GroupIdentity(object? groupKey) =>
-    groupKey?.ToString() is { Length: > 0 } s ? s : NoneKey;
+// The Person property a group-key Tag groups by: IsActive groups by its Active/Inactive label.
+public static string GroupPathOf(string key) => key switch
+{
+    nameof(Person.Office) => nameof(Person.Office),
+    nameof(Person.Role) => nameof(Person.Role),
+    nameof(Person.IsActive) => nameof(Person.ActiveStatus),
+    _ => nameof(Person.Department),
+};
 
 // From Models\Person.cs
 // The Name column binds FullName. Its setter lets page actions rename a person: the first word

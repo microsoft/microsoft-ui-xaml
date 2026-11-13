@@ -1,10 +1,10 @@
-Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
 
 // PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.
 public ObservableCollection<Person> People { get; } = RtlPersonData.Mixed();
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnRtlToggled(object sender, RoutedEventArgs e)
 {

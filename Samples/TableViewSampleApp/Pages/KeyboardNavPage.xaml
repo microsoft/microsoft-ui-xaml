@@ -114,7 +114,7 @@
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                     <TextBlock
-                        Text="The Group by department switch uses TableViewSource.GroupBy on Department. Inspect the group headers' ExpandCollapse pattern and the row positions within groups; group headers are not selectable records. Query the providers again after each reshape. The source count is not the grouped UI Automation row count."
+                        Text="The Group by department switch adds a PropertyGroupDescription on Department. Inspect the group headers' ExpandCollapse pattern and the row positions within groups; group headers are not selectable records. Query the providers again after each reshape. The source count is not the grouped UI Automation row count."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                     <TextBlock
@@ -174,7 +174,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="KeyboardNav"
-                    Description="Shapes the first table. When grouped, check how Up and Down treat the group header rows. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Shapes the first table. When grouped, check how Up and Down treat the group header rows. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

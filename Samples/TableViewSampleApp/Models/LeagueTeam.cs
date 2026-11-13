@@ -174,6 +174,15 @@ public sealed class LeagueTeam : INotifyPropertyChanged
     /// <summary>Standard football points: <c>3·Wins + 1·Draws</c>.</summary>
     public int Points => (_wins * 3) + _draws;
 
+    /// <summary>Group key for the Standing grouping: the points band.</summary>
+    public string Standing => Data.LeagueData.Band(Points);
+
+    /// <summary>Group key for the Group grouping, e.g. "Group A".</summary>
+    public string GroupLabel => string.IsNullOrWhiteSpace(_group) ? Helpers.SampleShaping.NoneKey : string.Format(CultureInfo.CurrentCulture, "Group {0}", _group);
+
+    /// <summary>Group key for the Seeded grouping.</summary>
+    public string Seeding => _isSeeded ? "Seeded" : "Unseeded";
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

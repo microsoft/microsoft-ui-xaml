@@ -67,7 +67,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="ContextMenusTable"
                 AutomationProperties.Name="People with context menus"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">

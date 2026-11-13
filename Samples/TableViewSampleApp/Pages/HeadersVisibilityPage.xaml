@@ -90,7 +90,7 @@
                 x:Name="TicketsTable"
                 AutomationProperties.AutomationId="HeadersVisibilityTable"
                 AutomationProperties.Name="Support tickets"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 HeadersVisibility="Column"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
@@ -141,7 +141,7 @@
                     x:Name="Shaping"
                     HierarchyColumnHeader="Ticket"
                     AutomationIdPrefix="HeadersVisibility"
-                    Description="Grouped shows that group headers are not column headers: HeadersVisibility None leaves them in place. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped shows that group headers are not column headers: HeadersVisibility None leaves them in place. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Queue" Tag="Queue"/>
                     <ComboBoxItem Content="Priority" Tag="Priority"/>
                     <ComboBoxItem Content="Assignee" Tag="Assignee"/>

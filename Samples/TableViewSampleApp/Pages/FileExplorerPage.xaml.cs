@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -26,11 +27,11 @@ namespace TableViewSampleApp.Pages;
 /// <summary>
 /// File Explorer scenario: a folder listing that opens in the sample's install folder, reads
 /// each folder off the UI thread, keeps folders first through computed SortMemberPath keys, and
-/// filters and groups one TableViewSource in place. Enter opens a folder, Backspace goes up.
+/// filters and groups one CollectionViewSource. Enter opens a folder, Backspace goes up.
 /// </summary>
 public sealed partial class FileExplorerPage : SamplePageBase
 {
-    // Nested listings read this deep and this many rows; every Add reshapes a ParentBy source.
+    // Nested listings read this deep and this many rows; every Add reshapes the nested rows.
     private const int SubfolderLevels = 2;
     private const int MaxNestedEntries = 500;
 
@@ -42,7 +43,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
     public FileExplorerPage()
     {
         // <snippet>
-        Source = TableViewSource.From(Entries);    // created once; filtered and grouped in place
+        Source = new CollectionViewSource { Source = Entries };    // created once; TableView shows its View
         InitializeComponent();
         FileTable.DoubleTapped += OnRowDoubleTapped; // snippet:skip
         FileTable.Sorted += OnTableSorted; // snippet:skip
@@ -55,7 +56,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
         // </snippet>
 
-        InitializeSample(Status, Shaping.Attach(FileTable, Source, (row, key) => KeyOf(row as FileSystemEntry, key), FileSystemBrowser.ParentFolder));
+        InitializeSample(Status, Shaping.Attach(FileTable, Source, GroupPathOf, FileSystemBrowser.ParentFolder));
         TrackLifetime(OpenInitialFolder);
     }
 
@@ -65,7 +66,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     private void OpenInitialFolder()
@@ -81,7 +82,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
     private async Task NavigateAsync(string path, bool addToHistory, string verb)
     {
         var version = ++_navigationVersion;
-        // Nested (Hierarchy modes): subfolder contents too, so ParentBy has folders to nest under.
+        // Nested (Hierarchy modes): subfolder contents too, so ParentKeyPath has folders to nest under.
         var nested = IsHierarchical;
         var listing = await Task.Run(() => nested
             ? FileSystemBrowser.Read(path, SubfolderLevels, MaxNestedEntries)
@@ -268,7 +269,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         _ = NavigateAsync(path, addToHistory: true, verb: "Opened");
     }
 
-    // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+    // ---- Filter (CollectionViewSource.Filter) ---------------------------------------------
 
     // <snippet>
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
@@ -282,16 +283,16 @@ public sealed partial class FileExplorerPage : SamplePageBase
         switch (filter)
         {
             case "folders":
-                Source.Filter(item => item is FileSystemEntry { IsFolder: true });
+                Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: true });
                 break;
             case "files":
-                Source.Filter(item => item is FileSystemEntry { IsFolder: false });
+                Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: false });
                 break;
             case "none":
-                Source.Filter(_ => false);
+                Source.Filter = new CollectionViewFilter(_ => false);
                 break;
             default:
-                Source.ClearFilter();
+                Source.Filter = null;
                 break;
         }
 
@@ -374,7 +375,15 @@ public sealed partial class FileExplorerPage : SamplePageBase
         }
     }
 
-    // Never blank: TableViewSource fails fast on an empty group identity.
+    // The FileSystemEntry property a group-key Tag groups by.
+    private static string GroupPathOf(string key) => key switch
+    {
+        nameof(FileSystemEntry.IsFolder) => nameof(FileSystemEntry.Kind),
+        nameof(FileSystemEntry.DateModified) => nameof(FileSystemEntry.ModifiedBucket),
+        _ => nameof(FileSystemEntry.TypeDisplay),
+    };
+
+    // Never blank, so the readouts name every group.
     private static object KeyOf(FileSystemEntry? entry, string key)
     {
         if (entry is null)
@@ -384,25 +393,11 @@ public sealed partial class FileExplorerPage : SamplePageBase
 
         var value = key switch
         {
-            nameof(FileSystemEntry.IsFolder) => entry.IsFolder ? "Folders" : "Files",
-            nameof(FileSystemEntry.DateModified) => ModifiedBucket(entry.DateModified),
+            nameof(FileSystemEntry.IsFolder) => entry.Kind,
+            nameof(FileSystemEntry.DateModified) => entry.ModifiedBucket,
             _ => entry.TypeDisplay,
         };
 
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
-    }
-
-    private static string ModifiedBucket(DateTimeOffset modified)
-    {
-        var days = (DateTime.Now.Date - modified.LocalDateTime.Date).TotalDays;
-        return days switch
-        {
-            < 1 => "Today",
-            < 2 => "Yesterday",
-            < 8 => "Earlier this week",
-            < 31 => "Earlier this month",
-            < 366 => "Earlier this year",
-            _ => "A long time ago",
-        };
     }
 }

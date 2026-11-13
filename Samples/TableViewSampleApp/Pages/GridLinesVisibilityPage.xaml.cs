@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -27,7 +28,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
     public GridLinesVisibilityPage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
@@ -55,7 +56,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Grid lines and banding ---------------------------------------------------------
@@ -241,8 +242,8 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             }
         }
 
-        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
-        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        // Grouping reads the value when the view refreshes, so the control cannot re-bucket the row
+        // on PropertyChanged; refresh the view when the grouped-on value changed.
         ReapplyIfGroupedOn(key);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
@@ -282,7 +283,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             person.PropertyChanged -= OnPersonChanged;
         }
 
-        // The same collection is refilled, so the TableViewSource and its grouping stay in place.
+        // The same collection is refilled, so the CollectionViewSource and its grouping stay in place.
         People.Clear();
         foreach (var person in PersonData.Take(InitialRows))
         {

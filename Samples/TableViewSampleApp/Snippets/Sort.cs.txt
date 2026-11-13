@@ -1,9 +1,9 @@
-Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = Teams };     // created once; TableView shows its View
 InitializeComponent();
 
 public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, SortDirection.Descending);
 

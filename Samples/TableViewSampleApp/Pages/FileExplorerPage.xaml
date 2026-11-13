@@ -23,7 +23,7 @@
 
     <controls:SamplePresenter
         Header="File Explorer"
-        Description="A File Explorer-style folder listing that opens in this sample's install folder. Each folder is read on a background thread and its entries replace the items of one ObservableCollection, which a single TableViewSource filters and groups in place. Name, Type and Size sort through a computed SortMemberPath that keeps folders together, as Explorer does. Open a folder with Enter or a double-click, and go up with Backspace or the Up button."
+        Description="A File Explorer-style folder listing that opens in this sample's install folder. Each folder is read on a background thread and its entries replace the items of one ObservableCollection, which a single CollectionViewSource filters and groups. Name, Type and Size sort through a computed SortMemberPath that keeps folders together, as Explorer does. Open a folder with Enter or a double-click, and go up with Backspace or the Up button."
         Snippet="FileExplorer"
         StretchExample="True"
         TryIt="Select the Assets folder and press Enter to open it, then press Backspace to come back. Click the Name header twice: folders stay together at the top, then at the bottom. Set Filter to Files only, then switch Shaping to Grouped by Item type."
@@ -86,7 +86,7 @@
                     Grid.Row="1"
                     AutomationProperties.AutomationId="FileExplorerTable"
                     AutomationProperties.Name="Folder contents"
-                    ItemsSource="{x:Bind Source}"
+                    ItemsSource="{x:Bind Source.View}"
                     SelectionMode="Single"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
@@ -125,7 +125,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Filter"
-                    Description="TableViewSource.Filter keeps only the rows a predicate accepts, on the same source that sorts and groups, so the folder is not read again. Match nothing shows the empty result.">
+                    Description="CollectionViewSource.Filter keeps only the rows a predicate accepts, on the same source that sorts and groups, so the folder is not read again. Match nothing shows the empty result.">
                     <ComboBox
                         x:Name="FilterSelector"
                         AutomationProperties.AutomationId="FileExplorerFilterSelector"
@@ -144,7 +144,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="FileExplorer"
-                    Description="Grouping bands the listing like File Explorer's Group by: by item type, folders and files, or date modified (newest first). TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping bands the listing like File Explorer's Group by: by item type, folders and files, or date modified (newest first). A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Item type" Tag="TypeDisplay"/>
                     <ComboBoxItem Content="Folder or file" Tag="IsFolder"/>
                     <ComboBoxItem Content="Date modified" Tag="DateModified"/>

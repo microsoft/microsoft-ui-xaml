@@ -49,7 +49,7 @@
 
     <controls:SamplePresenter
         Header="Empty state"
-        Description="TableView.EmptyTemplate is a DataTemplate the control centres over the row area whenever there are no rows to show. A table can be empty in three ways: ItemsSource is null, the bound source holds zero rows, or TableViewSource.Filter matches nothing. Pick each data source, remove rows one at a time, or filter to zero matches, and the same template takes over. Switch Shaping to Grouped first to see that an empty grouped set shows the template too, not an empty group band."
+        Description="TableView.EmptyTemplate is a DataTemplate the control centres over the row area whenever there are no rows to show. A table can be empty in three ways: ItemsSource is null, the bound source holds zero rows, or the CollectionViewSource Filter matches nothing. Pick each data source, remove rows one at a time, or filter to zero matches, and the same template takes over. Switch Shaping to Grouped first to see that an empty grouped set shows the template too, not an empty group band."
         Snippet="EmptyState"
         StretchExample="True"
         TryIt="Set Data source to Null ItemsSource, then to Zero rows: the empty template appears both times. Choose Populated, switch Shaping to Grouped, and press Filter to zero matches: every group disappears and the template takes over. Press Restore the rows to bring the people back."
@@ -61,7 +61,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="EmptyStateTable"
                 AutomationProperties.Name="People, with an empty state"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 EmptyTemplate="{StaticResource EmptyStateTemplate}"
                 VerticalAlignment="Stretch"
@@ -86,7 +86,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Data source"
-                    Description="Null ItemsSource sets TableView.ItemsSource to null. Zero rows keeps the TableViewSource attached and clears the collection behind it. Both show the EmptyTemplate.">
+                    Description="Null ItemsSource sets TableView.ItemsSource to null. Zero rows keeps the CollectionViewSource View attached and clears the collection behind it. Both show the EmptyTemplate.">
                     <ComboBox
                         x:Name="DataSourceSelector"
                         AutomationProperties.AutomationId="EmptyStateDataSourceSelector"
@@ -103,7 +103,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="EmptyState"
-                    Description="Grouping an empty set is legal: the projection yields no groups, and the empty template wins over an empty group band. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping an empty set is legal: the projection yields no groups, and the empty template wins over an empty group band. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
                 </controls:ShapingOptions>
@@ -135,8 +135,8 @@
                             AutomationProperties.AutomationId="EmptyStateFilterToZeroButton"
                             Content="Filter to zero matches"
                             Click="OnFilterToZeroClick"
-                            ToolTipService.ToolTip="Calls TableViewSource.Filter with 'joined after today', which matches nobody. The collection keeps its rows, yet the empty template shows."
-                            AutomationProperties.HelpText="Calls TableViewSource.Filter with a predicate that matches nobody."
+                            ToolTipService.ToolTip="Sets CollectionViewSource.Filter to 'joined after today', which matches nobody. The collection keeps its rows, yet the empty template shows."
+                            AutomationProperties.HelpText="Sets CollectionViewSource.Filter to a predicate that matches nobody."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button
@@ -161,7 +161,7 @@
                 </controls:RailSection>
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="EmptyState">
-                    <TextBlock x:Name="ItemsSourceText" controls:StatusPanel.Label="ItemsSource" Text="TableViewSource"/>
+                    <TextBlock x:Name="ItemsSourceText" controls:StatusPanel.Label="ItemsSource" Text="CollectionViewSource.View"/>
                     <TextBlock x:Name="EmptyTemplateText" controls:StatusPanel.Label="Empty template" Text="Hidden"/>
                 </controls:StatusPanel>
             </StackPanel>

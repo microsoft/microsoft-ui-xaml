@@ -13,7 +13,7 @@
   Unnamed regions in Pages\<Tag>Page.xaml / Pages\<Tag>Page.xaml.cs belong to <Tag>. A named region
   (<!-- snippet Groups Sort --> or // <snippet Groups Sort>) in ANY project file is appended to the
   listed Tags' snippets, after the page's own regions, under a "From <file>" line; this is how the
-  Groups snippet shows the real GroupBy call that lives in Controls\ShapingOptions.xaml.cs.
+  Groups snippet shows the real grouping code that lives in Controls\ShapingOptions.xaml.cs.
   *.Status.cs and shared files contribute only through named regions.
 
   A Tag is generated only when its own page files contain at least one unnamed region; a page

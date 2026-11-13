@@ -1,9 +1,9 @@
-Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = Tickets };    // created once; TableView shows its View
 InitializeComponent();
 
 public ObservableCollection<SupportTicket> Tickets { get; } = TicketData.Queue();
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
 {

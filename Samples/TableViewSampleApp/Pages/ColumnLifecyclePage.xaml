@@ -23,7 +23,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="ColumnLifecycleTable"
                 AutomationProperties.Name="People with dynamic columns"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
@@ -119,7 +119,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="ColumnLifecycle"
-                    Description="Grouping changes the rows, never the columns, so a column you moved or hid stays that way. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping changes the rows, never the columns, so a column you moved or hid stays that way. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

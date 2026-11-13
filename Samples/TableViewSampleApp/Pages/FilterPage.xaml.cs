@@ -9,18 +9,18 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Filtering: ONE live <see cref="TableViewSource"/> whose <c>Filter(predicate)</c> narrows the
-/// rows the control renders (and <c>ClearFilter()</c> restores them) without mutating the
+/// Filtering: ONE <see cref="CollectionViewSource"/> whose <c>Filter</c> narrows the rows the
+/// control renders (and setting it to null restores them) without mutating the
 /// collection. Grouping is applied to that same source, so a filtered, grouped view is a single
 /// projection.
 /// </summary>
@@ -35,7 +35,7 @@ public sealed partial class FilterPage : SamplePageBase
     public FilterPage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         FilterTable.SelectionChanged += OnTableSelectionChanged; // snippet:skip
         ApplyFilter();
@@ -49,7 +49,7 @@ public sealed partial class FilterPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Filtering --------------------------------------------------------------------------
@@ -108,11 +108,11 @@ public sealed partial class FilterPage : SamplePageBase
         var activeOnly = ActiveOnly;
         if (query.Length > 0 || activeOnly)
         {
-            Source.Filter(item => Matches((Person)item, query, activeOnly));
+            Source.Filter = new CollectionViewFilter(item => Matches((Person)item, query, activeOnly));
         }
         else
         {
-            Source.ClearFilter();
+            Source.Filter = null;
         }
 
         RefreshReadouts();
@@ -140,7 +140,7 @@ public sealed partial class FilterPage : SamplePageBase
         value is not null && value.Contains(query, StringComparison.CurrentCultureIgnoreCase);
     // </snippet>
 
-    // An edit does not re-run the predicate or the group key selector; apply both once it settles.
+    // An edit does not re-run the filter or the grouping; refresh the view once it settles.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (IsBulkUpdating || _refreshQueued)
@@ -180,7 +180,7 @@ public sealed partial class FilterPage : SamplePageBase
         _programmaticQuery = SearchBox.Text == NoMatchQuery ? null : NoMatchQuery;
         SearchBox.Text = NoMatchQuery;
         ApplyFilter();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter(query \u201C{0}\u201D): no row matches, so the EmptyTemplate shows", NoMatchQuery));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter (query \u201C{0}\u201D): no row matches, so the EmptyTemplate shows", NoMatchQuery));
     }
 
     private void OnClearFilterClick(object sender, RoutedEventArgs e)
@@ -189,7 +189,7 @@ public sealed partial class FilterPage : SamplePageBase
         SearchBox.Text = string.Empty;
         ActiveOnlyToggle.IsOn = false;
         ApplyFilter();
-        SetLastAction("ClearFilter(): every row is back, " + ShownSummary());
+        SetLastAction("Filter = null: every row is back, " + ShownSummary());
         SearchBox.Focus(FocusState.Programmatic);
 
         var peer = FrameworkElementAutomationPeer.FromElement(SearchBox)
@@ -286,7 +286,7 @@ public sealed partial class FilterPage : SamplePageBase
             }
         }
 
-        // GroupBy's key selector and the filter predicate are delegates evaluated when applied, so re-apply both.
+        // The grouping and the filter are evaluated when the view refreshes, so refresh it.
         ReapplyIfGroupedOn(key);
         ApplyFilter();
         SetLastAction(string.Format(

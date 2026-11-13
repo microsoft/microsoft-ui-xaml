@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -25,7 +26,7 @@ namespace TableViewSampleApp.Pages;
 /// <summary>
 /// Showcase: one people directory that combines live-updating template cells, header sort,
 /// column resize and visibility, selection modes, headers visibility and grouping over a single
-/// TableViewSource that is reshaped in place.
+/// CollectionViewSource that is reshaped in place.
 /// </summary>
 public sealed partial class ShowcasePage : SamplePageBase
 {
@@ -46,7 +47,7 @@ public sealed partial class ShowcasePage : SamplePageBase
         Vibrant = true;
         FillPeople(100);
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
         PeopleTable.Sorted += OnPeopleTableSorted;
@@ -76,7 +77,7 @@ public sealed partial class ShowcasePage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // Upper bound of the display indexes (rows plus one header per group).
@@ -280,8 +281,8 @@ public sealed partial class ShowcasePage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} ({1})", args.Column.Header, args.Direction));
     }
 
-    // The control sorts when the sort is applied; re-declaring the same path on the source re-reads
-    // every key, so a row whose sorted value changed moves.
+    // The view sorts when the sort is applied; Refresh() re-reads every key, so a row whose sorted
+    // value changed moves.
     private void ResortIfSortedOn(params string[] propertyNames)
     {
         var column = SampleShaping.ActiveSortColumn(PeopleTable);
@@ -293,14 +294,14 @@ public sealed partial class ShowcasePage : SamplePageBase
         _isResorting = true;
         try
         {
-            Source.Sort(column.SortMemberPath, column.SortDirection);
+            Source.Refresh();
         }
         finally
         {
             _isResorting = false;
         }
 
-        // Sort raises a Reset, and the control keeps the selection on the same item.
+        // Refresh raises a Reset, and the control keeps the selection on the same item.
         RefreshReadouts();
     }
 
