@@ -756,15 +756,13 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetAtlasSizeHint()
     m_pDXamlCoreNoRef->ResetAtlasSizeHint();
 }
 
-IFACEMETHODIMP_(void) DxamlCoreTestHooks::ShrinkApplicationViewVisibleBounds(_In_ bool enabled, _In_opt_ xaml::IWindow* iwindow)
+IFACEMETHODIMP DxamlCoreTestHooks::ShrinkXamlIslandVisibleBounds(_In_ xaml::IXamlRoot* xamlRoot, _In_ bool enabled)
 {
-    auto window = GetTargetWindow(iwindow);
-    if (!window)
-    {
-        return;
-    }
-
-    window->SetShrinkApplicationViewVisibleBounds(enabled);
+    ctl::ComPtr<XamlRoot> root;
+    IFC_RETURN(xamlRoot->QueryInterface(IID_PPV_ARGS(&root)));
+    auto islandRoot = root->GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef();
+    islandRoot->SetShouldShrinkVisibleBoundsForTesting(enabled);
+    return S_OK;
 }
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::RequestReplayPreviousPointerUpdate_TempTestHook()
@@ -1121,7 +1119,7 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::SetMockUIAClientsListening()
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::ClearMockUIAClientsListening()
 {
-    DXamlCore::GetCurrent()->SetMockUIAClientsListening(true);
+    DXamlCore::GetCurrent()->SetMockUIAClientsListening(false);
 }
 
 IFACEMETHODIMP DxamlCoreTestHooks::GetLightsTargetingElement(

@@ -227,10 +227,14 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
                 {
                     // GitHub #3879: When popup is initialized with IsOpen property, there is no 
                     // popup root available yet and this causes Open to throw.
-                    // Defer this open until one is available post EnterImpl
+                    // Defer this open until one is available post EnterImpl. In Islands mode, the
+                    // MainPopupRoot can be returned and also should not be used; the popup open
+                    // should remain pending until connected to an island's popup root.
                     CPopupRoot* pPopupRootNoRef = nullptr;
                     IFC(GetContext()->GetAdjustedPopupRootForElement(this, &pPopupRootNoRef));
-                    if (!pPopupRootNoRef)
+                    if (!pPopupRootNoRef ||
+                        (GetContext()->GetInitializationType() == InitializationType::IslandsOnly &&
+                         pPopupRootNoRef == GetContext()->GetMainPopupRoot()))
                     {
                         m_fIsOpenPending = true;
                         hr = S_OK;
@@ -2724,11 +2728,17 @@ _Check_return_ HRESULT CPopup::SetChild(
             {
                 IFC(pPopupRoot->AddToDeferredOpenPopupList(this));
             }
-            else if (IsParsing() && !pPopupRoot)
+            else if (IsParsing() &&
+                (!pPopupRoot ||
+                 (GetContext()->GetInitializationType() == InitializationType::IslandsOnly &&
+                  pPopupRoot == GetContext()->GetMainPopupRoot())))
             {
                 // GitHub #3879: When popup is initialized with IsOpen property, there is no 
                 // popup root available yet and this causes Open to throw.
-                // Defer this open until one is available post EnterImpl
+                // The dummy main popup root is also unusable before the first island exists.
+                // Defer this open until one is available post EnterImpl. In Islands mode, the
+                // MainPopupRoot can be returned and also should not be used; the popup open
+                // should remain pending until connected to an island's popup root.
                 m_fIsOpenPending = true;
             }
             else

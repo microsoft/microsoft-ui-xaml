@@ -551,11 +551,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ChromeFocusRectangleTests::NudgeInsideVisibleBoundsHelper(const NudgeInsideArgs& args)
         {
-            TestCleanupWrapper cleanup([]()
+            XamlRoot^ testXamlRoot = nullptr;
+            TestCleanupWrapper cleanup([&]()
             {
-                TestServices::Utilities->ShrinkApplicationViewVisibleBounds(false);
+                if (testXamlRoot != nullptr)
+                {
+                    TestServices::Utilities->ShrinkXamlIslandVisibleBounds(testXamlRoot, false);
+                }
             });
-            TestServices::Utilities->ShrinkApplicationViewVisibleBounds(true); // Shinks the bounds 100px at left and right, 40px at top and bottom
 
             Panel^ root;
             Button^ button;
@@ -583,6 +586,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             RunOnUIThread([&]()
             {
+                testXamlRoot = root->XamlRoot;
+                VERIFY_IS_NOT_NULL(testXamlRoot);
+                TestServices::Utilities->ShrinkXamlIslandVisibleBounds(testXamlRoot, true); // Enforces 100px left/right and 40px top/bottom monitor-edge margins.
+                auto bounds = TestServices::WindowHelper->VisibleBounds;
+                VERIFY_ARE_EQUAL(100.0f, bounds.X);
+                VERIFY_ARE_EQUAL(40.0f, bounds.Y);
+                VERIFY_ARE_EQUAL(testXamlRoot->Size.Width - 100.0f, bounds.Width);
+                VERIFY_ARE_EQUAL(testXamlRoot->Size.Height - 40.0f, bounds.Height);
+
                 button->Focus(FocusState::Keyboard);
 
                 LOG_OUTPUT(L"Position button at top left corner of visible bounds");
@@ -1852,5 +1864,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 } } } } }
-
-

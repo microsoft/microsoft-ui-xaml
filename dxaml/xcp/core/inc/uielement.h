@@ -519,7 +519,8 @@ public:
 
     _Check_return_ HRESULT TransformToAncestor(
         _In_ const CUIElement *pAncestor,
-        _Outptr_ ITransformer** ppTransformer
+        _Outptr_ ITransformer** ppTransformer,
+        TransformRetrievalOptions transformRetrievalOptions = TransformRetrievalOptions::IncludePropertiesSetInComposition
         );
 
     // See: /design-notes/OneCoreTransforms.md for more information about this function's coordinate space
@@ -532,7 +533,8 @@ public:
         );
 
     _Check_return_ HRESULT GetTransformer(
-        _Outptr_result_maybenull_ ITransformer** ppTransformer );
+        _Outptr_result_maybenull_ ITransformer** ppTransformer,
+        TransformRetrievalOptions transformRetrievalOptions = TransformRetrievalOptions::IncludePropertiesSetInComposition);
 
     virtual void GetShouldFlipRTL(
         _Out_ bool *pShouldFlipRTL,
@@ -1049,7 +1051,8 @@ private:
         _In_opt_ const CUIElement *pAncestor,
         bool fPublicParentsOnly,
         bool fStopAtParentWithIntermediate,
-        _Outptr_ ITransformer** ppTransformer
+        _Outptr_ ITransformer** ppTransformer,
+        TransformRetrievalOptions transformRetrievalOptions = TransformRetrievalOptions::IncludePropertiesSetInComposition
         );
 
     _Check_return_ HRESULT PushUseLayoutRounding(bool fUseLayoutRounding);
@@ -1124,7 +1127,10 @@ private:
 protected:
     virtual bool IgnoresInheritedClips() { return false; }
 
-    static _Check_return_ HRESULT AggregateElementTransform(_In_ CUIElement* pElement, _In_ CAggregateTransformer* pAggregate);
+    static _Check_return_ HRESULT AggregateElementTransform(
+        _In_ CUIElement* pElement,
+        _In_ CAggregateTransformer* pAggregate,
+        TransformRetrievalOptions transformRetrievalOptions = TransformRetrievalOptions::IncludePropertiesSetInComposition);
 
 
 public:

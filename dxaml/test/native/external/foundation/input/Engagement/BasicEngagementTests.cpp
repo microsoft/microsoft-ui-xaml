@@ -1298,6 +1298,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 popupBtn2->Content = "Button2";
                 stackPanel = ref new StackPanel();
                 popup1 = ref new xaml_primitives::Popup();
+                popup1->XamlRoot = rootStackPanel->XamlRoot;
                 popup1->Child = stackPanel;
                 stackPanel->Children->Append(popupBtn1);
                 stackPanel->Children->Append(popupBtn2);

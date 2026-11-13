@@ -63,7 +63,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(BringItemIntoShrunkViewWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons using a shrunk ApplicationView.VisibleBounds rectangle.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StopInertialManipulationWithGamepad)

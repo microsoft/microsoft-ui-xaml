@@ -40,7 +40,7 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(GetLastInputDeviceType)(_Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult) override;
+        IFACEMETHOD(GetLastInputDeviceTypeForXamlRoot)(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult) override;
 
         // Static events.
 
@@ -54,6 +54,6 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT GetLastInputDeviceTypeImpl(_Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult); 
+         _Check_return_ HRESULT GetLastInputDeviceTypeForXamlRootImpl(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Out_ ABI::Microsoft::UI::Xaml::Input::LastInputDeviceType* pResult); 
     };
 }

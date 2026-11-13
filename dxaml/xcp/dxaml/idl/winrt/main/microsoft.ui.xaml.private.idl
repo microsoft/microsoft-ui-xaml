@@ -466,7 +466,7 @@ namespace Microsoft.UI.Xaml.Input
     [webhosthidden]
     runtimeclass InputManager
     {
-        static Microsoft.UI.Xaml.Input.LastInputDeviceType GetLastInputDeviceType();
+        static Microsoft.UI.Xaml.Input.LastInputDeviceType GetLastInputDeviceTypeForXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot);
     };
 
 }

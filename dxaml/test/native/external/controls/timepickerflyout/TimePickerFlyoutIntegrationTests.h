@@ -80,7 +80,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateAcceptDismissButtonsAreHiddenWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that opening a TimePickerFlyout with a gamepad causes the accept and dismiss buttons to become hidden.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)

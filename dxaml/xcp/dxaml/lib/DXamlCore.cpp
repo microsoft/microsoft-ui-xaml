@@ -4624,6 +4624,11 @@ _Check_return_ HRESULT DXamlCore::GetVisibleContentBoundsForElement(_In_ bool ig
 {
     if (TryGetXamlIslandBoundsForElement(dependencyObject, pValue))
     {
+        auto islandRoot = VisualTree::GetXamlIslandRootForElement(dependencyObject);
+        if (islandRoot->ShouldShrinkVisibleBoundsForTesting())
+        {
+            IFC_RETURN(Window::ShrinkVisibleBoundsForTesting(islandRoot->GetContentRootNoRef(), pValue));
+        }
         return S_OK;
     }
 

@@ -53,7 +53,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_Basics()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -475,7 +475,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationLocal()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -489,12 +489,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:1"),
@@ -518,7 +519,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationLocal_EmptyGroups()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -531,13 +532,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
@@ -561,7 +564,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationCycle()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -575,12 +578,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab"
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab"
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>() 
             { 
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:1"),
@@ -603,7 +607,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GV_IWG_HVirt_KeyNav_TabNavigationCycle_EmptyGroups()
         {
             LoadXaml_GridView_ItemsWrapGrid_VdirHorizontal();
@@ -616,13 +620,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(GridViewHeaderItem), "G:0E0"),
@@ -689,7 +695,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "OneCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_Basics()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -762,7 +768,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationLocal()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -776,12 +782,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:1"),
@@ -805,7 +812,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationLocal_EmptyGroups()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -818,13 +825,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
@@ -848,7 +857,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationCycle()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -862,12 +871,13 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
             List<string> inputKeys = new List<string>()
             {
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab",
-                "tab", "tab", "tab", "tab", "tab", "tab", "tab"
+                "tab", "tab", "tab", "tab", "tab", "tab", "tab", "tab"
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:1"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:1"),
@@ -890,7 +900,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LV_ISP_VVirt_KeyNav_TabNavigationCycle_EmptyGroups()
         {
             LoadXaml_ListView_ItemsStackPanel_VdirVertical();
@@ -903,13 +913,15 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.FastGrouping
 
             List<string> inputKeys = new List<string>()
             {
-                "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
+                "tab", "tab", "tab", "tab", "shifttab", "shifttab", "tab", "tab", "tab", "tab", "tab", "tab",
                 "tab", "tab", "tab", "tab", "tab", "tab", "tab",
             };
 
             List<Tuple<Type, string>> expectedFocusOrder = new List<Tuple<Type, string>>()
             {
                 Tuple.Create(typeof(Button), "Header"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),
+                Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewItem), "G:0:I:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0"),
                 Tuple.Create(typeof(ListViewHeaderItem), "G:0E0"),

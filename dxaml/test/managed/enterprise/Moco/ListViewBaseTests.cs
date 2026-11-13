@@ -1648,7 +1648,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GroupStyleSelectorTest()
         {
             Grid rootPanel = null;
@@ -1663,7 +1663,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
                 for (int i = 0; i < 4; i++)
                 {
-                    List<int> group = new List<int>();
+                    List<object> group = new List<object>();
                     for (int j = 0; j < i; j++)
                     {
                         group.Add(i * 100 + j);
@@ -1695,7 +1695,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     var header = lv.GroupHeaderContainerFromItemContainer(container) as ListViewBaseHeaderItem;
                     var tb = header.FindNameInSubtree("TB") as TextBlock;
                     // verify we applied correct group style by checking the TextBlock.Text inside the header template.
-                    Verify.AreEqual(tb.Text, (header.Content as List<int>).Count.ToString());
+                    Verify.AreEqual(tb.Text, (header.Content as List<object>).Count.ToString());
                 }
             });
 
@@ -3081,10 +3081,11 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "If the selected item's container is not focusable, validate that focus is sent to children instead.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesFocusChildrenOfSelectedItemIfContainerIsNotFocusable()
         {
             StackPanel root = null;
+            StackPanel itemContentRoot = null;
             ListView listView = null;
             Button beforeButton = null;
             Button afterButton = null;
@@ -3096,7 +3097,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 firstFocusableChild = new Button() { Content = "First Focusable" };
                 lastFocusableChild = new Button() { Content = "Last Focusable" };
 
-                var itemContentRoot = new StackPanel();
+                itemContentRoot = new StackPanel();
                 itemContentRoot.Children.Add(firstFocusableChild);
                 itemContentRoot.Children.Add(lastFocusableChild);
 
@@ -3137,7 +3138,9 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
                 UIExecutor.Execute(() =>
                 {
-                    Verify.AreEqual(forwardExpectedFocused, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
+                    var focused = FocusManager.GetFocusedElement(root.XamlRoot) as Button;
+                    Verify.AreEqual(forwardExpectedFocused, focused,
+                        $"Expected '{(forwardExpectedFocused as Button)?.Content}', actual '{focused?.Content}'.");
                 });
 
                 Log.Comment("Reset focus to the control after the ListView.");
@@ -3153,7 +3156,9 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
                 UIExecutor.Execute(() =>
                 {
-                    Verify.AreEqual(backwardExpectedFocused, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
+                    var focused = FocusManager.GetFocusedElement(root.XamlRoot) as Button;
+                    Verify.AreEqual(backwardExpectedFocused, focused,
+                        $"Expected '{(backwardExpectedFocused as Button)?.Content}', actual '{focused?.Content}'.");
                 });
             };
 
@@ -3161,21 +3166,26 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             runScenario(() => { TestServices.KeyboardHelper.Tab(); }, () => { TestServices.KeyboardHelper.ShiftTab(); }, firstFocusableChild, lastFocusableChild);
 
             Log.Comment("Run Scenario with Down/Up.");
-            runScenario(() => { TestServices.KeyboardHelper.Down(); }, () => { TestServices.KeyboardHelper.Up(); }, firstFocusableChild, firstFocusableChild);
+            // Spatial navigation preserves the nearest child when entering the selected item from below.
+            runScenario(() => { TestServices.KeyboardHelper.Down(); }, () => { TestServices.KeyboardHelper.Up(); }, firstFocusableChild, lastFocusableChild);
 
-            // The following scenarios use horizontal navigation, so change the orientation of the panel.
-            UIExecutor.Execute(() => { root.Orientation = Orientation.Horizontal; });
+            // Align both panels with navigation so entry from either side has a unique nearest child.
+            UIExecutor.Execute(() =>
+            {
+                root.Orientation = Orientation.Horizontal;
+                itemContentRoot.Orientation = Orientation.Horizontal;
+            });
             TestServices.WindowHelper.WaitForIdle();
 
             Log.Comment("Run Scenario with Right/Left.");
-            runScenario(() => { TestServices.KeyboardHelper.Right(); }, () => { TestServices.KeyboardHelper.Left(); }, firstFocusableChild, firstFocusableChild);
+            runScenario(() => { TestServices.KeyboardHelper.Right(); }, () => { TestServices.KeyboardHelper.Left(); }, firstFocusableChild, lastFocusableChild);
 
             // The next scenario requires us to be in RTL.
             UIExecutor.Execute(() => { root.FlowDirection = FlowDirection.RightToLeft; });
             TestServices.WindowHelper.WaitForIdle();
 
             Log.Comment("Run Scenario with Left/Right (RTL-case).");
-            runScenario(() => { TestServices.KeyboardHelper.Left(); }, () => { TestServices.KeyboardHelper.Right(); }, firstFocusableChild, firstFocusableChild);
+            runScenario(() => { TestServices.KeyboardHelper.Left(); }, () => { TestServices.KeyboardHelper.Right(); }, firstFocusableChild, lastFocusableChild);
         }
 
 

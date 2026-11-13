@@ -169,7 +169,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             // Change FocusVisualKind and tickle a theme change to make the controls pick up the change.
             Microsoft::UI::Xaml::Application::Current->FocusVisualKind = FocusVisualKind::Reveal;
-            rootPanel->RequestedTheme = Microsoft::UI::Xaml::ElementTheme::Dark;
+            rootPanel->RequestedTheme = rootPanel->ActualTheme == ElementTheme::Dark
+                ? ElementTheme::Light : ElementTheme::Dark;
             rootPanel->RequestedTheme = Microsoft::UI::Xaml::ElementTheme::Default;
         });
 
