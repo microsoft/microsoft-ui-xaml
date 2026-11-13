@@ -280,6 +280,7 @@ TEXT_BINDINGTRACE_STR_INDEXER_FAILED "Error: Cannot get index [%s] value (type '
 TEXT_BINDINGTRACE_SETTER_FAILED "Error: Cannot save value from target back to source. %s." // %s is a trace string with the binding expression definition
 
 ERROR_INVALID_DOUBLE_VALUE "The value cannot be infinite or Not a Number (NaN)." // {Locked}
+ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY "%s cannot be infinite or Not a Number (NaN)." // %s is the fully qualified property name.
 ERROR_INVALID_MULTIPLE_SELECT "SelectAll can be called only when the value of SelectionMode is Multiple or Extended."
 ERROR_TEMPLATE_TARGETTYPE_WRONG "The value of the template's TargetType property does not match its control type."
 ERROR_OBJECT_IS_FROZEN "The object is immutable."
