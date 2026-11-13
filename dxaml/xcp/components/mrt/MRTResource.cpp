@@ -7,6 +7,7 @@
 #include <palmemory.h>
 #include <PalResourceManager.h>
 #include <shlwapi.h>
+#include <memorybuffer.h>
 
 #include "FilePathResource.h"
 #include "MRTKnownQualifierNames.h"
@@ -42,7 +43,9 @@ CMRTResource::CMRTResource(_In_ IPALUri* pResourceUri, _In_ IPALUri* pPhysicalRe
 
 CMRTResource::~CMRTResource()
 {
-    CoTaskMemFree(m_embeddedDataBuffer);
+    // m_embeddedDataBuffer points into the read-only PRI mapping kept alive by
+    // m_spEmbeddedDataMemoryBuffer / m_spEmbeddedDataBufferReference.
+    // The pointer is non-owning and must not be freed.
 }
 
 // See IPALResource::Load().
@@ -225,11 +228,34 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
 {
     ASSERT(m_pFilePathResource == nullptr);
 
-    if (m_embeddedDataBuffer == nullptr)
+    if (m_spEmbeddedDataBufferReference == nullptr)
     {
-        IFC_RETURN(m_pResourceCandidate->get_ValueAsBytes(
-            &m_embeddedDataBufferSize,
-            &m_embeddedDataBuffer));
+        // Use the zero-copy accessor: ValueAsMemoryBuffer() exposes the embedded resource bytes
+        // directly from the memory-mapped PRI instead of marshalling a full copy across the ABI
+        // (as get_ValueAsBytes does). The IMemoryBuffer and its IMemoryBufferReference are held as
+        // members so the bytes remain valid for the lifetime of this resource, matching the
+        // non-owning CResourceMemory created in Load().
+        wrl::ComPtr<mwar::IResourceCandidate2> resourceCandidate2;
+        IFC_RETURN(m_pResourceCandidate.As(&resourceCandidate2));
+
+        wrl::ComPtr<wf::IMemoryBuffer> memoryBuffer;
+        IFC_RETURN(resourceCandidate2->ValueAsMemoryBuffer(&memoryBuffer));
+        wrl::ComPtr<wf::IMemoryBufferReference> bufferReference;
+        IFC_RETURN(memoryBuffer->CreateReference(&bufferReference));
+
+        wrl::ComPtr<wf_::IMemoryBufferByteAccess> bufferByteAccess;
+        IFC_RETURN(bufferReference.As(&bufferByteAccess));
+
+        // The returned buffer is a read-only (PAGE_READONLY) view; it is only read here and by the
+        // non-owning PAL memory wrapper. Never write through m_embeddedDataBuffer.
+        BYTE* buffer = nullptr;
+        std::uint32_t bufferSize = 0;
+        IFC_RETURN(bufferByteAccess->GetBuffer(&buffer, &bufferSize));
+
+        m_embeddedDataBuffer = buffer;
+        m_embeddedDataBufferSize = bufferSize;
+        m_spEmbeddedDataMemoryBuffer = std::move(memoryBuffer);
+        m_spEmbeddedDataBufferReference = std::move(bufferReference);
     }
 
     return S_OK;
