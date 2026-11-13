@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Text.RegularExpressions;
+
 namespace WinUIProfiler.Engine.Symbols;
 
 // A location SymbolReader searches: a directory of PDBs when Cache is null, else a symbol store or server whose PDBs
@@ -23,12 +25,43 @@ public static class SymbolPaths
 {
     internal const string SymwebHost = "symweb.azurefd.net";
 
+    // A URL in a symbol path or a message, up to the next separator.
+    private static readonly Regex Url = new(@"https?://[^;*""\s]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
     // Where downloads go when the path names no cache.
     public static string DefaultCache { get; } = Path.Combine(Path.GetTempPath(), "SymbolCache");
 
     // Throws ArgumentException when the path names no location or an element is malformed.
     public static string Normalize(string path, string? defaultCache = null) =>
         string.Join(';', Sources(path, defaultCache));
+
+    // The text with what its URLs may carry as credentials hidden: user info, the query (such as a SAS token) and the
+    // fragment. Use it for a symbol path that is stored or shown; searching uses the path as given.
+    public static string Redact(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return Url.Replace(text, match =>
+        {
+            var url = match.Value;
+            var start = url.IndexOf("://", StringComparison.Ordinal) + 3;
+            var end = url.IndexOfAny(['/', '?', '#'], start);
+            var authority = end < 0 ? url[start..] : url[start..end];
+            var rest = end < 0 ? "" : url[end..];
+            var fragment = rest.IndexOf('#', StringComparison.Ordinal);
+            if (fragment >= 0)
+            {
+                rest = rest[..fragment];
+            }
+
+            var query = rest.IndexOf('?', StringComparison.Ordinal);
+            if (query >= 0)
+            {
+                rest = rest[..query] + (query + 1 < rest.Length ? "?<redacted>" : "");
+            }
+
+            return url[..start] + authority[(authority.LastIndexOf('@') + 1)..] + rest;
+        });
+    }
 
     internal static List<SymbolSource> Sources(string path, string? defaultCache = null)
     {
@@ -131,7 +164,7 @@ public static class SymbolPaths
         if (segments.Length > 1)
         {
             throw new ArgumentException(
-                $"'{text}' is not a symbol path element: use a directory, a URL, srv*cache*server or cache*directory.");
+                $"'{Redact(text)}' is not a symbol path element: use a directory, a URL, srv*cache*server or cache*directory.");
         }
 
         return new DirectoryElement(Location(text));
@@ -148,7 +181,7 @@ public static class SymbolPaths
         // srv*store, or srv*store* with nothing after the last '*'.
         if (segments[0].Length == 0)
         {
-            throw new ArgumentException($"'{text}' names no symbol server or store.");
+            throw new ArgumentException($"'{Redact(text)}' names no symbol server or store.");
         }
 
         return new ServerElement(null, [], Location(segments[0]));
@@ -181,7 +214,8 @@ public static class SymbolPaths
     // A cache must be a directory, local or on a share.
     private static string CacheDirectory(string segment, string text) =>
         IsUrl(segment)
-            ? throw new ArgumentException($"In '{text}', the cache {segment} is a URL; a cache must be a local or network directory.")
+            ? throw new ArgumentException(
+                $"In '{Redact(text)}', the cache {Redact(segment)} is a URL; a cache must be a local or network directory.")
             : Location(segment);
 
     private static string Location(string text)

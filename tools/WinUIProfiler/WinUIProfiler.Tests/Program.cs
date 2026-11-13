@@ -1028,6 +1028,35 @@ finally
 }
 Console.WriteLine("Passed: parent/child recordings, equal addresses, launcher markers and absent telemetry stay process-isolated.");
 
+var recordedDirectory = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Recorded-{Guid.NewGuid():N}");
+var recordedPaths = new List<string>();
+try
+{
+    var created = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    SessionStart[] recordedSources =
+    [
+        new(10, "RecordedTests", created, 1_000_000, 0, SessionCoverage.ProcessStart),
+        new(20, "RecordedTests", null, 1_000_000, 0, SessionCoverage.ProcessStart)
+    ];
+    using var recorded = new ProcessRecordingGroup(recordedSources, 20, null, recordedDirectory);
+    recordedPaths.AddRange(recorded.Processes.Select(item => item.Recording!.Path));
+    Expect(!recorded.IsRecorded(10, created.ToFileTimeUtc() - 1) && recorded.IsRecorded(10, created.ToFileTimeUtc()) &&
+        recorded.IsRecorded(20, 0) && !recorded.IsRecorded(30, created.ToFileTimeUtc()),
+        "A target's samples must be recorded from its creation on, not an earlier process's that had its ID.");
+    Expect(recorded.RecordingPaths.SequenceEqual(
+        [recorded.Primary.Recording!.Path, recorded.Processes.Single(item => !item.IsPrimary).Recording!.Path]),
+        "Every session file of the group must be listed, the primary process's first.");
+}
+finally
+{
+    foreach (var saved in recordedPaths)
+    {
+        foreach (var file in new[] { saved, saved + "-wal", saved + "-shm" }) File.Delete(file);
+    }
+    if (Directory.Exists(recordedDirectory)) Directory.Delete(recordedDirectory);
+}
+Console.WriteLine("Passed: a process's samples are recorded from its creation on, and the group lists its files, the primary's first.");
+
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
 
@@ -1055,8 +1084,64 @@ Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills."
         ExpectThrows<ArgumentException>(() => SymbolPaths.Normalize(malformed, testCache),
             $"The symbol path '{malformed}' must be rejected.");
     }
+
+    Expect(SymbolPaths.Redact("https://user:pw@host/p?sig=a#f") == "https://host/p?<redacted>" &&
+        SymbolPaths.Redact($@"srv*C:\c*https://u@h/x?t=1;C:\syms;srv*{msdl}") == $@"srv*C:\c*https://h/x?<redacted>;C:\syms;srv*{msdl}" &&
+        SymbolPaths.Redact("https://h/x?") == "https://h/x",
+        "A symbol path that is stored or shown must hide its URLs' user info, query and fragment, and keep the rest.");
 }
-Console.WriteLine("Passed: symbol paths keep only the locations given, in WPA's forms.");
+Console.WriteLine("Passed: symbol paths keep only the locations given, in WPA's forms, and hide their URLs' credentials.");
+
+Expect(StackSampleCollector.NextInterval(null, collection: true, sampled: false, 10_000, 0) == 1.0 &&
+    StackSampleCollector.NextInterval(2.0, collection: true, sampled: false, 10_000, 0) == 2.0 &&
+    StackSampleCollector.NextInterval(1.0, collection: false, sampled: false, 5_000, 10_000) == 0.5 &&
+    StackSampleCollector.NextInterval(0.5, collection: false, sampled: true, 10_000, 5_000) == 0.5 &&
+    StackSampleCollector.NextInterval(null, collection: false, sampled: true, 10_000, 5_000) == 0.5 &&
+    StackSampleCollector.NextInterval(null, collection: false, sampled: false, 0, 0) is null,
+    "The sampling interval must be the one in effect while the trace sampled, not the reset when a recording stops.");
+Expect(TraceReplay.FlushesPendingSamples(halted: false, stopRequested: false, failed: false) &&
+    TraceReplay.FlushesPendingSamples(halted: false, stopRequested: false, failed: true) &&
+    TraceReplay.FlushesPendingSamples(halted: true, stopRequested: true, failed: false) &&
+    !TraceReplay.FlushesPendingSamples(halted: true, stopRequested: false, failed: false) &&
+    !TraceReplay.FlushesPendingSamples(halted: true, stopRequested: true, failed: true),
+    "Samples awaiting their stacks must be stored at the trace's end, even a damaged one, and on Stop, but not after a failure.");
+Console.WriteLine("Passed: the sampling interval is the one in effect while sampling, and Stop keeps the samples awaiting their stacks.");
+
+{
+    var heldSampleSet = new HeldSamples(5);
+    heldSampleSet.Hold(1, new(10, 0x1000, 1.0, 100));
+    heldSampleSet.Hold(1, new(12, 0x1000, 3.0, 50));
+    heldSampleSet.Hold(1, new(13, 0x1000, 4.0, 100));
+    heldSampleSet.Hold(2, new(11, 0x1000, 2.0, 100));
+    heldSampleSet.Hold(1, new(14, 0x1000, 5.0, 100));
+    // The sample before the thread's start was an earlier thread's, so it's left out; the other process's isn't counted.
+    var heldReleased = heldSampleSet.Release(1, 7, 2.0, (pid, fileTime) => pid == 7 && fileTime >= 100);
+    Expect(heldReleased.Select(sample => sample.Qpc).SequenceEqual([13L, 14L]) &&
+        heldSampleSet is { Count: 1, Unattributed: 1 } &&
+        heldSampleSet.Release(1, 7, 0, (_, _) => true).Count == 0 &&
+        heldSampleSet.Release(2, -1, 0, (_, _) => true).Count == 0 && heldSampleSet.Count == 1,
+        "A thread's held samples must be released once, in order, from its start and for the target process only.");
+
+    var heldCapped = new HeldSamples(2);
+    heldCapped.Hold(1, new(1, 0x1000, 1.0, 100));
+    heldCapped.Hold(2, new(2, 0x1000, 2.0, 100));
+    heldCapped.Hold(3, new(3, 0x1000, 3.0, 100));
+    var heldCappedCounts = (heldCapped.Count, heldCapped.Unattributed);
+    heldCapped.Clear();
+    Expect(heldCappedCounts == (2, 1L) && heldCapped is { Count: 0, Unattributed: 3 },
+        "Samples past the limit, and those never given a process, must be counted as left out.");
+
+    var heldPartNote = StackSampleCollector.TraceNote(new(1.0, false, 4, [], 3));
+    var heldCompressedNote = StackSampleCollector.TraceNote(new(1.0, true, 4, [], 3));
+    var heldOnlyNote = StackSampleCollector.TraceNote(new(1.0, false, 0, [], 3));
+    Expect(heldPartNote is not null && heldPartNote.StartsWith("3 CPU samples were left out", StringComparison.Ordinal) &&
+        StackSampleCollector.TraceNote(new(1.0, false, 4, [])) is null &&
+        heldCompressedNote is not null && heldCompressedNote.Contains("compressed", StringComparison.Ordinal) &&
+        heldCompressedNote.EndsWith(heldPartNote, StringComparison.Ordinal) &&
+        heldOnlyNote == heldPartNote,
+        "A trace's note must say how many samples were left out, and not that it has none when they all were.");
+}
+Console.WriteLine("Passed: samples of threads whose process isn't known are held up to a limit, and those left out are counted and noted.");
 
 {
     const ulong kernelLeaf = 0xFFFFF800_00001000, kernelRoot = 0xFFFFF800_00002000;
@@ -1111,6 +1196,8 @@ var cpuPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Cpu-{Guid.NewGuid
 var cpuIdentityPath = Path.ChangeExtension(cpuPath, "identity.sqlite");
 var cpuEmptyPath = Path.ChangeExtension(cpuPath, "empty.sqlite");
 var cpuLivePath = Path.ChangeExtension(cpuPath, "live.sqlite");
+var cpuTrimPath = Path.ChangeExtension(cpuPath, "trim.sqlite");
+var cpuPlacePath = Path.ChangeExtension(cpuPath, "place.sqlite");
 var cpuSymbols = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Symbols-{Guid.NewGuid():N}");
 try
 {
@@ -1196,12 +1283,30 @@ try
         threadStacks.TopDown().Children is [{ Frame: "Test.dll!0x1000", Samples: 1 }],
         "A thread's call tree must keep only its own samples.");
 
+    // A frame's code address finds it in a later read, where naming its function changed its text and index.
+    var recursiveAddress = cpuStacks.AddressOf(FrameOf("Test.dll!0x1300"));
+    var renamedStacks = CpuProfileReader.ReadStacks(cpuPath, functionName: address => address == recursiveAddress ? "Recurse" : null);
+    Expect(functions.All(function => cpuStacks.AddressOf(function.FrameIndex) is { } address &&
+            cpuStacks.FrameOfAddress(address) == function.FrameIndex) &&
+        cpuStacks.AddressOf(topDown.FrameIndex) is null && cpuStacks.FrameOfAddress(long.MaxValue) is null &&
+        recursiveAddress is { } recursive && renamedStacks?.FrameOfAddress(recursive) is { } renamedFrame &&
+        renamedStacks.Functions().Single(function => function.FrameIndex == renamedFrame) is
+            { Frame: "Test.dll!Recurse", Named: true, Self: 0, Total: 1 },
+        "A frame's code address must find the frame again in a later read, once its function is named.");
+
     // The module's binary is gone and the trace didn't name its PDB: nothing can be searched for.
     Directory.CreateDirectory(cpuSymbols);
     var symbolized = SessionSymbolizer.Symbolize(cpuPath, cpuSymbols);
     Expect(symbolized is { Modules: 1, NoIdentity: 1, Resolved: 0, Failed: 0, Named: 0 } &&
         CpuProfileReader.Read(cpuPath) is { Modules: [{ Status: "NoIdentity" }], Sampling: { SymbolPath: not null, SymbolizedUtc: not null } },
         "A module without a PDB identity must be reported, not fail symbolizing.");
+
+    // A symbol path is stored and reported without what its URLs may carry as credentials, such as a SAS token.
+    var secretSymbols = $"srv*{cpuSymbols}*https://user:secret@127.0.0.1:9/symbols?sig=token";
+    Expect(SessionSymbolizer.Symbolize(cpuPath, secretSymbols).SymbolPath is var reported &&
+        CpuProfileReader.ReadSampling(cpuPath)?.SymbolPath is { } stored &&
+        new[] { reported, stored }.All(shown => shown == $"srv*{cpuSymbols}*https://127.0.0.1:9/symbols?<redacted>"),
+        "Symbolizing must store and report the symbol path without its URLs' credentials.");
 
     // The trace named a PDB that isn't on the symbol path, and only the symbol path is searched.
     var identified = CpuModule();
@@ -1212,6 +1317,17 @@ try
     Expect(SessionSymbolizer.Symbolize(cpuIdentityPath, cpuSymbols) is { Modules: 1, NotFound: 1, Failed: 0, Named: 0 } &&
         CpuProfileReader.Read(cpuIdentityPath) is { Modules: [{ Status: "NotFound" }] },
         "A PDB that isn't on the symbol path must be reported as not found.");
+
+    using (var canceled = new CancellationTokenSource())
+    {
+        canceled.Cancel();
+        ExpectThrows<OperationCanceledException>(
+            () => SessionSymbolizer.Symbolize(cpuIdentityPath, cpuSymbols, force: true, cancellationToken: canceled.Token),
+            "A canceled symbolizing must stop.");
+    }
+
+    Expect(!File.Exists(cpuIdentityPath + "-journal") && CpuProfileReader.Read(cpuIdentityPath) is { Modules: [{ Status: "NotFound" }] },
+        "A canceled symbolizing must leave the file as it was, readable.");
 
     SessionWriter.Create(cpuEmptyPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)).Dispose();
     Expect(CpuProfileReader.Read(cpuEmptyPath) is null && CpuProfileReader.ReadStacks(cpuEmptyPath) is null,
@@ -1269,11 +1385,87 @@ try
         identityNamer.Dispose();
         ExpectThrows<ObjectDisposedException>(() => identityNamer.Name(), "A disposed live namer must not name.");
     }
+
+    // A session over its size limit deletes its oldest samples, then the stacks and code addresses no sample has any more.
+    const int trimSamples = 30_000;
+    var trimModule = CpuModule();
+    Exception? trimFailure;
+    using (var trimWriter = SessionWriter.Create(cpuTrimPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace),
+        limitBytes: 1024 * 1024))
+    {
+        // Each sample has its own leaf, so each adds a stack node and a code address. The first 1,000 but one have a root of
+        // their own, which trimming must delete with them. The root the rest have is the first sample's whole stack, which
+        // trimming must keep for the samples it keeps.
+        for (var sample = 0; sample < trimSamples; sample++)
+        {
+            CodeFrame root = new(trimModule, cpuBase + (sample is > 0 and < 1_000 ? 0xE000UL : 0xF000UL));
+            CodeFrame[] frames = sample == 0 ? [root] : [new(trimModule, cpuBase + 0x100 + (ulong)sample), root];
+            trimWriter.PostSample(new(1_000 + sample, 1, 5, frames), wait: true);
+        }
+
+        // The second sample's leaf again, under the other root, after trimming deleted it.
+        trimWriter.PostSample(new(1_000 + trimSamples, 1, 5,
+            [new(trimModule, cpuBase + 0x101), new(trimModule, cpuBase + 0xF000)]), wait: true);
+        trimWriter.SetCpuSampling(new(1.0, false, trimSamples + 1, [trimModule]), null);
+        trimWriter.Close("Test complete");
+        trimFailure = trimWriter.Failure;
+    }
+
+    var trimmedSampling = CpuProfileReader.ReadSampling(cpuTrimPath);
+    using (var trimConnection = SessionFile.Open(cpuTrimPath))
+    {
+        Expect(trimFailure is null && new FileInfo(cpuTrimPath).Length <= 1024 * 1024 &&
+            trimmedSampling is { Samples: > 0 and < trimSamples, Note: CpuSampleIndex.TrimmedNote } &&
+            Sql.Scalar(trimConnection, "SELECT MIN(Qpc) FROM CpuSamples") >= 2_000 &&
+            Sql.Scalar(trimConnection, "SELECT MAX(Qpc) FROM CpuSamples") == 1_000 + trimSamples,
+            "A session over its size limit must delete its oldest CPU samples, and say so.");
+        Expect(Sql.Scalar(trimConnection, "SELECT COUNT(*) FROM CodeAddresses WHERE Rva = 0xE000") == 0 &&
+            Sql.Scalar(trimConnection, "SELECT COUNT(*) FROM CallStacks s JOIN CodeAddresses a USING (AddressId) WHERE a.Rva = 0xF000") == 1,
+            "Trimming must delete a caller only trimmed samples had, and keep one kept samples have, though its own sample went.");
+        Expect(Sql.Scalar(trimConnection, """
+            WITH RECURSIVE Used (StackId) AS (
+                SELECT StackId FROM CpuSamples
+                UNION
+                SELECT s.ParentId FROM CallStacks s JOIN Used u ON s.StackId = u.StackId WHERE s.ParentId IS NOT NULL)
+            SELECT (SELECT COUNT(*) FROM CallStacks WHERE StackId NOT IN (SELECT StackId FROM Used)) +
+                (SELECT COUNT(*) FROM CodeAddresses WHERE AddressId NOT IN (SELECT AddressId FROM CallStacks)) +
+                (SELECT COUNT(*) FROM CpuSamples WHERE StackId NOT IN (SELECT StackId FROM CallStacks)) +
+                (SELECT COUNT(*) FROM CallStacks WHERE ParentId IS NOT NULL AND ParentId NOT IN (SELECT StackId FROM CallStacks)) +
+                (SELECT COUNT(*) FROM CallStacks WHERE AddressId NOT IN (SELECT AddressId FROM CodeAddresses))
+            """) == 0,
+            "Trimming must delete the stacks and code addresses no sample has, and only those.");
+    }
+
+    Expect(CpuProfileReader.ReadStacks(cpuTrimPath) is { } trimmedStacks && trimmedStacks.Samples == trimmedSampling!.Samples &&
+        trimmedStacks.Functions().Single(function => function.Frame == "Test.dll!0x101") is { Self: 1, Total: 1 },
+        "A frame whose rows trimming deleted must be stored again by a later sample.");
+
+    // An address outside every module known when its sample was stored goes to the module the trace's end named, if that
+    // module had it at the sample's time.
+    using (var placeWriter = SessionWriter.Create(cpuPlacePath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+    {
+        var placeRoot = CpuModule();
+        var late = new SampledModule(1, @"C:\WinUIProfilerTests\Missing\Late.dll", 0x7FF1_0000_0000, 0x10000, 0) { EndOnly = true };
+        var gone = new SampledModule(1, @"C:\WinUIProfilerTests\Missing\Gone.dll", 0x7FF2_0000_0000, 0x10000, 0)
+        {
+            EndOnly = true,
+            UnloadQpc = 500
+        };
+        placeWriter.PostSample(new(1_000, 1, 5, [new(null, 0x7FF1_0000_1100), new(placeRoot, cpuBase + 0x1000)]), wait: true);
+        placeWriter.PostSample(new(2_000, 1, 5, [new(null, 0x7FF2_0000_1100), new(placeRoot, cpuBase + 0x1000)]), wait: true);
+        placeWriter.SetCpuSampling(new(1.0, false, 2, [placeRoot, late, gone]), null);
+    }
+
+    Expect(CpuProfileReader.Read(cpuPlacePath) is { Exclusive: var placedFrames, Modules: var placedModules } &&
+        placedFrames.Select(frame => frame.Frame).Order(StringComparer.Ordinal).SequenceEqual(["?!0x7FF200001100", "Late.dll!0x1100"]) &&
+        placedModules.Any(module => module is { Name: "Late.dll", Addresses: 1 }) &&
+        placedModules.All(module => module.Name != "Gone.dll"),
+        "An address must go to the module the trace's end named only when that module had it while it was sampled.");
 }
 finally
 {
-    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath }.SelectMany(cpuSession =>
-        new[] { cpuSession, cpuSession + "-wal", cpuSession + "-shm" }))
+    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath, cpuTrimPath, cpuPlacePath }.SelectMany(cpuSession =>
+        new[] { cpuSession, cpuSession + "-wal", cpuSession + "-shm", cpuSession + "-journal" }))
     {
         File.Delete(cpuFile);
     }
@@ -1283,7 +1475,7 @@ finally
         Directory.Delete(cpuSymbols, recursive: true);
     }
 }
-Console.WriteLine("Passed: CPU samples read back by thread, frame and call tree, symbolizing reports modules it can't name, and live naming names only what was asked for.");
+Console.WriteLine("Passed: CPU samples read back by thread, frame and call tree, symbolizing reports modules it can't name, and live naming names only what was asked for; trimming keeps stacks whole, and late modules get their addresses.");
 
 // The live kernel session keeps the samples from before it's read, and gives the sink the target's complete samples.
 KernelSampleSession? liveCpu = null;
@@ -1315,7 +1507,7 @@ else
     using (liveCpu)
     {
         SpinCpu();
-        liveCpu.StartReading(processId => processId == Environment.ProcessId, sample =>
+        liveCpu.StartReading((processId, _) => processId == Environment.ProcessId, sample =>
         {
             lock (liveSamples)
             {

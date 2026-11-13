@@ -14,14 +14,18 @@ public sealed record CpuFunctionSamples(string Module, string Frame, int FrameIn
 public sealed class CpuStacks
 {
     private readonly IReadOnlyList<(string Module, string Frame, bool Named)> frames;
+    // The frame of each code address (CodeAddresses.AddressId) on the stacks.
+    private readonly IReadOnlyDictionary<long, int> addressFrames;
 
     internal CpuStacks(CpuSamplingInfo sampling, int? threadId, IReadOnlyList<CpuThreadSamples> threads,
-        IReadOnlyList<(string Module, string Frame, bool Named)> frames, int[][] stacks, long[] counts)
+        IReadOnlyList<(string Module, string Frame, bool Named)> frames, int[][] stacks, long[] counts,
+        IReadOnlyDictionary<long, int>? addressFrames = null)
     {
         Sampling = sampling;
         ThreadId = threadId;
         Threads = threads;
         this.frames = frames;
+        this.addressFrames = addressFrames ?? new Dictionary<long, int>();
         Stacks = stacks;
         Counts = counts;
         Samples = counts.Sum();
@@ -45,6 +49,25 @@ public sealed class CpuStacks
     public double? Ms(long samples) => samples * Sampling.IntervalMs;
 
     internal (string Module, string Frame, bool Named) Frame(int frameIndex) => frames[frameIndex];
+
+    // A code address of a frame (its lowest CodeAddresses.AddressId), which finds the frame again in a later read
+    // (FrameOfAddress), where its index differs and, once its function is named, its text; null for an unknown frame.
+    public long? AddressOf(int frameIndex)
+    {
+        long? lowest = null;
+        foreach (var (address, frame) in addressFrames)
+        {
+            if (frame == frameIndex && (lowest is null || address < lowest))
+            {
+                lowest = address;
+            }
+        }
+
+        return lowest;
+    }
+
+    // The frame (index) of a code address, by CodeAddresses.AddressId; null when no stored stack has it.
+    public int? FrameOfAddress(long addressId) => addressFrames.TryGetValue(addressId, out var frame) ? frame : null;
 
     // The sampled functions, those that ran the most first (by Self, then Total).
     public IReadOnlyList<CpuFunctionSamples> Functions()

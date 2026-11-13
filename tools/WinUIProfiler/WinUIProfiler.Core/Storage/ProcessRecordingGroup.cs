@@ -79,6 +79,12 @@ internal sealed class ProcessRecordingGroup : IDisposable
 
     internal ProcessRecordingStatus Primary => Status(recordings[primaryProcessId]);
     internal IReadOnlyList<ProcessRecordingStatus> Processes => recordings.Values.Select(Status).ToArray();
+    // Every session file of the group, the primary process's first.
+    internal IReadOnlyList<string> RecordingPaths => recordings.Values
+        .OrderBy(recording => recording.Source.ProcessId != primaryProcessId)
+        .Select(recording => recording.Writer?.Path)
+        .OfType<string>()
+        .ToArray();
     internal Exception? Failure => recordings.Values.Select(recording => recording.Pipeline.Failure).FirstOrDefault(error => error is not null);
     internal string? RecordingError => recordings.Values.FirstOrDefault(recording => recording.Error is not null) is { } failed
         ? $"PID {failed.Source.ProcessId}: {failed.Error}" : null;
@@ -100,9 +106,12 @@ internal sealed class ProcessRecordingGroup : IDisposable
         }
     }
 
-    // Whether a process's samples are stored: it's one of the target processes and has a session file. Safe on any
-    // thread: the group doesn't change.
-    internal bool IsRecorded(int processId) => recordings.TryGetValue(processId, out var recording) && recording.Writer is not null;
+    // Whether a process's samples are stored: it's one of the target processes, has a session file, and the event is from
+    // after the process's creation, so an earlier process that had its ID isn't. Safe on any thread: the group doesn't
+    // change.
+    internal bool IsRecorded(int processId, long eventFileTime) =>
+        recordings.TryGetValue(processId, out var recording) && recording.Writer is not null &&
+        (recording.Source.ProcessCreatedUtc is not { } created || eventFileTime >= created.ToFileTimeUtc());
     internal bool IsWriting => recordings.Values.Any(recording => recording.Writer is not null);
 
     // Stores a live CPU sample in its process's session file, on any thread. It doesn't wait for the writer, which

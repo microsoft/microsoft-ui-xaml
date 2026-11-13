@@ -17,7 +17,9 @@ namespace WinUIProfiler.Engine.Symbols;
 // - Other servers get the user's Windows credentials when they ask for them.
 // - A server that cannot be reached, or does not answer within 30 seconds, is not asked again. A dead server then
 //   costs one timeout rather than one per PDB.
-internal sealed class SymbolServerHandler(Action<string>? warn)
+// - Stop fails new requests, cancels those waiting for an answer, and disposes the answers whose content is still
+//   being read (SymbolReader reads it synchronously, and drops a partial download).
+internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToken stop = default)
     : DelegatingHandler(new HttpClientHandler { UseDefaultCredentials = true })
 {
     // The Azure application symweb accepts tokens for.
@@ -40,19 +42,21 @@ internal sealed class SymbolServerHandler(Action<string>? warn)
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        stop.ThrowIfCancellationRequested();
         var uri = request.RequestUri ?? throw new InvalidOperationException("The symbol request has no URI.");
         if (deadServers.ContainsKey(uri.Authority))
         {
             throw new HttpRequestException($"{uri.Authority} is skipped because it did not respond earlier.");
         }
 
+        using var stopping = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop);
         SymwebToken? token = null;
         if (!tokenFailed &&
             request.Headers.Authorization is null &&
             uri.Scheme == Uri.UriSchemeHttps &&
             uri.Host.Equals(SymbolPaths.SymwebHost, StringComparison.OrdinalIgnoreCase))
         {
-            token = await GetSymwebTokenAsync(cancellationToken).ConfigureAwait(false);
+            token = await GetSymwebTokenAsync(stopping.Token).ConfigureAwait(false);
             if (token is not null)
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Value);
@@ -61,26 +65,30 @@ internal sealed class SymbolServerHandler(Action<string>? warn)
 
         HttpResponseMessage response;
 
-        // SymbolReader reads the content after this returns, so the timeout covers the server's first answer only.
-        using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        // SymbolReader reads the content after this returns, so the timeout covers the server's first answer only. A
+        // stopped request is not the server's fault, so it does not mark the server dead.
+        using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(stopping.Token))
         {
             timeout.CancelAfter(RequestTimeout);
             try
             {
                 response = await base.SendAsync(request, timeout.Token).ConfigureAwait(false);
             }
-            catch (HttpRequestException error) when (error.StatusCode is null)
+            catch (HttpRequestException error) when (error.StatusCode is null && !stopping.IsCancellationRequested)
             {
                 MarkDead(uri, error.Message);
                 throw;
             }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (!stopping.IsCancellationRequested)
             {
                 var message = $"no answer within {RequestTimeout.TotalSeconds:0} seconds";
                 MarkDead(uri, message);
                 throw new HttpRequestException($"{uri.Authority} sent {message}.");
             }
         }
+
+        // The registration lasts as long as the stop token's source, which is one symbolizing run.
+        stop.Register(response.Dispose);
 
         if (token is not null && response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {

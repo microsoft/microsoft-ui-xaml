@@ -150,7 +150,7 @@ public sealed partial class MainWindow : Window
         model.PropertyChanged -= Model_PropertyChanged;
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
         foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
-        model.CancelSymbols();
+        await model.CancelSymbolsAsync();
         await model.DisconnectAsync();
         closeAllowed = true;
         Close();
@@ -478,9 +478,9 @@ public sealed partial class MainWindow : Window
             SetLine(CpuSummary, cpuText, cpuDetails);
 
             // The CPU tab names a recording's functions from the symbol path while it records, and reads the session file
-            // again once the symbol path has named them in it.
+            // again once the symbol path has named them in it; it doesn't read a file while that file is being named.
             CpuPanel.SymbolPath = model.SymbolPath;
-            CpuPanel.Symbolizing = model.Symbolizing;
+            CpuPanel.SymbolizingPath = model.SymbolizingPath;
 
             // A trace's session file grows while it is read, so the tabs follow it as they follow a connection's.
             session.ShowRecording(recording?.Path, model.State is "Connected" or "TraceReading" or "TraceStopping");

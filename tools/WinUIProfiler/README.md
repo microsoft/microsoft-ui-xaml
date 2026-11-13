@@ -491,10 +491,13 @@ recorded-ETL replay remains supported as before.
 JSON has no Infinity or NaN, so those values are stored as the strings
 `"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
 
-A session file is limited to 500 MB. Before a batch would take it past the
-limit, the oldest events are deleted, `SessionInfo.CompleteFromSeq` records the
-first event still stored, and the connection panel says from when the file is
-complete. While recording, the file is in WAL mode, so it can be read at the
+A session file is limited to 500 MB, CPU samples included. Before a batch would
+take it past the limit, the oldest data is deleted: the oldest events, with the
+CPU samples from before the first event left, or else, when samples are older
+than every event, the oldest samples. The call stacks and code addresses no
+sample has any more go with them. `SessionInfo.CompleteFromSeq` records the
+first event still stored, the connection panel says from when the file is
+complete, and `CpuSampling.Note` says when samples were deleted. While recording, the file is in WAL mode, so it can be read at the
 same time, for example with the CLI; when the session ends, it is left as a
 single `.sqlite` file. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
@@ -1126,7 +1129,10 @@ Where the samples come from:
   `wpr -start CPU -start xaml.wprp -filemode`. Give that profile's collector
   large buffers, as the `logman` command's `-bs` and `-nb` do, or ETW loses
   events. The `logman` trace above has no samples. A trace whose stacks were
-  compressed (stack keys) keeps only each sample's leaf frame.
+  compressed (stack keys) keeps only each sample's leaf frame. A trace's
+  samples are matched to the target by process ID alone, so if another process
+  had that ID earlier or later in the trace, its samples are kept too; live
+  sampling also checks that a sample is from after the target's creation.
 
 A module's PDB identity (PDB name, GUID and age) is the one the trace recorded.
 When it recorded none, it's read from the module's file, if that is still the
@@ -1141,7 +1147,10 @@ image that was loaded (same time stamp and size). The samples are stored in:
 | `CpuFrames`, `CpuSampleDetails`, `HotFunctions` | The [shared views](#shared-queries-views). A frame is `Module!Function`, or `Module!0xRva` until it's named. |
 
 The symbol path takes WPA's forms, separated by `;`. Only the locations in it
-are searched: `_NT_SYMBOL_PATH` is never read, and no server is added.
+are searched: `_NT_SYMBOL_PATH` is never read, and no server is added. What the
+profiler stores or shows of the path, such as `CpuSampling.SymbolPath` and its
+messages, leaves out a URL's user name, password, query (such as a SAS token)
+and fragment; searching uses the path as given.
 
 | Element | Searches |
 | --- | --- |
@@ -1165,12 +1174,15 @@ To name the functions:
   pass `--symbol-path`. While the session records, or the trace is read, the
   **CPU** tab names the functions of the stacks it shows, in memory, as their
   PDBs are found (see [CPU tab](#cpu-tab)). When the session or the trace's
-  reading ends, the functions are named in the session file in the background.
-  The **CPU** line shows the samples and how many modules and code addresses
-  were named, and its tooltip has the details. Closing the window stops naming;
-  modules already done stay named.
+  reading ends, the functions are named in the session file in the background,
+  and after a private-runtime startup handoff in each of its processes' files,
+  the displayed one first. The **CPU** line shows the samples and how many
+  modules and code addresses were named, and its tooltip has the details.
+  Closing the window stops naming; modules already done stay named.
 - **Script:** `Profile-App.ps1 -SymbolPath <path>` passes the path to the App.
-  Include the folder with your private DLLs' PDBs, such as `D:\out`.
+  Include the folder with your private DLLs' PDBs, such as `D:\out`. The script
+  resolves relative folders from the current folder and expands environment
+  variables, which an elevated relaunch wouldn't have, before passing it on.
 - **CLI:** `record --symbol-path <path>` names them once the session file is
   written. `symbolize session.sqlite --symbol-path <path>` names them in an
   existing session file. Run again, it skips the modules already named, so

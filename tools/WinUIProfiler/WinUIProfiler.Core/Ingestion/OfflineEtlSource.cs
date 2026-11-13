@@ -202,7 +202,7 @@ public static class OfflineEtlSource
                 launch.OtherProcessEvent);
             if (cpuSamples is not null)
             {
-                stacks = new(source, pid => pid == id, sample => cpuSamples.PostSample(sample, wait: true));
+                stacks = new(source, (pid, _) => pid == id, sample => cpuSamples.PostSample(sample, wait: true));
             }
         }
         else

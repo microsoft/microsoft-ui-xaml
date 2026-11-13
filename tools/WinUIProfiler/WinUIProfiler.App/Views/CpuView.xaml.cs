@@ -77,6 +77,8 @@ public sealed partial class CpuView : UserControl
     // The samples the recording had saved at the last count, while the shown ones are older.
     private long? liveSamples;
     private bool counting;
+    // The file whose functions the app is naming, and whether that's the shown file.
+    private string? symbolizingPath;
     private bool symbolizing;
     private int? threadId;
     private CpuStacks? stacks;
@@ -90,6 +92,8 @@ public sealed partial class CpuView : UserControl
     private int shown;
     private int treeVersion;
     private string? selectedFrame;
+    // A code address of the selected function, which finds it again when it's named.
+    private long? selectedAddress;
     private bool populating;
     private string? symbolPath;
     // Names the recording's functions in memory while it records; see StartNaming.
@@ -150,20 +154,27 @@ public sealed partial class CpuView : UserControl
         }
     }
 
-    // Whether the app is naming the functions of the session file's samples. The file isn't read meanwhile, since the
-    // names are written to it module by module, and it's read again when they're done.
-    public bool Symbolizing
+    // The session file whose samples' functions the app is naming, or null. The shown file isn't read while it's the one
+    // being named, since the names are written to it module by module, and it's read again when they're done; any other
+    // file is read as usual.
+    public string? SymbolizingPath
     {
-        get => symbolizing;
+        get => symbolizingPath;
         set
         {
-            if (symbolizing == value)
+            if (string.Equals(symbolizingPath, value, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            symbolizing = value;
-            if (value)
+            symbolizingPath = value;
+            if (IsSymbolizing(path) == symbolizing)
+            {
+                return;
+            }
+
+            symbolizing = !symbolizing;
+            if (symbolizing)
             {
                 readCancellation?.Cancel();
                 StopNamer();
@@ -171,6 +182,7 @@ public sealed partial class CpuView : UserControl
 
             stale = true;
             ShowNotice();
+            ShowButtons();
             _ = RefreshAsync();
         }
     }
@@ -207,6 +219,9 @@ public sealed partial class CpuView : UserControl
     private static string Milliseconds(CpuStacks value, long samples) =>
         value.Ms(samples) is { } ms ? ms.ToString("N1", CultureInfo.CurrentCulture) : string.Empty;
 
+    private bool IsSymbolizing(string? file) =>
+        file is not null && string.Equals(symbolizingPath, file, StringComparison.OrdinalIgnoreCase);
+
     private void Source_Changed(object? sender, EventArgs args)
     {
         if (source!.Path != path)
@@ -216,8 +231,10 @@ public sealed partial class CpuView : UserControl
         }
         else if (live != source.Live)
         {
-            // The recording's end completes the file's samples.
+            // The recording's end completes the file's samples, so a read begun before it is read again.
             live = source.Live;
+            shown++;
+            readCancellation?.Cancel();
             stale = true;
             if (!live)
             {
@@ -237,8 +254,10 @@ public sealed partial class CpuView : UserControl
         shown++;
         readCancellation?.Cancel();
         StopNamer();
+        symbolizing = IsSymbolizing(file);
         threadId = null;
         selectedFrame = null;
+        selectedAddress = null;
         liveSamples = null;
         stale = true;
         ReadError.IsOpen = false;
@@ -251,6 +270,20 @@ public sealed partial class CpuView : UserControl
         stacks = value;
         functions = items;
         read = loaded;
+        // The selected function is found by its code address, so it stays selected when it's named, else by its text; its
+        // address is then taken again, since trimming the oldest samples can remove the one it had.
+        if (value is not null && selectedFrame is not null)
+        {
+            var byAddress = selectedAddress is { } address && value.FrameOfAddress(address) is { } frame
+                ? items.FirstOrDefault(item => item.FrameIndex == frame)
+                : null;
+            if ((byAddress ?? items.FirstOrDefault(item => item.Frame == selectedFrame)) is { } selected)
+            {
+                selectedFrame = selected.Frame;
+                selectedAddress = value.AddressOf(selected.FrameIndex);
+            }
+        }
+
         rows = value is null ? [] : items.Select(item => Row(value, item)).ToList();
         ShowSummary();
         ShowThreads();
@@ -453,6 +486,16 @@ public sealed partial class CpuView : UserControl
             // A thread picked meanwhile is read next.
             if (current != shown || thread != threadId || cancellation.IsCancellationRequested)
             {
+                return;
+            }
+
+            // A thread whose samples were all trimmed away isn't listed any more, so all the threads are read instead.
+            if (thread is { } picked && loaded.Stacks is { } found && !found.Threads.Any(item => item.ThreadId == picked))
+            {
+                threadId = null;
+                stale = true;
+                namesRead |= forNames;
+                readAgain = true;
                 return;
             }
 
@@ -759,6 +802,7 @@ public sealed partial class CpuView : UserControl
         }
 
         selectedFrame = row.Function;
+        selectedAddress = stacks?.AddressOf(row.Item.FrameIndex);
         if (TreeMode.SelectedIndex == 0)
         {
             // Selecting a function asks where it's called from, so the tree turns to its callers.

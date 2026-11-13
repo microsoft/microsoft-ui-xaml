@@ -42,11 +42,12 @@ internal sealed class SymbolResolver : IDisposable
     private readonly Dictionary<PdbIdentity, ModuleSymbols> results = [];
     private readonly SymbolReader reader;
 
-    // Throws ArgumentException when the symbol path is malformed. Warnings may arrive on any thread, one at a time.
-    internal SymbolResolver(string symbolPath, Action<string>? warn = null, TextWriter? log = null)
+    // Throws ArgumentException when the symbol path is malformed. Warnings may arrive on any thread, one at a time. Stop
+    // cuts short the wait for network shares and the symbol server requests, and a lookup it interrupts finds nothing.
+    internal SymbolResolver(string symbolPath, Action<string>? warn = null, TextWriter? log = null, CancellationToken stop = default)
     {
         this.warn = warn;
-        var sources = Reachable(SymbolPaths.Sources(symbolPath));
+        var sources = Reachable(SymbolPaths.Sources(symbolPath), stop);
         SearchPath = string.Join(';', sources);
         if (sources.Count == 0)
         {
@@ -54,7 +55,7 @@ internal sealed class SymbolResolver : IDisposable
         }
 
         // SymbolReader reads _NT_SYMBOL_PATH only when given null.
-        reader = new SymbolReader(log ?? TextWriter.Null, SearchPath, new SymbolServerHandler(Warn))
+        reader = new SymbolReader(log ?? TextWriter.Null, SearchPath, new SymbolServerHandler(Warn, stop))
         {
             // PDBs from any location in the path are trusted; the user chose them.
             SecurityCheck = _ => true,
@@ -106,7 +107,8 @@ internal sealed class SymbolResolver : IDisposable
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
-            return new ModuleSymbols(SymbolStatus.Error, null, null, error.Message);
+            // The message is stored and shown, so it must not carry the symbol path's credentials.
+            return new ModuleSymbols(SymbolStatus.Error, null, null, SymbolPaths.Redact(error.Message));
         }
     }
 
@@ -128,7 +130,7 @@ internal sealed class SymbolResolver : IDisposable
     };
 
     // Leaves out locations on network shares that do not answer.
-    private List<SymbolSource> Reachable(List<SymbolSource> sources)
+    private List<SymbolSource> Reachable(List<SymbolSource> sources, CancellationToken stop)
     {
         static string? ShareOf(string? location) =>
             location is not null && SymbolPaths.IsUnc(location) ? Path.GetPathRoot(location) : null;
@@ -145,7 +147,7 @@ internal sealed class SymbolResolver : IDisposable
 
         try
         {
-            Task.WaitAll([.. probes.Values], ShareTimeout);
+            Task.WaitAll([.. probes.Values], (int)ShareTimeout.TotalMilliseconds, stop);
         }
         catch (AggregateException)
         {

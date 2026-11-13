@@ -25,10 +25,13 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private RecordingStatus? finalRecording;
     private string? finalRecordingError;
     private string? finalCpuSamplingError;
-    // The symbolizing of the last session file, which starts once its connection or trace reading has ended and closed it.
+    // The symbolizing of the last session's files, which starts once its connection or trace reading has ended and closed
+    // them.
     private CancellationTokenSource? symbolizing;
-    private string? symbolizedPath;
+    private IReadOnlyList<string> symbolizedPaths = [];
     private bool symbolsStopped;
+    // Every symbolizing started, superseded ones included, which may still be writing to their session files.
+    private Task naming = Task.CompletedTask;
     public event PropertyChangedEventHandler? PropertyChanged;
     public MetricHistory? History
     {
@@ -64,7 +67,12 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         get; private set;
     }
     public bool Symbolizing => symbolizing is not null;
-    // The symbol path of the symbolizing that is running or ended, and how it ended.
+    // The session file whose functions are being named, which isn't read meanwhile; null when none is.
+    public string? SymbolizingPath
+    {
+        get; private set;
+    }
+    // The symbol path of the symbolizing that is running or ended, and how it ended (over all the session's files).
     public string? SymbolsFrom
     {
         get; private set;
@@ -256,7 +264,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalCpuSamplingError = owned.CpuSamplingError;
         connection = null;
         Notify();
-        _ = SymbolizeAsync(finalRecording?.Path);
+        StartSymbolizing(owned.RecordingPaths);
     }
 
     private void Replay_Changed(object? sender, EventArgs args)
@@ -289,7 +297,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         finalRecordingError = owned.RecordingError;
         replay = null;
         Notify();
-        _ = SymbolizeAsync(finalRecording?.Path);
+        StartSymbolizing(finalRecording?.Path is { } path ? [path] : []);
     }
 
     private void History_Changed(object? sender, EventArgs args)
@@ -354,22 +362,31 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
             connection = null;
             IsBusy = false;
             Notify();
-            _ = SymbolizeAsync(finalRecording?.Path);
+            StartSymbolizing(owned.RecordingPaths);
         }
     }
 
-    // Stops symbolizing for good, as the window closes; the modules already done stay named in the session file.
-    public void CancelSymbols()
+    // Stops symbolizing for good, as the window closes, and waits until no session file is being written: the module being
+    // named is rolled back, and the modules already done stay named. A file left mid-write couldn't be opened read-only.
+    public async Task CancelSymbolsAsync()
     {
         symbolsStopped = true;
         symbolizing?.Cancel();
+        await naming;
+    }
+
+    private void StartSymbolizing(IReadOnlyList<string> paths)
+    {
+        var run = SymbolizeAsync(paths);
+        naming = naming.IsCompleted ? run : Task.WhenAll(naming, run);
     }
 
     private void ResetSymbols()
     {
         symbolizing?.Cancel();
         symbolizing = null;
-        symbolizedPath = null;
+        symbolizedPaths = [];
+        SymbolizingPath = null;
         finalCpuSamplingError = null;
         CpuSampling = null;
         SymbolsFrom = null;
@@ -377,52 +394,91 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         SymbolsError = null;
     }
 
-    // Reads what an ended session's file recorded of CPU sampling and, given a symbol path, names the functions of its
-    // samples, on a worker thread. Both ways a connection ends call it, so each file is done once.
-    private async Task SymbolizeAsync(string? path)
+    // Reads what an ended session's file recorded of CPU sampling and, given a symbol path, names the functions of the
+    // samples in each of the session's files (the primary process's first; a private-runtime launch hands off to more than
+    // one), one at a time on a worker thread. Both ways a connection ends call it, so each session is done once. Symbols
+    // describes the primary file, which the tabs show, and SymbolsError the first file that failed.
+    private async Task SymbolizeAsync(IReadOnlyList<string> paths)
     {
-        if (symbolsStopped || string.IsNullOrEmpty(path) || string.Equals(path, symbolizedPath, StringComparison.OrdinalIgnoreCase))
+        if (symbolsStopped || paths.Count == 0 || paths.SequenceEqual(symbolizedPaths, StringComparer.OrdinalIgnoreCase))
         {
             return;
         }
 
-        symbolizedPath = path;
+        symbolizedPaths = paths;
         symbolizing?.Cancel();
         using var cancellation = new CancellationTokenSource();
         symbolizing = cancellation;
-        var symbolPath = SymbolPath;
+        Symbols = null;
+        SymbolsError = null;
+        var symbolPath = string.IsNullOrWhiteSpace(SymbolPath) ? null : SymbolPath;
+        var primary = finalRecording?.Path;
         try
         {
-            var sampling = await Task.Run(() => File.Exists(path) ? CpuProfileReader.ReadSampling(path) : null, cancellation.Token);
-            if (!ReferenceEquals(symbolizing, cancellation))
+            foreach (var path in paths)
             {
-                return;
-            }
+                var isPrimary = string.Equals(path, primary, StringComparison.OrdinalIgnoreCase);
+                if (!isPrimary && symbolPath is null)
+                {
+                    continue;
+                }
 
-            CpuSampling = sampling;
-            if (sampling is not { Samples: > 0 } || string.IsNullOrWhiteSpace(symbolPath))
-            {
-                return;
-            }
+                try
+                {
+                    var sampling = await Task.Run(() => File.Exists(path) ? CpuProfileReader.ReadSampling(path) : null, cancellation.Token);
+                    if (!ReferenceEquals(symbolizing, cancellation))
+                    {
+                        return;
+                    }
 
-            SymbolsFrom = symbolPath;
-            Notify();
-            var symbols = await Task.Run(
-                () => SessionSymbolizer.Symbolize(path, symbolPath, cancellationToken: cancellation.Token), cancellation.Token);
-            if (ReferenceEquals(symbolizing, cancellation))
-            {
-                Symbols = symbols;
-            }
-        }
-        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
-        {
-        }
-        catch (Exception error) when (error is not OutOfMemoryException)
-        {
-            Trace.TraceWarning("Naming the functions of the CPU samples in {0} failed: {1}", path, error);
-            if (ReferenceEquals(symbolizing, cancellation))
-            {
-                SymbolsError = error.Message;
+                    if (isPrimary)
+                    {
+                        CpuSampling = sampling;
+                    }
+
+                    if (sampling is not { Samples: > 0 } || symbolPath is null)
+                    {
+                        continue;
+                    }
+
+                    SymbolsFrom = SymbolPaths.Redact(symbolPath);
+                    SymbolizingPath = path;
+                    Notify();
+                    var symbols = await Task.Run(
+                        () => SessionSymbolizer.Symbolize(path, symbolPath, cancellationToken: cancellation.Token), cancellation.Token);
+                    if (!ReferenceEquals(symbolizing, cancellation))
+                    {
+                        return;
+                    }
+
+                    if (isPrimary)
+                    {
+                        Symbols = symbols;
+                    }
+                }
+                catch (Exception error) when (error is not OutOfMemoryException)
+                {
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    Trace.TraceWarning("Naming the functions of the CPU samples in {0} failed: {1}", path,
+                        SymbolPaths.Redact(error.ToString()));
+                    if (ReferenceEquals(symbolizing, cancellation))
+                    {
+                        var message = SymbolPaths.Redact(error.Message);
+                        SymbolsError ??= isPrimary ? message : $"{Path.GetFileName(path)}: {message}";
+                    }
+                }
+                finally
+                {
+                    if (ReferenceEquals(symbolizing, cancellation) && SymbolizingPath is not null)
+                    {
+                        SymbolizingPath = null;
+                        Notify();
+                    }
+                }
             }
         }
         finally

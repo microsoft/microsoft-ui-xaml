@@ -59,6 +59,7 @@ public static class SessionSymbolizer
         var counts = new Dictionary<SymbolStatus, int>();
         int skipped = 0;
         long named = 0, total = 0;
+        string searched;
         SymbolResolver? resolver = null;
         try
         {
@@ -74,30 +75,33 @@ public static class SessionSymbolizer
                     continue;
                 }
 
-                resolver ??= new SymbolResolver(symbolPath, warn, log);
-                var (status, moduleNamed, message) = Symbolize(connection, resolver, module, stored);
+                resolver ??= new SymbolResolver(symbolPath, warn, log, cancellationToken);
+                var (status, moduleNamed, message) = Symbolize(connection, resolver, module, stored, cancellationToken);
                 counts[status] = counts.GetValueOrDefault(status) + 1;
                 named += moduleNamed;
                 progress?.Invoke($"{module.Name}: {message}");
             }
 
+            // Stored and returned without what its URLs may carry as credentials, such as a SAS token.
+            searched = SymbolPaths.Redact(resolver?.SearchPath ?? normalized);
             Sql.Execute(connection, "UPDATE CpuSampling SET SymbolPath = $path, SymbolizedUtc = $utc", null,
-                ("$path", resolver?.SearchPath ?? normalized), ("$utc", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
+                ("$path", searched), ("$utc", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)));
         }
         finally
         {
             resolver?.Dispose();
         }
 
-        return new SymbolizeResult(resolver?.SearchPath ?? normalized, modules.Count, counts.GetValueOrDefault(SymbolStatus.Resolved),
+        return new SymbolizeResult(searched, modules.Count, counts.GetValueOrDefault(SymbolStatus.Resolved),
             counts.GetValueOrDefault(SymbolStatus.NotFound), counts.GetValueOrDefault(SymbolStatus.NoIdentity),
             counts.GetValueOrDefault(SymbolStatus.Portable), counts.GetValueOrDefault(SymbolStatus.Error), skipped, named, total);
     }
 
-    // Symbolizes one module in one transaction. A module that was resolved stays so when a forced run does not find its PDB
-    // again: its names are still right.
+    // Symbolizes one module in one transaction. A cancel rolls it back promptly, so the file is never left mid-write: a
+    // hot journal would keep read-only opens from reading it. A module that was resolved stays so when a forced run does
+    // not find its PDB again: its names are still right.
     private static (SymbolStatus Status, long Named, string Message) Symbolize(SqliteConnection connection, SymbolResolver resolver,
-        StoredModule module, List<StoredAddress> addresses)
+        StoredModule module, List<StoredAddress> addresses, CancellationToken cancellationToken)
     {
         var identity = StoredIdentity(module);
         var readFromImage = false;
@@ -108,6 +112,9 @@ public static class SessionSymbolizer
         }
 
         var symbols = resolver.Open(identity);
+
+        // A canceled lookup fails, which must not be stored as the module's status.
+        cancellationToken.ThrowIfCancellationRequested();
         using var transaction = connection.BeginTransaction();
         if (readFromImage)
         {
@@ -122,8 +129,15 @@ public static class SessionSymbolizer
             using var update = Sql.Prepare(connection, "UPDATE CodeAddresses SET Function = $function WHERE AddressId = $id",
                 ("$function", SqliteType.Text), ("$id", SqliteType.Integer));
             update.Transaction = transaction;
+            var visited = 0;
             foreach (var address in addresses)
             {
+                if ((++visited & 1023) == 0)
+                {
+                    // Disposing the transaction uncommitted rolls it back.
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+
                 var name = address.Rva is >= 0 and <= uint.MaxValue ? findName((uint)address.Rva) : null;
                 update.Parameters["$function"].Value = (object?)name ?? DBNull.Value;
                 update.Parameters["$id"].Value = address.AddressId;

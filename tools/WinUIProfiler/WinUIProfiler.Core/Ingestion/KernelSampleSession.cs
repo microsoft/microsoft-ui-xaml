@@ -36,11 +36,13 @@ internal sealed class KernelSampleSession : IDisposable
     public Exception? Failure { get; private set; }
 
     // Why the samples are incomplete, stored with them once the session stopped; null when they aren't known to be.
-    public string? Note => Failure is { } failure
-        ? $"CPU sampling stopped early: {failure.Message}"
-        : eventsLost > 0
-            ? $"The kernel's ETW session lost {eventsLost} events, so some CPU samples or their stacks are missing."
-            : null;
+    public string? Note => StackSampleCollector.JoinNotes(
+        Failure is { } failure
+            ? $"CPU sampling stopped early: {failure.Message}"
+            : eventsLost > 0
+                ? $"The kernel's ETW session lost {eventsLost} events, so some CPU samples or their stacks are missing."
+                : null,
+        summary is { } sampling ? StackSampleCollector.UnattributedNote(sampling) : null);
 
     public static KernelSampleSession Start()
     {
@@ -73,9 +75,10 @@ internal sealed class KernelSampleSession : IDisposable
         }
     }
 
-    // Reads the session on its own thread, from the events it kept. IsTarget and sink are called on that thread, and sink
-    // in Stop for the samples still waiting; both must be safe to call there.
-    public void StartReading(Func<int, bool> isTarget, Action<CompletedSample> sink)
+    // Reads the session on its own thread, from the events it kept. IsTarget (given a process ID and the event's time as a
+    // UTC FILETIME) and sink are called on that thread, and sink in Stop for the samples still waiting; both must be safe
+    // to call there.
+    public void StartReading(Func<int, long, bool> isTarget, Action<CompletedSample> sink)
     {
         lock (gate)
         {

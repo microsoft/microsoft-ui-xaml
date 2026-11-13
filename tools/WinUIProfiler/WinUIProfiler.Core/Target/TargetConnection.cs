@@ -99,6 +99,8 @@ public sealed class TargetConnection : IAsyncDisposable
     }
     // The session file the events are saved to; null when this connection does not record. Kept after cleanup.
     public RecordingStatus? Recording => recordings?.Primary.Recording;
+    // Every session file this connection records, the target's first: a startup handoff records each of its processes.
+    public IReadOnlyList<string> RecordingPaths => recordings?.RecordingPaths ?? [];
     public string? RecordingError => recordings?.RecordingError ?? startupCatalogError;
     // Why a recorded session has no CPU samples, or why some are missing; the events are recorded either way.
     public string? CpuSamplingError => cpuSamplingError ?? cpu?.Note;

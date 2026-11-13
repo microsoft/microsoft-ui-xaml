@@ -7,12 +7,12 @@ namespace WinUIProfiler.Engine.Storage;
 
 internal static class Sql
 {
-    // A command on a connection with an open transaction must be given that transaction.
-    internal static void Execute(SqliteConnection connection, string text, SqliteTransaction? transaction = null,
+    // A command on a connection with an open transaction must be given that transaction. Returns the rows it changed.
+    internal static int Execute(SqliteConnection connection, string text, SqliteTransaction? transaction = null,
         params (string Name, object? Value)[] parameters)
     {
         using var command = Create(connection, text, transaction, parameters);
-        command.ExecuteNonQuery();
+        return command.ExecuteNonQuery();
     }
 
     internal static long Scalar(SqliteConnection connection, string text, SqliteTransaction? transaction = null,
@@ -20,6 +20,21 @@ internal static class Sql
     {
         using var command = Create(connection, text, transaction, parameters);
         return command.ExecuteScalar() is long value ? value : 0;
+    }
+
+    // The first column of each row, such as a DELETE's RETURNING column.
+    internal static List<long> Longs(SqliteConnection connection, string text, SqliteTransaction? transaction = null,
+        params (string Name, object? Value)[] parameters)
+    {
+        using var command = Create(connection, text, transaction, parameters);
+        using var reader = command.ExecuteReader();
+        var values = new List<long>();
+        while (reader.Read())
+        {
+            values.Add(reader.GetInt64(0));
+        }
+
+        return values;
     }
 
     // A command run many times: set its parameters' values, and its transaction, before each run.

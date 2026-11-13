@@ -56,7 +56,7 @@ public static class CpuProfileReader
         }
 
         var threads = ReadThreads(connection, sampling);
-        var (frames, nodes, leaves) = LoadStacks(connection, threadId, null, cancellationToken);
+        var (frames, nodes, leaves, _) = LoadStacks(connection, threadId, null, cancellationToken);
         var exclusive = new long[frames.Count];
         var inclusive = new long[frames.Count];
         var onStack = new HashSet<int>();
@@ -122,7 +122,7 @@ public static class CpuProfileReader
         }
 
         var threads = ReadThreads(connection, sampling);
-        var (frames, nodes, leaves) = LoadStacks(connection, threadId, functionName, cancellationToken);
+        var (frames, nodes, leaves, addressFrames) = LoadStacks(connection, threadId, functionName, cancellationToken);
         var stacks = new int[leaves.Count][];
         var counts = new long[leaves.Count];
         var walk = new List<int>();
@@ -143,7 +143,7 @@ public static class CpuProfileReader
             counts[leaf] = leaves[leaf].Samples;
         }
 
-        return new(sampling, threadId, threads, frames, stacks, counts);
+        return new(sampling, threadId, threads, frames, stacks, counts, addressFrames);
     }
 
     // The sampled threads, most samples first, marking the UI threads.
@@ -168,10 +168,11 @@ public static class CpuProfileReader
     }
 
     // The samples by their stack's leaf node, of all threads or of threadId, and every stack node with its frame, by index
-    // into Frames as many nodes share a frame. A frame is Named once symbolizing (or functionName) found its function.
+    // into Frames as many nodes share a frame, and the frame of each code address. A frame is Named once symbolizing (or
+    // functionName) found its function.
     private static (List<(string Module, string Frame, bool Named)> Frames, Dictionary<long, (long Parent, int Frame)> Nodes,
-        List<(long StackId, long Samples)> Leaves) LoadStacks(SqliteConnection connection, int? threadId,
-        Func<long, string?>? functionName, CancellationToken cancellationToken)
+        List<(long StackId, long Samples)> Leaves, Dictionary<long, int> AddressFrames) LoadStacks(SqliteConnection connection,
+        int? threadId, Func<long, string?>? functionName, CancellationToken cancellationToken)
     {
         var leaves = new List<(long StackId, long Samples)>();
         using (var command = connection.CreateCommand())
@@ -191,6 +192,7 @@ public static class CpuProfileReader
         var frames = new List<(string Module, string Frame, bool Named)>();
         var frameIds = new Dictionary<string, int>(StringComparer.Ordinal);
         var nodes = new Dictionary<long, (long Parent, int Frame)>();
+        var addressFrames = new Dictionary<long, int>();
         using (var command = connection.CreateCommand())
         {
             command.CommandText = "SELECT StackId, ParentId, Module, Frame, Function IS NOT NULL, AddressId FROM CpuFrames";
@@ -200,7 +202,8 @@ public static class CpuProfileReader
                 var module = reader.GetString(2);
                 var frame = reader.GetString(3);
                 var named = reader.GetBoolean(4);
-                if (!named && functionName?.Invoke(reader.GetInt64(5)) is { } function)
+                var address = reader.GetInt64(5);
+                if (!named && functionName?.Invoke(address) is { } function)
                 {
                     frame = module + "!" + function;
                     named = true;
@@ -213,11 +216,12 @@ public static class CpuProfileReader
                 }
 
                 nodes[reader.GetInt64(0)] = (reader.IsDBNull(1) ? 0 : reader.GetInt64(1), id);
+                addressFrames[address] = id;
             }
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        return (frames, nodes, leaves);
+        return (frames, nodes, leaves, addressFrames);
     }
 
     // The PdbName, PdbGuid and PdbAge columns from column on, as a symbol server keys the PDB; null when not recorded.

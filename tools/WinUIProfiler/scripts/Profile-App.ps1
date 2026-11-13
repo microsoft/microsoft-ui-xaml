@@ -45,7 +45,8 @@ Rebuilds the profiler with Build-App.ps1 first.
 .PARAMETER SymbolPath
 Where the profiler resolves the recording's CPU sample stacks from, as WPA's symbol path: local or network folders and
 symbol servers, separated by semicolons, for example srv*C:\Symbols*https://msdl.microsoft.com/download/symbols. Only
-this path is searched; _NT_SYMBOL_PATH is not read. Without it, the samples are recorded but not symbolized.
+this path is searched; _NT_SYMBOL_PATH is not read. Relative folders are resolved from the current folder, and
+environment variables are expanded. Without it, the samples are recorded but not symbolized.
 
 .EXAMPLE
 .\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe
@@ -586,6 +587,38 @@ function Close-LaunchedApp([int] $ProcessId, [long] $CreationTime, [string] $Exe
     finally { $process.Dispose() }
 }
 
+function Resolve-SymbolPath([string] $Path) {
+    # The profiler runs from its own folder, so relative folders are anchored to the current one. Variables are expanded
+    # here because an elevated relaunch does not inherit this session's environment. URLs and full paths stay as they are.
+    $anchor = {
+        param([string] $Folder)
+        if ($Folder.Length -eq 0 -or $Folder.Contains('://') -or [IO.Path]::IsPathFullyQualified($Folder)) {
+            return $Folder
+        }
+        $provider = $null
+        $drive = $null
+        $full = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Folder, [ref]$provider, [ref]$drive)
+        if ($provider.Name -ne 'FileSystem') { throw "Use a filesystem folder in -SymbolPath: $Folder" }
+        return $full
+    }
+    $elements = foreach ($element in $Path.Split(';')) {
+        $element = [Environment]::ExpandEnvironmentVariables($element.Trim().Trim('"').Trim())
+        $segments = @($element.Split('*') | ForEach-Object { $_.Trim() })
+        # srv*cache*server..., cache*folder and symsrv*symsrv.dll*cache*server..., whose DLL name stays as it is. Other
+        # starred parts are left for the profiler to reject.
+        $prefix = $segments[0]
+        $first = if ($segments.Count -eq 1) { 0 }
+        elseif ($prefix -eq 'srv' -or ($prefix -eq 'cache' -and $segments.Count -eq 2)) { 1 }
+        elseif ($prefix -eq 'symsrv' -and $segments.Count -gt 2) { 2 }
+        else { $segments.Count }
+        for ($index = $first; $index -lt $segments.Count; $index++) {
+            $segments[$index] = & $anchor $segments[$index]
+        }
+        $segments -join '*'
+    }
+    return $elements -join ';'
+}
+
 function ConvertTo-ProfileArgument([string] $Value) {
     # Quote for CommandLineToArgvW: double the backslashes before an escaped or closing quote.
     if ($Value -and $Value -notmatch '[\s"]') { return $Value }
@@ -813,6 +846,7 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $profiler) 'NativeLauncher\manifest.json') -PathType Leaf)) {
         throw "This WinUI Profiler build has no private WinUI launcher: $profiler. Build it with Build-App.ps1."
     }
+    if ($SymbolPath) { $SymbolPath = Resolve-SymbolPath $SymbolPath }
     if (Test-Administrator) {
         Invoke-ProfileApp $profiler $hostPlatform
     }
@@ -823,6 +857,7 @@ try {
             if ($entry.Key -ne 'Build') { $parameters[$entry.Key] = $entry.Value }
         }
         $parameters['ProfilerPath'] = $profiler
+        if ($SymbolPath) { $parameters['SymbolPath'] = $SymbolPath }
         $script:ExitCode = Invoke-ProfileAppElevated $PSCommandPath $parameters
     }
 }

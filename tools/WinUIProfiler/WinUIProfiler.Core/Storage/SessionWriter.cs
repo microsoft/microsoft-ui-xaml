@@ -58,9 +58,6 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // object indexes.
     private const int RowOverheadBytes = 100;
 
-    // Space a CPU sample takes: its row and its index entry. Its stack's nodes are shared with other samples.
-    private const int SampleBytes = 48;
-
     private readonly BlockingCollection<QueueItem> queue = new(16_384);
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertEvent;
@@ -335,14 +332,18 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
 
     private void WriteSamples(List<CompletedSample> samples)
     {
-        TrimIfNeeded((long)samples.Count * SampleBytes);
-        using var transaction = connection.BeginTransaction();
-        foreach (var sample in samples)
+        TrimIfNeeded(cpu.IncomingBytes(samples));
+        using (var transaction = connection.BeginTransaction())
         {
-            cpu.Add(sample, transaction);
+            foreach (var sample in samples)
+            {
+                cpu.Add(sample, transaction);
+            }
+
+            transaction.Commit();
         }
 
-        transaction.Commit();
+        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
     }
 
     private void Write(List<(long Sequence, ProfilerEvent Event)> batch)
@@ -503,7 +504,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // Deletes the oldest events until the stored data plus the incoming batch fits under the trim point.
+    // Deletes the oldest data until what's stored plus the incoming batch fits under the trim point: the oldest events, with
+    // the CPU samples from before the first event left, or else the oldest CPU samples, when they're older than every event
+    // or no event can be deleted. The call stacks and code addresses no sample has any more go with them.
     private void TrimIfNeeded(long incomingBytes)
     {
         while ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
@@ -511,35 +514,64 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             var oldest = Interlocked.Read(ref oldestSequence);
             var newest = Interlocked.Read(ref newestSequence);
-            if (oldest == 0 || newest <= oldest)
+            long? firstEvent = oldest != 0 && newest > oldest ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1") : null;
+            var firstSample = cpu.FirstQpc();
+            if (firstEvent is { } eventQpc && (firstSample is null || eventQpc <= firstSample))
+            {
+                TrimEvents(oldest, newest);
+            }
+            else if (firstSample is null || !TrimSamples(firstEvent))
             {
                 return;
             }
+        }
+    }
 
-            var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
-            long qpc;
-            using (var transaction = connection.BeginTransaction())
+    // Deletes the oldest events, with the CPU samples from before the first event left.
+    private void TrimEvents(long oldest, long newest)
+    {
+        var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
+        long qpc;
+        using (var transaction = connection.BeginTransaction())
+        {
+            objects.Trim(cutoff, transaction);
+            frames.Trim(cutoff, transaction);
+            Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
+            // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
+            // process's first event from the cutoff, or else the cutoff's.
+            qpc = Sql.Scalar(connection, """
+                SELECT COALESCE(
+                    (SELECT Qpc FROM Events WHERE Seq >= $cutoff
+                        AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
+                    (SELECT Qpc FROM Events WHERE Seq = $cutoff))
+                """, transaction, ("$cutoff", cutoff));
+            Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
+                ("$cutoff", cutoff), ("$qpc", qpc));
+            if (cpu.Trim(qpc, transaction) > 0)
             {
-                objects.Trim(cutoff, transaction);
-                frames.Trim(cutoff, transaction);
-                Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
-                // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
-                // process's first event from the cutoff, or else the cutoff's.
-                qpc = Sql.Scalar(connection, """
-                    SELECT COALESCE(
-                        (SELECT Qpc FROM Events WHERE Seq >= $cutoff
-                            AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
-                        (SELECT Qpc FROM Events WHERE Seq = $cutoff))
-                    """, transaction, ("$cutoff", cutoff));
-                Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
-                    ("$cutoff", cutoff), ("$qpc", qpc));
-                cpu.Trim(qpc, transaction);
-                transaction.Commit();
+                cpu.Prune(transaction);
             }
 
-            Interlocked.Exchange(ref oldestSequence, cutoff);
-            Interlocked.Exchange(ref completeFromQpc, qpc);
+            transaction.Commit();
         }
+
+        Interlocked.Exchange(ref oldestSequence, cutoff);
+        Interlocked.Exchange(ref completeFromQpc, qpc);
+    }
+
+    // Deletes the oldest CPU samples, but none from firstEvent's time on, so the file keeps every sample from the first
+    // event it keeps. Returns false when none was deleted.
+    private bool TrimSamples(long? firstEvent)
+    {
+        using var transaction = connection.BeginTransaction();
+        if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, transaction) == 0)
+        {
+            return false;
+        }
+
+        cpu.Prune(transaction);
+        transaction.Commit();
+        return true;
     }
 
     // Stores the remaining events, records how the session ended and closes the file. Call after the last Process call.
