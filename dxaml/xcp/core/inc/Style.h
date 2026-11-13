@@ -49,6 +49,8 @@ public:
 
     _Check_return_ HRESULT NotifySetterApplied(_In_ unsigned int setterIndex);
 
+    _Check_return_ HRESULT TakeDeferredValueError(_In_ unsigned int setterIndex);
+
     _Check_return_ HRESULT HasPropertySetter(_In_ const KnownPropertyIndex propIndex, _Out_ bool* hasProperty);
 
     // Default property getter. Will try to get the property from based on style if no setter on

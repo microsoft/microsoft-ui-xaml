@@ -552,6 +552,30 @@ bool OptimizedStyle::HasPropertySetter(_In_ const KnownPropertyIndex propertyId)
     return std::find(m_properties.begin(), m_properties.end(), propertyId) != m_properties.end();
 }
 
+// Returns and clears the setter's cached deferred realization error, or S_OK if none is recorded.
+_Check_return_ HRESULT OptimizedStyle::TakeDeferredValueError(_In_ unsigned int setterIndex)
+{
+    ASSERT(setterIndex < m_properties.size());
+
+    if (setterIndex >= m_basedOnBegin)
+    {
+        ASSERT(m_style->m_pBasedOn != nullptr);
+        setterIndex -= static_cast<unsigned int>(m_basedOnBegin);
+        return m_style->m_pBasedOn->TakeDeferredValueError(setterIndex);
+    }
+
+    if (m_runtimeData && !m_realizedStates[setterIndex] && m_values[setterIndex].GetType() == valueUnsigned)
+    {
+        const HRESULT hr = static_cast<HRESULT>(m_values[setterIndex].AsUnsigned());
+        ASSERT(FAILED(hr));
+        AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+        m_values[setterIndex].Unset();
+        return hr;
+    }
+
+    return S_OK;
+}
+
 // Get the value of a property in the style. Return null CValue if property is not found.
 _Check_return_ HRESULT OptimizedStyle::GetPropertyValue(_In_ KnownPropertyIndex propertyId, _In_ bool getFromBasedOn, _Outptr_opt_ CValue** ppValue)
 {
@@ -591,7 +615,13 @@ _Check_return_ HRESULT OptimizedStyle::GetPropertyValue(_In_ KnownPropertyIndex 
     // Realize the value if it was deferred
     if (m_runtimeData && !m_realizedStates[foundIndex])
     {
-        IFC_RETURN(EnsureValueRealized(foundIndex));
+        const HRESULT hr = EnsureValueRealized(foundIndex);
+        if (FAILED(hr) && !m_realizedStates[foundIndex])
+        {
+            AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+            m_values[foundIndex].SetUnsigned(static_cast<UINT32>(hr));
+        }
+        IFC_RETURN(hr);
     }
 
     auto& foundVal = m_values[foundIndex];
@@ -808,10 +838,10 @@ _Check_return_ HRESULT OptimizedStyle::NotifySetterApplied(_In_ unsigned int set
     {
         // The index is within the range of this style's owned setters.
 
-        // Realize the value if it was deferred
+        // Unrealized values have no peer to protect. Property evaluation will realize them when needed.
         if (m_runtimeData && !m_realizedStates[setterIndex])
         {
-            IFC_RETURN(EnsureValueRealized(setterIndex));
+            return S_OK;
         }
 
         if (!m_peggedStates[setterIndex])

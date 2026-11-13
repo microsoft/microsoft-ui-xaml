@@ -80,6 +80,8 @@ public:
 
     _Check_return_ HRESULT NotifySetterApplied(_In_ unsigned int setterIndex);
 
+    _Check_return_ HRESULT TakeDeferredValueError(_In_ unsigned int setterIndex);
+
     bool HasPropertySetter(_In_ const KnownPropertyIndex propertyId) const;
 
     _Check_return_ HRESULT GetPropertyValue(_In_ KnownPropertyIndex propertyId, _Outptr_opt_ CValue** ppValue)
@@ -137,6 +139,7 @@ private:
     // Deferred loading state — only populated when created from XBF data.
     // When m_runtimeData is non-null, values may be deferred and m_realizedStates
     // tracks which entries in m_values have been realized.
+    // Unrealized entries are unset or hold a failing HRESULT as valueUnsigned.
     std::shared_ptr<StyleCustomRuntimeData> m_runtimeData;
     std::shared_ptr<CustomWriterRuntimeContext> m_runtimeContext;
     std::unique_ptr<CustomWriterRuntimeObjectCreator> m_spObjectCreator; // Destruct before m_spRuntimeContext, has raw pointer to it.

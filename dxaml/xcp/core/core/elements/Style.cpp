@@ -359,9 +359,6 @@ _Check_return_ HRESULT CStyle::GetPropertyValue(
     {
         CValue* foundValue = nullptr;
 
-        // Get property value.
-        // Catch any exception and return a failure code if necessary
-        // -- InvalidateProperties will ignore the failure.
         IFC_RETURN(m_optimizedStyle->GetPropertyValue(uPropertyId, getFromBasedOn, &foundValue));
         if (foundValue == nullptr)
             return S_OK;
@@ -710,6 +707,11 @@ _Check_return_ HRESULT CStyle::NotifySetterApplied(_In_ unsigned int setterIndex
     }
 
     return S_OK;
+}
+
+_Check_return_ HRESULT CStyle::TakeDeferredValueError(_In_ unsigned int setterIndex)
+{
+    return m_optimizedStyle ? m_optimizedStyle->TakeDeferredValueError(setterIndex) : S_OK;
 }
 
 _Check_return_ HRESULT CStyle::NotifyMutableSetterValueChanged(_In_ CSetter* const sender)
