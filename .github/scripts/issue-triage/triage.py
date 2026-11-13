@@ -743,7 +743,6 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         team_labels.update(team_ancestors(team, parents))
     needs_triage = (
         not effective_areas
-        or (bool(area_to_add) and result["area_confidence"] == "MEDIUM")
         or (not teams and not team_to_add)
         or (bool(area_to_add or team_to_add) and entry.get("confidence") == "low")
     )
