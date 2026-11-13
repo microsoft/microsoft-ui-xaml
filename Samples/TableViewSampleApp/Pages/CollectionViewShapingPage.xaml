@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pages:SamplePageBase
+    x:Class="TableViewSampleApp.Pages.CollectionViewShapingPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+        <!-- snippet -->
+        <DataTemplate x:Key="CvsProcessNameTemplate" x:DataType="models:ProcessItem">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+                <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="CvsCpuTemplate" x:DataType="models:ProcessItem">
+            <Border Background="{x:Bind CpuPercent, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Cpu}" Padding="8,4">
+                <TextBlock Text="{x:Bind CpuDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="CvsMemoryTemplate" x:DataType="models:ProcessItem">
+            <Border Background="{x:Bind MemoryMB, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Memory}" Padding="8,4">
+                <TextBlock Text="{x:Bind MemoryDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+        <!-- /snippet -->
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="CollectionViewSource shaping"
+        Description="The same process list as Task Manager, shaped by the framework's CollectionViewSource instead of a TableViewSource (experimental API). GroupDescriptions group the rows by category, Filter plus Refresh() narrows them, and a header click writes the column's SortMemberPath to the view's SortDescriptions through ICollectionViewShaping. TableView only renders the view: it never reorders, filters or groups the rows itself."
+        Snippet="CollectionViewShaping"
+        StretchExample="True"
+        TryIt="Click the CPU header: the view's SortDescriptions change and the arrow follows them. Type web in Filter. Collapse a category, then choose Update CPU and refresh: the view recomputes its groups and the category stays collapsed."
+        WhatToLookFor="The ItemsSource is CollectionViewSource.View. The rows, their order and the groups all come from that view; TableView reads them. A sort applied to the view by code (Sort by memory) moves the header arrow too. A property edit is not a collection change, so the page calls Refresh() after changing values. Groups are keyed by their value, so expansion state survives every recompute. Hierarchy (TableViewSource.ParentBy) has no CollectionViewSource equivalent, so this page is flat or grouped only.">
+
+        <controls:SamplePresenter.Example>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="ProcessTable"
+                AutomationProperties.AutomationId="CvsShapingTable"
+                AutomationProperties.Name="Processes"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource CvsProcessNameTemplate}" SortMemberPath="Name"/>
+                <tv:TableViewTemplateColumn Header="Status" Width="130" SortMemberPath="StatusText">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:ProcessItem">
+                            <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource CellTextStyle}"/>
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTemplateColumn Header="CPU" Width="100" CellTemplate="{StaticResource CvsCpuTemplate}" SortMemberPath="CpuPercent"/>
+                <tv:TableViewTemplateColumn Header="Memory" Width="100" CellTemplate="{StaticResource CvsMemoryTemplate}" SortMemberPath="MemoryMB"/>
+            </tv:TableView>
+            <!-- /snippet -->
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="View shaping"
+                    Description="Every option edits the CollectionViewSource; TableView follows its View.">
+                    <TextBox
+                        x:Name="FilterBox"
+                        AutomationProperties.AutomationId="CvsShapingFilterBox"
+                        Header="Filter"
+                        PlaceholderText="Search processes"
+                        AutomationProperties.HelpText="Sets CollectionViewSource.Filter to match the process name."
+                        ToolTipService.ToolTip="Sets CollectionViewSource.Filter to match the process name."
+                        TextChanged="OnFilterChanged"
+                        HorizontalAlignment="Stretch"/>
+                    <ToggleSwitch
+                        x:Name="GroupToggle"
+                        AutomationProperties.AutomationId="CvsShapingGroupToggle"
+                        Header="Group by category"
+                        OffContent="Off"
+                        OnContent="On"
+                        IsOn="True"
+                        Toggled="OnGroupToggled"/>
+                </controls:RailSection>
+
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Each action changes the data or the view, not the table.">
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="SortByMemoryButton"
+                            AutomationProperties.AutomationId="CvsShapingSortByMemoryButton"
+                            Content="Sort by memory"
+                            Click="OnSortByMemoryClick"
+                            ToolTipService.ToolTip="Writes a descending MemoryMB SortDescription to the view; the Memory arrow follows."
+                            AutomationProperties.HelpText="Writes a descending MemoryMB SortDescription to the view."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RefreshButton"
+                            AutomationProperties.AutomationId="CvsShapingRefreshButton"
+                            Content="Update CPU and refresh"
+                            Click="OnRefreshClick"
+                            ToolTipService.ToolTip="Changes every process's CPU value, then calls Refresh() so the view sorts and groups again."
+                            AutomationProperties.HelpText="Changes CPU values, then calls Refresh()."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </controls:RailSection>
+
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="CvsShaping">
+                    <TextBlock x:Name="SortStateText" controls:StatusPanel.Label="SortDescriptions" Text="(none)"/>
+                </controls:StatusPanel>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</pages:SamplePageBase>

@@ -96,6 +96,7 @@
                 <muxc:NavigationViewItem Tag="Selection" Content="Selection"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE73A;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Sort" Content="Sorting"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8CB;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Filter" Content="Filtering"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE71C;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="CollectionViewShaping" Content="CollectionViewSource shaping"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8EC;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="KeyboardNav" Content="Keyboard navigation + accessibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE765;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Columns"/>
