@@ -938,6 +938,8 @@ private:
     void AdoptItemsSource(bool reclaimActiveSource = false);
     void ReclaimItemsSource();
     void RefreshRowsPipeline();
+    // Re-reads the active source's view and row metadata without touching the repeater.
+    void RefreshCachedProjection();
     // Raised by the bound TableViewShapingSource when a shaping verb swapped its projection
     // (grouped <-> flat), so the cached view / row metadata are re-read.
     void OnTableViewShapingSourceProjectionChanged();
