@@ -5,6 +5,7 @@ using Common;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
@@ -254,16 +255,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateDataTemplateWithElementNameBinding()
         {
-            ValidateDataTemplateWithElementNameBinding(useNestedElements: false);
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: false, useDerivedRepeater: false);
         }
 
         [TestMethod]
         public void ValidateDataTemplateWithNestedElementNameBinding()
         {
-            ValidateDataTemplateWithElementNameBinding(useNestedElements: true);
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: true, useDerivedRepeater: false);
         }
 
-        private void ValidateDataTemplateWithElementNameBinding(bool useNestedElements)
+        [TestMethod]
+        public void ValidateDataTemplateWithElementNameBindingInDerivedRepeater()
+        {
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: false, useDerivedRepeater: true);
+        }
+
+        [TestMethod]
+        public void ValidateDataTemplateWithNestedElementNameBindingInDerivedRepeater()
+        {
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: true, useDerivedRepeater: true);
+        }
+
+        private void ValidateDataTemplateWithElementNameBinding(bool useNestedElements, bool useDerivedRepeater)
         {
             const int numItems = 5;
             ItemsRepeater itemsRepeater = null;
@@ -301,13 +314,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Text = "DataSource"
                 };
 
-                itemsRepeater = new ItemsRepeater()
-                {
-                    Name = "itemsRepeater",
-                    ItemsSource = Enumerable.Range(0, numItems).Select(i => i.ToString()),
-                    Layout = new StackLayout(),
-                    ItemTemplate = dataTemplate
-                };
+                itemsRepeater = useDerivedRepeater ? new DerivedItemsRepeater() : new ItemsRepeater();
+                itemsRepeater.Name = "itemsRepeater";
+                itemsRepeater.ItemsSource = Enumerable.Range(0, numItems).Select(i => i.ToString());
+                itemsRepeater.Layout = new StackLayout();
+                itemsRepeater.ItemTemplate = dataTemplate;
 
                 stackPanel.Children.Add(siblingTextBlock);
                 stackPanel.Children.Add(itemsRepeater);
@@ -321,26 +332,279 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(itemsRepeater));
+                Verify.AreEqual(useDerivedRepeater, itemsRepeater is DerivedItemsRepeater);
+                VerifyElementNameBoundItems(itemsRepeater, numItems, firstItem: 0, useNestedElements, expectedTag: "DataSource");
 
-                for (int i = 0; i < numItems; i++)
+                // Sequence: replace the ItemsSource after the first bind. The newly realized items must bind as well.
+                itemsRepeater.ItemsSource = Enumerable.Range(100, numItems).Select(i => i.ToString());
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyElementNameBoundItems(itemsRepeater, numItems, firstItem: 100, useNestedElements, expectedTag: "DataSource");
+
+                // Sequence: change the named source after the bind. The bound items must follow it.
+                var siblingTextBlock = (TextBlock)((StackPanel)Content).Children[0];
+                siblingTextBlock.Text = "DataSourceChanged";
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyElementNameBoundItems(itemsRepeater, numItems, firstItem: 100, useNestedElements, expectedTag: "DataSourceChanged");
+
+                itemsRepeater.ItemsSource = null;
+                Content.UpdateLayout();
+            });
+        }
+
+        private static void VerifyElementNameBoundItems(ItemsRepeater itemsRepeater, int numItems, int firstItem, bool useNestedElements, string expectedTag)
+        {
+            Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(itemsRepeater));
+
+            for (int i = 0; i < numItems; i++)
+            {
+                TextBlock itemTextBlock = null;
+
+                if (useNestedElements)
                 {
-                    TextBlock itemTextBlock = null;
-
-                    if (useNestedElements)
-                    {
-                        Border itemBorder = itemsRepeater.TryGetElement(i) as Border;
-                        itemTextBlock = itemBorder.Child as TextBlock;
-                    }
-                    else
-                    {
-                        itemTextBlock = itemsRepeater.TryGetElement(i) as TextBlock;
-                    }
-
-                    Verify.IsNotNull(itemTextBlock);
-                    Verify.AreEqual(i.ToString(), itemTextBlock.Text);
-                    Verify.AreEqual("DataSource", itemTextBlock.Tag);
+                    Border itemBorder = itemsRepeater.TryGetElement(i) as Border;
+                    itemTextBlock = itemBorder.Child as TextBlock;
                 }
+                else
+                {
+                    itemTextBlock = itemsRepeater.TryGetElement(i) as TextBlock;
+                }
+
+                Verify.IsNotNull(itemTextBlock);
+                Verify.AreEqual((firstItem + i).ToString(), itemTextBlock.Text);
+                Verify.AreEqual(expectedTag, itemTextBlock.Tag, "Tag of item " + i + " (ElementName=siblingTextBlock)");
+            }
+        }
+
+        // ElementName lookup from an inner repeater's ItemTemplate, with nested repeaters. The lookup uses the nearest
+        // repeater ancestor first (its namescope is the outer item's template namescope), then the next repeater
+        // ancestor (the page namescope). This must hold whether each repeater is an ItemsRepeater or a subclass.
+        [TestMethod]
+        public void ValidateNestedRepeatersElementNameBinding()
+        {
+            ValidateNestedRepeatersElementNameBinding(useDerivedOuterRepeater: false, useDerivedInnerRepeater: false);
+        }
+
+        [TestMethod]
+        public void ValidateNestedRepeatersElementNameBindingWithDerivedInnerRepeater()
+        {
+            ValidateNestedRepeatersElementNameBinding(useDerivedOuterRepeater: false, useDerivedInnerRepeater: true);
+        }
+
+        [TestMethod]
+        public void ValidateNestedRepeatersElementNameBindingWithDerivedOuterRepeater()
+        {
+            ValidateNestedRepeatersElementNameBinding(useDerivedOuterRepeater: true, useDerivedInnerRepeater: false);
+        }
+
+        [TestMethod]
+        public void ValidateNestedRepeatersElementNameBindingWithDerivedRepeaters()
+        {
+            ValidateNestedRepeatersElementNameBinding(useDerivedOuterRepeater: true, useDerivedInnerRepeater: true);
+        }
+
+        private void ValidateNestedRepeatersElementNameBinding(bool useDerivedOuterRepeater, bool useDerivedInnerRepeater)
+        {
+            const int numOuterItems = 2;
+            const int numInnerItems = 3;
+            ItemsRepeater outerRepeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // MUXControlsTestApp.Samples.MyItemsRepeater is an app subclass known to the app's XAML metadata.
+                string outerTag = useDerivedOuterRepeater ? "local:MyItemsRepeater" : "controls:ItemsRepeater";
+                string innerTag = useDerivedInnerRepeater ? "local:MyItemsRepeater" : "controls:ItemsRepeater";
+
+                var root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                  xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                                  xmlns:local='using:MUXControlsTestApp.Samples'
+                                  Width='300'>
+                        <TextBlock x:Name='pageTextBlock' Text='PageSource'/>
+                        <TextBlock x:Name='sharedTextBlock' Text='PageShared'/>
+                        <" + outerTag + @" x:Name='outerRepeater'>
+                            <" + outerTag + @".ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock x:Name='outerItemTextBlock' Text='OuterItemSource'/>
+                                        <TextBlock x:Name='sharedTextBlock' Text='OuterItemShared'/>
+                                        <" + innerTag + @" x:Name='innerRepeater' ItemsSource='{Binding}'>
+                                            <" + innerTag + @".ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border>
+                                                        <StackPanel>
+                                                            <TextBlock Text='{Binding}' Tag='{Binding ElementName=pageTextBlock, Path=Text}'/>
+                                                            <TextBlock Tag='{Binding ElementName=outerItemTextBlock, Path=Text}'/>
+                                                            <TextBlock Tag='{Binding ElementName=sharedTextBlock, Path=Text}'/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </" + innerTag + @".ItemTemplate>
+                                        </" + innerTag + @">
+                                    </StackPanel>
+                                </DataTemplate>
+                            </" + outerTag + @".ItemTemplate>
+                        </" + outerTag + @">
+                    </StackPanel>");
+
+                outerRepeater = (ItemsRepeater)root.FindName("outerRepeater");
+                outerRepeater.ItemsSource = Enumerable.Range(0, numOuterItems)
+                    .Select(o => Enumerable.Range(0, numInnerItems).Select(i => o + "." + i).ToList())
+                    .ToList();
+
+                Content = root;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(useDerivedOuterRepeater, outerRepeater is MUXControlsTestApp.Samples.MyItemsRepeater);
+                Verify.AreEqual(numOuterItems, VisualTreeHelper.GetChildrenCount(outerRepeater));
+
+                for (int o = 0; o < numOuterItems; o++)
+                {
+                    var outerItem = (StackPanel)outerRepeater.TryGetElement(o);
+                    Verify.IsNotNull(outerItem);
+                    var innerRepeater = (ItemsRepeater)outerItem.Children[2];
+                    Verify.AreEqual(useDerivedInnerRepeater, innerRepeater is MUXControlsTestApp.Samples.MyItemsRepeater);
+                    Verify.AreEqual(numInnerItems, VisualTreeHelper.GetChildrenCount(innerRepeater));
+
+                    for (int i = 0; i < numInnerItems; i++)
+                    {
+                        var innerItem = (Border)innerRepeater.TryGetElement(i);
+                        Verify.IsNotNull(innerItem);
+                        var innerItemPanel = (StackPanel)innerItem.Child;
+                        var toPage = (TextBlock)innerItemPanel.Children[0];
+                        var toOuterItem = (TextBlock)innerItemPanel.Children[1];
+                        var toShared = (TextBlock)innerItemPanel.Children[2];
+                        string item = o + "." + i;
+
+                        Verify.AreEqual(item, toPage.Text);
+                        Verify.AreEqual("PageSource", toPage.Tag, "Item " + item + ": ElementName=pageTextBlock (page namescope)");
+                        Verify.AreEqual("OuterItemSource", toOuterItem.Tag, "Item " + item + ": ElementName=outerItemTextBlock (outer item namescope)");
+                        // The name exists in the outer item and in the page namescopes. The nearest repeater's namescope wins.
+                        Verify.AreEqual("OuterItemShared", toShared.Tag, "Item " + item + ": ElementName=sharedTextBlock (nearest namescope wins)");
+                    }
+                }
+
+                outerRepeater.ItemsSource = null;
+                Content.UpdateLayout();
+            });
+        }
+
+        // Re-entrancy: the ElementName binding's target property-changed callback mutates the subclass's ItemsSource when
+        // the bound value first arrives. The repeater must realize the new items, their bindings must resolve, and the
+        // TwoWay binding must keep flowing in both directions afterwards.
+        [TestMethod]
+        public void ValidateElementNameBindingInDerivedRepeaterWithReentrantItemsSourceChange()
+        {
+            const int numItems = 3;
+            const int numAddedItems = 2;
+            ItemsRepeater itemsRepeater = null;
+            TextBlock siblingTextBlock = null;
+            var items = new ObservableCollection<string>(Enumerable.Range(0, numItems).Select(i => i.ToString()));
+            int reentrantChangeCount = 0;
+            var hookedElements = new HashSet<UIElement>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplate = XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                        <TextBlock Text='{Binding}' Tag='{Binding ElementName=siblingTextBlock, Path=Text, Mode=TwoWay}'/>
+                    </DataTemplate>") as DataTemplate;
+
+                var stackPanel = new StackPanel() { Width = 200 };
+
+                siblingTextBlock = new TextBlock()
+                {
+                    Name = "siblingTextBlock",
+                    Text = "DataSource"
+                };
+
+                itemsRepeater = new DerivedItemsRepeater()
+                {
+                    ItemsSource = items,
+                    Layout = new StackLayout(),
+                    ItemTemplate = dataTemplate
+                };
+
+                itemsRepeater.ElementPrepared += (sender, args) =>
+                {
+                    var element = (TextBlock)args.Element;
+                    if (!hookedElements.Add(element))
+                    {
+                        return;
+                    }
+
+                    element.RegisterPropertyChangedCallback(FrameworkElement.TagProperty, (d, dp) =>
+                    {
+                        if (((FrameworkElement)d).Tag != null && reentrantChangeCount == 0)
+                        {
+                            reentrantChangeCount++;
+                            for (int i = 0; i < numAddedItems; i++)
+                            {
+                                items.Add("added" + i);
+                            }
+                        }
+                    });
+                };
+
+                stackPanel.Children.Add(siblingTextBlock);
+                stackPanel.Children.Add(itemsRepeater);
+
+                Content = stackPanel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Let the repeater realize the items added by the callback.
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, reentrantChangeCount, "The bound value reached the item and the callback mutated ItemsSource once");
+                Verify.AreEqual(numItems + numAddedItems, VisualTreeHelper.GetChildrenCount(itemsRepeater));
+
+                for (int i = 0; i < numItems + numAddedItems; i++)
+                {
+                    var itemTextBlock = (TextBlock)itemsRepeater.TryGetElement(i);
+                    Verify.IsNotNull(itemTextBlock);
+                    Verify.AreEqual(items[i], itemTextBlock.Text);
+                    Verify.AreEqual("DataSource", itemTextBlock.Tag, "Tag of item " + i);
+                }
+
+                // Source -> target still flows.
+                siblingTextBlock.Text = "DataSourceChanged";
+                Content.UpdateLayout();
+
+                for (int i = 0; i < numItems + numAddedItems; i++)
+                {
+                    Verify.AreEqual("DataSourceChanged", ((TextBlock)itemsRepeater.TryGetElement(i)).Tag, "Tag of item " + i + " after the source changed");
+                }
+
+                // Target -> source (TwoWay) still flows.
+                ((TextBlock)itemsRepeater.TryGetElement(0)).Tag = "FromItem";
+                Verify.AreEqual("FromItem", siblingTextBlock.Text);
 
                 itemsRepeater.ItemsSource = null;
                 Content.UpdateLayout();
@@ -1049,5 +1313,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return (((int)item) % 2 == 0) ? TemplateEven : TemplateOdd;
         }
 
+    }
+
+    // An app-style ItemsRepeater subclass created only from code (not referenced from XAML). ElementName lookup
+    // in its ItemTemplate must work as it does for ItemsRepeater.
+    public partial class DerivedItemsRepeater : ItemsRepeater
+    {
     }
 }

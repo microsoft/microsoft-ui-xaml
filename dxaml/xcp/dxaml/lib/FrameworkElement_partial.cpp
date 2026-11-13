@@ -1255,6 +1255,33 @@ _Check_return_ HRESULT FrameworkElement::GetInheritanceParent(_Outptr_ Dependenc
     return S_OK;
 }
 
+namespace
+{
+    // IID of Microsoft.UI.Xaml.Controls.IItemsRepeater, the default interface of the MUXC ItemsRepeater runtime class.
+    // MUX does not reference Microsoft.UI.Xaml.Controls, so the IID is declared here. It is part of the public ABI.
+    constexpr GUID IID_MUXC_IItemsRepeater = { 0x9dabac84, 0xfe81, 0x53d1, { 0xa0, 0x41, 0x7a, 0x3b, 0xef, 0xea, 0x50, 0x5f } };
+
+    // Returns true if the panel is a MUXC ItemsRepeater or an instance of a type deriving from it.
+    // GetClassName() returns the most-derived type name for a subclass (or a built-in base type name when the app's
+    // metadata does not know the subclass), so it only identifies ItemsRepeater itself. A subclass is a composed object
+    // whose aggregated ItemsRepeater still answers QueryInterface for IItemsRepeater.
+    bool IsItemsRepeaterOrDerived(_In_ DependencyObject* panel)
+    {
+        if (static_cast<CFrameworkElement*>(panel->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
+        {
+            return true;
+        }
+
+        if (!panel->IsComposed())
+        {
+            return false;
+        }
+
+        ctl::ComPtr<IInspectable> itemsRepeater;
+        return SUCCEEDED(ctl::as_iinspectable(panel)->QueryInterface(IID_MUXC_IItemsRepeater, reinterpret_cast<void**>(itemsRepeater.ReleaseAndGetAddressOf())));
+    }
+}
+
 _Check_return_ HRESULT FrameworkElement::FindNameInPage(
     _In_ HSTRING strElementName,
     _In_ bool fIsCalledFromUserControl,
@@ -1303,13 +1330,12 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
             {
                 // Two kinds of panels get special treatment:
                 // - items host for an ItemsControl,
-                // - MUXC ItemsRepeater
+                // - MUXC ItemsRepeater, including types deriving from it
                 // In both cases, ElementName-based bindings need to be able to successfully find elements outside the ItemsControl or ItemsRepeater respectively.
                 BOOLEAN fIsItemsHost = false;
 
                 IFC_RETURN(panel->get_IsItemsHost(&fIsItemsHost));
-                if (fIsItemsHost ||
-                    static_cast<CFrameworkElement*>(inheritanceParentAsDO->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
+                if (fIsItemsHost || IsItemsRepeaterOrDerived(inheritanceParentAsDO.Get()))
                 {
                     current = inheritanceParentAsDO.Cast<FrameworkElement>();
                 }
@@ -1317,7 +1343,7 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
 
             if (current == nullptr)
             {
-                // Check if there is a parent MUXC ItemsRepeater and use it as the next step in the chain.
+                // Check if there is a parent MUXC ItemsRepeater (or subclass) and use it as the next step in the chain.
                 // This is to ensure ElementName bindings used in nested ItemsRepeater.ItemTemplate elements work.
                 do
                 {
@@ -1339,8 +1365,7 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
 
                     inheritanceParentAsDO.As(&panel);
 
-                    if (panel &&
-                        static_cast<CFrameworkElement*>(inheritanceParentAsDO->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
+                    if (panel && IsItemsRepeaterOrDerived(inheritanceParentAsDO.Get()))
                     {
                         current = inheritanceParentAsDO.Cast<FrameworkElement>();
                     }
