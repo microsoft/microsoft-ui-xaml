@@ -987,10 +987,14 @@ private:
     tracker_ref<winrt::TableViewSource> m_activeSource{ this };
 
     // The ItemsSource is an ICollectionView the control projected itself. The view owns its order and
-    // grouping, so control-initiated sorts raise Sorting and leave the rows as the view has them.
+    // grouping, so control-initiated sorts raise Sorting and leave the rows as the view has them,
+    // unless the view implements ICollectionViewShaping, in which case they edit its SortDescriptions.
     bool m_itemsSourceIsCollectionView{ false };
     // Mirrors the view's CollectionGroups onto m_activeSource; null for an ungrouped view.
     std::shared_ptr<TableViewCollectionViewGroups> m_collectionViewGroups{};
+    winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping m_collectionViewShaping{ nullptr };
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::Microsoft::UI::Xaml::Data::SortDescription>::VectorChanged_revoker m_collectionViewSortChangedRevoker{};
+    bool m_updatingCollectionViewSort{ false };
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
@@ -1104,6 +1108,11 @@ private:
     // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
     // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
+    // An ICollectionViewShaping source: the sort is written to the view's SortDescriptions, and the
+    // arrow follows the view's primary SortDescription.
+    bool CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const;
+    bool SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
+    void ReconcileSortStateWithCollectionView();
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip,
         bool requireCanSort = true, bool resort = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);

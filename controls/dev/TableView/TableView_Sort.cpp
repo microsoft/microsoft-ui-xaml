@@ -325,8 +325,9 @@ bool TableView::SortByColumnInternal(
         return false;
     }
 
-    // An ICollectionView source owns its order: the Sorting handler is where the app sorts it.
-    if (m_itemsSourceIsCollectionView)
+    // An ICollectionView source owns its order: the Sorting handler is where the app sorts it, unless
+    // the view takes the sort through ICollectionViewShaping.
+    if (m_itemsSourceIsCollectionView && !CanSortThroughCollectionView(column, direction))
     {
         return false;
     }
@@ -395,7 +396,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    if (m_itemsSourceIsCollectionView)
+    if (m_itemsSourceIsCollectionView && !CanSortThroughCollectionView(column, next))
     {
         return false;
     }
@@ -680,8 +681,13 @@ bool TableView::SyncTableViewSourceSort(
     uint64_t tipGeneration,
     bool explicitClear)
 {
+    if (m_itemsSourceIsCollectionView)
+    {
+        return SyncCollectionViewSort(trigger, direction);
+    }
+
     auto tableViewSource = ShapingSourceInternal();
-    if (!tableViewSource || m_itemsSourceIsCollectionView)
+    if (!tableViewSource)
     {
         return false;
     }
@@ -870,6 +876,137 @@ bool TableView::SyncTableViewSourceSort(
     RefreshRowsPipeline();
     UpdateEmptyState();
     return true;
+}
+
+bool TableView::CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const
+{
+    // A SortDescription names a property, so a CustomSortComparer column cannot sort a view.
+    return m_collectionViewShaping && (direction == winrt::SortDirection::None || HasResolvedSortMemberPath(column));
+}
+
+bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction)
+{
+    if (!m_collectionViewShaping)
+    {
+        return false;
+    }
+
+    namespace data = winrt::Microsoft::UI::Xaml::Data;
+    data::SortDescription description{ nullptr };
+    if (trigger && direction != winrt::SortDirection::None)
+    {
+        winrt::hstring sortMemberPath;
+        try { sortMemberPath = trigger.GetSortMemberPathCore(); }
+        catch (...)
+        {
+            if (TableViewDetails::IsAppDerivedColumn(trigger)) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
+            throw;
+        }
+        if (sortMemberPath.empty())
+        {
+            return false;
+        }
+        description = data::SortDescription{ sortMemberPath,
+            direction == winrt::SortDirection::Descending ? data::ListSortDirection::Descending : data::ListSortDirection::Ascending };
+    }
+
+    // Last writer wins, as with a TableViewSource: the column's sort becomes the view's only sort.
+    // The view reshapes in place and raises Reset, which the projection over it follows.
+    auto const sortDescriptions = m_collectionViewShaping.SortDescriptions();
+    {
+        m_updatingCollectionViewSort = true;
+        auto const resetUpdating = wil::scope_exit([this]() noexcept { m_updatingCollectionViewSort = false; });
+        if (!description)
+        {
+            sortDescriptions.Clear();
+        }
+        else if (sortDescriptions.Size() == 1)
+        {
+            sortDescriptions.SetAt(0, description);
+        }
+        else
+        {
+            sortDescriptions.Clear();
+            sortDescriptions.Append(description);
+        }
+    }
+
+    RefreshRowsPipeline();
+    UpdateEmptyState();
+    return true;
+}
+
+// Lights the column whose sort path is the view's primary SortDescription, for a sort the app (or
+// another consumer of the view) applied. Raises Sorted when the lit column or direction changes.
+void TableView::ReconcileSortStateWithCollectionView()
+{
+    if (!m_collectionViewShaping || m_sortDisplaySetByApp)
+    {
+        return;
+    }
+
+    namespace data = winrt::Microsoft::UI::Xaml::Data;
+    winrt::TableViewColumn matchedColumn{ nullptr };
+    auto direction = winrt::SortDirection::None;
+    auto const sortDescriptions = m_collectionViewShaping.SortDescriptions();
+    if (sortDescriptions.Size() > 0)
+    {
+        if (auto const primary = sortDescriptions.GetAt(0))
+        {
+            auto const path = primary.PropertyName();
+            if (auto const columns = Columns(); columns && !path.empty())
+            {
+                for (auto const& column : columns)
+                {
+                    if (column && column.GetSortMemberPathCore() == path)
+                    {
+                        matchedColumn = column;
+                        direction = primary.Direction() == data::ListSortDirection::Descending
+                            ? winrt::SortDirection::Descending : winrt::SortDirection::Ascending;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (m_sortedColumns.size() == (matchedColumn ? 1u : 0u))
+    {
+        winrt::TableViewColumn lit{ nullptr };
+        if (!m_sortedColumns.empty())
+        {
+            lit = m_sortedColumns.front().get();
+        }
+        if (lit == matchedColumn && (!lit || lit.SortDirection() == direction))
+        {
+            return;
+        }
+    }
+
+    CancelPendingSortRestore();
+    {
+        auto const update = BeginSortStateUpdate();
+        auto const lit = SnapshotSortedColumns();
+        m_sortedColumns.clear();
+        for (auto const& column : lit)
+        {
+            if (column != matchedColumn)
+            {
+                winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(winrt::SortDirection::None);
+            }
+        }
+        if (matchedColumn)
+        {
+            winrt::get_self<TableViewColumn>(matchedColumn)->SetSortStateInternal(direction);
+            m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, matchedColumn });
+        }
+    }
+
+    if (m_sortedEventSource)
+    {
+        auto args = winrt::make_self<TableViewSortedEventArgs>(matchedColumn, direction);
+        m_sortedEventSource(*this, *args);
+    }
 }
 
 bool TableView::PurgeColumnFromSortState(const winrt::TableViewColumn& removedColumn)
@@ -1138,6 +1275,13 @@ void TableView::QueueReconcileSortStateWithSource()
 
 void TableView::ReconcileSortStateWithSource()
 {
+    // A view owns its sort; only a shaping view has one the arrow can follow.
+    if (m_itemsSourceIsCollectionView)
+    {
+        ReconcileSortStateWithCollectionView();
+        return;
+    }
+
     auto tableViewSource = ShapingSourceInternal();
     // Released on Unloaded: another table may own it now, and Loaded reconciles on reclaim.
     if (!tableViewSource || m_activeSourceReleased)

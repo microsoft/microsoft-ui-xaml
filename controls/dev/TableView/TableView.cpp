@@ -1818,6 +1818,8 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         m_telemetrySourceKinds = tableViewSource ? TableViewTelemetry::SourceKind::AppSupplied : 0u;
         m_itemsSourceIsCollectionView = false;
         m_collectionViewGroups = nullptr;
+        m_collectionViewShaping = nullptr;
+        m_collectionViewSortChangedRevoker.revoke();
     }
 
     // Normalize the source. When the app hands us a plain collection, project it through a
@@ -1842,6 +1844,23 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         if (auto const view = itemsSource.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionView>())
         {
             m_itemsSourceIsCollectionView = true;
+
+            // A view a CollectionViewSource shapes can be sorted through its SortDescriptions. The
+            // reconcile that adoption queues below lights the arrow for a sort the view already has.
+            if (auto const shaping = view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping>())
+            {
+                m_collectionViewShaping = shaping;
+                auto weakThis = get_weak();
+                m_collectionViewSortChangedRevoker = shaping.SortDescriptions().VectorChanged(winrt::auto_revoke,
+                    [weakThis](auto const&, auto const&)
+                    {
+                        if (auto strongThis = weakThis.get(); strongThis && !strongThis->m_updatingCollectionViewSort)
+                        {
+                            strongThis->QueueReconcileSortStateWithSource();
+                        }
+                    });
+            }
+
             if (auto groups = TableViewCollectionViewGroups::TryCreate(view))
             {
                 try
