@@ -52,6 +52,9 @@ public sealed class TargetConnection : IAsyncDisposable
     private long etwListeningSinceFileTime;
     private long etwListeningSinceQpc;
     private string? etwStartError;
+    // Samples the recorded processes' call stacks; null when the session isn't recorded or sampling couldn't start.
+    private KernelSampleSession? cpu;
+    private string? cpuSamplingError;
     private string? startupCatalogError;
     private Task? lifetime;
     private Task? disposal;
@@ -96,7 +99,11 @@ public sealed class TargetConnection : IAsyncDisposable
     }
     // The session file the events are saved to; null when this connection does not record. Kept after cleanup.
     public RecordingStatus? Recording => recordings?.Primary.Recording;
+    // Every session file this connection records, the target's first: a startup handoff records each of its processes.
+    public IReadOnlyList<string> RecordingPaths => recordings?.RecordingPaths ?? [];
     public string? RecordingError => recordings?.RecordingError ?? startupCatalogError;
+    // Why a recorded session has no CPU samples, or why some are missing; the events are recorded either way.
+    public string? CpuSamplingError => cpuSamplingError ?? cpu?.Note;
     private TargetConnection(IProgress<ConnectionProgress>? progress) => this.progress = progress;
 
     public static void ValidateOptions(TargetConnectionOptions options)
@@ -204,6 +211,12 @@ public sealed class TargetConnection : IAsyncDisposable
         if (launchExecutables.Count > 0)
         {
             PrepareEtw(launchExecutables, GetLauncherExecutables(options), markers);
+        }
+
+        // Before the launch too, so the startup's samples are kept until the recordings exist.
+        if (options.SessionDirectory is not null && etwStartError is null)
+        {
+            PrepareCpuSampling();
         }
 
         if (options.PrivateRuntime is { } privateRuntime)
@@ -353,6 +366,9 @@ History);
     {
         if (etwStartError is not null)
         {
+            // Without the events there are no recordings to store the samples in.
+            cpu?.Dispose();
+            cpu = null;
             return;
         }
 
@@ -400,12 +416,15 @@ History);
                 // The launcher's events from the launcher providers are the launch's too.
                 etw.StartReading(identities, launcher?.ProcessId, recordings.Post);
             }
+            StartCpuSampling(recordings);
             SaveStartupRecordings("Recording");
         }
         catch (Exception error)
         {
             etw?.Dispose();
             etw = null;
+            cpu?.Dispose();
+            cpu = null;
             recordings?.Close("ETW could not start");
             etwFromProcessStart = false;
             SetEtwStartError(error);
@@ -426,6 +445,56 @@ History);
         var launcher = result.Processes.FirstOrDefault(entry => entry.ProcessId == root) is { } activation
             ? ProcessParent.Find(activation.ProcessId, activation.CreationTimeFileTime) : null;
         return launcher is { } found && result.Processes.All(entry => entry.ProcessId != found.ProcessId) ? launcher : null;
+    }
+
+    // Starts sampling the processors' call stacks for a recorded session, as WPR's CPU profile does. The kernel's
+    // sampled profile needs an elevated profiler; otherwise the session records events only.
+    private void PrepareCpuSampling()
+    {
+        try
+        {
+            cpu = KernelSampleSession.Start();
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            cpuSamplingError = error is UnauthorizedAccessException
+                ? "CPU sampling needs an elevated (administrator) profiler; only events are recorded."
+                : $"CPU sampling could not start: {error.Message}";
+            Trace.TraceWarning(error.ToString());
+        }
+    }
+
+    // Gives each recording its process's CPU samples, from those the session kept since it started.
+    private void StartCpuSampling(ProcessRecordingGroup group)
+    {
+        if (!group.IsWriting)
+        {
+            cpu?.Dispose();
+            cpu = null;
+            return;
+        }
+
+        if (cpu is null && cpuSamplingError is null)
+        {
+            PrepareCpuSampling();
+        }
+
+        if (cpu is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cpu.StartReading(group.IsRecorded, group.PostSample);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            cpuSamplingError = $"CPU sampling could not start: {error.Message}";
+            Trace.TraceWarning(error.ToString());
+            cpu.Dispose();
+            cpu = null;
+        }
     }
 
     private void SaveStartupRecordings(string status)
@@ -613,6 +682,20 @@ History);
             // Stop the source before the pipeline so nothing is posted to a finished queue, and the pipeline before the
             // recorder so every processed event is stored.
             etw?.Dispose();
+        }
+        catch (Exception error)
+        {
+            errors.Add(error);
+        }
+
+        try
+        {
+            // The samples still waiting are given to the recordings before they close and store what was sampled.
+            var summary = cpu?.Stop();
+            if (cpu is not null || cpuSamplingError is not null)
+            {
+                recordings?.SetCpuSampling(summary, CpuSamplingError);
+            }
         }
         catch (Exception error)
         {

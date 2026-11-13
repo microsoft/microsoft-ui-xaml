@@ -8,5 +8,7 @@
     <ProjectReference Include="..\..\..\perf\tooling\XamlTimeline\XamlTimeline.csproj" />
     <Content Include="..\..\..\perf\profiles\XAML.regions.complete.with.startup.xml"
              Link="XAML.regions.complete.with.startup.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\NativeSymbols\NativeSymbols.dll;Fixtures\NativeSymbols\NativeSymbols.pdb;Fixtures\NativeSymbols\CpuProfile.etl"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

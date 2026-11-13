@@ -8,12 +8,15 @@ using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
 using WinUIProfiler.Engine.Storage;
+using WinUIProfiler.Engine.Symbols;
 
 namespace WinUIProfiler.Cli;
 
 internal static class CliApplication
 {
     private const int DefaultDumpLimit = 1000;
+
+    private const int DefaultCpuTop = 30;
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
 
@@ -23,12 +26,15 @@ internal static class CliApplication
           WinUIProfiler.Cli summary <trace.etl | session.sqlite> [--pid <pid>] [--markers <file>]
           WinUIProfiler.Cli dump <trace.etl | session.sqlite> [--pid <pid>] [--name <text>] [--max <count>] [--markers <file>]
           WinUIProfiler.Cli record <trace.etl> --pid <pid> --out <session.sqlite> [--limit-mb <size>] [--markers <file>]
+                                   [--symbol-path <path>]
           WinUIProfiler.Cli launch <trace.etl | session.sqlite> [--pid <pid>] [--markers <file>]
           WinUIProfiler.Cli objects <session.sqlite> [--kind element|visual] [--type <text>] [--name <text>]
           WinUIProfiler.Cli timeline <session.sqlite> (--object <id> | --address <address>)
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other] [--filter <text>]]
                                                     [--list [--show interesting|slow]] [--json]
           WinUIProfiler.Cli interesting <session.sqlite> [--region <id>] [--json]
+          WinUIProfiler.Cli symbolize <session.sqlite> --symbol-path <path> [--force]
+          WinUIProfiler.Cli cpu <session.sqlite> [--thread <tid>] [--top <count>] [--json]
 
           processes  Counts the events of each process with XAML events, to find the target PID.
                      A session file shows its process.
@@ -36,7 +42,9 @@ internal static class CliApplication
           dump       Prints one process's events in order. --name keeps events whose
                      name contains <text>; --max limits the output (default 1000, 0 = all).
           record     Writes one process's events from a trace to a new session file, as the
-                     app does while connected. --limit-mb is the size limit (default 500).
+                     app does while connected. --limit-mb is the size limit (default 500). The process's
+                     sampled CPU call stacks are stored too when the trace has them; --symbol-path then names
+                     their functions, as symbolize does.
           launch     Prints the process's launch timeline: the milestones of the marker configuration
                      it reached, in milliseconds from its creation, or from an earlier milestone of the
                      process that launched it, and those it did not reach.
@@ -51,8 +59,16 @@ internal static class CliApplication
           interesting  Lists the regions of interest (see the README) in file order, with what started each
                      one, and the ticks, layout passes, operations, navigations and focus changes in them (the
                      InterestingRows view). --region keeps one region (an ID from 'frames --list') and its rows.
+          symbolize  Names the functions in a session file's CPU call stacks from their modules' PDBs, searching
+                     only --symbol-path, written as for WPA: directories, shares, symbol server URLs and
+                     srv*<cache>*<server> elements, separated by ';' (for example
+                     srv*C:\Symbols*https://msdl.microsoft.com/download/symbols). _NT_SYMBOL_PATH is not read.
+                     Modules named before are skipped; --force names them again.
+          cpu        Prints a session file's CPU samples: the threads by samples, the functions with the most
+                     samples, exclusive (running) and inclusive (anywhere on the stack), and each sampled module's
+                     symbols. --thread keeps one thread; --top is how many functions each list has (default 30).
 
-          --json prints the rows of frames and interesting as JSON, with the views' values.
+          --json prints the rows of frames and interesting, and the profile of cpu, as JSON, with the views' values.
           The views are in the session file: any SQLite reader gets the same rows (see the README).
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
@@ -68,11 +84,11 @@ internal static class CliApplication
           warning says why), or else the default configuration. See "Launch timeline" in the README.
         """;
 
-    // Markers is the marker configuration, read for the commands that need it.
+    // Markers is the marker configuration, read for the commands that need it. SymbolPath is as the user wrote it.
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
         string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket,
         string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show, string? MarkersPath,
-        MarkerConfig? Markers = null)
+        MarkerConfig? Markers = null, string? SymbolPath = null, bool Force = false, int? ThreadId = null, int Top = DefaultCpuTop)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -112,6 +128,8 @@ internal static class CliApplication
                 "timeline" => Timeline(options, output, cancellationToken),
                 "frames" => Frames(options, output, cancellationToken),
                 "interesting" => Interesting(options, output),
+                "symbolize" => Symbolize(options, output, error, cancellationToken),
+                "cpu" => Cpu(options, output, cancellationToken),
                 _ => Dump(options, output, cancellationToken)
             };
         }
@@ -135,7 +153,7 @@ internal static class CliApplication
     private static Options Parse(string[] args)
     {
         if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "launch" or "objects" or "timeline" or
-            "frames" or "interesting"))
+            "frames" or "interesting" or "symbolize" or "cpu"))
         {
             throw new ArgumentException("Expected a command and a trace or session file path.");
         }
@@ -155,14 +173,24 @@ internal static class CliApplication
         var list = false;
         string? show = null;
         string? markersPath = null;
+        string? symbolPath = null;
+        var force = false;
+        int? threadId = null;
+        var top = DefaultCpuTop;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
         for (var i = 2; i < args.Length; i++)
         {
             // Flags, without a value.
-            if (args[i] == "--json" && args[0] is "frames" or "interesting")
+            if (args[i] == "--json" && args[0] is "frames" or "interesting" or "cpu")
             {
                 json = true;
+                continue;
+            }
+
+            if (args[i] == "--force" && args[0] == "symbolize")
+            {
+                force = true;
                 continue;
             }
 
@@ -229,6 +257,27 @@ internal static class CliApplication
                 case "--markers" when args[0] is "processes" or "summary" or "dump" or "record" or "launch":
                     markersPath = Path.GetFullPath(value);
                     break;
+                case "--symbol-path" when args[0] is "record" or "symbolize":
+                    try
+                    {
+                        // Checked now, so a malformed path stops the command before it writes anything.
+                        SymbolPaths.Normalize(value);
+                    }
+                    catch (ArgumentException exception)
+                    {
+                        throw new ArgumentException($"--symbol-path: {exception.Message}");
+                    }
+
+                    symbolPath = value;
+                    break;
+                case "--thread" when args[0] == "cpu":
+                    threadId = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var thread) && thread > 0
+                        ? thread : throw new ArgumentException("--thread must be a thread ID from 'cpu'.");
+                    break;
+                case "--top" when args[0] == "cpu":
+                    top = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var count) && count > 0
+                        ? count : throw new ArgumentException("--top must be a positive count.");
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option {args[i]}.");
             }
@@ -237,10 +286,16 @@ internal static class CliApplication
         }
 
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
-            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath);
-        if (options.Command is "objects" or "timeline" or "frames" or "interesting" && !options.IsSessionFile)
+            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath,
+            SymbolPath: symbolPath, Force: force, ThreadId: threadId, Top: top);
+        if (options.Command is "objects" or "timeline" or "frames" or "interesting" or "symbolize" or "cpu" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
+        }
+
+        if (options.Command == "symbolize" && symbolPath is null)
+        {
+            throw new ArgumentException("symbolize requires --symbol-path <path>: only that path is searched.");
         }
 
         if (markersPath is not null && options.IsSessionFile && options.Command != "launch")
@@ -439,7 +494,7 @@ internal static class CliApplication
         var writer = SessionWriter.Create(options.OutputPath!,
             new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
                 SessionCoverage.Trace, options.InputPath), options.LimitBytes);
-        var (events, launcherEvents) = RecordTrace(options, options.Markers!.Providers, writer, cancellationToken);
+        var (events, launcherEvents) = RecordTrace(options, options.Markers!.Providers, writer, cpuSamples: true, cancellationToken);
         if (writer.Failure is { } failure)
         {
             error.WriteLine($"Writing '{writer.Path}' failed: {failure.Message}");
@@ -449,14 +504,23 @@ internal static class CliApplication
         output.WriteLine($"Read {events} events of process {options.ProcessId}" +
             (launcherEvents == 0 ? "" : $" and {launcherEvents} of its launcher") + " from the trace.");
         WriteSessionInfo(SessionFile.ReadInfo(writer.Path), output);
+        var sampling = CpuProfileReader.ReadSampling(writer.Path);
+        WriteCpuSampling(sampling, output);
         output.WriteLine($"Session file: {writer.Path} ({writer.Status.FileBytes / 1024.0 / 1024:F1} MB)");
+        if (options.SymbolPath is { } symbolPath && sampling is { Samples: > 0 })
+        {
+            WriteSymbolized(SessionSymbolizer.Symbolize(writer.Path, symbolPath, options.Force, output.WriteLine,
+                warning => error.WriteLine($"Warning: {warning}"), cancellationToken: cancellationToken), output);
+        }
+
         return 0;
     }
 
     // Stores the process's events from the trace, and when and by which process it was created, with that launcher's
-    // events, and closes the writer. Returns how many events of the process, and of its launcher, were stored.
+    // events, and closes the writer. cpuSamples stores the process's sampled call stacks too. Returns how many events of
+    // the process, and of its launcher, were stored.
     private static (long Events, long LauncherEvents) RecordTrace(Options options, IReadOnlyCollection<MarkerProviderSettings> markers,
-        SessionWriter writer, CancellationToken cancellationToken)
+        SessionWriter writer, bool cpuSamples, CancellationToken cancellationToken)
     {
         long sequence = 0, launcherEvents = 0;
         EtlReadResult? result = null;
@@ -470,7 +534,7 @@ internal static class CliApplication
                 }
 
                 writer.Process(++sequence, profilerEvent);
-            }, writer.SetProcessStart, cancellationToken);
+            }, writer.SetProcessStart, cancellationToken, cpuSamples ? writer : null);
         }
         finally
         {
@@ -504,7 +568,7 @@ internal static class CliApplication
             var writer = SessionWriter.Create(path,
                 new(options.ProcessId!.Value, null, null, OfflineEtlSource.ReadQpcFrequency(options.InputPath), null,
                     SessionCoverage.Trace, options.InputPath), long.MaxValue);
-            var (events, _) = RecordTrace(options, config.Providers, writer, cancellationToken);
+            var (events, _) = RecordTrace(options, config.Providers, writer, cpuSamples: false, cancellationToken);
             if (writer.Failure is { } failure)
             {
                 error.WriteLine($"Writing the temporary session file '{path}' failed: {failure.Message}");
@@ -773,6 +837,116 @@ internal static class CliApplication
 
         output.WriteLine($"{rows.Count} interesting rows, {rows.Count(row => row.Type == InterestingRowType.Region)} region(s) of interest.");
         return 0;
+    }
+
+    private static int Symbolize(Options options, TextWriter output, TextWriter error, CancellationToken cancellationToken)
+    {
+        var sampling = CpuProfileReader.ReadSampling(options.InputPath);
+        if (sampling is not { Samples: > 0 })
+        {
+            WriteCpuSampling(sampling, output);
+            return 0;
+        }
+
+        WriteSymbolized(SessionSymbolizer.Symbolize(options.InputPath, options.SymbolPath!, options.Force, output.WriteLine,
+            warning => error.WriteLine($"Warning: {warning}"), cancellationToken: cancellationToken), output);
+        return 0;
+    }
+
+    private static void WriteSymbolized(SymbolizeResult result, TextWriter output)
+    {
+        output.WriteLine($"Symbolized {result.Modules} modules: {result.Resolved} with symbols, {result.NotFound} without " +
+            $"(not on the symbol path), {result.NoIdentity} without a PDB identity, {result.Portable} with portable (managed) PDBs, " +
+            $"{result.Failed} failed" + (result.Skipped == 0 ? "" : $", {result.Skipped} named before (--force names them again)") + ".");
+        output.WriteLine($"{result.Named} of {result.Addresses} code addresses have a function name. Searched: {result.SymbolPath}");
+    }
+
+    // One line: what the session's CPU sampling recorded, or that it has none, and why when known.
+    private static void WriteCpuSampling(CpuSamplingInfo? sampling, TextWriter output)
+    {
+        if (sampling is null)
+        {
+            output.WriteLine("CPU samples: none; the session did not sample CPU.");
+            return;
+        }
+
+        var interval = sampling.IntervalMs is { } milliseconds
+            ? $", every {milliseconds.ToString("0.###", CultureInfo.InvariantCulture)} ms" : "";
+        var dropped = sampling.Dropped == 0 ? "" : $", {sampling.Dropped} dropped";
+        output.WriteLine($"CPU samples: {sampling.Samples}{interval}{dropped}." + (sampling.Note is null ? "" : $" {sampling.Note}"));
+    }
+
+    private static int Cpu(Options options, TextWriter output, CancellationToken cancellationToken)
+    {
+        var profile = CpuProfileReader.Read(options.InputPath, options.ThreadId, options.Top, cancellationToken);
+        if (options.Json)
+        {
+            output.WriteLine(JsonSerializer.Serialize(profile, JsonOptions));
+            return 0;
+        }
+
+        if (profile is null)
+        {
+            WriteCpuSampling(null, output);
+            return 0;
+        }
+
+        var sampling = profile.Sampling;
+        WriteCpuSampling(sampling, output);
+        output.WriteLine(sampling.SymbolizedUtc is { } symbolized
+            ? $"Symbolized {symbolized.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} from {sampling.SymbolPath}."
+            : "Not symbolized: frames are Module!0xOffset. Run 'symbolize <session.sqlite> --symbol-path <path>' to name them.");
+        if (profile.Samples == 0)
+        {
+            // Without --thread the sampling line said why; with it, the threads that have samples are listed.
+            if (profile.ThreadId is { } thread && profile.Threads.Count > 0)
+            {
+                output.WriteLine($"No samples of thread {thread}.");
+                WriteCpuThreads(profile, output);
+            }
+
+            return 0;
+        }
+
+        WriteCpuThreads(profile, output);
+        var of = profile.ThreadId is { } threadId ? $"thread {threadId}'s {profile.Samples}" : $"all {profile.Samples}";
+        WriteCpuFrames($"Exclusive: where the samples ran (top {profile.Exclusive.Count} of {of} samples)", profile.Exclusive,
+            profile.Samples, output);
+        WriteCpuFrames($"Inclusive: on the sampled stacks (top {profile.Inclusive.Count} of {of} samples)", profile.Inclusive,
+            profile.Samples, output);
+
+        output.WriteLine();
+        output.WriteLine($"Modules ({profile.Modules.Count}):");
+        output.WriteLine($"{"Addresses",9} {"Symbols",-10} {"Module",-32} PDB");
+        foreach (var module in profile.Modules)
+        {
+            output.WriteLine($"{module.Addresses,9} {module.Status ?? "-",-10} {module.Name,-32} {module.SymbolFile ?? module.Pdb ?? ""}");
+        }
+
+        return 0;
+    }
+
+    private static void WriteCpuThreads(CpuProfile profile, TextWriter output)
+    {
+        output.WriteLine();
+        output.WriteLine($"Threads ({profile.Threads.Count}):");
+        output.WriteLine($"{"Thread",7} {"Samples",9} {"Ms",12}");
+        foreach (var thread in profile.Threads)
+        {
+            output.WriteLine($"{thread.ThreadId,7} {thread.Samples,9} {Milliseconds(thread.Ms),12}" + (thread.UiThread ? "  UI thread" : ""));
+        }
+    }
+
+    private static void WriteCpuFrames(string title, IReadOnlyList<CpuFrameSamples> frames, long total, TextWriter output)
+    {
+        output.WriteLine();
+        output.WriteLine(title + ":");
+        output.WriteLine($"{"Samples",9} {"Ms",12} {"%",6}  Frame");
+        foreach (var frame in frames)
+        {
+            output.WriteLine($"{frame.Samples,9} {Milliseconds(frame.Ms),12} " +
+                $"{(100.0 * frame.Samples / total).ToString("F1", CultureInfo.InvariantCulture),6}  {frame.Frame}");
+        }
     }
 
     private static void WriteSessionInfo(SessionFileInfo info, TextWriter output)
