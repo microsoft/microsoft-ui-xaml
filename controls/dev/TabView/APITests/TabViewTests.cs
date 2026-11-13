@@ -500,4 +500,265 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return tabViewItem;
         }
     }
+
+    // A TabViewItem without a Header shows its Content in the header (for example TabItemsSource items without
+    // a TabItemTemplate), except when the Content is a UIElement: that is already shown in the tab content area and
+    // can't have two parents (it used to throw E_INVALIDARG, #10944).
+    [TestClass]
+    public class TabViewHeaderlessContentTests : ApiTestBase
+    {
+        [TestMethod]
+        public void HeaderlessTabViewItemWithElementContentDoesNotThrow_NullHeader()
+        {
+            VerifyElementContentIsOnlyInTabBody(header: null);
+        }
+
+        [TestMethod]
+        public void HeaderlessTabViewItemWithElementContentDoesNotThrow_EmptyHeader()
+        {
+            VerifyElementContentIsOnlyInTabBody(header: "");
+        }
+
+        [TestMethod]
+        public void HeaderedTabViewItemWithElementContentShowsContentOnlyInTabBody()
+        {
+            VerifyElementContentIsOnlyInTabBody(header: "Header");
+        }
+
+        // These verify the shipped behavior, which TabItemsSource without a TabItemTemplate relies on for tab titles.
+        // The ignored TabViewTests.TabViewItemHeaderTest expects the opposite (an empty header presenter for a
+        // headerless TabViewItem with string Content) and fails against both the shipped and the current code.
+        [TestMethod]
+        public void HeaderlessTabViewItemShowsStringContentInHeader_NullHeader()
+        {
+            VerifyStringContentIsShownInHeader(header: null);
+        }
+
+        [TestMethod]
+        public void HeaderlessTabViewItemShowsStringContentInHeader_EmptyHeader()
+        {
+            VerifyStringContentIsShownInHeader(header: "");
+        }
+
+        [TestMethod]
+        public void TabItemsSourceWithoutTemplateShowsItemsAsHeaders()
+        {
+            var items = new ObservableCollection<string>() { "Tab 0", "Tab 1" };
+            TabView tabView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tabView = new TabView() { TabItemsSource = items };
+                Content = tabView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var listView = tabView.FindVisualChildByName("TabListView") as ListView;
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var tvi = listView.ContainerFromIndex(i) as TabViewItem;
+                    var headerPresenter = tvi.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                    Verify.AreEqual(items[i], headerPresenter.Content, $"Tab {i} should show its item as the header");
+                }
+            });
+        }
+
+        [TestMethod]
+        public void HeaderlessTabViewItemContentChangesUpdateHeader()
+        {
+            TabViewItem tvi = null;
+            TabViewItem otherTvi = null;
+            TabView tabView = null;
+            Grid tabBody = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tvi = new TabViewItem() { Content = "Text 1" };
+                otherTvi = new TabViewItem() { Header = "Other", Content = "Other content" };
+                tabView = new TabView();
+                tabView.TabItems.Add(tvi);
+                tabView.TabItems.Add(otherTvi);
+                tabView.SelectedItem = tvi;
+                Content = tabView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headerPresenter = tvi.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                Verify.AreEqual("Text 1", headerPresenter.Content, "The string content should be shown in the header");
+
+                Log.Comment("Change the content to a UIElement, then reselect the tab so the tab content area shows it.");
+                tabBody = new Grid() { Width = 100, Height = 100 };
+                tvi.Content = tabBody;
+                Content.UpdateLayout();
+                tabView.SelectedItem = otherTvi;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tabView.SelectedItem = tvi;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                var headerPresenter = tvi.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                var tabContentPresenter = tabView.FindVisualChildByName("TabContentPresenter") as ContentPresenter;
+                Verify.AreEqual(Visibility.Collapsed, headerPresenter.Visibility, "The header should be collapsed instead of showing the UIElement content");
+                Verify.IsTrue(ReferenceEquals(VisualTreeHelper.GetParent(tabBody), tabContentPresenter), "The UIElement content should be shown in the tab content area");
+
+                Log.Comment("Change the content back to a string.");
+                tvi.Content = "Text 2";
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Visible, headerPresenter.Visibility, "The header should be visible again");
+                Verify.AreEqual("Text 2", headerPresenter.Content, "The new string content should be shown in the header");
+            });
+        }
+
+        [TestMethod]
+        public void ClearingHeaderDoesNotShowContentInHeader()
+        {
+            TabViewItem tvi = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tvi = new TabViewItem() { Header = "Header", Content = "Tab body" };
+                var tabView = new TabView();
+                tabView.TabItems.Add(tvi);
+                Content = tabView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headerPresenter = tvi.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                Verify.AreEqual("Header", headerPresenter.Content, "The header should be shown while it is set");
+
+                Log.Comment("Clear the header.");
+                tvi.Header = null;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(IsNullOrEmptyString(headerPresenter.Content), "Clearing a header that was set must not fall back to the TabViewItem's Content");
+            });
+        }
+
+        [TestMethod]
+        public void TabItemTemplateWithHeaderlessTabViewItemRootDoesNotThrow()
+        {
+            // Repro from #10944: the TabItemTemplate root is a TabViewItem with content and no header,
+            // and the item is the empty string.
+            TabView tabView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var template = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                        <TabViewItem>
+                            <Grid />
+                        </TabViewItem>
+                      </DataTemplate>");
+
+                tabView = new TabView()
+                {
+                    TabItemsSource = new ObservableCollection<string>() { "" },
+                    TabItemTemplate = template
+                };
+
+                Content = tabView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                Verify.IsNotNull(tabView.FindVisualChildByName("TabListView"), "The TabView should have been created and laid out without throwing");
+            });
+        }
+
+        private void VerifyElementContentIsOnlyInTabBody(string header)
+        {
+            TabViewItem tvi = null;
+            TabView tabView = null;
+            Grid tabBody = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tabBody = new Grid() { Width = 100, Height = 100 };
+                tvi = new TabViewItem() { Content = tabBody };
+                if (header != null)
+                {
+                    tvi.Header = header;
+                }
+
+                tabView = new TabView();
+                tabView.TabItems.Add(tvi);
+
+                Content = tabView;
+                Log.Comment("Layout must not throw E_INVALIDARG for the headerless tab.");
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+
+                var headerPresenter = tvi.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                var tabContentPresenter = tabView.FindVisualChildByName("TabContentPresenter") as ContentPresenter;
+
+                Verify.IsFalse(ReferenceEquals(headerPresenter.Content, tabBody), "The header presenter must not show the TabViewItem's Content");
+                Verify.IsTrue(ReferenceEquals(tabContentPresenter.Content, tabBody), "The tab content presenter should show the TabViewItem's Content");
+                Verify.IsTrue(ReferenceEquals(VisualTreeHelper.GetParent(tabBody), tabContentPresenter), "The content should only be parented by the tab content presenter");
+            });
+        }
+
+        private void VerifyStringContentIsShownInHeader(string header)
+        {
+            TabViewItem tvi = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tvi = new TabViewItem() { Content = "Tab body" };
+                if (header != null)
+                {
+                    tvi.Header = header;
+                }
+
+                var tabView = new TabView();
+                tabView.TabItems.Add(tvi);
+
+                Content = tabView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+
+                var headerPresenter = tvi.FindVisualChildByName("ContentPresenter") as ContentPresenter;
+                Verify.AreEqual("Tab body", headerPresenter.Content, "A headerless TabViewItem should keep showing its string Content in the header");
+            });
+        }
+
+        private static bool IsNullOrEmptyString(object value)
+        {
+            return value == null || (value is string s && s.Length == 0);
+        }
+    }
 }
