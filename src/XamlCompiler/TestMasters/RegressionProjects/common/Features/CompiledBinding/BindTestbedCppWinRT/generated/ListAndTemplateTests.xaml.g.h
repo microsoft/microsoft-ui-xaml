@@ -107,14 +107,18 @@ namespace winrt::BindTestbed::implementation
         struct ListAndTemplateTests_obj14_Bindings;
         struct ListAndTemplateTests_obj19_Bindings;
         struct ListAndTemplateTests_obj21_Bindings;
-        struct ListAndTemplateTests_obj25_Bindings;
         struct ListAndTemplateTests_obj26_Bindings;
-        struct ListAndTemplateTests_obj28_Bindings;
-        struct ListAndTemplateTests_obj30_Bindings;
-        struct ListAndTemplateTests_obj46_Bindings;
-        struct ListAndTemplateTests_obj51_Bindings;
-        struct ListAndTemplateTests_obj54_Bindings;
-        struct ListAndTemplateTests_obj58_Bindings;
+        struct ListAndTemplateTests_obj31_Bindings;
+        struct ListAndTemplateTests_obj33_Bindings;
+        struct ListAndTemplateTests_obj36_Bindings;
+        struct ListAndTemplateTests_obj39_Bindings;
+        struct ListAndTemplateTests_obj40_Bindings;
+        struct ListAndTemplateTests_obj42_Bindings;
+        struct ListAndTemplateTests_obj44_Bindings;
+        struct ListAndTemplateTests_obj60_Bindings;
+        struct ListAndTemplateTests_obj65_Bindings;
+        struct ListAndTemplateTests_obj68_Bindings;
+        struct ListAndTemplateTests_obj72_Bindings;
         struct ListAndTemplateTests_obj1_Bindings;
 
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _LastName{nullptr};

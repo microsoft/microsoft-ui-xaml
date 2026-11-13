@@ -747,6 +747,10 @@ this.Write("            // A missing item is distinct from default(T) and from i
         "nding initialization.\r\n            private bool hasDataRoot;\r\n");
 
              }
+             if (bindUniverse.NeedsItemBindingInitialization) {
+this.Write("            private bool itemBindingsInitialized;\r\n");
+
+             }
              if (bindUniverse.NeededForOuterScopeElement) 
              { 
 this.Write("            #pragma warning disable 649\r\n");
@@ -1515,8 +1519,13 @@ this.Write(@";
                             }
                         }
                         this.initialized = true;
-                        break;
 ");
+
+                     if (bindUniverse.NeedsItemBindingInitialization) {
+this.Write("                        this.itemBindingsInitialized |= this.hasDataRoot;\r\n");
+
+                     }
+this.Write("                        break;\r\n");
 
                      foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) 
                      { 
@@ -1662,14 +1671,23 @@ this.Write("(this.dataRoot, NOT_PHASED);\r\n");
 
                  }
              }
-this.Write("                this.initialized = true;\r\n            }\r\n\r\n            public voi" +
-        "d StopTracking()\r\n            {\r\n");
+this.Write("                this.initialized = true;\r\n");
+
+             if (bindUniverse.NeedsItemBindingInitialization) {
+this.Write("                this.itemBindingsInitialized |= this.hasDataRoot;\r\n");
+
+             }
+this.Write("            }\r\n\r\n            public void StopTracking()\r\n            {\r\n");
 
              if (bindUniverse.NeedsBindingsTracking)
              {
 this.Write("                this.bindingsTracking.ReleaseAllListeners();\r\n                thi" +
         "s.initialized = false;\r\n");
 
+                 if (bindUniverse.NeedsItemBindingInitialization) {
+this.Write("                this.itemBindingsInitialized = false;\r\n");
+
+                 }
              }
 this.Write("            }\r\n\r\n            public void DisconnectUnloadedObject(int connectionI" +
         "d)\r\n            {\r\n");
@@ -2747,7 +2765,7 @@ this.Write("        }\r\n");
  } 
  private void Output_UpdateTwoWay(BindAssignment ba)
  {
-     // Independent initialization must not enable reverse writes through a missing item.
+     // Forward initialization and reverse receiver validity are separate requirements.
 this.Write("            private void UpdateTwoWay_");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.ConnectionIdElement.ConnectionId));
@@ -2756,7 +2774,9 @@ this.Write("_");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.MemberName));
 
-this.Write("()\r\n            {\r\n                if (this.initialized");
+this.Write("()\r\n            {\r\n                if (this.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(ba.NeedsItemBindingInitialization ? "itemBindingsInitialized" : "initialized"));
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.NeedsDataRootForReverseAssignment ? " && this.hasDataRoot" : ""));
 

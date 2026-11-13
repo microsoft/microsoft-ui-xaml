@@ -308,6 +308,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
 
                 // A DataTemplate universe is rooted at its first visual, not the template.
+                // Include ordinary templates too: named x:Bind sources without bindings
+                // of their own still need connection IDs.
                 return !this.BindUniverse.IsFileRoot;
             }
         }

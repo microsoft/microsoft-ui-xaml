@@ -312,6 +312,16 @@ namespace LibManagedDll
                 }).Invoke(_bindings, arguments);
                 return (int)arguments[3];
             }
+
+            public void Recycle()
+            {
+                _bindingsType.GetMethod("Recycle").Invoke(_bindings, null);
+            }
+
+            public void StopTracking()
+            {
+                _bindingsType.GetMethod("StopTracking").Invoke(_bindings, null);
+            }
         }
 
         [TestMethod]
@@ -519,6 +529,102 @@ namespace LibManagedDll
         }
 
         [TestMethod]
+        public void FunctionBinding_StaticInitializationDoesNotEnableItemDependentBindBack()
+        {
+            var bindings = CreateTemplateBindings(
+                "x:DataType='dll:BindPathParserClass'",
+                "FormatTitle(StringProperty), Mode=TwoWay, BindBack=dll:BindPathParserClass.SetTextStatic");
+            bindings.ChangeDataContext(null);
+            bindings.SetTag("edited without an item");
+            Assert.AreEqual(0, bindings.StaticBindBackCalls,
+                "Initializing an unrelated static binding must not enable an item-dependent binding's BindBack.");
+            Assert.AreEqual("static text", bindings.StaticText);
+        }
+
+        [TestMethod]
+        public void FunctionBinding_StaticArgumentInitializationDoesNotEnableBindBack()
+        {
+            var bindings = CreateTemplateBindings(
+                "x:DataType='dll:BindPathParserClass'",
+                "dll:BindPathParserClass.FormatTitleStatic(StringProperty), Mode=TwoWay, BindBack=dll:BindPathParserClass.SetTextStatic");
+            bindings.ChangeDataContext(null);
+            bindings.SetTag("edited without an item");
+            Assert.AreEqual(0, bindings.StaticBindBackCalls,
+                "A static receiver does not make item-dependent function arguments independent.");
+            Assert.AreEqual(0, bindings.StaticArgumentCalls);
+        }
+
+        [TestMethod]
+        public void FunctionBinding_StaticInitializationDoesNotWriteBackFirstItem()
+        {
+            var bindings = CreateTemplateBindings(
+                "x:DataType='dll:BindPathParserClass'",
+                "FormatTitle(StringProperty), Mode=TwoWay, BindBack=dll:BindPathParserClass.SetTextStatic");
+            bindings.ChangeDataContext(null);
+            bindings.ChangeDataContext(bindings.CreateItem("first item"));
+            Assert.AreEqual("Title: first item", bindings.Tag);
+            Assert.AreEqual(0, bindings.StaticBindBackCalls,
+                "The first item-to-target update must not acquire a reverse write from earlier static initialization.");
+            bindings.SetTag("legitimate edit");
+            Assert.AreEqual(1, bindings.StaticBindBackCalls);
+            Assert.AreEqual("legitimate edit", bindings.StaticText);
+        }
+
+        [TestMethod]
+        public void FunctionBinding_StaticInitializationPreservesIndependentStaticTwoWayBinding()
+        {
+            var independent = CreateTemplateBindings(
+                "x:DataType='dll:BindPathParserClass'",
+                "dll:BindPathParserClass.GetTipOfTheDayStatic(), Mode=TwoWay, BindBack=dll:BindPathParserClass.SetTextStatic");
+            independent.ChangeDataContext(null);
+            independent.SetTag("static edit");
+            Assert.AreEqual(1, independent.StaticBindBackCalls);
+            Assert.AreEqual("static edit", independent.StaticText);
+        }
+
+        [TestMethod]
+        public void FunctionBinding_StaticInitializationPreservesItemBindBackLifecycle()
+        {
+            foreach (string staticBinding in new[] { null, "dll:BindPathParserClass.GetTipOfTheDayStatic()" })
+            {
+                var bindings = CreateTemplateBindings(
+                    "x:DataType='dll:BindPathParserClass'",
+                    "FormatTitle(StringProperty), Mode=TwoWay, BindBack=dll:BindPathParserClass.SetTextStatic",
+                    staticBinding);
+                bindings.ChangeDataContext(null);
+                bindings.ChangeDataContext(bindings.CreateItem("first"));
+                Assert.AreEqual(0, bindings.StaticBindBackCalls);
+                bindings.SetTag("first edit");
+                Assert.AreEqual(1, bindings.StaticBindBackCalls);
+
+                bindings.ChangeDataContext(null);
+                bindings.SetTag("edit after removal");
+                Assert.AreEqual(2, bindings.StaticBindBackCalls,
+                    "An initialized binding with an independent BindBack receiver keeps its existing lifetime.");
+                bindings.ChangeDataContext(bindings.CreateItem("replacement"));
+                Assert.AreEqual("Title: replacement", bindings.Tag);
+                Assert.AreEqual(3, bindings.StaticBindBackCalls,
+                    "Replacing an item must preserve the established forward/reverse ordering.");
+
+                bindings.Recycle();
+                Assert.AreEqual(-1, bindings.ProcessBindings(bindings.CreateItem("recycled"), 0));
+                Assert.AreEqual("Title: recycled", bindings.Tag);
+                Assert.AreEqual(4, bindings.StaticBindBackCalls);
+                bindings.SetTag("recycled edit");
+                Assert.AreEqual(5, bindings.StaticBindBackCalls);
+
+                bindings.StopTracking();
+                bindings.ChangeDataContext(null);
+                bindings.SetTag("edit before reinitialization");
+                Assert.AreEqual(5, bindings.StaticBindBackCalls);
+                bindings.ChangeDataContext(bindings.CreateItem("reinitialized"));
+                Assert.AreEqual(5, bindings.StaticBindBackCalls);
+                bindings.SetTag("reinitialized edit");
+                Assert.AreEqual(6, bindings.StaticBindBackCalls);
+            }
+        }
+
+        [TestMethod]
         public void FunctionBinding_StaticTemplateDoesNotEvaluateBindBackOnlyReceiverWithoutItem()
         {
             var bindings = CreateTemplateBindings(
@@ -538,8 +644,10 @@ namespace LibManagedDll
         {
             string code = GenerateDeferredNamedSourceTemplateBindingsCppWinRT();
 
+            AssertGenerated(code,
+                @"void UpdateStaticBindings\(\) override\s*\{\s*UpdateStaticBindings\(this->NOT_PHASED\);\s*\}");
             var updater = Regex.Match(code,
-                @"void UpdateStaticBindings\(\) override\s*\{(?<body>[\s\S]*?)\r?\n        \}");
+                @"void UpdateStaticBindings\(int32_t phase\)\s*\{(?<body>[\s\S]*?)\r?\n        \}");
             Assert.IsTrue(updater.Success, "The null-data static updater was not generated.");
             AssertGenerated(updater.Groups["body"].Value, @"\bUpdate_source\(");
         }

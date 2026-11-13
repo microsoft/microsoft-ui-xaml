@@ -31,6 +31,27 @@
             <DataTemplate x:Key="StaticUntypedPhasedBindingTemplate">
                 <TextBlock x:Phase="1" Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
             </DataTemplate>
+            <DataTemplate x:Key="StaticInitializationBindBackTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock x:Name="staticInitializationValue" Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                    <TextBlock x:Name="itemInitializationValue" Text="{x:Bind FormatSetting(BoolSetting), Mode=TwoWay, BindBack=model:FakeSettings.SetFormattedTextStatic}"/>
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="ItemInitializationBindBackTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock x:Name="itemInitializationValue" Text="{x:Bind FormatSetting(BoolSetting), Mode=TwoWay, BindBack=model:FakeSettings.SetFormattedTextStatic}"/>
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="IndependentStaticBindBackTemplate" x:DataType="model:FakeSettings">
+                <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs(), Mode=TwoWay, BindBack=model:FakeSettings.SetFormattedTextStatic}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="IndependentNamedTwoWayTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock x:Name="independentSource" Text="named source"/>
+                    <TextBlock x:Name="independentTarget" Tag="{x:Bind independentSource.Text, Mode=TwoWay}"/>
+                    <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                </StackPanel>
+            </DataTemplate>
             <DataTemplate x:Key="StaticPhasedBindingTemplate" x:DataType="model:FakeSettings">
                 <StackPanel>
                     <TextBlock x:Phase="1" Tag="{x:Bind BoolSetting, Mode=TwoWay}"/>

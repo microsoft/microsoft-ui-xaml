@@ -102,6 +102,12 @@ restoration of independent named-element sources.
 that a static BindBack-only root cannot activate an instance-dependent forward
 binding before any item is supplied, while preserving reverse updates once an
 item initializes the binding.
+`FunctionBinding_StaticInitialization*` covers the combination of an independent
+static forward binding and an item-dependent TwoWay function with a static
+BindBack receiver. Initial null-item edits and the first item-to-target update
+must not call BindBack; later edits, replacement/recycle ordering, and
+reinitialization retain their existing behavior. Independent static TwoWay
+bindings remain active without an item.
 
 `ListAndTemplateTests.xaml` in both compiled-binding regression applications also
 includes null-content static templates, so their generated C# and C++/WinRT are
@@ -114,6 +120,13 @@ from every runtime assertion group. Run them with
 `runtests.cmd /TestCaseFilter:FullyQualifiedName~Runtime_StaticTemplateBindings`.
 They require an interactive Windows desktop and the runnable application payloads
 produced by `XamlCompilerTests.sln`; missing payloads or timeouts fail rather than skip.
+The TwoWay initialization group uses real dependency-property callbacks and a
+counting static BindBack receiver, with and without the independent forward
+binding. It checks null edits, first item arrival, later edits, replacement and
+recycling, plus item-independent static and named-element reverse writes.
+The C# function cases use the object-valued `Tag` target; the native function
+cases use string-valued `Text` targets with the same item/independent binding
+split and callback timing.
 The native applications host the managed model through app-local `WinRT.Host.dll`
 and require an installed .NET 8 runtime compatible with its runtimeconfig. The
 launcher removes build-SDK `DOTNET_ROOT` overrides from the child process so they

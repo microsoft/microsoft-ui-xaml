@@ -81,6 +81,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
   if (bindUniverse.IsDataIndependentUntypedTemplate) {
             this.Write("        void Update() override\r\n        {\r\n            UpdateStaticBindings();\r\n " +
                     "       }\r\n\r\n");
+  } else if (bindUniverse.NeedsItemBindingInitialization) {
+            this.Write(@"        void Update() override
+        {
+            Base::Update();
+            this->_itemBindingsInitialized |= this->_hasDataRoot;
+        }
+
+        void StopTracking() override
+        {
+            Base::StopTracking();
+            this->_itemBindingsInitialized = false;
+        }
+
+");
   }
             this.Write("        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
@@ -228,9 +242,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                         _dataContextChangedToken.value = 0;
                     }
                     _isInitialized = true;
-                 }
-                 break;
 ");
+      if (bindUniverse.NeedsItemBindingInitialization) {
+            this.Write("                    this->_itemBindingsInitialized |= this->_hasDataRoot;\r\n");
+      }
+            this.Write("                 }\r\n                 break;\r\n");
       foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) { 
             this.Write("            case ");
             this.Write(this.ToStringHelper.ToStringWithCulture(kvp.Key));
@@ -303,6 +319,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("        // A missing item differs from default(T), even while independent binding" +
                     "s are initialized.\r\n        bool _hasDataRoot = false;\r\n");
   }
+  if (bindUniverse.NeedsItemBindingInitialization) {
+            this.Write("        bool _itemBindingsInitialized = false;\r\n");
+  }
   if (bindUniverse.BoundElements != null && bindUniverse.BoundElements.Any()) { 
             this.Write("        // Fields for each control that has bindings.\r\n");
   }
@@ -363,14 +382,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("\r\n        // Update methods for each path node used in binding steps.\r\n");
   }
   if (bindUniverse.NeedsStaticBindingsUpdate) {
-            this.Write("        // Reconnect static/named sources and dispatch their functions without wa" +
-                    "lking the data root.\r\n        void UpdateStaticBindings() override\r\n        {\r\n");
-      if (bindUniverse.IsDataIndependentUntypedTemplate) {
-            this.Write("            UpdateStaticBindings(this->NOT_PHASED);\r\n        }\r\n\r\n        void Up" +
-                    "dateStaticBindings(int32_t phase)\r\n        {\r\n");
-      } else {
-            this.Write("            int phase = this->NOT_PHASED;\r\n");
-      }
+            this.Write(@"        // Reconnect static/named sources and dispatch their functions without walking the data root.
+        void UpdateStaticBindings() override
+        {
+            UpdateStaticBindings(this->NOT_PHASED);
+        }
+
+        void UpdateStaticBindings(int32_t phase)
+        {
+");
       Output_Update_Steps(false, bindUniverse.RootStep.Children.OfType<RootNamedElementStep>(), true, "phase");
       Output_Update_Independent_Steps(bindUniverse);
             this.Write("            this->_isInitialized = true;\r\n        }\r\n");
@@ -785,7 +805,7 @@ this.Write("\r\n");
      }
  private void Output_Connect_TwoWayBinding(BindAssignment ba)
  {
-     // Independent initialization must not enable reverse writes through a missing item.
+     // Forward initialization and reverse receiver validity are separate requirements.
      Output_ApiInformationCall_Push(ba.ApiInformation, Indent.None); 
      if (ba.NeedsLostFocusForTwoWay) { 
 this.Write("                ");
@@ -828,7 +848,9 @@ this.Write("Property(),\r\n                    [weakThis{ this->weak_from_this()
 
      } 
 this.Write("                        if (auto strongThis{ weakThis.lock() })\r\n                " +
-        "        {\r\n                            if (IsInitialized()");
+        "        {\r\n                            if (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(ba.NeedsItemBindingInitialization ? "this->_itemBindingsInitialized" : "IsInitialized()"));
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.NeedsDataRootForReverseAssignment ? " && this->_hasDataRoot" : ""));
 

@@ -414,6 +414,9 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
             // A missing item is distinct from default(T) and from independent binding initialization.
             private bool hasDataRoot;
 <#+             }#>
+<#+             if (bindUniverse.NeedsItemBindingInitialization) {#>
+            private bool itemBindingsInitialized;
+<#+             }#>
 <#+             if (bindUniverse.NeededForOuterScopeElement) #>
 <#+             { #>
             #pragma warning disable 649
@@ -837,6 +840,9 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                             }
                         }
                         this.initialized = true;
+<#+                     if (bindUniverse.NeedsItemBindingInitialization) {#>
+                        this.itemBindingsInitialized |= this.hasDataRoot;
+<#+                     }#>
                         break;
 <#+                     foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) #>
 <#+                     { #>
@@ -926,6 +932,9 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 }#>
 <#+             }#>
                 this.initialized = true;
+<#+             if (bindUniverse.NeedsItemBindingInitialization) {#>
+                this.itemBindingsInitialized |= this.hasDataRoot;
+<#+             }#>
             }
 
             public void StopTracking()
@@ -934,6 +943,9 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+             {#>
                 this.bindingsTracking.ReleaseAllListeners();
                 this.initialized = false;
+<#+                 if (bindUniverse.NeedsItemBindingInitialization) {#>
+                this.itemBindingsInitialized = false;
+<#+                 }#>
 <#+             }#>
             }
 
@@ -1502,10 +1514,10 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
 <#+ private void Output_UpdateTwoWay(BindAssignment ba)#>
 <#+ {#>
-<#+     // Independent initialization must not enable reverse writes through a missing item.#>
+<#+     // Forward initialization and reverse receiver validity are separate requirements.#>
             private void UpdateTwoWay_<#=ba.ConnectionIdElement.ConnectionId#>_<#=ba.MemberName#>()
             {
-                if (this.initialized<#=ba.NeedsDataRootForReverseAssignment ? " && this.hasDataRoot" : ""#>)
+                if (this.<#=ba.NeedsItemBindingInitialization ? "itemBindingsInitialized" : "initialized"#><#=ba.NeedsDataRootForReverseAssignment ? " && this.hasDataRoot" : ""#>)
                 {
 <#+             MethodStep bindBackStep = ba.BindBackStep as MethodStep; #>
 <#+             if (bindBackStep != null)#>

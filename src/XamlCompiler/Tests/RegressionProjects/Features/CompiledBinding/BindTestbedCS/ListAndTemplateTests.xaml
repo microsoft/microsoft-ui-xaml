@@ -31,6 +31,23 @@
             <DataTemplate x:Key="StaticUntypedPhasedBindingTemplate">
                 <TextBlock x:Phase="1" Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
             </DataTemplate>
+            <DataTemplate x:Key="StaticInitializationBindBackTemplate" x:DataType="model:FakeSettings">
+                <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"
+                           Tag="{x:Bind FormatSetting(BoolSetting), Mode=TwoWay, BindBack=model:FakeSettings.SetFormattedSettingStatic}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="ItemInitializationBindBackTemplate" x:DataType="model:FakeSettings">
+                <TextBlock Tag="{x:Bind FormatSetting(BoolSetting), Mode=TwoWay, BindBack=model:FakeSettings.SetFormattedSettingStatic}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="IndependentStaticBindBackTemplate" x:DataType="model:FakeSettings">
+                <TextBlock Tag="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs(), Mode=TwoWay, BindBack=model:FakeSettings.SetFormattedSettingStatic}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="IndependentNamedTwoWayTemplate" x:DataType="model:FakeSettings">
+                <StackPanel>
+                    <TextBlock x:Name="independentSource" Text="named source"/>
+                    <TextBlock x:Name="independentTarget" Tag="{x:Bind independentSource.Text, Mode=TwoWay}"/>
+                    <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                </StackPanel>
+            </DataTemplate>
             <DataTemplate x:Key="InstanceOnlyBindingTemplate" x:DataType="model:FakeSettings">
                 <TextBlock Tag="{x:Bind BoolSetting, Mode=TwoWay}"/>
             </DataTemplate>

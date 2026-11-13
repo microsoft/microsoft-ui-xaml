@@ -25,15 +25,15 @@ namespace winrt::BindTestbed::implementation
 {
     namespace
     {
-        wuxc::TextBlock FindTextBlock(wux::DependencyObject const& root)
+        wuxc::TextBlock FindTextBlock(wux::DependencyObject const& root, wchar_t const* name = nullptr)
         {
-            if (auto text = root.try_as<wuxc::TextBlock>())
+            if (auto text = root.try_as<wuxc::TextBlock>(); text && (name == nullptr || text.Name() == name))
             {
                 return text;
             }
             for (int index = 0; index < wux::Media::VisualTreeHelper::GetChildrenCount(root); index++)
             {
-                if (auto text = FindTextBlock(wux::Media::VisualTreeHelper::GetChild(root, index)))
+                if (auto text = FindTextBlock(wux::Media::VisualTreeHelper::GetChild(root, index), name))
                 {
                     return text;
                 }
@@ -241,6 +241,110 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
+        void AssertStaticBindBack(int calls, wchar_t const* value)
+        {
+            auto observed = BindTestbedModel::FakeSettings::StaticBindBackCalls();
+            auto observedValue = BindTestbedModel::FakeSettings::StaticBindBackValue();
+            std::printf("Static BindBack: expected=%d, observed=%d, value='%ls'.\n", calls, observed, observedValue.c_str());
+            std::fflush(stdout);
+            if (observed != calls || observedValue != value)
+            {
+                throw hresult_error(E_FAIL, L"Unexpected static BindBack calls or value.");
+            }
+        }
+
+        wf::IAsyncAction VerifyTwoWayBindingInitialization(wuxc::StackPanel host, wux::Window window, wux::ResourceDictionary resources)
+        {
+            for (auto key : { L"StaticInitializationBindBackTemplate", L"ItemInitializationBindBackTemplate" })
+            {
+                for (bool editBeforeItem : { true, false })
+                {
+                    std::printf("Testing TwoWay initialization %ls, initial edit=%d.\n", key, editBeforeItem);
+                    wuxc::ContentControl control;
+                    control.ContentTemplate(resources.Lookup(box_value(hstring(key))).as<wux::DataTemplate>());
+                    host.Children().Append(control);
+                    co_await WaitForTemplateUpdate(host, window);
+                    auto target = FindTextBlock(control, L"itemInitializationValue");
+                    auto staticValue = FindTextBlock(control, L"staticInitializationValue");
+                    if (!target || control.Content() || target.DataContext() ||
+                        (std::wcscmp(key, L"StaticInitializationBindBackTemplate") == 0 &&
+                            (!staticValue || staticValue.Text() != BindTestbedModel::DataModel::StaticFunctionOnModelNoArgs())))
+                    {
+                        throw hresult_error(E_FAIL, L"The TwoWay template did not initialize its null-item static binding.");
+                    }
+                    auto root = wux::Media::VisualTreeHelper::GetParent(target).as<wuxc::StackPanel>();
+
+                    BindTestbedModel::FakeSettings::ResetStaticBindBack();
+                    if (editBeforeItem)
+                    {
+                        target.Text(L"edited before an item");
+                        AssertStaticBindBack(0, L"");
+                    }
+                    // Reuse the visual/connector so new Content cannot hide the independent
+                    // initialization by creating another binding instance.
+                    auto item = BindTestbedModel::FakeSettings();
+                    item.BoolSetting(true);
+                    root.DataContext(item);
+                    if (target.Text() != L"setting: true")
+                    {
+                        throw hresult_error(E_FAIL, L"The first item did not update its TwoWay target.");
+                    }
+                    AssertStaticBindBack(0, L"");
+                    target.Text(L"edited with an item");
+                    AssertStaticBindBack(1, L"edited with an item");
+                    root.DataContext(BindTestbedModel::FakeSettings());
+                    AssertStaticBindBack(2, L"setting: false");
+                    root.DataContext(nullptr);
+                    target.Text(L"edited after removal");
+                    AssertStaticBindBack(3, L"edited after removal");
+                    auto component = wux::Markup::XamlBindingHelper::GetDataTemplateComponent(root);
+                    component.Recycle();
+                    auto recycled = BindTestbedModel::FakeSettings();
+                    recycled.BoolSetting(true);
+                    int nextPhase = -1;
+                    component.ProcessBindings(recycled, 0, 0, nextPhase);
+                    if (nextPhase != -1)
+                    {
+                        throw hresult_error(E_FAIL, L"The recycled TwoWay template did not complete phase zero.");
+                    }
+                    AssertStaticBindBack(4, L"setting: true");
+                    target.Text(L"edited after recycling");
+                    AssertStaticBindBack(5, L"edited after recycling");
+                    component.Recycle();
+                    host.Children().RemoveAt(host.Children().Size() - 1);
+                }
+            }
+
+            wuxc::ContentControl independentControl;
+            independentControl.ContentTemplate(resources.Lookup(box_value(L"IndependentStaticBindBackTemplate")).as<wux::DataTemplate>());
+            host.Children().Append(independentControl);
+            co_await WaitForTemplateUpdate(host, window);
+            auto independent = FindTextBlock(independentControl);
+            if (!independent || independent.Text() != BindTestbedModel::DataModel::StaticFunctionOnModelNoArgs())
+            {
+                throw hresult_error(E_FAIL, L"The independent static TwoWay binding did not initialize without an item.");
+            }
+            BindTestbedModel::FakeSettings::ResetStaticBindBack();
+            independent.Text(L"independent edit");
+            AssertStaticBindBack(1, L"independent edit");
+
+            wuxc::ContentControl namedControl;
+            namedControl.ContentTemplate(resources.Lookup(box_value(L"IndependentNamedTwoWayTemplate")).as<wux::DataTemplate>());
+            host.Children().Append(namedControl);
+            co_await WaitForTemplateUpdate(host, window);
+            auto source = FindTextBlock(namedControl, L"independentSource");
+            auto namedTarget = FindTextBlock(namedControl, L"independentTarget");
+            if (!source || !namedTarget)
+            {
+                throw hresult_error(E_FAIL, L"The independent named TwoWay sources did not connect.");
+            }
+            namedTarget.Tag(box_value(L"named edit"));
+            if (namedTarget.DataContext() || source.Text() != L"named edit")
+            {
+                throw hresult_error(E_FAIL, L"The independent named TwoWay binding did not write without an item.");
+            }
+        }
+
         wf::IAsyncAction VerifyUntypedTemplateContexts(wuxc::StackPanel host, wux::Window window, wux::ResourceDictionary resources)
         {
             auto dataTemplate = resources.Lookup(box_value(L"StaticUntypedBindingTemplate")).as<wux::DataTemplate>();
@@ -365,6 +469,8 @@ namespace winrt::BindTestbed::implementation
                 std::puts("Initial null-content templates passed.");
                 std::fflush(stdout);
 
+                co_await VerifyTwoWayBindingInitialization(host, testWindow, resources);
+                std::puts("TwoWay binding initialization passed.");
                 co_await VerifyUntypedTemplateContexts(host, testWindow, resources);
                 std::puts("Untyped template contexts and transitions passed.");
                 VerifyUntypedTemplateComponents(resources);

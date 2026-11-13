@@ -449,8 +449,10 @@ namespace UnitTests
             string executable = Path.Combine(CodegenRoot.Value,
                 @"CompilerTests\Features\CompiledBinding", sourceProject, projectName, executableName);
             string output = RunRegressionApplication(executable, "--test-static-template-bindings", projectName);
+            Console.WriteLine(output);
             // Require every runtime group, not just a successful launch or the old opt-in success marker.
             StringAssert.Contains(output, "Initial null-content templates passed.");
+            StringAssert.Contains(output, "TwoWay binding initialization passed.");
             StringAssert.Contains(output, "Untyped template contexts and transitions passed.");
             StringAssert.Contains(output, "Untyped template component entry points passed.");
             if (sourceProject == "BindTestbedCppWinRT")

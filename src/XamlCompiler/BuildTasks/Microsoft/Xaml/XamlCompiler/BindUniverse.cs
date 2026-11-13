@@ -265,6 +265,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         internal bool NeedsStaticBindingsUpdate => NeedsIDataTemplateExtension &&
             BindPathSteps.Values.Any(step => step.IsIncludedInUpdate && step.Parent is StaticRootStep);
 
+        internal bool NeedsItemBindingInitialization =>
+            BindAssignments.Any(assignment => assignment.NeedsItemBindingInitialization);
+
         // Omit the synthetic root conversion only when no path needs the item, not merely
         // because a static binding exists. Root assignments/dependents include whole-item
         // bindings/arguments; all children include reverse-only receivers and event paths.

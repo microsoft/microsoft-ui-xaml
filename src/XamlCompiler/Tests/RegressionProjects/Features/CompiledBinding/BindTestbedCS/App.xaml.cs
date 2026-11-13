@@ -100,6 +100,8 @@ namespace BindTestbed
                 }
                 Console.WriteLine("Initial null-content templates passed.");
 
+                await VerifyTwoWayBindingInitializationAsync(host, owner);
+                Console.WriteLine("TwoWay binding initialization passed.");
                 await VerifyUntypedTemplateContextsAsync(host, owner);
                 Console.WriteLine("Untyped template contexts and transitions passed.");
                 VerifyUntypedTemplateComponents(owner);
@@ -125,6 +127,105 @@ namespace BindTestbed
                 throw new InvalidOperationException("Could not queue the template update observation.");
             }
             await ready.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        private static void AssertStaticBindBack(int calls, string value)
+        {
+            Console.WriteLine($"Static BindBack: expected={calls}, observed={FakeSettings.StaticBindBackCalls}, value='{FakeSettings.StaticBindBackValue}'.");
+            if (FakeSettings.StaticBindBackCalls != calls || FakeSettings.StaticBindBackValue != value)
+            {
+                throw new InvalidOperationException("Unexpected static BindBack calls or value.");
+            }
+        }
+
+        private async Task VerifyTwoWayBindingInitializationAsync(StackPanel host, ListAndTemplateTests owner)
+        {
+            foreach (string key in new[] { "StaticInitializationBindBackTemplate", "ItemInitializationBindBackTemplate" })
+            {
+                foreach (bool editBeforeItem in new[] { true, false })
+                {
+                    Console.WriteLine($"Testing TwoWay initialization {key}, initial edit={editBeforeItem}.");
+                    var control = new ContentControl { ContentTemplate = (DataTemplate)owner.Resources[key] };
+                    host.Children.Add(control);
+                    await WaitForTemplateUpdateAsync(host);
+                    var target = FindTextBlock(control);
+                    if (target == null || control.Content != null || target.DataContext != null ||
+                        (key == "StaticInitializationBindBackTemplate" &&
+                            target.Text != DataModel.StaticFunctionOnModelNoArgs()))
+                    {
+                        throw new InvalidOperationException("The TwoWay template did not initialize its null-item static binding.");
+                    }
+
+                    FakeSettings.ResetStaticBindBack();
+                    if (editBeforeItem)
+                    {
+                        target.Tag = "edited before an item";
+                        AssertStaticBindBack(0, "");
+                    }
+                    // Keep the visual/connector: replacing Content could create a new binding
+                    // instance and conceal initialization inherited from the independent path.
+                    var item = new FakeSettings { BoolSetting = true };
+                    target.DataContext = item;
+                    if (!Equals(target.Tag, "setting: true"))
+                    {
+                        throw new InvalidOperationException("The first item did not update its TwoWay target.");
+                    }
+                    AssertStaticBindBack(0, "");
+                    target.Tag = "edited with an item";
+                    AssertStaticBindBack(1, "edited with an item");
+
+                    target.DataContext = new FakeSettings();
+                    AssertStaticBindBack(2, "setting: false");
+                    target.DataContext = null;
+                    target.Tag = "edited after removal";
+                    AssertStaticBindBack(3, "edited after removal");
+                    var component = XamlBindingHelper.GetDataTemplateComponent(target);
+                    component.Recycle();
+                    component.ProcessBindings(new FakeSettings { BoolSetting = true }, 0, 0, out int nextPhase);
+                    if (nextPhase != -1)
+                    {
+                        throw new InvalidOperationException("The recycled TwoWay template did not complete phase zero.");
+                    }
+                    AssertStaticBindBack(4, "setting: true");
+                    target.Tag = "edited after recycling";
+                    AssertStaticBindBack(5, "edited after recycling");
+                    component.Recycle();
+                    host.Children.Remove(control);
+                }
+            }
+
+            var independentControl = new ContentControl
+            {
+                ContentTemplate = (DataTemplate)owner.Resources["IndependentStaticBindBackTemplate"]
+            };
+            host.Children.Add(independentControl);
+            await WaitForTemplateUpdateAsync(host);
+            var independent = FindTextBlock(independentControl);
+            if (!Equals(independent?.Tag, DataModel.StaticFunctionOnModelNoArgs()))
+            {
+                throw new InvalidOperationException("The independent static TwoWay binding did not initialize without an item.");
+            }
+            FakeSettings.ResetStaticBindBack();
+            independent.Tag = "independent edit";
+            AssertStaticBindBack(1, "independent edit");
+
+            var namedControl = new ContentControl
+            {
+                ContentTemplate = (DataTemplate)owner.Resources["IndependentNamedTwoWayTemplate"]
+            };
+            host.Children.Add(namedControl);
+            await WaitForTemplateUpdateAsync(host);
+            var source = FindTextBlock(namedControl, "independentSource");
+            var namedTarget = FindTextBlock(namedControl, "independentTarget");
+            if (source == null || namedTarget == null)
+            {
+                throw new InvalidOperationException("The independent named TwoWay sources did not connect.");
+            }
+            namedTarget.Tag = "named edit";
+            if (namedTarget.DataContext != null || source.Text != "named edit")
+            {
+                throw new InvalidOperationException("The independent named TwoWay binding did not write without an item.");
+            }
         }
 
         private async Task VerifyUntypedTemplateContextsAsync(StackPanel host, ListAndTemplateTests owner)
@@ -211,15 +312,15 @@ namespace BindTestbed
             }
         }
 
-        private static TextBlock FindTextBlock(DependencyObject root)
+        private static TextBlock FindTextBlock(DependencyObject root, string name = null)
         {
-            if (root is TextBlock text)
+            if (root is TextBlock text && (name == null || text.Name == name))
             {
                 return text;
             }
             for (int index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
             {
-                var child = FindTextBlock(VisualTreeHelper.GetChild(root, index));
+                var child = FindTextBlock(VisualTreeHelper.GetChild(root, index), name);
                 if (child != null)
                 {
                     return child;

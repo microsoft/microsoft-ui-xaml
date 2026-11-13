@@ -43,6 +43,19 @@
             UpdateStaticBindings();
         }
 
+<#  } else if (bindUniverse.NeedsItemBindingInitialization) {#>
+        void Update() override
+        {
+            Base::Update();
+            this->_itemBindingsInitialized |= this->_hasDataRoot;
+        }
+
+        void StopTracking() override
+        {
+            Base::StopTracking();
+            this->_itemBindingsInitialized = false;
+        }
+
 <#  }#>
         <#=bindUniverse.BindingsClassName#>()
         {
@@ -183,6 +196,9 @@
                         _dataContextChangedToken.value = 0;
                     }
                     _isInitialized = true;
+<#      if (bindUniverse.NeedsItemBindingInitialization) {#>
+                    this->_itemBindingsInitialized |= this->_hasDataRoot;
+<#      }#>
                  }
                  break;
 <#      foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) { #>
@@ -256,6 +272,9 @@
         // A missing item differs from default(T), even while independent bindings are initialized.
         bool _hasDataRoot = false;
 <#  }#>
+<#  if (bindUniverse.NeedsItemBindingInitialization) {#>
+        bool _itemBindingsInitialized = false;
+<#  }#>
 <#  if (bindUniverse.BoundElements != null && bindUniverse.BoundElements.Any()) { #>
         // Fields for each control that has bindings.
 <#  }#>
@@ -303,15 +322,11 @@
         // Reconnect static/named sources and dispatch their functions without walking the data root.
         void UpdateStaticBindings() override
         {
-<#      if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
             UpdateStaticBindings(this->NOT_PHASED);
         }
 
         void UpdateStaticBindings(int32_t phase)
         {
-<#      } else {#>
-            int phase = this->NOT_PHASED;
-<#      }#>
 <#      Output_Update_Steps(false, bindUniverse.RootStep.Children.OfType<RootNamedElementStep>(), true, "phase");#>
 <#      Output_Update_Independent_Steps(bindUniverse);#>
             this->_isInitialized = true;
@@ -641,7 +656,7 @@
 
 <#+ private void Output_Connect_TwoWayBinding(BindAssignment ba)#>
 <#+ {#>
-<#+     // Independent initialization must not enable reverse writes through a missing item.#>
+<#+     // Forward initialization and reverse receiver validity are separate requirements.#>
 <#+     Output_ApiInformationCall_Push(ba.ApiInformation, Indent.None); #>
 <#+     if (ba.NeedsLostFocusForTwoWay) { #>
                 <#=ba.ConnectionIdElement.ReferenceExpression#>.LostFocus(
@@ -664,7 +679,7 @@
 <#+     } #>
                         if (auto strongThis{ weakThis.lock() })
                         {
-                            if (IsInitialized()<#=ba.NeedsDataRootForReverseAssignment ? " && this->_hasDataRoot" : ""#>)
+                            if (<#=ba.NeedsItemBindingInitialization ? "this->_itemBindingsInitialized" : "IsInitialized()"#><#=ba.NeedsDataRootForReverseAssignment ? " && this->_hasDataRoot" : ""#>)
                             {
                                 // Update Two Way binding
 <#+     MethodStep bindBackStep = ba.BindBackStep as MethodStep; #>
