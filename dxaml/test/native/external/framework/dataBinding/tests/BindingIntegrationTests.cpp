@@ -3893,6 +3893,55 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    ref class ParityGroupKeyConverter sealed : public IValueConverter
+    {
+    public:
+        virtual Object^ Convert(Object^ value, wxaml_interop::TypeName, Object^, String^)
+        {
+            return (safe_cast<int32>(value) % 2 == 0) ? ref new String(L"even") : ref new String(L"odd");
+        }
+
+        virtual Object^ ConvertBack(Object^, wxaml_interop::TypeName, Object^, String^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+    };
+
+    void BindingIntegrationTests::CollectionViewSourceGroupConverter()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto groupKeyOf = [](Object^ group)
+            {
+                auto provider = safe_cast<ICustomPropertyProvider^>(group);
+                return safe_cast<String^>(provider->GetCustomProperty(L"Key")->GetValue(group));
+            };
+
+            VERIFY_IS_NULL((ref new PropertyGroupDescription(L"Int32Property"))->Converter);
+
+            auto converter = ref new ParityGroupKeyConverter();
+            auto description = ref new PropertyGroupDescription(L"Int32Property", converter);
+            VERIFY_IS_TRUE(description->Converter == converter);
+            VERIFY_ARE_STRINGS_EQUAL(L"Int32Property", description->PropertyName->Data());
+
+            LOG_OUTPUT(L"The converter maps each property value to its group key.");
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = MakeShapingSource();
+            cvs->GroupDescriptions->Append(description);
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_IS_NOT_NULL(groups);
+            VERIFY_ARE_EQUAL(2u, groups->Size);
+
+            auto odd = safe_cast<ICollectionViewGroup^>(groups->GetAt(0));
+            auto even = safe_cast<ICollectionViewGroup^>(groups->GetAt(1));
+            VERIFY_ARE_STRINGS_EQUAL(L"odd", groupKeyOf(odd->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(odd->GroupItems)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"even", groupKeyOf(even->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"dc", ShapingNamesOf(even->GroupItems)->Data());
+        });
+    }
+
     void BindingIntegrationTests::VerifyBoolToVisibilityConverter()
     {
         TestCleanupWrapper cleanup;

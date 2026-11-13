@@ -28,6 +28,7 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Converter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue) override { return This()->get_Converter(ppValue); }
         IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) override { return This()->get_PropertyName(pValue); }
     };
 }
@@ -63,6 +64,8 @@ namespace DirectUI
 
 
         // Properties.
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Converter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue);
+        _Check_return_ HRESULT put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_PropertyName(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_PropertyName(_In_opt_ HSTRING value);
 
@@ -80,6 +83,7 @@ namespace DirectUI
         // Customized methods.
 
         // Fields.
+        ctl::ComPtr<ABI::Microsoft::UI::Xaml::Data::IValueConverter> m_pConverter;
         Microsoft::WRL::Wrappers::HString m_propertyName;
     };
 }
@@ -110,6 +114,7 @@ namespace DirectUI
     public:
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
+        IFACEMETHOD(CreateInstanceWithConverter)(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
 
         // Static properties.
 
@@ -129,6 +134,7 @@ namespace DirectUI
 
     private:
         _Check_return_ HRESULT CreateInstanceImpl(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithConverterImpl(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
 
         // Customized static properties.
 

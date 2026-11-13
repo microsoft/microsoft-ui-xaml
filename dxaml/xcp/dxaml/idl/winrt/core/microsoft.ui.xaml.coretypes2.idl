@@ -2056,7 +2056,9 @@ namespace Microsoft.UI.Xaml.Data
     runtimeclass PropertyGroupDescription
     {
         [method_name("CreateInstance")] PropertyGroupDescription(String propertyName);
+        [method_name("CreateInstanceWithConverter")] PropertyGroupDescription(String propertyName, Microsoft.UI.Xaml.Data.IValueConverter converter);
         String PropertyName{ get; };
+        Microsoft.UI.Xaml.Data.IValueConverter Converter{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
