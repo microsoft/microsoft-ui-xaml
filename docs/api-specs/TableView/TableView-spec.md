@@ -415,13 +415,13 @@ Selection is also independent of the current cell: the current cell is unaffecte
 
 ### Grouping rows
 
-Grouping is declared on the **data source**, not on the control. Wrap your collection in a `TableViewSource`, declare a `GroupBy`, and hand that to `ItemsSource`:
+Grouping, like sorting and filtering, is declared on the **data**, not on the control. Wrap your collection in a `CollectionViewSource`, add a `PropertyGroupDescription`, and hand its `View` to `ItemsSource`:
 
 ```csharp
-var source = TableViewSource.From(People)
-                            .GroupBy(item => ((Person)item).Department);
+var source = new CollectionViewSource { Source = People };
+source.GroupDescriptions.Add(new PropertyGroupDescription("Department"));
 
-PeopleTable.ItemsSource = source;
+PeopleTable.ItemsSource = source.View;
 ```
 
 ```xaml
@@ -439,36 +439,9 @@ PeopleTable.ItemsSource = source;
 
 `GroupHeaderTemplate` fills only the **content region** of the control-owned group-header band; the chevron and the themed background stay with the control, so a header template cannot accidentally remove the expander. Its data context is a `TableViewGroupInfo`, which exposes the raw `Key` and `ItemCount` as well as the culture-formatted `KeyText` and `ItemCountText`. Binding only `Key`/`ItemCount` costs nothing extra — the formatted strings are computed lazily.
 
-The group key is any object, but its **string identity** is what buckets rows. `String`, `Int32`, `Int64`, `Guid`, `Boolean` and enum keys have a built-in identity and work with the single-argument overload. A key of any other (reference) type needs the two-argument overload, which names the identity explicitly:
+Groups are keyed by the **value** at the group path. Grouping composes with the view's `Filter` and `SortDescriptions`: a filter runs first, so a group whose last remaining row is filtered out disappears, and the sort orders rows within each group. See [Using a CollectionViewSource](#using-a-collectionviewsource) for the full shaping surface.
 
-```csharp
-var source = TableViewSource.From(People)
-                            .GroupBy(item => ((Person)item).Team,          // key object
-                                     key => ((Team)key).Id);               // stable string identity
-```
-
-The identity selector receives the key object returned by the key selector, not the original source item.
-
-If an identity cannot be produced — it is empty, it is not a string, the selector throws, or two genuinely different keys collapse onto the same identity without the identity overload — the call **throws** rather than quietly rendering an ungrouped table, so the mistake surfaces at development time.
-
-This includes a key that is `null` or the **empty string**, even though `String` is a supported key type: `""` is not a usable bucket identity. Group on a property that can be blank or null and you must supply the fallback yourself:
-
-```csharp
-.GroupBy(item => ((Person)item).Department is string d && d.Length > 0 ? d : "(none)")
-```
-
-Grouping composes with filtering and sorting, and the order of the calls never matters. By default (`SortGroups(None)`) each group appears where its first item falls in the filtered, sorted sequence, as in WPF, so sorting the rows can also reorder the groups. To keep groups in key order regardless of the row sort, pin it with `SortGroups`:
-
-```csharp
-var source = TableViewSource.From(People)
-                            .Filter(item => item is Person p && p.IsActive)
-                            .GroupBy(item => ((Person)item).Department)
-                            .SortGroups(SortDirection.Ascending)           // pins the GROUPS to key order
-                            .Sort("Name", SortDirection.Ascending)         // orders rows WITHIN each group
-                            .ThenSort("Id", SortDirection.Ascending);      // tie-breaker
-```
-
-`Sort` replaces every item sort level; `ThenSort` appends one. A column-header sort also replaces the item sort levels and keeps `SortGroups`: with `SortGroups(None)` it can reorder the groups, with `Ascending`/`Descending` it only reorders rows within each group. A filter always runs first, so a group whose last remaining row is filtered out disappears entirely. `ClearGroupBy()` removes grouping; a second `GroupBy` replaces the first rather than nesting, since v1 is single-level.
+The view reads the grouped-on value when it refreshes, not on `PropertyChanged`: after changing a row's group value, call `source.Refresh()` to move the row. Turning grouping on or off gives the `CollectionViewSource` a new `View`; assign it to `ItemsSource` again.
 
 Every group can be expanded and collapsed by clicking or tapping the header band, or through its UI Automation `ExpandCollapse` pattern. From code, expand or collapse one group by key, or every group at once:
 
@@ -481,7 +454,7 @@ PeopleTable.CollapseAllGroups();
 
 `GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, whatever caused it.
 
-Expansion is remembered as intent about a **group identity**, not as state on a group object, so collapsing a group and then re-sorting, re-filtering or regrouping keeps that group collapsed — and a group that appears later inherits whatever `ExpandAllGroups`/`CollapseAllGroups` last established, rather than an intent nobody expressed about it.
+Expansion is remembered as intent about a **group key**, not as state on a group object, so collapsing a group and then re-sorting, re-filtering or refreshing keeps that group collapsed — and a group that appears later inherits whatever `ExpandAllGroups`/`CollapseAllGroups` last established, rather than an intent nobody expressed about it.
 
 One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Use `IndexOf(item)` to get an item's index in that space. Headers themselves are never selectable — `Select(index)` on a header index is a no-op that keeps the current selection, `IsSelected` on it is `false`, and keyboard selection-follows-focus leaves the selection alone while focus is on a header. `StartBringItemIntoView` does accept a header index and brings the band into view.
 
@@ -514,7 +487,31 @@ One thing to know when combining grouping with selection: group headers occupy t
 
 `TableViewGroupInfo.Key` is the group object (`ICollectionViewGroup.Group`), so `ExpandGroup`/`CollapseGroup` take that object, and `GroupHeaderTemplate` binds to it as usual. Adding or removing items and groups in the source updates the table.
 
-The view stays in charge of its shape: TableView does not sort, filter or regroup it. A column-header sort raises `Sorting` and then leaves the rows alone, without lighting an arrow or raising `Sorted`; sort the view's source in the handler and set `TableViewColumn.SortDirection` to show the arrow. For sorting, filtering and grouping done by the table, use `TableViewSource`. Current-item synchronization (`ICollectionView.CurrentItem`) is not supported.
+The view stays in charge of its shape: TableView renders the rows and groups the view produces. A view created by `CollectionViewSource` also implements `ICollectionViewShaping`, and `CollectionViewSource` exposes the same surface:
+
+| Member | Description |
+|---|---|
+| `SortDescriptions` | Ordered `SortDescription(propertyName, direction)` levels. A column-header click writes the column's `SortMemberPath` here as the single level, and the column arrow follows the primary level, including one set by code. |
+| `Filter` | A `CollectionViewFilter` predicate; `null` shows every row. |
+| `GroupDescriptions` | `PropertyGroupDescription(propertyName)`; one level in this release. |
+| `Refresh()` | Re-runs the filter, sort and grouping. A property edit is not a collection change, so call it after changing a sorted, filtered or grouped value. |
+
+A column with a `CustomSortComparer` cannot sort a `CollectionViewSource` view from its header: the view sorts by property path. For any other `ICollectionView`, a column-header sort raises `Sorting` and then leaves the rows alone, without lighting an arrow or raising `Sorted`; sort the view's source in the handler and set `TableViewColumn.SortDirection` to show the arrow. A plain collection (not a view) is sorted by the table itself on a header click. Current-item synchronization (`ICollectionView.CurrentItem`) is not supported.
+
+> `TableViewSource`, the table-specific shaping source of earlier previews, has been removed; `CollectionViewSource` replaces it. See [Hierarchical rows](#hierarchical-rows) for the parent-key relation it used to declare.
+
+### Hierarchical rows
+
+A flat collection whose items name their parent can be shown as a tree. Set `ItemKeyPath` to the property that holds each item's unique key and `ParentKeyPath` to the property that holds its parent's key:
+
+```xaml
+<tabular:TableView ItemsSource="{x:Bind Employees}" ItemKeyPath="EmployeeId" ParentKeyPath="ManagerId">
+```
+
+A row whose parent key is `null` is a root, and a row whose parent key matches no item is shown as an orphan root. Rows start collapsed; the chevron, the keyboard (Right, Left, `*`), UI Automation `ExpandCollapse`, `ExpandAllRows` and `CollapseAllRows` expand them. Duplicate keys and cycles throw `E_INVALIDARG` and keep the previous projection. Changing either path replaces the relation and collapses every row; clearing either path shows the rows flat.
+
+The relation works over a plain collection and over a `CollectionViewSource` view. With a view, the view's filter and sort run first: siblings keep the view's order, and a match whose parent is filtered out is shown as a root. With a grouped view, each root is placed in its group and keeps its subtree. A key edit is not a collection change: call `Refresh()` on the view (or replace the item) to reparent a row. A hierarchy description on `CollectionViewSource` itself is future work.
+
 
 ### Editing cells
 
@@ -579,6 +576,8 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. An `ICollectionView` (for example `CollectionViewSource.View`) is shown read-only, including its `CollectionGroups`; see [Using a CollectionViewSource](#using-a-collectionviewsource). |
+| `ItemKeyPath` | `String` | `""` | Property path of each item's unique key. With `ParentKeyPath`, shows the rows as a tree; see [Hierarchical rows](#hierarchical-rows). |
+| `ParentKeyPath` | `String` | `""` | Property path of each item's parent key; `null` makes a root. Rows are flat while either path is empty. Duplicate keys or a cycle throw `E_INVALIDARG`. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
@@ -655,41 +654,21 @@ These are understood and deliberately not addressed by single selection:
 
 ## TableView grouping members
 
-Grouping itself is declared on the data source (`TableViewSource.GroupBy`); the control contributes presentation, expand/collapse commands and expansion events.
+Grouping itself is declared on the data (`CollectionViewSource.GroupDescriptions`); the control contributes presentation, expand/collapse commands and expansion events.
 
 | Member | Kind | Description |
 |---|---|---|
 | `GroupHeaderTemplate` | `DataTemplate` DP | Content template for the group-header band. The data context is a `TableViewGroupInfo`. |
-| `ExpandGroup(Object groupKey)` | method | Expands the group whose key matches. The key is resolved to a group identity exactly as `GroupBy` does (the built-in identity, or the source's `TableViewGroupIdentitySelector`), so a null key and `""` never match each other. An unknown key, or a group already expanded, is a no-op and raises no event. |
+| `ExpandGroup(Object groupKey)` | method | Expands the group whose key matches. The key is matched by value against the view's group keys, so a null key and `""` never match each other. An unknown key, or a group already expanded, is a no-op and raises no event. |
 | `CollapseGroup(Object groupKey)` | method | Collapses the matching group, on the same terms. |
 | `ExpandAllGroups()` | method | Expands every group, including groups that do not exist yet — it moves the default rather than looping over the realized headers. No-op when the source is not grouped. |
 | `CollapseAllGroups()` | method | Collapses every group, on the same terms. No-op when the source is not grouped. |
 | `GroupExpanding` | event (`TableViewGroupExpandingEventArgs`: `GroupKey`) | Raised synchronously before a group expands. Not cancellable. Once raised, the direction is pinned: a handler that calls `ExpandGroup` on the same group is a no-op. |
 | `GroupCollapsed` | event (`TableViewGroupCollapsedEventArgs`: `GroupKey`) | Raised after a group collapses. |
 
-`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily); the control defers the source's refresh while `GroupExpanding` runs, so the change is coalesced into one reshape and the expansion is kept. An exception thrown by a group-event handler is contained and logged.
+`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily). An exception thrown by a group-event handler is contained and logged.
 
-Expansion is stored as intent keyed by a group's **identity**, so it survives a reshape (sort, filter, or regroup) that re-creates every group object. Setting the bulk state also resets per-group exceptions, which is what makes "collapse all, then expand two, then re-sort" behave the way the user expects.
-
-## TableViewSource grouping verbs
-
-`TableViewSource` wraps an app collection and declares the shape the control should render. It accepts the same collection interfaces as `ItemsSourceView`; anything else throws `E_INVALIDARG`. The verbs change this source and return it, so they chain. The full member list (`Filter`, `Sort`, `ThenSort`, `SortGroups`, `ParentBy`, `Refresh`, `DeferRefresh`, `Source`, `IsLiveShaping`) and its contracts are in the [API review](../../design-notes/TabularControls/TableView-API-Review.md#21-data-and-shaping-tableviewsource).
-
-| Member | Returns | Description |
-|---|---|---|
-| `TableViewSource.From(Object items)` | `TableViewSource` | Wraps a collection. The projection is populated by the time `From` returns. `Source` returns `items`. |
-| `GroupBy(TableViewKeySelector keySelector)` | `TableViewSource` | Groups rows by the key the selector returns. The key's identity must be resolvable by the built-in value-type identity (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, enum). A null `keySelector` throws `E_INVALIDARG`; use `ClearGroupBy()` to remove grouping. |
-| `GroupBy(TableViewKeySelector keySelector, TableViewGroupIdentitySelector groupIdentitySelector)` | `TableViewSource` | Same, with the group's stable string identity supplied explicitly. Required for reference-typed keys. Supplying an identity selector is also the opt-in that makes two distinct key instances sharing one identity intentional rather than a collision. A null `groupIdentitySelector` selects the built-in identity. |
-| `SortGroups(SortDirection direction)` | `TableViewSource` | `Ascending`/`Descending` orders groups by key, and item sorts then order rows only within groups. `None` (the default) orders groups by the position of each group's first item in the filtered, item-sorted sequence (source order when there is no item sort), matching WPF `ListCollectionView`. Survives `GroupBy` replacement, `ClearGroupBy`, `ClearSort`, `Sort` and column-header sorts. |
-| `ClearGroupBy()` | `TableViewSource` | Removes grouping. |
-
-Contract notes:
-
-- **Single level.** A second `GroupBy` replaces the first; grouping axes do not nest or stack.
-- **Fail fast.** An identity that is empty, non-string, produced by a throwing selector, or shared by two genuinely different keys without the identity overload throws `hresult_invalid_argument` at the point the projection is built. The projection does not silently fall back to ungrouped. A `null` key and an empty-string key are both rejected on these terms, so a group key derived from a nullable or possibly-blank property must be coalesced to a real label by the app.
-- **Ordering.** Group order never depends on call order. `Sort`/`ThenSort` order rows within each group, whether declared before or after `GroupBy`; under `SortGroups(None)` they also determine group order through each group's first item. A filter applies before either, and a group whose last member is filtered out disappears.
-- **Rows are identified by object identity.** There is no app-supplied row key, so selection and focus re-anchor across a reshape, but not across an item being re-created; the same object appearing in two rows fails fast.
-- **UI-thread affine**, like any XAML items source. The wrapped collection must also raise its change notifications on that thread.
+Expansion is stored as intent keyed by a group's **key**, so it survives a reshape (sort, filter, or refresh) that re-creates every group object. Setting the bulk state also resets per-group exceptions, which is what makes "collapse all, then expand two, then re-sort" behave the way the user expects.
 
 ## TableViewGroupInfo class
 
@@ -697,7 +676,7 @@ The read-only projection a `GroupHeaderTemplate` binds against. It implements `I
 
 | Property | Type | Description |
 |---|---|---|
-| `Key` | `Object` | The `GroupBy` key for this group. |
+| `Key` | `Object` | The group key: the value at the `PropertyGroupDescription` path (or `ICollectionViewGroup.Group` for any other grouped view). |
 | `ItemCount` | `Int32` | Number of members in the group. |
 | `IsExpandable` | `Boolean` | `false` when the group cannot expand (for example, it has no members). |
 | `IsExpanded` | `Boolean` | Current expansion state. |
@@ -1174,7 +1153,7 @@ A column header exposes the Transform pattern (required by UIA for a resizable `
 # API Details
 
 ```idl
-// Generated from TabularShaping/SortDirection.idl, TableView/TableViewSource.idl, TableView/TableView.idl and
+// Generated from TabularShaping/SortDirection.idl, TableView/TableView.idl and
 // dll-tabular/Microsoft.UI.Xaml.Controls.Tabular.idl (TabularControlsResources). Property-changed-callback
 // attributes and the [MUX_INTERNAL] TableViewRowTemplateSelector are omitted. XamlControlsTabularXamlMetaDataProvider
 // (IXamlMetadataProvider) is declared in the Microsoft.UI.Xaml.XamlTypeInfo namespace.
@@ -1188,50 +1167,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Ascending = 1,
         Descending = 2,
     };
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    delegate Boolean TableViewPredicate(Object item);
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    delegate Object TableViewKeySelector(Object item);
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    delegate String TableViewGroupIdentitySelector(Object item);
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewSource
-    {
-        Boolean IsLiveShaping { get; set; };
-        Object Source { get; };
-
-        TableViewSource Filter(TableViewPredicate predicate);
-        [default_overload] [method_name("GroupBy")]
-        TableViewSource GroupBy(TableViewKeySelector keySelector);
-        [method_name("GroupByWithIdentity")]
-        TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewGroupIdentitySelector groupIdentitySelector);
-        TableViewSource SortGroups(SortDirection direction);
-        [method_name("SortByPath")]
-        TableViewSource Sort(String sortMemberPath, SortDirection direction);
-        [default_overload] [method_name("Sort")]
-        TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
-        [method_name("ThenSortByPath")]
-        TableViewSource ThenSort(String sortMemberPath, SortDirection direction);
-        [default_overload] [method_name("ThenSort")]
-        TableViewSource ThenSort(TableViewKeySelector keySelector, SortDirection direction);
-        TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
-        TableViewSource ClearFilter();
-        TableViewSource ClearGroupBy();
-        TableViewSource ClearSort();
-        TableViewSource ClearParentBy();
-        void Refresh();
-        Windows.Foundation.IClosable DeferRefresh();
-
-        static TableViewSource From(Object items);
-    }
 
     [MUX_PREVIEW]
     [webhosthidden]
@@ -1491,6 +1426,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         TableView();
 
         Object ItemsSource { get; set; };
+        String ItemKeyPath { get; set; };
+        String ParentKeyPath { get; set; };
 
         Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
 
@@ -1550,6 +1487,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupCollapsedEventArgs> GroupCollapsed;
 
         static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty ItemKeyPathProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty ParentKeyPathProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
@@ -1804,7 +1743,7 @@ Cut from V1 and deferred to V2; it can return additively:
 
 - Replacing DataGrid.
 - Marquee selection.
-- Multi-column sort from the column headers (TableViewSource.ThenSort provides multi-level sort from code).
+- Multi-column sort from the column headers (`CollectionViewSource.SortDescriptions` provides multi-level sort from code).
 - Column virtualization.
 - Row headers.
 - Hierarchy deeper than two levels; row drag-drop.

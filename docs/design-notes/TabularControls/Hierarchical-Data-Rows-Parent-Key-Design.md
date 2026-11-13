@@ -2,16 +2,20 @@
 
 Status: **implemented** (decisions in §13).
 
+> **Public surface changed.** The public `TableViewSource` is removed (data shaping is
+> `CollectionViewSource`). The relation is now declared with `TableView.ItemKeyPath` and
+> `ParentKeyPath` (property paths), which drive the internal `ParentBy` of the engine described
+> here (`TableViewShapingSource` → `ShapedItemsSource`). Selector-based `ParentBy`, `ClearParentBy`
+> and `IsLiveShaping` below are internal engine verbs, no longer public API.
+
 ## 1. Motivation
 
 `TableView` reads hierarchy **from a relation inside a flat collection**: every item is a row
-candidate, and two key selectors say "this is my key" and "this is my parent's key".
+candidate, and two key paths say "this is my key" and "this is my parent's key".
 
-```csharp
-var byManager = TableViewSource.From(employees).ParentBy(
-    item => ((Employee)item).Id, item => ((Employee)item).ManagerId);
-var byMentor  = TableViewSource.From(employees).ParentBy(
-    item => ((Employee)item).Id, item => ((Employee)item).MentorId);
+```xml
+<tv:TableView ItemsSource="{x:Bind Employees}" ItemKeyPath="Id" ParentKeyPath="ManagerId" />
+<tv:TableView ItemsSource="{x:Bind Employees}" ItemKeyPath="Id" ParentKeyPath="MentorId" />
 ```
 
 Why:
@@ -43,31 +47,24 @@ It can be added later as a separate verb over the same adapter (§11).
 ## 2. Public API
 
 ```idl
-// Existing delegate, reused for both selectors. No new delegate types.
-delegate Object TableViewKeySelector(Object item);
-
-runtimeclass TableViewSource
-{
-    // Declares the source a HIERARCHY defined by a parent-key relation over its own items.
-    //
-    // keySelector:       the item's own key.
-    // parentKeySelector: the key of the item's parent. Null means "root".
-    //
-    // Both required and non-null (E_INVALIDARG otherwise; use ClearParentBy() to remove).
-    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
-
-    TableViewSource ClearParentBy();
-
-    // Opt-in (default false). Reshapes when an item's PropertyChanged moves a value a verb reads.
-    Boolean IsLiveShaping { get; set; };
-}
-
 runtimeclass TableView
 {
+    // Property paths of each item's key and of its parent's key. Both non-empty: the rows nest
+    // (internally ParentBy with path key selectors); either empty: ClearParentBy.
+    String ItemKeyPath { get; set; };
+    String ParentKeyPath { get; set; };
+
     // Bulk node expansion, separate from the group verbs.
     void ExpandAllRows();
     void CollapseAllRows();
 }
+```
+
+The engine verbs the paths drive (internal, on `TableViewShapingSource`):
+
+```cpp
+void ParentBy(KeySelector keySelector, KeySelector parentKeySelector); // parentKey null => root
+void ClearParentBy();
 ```
 
 Rows are presented through the `TableViewRowIndentSize` and `TableViewRowExpanderSize` theme
@@ -455,7 +452,7 @@ back to one Rebuild and a single Reset.
 
 | Component | Role |
 | --- | --- |
-| `TableViewSource.idl` | `ParentBy` / `ClearParentBy`. |
+| `TableView.idl` / `TableView::ApplyHierarchyPaths` | `ItemKeyPath` / `ParentKeyPath` → internal `ParentBy` / `ClearParentBy` on `TableViewShapingSource`. |
 | `ParentKeyIndex` / `ParentStructure` (layer 1) | Validate the relation; filter and sort it (§6.1). |
 | `ShapedItemsSource` hierarchy paths | Index build, filter inside the build, incremental bail-out, intent reset on redeclaration, adapter release on retraction (§6.2). |
 | `HierarchicalSourceAdapter` | Walk, splice and publish the visible rows (§6.3). |
@@ -578,7 +575,7 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
   `ShapedGroup::SetItems` makes the grouped adapter rebuild the grouped axis. Batch the re-slice:
   update only the slices that changed, then rebuild once.
 - **Row-axis descriptor.** `ProjectionKind` is a closed enumeration switched on in
-  `ShapedItemsSource`, `TableViewSource` and `RowMetadataProvider`, so a new kind of source (for
+  `ShapedItemsSource`, `TableViewShapingSource` and `RowMetadataProvider`, so a new kind of source (for
   example virtualized or asynchronous) means editing all three. The engine could publish a row-axis
   descriptor instead — source view, row-metadata provider, grouping status and expansion endpoints —
   keeping the enumeration only as diagnostic state.
