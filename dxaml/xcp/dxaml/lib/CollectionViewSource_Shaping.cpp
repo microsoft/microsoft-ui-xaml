@@ -377,6 +377,81 @@ namespace
         return 0;
     }
 
+    _Check_return_ HRESULT CreateSortSelectors(
+        _In_opt_ wfc::IVector<xaml_data::SortDescription*>* pDescriptions,
+        _Inout_ std::vector<ShapingKeySelector>* pSelectors)
+    {
+        UINT count = 0;
+        if (pDescriptions)
+        {
+            IFC_RETURN(pDescriptions->get_Size(&count));
+        }
+
+        for (UINT i = 0; i < count; ++i)
+        {
+            ctl::ComPtr<xaml_data::ISortDescription> spDescription;
+            IFC_RETURN(pDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
+            if (!spDescription)
+            {
+                continue;
+            }
+
+            wrl_wrappers::HString path;
+            xaml_data::ListSortDirection direction = xaml_data::ListSortDirection_Ascending;
+            ShapingKeySelector selector;
+            IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+            IFC_RETURN(spDescription->get_Direction(&direction));
+            IFC_RETURN(CreateKeySelector(path.Get(), &selector));
+            selector.isDescending = (direction == xaml_data::ListSortDirection_Descending);
+            pSelectors->push_back(std::move(selector));
+        }
+
+        return S_OK;
+    }
+
+    // Where a flat shaped view places one item: the sort keys (or the CustomSort), then the source
+    // index, which is the order the full recompute's stable sort produces.
+    struct ShapedPlacement
+    {
+        std::vector<ShapingKeySelector> selectors;
+        ctl::ComPtr<xaml_data::ICollectionViewComparer> customSort;
+
+        _Check_return_ HRESULT Compare(
+            _In_opt_ IInspectable* pLeft,
+            const std::vector<ctl::ComPtr<IInspectable>>& leftKeys,
+            UINT leftSourceIndex,
+            _In_opt_ IInspectable* pRight,
+            UINT rightSourceIndex,
+            _Out_ int* pResult) const
+        {
+            *pResult = 0;
+
+            if (customSort)
+            {
+                INT32 result = 0;
+                IFC_RETURN(customSort->Invoke(pLeft, pRight, &result));
+                *pResult = (result > 0) - (result < 0);
+            }
+            else
+            {
+                for (size_t i = 0; i < selectors.size() && *pResult == 0; ++i)
+                {
+                    ctl::ComPtr<IInspectable> spRightKey;
+                    IFC_RETURN(EvaluateKey(selectors[i], pRight, spRightKey.ReleaseAndGetAddressOf()));
+                    const int result = CompareKeys(leftKeys[i].Get(), spRightKey.Get());
+                    *pResult = selectors[i].isDescending ? -result : result;
+                }
+            }
+
+            if (*pResult == 0)
+            {
+                *pResult = (leftSourceIndex < rightSourceIndex) ? -1 : ((leftSourceIndex > rightSourceIndex) ? 1 : 0);
+            }
+
+            return S_OK;
+        }
+    };
+
     template <typename T>
     _Check_return_ HRESULT CreateShapingDescriptionCollection(
         _In_ CollectionViewSource* pOwner,
@@ -777,7 +852,7 @@ _Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable*
                 auto pegThis = ctl::try_make_autopeg(this);
                 if (pegThis)
                 {
-                    IFC_RETURN(RefreshShapedView());
+                    IFC_RETURN(OnShapedSourceVectorChanged(pArgs));
                 }
                 return S_OK;
             }));
@@ -794,6 +869,7 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
         ctl::ComPtr<IInspectable> item;
         std::vector<ctl::ComPtr<IInspectable>> sortKeys;
         ctl::ComPtr<IInspectable> groupKey;
+        UINT sourceIndex = 0;
     };
 
     std::vector<ShapingKeySelector> sortSelectors;
@@ -806,30 +882,13 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
     ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort = m_tpCustomSort.Get();
     std::vector<Entry> entries;
     std::vector<ctl::ComPtr<IInspectable>> outputItems;
+    std::vector<UINT> outputSourceIndices;
+    const UINT sourceChangeCount = m_shapedSourceChangeCount;
     UINT size = 0;
 
-    if (m_tpSortDescriptions && !spCustomSort)
+    if (!spCustomSort)
     {
-        UINT count = 0;
-        IFC_RETURN(m_tpSortDescriptions->get_Size(&count));
-        for (UINT i = 0; i < count; ++i)
-        {
-            ctl::ComPtr<xaml_data::ISortDescription> spDescription;
-            IFC_RETURN(m_tpSortDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
-            if (!spDescription)
-            {
-                continue;
-            }
-
-            wrl_wrappers::HString path;
-            xaml_data::ListSortDirection direction = xaml_data::ListSortDirection_Ascending;
-            ShapingKeySelector selector;
-            IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
-            IFC_RETURN(spDescription->get_Direction(&direction));
-            IFC_RETURN(CreateKeySelector(path.Get(), &selector));
-            selector.isDescending = (direction == xaml_data::ListSortDirection_Descending);
-            sortSelectors.push_back(std::move(selector));
-        }
+        IFC_RETURN(CreateSortSelectors(m_tpSortDescriptions.Get(), &sortSelectors));
     }
 
     // ICollectionViewGroup is single level, so only the first group description is used.
@@ -858,6 +917,7 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
     for (UINT i = 0; i < size; ++i)
     {
         Entry entry;
+        entry.sourceIndex = i;
         IFC_RETURN(m_tpShapedSource->GetAt(i, entry.item.ReleaseAndGetAddressOf()));
 
         if (spFilter)
@@ -925,9 +985,11 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
     if (!m_isShapedOutputGrouped)
     {
         outputItems.reserve(entries.size());
+        outputSourceIndices.reserve(entries.size());
         for (auto& entry : entries)
         {
             outputItems.push_back(std::move(entry.item));
+            outputSourceIndices.push_back(entry.sourceIndex);
         }
     }
     else
@@ -969,6 +1031,10 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
         }
     }
 
+    // Recorded before ReplaceAll raises, so a handler that changes the source sees consistent state.
+    m_shapedSourceIndices = std::move(outputSourceIndices);
+    m_shapedSourceSize = size;
+    m_areShapedSourceIndicesValid = !m_isShapedOutputGrouped && (sourceChangeCount == m_shapedSourceChangeCount);
     IFC_RETURN(static_cast<ShapedVector*>(m_tpShapedOutput.Get())->ReplaceAll(outputItems));
     return S_OK;
 }
@@ -1038,4 +1104,209 @@ void CollectionViewSource::DetachShapedSource()
     m_tpShapedSource.Clear();
     m_tpShapedOutput.Clear();
     m_isShapedOutputGrouped = false;
+    m_shapedSourceIndices.clear();
+    m_areShapedSourceIndicesValid = false;
+}
+
+_Check_return_ HRESULT CollectionViewSource::OnShapedSourceVectorChanged(_In_ wfc::IVectorChangedEventArgs* pArgs)
+{
+    wfc::CollectionChange change = wfc::CollectionChange_Reset;
+    UINT index = 0;
+    bool isApplied = false;
+
+    ++m_shapedSourceChangeCount;
+
+    // A change raised while computing (for example from a Filter callback) is not applied, and
+    // the next change recomputes fully.
+    if (!m_tpShapedOutput || m_isComputingShape)
+    {
+        m_areShapedSourceIndicesValid = false;
+        return S_OK;
+    }
+
+    if (m_deferRefreshLevel > 0)
+    {
+        m_areShapedSourceIndicesValid = false;
+        m_isRefreshPending = true;
+        return S_OK;
+    }
+
+    IFC_RETURN(pArgs->get_CollectionChange(&change));
+    IFC_RETURN(pArgs->get_Index(&index));
+
+    if (m_areShapedSourceIndicesValid && !m_isShapedOutputGrouped && change != wfc::CollectionChange_Reset)
+    {
+        IFC_RETURN(ApplyShapedSourceChange(change, index, &isApplied));
+    }
+
+    if (!isApplied)
+    {
+        IFC_RETURN(RefreshShapedView());
+    }
+
+    return S_OK;
+}
+
+// Applies one Add, Remove or Replace from the source to a flat shaped view as the matching vector
+// change, at the position a full recompute would give the item. Leaves *pIsApplied false when a
+// full recompute is needed instead.
+_Check_return_ HRESULT CollectionViewSource::ApplyShapedSourceChange(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied)
+{
+    auto pOutput = static_cast<ShapedVector*>(m_tpShapedOutput.Get());
+    const UINT sourceChangeCount = m_shapedSourceChangeCount;
+    const UINT notFound = static_cast<UINT>(-1);
+    UINT sourceSize = 0;
+    UINT oldPosition = notFound;
+    UINT newPosition = notFound;
+    ctl::ComPtr<IInspectable> spItem;
+    HRESULT hr = S_OK;
+
+    *pIsApplied = false;
+
+    IFC_RETURN(m_tpShapedSource->get_Size(&sourceSize));
+    if (change != wfc::CollectionChange_ItemInserted && change != wfc::CollectionChange_ItemRemoved && change != wfc::CollectionChange_ItemChanged)
+    {
+        return S_OK;
+    }
+
+    // The source has already changed; a size or index that does not match ours means a missed change.
+    const UINT expectedSize = m_shapedSourceSize
+        + ((change == wfc::CollectionChange_ItemInserted) ? 1 : 0)
+        - ((change == wfc::CollectionChange_ItemRemoved) ? 1 : 0);
+    if (sourceSize != expectedSize || index >= ((sourceSize > m_shapedSourceSize) ? sourceSize : m_shapedSourceSize))
+    {
+        return S_OK;
+    }
+    m_shapedSourceSize = sourceSize;
+
+    auto found = std::find(m_shapedSourceIndices.begin(), m_shapedSourceIndices.end(), index);
+    if (change != wfc::CollectionChange_ItemInserted && found != m_shapedSourceIndices.end())
+    {
+        oldPosition = static_cast<UINT>(found - m_shapedSourceIndices.begin());
+    }
+
+    if (change == wfc::CollectionChange_ItemInserted)
+    {
+        for (auto& sourceIndex : m_shapedSourceIndices)
+        {
+            if (sourceIndex >= index)
+            {
+                ++sourceIndex;
+            }
+        }
+    }
+
+    // App code (Filter, property getters, CustomSort) runs only here.
+    if (change != wfc::CollectionChange_ItemRemoved)
+    {
+        IFC_RETURN(m_tpShapedSource->GetAt(index, spItem.ReleaseAndGetAddressOf()));
+
+        m_isComputingShape = true;
+        hr = [&]() -> HRESULT
+        {
+            ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
+            ShapedPlacement placement;
+            std::vector<ctl::ComPtr<IInspectable>> keys;
+
+            if (spFilter)
+            {
+                boolean accepted = true;
+                IFC_RETURN(spFilter->Invoke(spItem.Get(), &accepted));
+                if (!accepted)
+                {
+                    return S_OK;
+                }
+            }
+
+            placement.customSort = m_tpCustomSort.Get();
+            if (!placement.customSort)
+            {
+                IFC_RETURN(CreateSortSelectors(m_tpSortDescriptions.Get(), &placement.selectors));
+                for (const auto& selector : placement.selectors)
+                {
+                    ctl::ComPtr<IInspectable> spKey;
+                    IFC_RETURN(EvaluateKey(selector, spItem.Get(), spKey.ReleaseAndGetAddressOf()));
+                    keys.push_back(std::move(spKey));
+                }
+            }
+
+            // Upper bound over the output without the replaced item.
+            const UINT count = static_cast<UINT>(m_shapedSourceIndices.size()) - ((oldPosition != notFound) ? 1 : 0);
+            UINT low = 0;
+            UINT high = count;
+            while (low < high)
+            {
+                const UINT middle = low + (high - low) / 2;
+                const UINT position = (oldPosition != notFound && middle >= oldPosition) ? middle + 1 : middle;
+                ctl::ComPtr<IInspectable> spOther;
+                int result = 0;
+                IFC_RETURN(pOutput->GetAt(position, spOther.ReleaseAndGetAddressOf()));
+                IFC_RETURN(placement.Compare(spItem.Get(), keys, index, spOther.Get(), m_shapedSourceIndices[position], &result));
+                if (result < 0)
+                {
+                    high = middle;
+                }
+                else
+                {
+                    low = middle + 1;
+                }
+            }
+
+            newPosition = low;
+            return S_OK;
+        }();
+        m_isComputingShape = false;
+        IFC_RETURN(hr);
+
+        if (sourceChangeCount != m_shapedSourceChangeCount)
+        {
+            return S_OK;
+        }
+    }
+
+    // Bookkeeping first, then the notifications, each matching the output at the time it is raised.
+    m_isComputingShape = true;
+    hr = [&]() -> HRESULT
+    {
+        if (oldPosition != notFound && oldPosition == newPosition)
+        {
+            IFC_RETURN(pOutput->InternalSetAt(oldPosition, spItem.Get()));
+            return S_OK;
+        }
+
+        if (oldPosition != notFound)
+        {
+            m_shapedSourceIndices.erase(m_shapedSourceIndices.begin() + oldPosition);
+        }
+
+        if (change == wfc::CollectionChange_ItemRemoved)
+        {
+            for (auto& sourceIndex : m_shapedSourceIndices)
+            {
+                if (sourceIndex > index)
+                {
+                    --sourceIndex;
+                }
+            }
+        }
+
+        if (oldPosition != notFound)
+        {
+            IFC_RETURN(pOutput->InternalRemoveAt(oldPosition));
+        }
+
+        if (newPosition != notFound)
+        {
+            m_shapedSourceIndices.insert(m_shapedSourceIndices.begin() + newPosition, index);
+            IFC_RETURN(pOutput->InternalInsertAt(newPosition, spItem.Get()));
+        }
+
+        return S_OK;
+    }();
+    m_isComputingShape = false;
+    IFC_RETURN(hr);
+
+    // A handler changed the source while the change was raised: recompute fully.
+    *pIsApplied = (sourceChangeCount == m_shapedSourceChangeCount);
+    return S_OK;
 }

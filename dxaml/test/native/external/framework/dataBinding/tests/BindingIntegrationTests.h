@@ -313,6 +313,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify PropertyGroupDescription.Converter maps property values to group keys")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceIncrementalUpdates)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a flat shaped view applies source Add, Remove and Replace as matching vector changes at sorted positions instead of a Reset")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()
