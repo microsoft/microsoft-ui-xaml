@@ -65,7 +65,6 @@ public:
     // Helper functions
     void PrepareView(winrt::TreeViewNode const& originNode);
     void SetOwners(winrt::TreeViewList const& owningList, winrt::TreeView const& owningTreeView);
-    winrt::TreeViewList ListControl();
     bool IsInSingleSelectionMode();
     bool IsNodeSelected(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState NodeSelectionState(winrt::TreeViewNode const& targetNode);
@@ -77,6 +76,8 @@ public:
     void NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
 
     winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
+    winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
 
 private:
     tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{ this };

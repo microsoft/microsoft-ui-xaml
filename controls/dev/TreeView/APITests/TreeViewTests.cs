@@ -2579,6 +2579,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TreeViewNode p = null, q = null;
             object flatList = null;
             IList<TreeViewNode> selectedNodes = null;
+            IList<object> selectedItems = null;
             WeakReference treeViewReference = null, listControlReference = null;
             var unloaded = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
@@ -2588,7 +2589,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 q = new TreeViewNode() { Content = "Q" };
                 a.Children.Add(new TreeViewNode() { Content = "A0" });
                 p.Children.Add(a);
-                ShowAndRemoveTreeView(unloaded, new[] { p, q }, out treeViewReference, out listControlReference, out flatList, out selectedNodes);
+                ShowAndRemoveTreeView(unloaded, new[] { p, q }, out treeViewReference, out listControlReference, out flatList, out selectedNodes, out selectedItems);
             });
             Verify.IsTrue(unloaded.WaitOne(TimeSpan.FromSeconds(10)), "The TreeView is unloaded");
 
@@ -2606,17 +2607,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var rows = flatList as IObservableVector<object>;
-                Verify.AreEqual("P,A,A0,Q", String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string)));
+                Func<string> describeRows = () => String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string));
+                Verify.AreEqual("P,A,A0,Q", describeRows());
 
-                p.Children.Add(new TreeViewNode() { Content = "P1" });
+                var p1 = new TreeViewNode() { Content = "P1" };
+                var p2 = new TreeViewNode() { Content = "P2" };
+                p.Children.Add(p1);
+                Verify.IsTrue(selectedNodes.Contains(p1), "A new child of a selected node is selected");
+                p.Children.Add(p2);
                 q.Children.Add(new TreeViewNode() { Content = "Q0" });
                 p.IsExpanded = false;
                 p.IsExpanded = true;
-                selectedNodes.Remove(p);
-                p.Children.Clear();
+                Verify.AreEqual("P,A,A0,P1,P2,Q", describeRows());
+                Verify.AreEqual(5, selectedNodes.Count);
+                Verify.AreEqual(5, selectedItems.Count);
 
-                Verify.IsFalse(selectedNodes.Contains(p));
-                Verify.AreEqual("P,Q", String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string)));
+                selectedNodes.Remove(p2);
+                Verify.IsFalse(selectedNodes.Contains(p2));
+                Verify.AreEqual(selectedNodes.Count, selectedItems.Count);
+
+                selectedNodes.Add(p);
+                selectedNodes.Remove(p);
+                Verify.AreEqual(0, selectedNodes.Count);
+                Verify.AreEqual(0, selectedItems.Count);
+
+                p.Children.Clear();
+                Verify.AreEqual("P,Q", describeRows());
             });
             GC.KeepAlive(flatList);
         }
@@ -2624,7 +2640,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // NoInlining, so no local here keeps the TreeView alive.
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private void ShowAndRemoveTreeView(AutoResetEvent unloaded, TreeViewNode[] rootNodes, out WeakReference treeViewReference,
-            out WeakReference listControlReference, out object flatList, out IList<TreeViewNode> selectedNodes)
+            out WeakReference listControlReference, out object flatList, out IList<TreeViewNode> selectedNodes, out IList<object> selectedItems)
         {
             var treeView = new TreeView() { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Multiple };
             foreach (var node in rootNodes)
@@ -2639,6 +2655,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
             flatList = listControl.ItemsSource;
             selectedNodes = treeView.SelectedNodes;
+            selectedItems = treeView.SelectedItems;
             treeViewReference = new WeakReference(treeView);
             listControlReference = new WeakReference(listControl);
             Content = null;

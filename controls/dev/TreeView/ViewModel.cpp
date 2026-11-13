@@ -105,13 +105,10 @@ void SelectedTreeNodeVector::InsertAtCore_NoContainsCheck(unsigned int index, wi
         auto selectedItems = viewModel->GetSelectedItems();
         if (selectedItems.Size() != Size())
         {
-            if (auto listControl = viewModel->ListControl())
+            if (auto item = viewModel->ItemFromNode(node))
             {
-                if (auto item = winrt::get_self<TreeViewList>(listControl)->ItemFromNode(node))
-                {
-                    winrt::get_self<SelectedItemsVector>(selectedItems)->InsertAt_NoContainsCheck(index, item);
-                    viewModel->TrackItemSelected(item);
-                }
+                winrt::get_self<SelectedItemsVector>(selectedItems)->InsertAt_NoContainsCheck(index, item);
+                viewModel->TrackItemSelected(item);
             }
         }
     }
@@ -174,12 +171,9 @@ void SelectedItemsVector::InsertAt_NoContainsCheck(unsigned int index, winrt::II
         auto selectedNodes = viewModel->GetSelectedNodes();
         if (selectedNodes.Size() != Size())
         {
-            if (auto listControl = viewModel->ListControl())
+            if (auto node = viewModel->NodeFromItem(item))
             {
-                if (auto node = winrt::get_self<TreeViewList>(listControl)->NodeFromItem(item))
-                {
-                    selectedNodes.InsertAt(index, node);
-                }
+                selectedNodes.InsertAt(index, node);
             }
         }
     }
@@ -566,11 +560,6 @@ void ViewModel::SetOwners(winrt::TreeViewList const& owningList, winrt::TreeView
     m_TreeView = winrt::make_weak(owningTreeView);
 }
 
-winrt::TreeViewList ViewModel::ListControl()
-{
-    return m_TreeViewList.get();
-}
-
 bool ViewModel::IsInSingleSelectionMode()
 {
     if (const auto listControl = m_TreeViewList.get())
@@ -918,6 +907,16 @@ winrt::TreeViewNode ViewModel::GetAssociatedNode(winrt::IInspectable item)
     }
 
     return nullptr;
+}
+
+winrt::IInspectable ViewModel::ItemFromNode(winrt::TreeViewNode const& node)
+{
+    return (m_isContentMode && node) ? node.Content() : static_cast<winrt::IInspectable>(node);
+}
+
+winrt::TreeViewNode ViewModel::NodeFromItem(winrt::IInspectable const& item)
+{
+    return m_isContentMode ? GetAssociatedNode(item) : item.try_as<winrt::TreeViewNode>();
 }
 
 bool ViewModel::IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& index)
