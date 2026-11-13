@@ -37,8 +37,11 @@ namespace DirectUI
         _Check_return_ HRESULT put_FilterImpl(_In_opt_ xaml_data::ICollectionViewFilter* pValue);
         _Check_return_ HRESULT RefreshImpl();
         _Check_return_ HRESULT DeferRefreshImpl(_Outptr_ wf::IClosable** ppReturnValue);
+        _Check_return_ HRESULT get_CustomSortImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewComparer** ppValue);
+        _Check_return_ HRESULT put_CustomSortImpl(_In_opt_ xaml_data::ICollectionViewComparer* pValue);
 
         _Check_return_ HRESULT OnShapingDescriptionsChanged();
+        _Check_return_ HRESULT OnSortDescriptionsChanged();
         _Check_return_ HRESULT EndDeferRefresh();
 
     private:
@@ -68,6 +71,8 @@ namespace DirectUI
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
         TrackerPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
         TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
+        TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
+        bool m_isApplyingCustomSort = false;
 
         // Non-null only while View is a shaped view.
         TrackerPtr<wfc::IVector<IInspectable*>> m_tpShapedSource;

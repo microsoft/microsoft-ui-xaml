@@ -1000,6 +1000,9 @@ private:
     winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping m_collectionViewShaping{ nullptr };
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::Microsoft::UI::Xaml::Data::SortDescription>::VectorChanged_revoker m_collectionViewSortChangedRevoker{};
     bool m_updatingCollectionViewSort{ false };
+    // The view's CustomSort this table installed for a CustomSortComparer column; the arrow stays
+    // on that column while the view still sorts with it.
+    winrt::Microsoft::UI::Xaml::Data::CollectionViewComparer m_collectionViewCustomSort{ nullptr };
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewShapingSource is bound, or when the projection is degraded and carries no shaped identity.
@@ -1113,8 +1116,8 @@ private:
     // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
     // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
     bool SyncTableViewShapingSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
-    // An ICollectionViewShaping source: the sort is written to the view's SortDescriptions, and the
-    // arrow follows the view's primary SortDescription.
+    // An ICollectionViewShaping source: the sort is written to the view's SortDescriptions (or, for a
+    // CustomSortComparer column, its CustomSort), and the arrow follows the view's primary SortDescription.
     bool CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const;
     bool SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     void ReconcileSortStateWithCollectionView();

@@ -78,8 +78,9 @@ namespace
     class __declspec(novtable) ShapingDescriptionCollection : public ObservableTrackerCollection<T>
     {
     public:
-        _Check_return_ HRESULT SetOwner(_In_ CollectionViewSource* pOwner)
+        _Check_return_ HRESULT SetOwner(_In_ CollectionViewSource* pOwner, bool isSortDescriptions)
         {
+            m_isSortDescriptions = isSortDescriptions;
             return ctl::AsWeak(pOwner, &m_ownerRef);
         }
 
@@ -96,7 +97,8 @@ namespace
                 IFC_RETURN(m_ownerRef.As(&spOwner));
                 if (spOwner)
                 {
-                    IFC_RETURN(spOwner.Cast<CollectionViewSource>()->OnShapingDescriptionsChanged());
+                    auto pOwner = spOwner.Cast<CollectionViewSource>();
+                    IFC_RETURN(m_isSortDescriptions ? pOwner->OnSortDescriptionsChanged() : pOwner->OnShapingDescriptionsChanged());
                 }
             }
 
@@ -105,6 +107,7 @@ namespace
 
     private:
         ctl::WeakRefPtr m_ownerRef;
+        bool m_isSortDescriptions = false;
     };
 
     // Read-only vector whose contents are replaced wholesale and announced with a single Reset.
@@ -377,11 +380,12 @@ namespace
     template <typename T>
     _Check_return_ HRESULT CreateShapingDescriptionCollection(
         _In_ CollectionViewSource* pOwner,
+        bool isSortDescriptions,
         _Outptr_ ShapingDescriptionCollection<T>** ppCollection)
     {
         ctl::ComPtr<ShapingDescriptionCollection<T>> spCollection;
         IFC_RETURN(ctl::ComObject<ShapingDescriptionCollection<T>>::CreateInstance(spCollection.ReleaseAndGetAddressOf()));
-        IFC_RETURN(spCollection->SetOwner(pOwner));
+        IFC_RETURN(spCollection->SetOwner(pOwner, isSortDescriptions));
         *ppCollection = spCollection.Detach();
         return S_OK;
     }
@@ -478,6 +482,23 @@ IFACEMETHODIMP CollectionView::put_Filter(_In_opt_ xaml_data::ICollectionViewFil
     return S_OK;
 }
 
+IFACEMETHODIMP CollectionView::get_CustomSort(_Outptr_result_maybenull_ xaml_data::ICollectionViewComparer** ppValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->get_CustomSortImpl(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionView::put_CustomSort(_In_opt_ xaml_data::ICollectionViewComparer* pValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->put_CustomSortImpl(pValue));
+    return S_OK;
+}
+
 IFACEMETHODIMP CollectionView::Refresh()
 {
     ctl::ComPtr<CollectionViewSource> spOwner;
@@ -501,7 +522,7 @@ _Check_return_ HRESULT CollectionViewSource::get_SortDescriptionsImpl(_Outptr_ w
     if (!m_tpSortDescriptions)
     {
         ctl::ComPtr<ShapingDescriptionCollection<xaml_data::SortDescription*>> spCollection;
-        IFC_RETURN(CreateShapingDescriptionCollection(this, spCollection.ReleaseAndGetAddressOf()));
+        IFC_RETURN(CreateShapingDescriptionCollection(this, true /* isSortDescriptions */, spCollection.ReleaseAndGetAddressOf()));
         SetPtrValue(m_tpSortDescriptions, spCollection.Get());
     }
 
@@ -514,7 +535,7 @@ _Check_return_ HRESULT CollectionViewSource::get_GroupDescriptionsImpl(_Outptr_ 
     if (!m_tpGroupDescriptions)
     {
         ctl::ComPtr<ShapingDescriptionCollection<xaml_data::PropertyGroupDescription*>> spCollection;
-        IFC_RETURN(CreateShapingDescriptionCollection(this, spCollection.ReleaseAndGetAddressOf()));
+        IFC_RETURN(CreateShapingDescriptionCollection(this, false /* isSortDescriptions */, spCollection.ReleaseAndGetAddressOf()));
         SetPtrValue(m_tpGroupDescriptions, spCollection.Get());
     }
 
@@ -531,6 +552,57 @@ _Check_return_ HRESULT CollectionViewSource::get_FilterImpl(_Outptr_result_maybe
 _Check_return_ HRESULT CollectionViewSource::put_FilterImpl(_In_opt_ xaml_data::ICollectionViewFilter* pValue)
 {
     SetPtrValue(m_tpFilter, pValue);
+    IFC_RETURN(OnShapingDescriptionsChanged());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_CustomSortImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewComparer** ppValue)
+{
+    IFC_RETURN(m_tpCustomSort.CopyTo(ppValue));
+    return S_OK;
+}
+
+// As in WPF, a CustomSort replaces the SortDescriptions, and adding a SortDescription drops the CustomSort.
+_Check_return_ HRESULT CollectionViewSource::put_CustomSortImpl(_In_opt_ xaml_data::ICollectionViewComparer* pValue)
+{
+    UINT sortCount = 0;
+
+    SetPtrValue(m_tpCustomSort, pValue);
+
+    if (pValue && m_tpSortDescriptions)
+    {
+        IFC_RETURN(m_tpSortDescriptions->get_Size(&sortCount));
+    }
+
+    if (sortCount > 0)
+    {
+        m_isApplyingCustomSort = true;
+        HRESULT hr = m_tpSortDescriptions->Clear();
+        m_isApplyingCustomSort = false;
+        IFC_RETURN(hr);
+    }
+
+    IFC_RETURN(OnShapingDescriptionsChanged());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::OnSortDescriptionsChanged()
+{
+    if (m_isApplyingCustomSort)
+    {
+        return S_OK;
+    }
+
+    if (m_tpCustomSort)
+    {
+        UINT sortCount = 0;
+        IFC_RETURN(m_tpSortDescriptions->get_Size(&sortCount));
+        if (sortCount > 0)
+        {
+            m_tpCustomSort.Clear();
+        }
+    }
+
     IFC_RETURN(OnShapingDescriptionsChanged());
     return S_OK;
 }
@@ -632,7 +704,7 @@ _Check_return_ HRESULT CollectionViewSource::IsShapingRequested(_In_ IInspectabl
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    if (sortCount == 0 && groupCount == 0 && !m_tpFilter)
+    if (sortCount == 0 && groupCount == 0 && !m_tpFilter && !m_tpCustomSort)
     {
         return S_OK;
     }
@@ -714,11 +786,12 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
     ShapingKeySelector groupSelector;
     bool hasGroupSelector = false;
     ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
+    ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort = m_tpCustomSort.Get();
     std::vector<Entry> entries;
     std::vector<ctl::ComPtr<IInspectable>> outputItems;
     UINT size = 0;
 
-    if (m_tpSortDescriptions)
+    if (m_tpSortDescriptions && !spCustomSort)
     {
         UINT count = 0;
         IFC_RETURN(m_tpSortDescriptions->get_Size(&count));
@@ -794,7 +867,22 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
         entries.push_back(std::move(entry));
     }
 
-    if (!sortSelectors.empty())
+    if (spCustomSort)
+    {
+        // A comparer that fails ends the sort and the recompute; the previous output stays.
+        HRESULT hrCompare = S_OK;
+        std::stable_sort(entries.begin(), entries.end(), [&spCustomSort, &hrCompare](const Entry& left, const Entry& right)
+        {
+            INT32 result = 0;
+            if (SUCCEEDED(hrCompare))
+            {
+                hrCompare = spCustomSort->Invoke(left.item.Get(), right.item.Get(), &result);
+            }
+            return SUCCEEDED(hrCompare) && result < 0;
+        });
+        IFC_RETURN(hrCompare);
+    }
+    else if (!sortSelectors.empty())
     {
         std::stable_sort(entries.begin(), entries.end(), [&sortSelectors](const Entry& left, const Entry& right)
         {

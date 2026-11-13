@@ -583,6 +583,15 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort
+        {
+            get;
+            set;
+        }
+
         public CollectionViewSource() { }
 
         [VelocityFeature("Feature_ExperimentalApi")]
@@ -615,6 +624,13 @@ namespace Microsoft.UI.Xaml.Data
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public delegate Windows.Foundation.Boolean CollectionViewFilter(Windows.Foundation.Object item);
 
+    // WPF's ListCollectionView.CustomSort (IComparer) as a delegate: negative, zero or positive as x sorts before, with or after y.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("result")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Windows.Foundation.Int32 CollectionViewComparer(Windows.Foundation.Object x, Windows.Foundation.Object y);
+
     // Optional capability of an ICollectionView (like ICollectionViewFactory or ISupportIncrementalLoading):
     // a view a CollectionViewSource shapes forwards these to the owning CollectionViewSource.
     [DXamlIdlGroup("coretypes2")]
@@ -640,6 +656,10 @@ namespace Microsoft.UI.Xaml.Data
 
         [OrderHint(4)]
         Windows.Foundation.IClosable DeferRefresh();
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(5)]
+        Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort { get; set; }
     }
 
     [DXamlIdlGroup("coretypes2")]

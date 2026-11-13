@@ -305,6 +305,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.DeferRefresh batches descriptor and source changes into one recompute when the outermost deferral closes")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceCustomSort)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.CustomSort orders the view, replaces and is replaced by SortDescriptions as in WPF, and a throwing comparer leaves the rows")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()

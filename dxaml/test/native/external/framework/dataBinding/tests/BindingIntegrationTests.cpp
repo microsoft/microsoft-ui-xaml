@@ -3834,6 +3834,65 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CollectionViewSourceCustomSort()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto byValue = ref new CollectionViewComparer([](Object^ x, Object^ y)
+            {
+                return safe_cast<InpcDataSource^>(x)->Int32Property - safe_cast<InpcDataSource^>(y)->Int32Property;
+            });
+
+            LOG_OUTPUT(L"A CustomSort alone shapes the view; ties keep source order.");
+            auto source = MakeShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->CustomSort = byValue;
+            auto view = cvs->View;
+            auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
+            VERIFY_IS_NOT_NULL(shaping);
+            VERIFY_IS_TRUE(shaping->CustomSort == byValue);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Adding a SortDescription drops the CustomSort.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            VERIFY_IS_NULL(cvs->CustomSort);
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"dcba", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Setting a CustomSort clears the SortDescriptions and reshapes once.");
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            shaping->CustomSort = byValue;
+            VERIFY_ARE_EQUAL(0u, cvs->SortDescriptions->Size);
+            VERIFY_ARE_EQUAL(1, counts->Total());
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"A comparer that throws fails the change and leaves the view's rows.");
+            bool threw = false;
+            try
+            {
+                cvs->CustomSort = ref new CollectionViewComparer([](Object^, Object^) -> int32
+                {
+                    throw ref new Platform::InvalidArgumentException();
+                });
+            }
+            catch (Platform::Exception^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Clearing the CustomSort restores source order.");
+            cvs->CustomSort = nullptr;
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
+
+            view->VectorChanged -= token;
+        });
+    }
+
     void BindingIntegrationTests::VerifyBoolToVisibilityConverter()
     {
         TestCleanupWrapper cleanup;

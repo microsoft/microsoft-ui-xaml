@@ -278,7 +278,7 @@ bool TableView::ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& c
 
 bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
 {
-    if (!column || column.SortDirection() == winrt::SortDirection::None || m_itemsSourceIsCollectionView)
+    if (!column || column.SortDirection() == winrt::SortDirection::None || (m_itemsSourceIsCollectionView && !m_collectionViewShaping))
     {
         return false;
     }
@@ -877,8 +877,8 @@ bool TableView::SyncTableViewShapingSourceSort(
 
 bool TableView::CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const
 {
-    // A SortDescription names a property, so a CustomSortComparer column cannot sort a view.
-    return m_collectionViewShaping && (direction == winrt::SortDirection::None || HasResolvedSortMemberPath(column));
+    // A SortMemberPath becomes a SortDescription; a CustomSortComparer becomes the view's CustomSort.
+    return m_collectionViewShaping && (direction == winrt::SortDirection::None || CanSortColumn(column));
 }
 
 bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction)
@@ -890,49 +890,124 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
 
     namespace data = winrt::Microsoft::UI::Xaml::Data;
     data::SortDescription description{ nullptr };
+    data::CollectionViewComparer customSort{ nullptr };
+    auto const faults = std::make_shared<TableViewTip::ContainedFaults>();
     if (trigger && direction != winrt::SortDirection::None)
     {
-        winrt::hstring sortMemberPath;
-        try { sortMemberPath = trigger.GetSortMemberPathCore(); }
-        catch (...)
+        const bool descending = direction == winrt::SortDirection::Descending;
+        if (auto const comparer = trigger.CustomSortComparer())
         {
-            if (TableViewDetails::IsAppDerivedColumn(trigger)) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
-            throw;
-        }
-        if (sortMemberPath.empty())
-        {
-            return false;
-        }
-        description = data::SortDescription{ sortMemberPath,
-            direction == winrt::SortDirection::Descending ? data::ListSortDirection::Descending : data::ListSortDirection::Ascending };
-    }
-
-    // Last writer wins, as with a TableViewShapingSource: the column's sort becomes the view's only sort.
-    // The view reshapes in place and raises Reset, which the projection over it follows.
-    auto const sortDescriptions = m_collectionViewShaping.SortDescriptions();
-    {
-        m_updatingCollectionViewSort = true;
-        auto const resetUpdating = wil::scope_exit([this]() noexcept { m_updatingCollectionViewSort = false; });
-        if (!description)
-        {
-            sortDescriptions.Clear();
-        }
-        else if (sortDescriptions.Size() == 1)
-        {
-            sortDescriptions.SetAt(0, description);
+            customSort = data::CollectionViewComparer{ [comparer, descending, faults](winrt::IInspectable const& x, winrt::IInspectable const& y) -> int32_t
+            {
+                try
+                {
+                    const int32_t result = comparer.Compare(x, y);
+                    const int32_t sign = (result > 0) - (result < 0);
+                    return descending ? -sign : sign;
+                }
+                catch (...)
+                {
+                    if (faults->count++ == 0)
+                    {
+                        faults->firstError = winrt::to_hresult();
+                    }
+                    throw;
+                }
+            } };
         }
         else
         {
-            sortDescriptions.Clear();
-            sortDescriptions.Append(description);
+            winrt::hstring sortMemberPath;
+            try { sortMemberPath = trigger.GetSortMemberPathCore(); }
+            catch (...)
+            {
+                if (TableViewDetails::IsAppDerivedColumn(trigger)) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
+                throw;
+            }
+            if (sortMemberPath.empty())
+            {
+                return false;
+            }
+            description = data::SortDescription{ sortMemberPath,
+                descending ? data::ListSortDirection::Descending : data::ListSortDirection::Ascending };
         }
     }
 
+    // Last writer wins, as with the control's own sort: the column's sort becomes the view's only sort.
+    // The view reshapes in place, once for the whole change, and raises Reset, which the projection
+    // over it follows.
+    auto const sortDescriptions = m_collectionViewShaping.SortDescriptions();
+    auto const previousCustomSort = m_collectionViewShaping.CustomSort();
+    std::vector<data::SortDescription> previousDescriptions;
+    for (auto const& previous : sortDescriptions)
+    {
+        previousDescriptions.push_back(previous);
+    }
+
+    m_updatingCollectionViewSort = true;
+    auto const resetUpdating = wil::scope_exit([this]() noexcept { m_updatingCollectionViewSort = false; });
+    try
+    {
+        auto const deferral = m_collectionViewShaping.DeferRefresh();
+        auto closeOnThrow = wil::scope_exit([&deferral]() noexcept { try { deferral.Close(); } catch (...) {} });
+        if (customSort)
+        {
+            // Replaces the SortDescriptions.
+            m_collectionViewShaping.CustomSort(customSort);
+        }
+        else
+        {
+            if (!description)
+            {
+                sortDescriptions.Clear();
+            }
+            else if (sortDescriptions.Size() == 1)
+            {
+                sortDescriptions.SetAt(0, description);
+            }
+            else
+            {
+                sortDescriptions.Clear();
+                sortDescriptions.Append(description);
+            }
+            m_collectionViewShaping.CustomSort(nullptr);
+        }
+        closeOnThrow.release();
+        deferral.Close();
+    }
+    catch (...)
+    {
+        if (!faults->count)
+        {
+            throw;
+        }
+
+        // A comparer that threw leaves the view's rows as they were; put its sort back too, so the
+        // previous sort and arrow stay, as on any other source.
+        try
+        {
+            auto const deferral = m_collectionViewShaping.DeferRefresh();
+            sortDescriptions.Clear();
+            for (auto const& previous : previousDescriptions)
+            {
+                sortDescriptions.Append(previous);
+            }
+            m_collectionViewShaping.CustomSort(previousCustomSort);
+            deferral.Close();
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Restoring the view's sort after a comparer fault failed.");
+        }
+        m_sortAbortedByComparerFault = TableViewTip::ContainedFaults{ faults->count, faults->firstError };
+        return false;
+    }
+
+    m_collectionViewCustomSort = customSort;
     RefreshRowsPipeline();
     UpdateEmptyState();
     return true;
 }
-
 // Lights the column whose sort path is the view's primary SortDescription, for a sort the app (or
 // another consumer of the view) applied. Raises Sorted when the lit column or direction changes.
 void TableView::ReconcileSortStateWithCollectionView()
@@ -946,6 +1021,11 @@ void TableView::ReconcileSortStateWithCollectionView()
     winrt::TableViewColumn matchedColumn{ nullptr };
     auto direction = winrt::SortDirection::None;
     auto const sortDescriptions = m_collectionViewShaping.SortDescriptions();
+    if (sortDescriptions.Size() == 0 && m_collectionViewCustomSort && m_collectionViewShaping.CustomSort() == m_collectionViewCustomSort)
+    {
+        // The view still sorts with the comparer this table installed; its column stays lit.
+        return;
+    }
     if (sortDescriptions.Size() > 0)
     {
         if (auto const primary = sortDescriptions.GetAt(0))
