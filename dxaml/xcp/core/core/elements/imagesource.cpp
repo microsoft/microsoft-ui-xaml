@@ -3838,8 +3838,10 @@ CBitmapImage::OnDownloadImageAvailableImpl(
                     SetBitmapState(BitmapImageState::Decoding);
                     IFC(RedecodeEncodedImage(FALSE));
                 }
-                else
+                else if (m_bitmapState != BitmapImageState::DecodePending)
                 {
+                    // A decode issued before the image left the tree can complete after the image
+                    // already went back to DecodePending; it stays pending for the next render walk.
                     SetBitmapState(BitmapImageState::DecodePending);
                 }
             }
