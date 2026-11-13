@@ -207,7 +207,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 
-                Verify.AreEqual(0, weak.Count(w => w.IsAlive), "No item may stay alive after clearing the relation and the list.");
+                var alive = string.Join(" ", weak.Where(w => w.IsAlive).Select(w => ((TreeEmployee)w.Target)?.Name));
+                Verify.AreEqual(0, weak.Count(w => w.IsAlive), $"No item may stay alive after clearing the relation and the list. Alive: [{alive}]");
                 GC.KeepAlive(tableView);
                 GC.KeepAlive(list);
             });
