@@ -590,6 +590,13 @@ namespace Microsoft.UI.Xaml.Data
         public void Refresh()
         {
         }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.IClosable DeferRefresh()
+        {
+            return null;
+        }
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
@@ -630,6 +637,9 @@ namespace Microsoft.UI.Xaml.Data
 
         [OrderHint(3)]
         void Refresh();
+
+        [OrderHint(4)]
+        Windows.Foundation.IClosable DeferRefresh();
     }
 
     [DXamlIdlGroup("coretypes2")]

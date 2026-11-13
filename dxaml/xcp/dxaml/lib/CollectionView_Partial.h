@@ -23,6 +23,7 @@ namespace DirectUI
         IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ xaml_data::ICollectionViewFilter** ppValue) override;
         IFACEMETHOD(put_Filter)(_In_opt_ xaml_data::ICollectionViewFilter* pValue) override;
         IFACEMETHOD(Refresh)() override;
+        IFACEMETHOD(DeferRefresh)(_Outptr_ wf::IClosable** ppReturnValue) override;
 
         _Check_return_ HRESULT SetShapingOwner(_In_ CollectionViewSource* pOwner);
 

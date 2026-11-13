@@ -39,6 +39,40 @@ namespace
 
     ShapingPropertyPathHost s_shapingPropertyPathHost;
 
+    // Returned by DeferRefresh. Holds the CollectionViewSource (as WPF's deferral holds its view) so a
+    // pending refresh still runs; Close is idempotent.
+    class ShapingRefreshDeferral final :
+        public wrl::RuntimeClass<wrl::RuntimeClassFlags<wrl::WinRt>, wf::IClosable>
+    {
+        InspectableClass(L"Microsoft.UI.Xaml.Data.CollectionViewSourceRefreshDeferral", BaseTrust);
+
+    public:
+        HRESULT RuntimeClassInitialize(_In_ CollectionViewSource* pOwner)
+        {
+            m_spOwner = static_cast<xaml_data::ICollectionViewSource*>(pOwner);
+            return S_OK;
+        }
+
+        IFACEMETHODIMP Close() override
+        {
+            if (!m_spOwner)
+            {
+                return S_OK;
+            }
+
+            auto pOwner = static_cast<CollectionViewSource*>(m_spOwner.Get());
+            IFC_RETURN(pOwner->CheckThread());
+
+            // Released first so a Close re-entered from the refresh is a no-op.
+            auto spOwner = std::move(m_spOwner);
+            IFC_RETURN(pOwner->EndDeferRefresh());
+            return S_OK;
+        }
+
+    private:
+        Microsoft::WRL::ComPtr<xaml_data::ICollectionViewSource> m_spOwner;
+    };
+
     // Descriptor collection that tells its owning CollectionViewSource to rebuild View when it changes.
     template <typename T>
     class __declspec(novtable) ShapingDescriptionCollection : public ObservableTrackerCollection<T>
@@ -452,6 +486,16 @@ IFACEMETHODIMP CollectionView::Refresh()
     return S_OK;
 }
 
+IFACEMETHODIMP CollectionView::DeferRefresh(_Outptr_ wf::IClosable** ppReturnValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue = nullptr;
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->DeferRefreshImpl(ppReturnValue));
+    return S_OK;
+}
+
 _Check_return_ HRESULT CollectionViewSource::get_SortDescriptionsImpl(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue)
 {
     if (!m_tpSortDescriptions)
@@ -497,6 +541,28 @@ _Check_return_ HRESULT CollectionViewSource::RefreshImpl()
     return S_OK;
 }
 
+_Check_return_ HRESULT CollectionViewSource::DeferRefreshImpl(_Outptr_ wf::IClosable** ppReturnValue)
+{
+    Microsoft::WRL::ComPtr<ShapingRefreshDeferral> spDeferral;
+    IFC_RETURN(wrl::MakeAndInitialize<ShapingRefreshDeferral>(&spDeferral, this));
+    ++m_deferRefreshLevel;
+    *ppReturnValue = spDeferral.Detach();
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::EndDeferRefresh()
+{
+    ASSERT(m_deferRefreshLevel > 0);
+    if (m_deferRefreshLevel == 0 || --m_deferRefreshLevel > 0 || !m_isRefreshPending)
+    {
+        return S_OK;
+    }
+
+    m_isRefreshPending = false;
+    IFC_RETURN(OnShapingDescriptionsChanged());
+    return S_OK;
+}
+
 _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
 {
     ctl::ComPtr<IInspectable> spSource;
@@ -504,6 +570,12 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
 
     if (m_isComputingShape)
     {
+        return S_OK;
+    }
+
+    if (m_deferRefreshLevel > 0)
+    {
+        m_isRefreshPending = true;
         return S_OK;
     }
 
@@ -799,6 +871,12 @@ _Check_return_ HRESULT CollectionViewSource::RefreshShapedView()
     // Changes raised while computing (for example from a Filter callback) are ignored.
     if (!m_tpShapedOutput || m_isComputingShape)
     {
+        return S_OK;
+    }
+
+    if (m_deferRefreshLevel > 0)
+    {
+        m_isRefreshPending = true;
         return S_OK;
     }
 

@@ -36,8 +36,10 @@ namespace DirectUI
         _Check_return_ HRESULT get_FilterImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewFilter** ppValue);
         _Check_return_ HRESULT put_FilterImpl(_In_opt_ xaml_data::ICollectionViewFilter* pValue);
         _Check_return_ HRESULT RefreshImpl();
+        _Check_return_ HRESULT DeferRefreshImpl(_Outptr_ wf::IClosable** ppReturnValue);
 
         _Check_return_ HRESULT OnShapingDescriptionsChanged();
+        _Check_return_ HRESULT EndDeferRefresh();
 
     private:
 
@@ -74,5 +76,9 @@ namespace DirectUI
         ctl::EventPtr<VectorChangedEventCallback> m_epShapedSourceVectorChangedHandler;
         bool m_isShapedOutputGrouped = false;
         bool m_isComputingShape = false;
+
+        // Open DeferRefresh deferrals; a change made while any is open recomputes once, when the last closes.
+        UINT m_deferRefreshLevel = 0;
+        bool m_isRefreshPending = false;
     };
 }

@@ -124,6 +124,27 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_View(_Outptr_result_
 
 // Methods.
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::DeferRefresh(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionViewSource_DeferRefresh", 0);
+    }
+    ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->DeferRefreshImpl(ppReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "CollectionViewSource_DeferRefresh", hr);
+    }
+    RRETURN(hr);
+}
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::Refresh()
 {
     HRESULT hr = S_OK;

@@ -2014,6 +2014,7 @@ namespace Microsoft.UI.Xaml.Data
         Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions{ get; };
         Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
         void Refresh();
+        Windows.Foundation.IClosable DeferRefresh();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2085,6 +2086,7 @@ namespace Microsoft.UI.Xaml.Data
             Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions{ get; };
             Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
             void Refresh();
+            Windows.Foundation.IClosable DeferRefresh();
         }
     };
 

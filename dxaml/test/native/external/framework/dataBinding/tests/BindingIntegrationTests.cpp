@@ -3722,6 +3722,118 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    namespace
+    {
+        InpcDataSource^ MakeShapingItem(Platform::String^ name, int32 value)
+        {
+            auto item = ref new InpcDataSource;
+            item->StringProperty = name;
+            item->Int32Property = value;
+            return item;
+        }
+
+        Platform::String^ ShapingNamesOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+            }
+            return result;
+        }
+
+        // b1 d2 a1 c0
+        Platform::Collections::Vector<Object^>^ MakeShapingSource()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"b", 1));
+            source->Append(MakeShapingItem(L"d", 2));
+            source->Append(MakeShapingItem(L"a", 1));
+            source->Append(MakeShapingItem(L"c", 0));
+            return source;
+        }
+
+        struct VectorChangeCounts
+        {
+            int resets = 0;
+            int inserted = 0;
+            int removed = 0;
+            int changed = 0;
+            std::vector<unsigned int> indices;
+
+            int Total() const { return resets + inserted + removed + changed; }
+        };
+
+        ::Windows::Foundation::EventRegistrationToken CountVectorChanges(::Windows::Foundation::Collections::IObservableVector<Object^>^ vector, std::shared_ptr<VectorChangeCounts> counts)
+        {
+            return vector->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [counts](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    switch (args->CollectionChange)
+                    {
+                    case ::Windows::Foundation::Collections::CollectionChange::Reset: counts->resets++; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemInserted: counts->inserted++; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemRemoved: counts->removed++; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemChanged: counts->changed++; break;
+                    }
+                    counts->indices.push_back(args->Index);
+                });
+        }
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceDeferRefresh()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+
+            LOG_OUTPUT(L"Descriptors set under a deferral shape View only when the deferral closes.");
+            auto deferral = cvs->DeferRefresh();
+            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(cvs->View)->Data());
+            VERIFY_IS_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
+            delete deferral;
+            auto view = cvs->View;
+            VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(view));
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", ShapingNamesOf(view)->Data());
+
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+
+            LOG_OUTPUT(L"Nested deferrals: descriptor and source changes recompute once, when the outermost closes.");
+            auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
+            auto outer = shaping->DeferRefresh();
+            auto inner = cvs->DeferRefresh();
+            cvs->SortDescriptions->Clear();
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            shaping->Filter = nullptr;
+            source->Append(MakeShapingItem(L"e", 2));
+            shaping->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"dba", ShapingNamesOf(view)->Data());
+            delete inner;
+            VERIFY_ARE_EQUAL(0, counts->Total());
+            delete outer;
+            VERIFY_ARE_EQUAL(1, counts->resets);
+            VERIFY_ARE_EQUAL(1, counts->Total());
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"abcde", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"A deferral closed without changes does not refresh.");
+            auto idle = cvs->DeferRefresh();
+            delete idle;
+            VERIFY_ARE_EQUAL(1, counts->Total());
+
+            view->VectorChanged -= token;
+        });
+    }
+
     void BindingIntegrationTests::VerifyBoolToVisibilityConverter()
     {
         TestCleanupWrapper cleanup;
