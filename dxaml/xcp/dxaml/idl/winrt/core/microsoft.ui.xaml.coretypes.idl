@@ -2354,6 +2354,13 @@ namespace Microsoft.UI.Xaml
             Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.InteractionBase> Interactions{ get; };
         }
     
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [static_name("Microsoft.UI.Xaml.IUIElementStaticsFeature_ExperimentalApi")]
+        {
+            static void InvalidateViewport(Microsoft.UI.Xaml.UIElement element);
+        }
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_XamlMotionSystemHoldbacks)]
         [interface_name("Microsoft.UI.Xaml.IUIElementFeature_XamlMotionSystemHoldbacks")]

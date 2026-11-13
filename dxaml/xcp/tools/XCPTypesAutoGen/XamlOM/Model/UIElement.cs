@@ -338,6 +338,13 @@ namespace Microsoft.UI.Xaml
         {
         }
 
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromCore = true)]
+        public static void InvalidateViewport(UIElement element)
+        {
+        }
+
         [Strictness(Strictness.StrictOnly)]
         [DependencyPropertyModifier(Modifier.Private)]
         public Microsoft.UI.Xaml.ScalarTransition OpacityTransition

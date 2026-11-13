@@ -595,6 +595,7 @@ namespace Microsoft.UI.Xaml
     [CodeGen(partial: true)]
     [NativeName("CUIElement")]
     [Platform("Feature_Xaml2018", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [Guids(ClassGuid = "c47ebf2e-f068-42c2-996a-be695fa71839")]
     [Velocity(Feature = "Feature_Xaml2018")]
     [Implements(typeof(Microsoft.UI.Composition.IAnimationObject), Version = 1)]
