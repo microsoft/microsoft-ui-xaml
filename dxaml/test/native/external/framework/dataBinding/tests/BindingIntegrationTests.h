@@ -297,6 +297,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify experimental CollectionViewSource Filter, SortDescriptions and GroupDescriptions")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewShapingInterface)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a shaped CollectionViewSource view implements ICollectionViewShaping, shares the source's descriptors and reshapes in place")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()

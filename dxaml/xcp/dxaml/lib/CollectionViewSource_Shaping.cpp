@@ -381,6 +381,82 @@ _Check_return_ HRESULT PropertyGroupDescriptionFactory::CreateInstanceImpl(
     return S_OK;
 }
 
+_Check_return_ HRESULT CollectionView::SetShapingOwner(_In_ CollectionViewSource* pOwner)
+{
+    return ctl::AsWeak(pOwner, &m_shapingOwnerRef);
+}
+
+_Check_return_ HRESULT CollectionView::GetShapingOwner(_Outptr_ CollectionViewSource** ppOwner)
+{
+    ctl::ComPtr<xaml_data::ICollectionViewSource> spOwner;
+
+    *ppOwner = nullptr;
+    IFC_RETURN(CheckThread());
+    if (m_shapingOwnerRef)
+    {
+        IFC_RETURN(m_shapingOwnerRef.As(&spOwner));
+    }
+    IFCEXPECTRC_RETURN(spOwner, RO_E_CLOSED);
+    *ppOwner = spOwner.Cast<CollectionViewSource>();
+    spOwner.Detach();
+    return S_OK;
+}
+
+HRESULT CollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewShaping)) && m_shapingOwnerRef)
+    {
+        *ppObject = static_cast<xaml_data::ICollectionViewShaping*>(this);
+        AddRefOuter();
+        return S_OK;
+    }
+
+    return CollectionViewGenerated::QueryInterfaceImpl(iid, ppObject);
+}
+
+IFACEMETHODIMP CollectionView::get_SortDescriptions(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->get_SortDescriptionsImpl(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionView::get_GroupDescriptions(_Outptr_ wfc::IObservableVector<xaml_data::PropertyGroupDescription*>** ppValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->get_GroupDescriptionsImpl(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionView::get_Filter(_Outptr_result_maybenull_ xaml_data::ICollectionViewFilter** ppValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->get_FilterImpl(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionView::put_Filter(_In_opt_ xaml_data::ICollectionViewFilter* pValue)
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->put_FilterImpl(pValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionView::Refresh()
+{
+    ctl::ComPtr<CollectionViewSource> spOwner;
+    IFC_RETURN(GetShapingOwner(spOwner.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spOwner->RefreshImpl());
+    return S_OK;
+}
+
 _Check_return_ HRESULT CollectionViewSource::get_SortDescriptionsImpl(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue)
 {
     if (!m_tpSortDescriptions)
@@ -440,6 +516,24 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
     if (!spSource)
     {
         return S_OK;
+    }
+
+    // A shaped View is reshaped in place, so a consumer holding View (for example through
+    // ICollectionViewShaping) keeps a live view. Only switching between flat and grouped output
+    // needs a different view class and therefore a new View.
+    if (m_tpShapedOutput)
+    {
+        UINT groupCount = 0;
+        if (m_tpGroupDescriptions)
+        {
+            IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
+        }
+
+        if ((groupCount > 0) == m_isShapedOutputGrouped)
+        {
+            IFC_RETURN(RefreshShapedView());
+            return S_OK;
+        }
     }
 
     // Leave an unshaped View untouched unless shaping is now requested.
@@ -517,6 +611,8 @@ _Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable*
     {
         IFC_RETURN(VectorCollectionView::CreateInstance(spOutput.Get(), ppView));
     }
+
+    IFC_RETURN(static_cast<CollectionView*>(*ppView)->SetShapingOwner(this));
 
     auto spObservable = spSourceVector.AsOrNull<wfc::IObservableVector<IInspectable*>>();
     if (spObservable)

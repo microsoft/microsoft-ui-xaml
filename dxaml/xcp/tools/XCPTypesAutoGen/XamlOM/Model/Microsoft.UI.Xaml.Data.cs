@@ -608,6 +608,30 @@ namespace Microsoft.UI.Xaml.Data
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public delegate Windows.Foundation.Boolean CollectionViewFilter(Windows.Foundation.Object item);
 
+    // Optional capability of an ICollectionView (like ICollectionViewFactory or ISupportIncrementalLoading):
+    // a view a CollectionViewSource shapes forwards these to the owning CollectionViewSource.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewShaping
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Microsoft.UI.Xaml.Data.CollectionViewFilter Filter { get; set; }
+
+        [OrderHint(3)]
+        void Refresh();
+    }
+
     [DXamlIdlGroup("coretypes2")]
     [TypeFlags(IsCreateableFromXAML = false)]
     [ClassFlags(IsFreeThreaded = true)]
