@@ -267,7 +267,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Row, cell | `F2` | Begin edit. |
 | Row, cell | `Space` / `Ctrl+Space` | Select / toggle the row. `Ctrl` with a navigation key moves without selecting. |
 
-- **Re-entry.** `Tab`/`Shift+Tab` into the body from outside the table returns to the item that last had focus, even after a sort or filter, at the same level. If it is not available, entry lands on the first or last enabled row in the viewport, never a cache row. From the header band, entry lands on the first or last row (or group header) in the viewport.
+- **Re-entry.** Body entry (`Tab`/`Shift+Tab` when the rows are the table's tab stop, or `Down` from the header row) returns to the row, cell or group header that last had focus, even after a sort or filter, at the same level; a row selected after it wins. It does so only while that element is at least partly in the viewport, so entry never scrolls to it. Otherwise entry lands on the selected row in view, else the first or last enabled row or group header in the viewport, never a cache row.
 - **Re-shape while focused.** When a sort or filter reshapes rows while focus is in the body, focus stays at the same row index. Focus elsewhere, including on the header that triggered the sort, stays put.
 - **Focus scrolling.** A keyboard-focused row scrolls fully into view. `OnBodyBringIntoViewRequested` drops XAML's 20 DIP vertical padding, so a visible row does not nudge the viewport.
 - Gamepad and XY focus navigation are not supported.

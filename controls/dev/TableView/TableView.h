@@ -1373,7 +1373,7 @@ private:
     winrt::IInspectable GetRowsSourceItemAt(int32_t index) const;
     bool ArrangeAndRevalidate(winrt::UIElement const& element, int32_t index, winrt::IInspectable const& expectedItem);
     static bool IsRowElementArranged(winrt::UIElement const& element);
-    bool IsRowElementInViewport(winrt::UIElement const& element) const;
+    bool IsRowElementInViewport(winrt::UIElement const& element, bool partly = false) const;
     bool BringRowElementIntoView(winrt::UIElement const& element, std::optional<double> alignRatio);
     bool ScrollBodyToRowElement(winrt::UIElement const& element, std::optional<double> alignRatio);
     bool ScrollBodyToIndex(int32_t index, std::optional<double> alignRatio);
@@ -1543,6 +1543,8 @@ private:
     bool TryRedirectTableEntry(const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
     bool TrySetBodyEntryTarget(const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
     FocusEntryTarget ResolveBodyEntryTarget(bool last);
+    winrt::TableViewGroupHeader FindRememberedGroupHeader();
+    void RememberGroupHeaderEntry(winrt::TableViewGroupHeader const& header);
     bool FocusBodyEntryTarget(bool select, winrt::FocusState focusState = winrt::FocusState::Keyboard);
     void QueueFocusTableEntry(winrt::DependencyObject const& expected, bool bodyOnly);
     void MoveFocusOffCollapsingHeaders();
@@ -1593,6 +1595,10 @@ private:
     // Shared body/header visible-column cursor; stored as an index so it survives row recycling.
     int32_t m_currentCellColumn{ 0 };
     int32_t m_currentCellRow{ -1 };
+    // The remembered body entry target is m_currentCellRow, or else a focused group header (then
+    // m_currentCellRow is -1). Its identity survives reshapes but applies only to its own source.
+    winrt::hstring m_rememberedGroupIdentity{};
+    winrt::weak_ref<winrt::TableViewSource> m_rememberedGroupSource{ nullptr };
 
     // Distinguishes column 0 from "no column chosen yet" so first header entry does not relocate.
     bool m_columnCursorEstablished{ false };
