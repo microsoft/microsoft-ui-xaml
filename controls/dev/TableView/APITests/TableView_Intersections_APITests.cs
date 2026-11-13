@@ -164,7 +164,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region Sort-key edits under an active filter
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a visible row whose sort key changed is moved to its sorted slot by the next collection change while a filter is active.")]
+        [TestProperty("Description", "Verifies a visible row whose sort key changed stays put through an incremental collection change and is moved to its sorted slot by Refresh while a filter is active.")]
         public void VerifySortKeyChangeRepositionsRowWhileFilterActive()
         {
             TableView tableView = null;
@@ -203,8 +203,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // The view applies source changes incrementally (no live shaping, as in WPF), so an add the filter
+                // rejects leaves the stale row; Refresh re-sorts.
+                VerifyProjection(tableView, new[] { "Zane", "Owen", "Rafa" }, "after an add the filter rejects");
+                source.Refresh();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
                 VerifyProjection(tableView, new[] { "Owen", "Rafa", "Zane" },
-                    "the next collection change must move the renamed row to its sorted slot");
+                    "Refresh moves the renamed row to its sorted slot");
             });
         }
 
