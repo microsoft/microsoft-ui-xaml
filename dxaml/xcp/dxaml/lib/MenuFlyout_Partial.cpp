@@ -182,6 +182,12 @@ _Check_return_ HRESULT MenuFlyout::OnOpening()
     // are UIElements they must be unparented when leaving the tree before they can be inserted elsewhere.
     IFC_RETURN(menuFlyoutPresenter->put_ItemsSource(ctl::as_iinspectable(m_tpItems.Get())));
 
+    // An Opening handler that called Hide() cancels the open, so no MenuClosed will follow.
+    if (IsOpeningCanceled())
+    {
+        return S_OK;
+    }
+
     IFC_RETURN(AutomationPeer::RaiseEventIfListener(menuFlyoutPresenter.Get(), xaml_automation_peers::AutomationEvents_MenuOpened));
 
     return S_OK;

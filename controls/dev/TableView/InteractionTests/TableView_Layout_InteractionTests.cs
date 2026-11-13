@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -41,6 +43,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // by searching for the gripper element: whether a header peer's own children enumerate safely is
     // UNVERIFIED, and a search that walked into a row would crash.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewLayoutInteractionTests
     {
         // One mouse-wheel notch. Matches the WHEEL_DELTA the input stack injects.
@@ -254,6 +257,753 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     widthBefore + 20.0,
                     "A resize after a mid-drag unload/reload must still widen the column - i.e. no capture wedged the gripper (dev-spec:129).");
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies losing the gripper's pointer capture mid-drag cancels the resize and leaves the gripper usable.")]
+        public void PointerResizeCaptureLostMidDragCancelsResize()
+        {
+            HoldResizeThroughDelayedTeardown(DelayedGripperCaptureLossButton, pressOnly: false,
+                "Gripper capture released", null, "Losing capture mid-drag");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies disabling the table while the gripper holds the pointer cancels the resize and leaves the gripper usable once re-enabled.")]
+        public void PointerResizeDisabledWhileCapturedCancelsResize()
+        {
+            HoldResizeThroughDelayedTeardown(DelayedDisableButton, pressOnly: false,
+                "Disabled", "Enabled", "Disabling while captured");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies unloading the table while a gripper press holds capture, before any drag starts, leaves the gripper usable after reload.")]
+        public void PointerPressOnGripperThenUnloadLeavesNoWedgedState()
+        {
+            HoldResizeThroughDelayedTeardown(DelayedUnloadButton, pressOnly: true,
+                "Unloaded", "Reloaded", "Unloading after a press");
+        }
+
+        private static void HoldResizeThroughDelayedTeardown(string teardownButtonId, bool pressOnly, string teardownStatus, string restoredStatus, string scenario)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject nameHeader = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                if (nameHeader == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found on the header host.");
+                    return;
+                }
+
+                var teardown = FindElement.ById<Button>(teardownButtonId);
+                if (teardown == null)
+                {
+                    Verify.Fail(teardownButtonId + " was not found on the test page.");
+                    return;
+                }
+
+                double widthBefore = nameHeader.BoundingRectangle.Width;
+                var bounds = nameHeader.BoundingRectangle;
+                int grabOffsetX = (bounds.Width / 2) - 1;
+                int startX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+
+                InputHelper.LeftMouseButtonDown(nameHeader, grabOffsetX, 0);
+                try
+                {
+                    if (!pressOnly)
+                    {
+                        InputHelper.MoveMouse(new Point(startX + 40, y));
+                    }
+                    // UIA, not a click: the pointer stays pressed on the gripper.
+                    teardown.Invoke();
+                    if (!WaitForStatusText(teardownStatus))
+                    {
+                        Verify.Fail("The page did not report '" + teardownStatus + "' while the pointer was held.");
+                        return;
+                    }
+                    Wait.ForIdle();
+                    if (!pressOnly)
+                    {
+                        InputHelper.MoveMouse(new Point(startX + 80, y));
+                    }
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+
+                if (restoredStatus != null)
+                {
+                    if (!WaitForStatusText(restoredStatus))
+                    {
+                        Verify.Fail("The page did not report '" + restoredStatus + "' after the teardown.");
+                        return;
+                    }
+                    Wait.ForIdle();
+                }
+
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                if (header == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found after the teardown.");
+                    return;
+                }
+
+                double widthAfterTeardown = header.BoundingRectangle.Width;
+                Log.Comment("{0}: Name width before={1}, after the release={2}.", scenario, widthBefore, widthAfterTeardown);
+                Verify.IsLessThanOrEqual(Math.Abs(widthAfterTeardown - widthBefore), 8.0,
+                    scenario + " must cancel the resize: the abandoned drag must not keep its width.");
+
+                DragColumnBoundary(header, 80, cancelWithEscape: false);
+                Wait.ForIdle();
+                double widthAfterResize = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("{0}: Name width after a normal resize={1}.", scenario, widthAfterResize);
+                Verify.IsGreaterThan(widthAfterResize, widthAfterTeardown + 20.0,
+                    scenario + " must leave the gripper usable: a later resize must widen the column.");
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct CURSORINFO
+        {
+            public int cbSize;
+            public int flags;
+            public IntPtr hCursor;
+            public int ptX;
+            public int ptY;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetCursorInfo(ref CURSORINFO pci);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+        private const uint GA_ROOT = 2;
+        private const int CURSOR_SHOWING = 0x1;
+        private static readonly IntPtr IDC_ARROW = new IntPtr(32512);
+        private static readonly IntPtr IDC_SIZEWE = new IntPtr(32644);
+
+        // Age has no HeaderToolTip, whose popup could open under the pointer and own the cursor.
+        private const string CursorTestColumn = "Age";
+
+        // Null while the system cursor is hidden or suppressed (e.g. the session has no mouse).
+        private static IntPtr? ReadCursor()
+        {
+            var info = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
+            Verify.IsTrue(GetCursorInfo(ref info), "GetCursorInfo must succeed.");
+            return (info.flags & CURSOR_SHOWING) != 0 ? info.hCursor : (IntPtr?)null;
+        }
+
+        // The cursor is updated asynchronously after the pointer moves, so poll until several
+        // consecutive samples agree rather than accepting a single transient match. Returns false,
+        // reporting the test Skipped, when the cursor is not showing: there is no cursor to verify.
+        private static bool VerifyCursorBecomes(IntPtr expected, string message, int requiredMatches = 3)
+        {
+            var samples = new List<string>();
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+            IntPtr? cursor;
+            int matches = 0;
+            while (true)
+            {
+                cursor = ReadCursor();
+                var sample = cursor.HasValue ? string.Format("0x{0:X}", cursor.Value.ToInt64()) : "hidden";
+                if (samples.Count == 0 || samples[samples.Count - 1] != sample)
+                {
+                    samples.Add(sample);
+                }
+                matches = cursor == expected ? matches + 1 : 0;
+                if (matches >= requiredMatches || DateTime.UtcNow >= deadline)
+                {
+                    break;
+                }
+                Wait.ForMilliseconds(50);
+            }
+
+            if (matches < requiredMatches && !cursor.HasValue)
+            {
+                Log.Result(TestResult.Skipped, string.Format("{0} The system cursor is not showing; sampled [{1}].", message, string.Join(", ", samples)));
+                return false;
+            }
+
+            Verify.IsTrue(matches >= requiredMatches,
+                string.Format("{0} Expected 0x{1:X} for {2} consecutive samples; sampled [{3}].",
+                    message, expected.ToInt64(), requiredMatches, string.Join(", ", samples)));
+            return true;
+        }
+
+        private static double GetAppWindowScale()
+        {
+            uint dpi = GetDpiForWindow(GetAncestor(TestEnvironment.Application.CoreWindow.NativeWindowHandle, GA_ROOT));
+            return dpi == 0 ? 1.0 : dpi / 96.0;
+        }
+
+        private static void EnsureAppWindowForeground()
+        {
+            IntPtr window = GetAncestor(TestEnvironment.Application.CoreWindow.NativeWindowHandle, GA_ROOT);
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+            while (GetForegroundWindow() != window && DateTime.UtcNow < deadline)
+            {
+                SetForegroundWindow(window);
+                Wait.ForMilliseconds(100);
+            }
+            Verify.AreEqual(window, GetForegroundWindow(), "The test app window must be in the foreground.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the system cursor is the west-east size cursor while the mouse rests, moves or drags on a column gripper.")]
+        public void PointerOverGripperShowsResizeCursor()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject header = FindColumnHeader(tableView, CursorTestColumn);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found on the header host.", CursorTestColumn));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
+
+                var bounds = header.BoundingRectangle;
+                // The 8-DIP gripper is right-aligned in the header cell; aim at its centre.
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int edgeX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                var centre = new Point(bounds.Left + (bounds.Width / 2), y);
+
+                InputHelper.MoveMouse(centre);
+                Wait.ForIdle();
+                if (!VerifyCursorBecomes(arrow, "Away from the gripper the cursor must be the arrow."))
+                {
+                    return;
+                }
+
+                foreach (int x in new[] { gripperX, gripperX - 1, gripperX + 1, gripperX, gripperX - 1 })
+                {
+                    InputHelper.MoveMouse(new Point(x, y));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, string.Format("Over the gripper at x={0} the cursor must be and stay the west-east size cursor.", x), requiredMatches: 5))
+                    {
+                        return;
+                    }
+                }
+
+                // The gripper travels with the edge, so the pointer stays over it.
+                InputHelper.LeftMouseButtonDown(header, gripperX - centre.X, 0);
+                try
+                {
+                    InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                    InputHelper.MoveMouse(new Point(edgeX + 40, y));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, "The west-east size cursor must hold during the drag."))
+                    {
+                        return;
+                    }
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+
+                InputHelper.MoveMouse(new Point(FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn).BoundingRectangle.Left + 10, y));
+                Wait.ForIdle();
+                VerifyCursorBecomes(arrow, "Leaving the gripper must restore the arrow.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the resize cursor holds on the gripper of a column with a HeaderToolTip while the pointer rests past the tooltip delay, before and after the first sort, and that a drag then resizes (GH #12436).")]
+        public void ResizeCursorHoldsOnGripperOfColumnWithHeaderToolTip()
+        {
+            // A sort click suppresses Name's HeaderToolTip until the pointer re-enters.
+            const string column = "Name";
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), column);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found.", column));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                var bounds = header.BoundingRectangle;
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int y = bounds.Top + (bounds.Height / 2);
+
+                foreach (string phase in new[] { "before any sort", "after the first sort" })
+                {
+                    InputHelper.MoveMouse(new Point(gripperX, bounds.Top - 40));
+                    InputHelper.MoveMouse(new Point(gripperX, y));
+                    Wait.ForMilliseconds(2500);
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, string.Format("Resting on the gripper {0} must keep the west-east size cursor.", phase), requiredMatches: 5))
+                    {
+                        return;
+                    }
+
+                    if (phase == "before any sort")
+                    {
+                        InputHelper.LeftClick(header); // None -> Ascending
+                        Wait.ForIdle();
+                    }
+                }
+
+                DragColumnBoundary(header, 80);
+                Wait.ForIdle();
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), column).BoundingRectangle.Width;
+                Log.Comment("Width before={0}, after={1}.", bounds.Width, widthAfter);
+                Verify.IsGreaterThan(widthAfter, bounds.Width + 20.0, "After the first sort a gripper drag must widen the column.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the resize cursor shows when the pointer slides onto the gripper while the header tooltip is open, and holds while that tooltip closes (GH #12436).")]
+        public void ResizeCursorShowsWhenSlidingOntoGripperFromOpenHeaderToolTip()
+        {
+            const string column = "Name";
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), column);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found.", column));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                var bounds = header.BoundingRectangle;
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int textX = bounds.Left + (bounds.Width / 3);
+                int y = bounds.Top + (bounds.Height / 2);
+
+                InputHelper.MoveMouse(new Point(10, 10));
+                Wait.ForIdle();
+                InputHelper.MoveMouse(new Point(textX, y));
+                if (!WaitForHeaderToolTip(open: true))
+                {
+                    Verify.Fail("Precondition: resting on the header text must open the header tooltip.");
+                    return;
+                }
+
+                const int steps = 6;
+                for (int i = 1; i <= steps; i++)
+                {
+                    InputHelper.MoveMouse(new Point(textX + ((gripperX - textX) * i / steps), y));
+                }
+                Wait.ForIdle();
+                if (!VerifyCursorBecomes(sizeWE, "Sliding onto the gripper from an open header tooltip must show the west-east size cursor.", requiredMatches: 5))
+                {
+                    return;
+                }
+
+                Verify.IsTrue(WaitForHeaderToolTip(open: false), "The header tooltip must close while the pointer is on the gripper.");
+                Wait.ForIdle();
+                VerifyCursorBecomes(sizeWE, "The west-east size cursor must hold after the header tooltip closes.", requiredMatches: 5);
+            }
+        }
+
+        private static bool WaitForHeaderToolTip(bool open)
+        {
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(4);
+            while (true)
+            {
+                bool isOpen = TableViewToolTipsInteractionTests.FindOpenToolTip(open ? "waiting for the header tooltip" : "waiting for the header tooltip to close") != null;
+                if (isOpen == open)
+                {
+                    return true;
+                }
+                if (DateTime.UtcNow >= deadline)
+                {
+                    return false;
+                }
+                Wait.ForMilliseconds(200);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape during a pointer resize releases the gripper's mouse capture, so the pointer stops showing the resize cursor away from the gripper.")]
+        public void PointerResizeEscapeReleasesCapture()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject header = FindColumnHeader(tableView, CursorTestColumn);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found on the header host.", CursorTestColumn));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
+
+                var bounds = header.BoundingRectangle;
+                int gripperOffset = (bounds.Width / 2) - (int)Math.Round(4.0 * GetAppWindowScale());
+                int edgeX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                var table = tableView.BoundingRectangle;
+                // Over the body, well away from the gripper.
+                var awayY = Math.Min(bounds.Bottom + (3 * bounds.Height), table.Bottom - 10);
+
+                InputHelper.LeftMouseButtonDown(header, gripperOffset, 0);
+                try
+                {
+                    InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                    InputHelper.MoveMouse(new Point(edgeX + 40, awayY));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, "Precondition: the captured drag must hold the resize cursor away from the gripper."))
+                    {
+                        return;
+                    }
+
+                    KeyboardHelper.PressKey(Key.Escape);
+                    Wait.ForIdle();
+                    InputHelper.MoveMouse(new Point(edgeX + 30, awayY));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(arrow, "After Escape the gripper must release capture, so the body's arrow cursor returns before the button is released."))
+                    {
+                        return;
+                    }
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+
+                UIObject resized = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn);
+                double widthBefore = resized.BoundingRectangle.Width;
+                DragColumnBoundary(resized, 80, cancelWithEscape: false);
+                Wait.ForIdle();
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn).BoundingRectangle.Width;
+                Log.Comment("After the canceled drag: {0} width before={1}, after a normal resize={2}.", CursorTestColumn, widthBefore, widthAfter);
+                Verify.IsGreaterThan(widthAfter, widthBefore + 20.0, "A resize after an Escape-canceled drag must still widen the column.");
+            }
+        }
+
+        // Name authors Width="160"; its "Person N" content is far narrower.
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking a column's resize gripper shrinks a too-wide column to fit its content.")]
+        public void PointerDoubleClickGripperShrinksColumnToFitContent()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                double scale = GetAppWindowScale();
+                double before = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+                double ageBefore = FindColumnHeader(tableView, "Age").BoundingRectangle.Width;
+
+                DoubleClickColumnGripper(FindColumnHeader(tableView, "Name"));
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                double ageAfter = FindColumnHeader(FindElement.ById(BasicTable), "Age").BoundingRectangle.Width;
+                Log.Comment("Name width before={0}, after double-click={1}; Age before={2}, after={3}; scale={4}.", before, after, ageBefore, ageAfter, scale);
+
+                Verify.IsLessThan(after, before - (20.0 * scale),
+                    "Double-clicking the gripper must shrink a column wider than its content to fit that content.");
+                Verify.IsTrue(after >= (60.0 * scale) - 1.0, "The fitted width must still honour MinWidth=60.");
+                Verify.IsTrue(Math.Abs(ageAfter - ageBefore) <= 1.0, "Fitting Name must not resize the Age column.");
+
+                DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+                double again = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width after a second double-click={0}.", again);
+                Verify.IsTrue(Math.Abs(again - after) <= 2.0, "A second double-click on a fitted column must leave its width unchanged.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking a column's resize gripper grows a too-narrow column to fit its content.")]
+        public void PointerDoubleClickGripperGrowsColumnToFitContent()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                double scale = GetAppWindowScale();
+                double authored = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+
+                // Narrow Name to its MinWidth=60, which clips "Person NN" plus the cell padding.
+                DragColumnBoundary(FindColumnHeader(tableView, "Name"), -(int)Math.Round(150.0 * scale));
+                double narrowed = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width authored={0}, narrowed={1}; scale={2}.", authored, narrowed, scale);
+                Verify.IsLessThan(narrowed, 70.0 * scale, "Precondition: dragging left must narrow Name to about its MinWidth.");
+
+                DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width after double-click={0}.", after);
+
+                Verify.IsGreaterThan(after, narrowed + (5.0 * scale),
+                    "Double-clicking the gripper must grow a column narrower than its content to fit that content.");
+                Verify.IsLessThan(after, authored - (20.0 * scale),
+                    "The fitted width must come from the content, not from the authored Width.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies two gripper clicks spaced beyond the system double-click time do not fit the column.")]
+        public void PointerSlowSecondClickOnGripperDoesNotFitColumn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                double before = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+                var point = GripperPoint(FindColumnHeader(tableView, "Name"));
+                int interval = (int)GetDoubleClickTime();
+
+                ClickPoint(point);
+                global::System.Threading.Thread.Sleep(interval + 300);
+                ClickPoint(point);
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width before={0}, after two slow clicks={1}; double-click time={2} ms.", before, after, interval);
+                Verify.IsTrue(Math.Abs(after - before) <= 1.0, "Two clicks further apart than the double-click time must not fit the column.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking where a CanResize=False column's gripper would be does not resize it.")]
+        public void PointerDoubleClickOnNonResizableColumnEdgeIsNoOp()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                var toggle = FindElement.ById<Button>(ToggleNameCanResizeButton);
+                if (tableView == null || toggle == null)
+                {
+                    Verify.Fail("BasicTableView and/or ToggleNameCanResizeButton were not found on the test page.");
+                    return;
+                }
+
+                toggle.InvokeAndWait();
+                Wait.ForIdle();
+
+                double before = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name (CanResize=False) width before={0}, after double-click={1}.", before, after);
+                Verify.IsTrue(Math.Abs(after - before) <= 1.0, "Double-clicking the edge of a column with CanResize=False must not resize it.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking the gripper of an Auto column and of a Star column leaves each with a Pixel Width at its fitted size, including when the fit does not change the Auto column's size.")]
+        public void PointerDoubleClickGripperCommitsAutoAndStarColumnsAsPixel()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var setWidths = FindElement.ById<Button>(SetAgeAutoScoreStarButton);
+                var report = FindElement.ById<Button>(ReportBasicColumnWidthsButton);
+                if (FindElement.ById(BasicTable) == null || setWidths == null || report == null)
+                {
+                    Verify.Fail("BasicTableView, SetAgeAutoScoreStarButton and/or ReportBasicColumnWidthsButton were not found on the test page.");
+                    return;
+                }
+
+                setWidths.Invoke();
+                if (!WaitForStatusText("Auto and Star set"))
+                {
+                    Verify.Fail("The page did not switch Age to Auto and Score to Star.");
+                    return;
+                }
+                Wait.ForIdle();
+
+                var before = ReadBasicColumnWidths(report);
+                if (!before.ContainsKey("Age") || !before.ContainsKey("Score"))
+                {
+                    Verify.Fail("The page did not report the Age and Score widths.");
+                    return;
+                }
+                Verify.AreEqual("Auto", before["Age"].Mode, "Precondition: Age is Auto.");
+                Verify.AreEqual("Star", before["Score"].Mode, "Precondition: Score is Star.");
+
+                foreach (string column in new[] { "Age", "Score" })
+                {
+                    DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), column));
+                    var after = ReadBasicColumnWidths(report);
+                    if (!after.ContainsKey(column))
+                    {
+                        Verify.Fail("The page did not report the " + column + " width.");
+                        return;
+                    }
+                    Log.Comment("{0}: before {1}:{2}:{3}, after {4}:{5}:{6}.", column,
+                        before[column].Mode, before[column].Value, before[column].Actual,
+                        after[column].Mode, after[column].Value, after[column].Actual);
+                    Verify.AreEqual("Pixel", after[column].Mode, column + ": a double-click fit must leave the column with a Pixel Width.");
+                    Verify.IsTrue(Math.Abs(after[column].Value - after[column].Actual) <= 0.5,
+                        column + ": the Pixel Width must be the fitted size the column now has.");
+                    if (column == "Age")
+                    {
+                        // Age's Auto width already fits its content, so this is the unchanged-size fit.
+                        Verify.IsTrue(Math.Abs(after[column].Actual - before[column].Actual) <= 1.0,
+                            "Precondition: fitting the Auto column must not change its size.");
+                    }
+                    else
+                    {
+                        Verify.IsTrue(Math.Abs(after[column].Actual - before[column].Actual) > 1.0,
+                            "Fitting the Star column must change its size from its Star share to its content width.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a gripper double-click under an ancestor scale is recognised when the second press is one physical pixel from the first.")]
+        public void PointerDoubleClickGripperFitsColumnUnderAncestorScale()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var scaleButton = FindElement.ById<Button>(ScaleBasicTableVerticallyButton);
+                if (FindElement.ById(BasicTable) == null || scaleButton == null)
+                {
+                    Verify.Fail("BasicTableView and/or ScaleBasicTableVerticallyButton were not found on the test page.");
+                    return;
+                }
+
+                scaleButton.Invoke();
+                if (!WaitForStatusText("Scaled vertically"))
+                {
+                    Verify.Fail("The page did not scale the table.");
+                    return;
+                }
+                Wait.ForIdle();
+
+                double scale = GetAppWindowScale();
+                var bounds = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle;
+                var first = GripperPoint(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+                // Under ScaleY=0.25 one physical pixel is four of the gripper's own DIPs: outside the double-click
+                // slop (half the system rectangle, two physical pixels by default) unless measured in window space.
+                Log.Comment("SM_CXDOUBLECLK={0}, SM_CYDOUBLECLK={1}.", GetSystemMetrics(SM_CXDOUBLECLK), GetSystemMetrics(SM_CYDOUBLECLK));
+                PointerInput.Move(first);
+                Wait.ForIdle();
+                // PointerInput.Move between the clicks takes longer than the double-click time.
+                ClickAtScreenPoint(first);
+                ClickAtScreenPoint(new Point(first.X, first.Y + 1));
+                Wait.ForIdle();
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width under ScaleY=0.25 before={0}, after double-click={1}; window scale={2}.", bounds.Width, after, scale);
+                Verify.IsLessThan(after, bounds.Width - (20.0 * scale),
+                    "A double-click with one physical pixel of jitter must fit the column under an ancestor scale.");
+            }
+        }
+
+        // Parses the page's "<Header>=<GridUnitType>:<Value>:<ActualWidth>;..." report.
+        private static Dictionary<string, (string Mode, double Value, double Actual)> ReadBasicColumnWidths(Button report)
+        {
+            var status = FindElement.ById<TextBlock>(StatusText);
+            string previous = status.DocumentText;
+            report.Invoke();
+            Wait.ForIdle();
+            DateTime deadline = DateTime.Now.AddSeconds(3);
+            while (status.DocumentText == previous && DateTime.Now < deadline)
+            {
+                Wait.ForMilliseconds(100);
+            }
+
+            var widths = new Dictionary<string, (string Mode, double Value, double Actual)>();
+            foreach (string entry in status.DocumentText.Split(';'))
+            {
+                string[] pair = entry.Split('=');
+                string[] parts = pair.Length == 2 ? pair[1].Split(':') : new string[0];
+                if (parts.Length == 3)
+                {
+                    widths[pair[0]] = (parts[0],
+                        double.Parse(parts[1], global::System.Globalization.CultureInfo.InvariantCulture),
+                        double.Parse(parts[2], global::System.Globalization.CultureInfo.InvariantCulture));
+                }
+            }
+            Log.Comment("Column widths: {0}", status.DocumentText);
+            return widths;
+        }
+
+        private const int SM_CXDOUBLECLK = 36;
+        private const int SM_CYDOUBLECLK = 37;
+        private const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+        private const uint MOUSEEVENTF_LEFTUP = 0x0004;
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetCursorPos(int x, int y);
+
+        [DllImport("user32.dll")]
+        private static extern void mouse_event(uint flags, int dx, int dy, uint data, UIntPtr extraInfo);
+
+        private static void ClickAtScreenPoint(Point point)
+        {
+            SetCursorPos(point.X, point.Y);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+        }
+        [DllImport("user32.dll")]
+        private static extern uint GetDoubleClickTime();
+
+        // The 8-DIP gripper is right-aligned in the header cell; aim at its centre.
+        private static Point GripperPoint(UIObject header)
+        {
+            var bounds = header.BoundingRectangle;
+            return new Point(
+                bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale()),
+                bounds.Top + (bounds.Height / 2));
+        }
+
+        private static void DoubleClickColumnGripper(UIObject header)
+        {
+            DoubleClickPoint(GripperPoint(header));
         }
 
         #endregion

@@ -618,4 +618,64 @@ void StowedExceptionTests::ReportUnhandledErrorNonRestrictedError()
     VERIFY_ARE_EQUAL(hrFailFast, E_FAIL);
 }
 
+// Regression test for #11253. Expander's template binds to TemplateSettings, so loading it makes
+// XAML probe Microsoft.UI.Xaml.Controls.dll for an ExpanderTemplateSettings activation factory.
+// There isn't one, and that's expected. But if the miss leaves an error context on the UI thread,
+// ErrorHelper::ProcessUnhandledError will fail-fast on a later unhandled error, even when the app
+// should survive it (for example an exception from an async void handler).
+void StowedExceptionTests::ExpectedActivationFactoryMissLeavesNoErrorContext()
+{
+    typedef DWORD (__cdecl* GetErrorContextIndexFuncPtr)();
+    auto pfnGetErrorContextIndex = reinterpret_cast<GetErrorContextIndexFuncPtr>(GetProcAddress(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), "GetErrorContextIndex"));
+    VERIFY_IS_NOT_NULL(pfnGetErrorContextIndex);
+    const DWORD errorContextIndex = pfnGetErrorContextIndex();
+    VERIFY_ARE_NOT_EQUAL(errorContextIndex, static_cast<DWORD>(TLS_OUT_OF_INDEXES));
+
+    Private::Infrastructure::IXamlErrorTestHooks^ winrtErrorTestHooks = TestServices::WindowHelper->GetErrorHandlingTestHooks();
+    auto errorTestHooks = reinterpret_cast<::IXamlErrorTestHooks*>(winrtErrorTestHooks);
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        RunOnUIThread([&]()
+        {
+            errorTestHooks->ClearStowedExceptions();
+        });
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+
+    // Error contexts are per-thread, so clear them on the UI thread.
+    RunOnUIThread([&]()
+    {
+        errorTestHooks->ClearStowedExceptions();
+        VERIFY_IS_NULL(TlsGetValue(errorContextIndex));
+    });
+
+    Expander^ expander = nullptr;
+    RunOnUIThread([&]()
+    {
+        expander = ref new Expander();
+        expander->Header = L"Header";
+        expander->Content = L"Content";
+        TestServices::WindowHelper->WindowContent = expander;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    LOG_OUTPUT(L"Expanding, to also run the expand storyboard.");
+    RunOnUIThread([&]()
+    {
+        expander->IsExpanded = true;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        auto errorContext = static_cast<ErrorContext*>(TlsGetValue(errorContextIndex));
+        if (errorContext)
+        {
+            LOG_OUTPUT(L"Unexpected error context: hr=0x%08x, frameCount=%u", errorContext->frameHRs[0], errorContext->frameCount);
+        }
+        VERIFY_IS_NULL(errorContext, L"Loading an Expander should not leave an error context on the UI thread.");
+    });
+}
+
 } } } } } }

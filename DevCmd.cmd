@@ -39,16 +39,16 @@ set PrereleaseArg=
 
 setlocal enableextensions enabledelayedexpansion
 set _ARGS=
+set _PreserveContext=0
 
 rem We are targeting VS 2019 (version 16.x) or later
 set VsVersion=16.0
 
-if exist %temp%\WinUI.PreserveContext.marker del %temp%\WinUI.PreserveContext.marker
 :ParseArgs
 if "%1" EQU "" (
     goto :DoneParsing
 ) else if /i "%1" EQU "/PreserveContext" (
-    echo. > %temp%\WinUI.PreserveContext.marker
+    set _PreserveContext=1
 ) else if /i "%1" EQU "/Prerelease" (
     set PrereleaseArg=-prerelease
 ) else (
@@ -90,6 +90,7 @@ if exist %~dp0.buildtools (
 )
 
 endlocal & (
+    set "_PreserveContext=%_PreserveContext%"
     echo "Initializing VS command prompt from %MSBuildInstallPath%\Common7\Tools\VsDevCmd.bat ..."
     call "%MSBuildInstallPath%\Common7\Tools\VsDevCmd.bat" /no_logo %_ARGS%
 )
@@ -99,11 +100,11 @@ call :SetEnviromentVariable VCToolsInstallDir "%VCToolsInstallDir%"
 call :SetEnviromentVariable VCToolsRedistDir "%VCToolsRedistDir%"
 call :SetEnviromentVariable ExtensionSdkDir "%ExtensionSdkDir%"
 
-if not exist %temp%\WinUI.PreserveContext.marker (
+if not "%_PreserveContext%"=="1" (
     echo Starting cmd /k
     cmd /k "cd /d %RepoRoot%"
 )
 
-if exist %temp%\WinUI.PreserveContext.marker (del %temp%\WinUI.PreserveContext.marker)
+set "_PreserveContext="
 
 exit /b 0

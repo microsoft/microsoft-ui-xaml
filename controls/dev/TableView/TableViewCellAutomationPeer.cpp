@@ -22,7 +22,44 @@
 #include <tuple>
 #include <vector>
 
+namespace
+{
+    winrt::FrameworkElement CellForPublicConstructor(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewRow const& row,
+        winrt::TableViewColumn const& column,
+        int32_t columnIndex)
+    {
+        if (!cell || !row || !column || columnIndex < 0)
+        {
+            throw winrt::hresult_invalid_argument();
+        }
+
+        // A row not yet owned by a TableView has no column set to check against.
+        if (auto const table = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
+        {
+            if (winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
+                static_cast<uint32_t>(columnIndex) >= table.Columns().Size())
+            {
+                throw winrt::hresult_invalid_argument();
+            }
+        }
+
+        return cell;
+    }
+}
+
 TableViewCellAutomationPeer::TableViewCellAutomationPeer(
+    winrt::FrameworkElement const& cell,
+    winrt::TableViewRow const& row,
+    winrt::TableViewColumn const& column,
+    int32_t columnIndex)
+    : TableViewCellAutomationPeer(TrustedOwnerTag{}, CellForPublicConstructor(cell, row, column, columnIndex), row, column, columnIndex)
+{
+}
+
+TableViewCellAutomationPeer::TableViewCellAutomationPeer(
+    TrustedOwnerTag,
     winrt::FrameworkElement const& cell,
     winrt::TableViewRow const& row,
     winrt::TableViewColumn const& column,
@@ -109,7 +146,7 @@ hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
 }
 
 // UIA focusability is not Tab reachability: row-level cells still need SetFocus and
-// IsKeyboardFocusable to succeed when enabled and visible.
+// IsKeyboardFocusable to succeed when enabled, visible and actionable.
 bool TableViewCellAutomationPeer::IsKeyboardFocusableCore()
 {
     auto const cell = Owner().try_as<winrt::FrameworkElement>();
@@ -124,7 +161,7 @@ bool TableViewCellAutomationPeer::IsKeyboardFocusableCore()
     {
         return false;
     }
-    return !row || row.IsEnabled();
+    return !row || (row.IsEnabled() && winrt::get_self<TableViewRow>(row)->IsCellActionableInternal(cell));
 }
 
 void TableViewCellAutomationPeer::SetFocusCore()
@@ -139,16 +176,45 @@ void TableViewCellAutomationPeer::SetFocusCore()
 
     if (row && cell)
     {
-        // Drill the row in first, exactly as Right does: the cell is not focusable at all while the
-        // row is at row level, so a bare Focus() here would silently do nothing.
-        winrt::get_self<TableViewRow>(row)->SetCellLevelInternal(true);
-        if (cell.Focus(winrt::FocusState::Programmatic))
+        // Only an actionable cell takes focus; never leave the row armed with no focusable level.
+        auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        const int32_t column = rowImpl->GetVisibleCellIndexInternal(cell);
+        if (column < 0 || !rowImpl->IsCellActionableInternal(cell))
         {
-            return;
+            throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
         }
+        // The exact cell or nothing: no fallback to the row, and a refused cell restores the level.
+        const bool wasCellLevel = rowImpl->IsCellLevelInternal();
+        rowImpl->SetCellLevelInternal(true);
+        if (!cell.Focus(winrt::FocusState::Programmatic) || cell.FocusState() == winrt::FocusState::Unfocused)
+        {
+            rowImpl->SetCellLevelInternal(wasCellLevel);
+            throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+        }
+        return;
     }
 
     __super::SetFocusCore();
+}
+
+void TableViewCellAutomationPeer::ShowContextMenuCore()
+{
+    // Same tracking rule as SetFocusCore: a recycled cell must not raise a request for another item.
+    auto const row = m_row.get();
+    auto const cell = row && GetTrackedTableForRow(row) ? GetRealizedCellFromRow(row) : nullptr;
+    if (!cell)
+    {
+        ThrowElementNotAvailable();
+    }
+
+    if (cell == Owner())
+    {
+        __super::ShowContextMenuCore();
+    }
+    else if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(cell))
+    {
+        peer.ShowContextMenu();
+    }
 }
 
 hstring TableViewCellAutomationPeer::GetNameCore()
@@ -830,7 +896,9 @@ void TableViewCellAutomationPeer::RealizeCore()
 
     if (auto const row = element.try_as<winrt::TableViewRow>())
     {
-        if (!IsTrackedRow(row, tableView))
+        // The peer is bound to its own cell element; if the repeater realized the item into another
+        // row, this provider cannot describe it, so fail rather than report a realized element.
+        if (!IsTrackedRow(row, tableView) || row != m_row.get() || !IsOwnerCurrentCellOfRow(row))
         {
             ThrowElementNotAvailable();
         }

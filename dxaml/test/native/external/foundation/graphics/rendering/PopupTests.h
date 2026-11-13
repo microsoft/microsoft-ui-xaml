@@ -25,8 +25,7 @@ public:
     TEST_METHOD_CLEANUP(TestCleanup)
 
     BEGIN_TEST_METHOD(WindowedPopupHasForcedBackground)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash
-        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -88,6 +87,11 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(WindowedPopupInputScaleAtOrigin)
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // The popup input adapter misses scale compensation when its offset remains (0, 0) on first open.
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(NoXamlRoot)
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
@@ -106,4 +110,3 @@ private:
 };
 
 } } } } } }
-

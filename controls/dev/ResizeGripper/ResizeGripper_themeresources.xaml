@@ -6,19 +6,16 @@
     <!-- Must be registered as a ThemeResources page (ResizeGripper.vcxitems), or these keys are
          missing at runtime and the gripper template throws. -->
 
-    <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
-    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
+    <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,1,0</Thickness>
+    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,1</Thickness>
 
     <ResourceDictionary.ThemeDictionaries>
-        <!-- Once any theme dictionary defines "Light", "Default" means Dark. -->
+        <!-- ControlStrongStrokeColorDefault. "Default" means Dark once "Light" is defined. -->
         <ResourceDictionary x:Key="Light">
-            <!-- AccentFillColorDefaultBrush's Light tier. {ThemeResource} on the colour, not a
-                 StaticResource alias: aliases don't resolve reliably across merged dictionaries. -->
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemAccentColorDark1}" />
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#72000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
-            <!-- AccentFillColorDefaultBrush's Dark tier. -->
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemAccentColorLight2}" />
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#8BFFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- Not the accent brush: under High Contrast it matches the window background. -->

@@ -8,7 +8,9 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
@@ -116,6 +118,7 @@ namespace MUXControlsTestApp
     {
         private readonly ObservableCollection<TableViewTestPerson> _basicItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
+        private readonly ObservableCollection<TableViewTestPerson> _cellControlsItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
         private TableViewSource _groupedSource;
         private int _addedColumnCount;
@@ -146,6 +149,11 @@ namespace MUXControlsTestApp
                 _scrollingItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
             }
 
+            for (int i = 0; i < Facts.CellControlsItemCount; i++)
+            {
+                _cellControlsItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
+            }
+
             for (int i = 0; i < Facts.GroupedItemCount; i++)
             {
                 _groupedItems.Add(new TableViewTestPerson(i, Facts.GroupedName(i), Facts.GroupedAge(i), Facts.CityOf(i)));
@@ -165,6 +173,7 @@ namespace MUXControlsTestApp
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
+            CellControlsTableView.ItemsSource = _cellControlsItems;
             GroupedTableView.ItemsSource = _groupedSource;
 
             // Reports the column each edit opens on. Appends rather than overwrites so a test can tell a
@@ -178,6 +187,7 @@ namespace MUXControlsTestApp
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
             HookHierarchyTables();
+            HookContextMenuTable();
         }
 
         private ScrollViewer _scrollingBodyScroller;
@@ -349,7 +359,85 @@ namespace MUXControlsTestApp
                 editor.GetType().Name + "|" +
                 (string.IsNullOrEmpty(automationName) ? "-" : automationName) + "|" +
                 editor.Text + "|focus=" +
-                IsSelfOrDescendant(editor, FocusManager.GetFocusedElement(XamlRoot) as DependencyObject) + ";";
+                IsSelfOrDescendant(editor, FocusManager.GetFocusedElement(XamlRoot) as DependencyObject) + "|" +
+                ProbeEditorAlignment(editor) + ";";
+        }
+
+        // Text line bounds of the edited column's display cell, captured before the editor replaces it.
+        private Windows.Foundation.Rect? _displayLine;
+
+        private void CaptureDisplayLine(object item, TableViewColumn column)
+        {
+            _displayLine = null;
+            var header = FindBasicHeaderCell(column);
+            if (header == null)
+            {
+                return;
+            }
+
+            var columnBounds = BoundsInTable(header);
+            var display = FindDescendants<TextBlock>(BasicTableView).FirstOrDefault(t =>
+            {
+                var bounds = BoundsInTable(t);
+                double centre = bounds.Left + (bounds.Width / 2);
+                return ReferenceEquals(t.DataContext, item) && centre >= columnBounds.Left && centre <= columnBounds.Right;
+            });
+            if (display != null)
+            {
+                var line = display.ContentStart.GetCharacterRect(Microsoft.UI.Xaml.Documents.LogicalDirection.Forward);
+                line.Union(display.ContentEnd.GetCharacterRect(Microsoft.UI.Xaml.Documents.LogicalDirection.Backward));
+                _displayLine = display.TransformToVisual(BasicTableView).TransformBounds(line);
+            }
+        }
+
+        private Windows.Foundation.Rect BoundsInTable(FrameworkElement element) =>
+            element.TransformToVisual(BasicTableView).TransformBounds(new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+
+        // "align=dx:<start-edge delta>,dy:<top delta, or line-bottom delta when the line heights differ>,lines:<display>/<editor>".
+        private string ProbeEditorAlignment(TextBox editor)
+        {
+            if (_displayLine == null)
+            {
+                return "align=no-display-text";
+            }
+            // GetRectFromCharacterIndex throws for empty text.
+            if (string.IsNullOrEmpty(editor.Text))
+            {
+                return "align=empty-editor";
+            }
+
+            // Flush the SizeChanged padding pass.
+            editor.UpdateLayout();
+            var d = _displayLine.Value;
+            var contentElement = FindDescendants<ScrollViewer>(editor).FirstOrDefault(s => s.Name == "ContentElement");
+            if (!(contentElement?.Content is FrameworkElement textView))
+            {
+                return "align=no-text-view";
+            }
+            var e = textView.TransformToVisual(BasicTableView).TransformBounds(EditorLineRect(editor, textView));
+            // Both rects are in the table's own coordinates, which are mirrored under RTL, so Left is the line's start edge.
+            double dx = e.Left - d.Left;
+            double dy = Math.Abs(e.Height - d.Height) <= 0.5 ? e.Top - d.Top : e.Bottom - d.Bottom;
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "align=dx:{0:0.##},dy:{1:0.##},lines:{2:0.##}/{3:0.##}", dx, dy, d.Height, e.Height);
+        }
+
+        // The editor's text line in its text view's coordinates. GetRectFromCharacterIndex is relative to the text
+        // view and leaves out an RTL line's right alignment, so under RTL the line is placed against the text view's
+        // start (right) edge: the RTL check compares the text view's start edge, not the glyphs.
+        internal static Windows.Foundation.Rect EditorLineRect(TextBox editor, FrameworkElement textView)
+        {
+            var first = editor.GetRectFromCharacterIndex(0, false);
+            var last = editor.GetRectFromCharacterIndex(Math.Max(0, editor.Text.Length - 1), true);
+            double width = Math.Max(0, last.Right - first.Left);
+            double left = editor.FlowDirection == FlowDirection.RightToLeft ? textView.ActualWidth - width : first.Left;
+            return new Windows.Foundation.Rect(left, first.Top, width, first.Height);
+        }
+
+        private void OnToggleBasicFlowDirectionClick(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.FlowDirection = BasicTableView.FlowDirection == FlowDirection.RightToLeft
+                ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
         private static bool IsSelfOrDescendant(DependencyObject root, DependencyObject candidate)
@@ -370,6 +458,7 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
         {
             EditColumnReportTextBlock.Text += (args.Column?.Header?.ToString() ?? "null") + ";";
+            CaptureDisplayLine(args.Item, args.Column);
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, ProbeEditor);
         }
 
@@ -669,33 +758,445 @@ namespace MUXControlsTestApp
             return "[" + (info == null || info.Key == null ? "?" : info.Key.ToString()) + "]";
         }
 
+        // ---- Context menus ----
+
+        private readonly ObservableCollection<TableViewTestPerson> _contextMenuItems = new ObservableCollection<TableViewTestPerson>();
+        private string _contextMenuLast = Facts.NoneValue;
+        private bool _contextMenuOpen;
+        private int _contextMenuOpens;
+        private string _contextMenuItem = Facts.NoneValue;
+        private string _contextMenuTarget = Facts.NoneValue;
+        private string _contextMenuFocus = Facts.NoneValue;
+        private bool _cancelEditorMenuCloseOnce;
+        private bool _editorMenuOpen;
+        private int _editorMenuClosings;
+
+        private void HookContextMenuTable()
+        {
+            for (int i = 0; i < Facts.ContextMenuItemCount; i++)
+            {
+                _contextMenuItems.Add(new TableViewTestPerson(i, Facts.ContextMenuName(i), Facts.BasicAge(i), Facts.CityOf(i)));
+            }
+
+            ContextMenuTable.ItemsSource = _contextMenuItems;
+            ContextMenuTable.SelectionChanged += (s, args) => RefreshContextMenuReadout();
+
+            // IsEditing flips after these events return, so refresh once they have.
+            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_cancelEditorMenuCloseOnce)
+                {
+                    ConfigureEditorMenuWithCancelledClose();
+                    _cancelEditorMenuCloseOnce = false;
+                }
+                RefreshContextMenuReadout();
+            });
+            ContextMenuTable.CellEditEnding += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
+
+            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.RowTemplateMenu, Facts.TableMenu })
+            {
+                var menu = (FlyoutBase)ContextMenuTableHost.Resources[key];
+                menu.Opening += (s, args) => OnContextMenuOpening(key, (FlyoutBase)s);
+                menu.Closed += (s, args) =>
+                {
+                    _contextMenuOpen = false;
+                    RefreshContextMenuReadout();
+                };
+            }
+
+            RefreshContextMenuReadout();
+        }
+
+        private void OnContextMenuTemplateLoaded(object sender, RoutedEventArgs e)
+        {
+            // Application content must not masquerade as a cell wrapper by tagging another column.
+            ((FrameworkElement)sender).Tag = ContextMenuTable.Columns[Facts.ContextMenuNameColumn];
+        }
+
+        // TableView moves focus before Opening; the menu takes focus right after.
+        private void OnContextMenuOpening(string key, FlyoutBase menu)
+        {
+            _contextMenuLast = key;
+            _contextMenuOpen = true;
+            _contextMenuOpens++;
+
+            FrameworkElement target = menu.Target;
+            var person = target?.DataContext as TableViewTestPerson;
+            _contextMenuItem = person == null ? Facts.NoneValue : person.Name;
+            _contextMenuTarget = target == null ? Facts.NoneValue : target.GetType().Name;
+            _contextMenuFocus = DescribeContextMenuFocus();
+
+            RefreshContextMenuReadout();
+        }
+
+        private void OnResetContextMenuClick(object sender, RoutedEventArgs e)
+        {
+            if (ContextMenuTable.IsEditing)
+            {
+                ContextMenuTable.CancelEdit();
+            }
+
+            if (ContextMenuTable.IsLoaded)
+            {
+                ContextMenuTable.DeselectAll();
+            }
+
+            // An edit test may have committed a new name; later tests expect the seeded ones.
+            for (int i = 0; i < _contextMenuItems.Count; i++)
+            {
+                _contextMenuItems[i].Name = Facts.ContextMenuName(i);
+            }
+
+            if (!ReferenceEquals(ContextMenuTable.ItemsSource, _contextMenuItems))
+            {
+                ContextMenuTable.ItemsSource = _contextMenuItems;
+            }
+            ContextMenuTable.FlowDirection = FlowDirection.LeftToRight;
+            SetRowTemplateMenu(null);
+
+            _contextMenuLast = Facts.NoneValue;
+            _contextMenuOpen = false;
+            _contextMenuOpens = 0;
+            _contextMenuItem = Facts.NoneValue;
+            _contextMenuTarget = Facts.NoneValue;
+            _contextMenuFocus = Facts.NoneValue;
+            _cancelEditorMenuCloseOnce = false;
+            _editorMenuOpen = false;
+            _editorMenuClosings = 0;
+            RefreshContextMenuReadout();
+        }
+
+        private void OnCancelEditorMenuCloseClick(object sender, RoutedEventArgs e) => _cancelEditorMenuCloseOnce = true;
+
+        private void ConfigureEditorMenuWithCancelledClose()
+        {
+            var editor = FindDescendant<TextBox>(ContextMenuTable);
+            if (editor == null)
+            {
+                throw new InvalidOperationException("The context-menu test requires an active text editor.");
+            }
+
+            var flyout = new CommandBarFlyout { AlwaysExpanded = true, AreOpenCloseAnimationsEnabled = false };
+            flyout.SecondaryCommands.Add(new AppBarButton { Label = "Keep editing" });
+            flyout.Opened += (s, args) =>
+            {
+                _editorMenuOpen = true;
+                RefreshContextMenuReadout();
+            };
+            flyout.Closing += (s, args) =>
+            {
+                _editorMenuClosings++;
+                if (_editorMenuClosings == 1)
+                {
+                    args.Cancel = true;
+                }
+                RefreshContextMenuReadout();
+            };
+            flyout.Closed += (s, args) =>
+            {
+                _editorMenuOpen = false;
+                RefreshContextMenuReadout();
+            };
+            editor.ContextFlyout = flyout;
+        }
+
+        // Groups ContextMenuTable by City; Reset ungroups it.
+        private void OnGroupContextMenuTableClick(object sender, RoutedEventArgs e)
+        {
+            ContextMenuTable.ItemsSource = TableViewSource.From(_contextMenuItems)
+                .GroupBy(item => ((TableViewTestPerson)item).City);
+        }
+
+        // Mirrors ContextMenuTable; Reset restores left to right.
+        private void OnMirrorContextMenuTableClick(object sender, RoutedEventArgs e)
+        {
+            ContextMenuTable.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        // Puts RowTemplateMenu on the template root of every realized row; Reset removes it.
+        private void OnAttachRowTemplateMenuClick(object sender, RoutedEventArgs e)
+        {
+            SetRowTemplateMenu((FlyoutBase)ContextMenuTableHost.Resources[Facts.RowTemplateMenu]);
+        }
+
+        private void SetRowTemplateMenu(FlyoutBase menu)
+        {
+            foreach (var row in FindDescendants<TableViewRow>(ContextMenuTable))
+            {
+                if (VisualTreeHelper.GetChildrenCount(row) > 0 && VisualTreeHelper.GetChild(row, 0) is UIElement templateRoot)
+                {
+                    templateRoot.ContextFlyout = menu;
+                }
+            }
+        }
+
+        private void RefreshContextMenuReadout()
+        {
+            if (ContextMenuReadout == null || ContextMenuTable == null)
+            {
+                return;
+            }
+
+            var selected = ContextMenuTable.SelectedItem as TableViewTestPerson;
+            string text =
+                Facts.MenuField + "=" + _contextMenuLast + ";" +
+                Facts.OpenField + "=" + _contextMenuOpen + ";" +
+                Facts.OpensField + "=" + _contextMenuOpens + ";" +
+                Facts.ItemField + "=" + _contextMenuItem + ";" +
+                Facts.TargetField + "=" + _contextMenuTarget + ";" +
+                Facts.FocusField + "=" + _contextMenuFocus + ";" +
+                Facts.EditorMenuOpenField + "=" + _editorMenuOpen + ";" +
+                Facts.EditorMenuClosingsField + "=" + _editorMenuClosings + ";" +
+                Facts.EditingField + "=" + ContextMenuTable.IsEditing + ";" +
+                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
+
+            if (ContextMenuReadout.Text != text)
+            {
+                ContextMenuReadout.Text = text;
+            }
+        }
+
+        // cell:<item>/<visible column index>, row:<item>, group:<key>, header:<text>, or the focused element's type name.
+        private string DescribeContextMenuFocus()
+        {
+            var focused = XamlRoot == null ? null : FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
+            if (focused == null)
+            {
+                return Facts.NoneValue;
+            }
+
+            for (DependencyObject node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    var person = row.DataContext as TableViewTestPerson;
+                    string name = person == null ? "?" : person.Name;
+                    if (focused == row)
+                    {
+                        return "row:" + name;
+                    }
+
+                    var cellsHost = FindDescendant<TableViewCellsPanel>(row);
+                    int index = cellsHost == null ? -1 : IndexOfChildContaining(cellsHost, focused);
+                    return "cell:" + name + "/" + index;
+                }
+
+                if (node is TableViewGroupHeader groupHeader)
+                {
+                    var info = groupHeader.Content as TableViewGroupInfo;
+                    return "group:" + (info == null || info.Key == null ? "?" : info.Key.ToString());
+                }
+
+                if (node is FrameworkElement element && element.Name == "PART_HeaderHost")
+                {
+                    var peer = focused is UIElement focusedElement
+                        ? FrameworkElementAutomationPeer.FromElement(focusedElement)
+                        : null;
+                    return "header:" + (peer == null ? "?" : peer.GetName());
+                }
+
+                if (node == ContextMenuTable)
+                {
+                    break;
+                }
+            }
+
+            return focused.GetType().Name;
+        }
+
+        // Index of the panel child that is, or contains, element; -1 if none.
+        private static int IndexOfChildContaining(Panel panel, DependencyObject element)
+        {
+            for (int i = 0; i < panel.Children.Count; i++)
+            {
+                for (DependencyObject node = element; node != null; node = VisualTreeHelper.GetParent(node))
+                {
+                    if (node == panel.Children[i])
+                    {
+                        return i;
+                    }
+                    if (node == panel)
+                    {
+                        break;
+                    }
+                }
+            }
+            return -1;
+        }
+
         // Unloads the Basic table from the tree shortly after the click, then restores it. The delay
         // exists so a test can start a pointer drag and have the unload land mid-gesture, which a
         // direct click cannot do while the control holds pointer capture.
         private void OnDelayedUnloadClick(object sender, RoutedEventArgs e)
         {
-            var unloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-            unloadTimer.Tick += (s, args) =>
+            RunAfterDelay(() =>
             {
-                unloadTimer.Stop();
                 BasicTableHost.Children.Remove(BasicTableView);
                 StatusTextBlock.Text = "Unloaded";
-
-                var reloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-                reloadTimer.Tick += (s2, args2) =>
+                RunAfterDelay(() =>
                 {
-                    reloadTimer.Stop();
                     BasicTableHost.Children.Add(BasicTableView);
                     StatusTextBlock.Text = "Reloaded";
-                };
-                reloadTimer.Start();
+                });
+            });
+        }
+
+        private static void RunAfterDelay(Action action)
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+            timer.Tick += (s, args) =>
+            {
+                timer.Stop();
+                action();
             };
-            unloadTimer.Start();
+            timer.Start();
+        }
+
+        private void OnDelayedGripperCaptureLossClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                foreach (var gripper in FindDescendants<Microsoft.UI.Private.Controls.ResizeGripper>(BasicTableView))
+                {
+                    gripper.ReleasePointerCaptures();
+                }
+                StatusTextBlock.Text = "Gripper capture released";
+            });
+        }
+
+        private void OnDelayedDisableClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                BasicTableView.IsEnabled = false;
+                StatusTextBlock.Text = "Disabled";
+                RunAfterDelay(() =>
+                {
+                    BasicTableView.IsEnabled = true;
+                    StatusTextBlock.Text = "Enabled";
+                });
+            });
+        }
+
+        private TableViewColumnHeader FindBasicHeaderCell(TableViewColumn column)
+        {
+            return FindDescendants<TableViewColumnHeader>(BasicTableView).FirstOrDefault(header => header.Tag == column);
+        }
+
+        private static void PinColumn(TableViewColumn column)
+        {
+            column.MinWidth = column.ActualWidth;
+            column.MaxWidth = column.ActualWidth;
+        }
+
+        // The ToolTip's DataContext is cleared while ToolTipService unregisters it.
+        private void OnPinNameOnHeaderToolTipDetachClick(object sender, RoutedEventArgs e)
+        {
+            var nameColumn = BasicTableView.Columns[0];
+            var headerCell = FindBasicHeaderCell(nameColumn);
+            var toolTip = headerCell == null ? null : ToolTipService.GetToolTip(headerCell) as ToolTip;
+            if (toolTip == null)
+            {
+                StatusTextBlock.Text = "No Name header tooltip";
+                return;
+            }
+
+            toolTip.DataContext = "HeaderToolTipProbe";
+            void OnDataContextChanged(FrameworkElement s, DataContextChangedEventArgs args)
+            {
+                if (args.NewValue == null)
+                {
+                    toolTip.DataContextChanged -= OnDataContextChanged;
+                    try
+                    {
+                        PinColumn(nameColumn);
+                        StatusTextBlock.Text = "Pinned while detaching";
+                    }
+                    catch (global::System.Exception ex)
+                    {
+                        StatusTextBlock.Text = "Pin failed while detaching: " + ex.Message;
+                    }
+                }
+            }
+            toolTip.DataContextChanged += OnDataContextChanged;
+            StatusTextBlock.Text = "Detach pin armed";
+        }
+
+        private ToolTip _rebuildProbeToolTip;
+
+        // First invoke caches the Name header's ToolTip (before the gripper detaches it); the second pins the
+        // column, and the ToolTip takes its header's DataContext when TableView attaches it again.
+        private void OnPinNameRebuildOnHeaderToolTipAttachClick(object sender, RoutedEventArgs e)
+        {
+            var nameColumn = BasicTableView.Columns[0];
+            var headerCell = FindBasicHeaderCell(nameColumn);
+            if (headerCell == null)
+            {
+                StatusTextBlock.Text = "No Name header";
+                return;
+            }
+
+            if (_rebuildProbeToolTip == null)
+            {
+                _rebuildProbeToolTip = ToolTipService.GetToolTip(headerCell) as ToolTip;
+                headerCell.DataContext = "HeaderToolTipProbe";
+                StatusTextBlock.Text = _rebuildProbeToolTip == null ? "No Name header tooltip" : "Rebuild probe ready";
+                return;
+            }
+
+            if (ToolTipService.GetToolTip(headerCell) != null)
+            {
+                StatusTextBlock.Text = "Name header tooltip not suppressed";
+                return;
+            }
+
+            var toolTip = _rebuildProbeToolTip;
+            void OnDataContextChanged(FrameworkElement s, DataContextChangedEventArgs args)
+            {
+                if (args.NewValue != null)
+                {
+                    toolTip.DataContextChanged -= OnDataContextChanged;
+                    BasicTableView.Columns.Clear();
+                    BasicTableView.Density = BasicTableView.Density == TableViewDensity.Compact
+                        ? TableViewDensity.Standard : TableViewDensity.Compact;
+                }
+            }
+            toolTip.DataContextChanged += OnDataContextChanged;
+            try
+            {
+                PinColumn(nameColumn);
+                StatusTextBlock.Text = "Pinned; columns=" + BasicTableView.Columns.Count;
+            }
+            catch (global::System.Exception ex)
+            {
+                StatusTextBlock.Text = "Pin failed: " + ex.Message;
+            }
+        }
+
+        private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
+        {
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is T typed)
+                {
+                    yield return typed;
+                }
+
+                foreach (var nested in FindDescendants<T>(child))
+                {
+                    yield return nested;
+                }
+            }
         }
 
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
         {
             BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;
+            RtlTableView.IsReadOnly = BasicTableView.IsReadOnly;
+            ContextMenuTable.IsReadOnly = BasicTableView.IsReadOnly;
+            ScrollingTableView.IsReadOnly = BasicTableView.IsReadOnly;
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the
@@ -709,6 +1210,72 @@ namespace MUXControlsTestApp
             }
 
             BasicTableView.CanUserSortColumns = ((CheckBox)sender).IsChecked == true;
+        }
+
+        private void OnCanUserResizeColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserResizeColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserResizeColumns = BasicTableView.CanUserResizeColumns;
+            }
+        }
+
+        private void OnHideColumnHeadersToggled(object sender, RoutedEventArgs e)
+        {
+            var visibility = ((CheckBox)sender).IsChecked == true ? TableViewHeadersVisibility.None : TableViewHeadersVisibility.Column;
+            BasicTableView.HeadersVisibility = visibility;
+            ScrollingTableView.HeadersVisibility = visibility;
+            RtlTableView.HeadersVisibility = visibility;
+        }
+
+        private void OnEmptyBasicToggled(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.ItemsSource = ((CheckBox)sender).IsChecked == true ? new ObservableCollection<TableViewTestPerson>() : _basicItems;
+        }
+
+        // A menu makes RtlAge, beyond the viewport, the only actionable column of the read-only RTL
+        // table, and the hierarchy table becomes a wide read-only tree.
+        private void OnScrollFixturesToggled(object sender, RoutedEventArgs e)
+        {
+            bool on = ((CheckBox)sender).IsChecked == true;
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "Age" });
+            RtlTableView.Columns[1].Width = new GridLength(on ? 400 : 220);
+            RtlTableView.Columns[2].CellContextFlyout = on ? menu : null;
+            HierarchyTable.Columns[2].Width = new GridLength(on ? 500 : 100);
+            HierarchyTable.IsReadOnly = on;
+            if (on && ScrollingTableView.Columns.Count == 4)
+            {
+                ScrollingTableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Link",
+                    Width = new GridLength(160),
+                    CellTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock VerticalAlignment='Center'><Hyperlink AutomationProperties.Name='" + Facts.CellHyperlink + "'>Open</Hyperlink></TextBlock>" +
+                        "</DataTemplate>"),
+                });
+            }
+            else if (!on && ScrollingTableView.Columns.Count > 4)
+            {
+                ScrollingTableView.Columns.RemoveAt(4);
+            }
+        }
+
+        // Read-only, ScrollCity is then the last actionable column, right after the frozen one, with
+        // wide trailing content.
+        private void OnScrollCityMenuToggled(object sender, RoutedEventArgs e)
+        {
+            var menu = new MenuFlyout();
+            menu.Items.Add(new MenuFlyoutItem { Text = "City" });
+            ScrollingTableView.Columns[1].CellContextFlyout = ((CheckBox)sender).IsChecked == true ? menu : null;
+        }
+
+        // App code scrolling the body: no pointer or wheel input reaches the table.
+        private void OnScrollScrollingBodyClick(object sender, RoutedEventArgs e)
+        {
+            _scrollingBodyScroller?.ChangeView(_scrollingBodyScroller.HorizontalOffset + 120, null, null, true);
         }
 
         // Page switching without a Pivot: hosting the TableViews in a Pivot asserts in
@@ -726,6 +1293,16 @@ namespace MUXControlsTestApp
         private void OnGoToHierarchyClick(object sender, RoutedEventArgs e) => ShowTableHost(HierarchyTableHost);
 
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
+        private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
+
+        private void OnGoToCellControlsClick(object sender, RoutedEventArgs e) => ShowTableHost(CellControlsTableHost);
+
+        private void OnToggleCellControlsHeadersClick(object sender, RoutedEventArgs e)
+        {
+            CellControlsTableView.HeadersVisibility = CellControlsTableView.HeadersVisibility == TableViewHeadersVisibility.None
+                ? TableViewHeadersVisibility.Column
+                : TableViewHeadersVisibility.None;
+        }
 
         private void ShowTableHost(FrameworkElement host)
         {
@@ -735,6 +1312,8 @@ namespace MUXControlsTestApp
             GroupedPagingTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
+            ContextMenuTableHost.Visibility = Visibility.Collapsed;
+            CellControlsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 
@@ -790,6 +1369,49 @@ namespace MUXControlsTestApp
             }
         }
 
+        // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
+        {
+            NameColumn.CanResize = !NameColumn.CanResize;
+        }
+
+        // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.
+        private void OnSetAgeAutoScoreStarClick(object sender, RoutedEventArgs e)
+        {
+            AgeColumn.Width = GridLength.Auto;
+            ScoreColumn.Width = new GridLength(1, GridUnitType.Star);
+            TemplateColumn.Width = new GridLength(1, GridUnitType.Star);
+            StatusTextBlock.Text = "Auto and Star set";
+        }
+
+        // "<Header>=<GridUnitType>:<Width.Value>:<ActualWidth>" per column, joined by ';'.
+        private void OnReportBasicColumnWidthsClick(object sender, RoutedEventArgs e)
+        {
+            StatusTextBlock.Text = string.Join(";", BasicTableView.Columns.Select(column =>
+                string.Format(global::System.Globalization.CultureInfo.InvariantCulture, "{0}={1}:{2:0.##}:{3:0.##}",
+                    column.Header, column.Width.GridUnitType, column.Width.Value, column.ActualWidth)));
+        }
+
+        private void OnScaleBasicTableVerticallyClick(object sender, RoutedEventArgs e)
+        {
+            BasicTableHost.RenderTransform = new ScaleTransform { ScaleY = 0.25 };
+            StatusTextBlock.Text = "Scaled vertically";
+        }
+
+        private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
+        {
+            if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))
+            {
+                ScoreColumn.MinWidth = ScoreColumn.ActualWidth;
+                ScoreColumn.MaxWidth = ScoreColumn.ActualWidth;
+            }
+            else
+            {
+                ScoreColumn.ClearValue(TableViewColumn.MaxWidthProperty);
+                ScoreColumn.ClearValue(TableViewColumn.MinWidthProperty);
+            }
+        }
+
         private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
         {
             GroupedTableView.ExpandAllGroups();
@@ -808,6 +1430,16 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
+        {
+            _groupedSource.Filter(item => ((TableViewTestPerson)item).Id == 0);
+        }
+
+        private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.Select(3);
         }
 
         private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)

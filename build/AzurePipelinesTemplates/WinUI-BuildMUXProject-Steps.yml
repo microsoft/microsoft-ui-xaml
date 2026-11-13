@@ -42,12 +42,16 @@ parameters:
   runStaticAnalysis: true
   projectCaching: false
   buildProductOnly: false
+  # Monobuild supplies repository-aware indexing before the first upload; standalone defaults are unchanged.
+  indexSources: true
+  prePublishSymbolsSteps: []
   # When set (mono-build test pipeline only), download the WinUI product from the parent mono-build
   # instead of rebuilding it: for Release x86/x64/arm64 jobs, skip the Microsoft.UI.Xaml.sln product
   # build and lay the mono-build's Build-WinUI-<plat>-Release output into BuildOutput\bin so
   # MUXControls.sln (test) + scenario apps consume it via eng\consumebinaries.targets. Empty
   # (default) = standalone behavior (build the product). Debug and arm64ec jobs always build the
-  # product (the mono-build publishes Release x86/x64/arm64 only).
+  # product (the mono-build publishes Release x86/x64/arm64 only), but every job restores the
+  # mono-build's component packages.
   consumeProductFromBuildId: ''
   consumeProductFromPipeline: ''
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
@@ -120,6 +124,9 @@ steps:
 
   - task: PowerShell@2
     displayName: GenerateVersionInfo
+    ${{ if eq(parameters.IsMonobuild, 'true') }}:
+      env:
+        WindowsAppSDKBinaryVersion: $(WindowsAppSDKBinaryVersion)
     inputs:
       filePath: '$(REPOROOT)\build\PipelineScripts\GenerateVersionInfo.ps1'
       arguments: >
@@ -139,10 +146,13 @@ steps:
   # projections). This must precede WinUI-InstallDependencies-Steps.yml: that template restores the
   # component packages at these versions, so pinning afterwards leaves the build looking for a version
   # that was never restored (W1007 on the Foundation transport winmd).
+  # Run in every job, including Debug and arm64ec, which rebuild the WinUI product: their test
+  # payloads (x86chk feeds every RunTests job) must exercise the mono-build's components, not the
+  # eng\Versions.props fallbacks.
   - ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
     - task: DownloadPipelineArtifact@2
       displayName: 'Consume product: download mono-build component packages'
-      condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+      condition: succeeded()
       inputs:
         source: specific
         runVersion: specific
@@ -157,7 +167,7 @@ steps:
         targetPath: $(Build.ArtifactStagingDirectory)\MonobuildComponents
     - task: PowerShell@2
       displayName: 'Consume product: stage component packages + pin version'
-      condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+      condition: succeeded()
       inputs:
         targetType: inline
         script: |
@@ -538,12 +548,16 @@ steps:
         !**\tools\!($(buildPlatform))\GenXbf.dll
       targetFolder: $(ob_outputDirectory)\packaging
 
+  - ${{ each step in parameters.prePublishSymbolsSteps }}:
+    - ${{ step }}
+
   - task: PublishSymbols@2
     displayName: 'Publish full symbols to internal symbol server'
     condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
     inputs:
       SearchPattern: '${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Symbols\Product\**\*.pdb'
       SymbolServerType: 'TeamServices'
+      IndexSources: ${{ parameters.indexSources }}
     # There is a bug which causes this task to fail if LIB includes an inaccessible path (even though it does not depend on it).
     # To work around this issue, we just force LIB to be any dir that we know exists.
     env:

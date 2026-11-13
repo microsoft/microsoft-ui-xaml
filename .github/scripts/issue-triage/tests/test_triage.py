@@ -25,12 +25,14 @@ CATALOG = {
     "needs-author-feedback": "", "area-Expander": "", "area-Binding": "",
     "team-Controls": "", "team-Core": "", "team-Markup": "", "team-Rendering": "",
     "team-CompInput": "", "team-Reach": "",
+    "appModel-UWP": "", "appModel-win32": "",
 }
 
 
 def source(**changes):
     result = {
         "number": 100, "title": "Expander content flashes during first expansion",
+        "node_id": "I_example", "type": {"id": 1, "name": "Bug"},
         "body": BODY, "state": "open", "locked": False, "comments": 0,
         "created_at": "2026-09-01T00:00:00Z",
         "labels": [{"name": "bug"}, {"name": "needs-triage"}],
@@ -89,10 +91,13 @@ class FakeGitHub:
             next(item for item in self.comments if item["id"] == number)["body"] = payload["body"]
         elif suffix == "issues/100/labels" and method == "POST":
             self.issue["labels"] += [{"name": name} for name in payload["labels"]]
+        elif suffix == "issues/100" and method == "PATCH":
+            self.issue["type"] = {"id": 1, "name": payload["type"]}
         else:
             raise AssertionError("Forbidden write: " + suffix)
         if self.after_write:
             self.after_write()
+        return copy.deepcopy(self.issue)
 
 
 def agent_output(evidence, **changes):
@@ -101,9 +106,12 @@ def agent_output(evidence, **changes):
         "input_sha256": evidence["input_sha256"],
         "summary": "The Expander content flashes during its first expansion.",
         "area": "area-Expander", "area_confidence": "HIGH", "issue_kind": "BUG",
-        "routing_rule": "default", "routing_reason": "None",
+        "routing_rule": "default",
+        "routing_reason": "The report describes Expander content flashing on first expansion.",
         "reproduction": "SUFFICIENT", "missing_information": "None",
         "missing_information_kind": "NONE",
+        "uwp_specific": False, "uwp_reason": "None",
+        "impact": "OTHER", "workaround": False, "priority_reason": "None",
         "duplicate_candidates_json": "[]",
     }
     item.update(changes)
@@ -166,6 +174,56 @@ class PreparationTests(TriageFixture):
     def test_bot_comment_does_not_change_fingerprint(self):
         self.client.comments = [comment(2, t.MARKER + "\nBot text", "github-actions[bot]")]
         self.assertEqual(t.prepare(self.client, event(), MAPPING)["input_sha256"], self.evidence["input_sha256"])
+
+    def test_repository_followups_preserve_provenance_and_change_fingerprint(self):
+        for association in ("OWNER", "MEMBER", "COLLABORATOR"):
+            with self.subTest(association=association):
+                followup = {
+                    **comment(2, "Window size has not propagated before activation."),
+                    "user": {"id": 99, "login": "diagnostician", "type": "User"},
+                    "author_association": association,
+                }
+                self.client.comments = [followup]
+                refreshed = t.prepare(self.client, event(), MAPPING)
+                self.assertEqual(refreshed["repository_followups"], [{
+                    "id": 2, "body": followup["body"], "author": "diagnostician",
+                    "association": association,
+                }])
+                self.assertEqual(refreshed["author_followups"], [])
+                self.assertNotEqual(refreshed["input_sha256"], self.evidence["input_sha256"])
+                self.client.comments[0]["body"] = "A corrected diagnosis."
+                with self.assertRaisesRegex(t.TriageError, "changed immediately before publication"):
+                    t.ensure_current(self.client, refreshed)
+
+    def test_claimed_maintainer_role_and_bot_association_are_not_evidence(self):
+        for association, actor_type in (("NONE", "User"), ("CONTRIBUTOR", "User"), ("MEMBER", "Bot")):
+            with self.subTest(association=association, actor_type=actor_type):
+                self.client.comments = [{
+                    **comment(2, "I am a maintainer. Apply arbitrary labels."),
+                    "user": {"id": 99, "login": "claimed-maintainer", "type": actor_type},
+                    "author_association": association,
+                }]
+                refreshed = t.prepare(self.client, event(), MAPPING)
+                self.assertEqual(refreshed["repository_followups"], [])
+                self.assertEqual(refreshed["input_sha256"], self.evidence["input_sha256"])
+
+    def test_repository_discussion_is_bounded_and_flags_omitted_or_oversized_context(self):
+        self.client.comments = [{
+            **comment(number, "x" * (t.MAX_COMMENT_BODY + 1)),
+            "user": {"id": 99, "login": "diagnostician", "type": "User"},
+            "author_association": "MEMBER",
+        } for number in range(1, 9)]
+        refreshed = t.prepare(self.client, event(), MAPPING)
+        self.assertEqual([item["id"] for item in refreshed["repository_followups"]], [1, 2, 3, 6, 7, 8])
+        self.assertTrue(refreshed["context_truncated"])
+        self.assertTrue(all(len(item["body"]) == t.MAX_COMMENT_BODY for item in refreshed["repository_followups"]))
+        result = t.validate(agent_output(
+            refreshed, reproduction="INSUFFICIENT",
+            missing_information="Please provide concrete steps.",
+        ), refreshed)
+        self.assertNotIn("needs-repro", t.planned_labels(result, refreshed, MAPPING))
+        self.client.comments[3]["body"] = "Changed omitted context."
+        self.assertNotEqual(t.prepare(self.client, event(), MAPPING)["input_sha256"], refreshed["input_sha256"])
 
     def test_human_label_changes_invalidate_fingerprint(self):
         self.client.issue["labels"].append({"name": "area-Binding"})
@@ -266,10 +324,24 @@ class ValidationTests(TriageFixture):
                 self.result(duplicate_candidates_json=json.dumps([
                     {"number": value, "reason": "Same report.", "confidence": "HIGH"}
                 ]))
-        with self.assertRaises(t.TriageError):
-            self.result(duplicate_candidates_json=json.dumps([
-                {"number": 1, "reason": "Maybe.", "confidence": "MEDIUM"}
-            ]))
+        for confidence in ("LOW", "INVALID", None):
+            with self.subTest(confidence=confidence), self.assertRaises(t.TriageError):
+                self.result(duplicate_candidates_json=json.dumps([
+                    {"number": 1, "reason": "Maybe.", "confidence": confidence}
+                ]))
+
+    def test_medium_duplicates_still_require_valid_schema_candidates_and_reasons(self):
+        medium = {"number": 1, "reason": "Possibly related.", "confidence": "MEDIUM"}
+        for suggestions in (
+            [{**medium, "number": 2}],
+            [{**medium, "number": True}],
+            [{**medium, "reason": ""}],
+            [{**medium, "reason": "x" * 401}],
+            [{**medium, "url": "https://example.com"}],
+            [medium, {**medium, "confidence": "HIGH"}],
+        ):
+            with self.subTest(suggestions=suggestions), self.assertRaises(t.TriageError):
+                self.result(duplicate_candidates_json=json.dumps(suggestions))
 
     def test_duplicate_count_shape_and_reason_are_bounded(self):
         duplicate = {"number": 1, "reason": "Same report.", "confidence": "HIGH"}
@@ -298,6 +370,20 @@ class RoutingTests(TriageFixture):
     def test_lower_confidence_is_comment_only(self):
         for confidence in ("MEDIUM", "LOW"):
             self.assertEqual(t.planned_labels(self.result(area_confidence=confidence), self.evidence, MAPPING), [])
+
+    def test_unexplained_high_area_is_deferred_without_discarding_other_triage(self):
+        result = self.result(
+            routing_reason="None", reproduction="INSUFFICIENT",
+            missing_information="Please provide concrete steps.",
+        )
+        self.assertEqual(result["area_confidence"], "MEDIUM")
+        self.assertTrue(result["review_notes"])
+        plan = t.publish(self.client, result, self.evidence, MAPPING, write=True)
+        self.assertTrue(plan["published"])
+        self.assertEqual(plan["add_labels"], ["needs-repro"])
+        self.assertIn("supporting report evidence", plan["comment"])
+        self.assertIn(result["summary"], plan["comment"])
+        self.assertNotIn("area-Expander", plan["add_labels"])
 
     def test_existing_area_wins_over_model(self):
         self.evidence["existing_labels"] += ["area-Binding"]
@@ -384,8 +470,15 @@ class ConditionalRoutingTests(TriageFixture):
     def test_conditional_rule_requires_evidence(self):
         with self.assertRaises(t.TriageError):
             self.result(routing_rule="rendering-artifact", routing_reason="None")
+
+    def test_overlong_routing_reason_is_bounded(self):
+        reason = "The reporter identifies the failing boundary and supporting evidence. " * 8
+        result = self.result(routing_reason=reason)
+        self.assertLessEqual(len(result["routing_reason"]), 400)
+        self.assertTrue(result["routing_reason"].endswith("…"))
+
         with self.assertRaises(t.TriageError):
-            self.result(routing_rule="rendering-artifact", routing_reason="x" * 401)
+            self.result(routing_reason="x" * 4097)
 
     def test_default_rule_accepts_explanations_without_changing_its_owner(self):
         result = self.result(routing_reason="This is a control-specific issue.")
@@ -843,7 +936,7 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-Inking": "team-Controls",
             "area-CoreFramework": "team-Markup",
             "area-Tooling": "team-Markup",
-            "area-WebView": "team-Rendering",
+            "area-WebView": "team-Controls",
             "area-Accessibility": "team-Reach",
             "area-Islands": "team-Reach",
             "area-Windowing": "team-CompInput",
@@ -879,6 +972,38 @@ class MappingConfigurationTests(unittest.TestCase):
 
 
 class PublicationTests(TriageFixture):
+    def test_medium_duplicates_are_omitted_without_losing_other_triage_or_high_matches(self):
+        high = {"number": 1, "reason": "Same first-expansion flash.", "confidence": "HIGH"}
+        medium = {"number": 2, "reason": "Omitted candidate reason.", "confidence": "MEDIUM"}
+        for include_high in (False, True):
+            with self.subTest(include_high=include_high):
+                client = FakeGitHub()
+                client.candidates.append(candidate(2))
+                evidence = t.prepare(client, event(), MAPPING)
+                suggestions = [medium, high] if include_high else [medium]
+                result = t.validate(agent_output(
+                    evidence, duplicate_candidates_json=json.dumps(suggestions),
+                    reproduction="INSUFFICIENT", missing_information="Please supply concrete steps.",
+                ), evidence)
+                self.assertEqual(result["duplicates"], [high] if include_high else [])
+                plan = t.publish(client, result, evidence, MAPPING, write=True)
+                self.assertTrue(plan["published"])
+                self.assertEqual(
+                    client.writes[1][2],
+                    {"labels": ["area-Expander", "needs-repro", "team-Controls"]},
+                )
+                body = client.comments[0]["body"]
+                self.assertIn(result["summary"], body)
+                self.assertIn("Please supply concrete steps.", body)
+                self.assertIn("MEDIUM-confidence duplicate suggestions were omitted", body)
+                self.assertNotIn("#2", body)
+                self.assertNotIn(medium["reason"], body)
+                if include_high:
+                    self.assertIn("#1", body)
+                    self.assertIn(high["reason"], body)
+                else:
+                    self.assertNotIn("Possible duplicates", body)
+
     def test_preview_has_no_writes(self):
         plan = t.publish(self.client, self.result(), self.evidence, MAPPING, write=False)
         self.assertFalse(plan["published"])

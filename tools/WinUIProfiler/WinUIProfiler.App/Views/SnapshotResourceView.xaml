@@ -1,0 +1,83 @@
+<UserControl
+    x:Class="WinUIProfiler.App.Views.SnapshotResourceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:WinUIProfiler.App.Views">
+    <UserControl.Resources>
+        <DataTemplate x:Key="ResourceValueTemplate" x:DataType="views:SnapshotResourceDisplayValue">
+            <StackPanel Spacing="4">
+                <TextBlock Text="{x:Bind Heading}" Visibility="{x:Bind HeadingVisibility}" TextWrapping="Wrap" />
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{x:Bind ComparisonWidth}" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="{x:Bind ComparisonWidth}" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{x:Bind Before}" Visibility="{x:Bind ComparisonVisibility}"
+                               TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    <TextBlock Text="{x:Bind After}" Grid.Column="1" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    <TextBlock Text="{x:Bind Delta}" Grid.Column="2" Visibility="{x:Bind ComparisonVisibility}"
+                               TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="ResourceRowTemplate" x:DataType="views:SnapshotResourceDisplayRow">
+            <Grid ColumnSpacing="12" Padding="0,6" AutomationProperties.Name="{x:Bind Metric}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="{x:Bind ValueWidth}" />
+                    <ColumnDefinition Width="{x:Bind LifetimeWidth}" />
+                    <ColumnDefinition Width="{x:Bind LifetimeWidth}" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Metric}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                <ContentPresenter Content="{x:Bind Created}" Grid.Column="1"
+                                  ContentTemplate="{StaticResource ResourceValueTemplate}" HorizontalContentAlignment="Stretch" />
+                <ContentPresenter Content="{x:Bind Destroyed}" Grid.Column="2" Visibility="{x:Bind LifetimeVisibility}"
+                                  ContentTemplate="{StaticResource ResourceValueTemplate}" HorizontalContentAlignment="Stretch" />
+                <ContentPresenter Content="{x:Bind Live}" Grid.Column="3" Visibility="{x:Bind LifetimeVisibility}"
+                                  ContentTemplate="{StaticResource ResourceValueTemplate}" HorizontalContentAlignment="Stretch" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Expander x:Uid="SnapshotResourceHeading" HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch" IsExpanded="True">
+        <StackPanel Spacing="6">
+            <TextBlock x:Name="Status" x:Uid="SnapshotResourceStatus" TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Polite" />
+            <TextBlock x:Name="Scope" x:Uid="SnapshotResourceScope" TextWrapping="Wrap"
+                       Style="{StaticResource CaptionTextBlockStyle}" />
+            <ScrollViewer MaxHeight="360" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="8">
+                    <ItemsControl x:Name="Groups">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="views:SnapshotResourceDisplayGroup">
+                                <Expander Header="{x:Bind Header}" HorizontalAlignment="Stretch" Margin="0,0,0,6"
+                                          HorizontalContentAlignment="Stretch"
+                                          AutomationProperties.AutomationId="{x:Bind AutomationId}">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{x:Bind Note}" TextWrapping="Wrap"
+                                                   Style="{StaticResource CaptionTextBlockStyle}" />
+                                        <TextBlock Text="{x:Bind EmptyText}" Visibility="{x:Bind EmptyVisibility}" TextWrapping="Wrap"
+                                                   Style="{StaticResource CaptionTextBlockStyle}" />
+                                        <ContentPresenter Content="{x:Bind Columns}" Visibility="{x:Bind ValuesVisibility}"
+                                                          ContentTemplate="{StaticResource ResourceRowTemplate}"
+                                                          HorizontalContentAlignment="Stretch" />
+                                        <ItemsControl ItemsSource="{x:Bind Rows}" ItemTemplate="{StaticResource ResourceRowTemplate}"
+                                                      Visibility="{x:Bind ValuesVisibility}" />
+                                    </StackPanel>
+                                </Expander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel x:Name="UnknownGraphics" Visibility="Collapsed" Spacing="6">
+                        <TextBlock x:Uid="SnapshotResourceUnknownScope" TextWrapping="Wrap"
+                                   Style="{StaticResource CaptionTextBlockStyle}" />
+                        <ContentPresenter x:Name="UnknownColumns" ContentTemplate="{StaticResource ResourceRowTemplate}"
+                                          HorizontalContentAlignment="Stretch" />
+                        <ItemsControl x:Name="UnknownValues" ItemTemplate="{StaticResource ResourceRowTemplate}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </StackPanel>
+    </Expander>
+</UserControl>
