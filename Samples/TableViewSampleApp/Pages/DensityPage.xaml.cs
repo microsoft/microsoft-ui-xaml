@@ -18,8 +18,8 @@ using TableViewDensity = Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Density: TableView.Density (Compact / Standard / Comfortable) switched live over text and
-/// read-only template cells, alongside grouping, whose headers keep a fixed height.
+/// Density: TableView.Density (Compact / Standard / Comfortable) switched live over text,
+/// read-only template cells and group headers.
 /// </summary>
 public sealed partial class DensityPage : SamplePageBase
 {

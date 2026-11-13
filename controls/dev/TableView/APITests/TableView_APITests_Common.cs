@@ -14,6 +14,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 using WEX.TestExecution;
 
@@ -73,6 +74,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewTestHelpers
     {
+        internal static void SetIsEnabledAndWait(Control control, bool enabled, params Control[] descendants)
+        {
+            var subscriptions = new List<(Control Target, AutoResetEvent Changed, DependencyPropertyChangedEventHandler Handler)>();
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var target in new[] { control }.Concat(descendants).Distinct())
+                    {
+                        if (target.IsEnabled == enabled)
+                        {
+                            continue;
+                        }
+
+                        var changed = new AutoResetEvent(false);
+                        DependencyPropertyChangedEventHandler handler = (sender, args) =>
+                        {
+                            if (target.IsEnabled == enabled)
+                            {
+                                changed.Set();
+                            }
+                        };
+                        subscriptions.Add((target, changed, handler));
+                        target.IsEnabledChanged += handler;
+                    }
+                    control.IsEnabled = enabled;
+                });
+
+                // Native visual-state handlers run on IsEnabledChanged, not when the property is set.
+                foreach (var subscription in subscriptions)
+                {
+                    TestUtilities.WaitForEvent(subscription.Changed);
+                }
+                IdleSynchronizer.Wait();
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var subscription in subscriptions)
+                    {
+                        subscription.Target.IsEnabledChanged -= subscription.Handler;
+                    }
+                });
+                foreach (var subscription in subscriptions)
+                {
+                    subscription.Changed.Dispose();
+                }
+            }
+        }
+
         // Resource init + the column-less TableView shell shared by every Create* variation. Each
         // builder decides how to attach its columns (bound/unbound, widths, template) afterward.
         internal static TableView CreateTableViewShell(

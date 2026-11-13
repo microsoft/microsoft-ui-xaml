@@ -43,8 +43,12 @@ public:
     winrt::Border GetGridLineInternal() const { return m_gridLine.get(); }
 
     // True while Content is the TextBlock the TableView made for a string Header.
-    void SetOwnsContentInternal(bool ownsContent) { m_ownsContent = ownsContent; }
-    bool OwnsContentInternal() const { return m_ownsContent; }
+    void SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding);
+    bool OwnsContentInternal() const
+    {
+        auto const text = m_ownedText.get();
+        return text && text == Content();
+    }
 
     // True while the local IsTabStop=false is the TableView's inactive-header stamp, not the app's.
     void SetOwnsTabStopStampInternal(bool ownsStamp) { m_ownsTabStopStamp = ownsStamp; }
@@ -53,8 +57,9 @@ public:
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
+    void UpdateContentPadding();
     void HostSortIndicator();
-    void SyncSortIndicatorForeground(bool followText, bool highlighted);
+    void SyncSortIndicatorForeground(bool highlighted);
     void ResetPointerState(winrt::PointerRoutedEventArgs const& args);
     bool IsInsideResizeGripper(winrt::IInspectable const& source);
 
@@ -71,6 +76,7 @@ private:
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     winrt::Thickness m_templateContentMargin{};
     double m_indicatorReserve{ 0.0 };
@@ -78,6 +84,9 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
-    bool m_ownsContent{ false };
+    winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
+    winrt::Thickness m_textPadding{};
+    winrt::Thickness m_initialControlPadding{};
+    bool m_hasTextPadding{ false };
     bool m_ownsTabStopStamp{ false };
 };

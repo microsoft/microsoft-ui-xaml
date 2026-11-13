@@ -15,10 +15,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <!-- Box is larger than the glyph on purpose: a Segoe Fluent Icons line box is taller than its
-         font size and a Grid does not clip, so equal sizes would let the chevron overflow. -->
     <x:Double x:Key="SortIndicatorSize">16</x:Double>
 
     <!-- Sized independently of the box so consumers can pad without scaling the glyph. -->
-    <x:Double x:Key="SortIndicatorGlyphSize">12</x:Double>
+    <x:Double x:Key="SortIndicatorGlyphSize">16</x:Double>
 </ResourceDictionary>

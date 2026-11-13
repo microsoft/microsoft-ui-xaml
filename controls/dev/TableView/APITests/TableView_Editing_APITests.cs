@@ -505,6 +505,291 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDensityEditorPreservesRowHeightAndTextInsets()
+        {
+            var densityCases = TableViewThemingTestHelpers.DensityCases;
+            for (var index = 0; index < densityCases.Length; ++index)
+            {
+                var testCase = densityCases[index];
+                var nextCase = densityCases[(index + 1) % densityCases.Length];
+                TableView tableView = null;
+                List<EditablePerson> items = null;
+                bool vetoClose = true;
+                Rect displayLine = default;
+                Rect editorLine = default;
+
+                Rect VerifyEditorLayout(TableViewRow row, TextBox editor, string context)
+                {
+                    var tolerance = 1 / row.XamlRoot.RasterizationScale + 0.001;
+                    var editorBounds = editor.TransformToVisual(row).TransformBounds(
+                        new Rect(0, 0, editor.ActualWidth, editor.ActualHeight));
+                    var line = TableViewEditorAlignmentTests.GetEditorLine(row, editor);
+                    Log.Comment($"{context}: row height={row.ActualHeight}, editor={editorBounds}, line={line}.");
+                    Verify.IsLessThanOrEqual(Math.Abs(editor.ActualHeight - row.ActualHeight), tolerance,
+                        $"{context}: the editor must fill the row without growing it.");
+                    Verify.IsGreaterThan(line.Height, 0.0, context);
+                    Verify.IsGreaterThanOrEqual(editorBounds.Top, -tolerance, context);
+                    Verify.IsLessThanOrEqual(editorBounds.Bottom, row.ActualHeight + tolerance, context);
+                    Verify.IsGreaterThanOrEqual(line.Top, editorBounds.Top - tolerance,
+                        $"{context}: the editor's text line must not be clipped at the top.");
+                    Verify.IsLessThanOrEqual(line.Bottom, editorBounds.Bottom + tolerance,
+                        $"{context}: the editor's text line must not be clipped at the bottom.");
+                    return line;
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    items = MakeEditableItems();
+                    tableView = CreateEditableTable(items);
+                    tableView.IsTextScaleFactorEnabled = false;
+                    tableView.IsReadOnly = false;
+                    tableView.Density = testCase.Density;
+                    tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = GetRowForItem(tableView, items[0]);
+                    displayLine = TableViewEditorAlignmentTests.GetDisplayLine(row,
+                        TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView));
+                    var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Editing");
+                    Verify.IsNotNull(error, "A vetoed commit must leave the editor open for inspection.");
+                    Verify.IsTrue(tableView.IsEditing);
+                    tableView.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var editor = FindVisualChildrenByType<TextBox>(tableView).First();
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(testCase.FontSize, editor.FontSize);
+                    Verify.AreEqual(testCase.RowMinHeight, row.ActualHeight, $"Editing must not grow a {testCase.Density} row.");
+                    Verify.AreEqual(testCase.CellPadding.Left, editor.Padding.Left + editor.BorderThickness.Left,
+                        "Editor text must retain the display cell's horizontal inset.");
+                    var line = VerifyEditorLayout(row, editor, testCase.Density.ToString());
+                    // TextBlock and TextBox line metrics differ across OS versions; retain the shared start edge.
+                    Verify.IsLessThanOrEqual(Math.Abs(displayLine.Left - line.Left),
+                        1 / row.XamlRoot.RasterizationScale + 0.001, "Opening the editor must preserve the text's start edge.");
+                    tableView.Density = nextCase.Density;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var editor = FindVisualChildrenByType<TextBox>(tableView).First();
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.IsTrue(tableView.IsEditing, "Changing density must preserve the open editor.");
+                    Verify.AreEqual(nextCase.FontSize, editor.FontSize, "The open editor must follow density typography.");
+                    Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "The open editor must follow a runtime density change.");
+                    Verify.AreEqual(nextCase.CellPadding.Left, editor.Padding.Left + editor.BorderThickness.Left,
+                        "The editor inset must follow a runtime density change.");
+                    editorLine = VerifyEditorLayout(row, editor, $"Runtime density change to {nextCase.Density}");
+                    vetoClose = false;
+                    Verify.IsTrue(tableView.CancelEdit());
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(nextCase.RowMinHeight, row.ActualHeight, "Closing the editor must preserve row height.");
+                    Verify.AreEqual(nextCase.FontSize, TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).FontSize,
+                        "The cached display text must pick up the new font size before it is restored.");
+                    Verify.AreEqual(TableViewThemingTestHelpers.GetAlignedContentPadding(row, nextCase.TextPadding),
+                        TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView).Padding,
+                        "Restoring display text must restore its optical padding without changing editor padding.");
+                    var restoredLine = TableViewEditorAlignmentTests.GetDisplayLine(row,
+                        TableViewThemingTestHelpers.RequireFirstCellTextBlock(tableView));
+                    Verify.IsLessThanOrEqual(Math.Abs(restoredLine.Left - editorLine.Left),
+                        1 / row.XamlRoot.RasterizationScale + 0.001, "Closing the editor must preserve the text's start edge.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensityPreservesAppDisplayTextBoxBindings()
+        {
+            TableView table = null;
+            AuthoredDisplayTextBoxColumn column = null;
+            TextBox display = null;
+            BindingExpression fontBinding = null;
+            BindingExpression paddingBinding = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var items = MakeEditableItems();
+                table = CreateTableViewShell(items, 500, 350);
+                column = new AuthoredDisplayTextBoxColumn
+                {
+                    Header = "Name",
+                    Width = new GridLength(200),
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                };
+                table.Columns.Add(column);
+                LoadContent(table);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() =>
+            {
+                display = (TextBox)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0));
+                fontBinding = display.GetBindingExpression(Control.FontSizeProperty);
+                paddingBinding = display.GetBindingExpression(Control.PaddingProperty);
+                Verify.IsNotNull(fontBinding);
+                Verify.IsNotNull(paddingBinding);
+                Verify.AreEqual(23.0, display.FontSize);
+            });
+            foreach (var density in TableViewThemingTestHelpers.DensityCases)
+            {
+                RunOnUIThread.Execute(() => table.Density = density.Density);
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(table.IsEditing);
+                    Verify.AreEqual(23.0, display.FontSize, "A display TextBox is not the built-in editor.");
+                    Verify.AreEqual(column.Source.Padding, display.Padding);
+                    Verify.AreSame(fontBinding, display.GetBindingExpression(Control.FontSizeProperty));
+                    Verify.AreSame(paddingBinding, display.GetBindingExpression(Control.PaddingProperty));
+                });
+            }
+            RunOnUIThread.Execute(() => column.Source.FontSize = 29);
+            SettleLayout(table);
+            RunOnUIThread.Execute(() => Verify.AreEqual(29.0, display.FontSize, "The app's binding must remain live."));
+        }
+
+        [TestMethod]
+        public void VerifyDensityFontChangeDropsEditingAutoWidthCache()
+        {
+            foreach (var commit in new[] { false, true })
+            {
+                TableView table = null;
+                var items = MakeEditableItems();
+                double oldWidth = 0;
+                TextBox editor = null;
+                bool allowClose = false;
+                RunOnUIThread.Execute(() =>
+                {
+                    items[0].Name = "A deliberately long display value for Auto width";
+                    table = CreateEditableTable(items);
+                    table.IsReadOnly = false;
+                    table.IsTextScaleFactorEnabled = false;
+                    table.Resources["TableViewCellFontSize"] = 26.0;
+                    table.Resources["TableViewCellFontSizeSmall"] = 12.0;
+                    table.Columns[0].Width = GridLength.Auto;
+                    table.CellEditEnding += (s, e) => e.Cancel = !allowClose;
+                    LoadContent(table);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    oldWidth = table.Columns[0].ActualWidth;
+                    Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), items[0].Name));
+                    editor = FindVisualChildrenByType<TextBox>(table).Single();
+                    table.Density = TableViewDensity.Compact;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(table.IsEditing);
+                    Verify.AreSame(editor, FindVisualChildrenByType<TextBox>(table).Single(),
+                        "Changing typography must not recycle the live editor.");
+                    Verify.AreEqual(12.0, editor.FontSize);
+                    allowClose = true;
+                    Verify.IsTrue(commit ? table.CommitEdit() : table.CancelEdit());
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(table.IsEditing);
+                    Verify.IsLessThan(table.Columns[0].ActualWidth, oldWidth - 20,
+                        "The smaller font must not inherit the open editor's old-font width maximum.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDensityPreservesCustomTextColumnFontsAndCachedDisplay()
+        {
+            foreach (var mode in new[] { "OwnValue", "BaseValue", "BaseBinding" })
+            {
+                TableView table = null;
+                AuthoredFontTextColumn column = null;
+                TextBlock display = null;
+                BindingExpression fontBinding = null;
+                var items = MakeEditableItems();
+                bool vetoClose = true;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateTableViewShell(items, 500, 350);
+                    table.IsReadOnly = false;
+                    table.IsTextScaleFactorEnabled = false;
+                    table.Resources["TableViewCellFontSize"] = 17.0;
+                    table.Resources["TableViewCellFontSizeSmall"] = 13.0;
+                    table.Density = TableViewDensity.Compact;
+                    table.Density = TableViewDensity.Comfortable;
+                    column = new AuthoredFontTextColumn(mode)
+                    {
+                        Header = "Name",
+                        Width = new GridLength(200),
+                        Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    };
+                    table.Columns.Add(column);
+                    table.Columns.Add(MakeTextColumn("Role", width: new GridLength(200)));
+                    table.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+                    LoadContent(table);
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    display = (TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0));
+                    fontBinding = display.GetBindingExpression(TextBlock.FontSizeProperty);
+                    Verify.AreEqual(mode == "BaseBinding" ? 17.0 : 24.0, display.FontSize, mode);
+                    table.Density = TableViewDensity.Compact;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(mode == "BaseBinding" ? 17.0 : 24.0, display.FontSize,
+                        $"A custom factory's font must survive density restamping: {mode}.");
+                    Verify.AreEqual(13.0, ((TextBlock)GetCellContent(GetRowCell(GetRealizedRows(table).First(), 1))).FontSize,
+                        "Control-owned text must still follow the density font resource.");
+                    table.Density = TableViewDensity.Comfortable;
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Pending"),
+                        "The vetoed commit leaves an editor open.");
+                    Verify.IsTrue(table.IsEditing);
+                    table.Density = TableViewDensity.Compact;
+                    if (mode == "BaseBinding")
+                    {
+                        column.FontSource.FontSize = 26;
+                    }
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(mode == "BaseBinding" ? 26.0 : 24.0, display.FontSize,
+                        $"The saved editing display must preserve app typography: {mode}.");
+                    if (mode == "BaseBinding")
+                    {
+                        Verify.AreSame(fontBinding, display.GetBindingExpression(TextBlock.FontSizeProperty),
+                            "Restamping must not replace the app's FontSize binding.");
+                    }
+                    vetoClose = false;
+                    Verify.IsTrue(table.CancelEdit());
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreSame(display, GetCellContent(GetRowCell(GetRealizedRows(table).First(), 0)));
+                    Verify.AreEqual(mode == "BaseBinding" ? 26.0 : 24.0, display.FontSize, mode);
+                    Verify.IsFalse(table.IsEditing);
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies cancelling CellEditEnding blocks the value and leaves the edit open, per the IDL's stay-open rule.")]
         public void VerifyCellEditEndingCancelBlocksCommitAndLeavesEditOpen()
         {
@@ -1285,11 +1570,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 first = CreateEditableTable(items);
                 first.ItemsSource = shared;
                 first.IsReadOnly = false;
+                second = CreateEditableTable(items);
+                second.ItemsSource = shared;
                 host = new StackPanel();
                 host.Children.Add(first);
+                host.Children.Add(second);
                 LoadContent(host);
             });
             SettleLayout(first);
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(second.IsLoaded, "Precondition: the waiter must be loaded before the owner unloads.");
+                Verify.AreEqual(0, GetRowsRepeater(second).ItemsSourceView?.Count ?? 0,
+                    "Precondition: the second table must be waiting for the shared source.");
+            });
 
             RunOnUIThread.Execute(() =>
                 Verify.IsTrue(first.SortByColumn(first.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts."));
@@ -1310,9 +1606,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 CaptureSetValue(GetValueProvider(first, items[0], columnIndex: 1), "Pilot");
                 Verify.IsTrue(first.IsEditing, "Precondition: the edit stays open.");
                 host.Children.Remove(first);
-                second = CreateEditableTable(items);
-                second.ItemsSource = shared;
-                host.Children.Add(second);
             });
             SettleLayout(second);
 
@@ -2536,17 +2829,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(tableView.IsEditing, "And must close.");
             });
         }
+
+    }
+
+    internal partial class AuthoredDisplayTextBoxColumn : TableViewTextColumn
+    {
+        public TextBox Source { get; } = new TextBox { FontSize = 23, Padding = new Thickness(20, 8, 20, 8) };
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            var text = new TextBox { IsReadOnly = true };
+            BindingOperations.SetBinding(text, TextBox.TextProperty, Binding);
+            BindingOperations.SetBinding(text, Control.FontSizeProperty,
+                new Binding { Source = Source, Path = new PropertyPath("FontSize"), Mode = BindingMode.OneWay });
+            BindingOperations.SetBinding(text, Control.PaddingProperty,
+                new Binding { Source = Source, Path = new PropertyPath("Padding"), Mode = BindingMode.OneWay });
+            return text;
+        }
+    }
+
+    internal partial class AuthoredFontTextColumn : TableViewTextColumn
+    {
+        private readonly string _mode;
+        public TextBlock FontSource { get; } = new TextBlock { FontSize = 17 };
+
+        public AuthoredFontTextColumn(string mode) => _mode = mode;
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            var text = _mode == "OwnValue" ? new TextBlock() : (TextBlock)base.GenerateElementCore(dataItem);
+            if (_mode == "OwnValue")
+            {
+                BindingOperations.SetBinding(text, TextBlock.TextProperty, Binding);
+            }
+            if (_mode == "BaseBinding")
+            {
+                BindingOperations.SetBinding(text, TextBlock.FontSizeProperty,
+                    new Binding { Source = FontSource, Path = new PropertyPath("FontSize"), Mode = BindingMode.OneWay });
+            }
+            else
+            {
+                text.FontSize = 24;
+            }
+            return text;
+        }
     }
 
     // Throws from Convert only while armed, so the display cells build normally.
     internal sealed class ArmableThrowingConverter : IValueConverter
     {
         public bool Armed { get; set; }
+        public Action BeforeThrow { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (Armed)
             {
+                BeforeThrow?.Invoke();
                 throw new InvalidOperationException("Deliberate editor-binding failure.");
             }
             return value;
@@ -2566,21 +2905,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("TestPass:MinOSVer", MUXControlsTestApp.WindowsOSVersion._22H2)]
         public void VerifyEditorTextDoesNotShiftWhenEditOpens()
         {
-            foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            foreach (var layout in new[]
             {
-                foreach (var density in new[] { TableViewDensity.Compact, TableViewDensity.Standard, TableViewDensity.Comfortable })
+                (GridLines: TableViewGridLinesVisibility.All, Rounding: true),
+                (GridLines: TableViewGridLinesVisibility.None, Rounding: true),
+                (GridLines: TableViewGridLinesVisibility.All, Rounding: false),
+                (GridLines: TableViewGridLinesVisibility.None, Rounding: false)
+            })
+            {
+                foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
                 {
-                    var m = OpenEditorAndMeasure(density, flowDirection, "Asha");
-                    VerifyLinesMatch($"{density}/{flowDirection}", m.DisplayLine, m.EditorLine);
+                    foreach (var density in new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact })
+                    {
+                        var m = OpenEditorAndMeasure(density, flowDirection, "Asha", layout.Rounding, layout.GridLines);
+                        VerifyLinesMatch($"{density}/{flowDirection}/{layout.GridLines}/rounding={layout.Rounding}", m.DisplayLine, m.EditorLine);
+                    }
                 }
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a fallback-font glyph at Compact density neither grows the editor past the cell nor grows the row.")]
-        public void VerifyFallbackGlyphKeepsCompactEditorAndRowHeight()
+        [TestProperty("Description", "Verifies a fallback-font glyph at Standard density neither grows the editor past the cell nor grows the row.")]
+        public void VerifyFallbackGlyphKeepsStandardEditorAndRowHeight()
         {
-            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha \U0001F600");
+            var m = OpenEditorAndMeasure(TableViewDensity.Standard, FlowDirection.LeftToRight, "Asha \U0001F600");
             Log.Comment($"Fallback glyph: dy(top)={m.EditorLine.Top - m.DisplayLine.Top} dy(bottom)={m.EditorLine.Bottom - m.DisplayLine.Bottom}; " +
                 $"cell {m.CellHeightBefore} -> editor {m.EditorHeight}; row {m.RowHeightBefore} -> {m.RowHeightAfter}");
 
@@ -2594,8 +2942,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyEditorRecentresAfterFallbackGlyphIsRemoved()
         {
             // Myanmar Text's line is taller than Segoe UI's, so the editor grows its text view for it first.
-            var m = OpenEditorAndMeasure(TableViewDensity.Compact, FlowDirection.LeftToRight, "Asha", "Asha \u1019\u103C\u1014\u103A\u1019\u102C", "Asha");
-            VerifyLinesMatch("Compact, fallback glyph removed", m.DisplayLine, m.EditorLine);
+            var m = OpenEditorAndMeasure(TableViewDensity.Standard, FlowDirection.LeftToRight, "Asha",
+                editorTexts: new[] { "Asha \u1019\u103C\u1014\u103A\u1019\u102C", "Asha" });
+            VerifyLinesMatch("Standard, fallback glyph removed", m.DisplayLine, m.EditorLine);
         }
 
         private sealed class EditorMeasurement
@@ -2610,7 +2959,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Opens an edit on the first row's Name cell, held open by a rejected value, then types each of editorTexts
         // into it in turn (by default the display text).
-        private EditorMeasurement OpenEditorAndMeasure(TableViewDensity density, FlowDirection flowDirection, string name, params string[] editorTexts)
+        private EditorMeasurement OpenEditorAndMeasure(TableViewDensity density, FlowDirection flowDirection, string name,
+            bool useLayoutRounding = true, TableViewGridLinesVisibility? gridLines = null, params string[] editorTexts)
         {
             TableView tableView = null;
             List<EditablePerson> items = null;
@@ -2624,6 +2974,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.IsReadOnly = false;
                 tableView.Density = density;
                 tableView.FlowDirection = flowDirection;
+                tableView.UseLayoutRounding = useLayoutRounding;
+                if (gridLines.HasValue) { tableView.GridLinesVisibility = gridLines.Value; }
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -2632,9 +2984,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var row = GetRowForItem(tableView, items[0]);
                 var display = FindVisualChildrenByType<TextBlock>(row).Single(t => t.Text == name);
-                var line = display.ContentStart.GetCharacterRect(LogicalDirection.Forward);
-                line.Union(display.ContentEnd.GetCharacterRect(LogicalDirection.Backward));
-                m.DisplayLine = display.TransformToVisual(row).TransformBounds(line);
+                m.DisplayLine = GetDisplayLine(row, display);
                 m.CellHeightBefore = ((FrameworkElement)Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(display)).ActualHeight;
                 m.RowHeightBefore = row.ActualHeight;
 
@@ -2659,8 +3009,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var row = GetRowForItem(tableView, items[0]);
                 var editor = FindVisualChildrenByType<TextBox>(row).Single();
-                var textView = (FrameworkElement)FindVisualChildrenByType<ScrollViewer>(editor).Single(s => s.Name == "ContentElement").Content;
-                m.EditorLine = textView.TransformToVisual(row).TransformBounds(MUXControlsTestApp.TableViewPage.EditorLineRect(editor, textView));
+                m.EditorLine = GetEditorLine(row, editor);
                 m.EditorHeight = editor.ActualHeight;
                 m.RowHeightAfter = row.ActualHeight;
             });
@@ -2670,7 +3019,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Compares the line's start edge, and its top (or its bottom when the line heights differ). Both rects are
         // in the row's own coordinates, which are mirrored under RTL, so Left is the start edge either way. Under RTL
         // the editor's start edge is its text view's start edge, not a glyph edge (see TableViewPage.EditorLineRect).
-        private static void VerifyLinesMatch(string context, Rect display, Rect editor)
+        internal static Rect GetDisplayLine(TableViewRow row, TextBlock display)
+        {
+            var line = display.ContentStart.GetCharacterRect(LogicalDirection.Forward);
+            line.Union(display.ContentEnd.GetCharacterRect(LogicalDirection.Backward));
+            return display.TransformToVisual(row).TransformBounds(line);
+        }
+
+        internal static Rect GetEditorLine(TableViewRow row, TextBox editor)
+        {
+            var textView = (FrameworkElement)FindVisualChildrenByType<ScrollViewer>(editor).Single(s => s.Name == "ContentElement").Content;
+            return textView.TransformToVisual(row).TransformBounds(MUXControlsTestApp.TableViewPage.EditorLineRect(editor, textView));
+        }
+
+        internal static void VerifyLinesMatch(string context, Rect display, Rect editor)
         {
             Log.Comment($"{context}: display line {display}, editor line {editor}");
             double dx = editor.Left - display.Left;

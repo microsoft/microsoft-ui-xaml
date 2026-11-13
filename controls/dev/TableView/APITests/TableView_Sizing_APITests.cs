@@ -349,6 +349,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDensityFontChangesRecomputeAutoWidths()
+        {
+            foreach (var headerDominates in new[] { false, true })
+            {
+                TableView tableView = null;
+                double standardWidth = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateAutoColumnTable(headerDominates ? VeryLongText : "Name",
+                        new[] { headerDominates ? "Al" : VeryLongText });
+                    tableView.IsTextScaleFactorEnabled = false;
+                    tableView.Resources[headerDominates
+                        ? "TableViewHeaderFontSizeSmall"
+                        : "TableViewCellFontSizeSmall"] = 12.0;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    standardWidth = tableView.Columns[0].ActualWidth;
+                    tableView.Density = TableViewDensity.Compact;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsLessThan(tableView.Columns[0].ActualWidth, standardWidth,
+                        "Smaller text must release stale Auto width maxima for both headers and cells.");
+                    tableView.Density = TableViewDensity.Comfortable;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                    Verify.AreEqual(standardWidth, tableView.Columns[0].ActualWidth,
+                        "Returning to Comfortable must restore the larger text's Auto width."));
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies an Auto column widens when a wider row realizes and keeps that width when the row is recycled.")]
         public void VerifyAutoWidthGrowsAsWiderRowsRealize()
         {
@@ -450,6 +487,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 t => t.Columns[0].CellEditingTemplate = (DataTemplate)XamlReader.Load(
                     @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""><TextBox /></DataTemplate>"),
                 "An editing template does not change what the cell displays, so the grown Auto width must be kept.");
+        }
+
+        [TestMethod]
+        public void VerifyDensityWithoutFontChangeKeepsGrownAutoWidth()
+        {
+            var densities = new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact };
+            foreach (var initialDensity in densities)
+            {
+                foreach (var density in densities.Where(value => value != initialDensity))
+                {
+                    VerifyChangeKeepsGrownAutoWidth(
+                        t => t.Density = initialDensity,
+                        t => t.Density = density,
+                        $"{initialDensity}/{density} use the same typography, so grown Auto widths must be kept.");
+                }
+            }
         }
 
         private void VerifyChangeKeepsGrownAutoWidth(Action<TableView> setup, Action<TableView> change, string message)

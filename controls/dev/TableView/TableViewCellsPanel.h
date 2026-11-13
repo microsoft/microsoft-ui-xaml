@@ -30,6 +30,7 @@ public:
 
     // Measured (unconstrained) width for this column from the last MeasureOverride pass (0 if absent).
     double MeasuredWidthForColumn(winrt::TableViewColumn const& column) const;
+    void InvalidateMeasuredWidths();
 
     // Pins the contiguous leading-frozen prefix of a cell host (header or row) against the horizontal
     // scroll offset and clips the scrolled cells beneath it. Shared by the header host and every row's
@@ -82,6 +83,7 @@ private:
     // columns measured this pass, so entries for removed/collapsed columns are pruned automatically
     // (bounding growth and limiting the void*-reuse window the per-pass cache note describes).
     std::unordered_map<void*, double> m_lastMeasuredWidthsByColumn;
+    bool m_editingWidthInvalidated{ false };
 
     // The row that owns this panel, or null for the header host. Weak: the row owns the panel.
     winrt::weak_ref<winrt::TableViewRow> m_owningRow{ nullptr };

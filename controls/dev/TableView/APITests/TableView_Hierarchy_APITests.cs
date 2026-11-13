@@ -1416,10 +1416,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 double rowX = row.TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
                 double chevronX = GetChevron(tableView, "Ada").TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
                 Log.Comment($"Root indent={chevronX - rowX}, gutter + TableViewGroupExpanderSpacing={expected}, header Padding.Left={header.Padding.Left}");
-                Verify.AreEqual(24.0 + 8.0, expected, "Default gutter (TableViewGroupExpanderSize) plus TableViewGroupExpanderSpacing.");
+                Verify.AreEqual(12.0 + 4.0, expected, "Default gutter (TableViewGroupExpanderSize) plus TableViewGroupExpanderSpacing.");
                 Verify.IsLessThan(Math.Abs(chevronX - rowX - expected), 0.5,
                     "A grouped root row's indent must equal the group header's gutter plus TableViewGroupExpanderSpacing.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies section-only alignment leaves ParentBy first-cell and chevron indentation unchanged at all three levels, with or without sections and in LTR/RTL.")]
+        public void VerifySectionAlignmentDoesNotChangeParentByIndentation()
+        {
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
+            var table = Place(source);
+            foreach (var grouped in new[] { false, true })
+            foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            foreach (var density in new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    table.FlowDirection = flow;
+                    table.Density = density;
+                    if (grouped) { source.GroupBy(ByDept); }
+                    else { source.ClearGroupBy(); }
+                    table.ExpandAllRows();
+                });
+                SettleLayout(table);
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var name in new[] { "Ada", "Ben", "Dan" })
+                    {
+                        var row = FindTreeRow(table, name);
+                        var indent = (grouped ? 16.0 : 0.0) + (row.Level - 1) * 16.0;
+                        Verify.AreEqual(indent + 24.0, GetRowCell(row, 0).Padding.Left,
+                            $"ParentBy cell reservation stays unchanged: {name}, {grouped}, {flow}, {density}.");
+                        Verify.AreEqual(indent, GetChevron(table, name).Margin.Left,
+                            "ParentBy chevrons retain their existing indentation.");
+                    }
+                });
+            }
         }
 
         #endregion

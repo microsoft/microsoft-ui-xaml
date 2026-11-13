@@ -7,6 +7,7 @@
 #include "TableView.h"
 #include "TableViewContextMenu.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "SharedHelpers.h"
 
 static constexpr std::wstring_view s_ContentPresenterPartName{ L"PART_ContentPresenter"sv };
 static constexpr std::wstring_view s_GridLinePartName{ L"PART_GridLine"sv };
@@ -17,6 +18,34 @@ static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator
 TableViewColumnHeader::TableViewColumnHeader()
 {
     SetDefaultStyleKey(this);
+    for (auto const& property : { winrt::Control::PaddingProperty(), winrt::ContentControl::ContentProperty() })
+    {
+        RegisterPropertyChangedCallback(property, [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->UpdateContentPadding();
+            }
+        });
+    }
+    RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
+        [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->UpdateVisualStates(false);
+            }
+        });
+    // Rebuilt headers must finish loading their template bindings before HC resting setters run.
+    m_loadedRevoker = Loaded(winrt::auto_revoke,
+        [weakThis = get_weak()](auto&&, auto&&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->UpdateContentPadding();
+                self->UpdateVisualStates(false);
+            }
+        });
 }
 
 void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winrt::TableViewColumn const& column)
@@ -61,13 +90,14 @@ void TableViewColumnHeader::OnApplyTemplate()
     m_resizeGripperHost.set(GetTemplateChild(hstring{ s_ResizeGripperHostPartName }).try_as<winrt::Border>());
 
     m_templateContentMargin = {};
+    m_hasTextPadding = false;
     if (auto const presenter = m_contentPresenter.get())
     {
         m_templateContentMargin = presenter.Margin();
     }
     UpdateContentReserve();
+    UpdateContentPadding();
     HostSortIndicator();
-
     if (auto const gripperHost = m_resizeGripperHost.get())
     {
         if (auto const gripper = m_resizeGripper.get())
@@ -119,10 +149,6 @@ void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorR
 void TableViewColumnHeader::SetSortDirectionInternal(winrt::SortDirection direction)
 {
     m_sortDirection = direction;
-    if (auto const indicator = m_sortIndicator.get())
-    {
-        indicator.Direction(TableView::ToSortIndicatorDirection(direction));
-    }
     UpdateVisualStates(true /* useTransitions */);
 }
 
@@ -146,6 +172,35 @@ winrt::ResizeGripper TableViewColumnHeader::GetResizeGripperInternal() const
     return nullptr;
 }
 
+void TableViewColumnHeader::SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding)
+{
+    m_ownedText = ownsContent ? winrt::make_weak(Content().as<winrt::TextBlock>()) : nullptr;
+    m_textPadding = textPadding;
+    m_initialControlPadding = Padding();
+    UpdateContentPadding();
+}
+
+void TableViewColumnHeader::UpdateContentPadding()
+{
+    if (auto const presenter = m_contentPresenter.get())
+    {
+        if (OwnsContentInternal())
+        {
+            const auto padding = Padding() == m_initialControlPadding ? m_textPadding : Padding();
+            if (presenter.Padding() != padding)
+            {
+                presenter.Padding(padding);
+            }
+            m_hasTextPadding = true;
+        }
+        else if (m_hasTextPadding)
+        {
+            SharedHelpers::SetBinding(L"Padding", presenter, winrt::ContentPresenter::PaddingProperty());
+            m_hasTextPadding = false;
+        }
+    }
+}
+
 void TableViewColumnHeader::UpdateContentReserve()
 {
     if (auto const presenter = m_contentPresenter.get())
@@ -154,6 +209,11 @@ void TableViewColumnHeader::UpdateContentReserve()
         if (m_isSortable)
         {
             margin.Right += m_indicatorReserve;
+            if (auto const host = m_sortIndicatorHost.get())
+            {
+                const auto padding = host.Padding();
+                margin.Right += padding.Left + padding.Right;
+            }
         }
         if (presenter.Margin() != margin)
         {
@@ -194,7 +254,7 @@ void TableViewColumnHeader::HostSortIndicator()
     }
 }
 
-void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool highlighted)
+void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
 {
     auto const indicator = m_sortIndicator.get();
     if (!indicator)
@@ -202,11 +262,10 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool hi
         return;
     }
 
-    // The glyph's style sets Foreground, so it cannot inherit; when a state recolors the text
-    // (Disabled, or a High Contrast highlight) the glyph must follow it. Bound, not copied, so it
-    // also follows a re-resolved theme brush (High Contrast toggle) without a state change.
+    // The indicator's style sets Foreground, so bind it to the header text instead of inheriting.
+    // Keep the binding live across style, theme, disabled, and High Contrast changes.
     auto const presenter = m_contentPresenter.get();
-    if (followText && presenter)
+    if (presenter)
     {
         // Rebinding on every state change would rebuild an identical expression.
         auto const bound = indicator.GetBindingExpression(winrt::Control::ForegroundProperty());
@@ -251,11 +310,12 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     }
 
     const wchar_t* highContrastState = L"HighContrastNormal";
-    if (commonState != std::wstring_view{ L"Normal" } && commonState != std::wstring_view{ L"Disabled" })
+    if (IsLoaded() && IsEnabled() && m_isSortable)
     {
         if (auto const owner = GetOwningTableView(); owner && winrt::get_self<TableView>(owner)->IsHighContrast())
         {
-            highContrastState = m_isPressed ? L"HighContrastPressed" : L"HighContrastPointerOver";
+            highContrastState = commonState == std::wstring_view{ L"Pressed" } ? L"HighContrastPressed" :
+                commonState == std::wstring_view{ L"PointerOver" } ? L"HighContrastPointerOver" : L"HighContrastSortable";
         }
     }
 
@@ -272,7 +332,7 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
         winrt::VisualStateManager::GoToState(*this, commonState, useTransitions);
     }
     const bool highlighted = highContrastState != std::wstring_view{ L"HighContrastNormal" };
-    SyncSortIndicatorForeground(highlighted || !IsEnabled(), highlighted);
+    SyncSortIndicatorForeground(highlighted);
 
     const wchar_t* sortState = L"Unsorted";
     if (m_sortDirection == winrt::SortDirection::Ascending)
@@ -283,7 +343,26 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     {
         sortState = L"SortDescending";
     }
-    winrt::VisualStateManager::GoToState(*this, sortState, useTransitions);
+    else if (IsEnabled() && m_isSortable &&
+        (commonState == std::wstring_view{ L"PointerOver" } ||
+            commonState == std::wstring_view{ L"Pressed" } ||
+            FocusState() == winrt::FocusState::Keyboard))
+    {
+        sortState = L"UnsortedSortAvailable";
+    }
+    if (auto const indicator = m_sortIndicator.get())
+    {
+        // Keep the glyph rendered while its host fades out; actual sorting and UIA stay unchanged.
+        const auto direction = m_sortDirection == winrt::SortDirection::None
+            ? winrt::SortDirection::Ascending : m_sortDirection;
+        indicator.Direction(TableView::ToSortIndicatorDirection(direction));
+    }
+    const bool animateSortAffordance = useTransitions && IsLoaded() && IsEnabled() &&
+        m_isSortable && !highlighted &&
+        FocusState() != winrt::FocusState::Keyboard &&
+        commonState != std::wstring_view{ L"Pressed" } &&
+        SharedHelpers::IsAnimationsEnabled();
+    winrt::VisualStateManager::GoToState(*this, sortState, animateSortAffordance);
 }
 
 void TableViewColumnHeader::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)

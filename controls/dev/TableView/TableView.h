@@ -166,14 +166,23 @@ struct TableViewResourceCache
         double rowMinHeight{ 0.0 };
         bool hasCellPadding{ false };
         winrt::Thickness cellPadding{};
+        bool hasCellTextPadding{ false };
+        winrt::Thickness cellTextPadding{};
+        bool hasHeaderTextPadding{ false };
+        winrt::Thickness headerTextPadding{};
+        bool hasGroupHeaderTextPadding{ false };
+        winrt::Thickness groupHeaderTextPadding{};
         bool hasHeaderCellPadding{ false };
         winrt::Thickness headerCellPadding{};
+        bool hasGroupHeaderMinHeight{ false };
+        double groupHeaderMinHeight{};
+        bool hasGroupHeaderPadding{ false };
+        winrt::Thickness groupHeaderPadding{};
     };
     DensityInfo density{};
 
-    // Font sizes resolved from fixed (non-density-suffixed) ThemeResource keys, so they do NOT
-    // vary with Density; kept out of DensityInfo to avoid implying otherwise. Still cached and
-    // cleared by InvalidateTableViewResourceCache alongside the other resolved resources.
+    // Built-in text defaults to 14px at every density. Density/theme changes clear
+    // this cache alongside the other resolved resources.
     struct FontInfo
     {
         bool hasCellFontSize{ false };
@@ -254,11 +263,20 @@ public:
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // Density resources fall back to Standard defaults; rows and columns call these via get_self.
+    // Density resources fall back to the selected preset; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
+    double GetDensityGroupHeaderMinHeight();
+    winrt::Thickness GetDensityGroupHeaderPadding();
+    winrt::Style GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header);
+    static bool IsDefaultGroupHeaderContentTemplate(winrt::TableViewGroupHeader const& header);
+    static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property);
     double GetCellFontSize();
+    winrt::Thickness GetDensityCellTextPadding();
+    winrt::Thickness GetDensityHeaderTextPadding();
+    winrt::Thickness GetDensityGroupHeaderTextPadding();
+    winrt::Thickness GetDisplayCellPadding(double contentVerticalOffset = 0.0);
     void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
@@ -1026,6 +1044,7 @@ private:
     // ThemeSettings must be created once a XamlRoot/WindowId is available (Loaded); its Changed handler
     // refreshes HC-dependent resources directly on the UI thread (Changed is raised there).
     void OnTableViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnXamlRootChanged(const winrt::XamlRoot& sender, const winrt::XamlRootChangedEventArgs& args);
     void OnThemeSettingsChanged(const winrt::Microsoft::UI::System::ThemeSettings& sender, const winrt::IInspectable& args);
 
     void UpdateHeaderVisibility();
@@ -1033,6 +1052,7 @@ private:
     void RefreshGridLinesOnRealizedRows();
     void QueueTerminalGridLineRefresh(bool isGeometryRetry = false);
     void RefreshTerminalGridLines();
+    std::optional<winrt::Rect> GetInnerBorderBounds();
     std::optional<bool> ShouldSuppressTrailingGridLine();
     std::optional<bool> ShouldSuppressBottomGridLine(
         const winrt::FrameworkElement& element,
@@ -1437,6 +1457,8 @@ private:
     // Only touched on the UI thread now, so no atomic is required.
     bool m_isHighContrast{ false };
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    double m_layoutRasterizationScale{ 0.0 };
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();

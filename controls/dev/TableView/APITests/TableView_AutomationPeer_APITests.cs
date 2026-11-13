@@ -15,6 +15,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
@@ -300,6 +301,121 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies retained data-item providers enforce single-selection and disabled-state rules without realizing their rows.")]
+        public void VerifyGetSelectionDataItemPeerSelectionMutationValidation()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the first selected row is unrealized.");
+                var firstPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var first = (ISelectionItemProvider)firstPeer.GetPattern(PatternInterface.SelectionItem);
+                first.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "Adding the selected item must not toggle it off.");
+
+                tableView.Select(180);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(180), "Precondition: the second selected row is unrealized.");
+                var secondPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var second = (ISelectionItemProvider)secondPeer.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsFalse(first.IsSelected, "A retained reference-item provider remains available after another row is selected.");
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => first.AddToSelection(),
+                    "Adding a retained unselected item must not replace the single selection.");
+                first.RemoveFromSelection();
+                Verify.AreEqual(180, tableView.SelectedIndex, "Removing an unselected item must preserve the selected row.");
+
+                tableView.IsEnabled = false;
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => first.Select(), "A disabled data-item provider cannot select.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => first.AddToSelection(), "A disabled data-item provider cannot add.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => second.RemoveFromSelection(), "A disabled data-item provider cannot remove.");
+                Verify.AreEqual(180, tableView.SelectedIndex, "Rejected mutations must preserve the selection.");
+                Verify.AreEqual(0, selectionChangedCount, "Rejected or no-op mutations must not raise SelectionChanged.");
+
+                tableView.IsEnabled = true;
+                first.Select();
+                Verify.AreEqual(150, tableView.SelectedIndex, "Select may replace another row once the table is enabled.");
+                first.RemoveFromSelection();
+                Verify.AreEqual(-1, tableView.SelectedIndex, "An enabled provider can remove its selected row.");
+                first.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "A retained reference-item provider can add to an empty selection.");
+                Verify.IsNull(repeater.TryGetElement(150), "Selection mutations must not realize the first row.");
+                Verify.IsNull(repeater.TryGetElement(180), "Selection mutations must not realize the second row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unrealized selected null entry has a stable index-based provider that does not realize rows and becomes unavailable on deselection.")]
+        public void VerifyGetSelectionReportsUnrealizedNullSelectedRow()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+            items[150] = null;
+            items[180] = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.AreEqual(150, tableView.SelectedIndex, "Precondition: the null source entry is selected by index.");
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the null entry is unrealized.");
+                var offset = GetBodyScroller(tableView).VerticalOffset;
+                var realized = string.Join(",", RealizedRowIndices(tableView));
+                var selection = RequireSelectionProvider(tableView);
+                var selected = selection.GetSelection();
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length, "A selected null entry must have a provider.");
+                var firstPeer = new ProviderPeerProbe().ToPeer(selected[0]);
+                var first = (ISelectionItemProvider)firstPeer.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsTrue(first.IsSelected);
+                Verify.AreSame(firstPeer, new ProviderPeerProbe().ToPeer(selection.GetSelection()[0]),
+                    "Repeated reads must reuse the null entry's provider.");
+
+                tableView.Select(180);
+                VerifyElementNotAvailable(() => _ = first.IsSelected, "IsSelected after another null entry is selected");
+                VerifyElementNotAvailable(() => first.AddToSelection(), "AddToSelection on a stale null-entry provider");
+                VerifyElementNotAvailable(() => first.Select(), "Select on a stale null-entry provider");
+                var secondPeer = new ProviderPeerProbe().ToPeer(selection.GetSelection()[0]);
+                Verify.AreNotSame(firstPeer, secondPeer, "Different null source entries must have different providers.");
+                var second = (ISelectionItemProvider)secondPeer.GetPattern(PatternInterface.SelectionItem);
+                second.RemoveFromSelection();
+                var empty = selection.GetSelection();
+                Verify.AreEqual(0, empty == null ? 0 : empty.Length, "Deselecting the null entry clears the reported selection.");
+                VerifyElementNotAvailable(() => second.RemoveFromSelection(), "RemoveFromSelection after deselection");
+
+                tableView.Select(150);
+                Verify.AreNotSame(firstPeer, new ProviderPeerProbe().ToPeer(selection.GetSelection()[0]),
+                    "Reselecting after deselection must create a fresh provider.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(offset, GetBodyScroller(tableView).VerticalOffset, "Provider reads must not scroll.");
+                Verify.AreEqual(realized, string.Join(",", RealizedRowIndices(tableView)), "Provider reads must not change realization.");
+                Verify.IsNull(repeater.TryGetElement(150));
+                Verify.IsNull(repeater.TryGetElement(180));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the data-item peer for an unrealized selected row reports ElementNotAvailable once its item leaves the source.")]
         public void VerifyGetSelectionDataItemPeerForRemovedItemIsNotAvailable()
         {
@@ -329,7 +445,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 VerifyElementNotAvailable(() => _ = selectionItem.IsSelected, "IsSelected");
                 VerifyElementNotAvailable(() => _ = selectionItem.SelectionContainer, "SelectionContainer");
+                VerifyElementNotAvailable(() => selectionItem.AddToSelection(), "AddToSelection");
                 VerifyElementNotAvailable(() => selectionItem.RemoveFromSelection(), "RemoveFromSelection");
+                VerifyElementNotAvailable(() => selectionItem.Select(), "Select");
                 VerifyElementNotAvailable(() => _ = itemPeer.GetName(), "GetName");
                 Verify.IsNull(itemPeer.GetPattern(PatternInterface.SelectionItem), "A removed item must stop offering SelectionItem.");
             });
@@ -464,6 +582,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(itemPeer.IsEnabled(), "Precondition: the row is enabled.");
                 row.IsEnabled = false;
                 Verify.IsFalse(itemPeer.IsEnabled(), "The held peer must report a disabled row as disabled.");
+                var selectionItem = (ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem);
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.Select(), "A held provider cannot select its disabled realized row.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.AddToSelection(), "A held provider cannot add its disabled realized row.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.RemoveFromSelection(), "A held provider cannot remove its disabled realized row.");
+                Verify.AreEqual(150, tableView.SelectedIndex, "Rejected mutations must preserve the selected row.");
                 row.IsEnabled = true;
 
                 Verify.IsNotNull(itemPeer.GetPattern(PatternInterface.ScrollItem) as IScrollItemProvider, "A realized row must offer ScrollItem.");
@@ -600,6 +723,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var repeater = GetRowsRepeater(tableView);
                 Verify.IsTrue(RealizedRowIndices(tableView).Any(i => IsInViewport((FrameworkElement)repeater.TryGetElement(i), scroller)),
                     "After a failed Realize, realized rows must follow the viewport.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifySelectedNullItemRemainsAccessibleAfterRealize()
+        {
+            TableView table = null;
+            var items = MakeNamedPeople(200);
+            items[150] = null;
+            items[180] = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateNamedPeopleTable(items);
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                table.Select(150);
+                table.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(table).TryGetElement(150));
+                var probe = new ProviderPeerProbe();
+                var peer = probe.ToPeer(RequireSelectionProvider(table).GetSelection()[0]);
+                var provider = (ISelectionItemProvider)peer.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsTrue(provider.IsSelected);
+                ((IVirtualizedItemProvider)peer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+                Verify.IsNotNull(GetRowsRepeater(table).TryGetElement(150));
+                var realized = probe.ToPeer(RequireSelectionProvider(table).GetSelection()[0]);
+                Verify.AreEqual(peer.GetName(), realized.GetName(), "Realization must not make null data unavailable.");
+                var realizedProvider = (ISelectionItemProvider)realized.GetPattern(PatternInterface.SelectionItem);
+                Verify.IsTrue(realizedProvider.IsSelected);
+                realizedProvider.RemoveFromSelection();
+                Verify.AreEqual(-1, table.SelectedIndex);
             });
         }
 
@@ -1020,16 +1176,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when a few very tall rows follow many short ones.")]
         public void VerifySetScrollPercentReachesLastRowWithShortThenTallRows()
         {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
+            foreach (var (notesWidth, density) in new[]
             {
-                tableView = CreateShortThenTallTable(width: 600);
-                LoadContent(tableView);
-            });
+                (280.0, TableViewDensity.Compact),
+                (320.0, TableViewDensity.Standard),
+                (360.0, TableViewDensity.Compact),
+                (360.0, TableViewDensity.Standard),
+                (360.0, TableViewDensity.Comfortable)
+            })
+            {
+                TableView tableView = null;
 
-            IdleSynchronizer.Wait();
-            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateShortThenTallTable(width: 600);
+                    tableView.Density = density;
+                    tableView.Columns[1].Width = new GridLength(notesWidth);
+                    Log.Comment($"Short/tall rows: density={density}, notes width={notesWidth}");
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+                VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
+            }
         }
 
         // 50 one-line rows, then 10 rows of wrapped text well over 100px tall, as on the sample's Fix demos page. Rows
@@ -1111,20 +1280,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static IScrollProvider BodyScrollProvider(TableView tableView) =>
             (IScrollProvider)FrameworkElementAutomationPeer.CreatePeerForElement(GetBodyScroller(tableView)).GetPattern(PatternInterface.Scroll);
 
+        private static void SetScrollPercentAndWaitForViewChange(TableView tableView, double verticalPercent)
+        {
+            using (var viewChanged = new AutoResetEvent(false))
+            {
+                ScrollViewer scroller = null;
+                EventHandler<ScrollViewerViewChangedEventArgs> handler = (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scroller = GetBodyScroller(tableView);
+                        scroller.ViewChanged += handler;
+                        var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                        scroll.SetScrollPercent(ScrollPatternIdentifiers.NoScroll, verticalPercent);
+                    });
+                    Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), "The requested scroll must complete.");
+                    IdleSynchronizer.Wait();
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (scroller != null)
+                        {
+                            scroller.ViewChanged -= handler;
+                        }
+                    });
+                }
+            }
+        }
+
         private static void VerifySetScrollPercentToEndAndBack(TableView tableView, double minLastRowHeight, bool verifyMidpoint)
         {
-            double noScroll = ScrollPatternIdentifiers.NoScroll;
-
             RunOnUIThread.Execute(() =>
             {
                 var scroll = RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll) as IScrollProvider;
                 Verify.IsNotNull(scroll, "The TableView peer must answer the Scroll pattern.");
                 Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "Precondition: the table starts at the top.");
-                scroll.SetScrollPercent(noScroll, 100.0);
-                Log.Comment($"Right after SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent}");
             });
 
-            IdleSynchronizer.Wait();
+            SetScrollPercentAndWaitForViewChange(tableView, 100.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1138,10 +1340,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(last != null && IsInViewport(last, scroller), "The last row must be realized and fully visible.");
                 Log.Comment($"Last row ActualHeight={last?.ActualHeight}");
                 Verify.IsGreaterThanOrEqual(last.ActualHeight, minLastRowHeight, "The last row must have its own height.");
-                scroll.SetScrollPercent(noScroll, 0.0);
+                Verify.IsNotNull(scroller.CurrentAnchor, "Row anchoring must resume after the explicit scroll.");
             });
 
-            IdleSynchronizer.Wait();
+            SetScrollPercentAndWaitForViewChange(tableView, 0.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1150,10 +1352,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be back at offset 0.");
                 var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
                 Verify.IsTrue(first != null && IsInViewport(first, GetBodyScroller(tableView)), "The first row must be visible again.");
-                if (verifyMidpoint)
-                {
-                    scroll.SetScrollPercent(noScroll, 50.0);
-                }
             });
 
             if (!verifyMidpoint)
@@ -1161,7 +1359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            IdleSynchronizer.Wait();
+            SetScrollPercentAndWaitForViewChange(tableView, 50.0);
 
             RunOnUIThread.Execute(() =>
             {

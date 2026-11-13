@@ -693,6 +693,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsGreaterThan(realized.Count, 0, "Rows should be realized before scrolling.");
                 Verify.IsLessThan(realized.Count, items.Count,
                     "Precondition: the source must be long enough that item 140 is not realized.");
+                Verify.IsFalse(realized.Any(row => ReferenceEquals(row.DataContext, items[140])),
+                    "Precondition: the item being changed must not have a realized row.");
 
                 // No row exists for this item yet. The raise must be harmless.
                 items[140].Name = "Renamed While Offscreen";
@@ -700,7 +702,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            ScrollBodyTo(tableView, ScrollAxis.Vertical, 140 * 40.0);
+            TableViewSizingTestHelpers.ScrollBodyToItem(tableView, 140);
 
             RunOnUIThread.Execute(() =>
             {
