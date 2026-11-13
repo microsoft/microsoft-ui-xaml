@@ -97,6 +97,9 @@ public:
     // falls back to this instead.
     winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
     void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
+    // UIA sees each binding of this header to a group as its own element (the header peer's
+    // EventsSource), so a held element never moves to another group. A cleared header exposes none.
+    void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding);
 
 private:
     void UpdateVisualStates(bool useTransitions);

@@ -8,6 +8,7 @@
 #include "TableViewGroupHeaderToggleRequestedEventArgs.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
+#include "TableViewAutomationHelpers.h"
 
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 
@@ -25,9 +26,86 @@ TableViewGroupHeader::TableViewGroupHeader()
         });
 }
 
+namespace
+{
+    template <typename D, typename... I>
+    using ComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
+
+    // The UIA element of one binding of a header to a group (the header peer's EventsSource). Not a
+    // FrameworkElementAutomationPeer, and only a weak reference to the header, so no core pointer
+    // outlives it. Once the header is cleared or rebound, every member throws ElementNotAvailable.
+    class TableViewGroupBindingAutomationPeer :
+        public ReferenceTracker<TableViewGroupBindingAutomationPeer, ComposableAutomationPeerT, winrt::IExpandCollapseProvider>
+    {
+    public:
+        explicit TableViewGroupBindingAutomationPeer(winrt::TableViewGroupHeader const& header) : m_header(winrt::make_weak(header)) {}
+
+        winrt::IInspectable GetPatternCore(winrt::PatternInterface const& pattern)
+        {
+            auto const peer = HeaderPeer();
+            return pattern == winrt::PatternInterface::ExpandCollapse ? winrt::IInspectable{ *this } : peer.GetPattern(pattern);
+        }
+        winrt::hstring GetNameCore() { return HeaderPeer().GetName(); }
+        winrt::hstring GetClassNameCore() { return HeaderPeer().GetClassName(); }
+        winrt::AutomationControlType GetAutomationControlTypeCore() { return HeaderPeer().GetAutomationControlType(); }
+        winrt::hstring GetLocalizedControlTypeCore() { return HeaderPeer().GetLocalizedControlType(); }
+        winrt::hstring GetAutomationIdCore() { return HeaderPeer().GetAutomationId(); }
+        int32_t GetLevelCore() { return HeaderPeer().GetLevel(); }
+        winrt::Rect GetBoundingRectangleCore() { return HeaderPeer().GetBoundingRectangle(); }
+        winrt::Point GetClickablePointCore() { return HeaderPeer().GetClickablePoint(); }
+        bool IsOffscreenCore() { return HeaderPeer().IsOffscreen(); }
+        bool IsEnabledCore() { return HeaderPeer().IsEnabled(); }
+        bool IsControlElementCore() { return HeaderPeer().IsControlElement(); }
+        bool IsContentElementCore() { return HeaderPeer().IsContentElement(); }
+        bool HasKeyboardFocusCore() { return HeaderPeer().HasKeyboardFocus(); }
+        bool IsKeyboardFocusableCore() { return HeaderPeer().IsKeyboardFocusable(); }
+        void SetFocusCore() { HeaderPeer().SetFocus(); }
+        void ShowContextMenuCore() { HeaderPeer().ShowContextMenu(); }
+        winrt::IVector<winrt::AutomationPeer> GetChildrenCore() { return HeaderPeer().GetChildren(); }
+        // The framework's tree holds the header's own peer, not this one.
+        winrt::IInspectable NavigateCore(winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection const& direction)
+        {
+            return HeaderPeer().Navigate(direction);
+        }
+
+        winrt::ExpandCollapseState ExpandCollapseState() { return HeaderPeer().as<winrt::IExpandCollapseProvider>().ExpandCollapseState(); }
+        void Expand() { HeaderPeer().as<winrt::IExpandCollapseProvider>().Expand(); }
+        void Collapse() { HeaderPeer().as<winrt::IExpandCollapseProvider>().Collapse(); }
+
+    private:
+        // The header's own peer while it still routes UIA to this binding.
+        winrt::AutomationPeer HeaderPeer()
+        {
+            auto const header = m_header.get();
+            auto const peer = header ? winrt::FrameworkElementAutomationPeer::FromElement(header) : nullptr;
+            if (!peer || peer.EventsSource() != get_strong().as<winrt::AutomationPeer>())
+            {
+                ThrowElementNotAvailable();
+            }
+            return peer;
+        }
+
+        winrt::weak_ref<winrt::TableViewGroupHeader> m_header{ nullptr };
+    };
+}
+
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 {
-    return winrt::make<TableViewGroupHeaderAutomationPeer>(*this);
+    auto const peer = winrt::make<TableViewGroupHeaderAutomationPeer>(*this);
+    SyncGroupAutomationPeerInternal(peer, true);
+    return peer;
+}
+
+void TableViewGroupHeader::SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding)
+{
+    if (!m_groupEntry.get())
+    {
+        headerPeer.EventsSource(nullptr);
+    }
+    else if (newBinding || !headerPeer.EventsSource())
+    {
+        headerPeer.EventsSource(winrt::make<TableViewGroupBindingAutomationPeer>(*this));
+    }
 }
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)

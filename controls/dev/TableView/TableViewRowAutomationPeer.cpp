@@ -689,7 +689,13 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     }
     // GetChildren normally establishes this relationship, but Grid.GetItem can be
     // the first and only acquisition route. Connect that same peer before publishing it.
-    peer.SetParent(*this);
+    // UIA sees the row through its item peer when it has one.
+    winrt::AutomationPeer parent = EventsSource();
+    if (!parent)
+    {
+        parent = *this;
+    }
+    peer.SetParent(parent);
     m_cellPeerCache.emplace_back(this, cell, peer);
     return peer;
 }
