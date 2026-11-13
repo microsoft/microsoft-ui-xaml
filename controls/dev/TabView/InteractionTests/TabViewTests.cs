@@ -100,34 +100,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TabEntryUsesSelectionBeforeAnyTabReceivesFocus()
         {
+            VerifySelectionBeforeAnyTabReceivesFocus(reverse: false);
+        }
+
+        [TestMethod]
+        public void ShiftTabEntryUsesSelectionBeforeAnyTabReceivesFocus()
+        {
+            VerifySelectionBeforeAnyTabReceivesFocus(reverse: true);
+        }
+
+        private void VerifySelectionBeforeAnyTabReceivesFocus(bool reverse)
+        {
             using (var setup = new TestSetupHelper("TabView Focus Tests"))
             {
-                var beforeButton = FindElement.ByName<Button>("SelectThirdTabButton");
+                var selectionButton = FindElement.ByName<Button>(reverse ? "SelectThirdTabFromAfterButton" : "SelectThirdTabButton");
                 var firstTab = FindElement.ByName<TabItem>("FocusTab0");
                 var secondTab = FindElement.ByName<TabItem>("FocusTab1");
                 var thirdTab = FindElement.ByName<TabItem>("FocusTab2");
+                var fourthTab = FindElement.ByName<TabItem>("FocusTab3");
 
                 Verify.IsFalse(firstTab.IsOffscreen);
                 Verify.IsFalse(secondTab.IsOffscreen);
                 Verify.IsFalse(thirdTab.IsOffscreen);
+                Verify.IsFalse(fourthTab.IsOffscreen);
                 Verify.IsTrue(firstTab.IsSelected);
                 Verify.IsFalse(firstTab.HasKeyboardFocus);
                 Verify.IsFalse(secondTab.HasKeyboardFocus);
                 Verify.IsFalse(thirdTab.HasKeyboardFocus);
+                Verify.IsFalse(fourthTab.HasKeyboardFocus);
 
                 Log.Comment("Select tab 2 after layout, while focus remains outside the tab strip.");
-                beforeButton.Click();
+                selectionButton.Click();
                 Wait.ForIdle();
 
-                Verify.IsTrue(beforeButton.HasKeyboardFocus);
+                Verify.IsTrue(selectionButton.HasKeyboardFocus);
                 Verify.IsTrue(thirdTab.IsSelected);
+                Verify.IsFalse(firstTab.HasKeyboardFocus);
+                Verify.IsFalse(secondTab.HasKeyboardFocus);
+                Verify.IsFalse(thirdTab.HasKeyboardFocus);
+                Verify.IsFalse(fourthTab.HasKeyboardFocus);
 
-                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab, reverse ? ModifierKey.Shift : ModifierKey.None);
                 Wait.ForIdle();
 
-                Log.Comment("Tab 0 has keyboard focus: " + firstTab.HasKeyboardFocus);
                 Verify.IsTrue(thirdTab.IsSelected, "Tab entry should not change selection.");
-                Verify.IsTrue(thirdTab.HasKeyboardFocus, "First Tab entry should focus the selected tab, not tab 0.");
+                Verify.IsTrue(thirdTab.HasKeyboardFocus, "First Tab/Shift+Tab entry should focus the selected tab, not an end tab.");
             }
         }
 

@@ -1172,29 +1172,56 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestProperty("Hosting:Mode", "WPF")]
         public void TabEntryUsesSelectionBeforeAnyItemReceivesFocus()
         {
-            var lv = CreateListViewWithGrouping();
+            VerifySingleSelectionTabEntry(reverse: false, useGridView: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void ShiftTabEntryUsesSelectionBeforeAnyItemReceivesFocus()
+        {
+            VerifySingleSelectionTabEntry(reverse: true, useGridView: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void GridViewSingleSelectionTabEntryBeforeAnyItemReceivesFocus()
+        {
+            VerifySingleSelectionTabEntry(reverse: false, useGridView: true);
+            VerifySingleSelectionTabEntry(reverse: true,  useGridView: true);
+        }
+
+        private void VerifySingleSelectionTabEntry(bool reverse, bool useGridView)
+        {
+            Microsoft.UI.Xaml.Controls.ListViewBase lv = useGridView ? null : CreateListViewWithGrouping();
             const int selectedIndex = 2;
             Button beforeButton = null;
+            Button afterButton = null;
             bool listReceivedFocus = false;
 
             UIExecutor.Execute(() =>
             {
+                if (useGridView)
+                {
+                    lv = new GridView { Height = 600, Width = 200, ItemsSource = Enumerable.Range(0, 10).ToArray() };
+                }
                 lv.SelectionMode = ListViewSelectionMode.Single;
                 lv.SingleSelectionFollowsFocus = false;
                 lv.TabNavigation = KeyboardNavigationMode.Once;
                 lv.GotFocus += (s, e) => listReceivedFocus = true;
 
                 beforeButton = new Button { Content = "Before" };
+                afterButton = new Button { Content = "After" };
                 var root = new StackPanel();
                 root.Children.Add(beforeButton);
                 root.Children.Add(lv);
+                root.Children.Add(afterButton);
                 TestServices.WindowHelper.WindowContent = root;
             });
             TestServices.WindowHelper.WaitForIdle();
 
             UIExecutor.Execute(() =>
             {
-                Verify.IsTrue(beforeButton.Focus(FocusState.Keyboard));
+                Verify.IsTrue((reverse ? afterButton : beforeButton).Focus(FocusState.Keyboard));
                 Verify.IsNotNull(lv.ContainerFromIndex(selectedIndex));
                 lv.SelectedIndex = selectedIndex;
             });
@@ -1204,11 +1231,18 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             {
                 Verify.IsFalse(listReceivedFocus);
                 Verify.AreEqual(selectedIndex, lv.SelectedIndex);
-                Verify.AreEqual(beforeButton, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
+                Verify.AreEqual(reverse ? afterButton : beforeButton, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
             });
 
-            Log.Comment("Tab into the grouped ListView after setting selection without focusing an item.");
-            TestServices.KeyboardHelper.Tab();
+            Log.Comment($"{(reverse ? "Shift+Tab" : "Tab")} into the {(useGridView ? "GridView" : "grouped ListView")} after setting selection without focusing an item.");
+            if (reverse)
+            {
+                TestServices.KeyboardHelper.ShiftTab();
+            }
+            else
+            {
+                TestServices.KeyboardHelper.Tab();
+            }
             TestServices.WindowHelper.WaitForIdle();
 
             UIExecutor.Execute(() =>
@@ -1217,31 +1251,41 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 Verify.AreEqual(lv.ContainerFromIndex(selectedIndex), FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
             });
 
-            Log.Comment("A subsequently focused group header should take precedence over the existing selection.");
-            Control groupHeader = null;
-            UIExecutor.Execute(() =>
+            if (!useGridView)
             {
-                groupHeader = (Control)lv.GroupHeaderContainerFromItemContainer(lv.ContainerFromIndex(selectedIndex));
-                Verify.IsNotNull(groupHeader);
-                Verify.IsTrue(groupHeader.Focus(FocusState.Keyboard));
-            });
-            TestServices.WindowHelper.WaitForIdle();
+                Log.Comment("A subsequently focused group header should take precedence over the existing selection.");
+                Control groupHeader = null;
+                UIExecutor.Execute(() =>
+                {
+                    groupHeader = (Control)lv.GroupHeaderContainerFromItemContainer(lv.ContainerFromIndex(selectedIndex));
+                    Verify.IsNotNull(groupHeader);
+                    Verify.IsTrue(groupHeader.Focus(FocusState.Keyboard));
+                });
+                TestServices.WindowHelper.WaitForIdle();
 
-            UIExecutor.Execute(() =>
-            {
-                Verify.AreEqual(groupHeader, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
-                Verify.IsTrue(beforeButton.Focus(FocusState.Keyboard));
-            });
-            TestServices.WindowHelper.WaitForIdle();
+                UIExecutor.Execute(() =>
+                {
+                    Verify.AreEqual(groupHeader, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
+                    Verify.IsTrue((reverse ? afterButton : beforeButton).Focus(FocusState.Keyboard));
+                });
+                TestServices.WindowHelper.WaitForIdle();
 
-            TestServices.KeyboardHelper.Tab();
-            TestServices.WindowHelper.WaitForIdle();
+                if (reverse)
+                {
+                    TestServices.KeyboardHelper.ShiftTab();
+                }
+                else
+                {
+                    TestServices.KeyboardHelper.Tab();
+                }
+                TestServices.WindowHelper.WaitForIdle();
 
-            UIExecutor.Execute(() =>
-            {
-                Verify.AreEqual(selectedIndex, lv.SelectedIndex);
-                Verify.AreEqual(groupHeader, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
-            });
+                UIExecutor.Execute(() =>
+                {
+                    Verify.AreEqual(selectedIndex, lv.SelectedIndex);
+                    Verify.IsTrue(IsAncestorOf(groupHeader, (DependencyObject)FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot)));
+                });
+            }
         }
 
         [TestMethod]
@@ -1276,9 +1320,25 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             VerifyMultiSelectionTabEntry(ListViewSelectionMode.Extended, grouped: true, reverse: true);
         }
 
-        private void VerifyMultiSelectionTabEntry(ListViewSelectionMode selectionMode, bool grouped, bool reverse)
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void GridViewMultipleSelectionTabEntryBeforeAnyItemReceivesFocus()
         {
-            ListView lv = grouped ? CreateListViewWithGrouping() : null;
+            VerifyMultiSelectionTabEntry(ListViewSelectionMode.Multiple, grouped: false, reverse: false, useGridView: true);
+            VerifyMultiSelectionTabEntry(ListViewSelectionMode.Multiple, grouped: false, reverse: true,  useGridView: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void GridViewExtendedSelectionTabEntryBeforeAnyItemReceivesFocus()
+        {
+            VerifyMultiSelectionTabEntry(ListViewSelectionMode.Extended, grouped: false, reverse: false, useGridView: true);
+            VerifyMultiSelectionTabEntry(ListViewSelectionMode.Extended, grouped: false, reverse: true,  useGridView: true);
+        }
+
+        private void VerifyMultiSelectionTabEntry(ListViewSelectionMode selectionMode, bool grouped, bool reverse, bool useGridView = false)
+        {
+            Microsoft.UI.Xaml.Controls.ListViewBase lv = (grouped && !useGridView) ? CreateListViewWithGrouping() : null;
             const int selectedIndex = 2;
             Button beforeButton = null;
             Button afterButton = null;
@@ -1288,7 +1348,10 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             {
                 if (!grouped)
                 {
-                    lv = new ListView { Height = 600, Width = 200, ItemsSource = Enumerable.Range(0, 10).ToArray() };
+                    lv = useGridView ? new GridView() : new ListView();
+                    lv.Height = 600;
+                    lv.Width = 200;
+                    lv.ItemsSource = Enumerable.Range(0, 10).ToArray();
                 }
                 lv.SelectionMode = selectionMode;
                 lv.SingleSelectionFollowsFocus = false;
@@ -1322,7 +1385,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 Verify.AreEqual(reverse ? afterButton : beforeButton, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
             });
 
-            Log.Comment($"{(reverse ? "Shift+Tab" : "Tab")} into a {(grouped ? "grouped" : "ungrouped")} ListView with {selectionMode} selection established before first focus.");
+            Log.Comment($"{(reverse ? "Shift+Tab" : "Tab")} into a {(grouped ? "grouped" : "ungrouped")} {(useGridView ? "GridView" : "ListView")} with {selectionMode} selection established before first focus.");
             if (reverse)
             {
                 TestServices.KeyboardHelper.ShiftTab();
