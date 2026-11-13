@@ -15,6 +15,9 @@ internal static class GraphicsIndexTests
         KindChangingStops();
         HistoricalObservations();
         PromotedDeviceBounds();
+        HistoricalDeviceReferences();
+        HistoricalStartBounds();
+        ResourceDeviceReuse();
         StaleMappings();
         ClearedBridges();
         IndependentAllocationLinks();
@@ -128,6 +131,175 @@ internal static class GraphicsIndexTests
                 "Resources between a promoted device's actual Start and its first reference must use that device lifetime.");
         });
         Console.WriteLine("Passed: promoted device creation bounds apply to earlier resource lifetimes.");
+    }
+
+    private static void HistoricalDeviceReferences()
+    {
+        foreach (var replacement in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Direct3D(3, Device) with { TimestampQpc = 1_000 },
+                Direct3D(4, Device) with { TimestampQpc = 3_000 }
+            ];
+            if (replacement) events.Add(Direct3D(3, Device) with { TimestampQpc = 4_000 });
+            events.AddRange(
+            [
+                Direct3D(12, 1, Device) with { TimestampQpc = 2_000 },
+                Direct3D(13, 1, Device) with { TimestampQpc = 2_500 }
+            ]);
+            WithRecording(events, connection =>
+            {
+                Expect(Sql.Scalar(connection, """
+                    SELECT COUNT(*) FROM GraphicsLifetimes r JOIN GraphicsObjects d ON d.GraphicsObjectId = r.DeviceId
+                    WHERE r.Kind = 'Texture2D' AND r.StartQpc = 2000 AND r.StopQpc = 2500
+                        AND d.StartQpc = 1000 AND d.StopQpc = 3000 AND d.LastQpc = 3000
+                    """) == 1,
+                    "Delayed resource events must resolve their unique historical device even when its pointer has been reused.");
+                Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == (replacement ? 2 : 1) &&
+                    (!replacement || Count(connection, "GraphicsObjects", "Kind = 'Device' AND StartQpc = 4000 AND LastQpc = 4000 AND EndSeq IS NULL") == 1),
+                    "Historical resource evidence must not create another device or modify the active replacement.");
+            });
+        }
+        Console.WriteLine("Passed: delayed resources retain their historical device across device-pointer reuse.");
+    }
+
+    private static void HistoricalStartBounds()
+    {
+        (ProfilerEvent Start, ProfilerEvent Stop)[] identities =
+        [
+            (Direct3D(3, Device), Direct3D(4, Device)),
+            (Direct3D(12, 1), Direct3D(13, 1)),
+            (Allocation(33, 2, 3, 100), Allocation(34, 2, 3, 100)),
+            (Allocation(36, 2, 3, 100), Allocation(37, 2, 3, 100))
+        ];
+        foreach (var (start, stop) in identities)
+        {
+            foreach (var qpc in new[] { 500L, 2_000L, 3_000L })
+            {
+                WithRecording(
+                [
+                    start with { TimestampQpc = 1_000 },
+                    stop with { TimestampQpc = 2_000 },
+                    stop with { TimestampQpc = 4_000 },
+                    start with { TimestampQpc = qpc }
+                ], connection =>
+                {
+                    if (qpc < 2_000)
+                    {
+                        Expect(Count(connection, "GraphicsObjects") == 3 &&
+                            Count(connection, "GraphicsLifetimes", "StartQpc = 500 AND StopQpc IS NULL AND EndQpc = 1000 AND DurationMs IS NULL") == 1 &&
+                            Count(connection, "GraphicsLifetimes", "StartQpc IS NULL AND StopQpc = 4000") == 1,
+                            "A delayed Start must not complete a later Stop across an intervening known lifetime.");
+                    }
+                    else
+                    {
+                        Expect(Count(connection, "GraphicsObjects") == 2 &&
+                            Count(connection, "GraphicsLifetimes", $"StartQpc = {qpc} AND StopQpc = 4000 AND DurationMs IS NOT NULL") == 1,
+                            "A delayed Start after the preceding lifetime, including its exact Stop timestamp, must still complete its unique Stop.");
+                    }
+                    Expect(Count(connection, "GraphicsLifetimes", "StartQpc = 1000 AND StopQpc = 2000 AND DurationMs = 1") == 1,
+                        "A delayed Start must preserve the intervening lifetime's original evidence.");
+                });
+            }
+        }
+        WithRecording(
+        [
+            Direct3D(8, 1) with { TimestampQpc = 1_000 },
+            Direct3D(7, 1) with { TimestampQpc = 2_000 },
+            Direct3D(13, 1) with { TimestampQpc = 4_000 },
+            Direct3D(12, 1, kernelResource: 101) with { TimestampQpc = 6_000 },
+            Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 500 },
+            Allocation(36, 2, 3, 101) with { TimestampQpc = 7_000 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind IN ('Buffer', 'Texture2D')") == 4 &&
+                Count(connection, "GraphicsLifetimes", "StartQpc = 500 AND EndQpc = 1000 AND StopQpc IS NULL") == 1,
+                "Historical Start bounds must span all resource kinds and use the earliest boundary, not the active replacement.");
+            Expect(Count(connection, "GraphicsObjects", "StartQpc = 6000 AND EndSeq IS NULL") == 1 &&
+                Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND StartSeq = 6 AND EndSeq IS NULL") == 1,
+                "Detached historical evidence must not close or remap the active replacement.");
+        });
+        WithRecording(
+        [
+            Direct3D(3, Device + 1) with { TimestampQpc = 100 },
+            Direct3D(3, Device) with { TimestampQpc = 1_000 },
+            Direct3D(14, 1, Device) with { TimestampQpc = 1_500 },
+            Direct3D(13, 1, Device) with { TimestampQpc = 2_000 },
+            Direct3D(13, 1, Device + 1) with { TimestampQpc = 5_000 },
+            Direct3D(12, 1, Device + 1) with { TimestampQpc = 500 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Texture2D'") == 3 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND StartQpc = 500 AND StopQpc IS NULL AND EndQpc = 1500") == 1 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND StartQpc IS NULL AND StopQpc = 5000") == 1,
+                "An intervening resource with another known owner must bound a delayed Start even when its own creation was not observed.");
+        });
+        WithRecording(
+        [
+            Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+            Allocation(34, 2, 3, 100) with { TimestampQpc = 2_000 },
+            Allocation(34, 2, 3, 100, Adapter + 1) with { TimestampQpc = 4_000 },
+            Allocation(33, 2, 3, 100, Adapter + 1) with { TimestampQpc = 500 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects") == 2 &&
+                Count(connection, "GraphicsLifetimes", $"Qualifier = '{Hex(Adapter + 1)}' AND StartQpc = 500 AND StopQpc = 4000") == 1,
+                "A matching pointer on another adapter must not impose a reuse bound on this allocation.");
+        });
+        Console.WriteLine("Passed: delayed Starts respect intervening lifetimes, resource kinds and qualified identity spaces.");
+    }
+
+    private static void ResourceDeviceReuse()
+    {
+        foreach (var samePointer in new[] { false, true })
+        {
+            var replacement = samePointer ? Device : Device + 1;
+            WithRecording(
+            [
+                Direct3D(3, Device) with { TimestampQpc = 1_000 },
+                Direct3D(12, 1, Device, 100) with { TimestampQpc = 2_000 },
+                Allocation(36, 2, 3, 100) with { TimestampQpc = 2_500 },
+                Direct3D(4, Device) with { TimestampQpc = 3_000 },
+                Direct3D(3, replacement) with { TimestampQpc = 4_000 },
+                Direct3D(14, 1, replacement, 101) with { TimestampQpc = 5_000 },
+                Direct3D(14, 1, Device, 100) with { TimestampQpc = 2_600 },
+                Allocation(36, 4, 5, 101) with { TimestampQpc = 5_500 },
+                Direct3D(13, 1, replacement, 101) with { TimestampQpc = 6_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "Events") == 9 &&
+                    Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND DurationMs IS NULL") == 2 &&
+                    Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND StartQpc = 2000 AND StopQpc IS NULL AND EndReason = 'HandleReuse'") == 1,
+                    "A changed owning device must split a reused resource without fabricating a complete lifetime.");
+                Expect(Sql.Scalar(connection, """
+                    SELECT COUNT(*) FROM GraphicsLifetimes r JOIN GraphicsObjects d ON d.GraphicsObjectId = r.DeviceId
+                    WHERE r.Kind = 'Texture2D' AND r.FirstObservation = 'Rundown' AND r.FirstQpc = 5000
+                        AND NOT r.StartKnown AND r.StopQpc = 6000 AND d.StartQpc = 4000
+                    """) == 1 &&
+                    Count(connection, "GraphicsObjects", "Kind = 'Device' AND StartQpc = 1000 AND StopQpc = 3000 AND LastQpc = 3000") == 1,
+                    "The replacement must use its actual device lifetime, without extending the destroyed parent.");
+                Expect(Count(connection, "GraphicsObjects", "Kind = 'Texture2D'") == 2 &&
+                    Count(connection, "GraphicsLinks", $"Kind = 'ResourceAllocation' AND Handle = '{Hex(100)}' AND EndSeq = 6") == 1 &&
+                    Count(connection, "GraphicsLinks", $"Kind = 'ResourceAllocation' AND Handle = '{Hex(101)}' AND StartSeq = 8 AND EndSeq = 9") == 1,
+                    "Late evidence for the old owner must not reopen old bridges or interrupt the replacement's links.");
+            });
+        }
+        WithRecording(
+        [
+            Direct3D(3, Device) with { TimestampQpc = 1_000 },
+            Direct3D(12, 1, Device) with { TimestampQpc = 2_000 },
+            Direct3D(4, Device) with { TimestampQpc = 3_000 },
+            Direct3D(3, Device + 1) with { TimestampQpc = 4_000 },
+            Direct3D(13, 1, Device + 1) with { TimestampQpc = 6_000 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Texture2D'") == 2 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND FirstObservation = 'Stop' AND NOT StartKnown AND StopQpc = 6000") == 1 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Texture2D' AND DurationMs IS NOT NULL") == 0,
+                "Even a stop-only replacement must not complete an older resource owned by a different device.");
+        });
+        Console.WriteLine("Passed: device changes split reused resources and preserve historical owners and allocation links.");
     }
 
     private static void StaleMappings()

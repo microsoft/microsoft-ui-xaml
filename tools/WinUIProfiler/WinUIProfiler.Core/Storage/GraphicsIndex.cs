@@ -117,13 +117,18 @@ internal sealed class GraphicsIndex : IDisposable
             """, ("$id", SqliteType.Integer), ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer),
             ("$reason", SqliteType.Text), ("$stopSeq", SqliteType.Integer), ("$stopQpc", SqliteType.Integer));
         history = Sql.Prepare(connection, """
-            SELECT GraphicsObjectId, Kind, FirstSeq, FirstQpc, LastQpc, FirstObservation, StartQpc,
-                EndSeq, EndQpc, DeviceId, StopQpc
-            FROM GraphicsObjects
-            WHERE Kind IN ($kind1, $kind2, $kind3, $kind4) AND Handle = $handle AND Qualifier = $qualifier AND EndQpc >= $qpc
-            ORDER BY EndQpc, GraphicsObjectId
+            SELECT g.GraphicsObjectId, g.Kind, g.FirstSeq, g.FirstQpc, g.LastQpc, g.FirstObservation, g.StartQpc,
+                g.EndSeq, g.EndQpc, g.DeviceId, g.StopQpc,
+                CASE WHEN $start AND g.StartQpc IS NULL THEN (SELECT MAX(p.LastQpc) FROM GraphicsObjects p
+                    WHERE p.Kind IN ($kind1, $kind2, $kind3, $kind4) AND p.Handle = g.Handle AND p.Qualifier = g.Qualifier
+                        AND p.GraphicsObjectId <> g.GraphicsObjectId AND COALESCE(p.StartQpc, p.FirstQpc) < g.FirstQpc
+                        AND (p.StartQpc IS NOT NULL OR p.Kind <> g.Kind OR p.DeviceId <> COALESCE(g.DeviceId, $device))) END
+            FROM GraphicsObjects g
+            WHERE g.Kind IN ($kind1, $kind2, $kind3, $kind4) AND g.Handle = $handle AND g.Qualifier = $qualifier AND g.EndQpc >= $qpc
+            ORDER BY g.EndQpc, g.GraphicsObjectId
             """, ("$kind1", SqliteType.Text), ("$kind2", SqliteType.Text), ("$kind3", SqliteType.Text),
-            ("$kind4", SqliteType.Text), ("$handle", SqliteType.Text), ("$qualifier", SqliteType.Text), ("$qpc", SqliteType.Integer));
+            ("$kind4", SqliteType.Text), ("$handle", SqliteType.Text), ("$qualifier", SqliteType.Text),
+            ("$qpc", SqliteType.Integer), ("$device", SqliteType.Integer), ("$start", SqliteType.Integer));
         insertEvent = Sql.Prepare(connection,
             "INSERT INTO GraphicsObjectEvents (Seq, GraphicsObjectId, Role) VALUES ($seq, $id, $role)",
             ("$seq", SqliteType.Integer), ("$id", SqliteType.Integer), ("$role", SqliteType.Text));
@@ -184,26 +189,25 @@ internal sealed class GraphicsIndex : IDisposable
         };
         if (identity.Handle == 0) return; // Unkeyed events remain available in the raw tables.
 
-        var (tracked, latest) = Observe(identity, shape.Kind, shape.Phase, sequence, data.TimestampQpc);
+        var parentHandle = shape.Kind is >= Kind.Buffer and <= Kind.Texture3D ? shape.Handle(data, "pID3D11Device") : 0;
+        (Lifetime Lifetime, bool Latest)? parent = null;
+        if (parentHandle != 0)
+            parent = Observe(new(IdentitySpace.Device, parentHandle), Kind.Device, Phase.Reference, sequence, data.TimestampQpc);
+        var (tracked, latest) = Observe(identity, shape.Kind, shape.Phase, sequence, data.TimestampQpc, parent?.Lifetime.Id);
         if (shape.Kind == Kind.Device)
         {
             if (latest) SaveDevice(tracked.Id, data, shape);
         }
         else if (shape.Kind is >= Kind.Buffer and <= Kind.Texture3D)
         {
-            var parentHandle = shape.Handle(data, "pID3D11Device");
-            if (tracked.DeviceId is null && parentHandle != 0 &&
-                (!active.TryGetValue(new(IdentitySpace.Device, parentHandle), out var parent) || parent.KnownFromQpc <= data.TimestampQpc))
+            if (tracked.DeviceId is null && parent is { } observed)
             {
-                var (observed, parentLatest) = Observe(new(IdentitySpace.Device, parentHandle), Kind.Device, Phase.Reference, sequence, data.TimestampQpc);
-                if (parentLatest) SaveDevice(observed.Id, data, shape);
-                tracked.DeviceId = observed.Id;
+                if (observed.Latest) SaveDevice(observed.Lifetime.Id, data, shape);
+                tracked.DeviceId = observed.Lifetime.Id;
             }
-            else if (tracked.DeviceId is { } parentId)
+            else if (parent is null && tracked.DeviceId is { } parentId)
             {
-                if (active.TryGetValue(new(IdentitySpace.Device, parentHandle), out var observed) && observed.Id == parentId)
-                    Record(observed, Phase.Reference, sequence, data.TimestampQpc);
-                else Record(parentId, Phase.Reference, sequence, data.TimestampQpc);
+                Record(parentId, Phase.Reference, sequence, data.TimestampQpc);
             }
             Set(resource, ("$id", tracked.Id), ("$device", tracked.DeviceId),
                 ("$kernel", latest ? shape.HandleText(data, "hKMResource") : null),
@@ -273,15 +277,17 @@ internal sealed class GraphicsIndex : IDisposable
         _ => null
     };
 
-    private (Lifetime Lifetime, bool Latest) Observe(Identity identity, Kind kind, Phase phase, long sequence, long qpc)
+    private (Lifetime Lifetime, bool Latest) Observe(Identity identity, Kind kind, Phase phase, long sequence, long qpc, long? deviceId = null)
     {
         active.TryGetValue(identity, out var tracked);
+        var ownerChanged = deviceId is not null && tracked?.DeviceId is not null && tracked.DeviceId != deviceId;
         var detached = tracked is not null && (qpc < tracked.KnownFromQpc && !tracked.ReferenceOnly ||
-            phase == Phase.Stop && qpc < tracked.LastQpc || phase == Phase.Start && qpc < tracked.LastQpc && !tracked.ReferenceOnly);
+            phase == Phase.Stop && qpc < tracked.LastQpc || phase == Phase.Start && qpc < tracked.LastQpc && !tracked.ReferenceOnly ||
+            ownerChanged && qpc < tracked.LastQpc);
         (long Seq, long Qpc)? boundary = null;
         if (tracked is null || detached)
         {
-            var past = FindHistorical(identity, kind, phase, qpc, out boundary);
+            var past = FindHistorical(identity, kind, phase, qpc, deviceId, out boundary);
             if (past is not null)
             {
                 var latest = qpc >= past.LastQpc;
@@ -289,10 +295,13 @@ internal sealed class GraphicsIndex : IDisposable
                 return (past, latest);
             }
             if (tracked is not null)
-                boundary = (tracked.FirstSeq, Math.Max(tracked.KnownFromQpc, qpc));
+            {
+                var next = (Seq: tracked.FirstSeq, Qpc: Math.Max(tracked.KnownFromQpc, qpc));
+                if (boundary is null || next.Qpc < boundary.Value.Qpc) boundary = next;
+            }
             detached = boundary is not null;
         }
-        if (!detached && tracked is not null && (tracked.Kind != kind || phase == Phase.Start && !tracked.ReferenceOnly))
+        if (!detached && tracked is not null && (tracked.Kind != kind || phase == Phase.Start && !tracked.ReferenceOnly || ownerChanged))
         {
             End(tracked, sequence, qpc, "HandleReuse");
             tracked = null;
@@ -314,26 +323,32 @@ internal sealed class GraphicsIndex : IDisposable
         return (tracked, newest);
     }
 
-    private Lifetime? FindHistorical(Identity identity, Kind kind, Phase phase, long qpc, out (long Seq, long Qpc)? boundary)
+    private Lifetime? FindHistorical(Identity identity, Kind kind, Phase phase, long qpc, long? deviceId, out (long Seq, long Qpc)? boundary)
     {
         var resourceIdentity = identity.Space == IdentitySpace.Resource;
         Set(history, ("$kind1", resourceIdentity ? Kind.Buffer.ToString() : kind.ToString()),
             ("$kind2", resourceIdentity ? Kind.Texture1D.ToString() : kind.ToString()),
             ("$kind3", resourceIdentity ? Kind.Texture2D.ToString() : kind.ToString()),
             ("$kind4", resourceIdentity ? Kind.Texture3D.ToString() : kind.ToString()),
-            ("$handle", Hex(identity.Handle)), ("$qualifier", Hex(identity.Qualifier) ?? ""), ("$qpc", qpc));
+            ("$handle", Hex(identity.Handle)), ("$qualifier", Hex(identity.Qualifier) ?? ""),
+            ("$qpc", qpc), ("$device", deviceId), ("$start", phase == Phase.Start));
         boundary = null;
         Lifetime? match = null;
         using var rows = history.ExecuteReader();
         while (rows.Read())
         {
-            boundary ??= (rows.GetInt64(7), rows.GetInt64(8));
-            if (rows.GetString(1) != kind.ToString()) continue;
             var firstQpc = rows.GetInt64(3);
             var startQpc = rows.IsDBNull(6) ? (long?)null : rows.GetInt64(6);
+            var knownFrom = startQpc ?? firstQpc;
+            var next = (Seq: qpc < knownFrom ? rows.GetInt64(2) : rows.GetInt64(7),
+                Qpc: qpc < knownFrom ? knownFrom : rows.GetInt64(8));
+            if (boundary is null || next.Qpc < boundary.Value.Qpc) boundary = next;
+            if (rows.GetString(1) != kind.ToString() ||
+                deviceId is { } owner && !rows.IsDBNull(9) && rows.GetInt64(9) != owner) continue;
             if (phase == Phase.Start)
             {
-                if (startQpc is { } start ? start != qpc : qpc > firstQpc) continue;
+                if (startQpc is { } start ? start != qpc :
+                    qpc > firstQpc || !rows.IsDBNull(11) && qpc < rows.GetInt64(11)) continue;
             }
             else if (qpc < (startQpc ?? firstQpc)) continue;
             if (phase == Phase.Stop && (qpc < rows.GetInt64(4) || !rows.IsDBNull(10) && qpc != rows.GetInt64(10))) continue;
