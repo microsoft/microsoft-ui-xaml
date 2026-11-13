@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -3759,7 +3759,7 @@ namespace Framework { namespace DataBinding {
             int inserted = 0;
             int removed = 0;
             int changed = 0;
-            std::vector<unsigned int> indices;
+            std::wstring log; // "+i" inserted, "-i" removed, "~i" changed, "R" reset
 
             int Total() const { return resets + inserted + removed + changed; }
         };
@@ -3771,12 +3771,12 @@ namespace Framework { namespace DataBinding {
                 {
                     switch (args->CollectionChange)
                     {
-                    case ::Windows::Foundation::Collections::CollectionChange::Reset: counts->resets++; break;
-                    case ::Windows::Foundation::Collections::CollectionChange::ItemInserted: counts->inserted++; break;
-                    case ::Windows::Foundation::Collections::CollectionChange::ItemRemoved: counts->removed++; break;
-                    case ::Windows::Foundation::Collections::CollectionChange::ItemChanged: counts->changed++; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::Reset: counts->resets++; counts->log += L"R"; return;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemInserted: counts->inserted++; counts->log += L"+"; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemRemoved: counts->removed++; counts->log += L"-"; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemChanged: counts->changed++; counts->log += L"~"; break;
                     }
-                    counts->indices.push_back(args->Index);
+                    counts->log += std::to_wstring(args->Index);
                 });
         }
     }
@@ -3939,6 +3939,81 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(odd->GroupItems)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"even", groupKeyOf(even->Group)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"dc", ShapingNamesOf(even->GroupItems)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceIncrementalUpdates()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
+            });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", ShapingNamesOf(view)->Data());
+
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            auto step = [&](Platform::String^ expectedNames, const wchar_t* expectedLog)
+            {
+                VERIFY_ARE_STRINGS_EQUAL(expectedNames->Data(), ShapingNamesOf(view)->Data());
+                VERIFY_ARE_STRINGS_EQUAL(expectedLog, counts->log.c_str());
+                counts->log.clear();
+            };
+
+            LOG_OUTPUT(L"An added item is inserted at its sorted position.");
+            source->Append(MakeShapingItem(L"e", 2));
+            step(L"abde", L"+3");
+
+            LOG_OUTPUT(L"An item the filter rejects raises nothing, added or removed.");
+            source->InsertAt(0, MakeShapingItem(L"f", 0));
+            step(L"abde", L"");
+
+            LOG_OUTPUT(L"A removed item is removed from its position, and currency stays on its item.");
+            VERIFY_IS_TRUE(view->MoveCurrentToPosition(1));
+            source->RemoveAt(2); // d
+            step(L"abe", L"-2");
+            VERIFY_ARE_STRINGS_EQUAL(L"b", safe_cast<InpcDataSource^>(view->CurrentItem)->StringProperty->Data());
+
+            LOG_OUTPUT(L"A replaced item that sorts elsewhere moves.");
+            source->SetAt(1, MakeShapingItem(L"g", 1)); // b -> g
+            step(L"aeg", L"-1+2");
+
+            LOG_OUTPUT(L"A replaced item that sorts in place is an ItemChanged.");
+            source->SetAt(4, MakeShapingItem(L"c", 2)); // e -> c
+            step(L"acg", L"~1");
+
+            LOG_OUTPUT(L"A replaced item the filter now accepts is inserted.");
+            source->SetAt(3, MakeShapingItem(L"b", 1)); // c0 -> b1
+            step(L"abcg", L"+1");
+
+            LOG_OUTPUT(L"The incremental result matches a full recompute.");
+            cvs->Refresh();
+            step(L"abcg", L"R");
+
+            LOG_OUTPUT(L"A source Reset recomputes fully.");
+            source->Clear();
+            step(L"", L"R");
+
+            view->VectorChanged -= token;
+
+            LOG_OUTPUT(L"A grouped view still recomputes fully on a source change.");
+            auto grouped = ref new CollectionViewSource();
+            auto groupedSource = MakeShapingSource();
+            grouped->Source = groupedSource;
+            grouped->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            auto groupedView = grouped->View;
+            auto groupedCounts = std::make_shared<VectorChangeCounts>();
+            auto groupedToken = CountVectorChanges(groupedView, groupedCounts);
+            groupedSource->Append(MakeShapingItem(L"e", 2));
+            VERIFY_IS_TRUE(groupedCounts->resets > 0);
+            groupedView->VectorChanged -= groupedToken;
         });
     }
 

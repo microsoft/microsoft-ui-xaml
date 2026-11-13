@@ -1229,6 +1229,60 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies source adds, removes and replaces on a sorted, filtered CollectionViewSource reach the TableView as incremental view changes, with no Reset, and the selected row stays selected.")]
+        public void VerifyIncrementalShapingCollectionViewChangesUpdateRows()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var changes = new List<global::Windows.Foundation.Collections.CollectionChange>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out items);
+                cvs.Filter = item => ((ShapedPerson)item).Role != "Architect";
+                cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                cvs.View.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Owen", "Rafa" }, "sorted, without the architect");
+                tableView.Select(3);
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "Precondition: Owen is selected.");
+                items.Add(new ShapedPerson("Bea", "Engineer", "Platform"));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Bea", "Diego", "Ines", "Owen", "Rafa" }, "after an add");
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "The selection stays on its row after an add.");
+                items.RemoveAt(1); // Diego
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Bea", "Ines", "Owen", "Rafa" }, "after a remove");
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "The selection stays on its row after a remove.");
+                items[0] = new ShapedPerson("Zed", "Designer", "Studio"); // replaces Asha
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Bea", "Ines", "Owen", "Rafa", "Zed" }, "after a replace");
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "The selection stays on its row after a replace.");
+                Verify.IsFalse(changes.Contains(global::Windows.Foundation.Collections.CollectionChange.Reset), "The view applied every change incrementally.");
+                Verify.AreEqual(4, changes.Count, "Insert, remove, then remove and insert for the moved replacement.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a Filter set through ICollectionViewShaping and a Refresh after an item edit update the TableView's rows.")]
         public void VerifyFilterAndRefreshOnShapingCollectionViewUpdateRows()
         {
