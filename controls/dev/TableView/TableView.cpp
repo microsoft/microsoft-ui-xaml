@@ -1930,11 +1930,12 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             }
         });
         AttachSourceTip(tableViewSource);
-        // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
+        // Live reshape must not end the user's edit, nor re-aim focus away from a Tab move still
+        // waiting for its row; DrainCoalescedEditReshape and EndPendingTabEditMove resume it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
             auto strongThis = weakThis.get();
-            return strongThis && strongThis->IsEditing();
+            return strongThis && (strongThis->IsEditing() || strongThis->IsTabEditMovePending());
         });
         // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
         sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)

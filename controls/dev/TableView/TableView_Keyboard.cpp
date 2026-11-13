@@ -27,11 +27,7 @@
 
 namespace
 {
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
     // enough: the walk must actually reach the header host, or a focused cell (an open editor,
@@ -1238,6 +1234,10 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = false;
+    if (TryHandleKeyDuringPendingTabEditMove(args))
+    {
+        return;
+    }
     using winrt::Windows::System::VirtualKey;
     const auto pressed = args.Key();
     const bool isModifier = pressed == VirtualKey::Shift || pressed == VirtualKey::Control || pressed == VirtualKey::Menu ||
@@ -1999,6 +1999,9 @@ void TableView::RestoreBodyFocusAfterReshape()
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
+    // The re-shape re-aims focus at the captured row, so a pending Tab target is no longer where
+    // focus will land.
+    EndPendingTabEditMove();
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -2091,8 +2094,7 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
-    m_beginEditAfterBodyFocusItem.set(nullptr);
-    m_beginEditAfterBodyFocusColumn.set(nullptr);
+    EndPendingTabEditMove();
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
     m_requestedBodyVerticalOffset.reset();
@@ -2170,17 +2172,26 @@ void TableView::OnReshapeFocusAttempt()
     {
         auto const editItem = m_beginEditAfterBodyFocusItem.get();
         auto const editColumn = m_beginEditAfterBodyFocusColumn.get();
-        CancelReshapeFocusRestore();
         // Posted: inside LayoutUpdated a CellEditingTemplate editor cannot be realized and focused.
         auto const queue = editItem && editColumn ? DispatcherQueue() : nullptr;
-        if (queue)
+        // Hand a Tab move to the posted BeginEdit below without releasing its live-shaping hold.
+        const bool handOff = queue && std::exchange(m_tabEditMovePending, false);
+        CancelReshapeFocusRestore();
+        if (handOff)
         {
-            queue.TryEnqueue([weakThis = get_weak(), editItem, editColumn]()
+            m_tabEditMovePending = true;
+            const uint32_t generation = m_tabEditMoveGeneration;
+            if (!queue.TryEnqueue([weakThis = get_weak(), editItem, editColumn, generation]()
             {
                 auto const strongThis = weakThis.get();
+                if (!strongThis || strongThis->m_tabEditMoveGeneration != generation)
+                {
+                    // Escape, another key, or a newer restore retired the move.
+                    return;
+                }
                 try
                 {
-                    if (strongThis && !strongThis->IsEditing() && strongThis->IsBodyFocusOnItem(editItem))
+                    if (!strongThis->IsEditing() && strongThis->IsBodyFocusOnItem(editItem))
                     {
                         strongThis->BeginEdit(editItem, editColumn);
                     }
@@ -2189,7 +2200,12 @@ void TableView::OnReshapeFocusAttempt()
                 {
                     // Best-effort; never fail-fast the dispatcher.
                 }
-            });
+                // Resumes live shaping only if the edit did not open; its close resumes otherwise.
+                strongThis->EndPendingTabEditMove();
+            }))
+            {
+                EndPendingTabEditMove();
+            }
         }
         return;
     }

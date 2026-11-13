@@ -274,6 +274,33 @@
                       IsChecked="False"
                       IsTabStop="False"
                       AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding collapses the Age
+                 column. Unchecking shows it again. -->
+            <CheckBox x:Name="HideAgeInCommitCheckBox"
+                      Content="Hide Age inside commit"
+                      AutomationProperties.Name="HideAgeInCommitCheckBox"
+                      AutomationProperties.AutomationId="HideAgeInCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Unchecked="OnHideAgeInCommitUnchecked" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding disables the row
+                 container of the second item. Unchecking re-enables it. -->
+            <CheckBox x:Name="DisableSecondRowInCommitCheckBox"
+                      Content="Disable second row inside commit"
+                      AutomationProperties.Name="DisableSecondRowInCommitCheckBox"
+                      AutomationProperties.AutomationId="DisableSecondRowInCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Unchecked="OnDisableSecondRowInCommitUnchecked" />
+            <!-- UIA Invoke only. Mirrors ScrollingTableView, which has a frozen leading column. -->
+            <Button Content="Toggle Scrolling Flow Direction"
+                    AutomationProperties.Name="ToggleScrollingFlowDirectionButton"
+                    AutomationProperties.AutomationId="ToggleScrollingFlowDirectionButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnToggleScrollingFlowDirectionClick" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in

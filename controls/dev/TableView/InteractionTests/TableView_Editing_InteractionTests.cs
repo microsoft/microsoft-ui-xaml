@@ -395,7 +395,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
-        #region Tab / Shift+Tab while editing (ADO 64540419)
+        #region Tab / Shift+Tab while editing
 
         // BasicTableView columns: Name, Age, ReadOnlyCity (IsReadOnly), Score, Template (editing template),
         // Action (not editable). Tab commits and edits the next editable visible cell, Shift+Tab the previous one.
@@ -424,7 +424,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("Name;Age;Name;", ReadEditReport(), "Shift+Tab must edit the previous editable cell.");
                 Verify.AreEqual("Commit;Commit;", ReadEditEndReport(), "Each move must commit the cell it leaves.");
 
-                CancelAnyOpenEdit();
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+                string focus;
+                bool inEditor = IsFocusInBasicTableEditor(out focus);
+                Log.Comment("End report after Escape: '{0}'. Focus: {1}.", ReadEditEndReport(), focus);
+                Verify.AreEqual("Commit;Commit;Cancel;", ReadEditEndReport(), "Escape must cancel the edit a Tab move opened.");
+                Verify.AreEqual("Tabbed", ReadFirstItemName(), "Cancelling the moved edit must not undo the earlier commit.");
+                Verify.IsFalse(inEditor, "Escape must close the moved editor.");
             }
         }
 
@@ -478,6 +485,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("Template;Name;", ReadEditReport(), "Tab must wrap to the next row's first editable cell.");
                 Verify.AreEqual(BasicName(1), ProbeEntryField(probe, 1, 2), "The new editor must belong to row 1.");
                 Verify.AreEqual("focus=True", ProbeEntryField(probe, 1, 3), "Focus must move into the new editor.");
+
+                UIObject table = FindElement.ById(BasicTable);
+                bool rowSelected;
+                Verify.IsTrue(TryGetIsSelected(table != null ? GetRow(table, 1) : null, out rowSelected), "Precondition: row 1's selection must be observable.");
+                Verify.IsTrue(rowSelected, "Selection must follow the edit to row 1.");
 
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
@@ -546,6 +558,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Tab wrapping across a group header edits the next group's first data row.")]
+        public void TabWrapSkipsGroupHeader()
+        {
+            VerifyTabWrapAcrossGroups(collapseMiddleGroup: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab wrapping past a collapsed group edits the first data row of the group after it.")]
+        public void TabWrapSkipsCollapsedGroup()
+        {
+            VerifyTabWrapAcrossGroups(collapseMiddleGroup: true);
+        }
+
+        // Edits the first group's last row's GroupedCity and presses Tab. The editor must open on GroupedName of the
+        // first data row after the next group header, or after the third one when the second group is collapsed.
+        private static void VerifyTabWrapAcrossGroups(bool collapseMiddleGroup)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var allowEditing = FindElement.ById<CheckBox>(AllowGroupedEditingCheckBox);
+                if (allowEditing == null) { Verify.Fail("AllowGroupedEditingCheckBox was not found."); return; }
+
+                try
+                {
+                    allowEditing.Check();
+                    Wait.ForIdle();
+                    if (!SelectPivotItem(GroupedPivotItem)) { Verify.Fail(GoToButton(GroupedPivotItem) + " was not found."); return; }
+
+                    FindElement.ById<Button>(ExpandAllGroupsButton)?.InvokeAndWait();
+                    ElementCache.Clear();
+                    UIObject rowsHost = GetRowsHost(GroupedTable);
+                    if (rowsHost == null) { return; }
+
+                    if (collapseMiddleGroup)
+                    {
+                        int middle = IndexOfGroupHeader(rowsHost, 2);
+                        if (middle < 0) { Verify.Fail("Precondition: a second group header is needed."); return; }
+                        new ExpandCollapseImplementation(rowsHost.Children[middle]).Collapse();
+                        Wait.ForIdle();
+                        ElementCache.Clear();
+                        rowsHost = GetRowsHost(GroupedTable);
+                        if (rowsHost == null) { return; }
+                    }
+
+                    int second = IndexOfGroupHeader(rowsHost, 2);
+                    int landingHeader = IndexOfGroupHeader(rowsHost, collapseMiddleGroup ? 3 : 2);
+                    if (second < 1 || landingHeader < 0 || landingHeader + 1 >= rowsHost.Children.Count ||
+                        !IsRow(rowsHost.Children[second - 1]) || !IsRow(rowsHost.Children[landingHeader + 1]) ||
+                        (collapseMiddleGroup && landingHeader != second + 1))
+                    {
+                        Verify.Fail("Precondition: unexpected group layout (second header " + second + ", landing header " + landingHeader + ").");
+                        return;
+                    }
+
+                    UIObject landingRow = rowsHost.Children[landingHeader + 1];
+                    string expectedName = landingRow.Children.Count > 0 ? landingRow.Children[0].Name : null;
+                    if (string.IsNullOrEmpty(expectedName)) { Verify.Fail("Precondition: the landing row must expose its GroupedName cell."); return; }
+
+                    // GroupedName is 200 wide, GroupedCity 160.
+                    DoubleClickRowAtColumnOffset(rowsHost.Children[second - 1], 280);
+                    if (UIObject.Focused?.ControlType != ControlType.Edit) { Verify.Fail("Precondition: double-click must open the GroupedCity editor. Focus: " + DescribeFocused()); return; }
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+                    VerifyFocusedEditorValue(expectedName, "Tab");
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    FindElement.ById<Button>(ExpandAllGroupsButton)?.InvokeAndWait();
+                    allowEditing.Uncheck();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Shift+Tab from the first editable cell of the first row commits and leaves the editor.")]
         public void ShiftTabWhileEditingFirstCellOfFirstRowExitsEdit()
         {
@@ -563,6 +652,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("ShiftTabbed", ReadFirstItemName(), "The commit must write the value.");
                 Verify.AreEqual("Name;", ReadEditReport(), "No new edit may open.");
                 Verify.IsFalse(inEditor, "Focus must leave the editor.");
+                Verify.IsFalse(IsFocusInRow(), "Focus must leave the rows, as Shift+Tab from the first cell does. Focus: " + focus);
             }
         }
 
@@ -591,6 +681,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("Commit;", ReadEditEndReport(), "Tab must commit.");
                 Verify.AreEqual("Template;", ReadEditReport(), "No new edit may open.");
                 Verify.IsFalse(inEditor, "Focus must leave the editor.");
+                Verify.IsFalse(IsFocusWithin(BasicTable), "Focus must leave the table, as Tab from the last cell does. Focus: " + focus);
             }
         }
 
@@ -684,40 +775,69 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                int firstVisible = OpenScrollingEditorBelowHiddenRow();
+                if (firstVisible < 0) { return; }
 
-                UIObject rowsHost = GetRowsHost(ScrollingTable);
-                if (rowsHost == null || rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows."); return; }
-
-                Log.Comment("PageDown twice scrolls a page; PageUp then lands on the first fully visible row without scrolling.");
-                rowsHost.Children[0].SetFocus();
-                Wait.ForIdle();
-                KeyboardHelper.PressKey(Key.PageDown);
-                Wait.ForIdle();
-                KeyboardHelper.PressKey(Key.PageDown);
-                Wait.ForIdle();
-                KeyboardHelper.PressKey(Key.PageUp);
-                Wait.ForIdle();
-
-                int firstVisible = FocusedPositionInSet() - 1;
-                if (firstVisible < 1) { Verify.Fail("Precondition: a row must sit above the viewport (" + firstVisible + ")."); return; }
-
-                KeyboardHelper.PressKey(Key.Right);
-                Wait.ForIdle();
-                KeyboardHelper.PressKey(Key.F2);
-                Wait.ForIdle();
-                UIObject editor = UIObject.Focused;
-                if (editor?.ControlType != ControlType.Edit) { Verify.Fail("Precondition: F2 must open the FrozenName editor. Focus: " + DescribeFocused()); return; }
-                Verify.AreEqual(ScrollingName(firstVisible), new Edit(editor).Value, "Precondition: the editor belongs to the first fully visible row.");
-
-                Log.Comment("Shift+Tab wraps to row {0}'s ScrollId, above the viewport.", firstVisible - 1);
+                double before = ReadScrollOffsetComponent(ReadScrollOffsets(), "V");
+                Log.Comment("Shift+Tab wraps to row {0}'s ScrollId, above the viewport. V before: {1}.", firstVisible - 1, before);
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
-                editor = UIObject.Focused;
-                Log.Comment("Focus after Shift+Tab: {0}.", DescribeFocused());
+                UIObject editor = UIObject.Focused;
+                double after = ReadScrollOffsetComponent(ReadScrollOffsets(), "V");
+                Log.Comment("Focus after Shift+Tab: {0}. V after: {1}.", DescribeFocused(), after);
                 Verify.AreEqual(ControlType.Edit, editor?.ControlType, "An editor must open once the row scrolls into view.");
                 Verify.AreEqual((firstVisible - 1).ToString(), editor != null ? new Edit(editor).Value : null, "The editor must belong to the row above the viewport.");
+                Verify.IsTrue(after < before, "The body must scroll up to the landing row (V " + before + " -> " + after + ").");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape pressed while a Tab move waits for an off-screen row cancels the move instead of opening an editor.")]
+        public void EscapeDuringOffscreenTabMoveCancelsPendingEdit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                int firstVisible = OpenScrollingEditorBelowHiddenRow();
+                if (firstVisible < 0) { return; }
+
+                Log.Comment("Escape follows Shift+Tab without idling, so it arrives while the move may still be pending.");
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                Log.Comment("Focus after Shift+Tab, Escape: {0}.", DescribeFocused());
+                Verify.AreNotEqual(ControlType.Edit, UIObject.Focused?.ControlType, "No editor may be open after Escape.");
+                Verify.IsTrue(IsFocusWithin(ScrollingTable), "Focus must stay in the table. Focus: " + DescribeFocused());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a second Tab pressed while a Tab move waits for an off-screen row leaves exactly one editor open, in the table.")]
+        public void SecondTabDuringOffscreenTabMoveKeepsSingleEditInTable()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                int firstVisible = OpenScrollingEditorBelowHiddenRow();
+                if (firstVisible < 0) { return; }
+
+                Log.Comment("Tab follows Shift+Tab without idling, so it arrives while the move may still be pending.");
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                UIObject editor = UIObject.Focused;
+                string value = editor?.ControlType == ControlType.Edit ? new Edit(editor).Value : null;
+                Log.Comment("Focus after Shift+Tab, Tab: {0}. Value: '{1}'.", DescribeFocused(), value);
+                Verify.IsTrue(IsFocusWithin(ScrollingTable), "Focus must stay in the table. Focus: " + DescribeFocused());
+                Verify.AreEqual(ControlType.Edit, editor?.ControlType, "An editor must be open.");
+
+                // The pending move swallows the Tab and lands on the row above; if the move finished first, the Tab wraps back.
+                bool onLandingRow = value == (firstVisible - 1).ToString();
+                bool onSourceRow = value == ScrollingName(firstVisible);
+                Verify.IsTrue(onLandingRow || onSourceRow, "The editor must be the Shift+Tab target or the cell Tab returns to, not '" + value + "'.");
 
                 CancelAnyOpenEdit();
             }
@@ -790,6 +910,208 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab opens no edit when a CellEditEnding handler collapses the target column.")]
+        public void TabWhileEditingStopsWhenCommitHidesTargetColumn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var hideAge = FindElement.ById<CheckBox>(HideAgeInCommitCheckBox);
+                if (hideAge == null) { Verify.Fail(HideAgeInCommitCheckBox + " was not found."); return; }
+
+                try
+                {
+                    hideAge.Check();
+                    Wait.ForIdle();
+                    OpenNameEditorAndReplaceText(GetFirstRow(), "Hidden");
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string focus;
+                    bool inEditor = IsFocusInBasicTableEditor(out focus);
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", ReadEditReport(), ReadEditEndReport(), focus);
+                    Verify.AreEqual("Commit;", ReadEditEndReport(), "Tab must commit the open edit.");
+                    Verify.AreEqual("Hidden", ReadFirstItemName(), "The commit must write through.");
+                    Verify.AreEqual("Name;", ReadEditReport(), "The target column was hidden, so no edit may open.");
+                    Verify.IsFalse(inEditor, "No editor may be open.");
+                    Verify.IsTrue(IsFocusWithin(BasicTable), "Focus must stay in the table. Focus: " + focus);
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    hideAge.Uncheck();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab wrapping to a row a CellEditEnding handler disabled neither selects nor edits that row.")]
+        public void TabWhileEditingStopsWhenCommitDisablesTargetRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var disableRow = FindElement.ById<CheckBox>(DisableSecondRowInCommitCheckBox);
+                if (disableRow == null) { Verify.Fail(DisableSecondRowInCommitCheckBox + " was not found."); return; }
+
+                try
+                {
+                    disableRow.Check();
+                    Wait.ForIdle();
+                    DoubleClickRowAtColumnOffset(GetFirstRow(), TemplateCellRelativeX);
+                    Verify.AreEqual("Template;", ReadEditReport(), "Precondition: the edit opened on row 0's Template.");
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string focus;
+                    bool inEditor = IsFocusInBasicTableEditor(out focus);
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", ReadEditReport(), ReadEditEndReport(), focus);
+                    Verify.AreEqual("Commit;", ReadEditEndReport(), "Tab must commit the open edit.");
+                    Verify.AreEqual("Template;", ReadEditReport(), "Row 1 is disabled, so no edit may open on it.");
+                    Verify.IsFalse(inEditor, "No editor may be open.");
+
+                    ElementCache.Clear();
+                    UIObject table = FindElement.ById(BasicTable);
+                    bool rowSelected;
+                    Verify.IsTrue(TryGetIsSelected(table != null ? GetRow(table, 1) : null, out rowSelected), "Precondition: row 1's selection must be observable.");
+                    Verify.IsFalse(rowSelected, "The refused move must not select row 1.");
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    disableRow.Uncheck();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies F2 then Escape pressed while a Tab move waits for an off-screen row leave no editor open, in the table.")]
+        public void F2ThenEscapeDuringOffscreenTabMoveLeavesNoEditor()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                int firstVisible = OpenScrollingEditorBelowHiddenRow();
+                if (firstVisible < 0) { return; }
+
+                Log.Comment("F2 follows Shift+Tab without idling, so it arrives while the move may still be pending.");
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.F2);
+                Wait.ForIdle();
+                Log.Comment("Focus after Shift+Tab, F2: {0}.", DescribeFocused());
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+                Wait.ForMilliseconds(300);
+                Wait.ForIdle();
+
+                Log.Comment("Focus after Escape: {0}.", DescribeFocused());
+                Verify.AreNotEqual(ControlType.Edit, UIObject.Focused?.ControlType, "No editor may reopen after Escape.");
+                Verify.IsTrue(IsFocusWithin(ScrollingTable), "Focus must stay in the table. Focus: " + DescribeFocused());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab to a column right of the viewport scrolls it into view and opens its editor.")]
+        public void TabWhileEditingToColumnOutsideViewportScrollsHorizontally()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!OpenScrollingFrozenNameEditor(rtl: false)) { return; }
+
+                double before = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                string[] expected = { CityOf(0), ScrollingAge(0).ToString(), "0" };
+                foreach (string value in expected)
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+                    VerifyFocusedEditorValue(value, "Tab");
+                }
+
+                double after = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Log.Comment("H before: {0}. H after: {1}.", before, after);
+                Verify.IsTrue(after > before, "The body must scroll to ScrollId, which starts past the viewport (H " + before + " -> " + after + ").");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab and Shift+Tab in a right-to-left table cross the frozen column in logical column order.")]
+        public void TabWhileEditingCrossesFrozenColumnInRtl()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var toggle = FindElement.ById<Button>(ToggleScrollingFlowDirectionButton);
+                if (toggle == null) { Verify.Fail(ToggleScrollingFlowDirectionButton + " was not found."); return; }
+
+                try
+                {
+                    if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                    toggle.InvokeAndWait();
+                    if (!OpenScrollingFrozenNameEditor(rtl: true)) { return; }
+
+                    foreach (string value in new[] { CityOf(0), ScrollingAge(0).ToString(), "0" })
+                    {
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        VerifyFocusedEditorValue(value, "Tab");
+                    }
+
+                    foreach (string value in new[] { ScrollingAge(0).ToString(), CityOf(0), ScrollingName(0) })
+                    {
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                        Wait.ForIdle();
+                        VerifyFocusedEditorValue(value, "Shift+Tab");
+                    }
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    toggle.InvokeAndWait();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab and Shift+Tab in a right-to-left table follow logical column order.")]
+        public void TabWhileEditingInRtlFollowsLogicalColumnOrder()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var toggle = FindElement.ById<Button>(ToggleBasicFlowDirectionButton);
+                if (toggle == null) { Verify.Fail(ToggleBasicFlowDirectionButton + " was not found."); return; }
+
+                try
+                {
+                    toggle.InvokeAndWait();
+                    UIObject row = GetFirstRow();
+                    if (row == null) { return; }
+                    var bounds = row.BoundingRectangle;
+                    DoubleClickPoint(new Point(bounds.Right - NameCellRelativeX, bounds.Top + (bounds.Height / 2)));
+                    Verify.AreEqual("Name;", ReadEditReport(), "Precondition: the edit opened on Name.");
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+                    string probe = ReadEditorProbe();
+                    Log.Comment("Edit report: '{0}'. Probe: '{1}'.", ReadEditReport(), probe);
+                    Verify.AreEqual("Name;Age;", ReadEditReport(), "Tab must edit the logically next column, Age.");
+                    Verify.AreEqual(BasicAge(0).ToString(), ProbeEntryField(probe, 1, 2), "The new editor must belong to row 0's Age.");
+
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                    Wait.ForIdle();
+                    Verify.AreEqual("Name;Age;Name;", ReadEditReport(), "Shift+Tab must edit the logically previous column, Name.");
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    toggle.InvokeAndWait();
+                }
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -855,6 +1177,108 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             string[] fields = entries[entry].Split('|');
             return field < fields.Length ? fields[field] : "<probe entry has no field " + field + ": '" + entries[entry] + "'>";
+        }
+
+        // True when UIA focus is on, or inside, the element with the given AutomationId.
+        private static bool IsFocusWithin(string automationId)
+        {
+            UIObject node = UIObject.Focused;
+            for (int depth = 0; node != null && depth < 24; depth++, node = node.Parent)
+            {
+                if (node.AutomationId == automationId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // True when UIA focus is on, or inside, a TableViewRow.
+        private static bool IsFocusInRow()
+        {
+            UIObject node = UIObject.Focused;
+            for (int depth = 0; node != null && depth < 24; depth++, node = node.Parent)
+            {
+                if (node.ClassName == "TableViewRow")
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Puts the FrozenName editor on the first fully visible row of ScrollingTableView, with a row above the
+        // viewport; returns that row's index, or -1 after failing the test.
+        private static int OpenScrollingEditorBelowHiddenRow()
+        {
+            if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return -1; }
+
+            UIObject rowsHost = GetRowsHost(ScrollingTable);
+            if (rowsHost == null || rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows."); return -1; }
+
+            rowsHost.Children[0].SetFocus();
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.PageDown);
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.PageDown);
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.PageUp);
+            Wait.ForIdle();
+
+            int firstVisible = FocusedPositionInSet() - 1;
+            if (firstVisible < 1) { Verify.Fail("Precondition: a row must sit above the viewport (" + firstVisible + ")."); return -1; }
+
+            KeyboardHelper.PressKey(Key.Right);
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.F2);
+            Wait.ForIdle();
+            UIObject editor = UIObject.Focused;
+            if (editor?.ControlType != ControlType.Edit) { Verify.Fail("Precondition: F2 must open the FrozenName editor. Focus: " + DescribeFocused()); return -1; }
+            if (new Edit(editor).Value != ScrollingName(firstVisible)) { Verify.Fail("Precondition: the editor must belong to row " + firstVisible + "."); return -1; }
+            return firstVisible;
+        }
+
+        // Double-clicks row 0's FrozenName cell in ScrollingTableView, which is 180 wide and leading in both
+        // directions; returns false after failing the test if no editor opened.
+        private static bool OpenScrollingFrozenNameEditor(bool rtl)
+        {
+            if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return false; }
+
+            UIObject table = FindElement.ById(ScrollingTable);
+            UIObject row = table != null ? GetRow(table, 0) : null;
+            if (row == null) { Verify.Fail("ScrollingTableView's first row was not found."); return false; }
+
+            const int frozenNameCentreX = 90;
+            var bounds = row.BoundingRectangle;
+            DoubleClickPoint(new Point(rtl ? bounds.Right - frozenNameCentreX : bounds.Left + frozenNameCentreX, bounds.Top + (bounds.Height / 2)));
+
+            UIObject editor = UIObject.Focused;
+            if (editor?.ControlType != ControlType.Edit || new Edit(editor).Value != ScrollingName(0))
+            {
+                Verify.Fail("Precondition: double-click must open row 0's FrozenName editor. Focus: " + DescribeFocused());
+                return false;
+            }
+            return true;
+        }
+
+        private static void VerifyFocusedEditorValue(string expected, string key)
+        {
+            UIObject editor = UIObject.Focused;
+            Log.Comment("Focus after {0}: {1}.", key, DescribeFocused());
+            Verify.AreEqual(ControlType.Edit, editor?.ControlType, key + " must open an editor.");
+            Verify.AreEqual(expected, editor?.ControlType == ControlType.Edit ? new Edit(editor).Value : null, key + " must edit the expected cell.");
+        }
+
+        // Index among the rows host's children of the n-th (1-based) group header, or -1.
+        private static int IndexOfGroupHeader(UIObject rowsHost, int n)
+        {
+            for (int i = 0, headers = 0; i < rowsHost.Children.Count; i++)
+            {
+                if (IsGroupHeader(rowsHost.Children[i]) && ++headers == n) { return i; }
+            }
+            return -1;
         }
 
         // True when UIA focus is on an Edit inside BasicTableView, i.e. in an open cell editor.
