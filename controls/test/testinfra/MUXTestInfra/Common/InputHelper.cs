@@ -216,7 +216,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Log.Comment("Tap and hold on {0} at ({1}, {2}) for {3} ms.", obj.GetIdentifier(), offsetX, offsetY, durationMs);
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
             {
-                obj.TapAndHold(offsetX, offsetY, durationMs);
+                TouchInjection.Run("TapAndHold", () => obj.TapAndHold(offsetX, offsetY, durationMs));
             }
             Wait.ForIdle();
         }
@@ -232,7 +232,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                     Log.Comment("Tap on {0}.", obj.GetIdentifier());
                     using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
                     {
-                        obj.Tap();
+                        TouchInjection.Run("Tap", () => obj.Tap());
                     }
 
                     retries = 0;
@@ -276,7 +276,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
                     using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
                     {
-                        obj.Tap(offsetX, offsetY);
+                        TouchInjection.Run("Tap", () => obj.Tap(offsetX, offsetY));
 
                         waiter?.Wait();
                     }
@@ -298,7 +298,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Log.Comment("Tap and hold on {0} for {1} ms.", obj.GetIdentifier(), durationMs);
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
             {
-                obj.TapAndHold(durationMs);
+                TouchInjection.Run("TapAndHold", () => obj.TapAndHold(durationMs));
             }
             Wait.ForIdle();
         }
@@ -310,7 +310,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 Log.Comment("Double-tap on {0}.", obj.GetIdentifier());
                 using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
                 {
-                    obj.DoubleTap();
+                    TouchInjection.Run("DoubleTap", () => obj.DoubleTap());
                 }
             }
             catch (Exception e)
@@ -328,7 +328,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 Log.Comment("Double-tap on {0} at ({1}, {2}).", obj.GetIdentifier(), offsetX, offsetY);
                 using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
                 {
-                    obj.DoubleTap(offsetX, offsetY);
+                    TouchInjection.Run("DoubleTap", () => obj.DoubleTap(offsetX, offsetY));
                 }
             }
             catch (Exception e)
@@ -373,7 +373,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Drag))
                 {
                     SinglePointGesture.Current.Move(start);
-                    SinglePointGesture.Current.PressAndDrag(end, dragDuration, holdDuration);
+                    TouchInjection.Run("Pan", () => SinglePointGesture.Current.PressAndDrag(end, dragDuration, holdDuration));
                 }
             }
             else
@@ -381,7 +381,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Pan))
                 {
                     SinglePointGesture.Current.Move(start);
-                    SinglePointGesture.Current.Pan(end, holdDuration, panAcceleration);
+                    TouchInjection.Run("Pan", () => SinglePointGesture.Current.Pan(end, holdDuration, panAcceleration));
                 }
             }
 
@@ -434,7 +434,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 }
                 else
                 {
-                    SinglePointGesture.Current.PressAndDrag(end, dragDuration, 500);
+                    TouchInjection.Run("Drag", () => SinglePointGesture.Current.PressAndDrag(end, dragDuration, 500));
                 }
 
                 Log.Comment("Drag Complete.");
@@ -488,7 +488,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 }
                 else
                 {
-                    SinglePointGesture.Current.ClickDrag(end, PointerButtons.Primary, duration);
+                    TouchInjection.Run("Drag", () => SinglePointGesture.Current.ClickDrag(end, PointerButtons.Primary, duration));
                 }
 
                 Log.Comment("Drag Complete.");
@@ -501,7 +501,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Log.Comment("Flick on {0} over {1} pixels in the {2} direction.", obj.GetIdentifier(), distance, direction);
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Flick))
             {
-                obj.Flick(distance, DirectionToAngle(direction));
+                TouchInjection.Run("Flick", () => obj.Flick(distance, DirectionToAngle(direction)));
             }
             Wait.ForIdle();
         }
@@ -514,7 +514,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Log.Comment("Flick on {0} over {1} pixels in the {2} direction.", obj.GetIdentifier(), distance, direction);
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Flick))
             {
-                obj.Flick(startPoint, distance, DirectionToAngle(direction));
+                TouchInjection.Run("Flick", () => obj.Flick(startPoint, distance, DirectionToAngle(direction)));
             }
             Wait.ForIdle();
         }
@@ -524,7 +524,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Log.Comment("Pinch on {0}.", obj.GetIdentifier());
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Pinch))
             {
-                MultiPointGesture.Pinch(obj);
+                TouchInjection.Run("Pinch", () => MultiPointGesture.Pinch(obj));
             }
             Wait.ForIdle();
         }
@@ -546,7 +546,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Pinch))
             {
-                MultiPointGesture.Pinch(obj, distance, DirectionToAngle(direction), pivot);
+                TouchInjection.Run("Pinch", () => MultiPointGesture.Pinch(obj, distance, DirectionToAngle(direction), pivot));
             }
             Wait.ForIdle();
         }
@@ -558,7 +558,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             {
                 try
                 {
-                    MultiPointGesture.Stretch(obj);
+                    TouchInjection.Run("Stretch", () => MultiPointGesture.Stretch(obj));
                 }
                 catch (Exception e)
                 {
@@ -587,7 +587,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             {
                 try
                 {
-                    MultiPointGesture.Stretch(obj, distance, DirectionToAngle(direction), pivot);
+                    TouchInjection.Run("Stretch", () => MultiPointGesture.Stretch(obj, distance, DirectionToAngle(direction), pivot));
                 } 
                 catch (Exception e)
                 {
