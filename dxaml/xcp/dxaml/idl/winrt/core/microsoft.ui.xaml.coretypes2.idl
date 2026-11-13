@@ -2005,6 +2005,17 @@ namespace Microsoft.UI.Xaml.Data
         Windows.Foundation.Collections.IObservableVector<Object> GroupItems{ get; };
     };
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    interface ICollectionViewShaping 
+    {
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions{ get; };
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions{ get; };
+        Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
+        void Refresh();
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     interface INotifyDataErrorInfo 

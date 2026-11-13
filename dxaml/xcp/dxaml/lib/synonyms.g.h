@@ -538,6 +538,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionView ICollectionView;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewFactory ICollectionViewFactory;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup ICollectionViewGroup;
+    typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewShaping ICollectionViewShaping;
     typedef ABI::Microsoft::UI::Xaml::Data::ICustomProperty ICustomProperty;
     typedef ABI::Microsoft::UI::Xaml::Data::ICustomPropertyProvider ICustomPropertyProvider;
     typedef ABI::Microsoft::UI::Xaml::Data::IItemsRangeInfo IItemsRangeInfo;
