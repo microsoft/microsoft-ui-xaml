@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 
 #include <exception>
 #include <utility>
@@ -145,7 +145,7 @@ TableViewTip::MetricsInputs TableView::TipMetricsInputs() noexcept
         metrics.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
         if (auto const source = m_activeSource.get())
         {
-            auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+            auto const* const sourceImpl = source.get();
             metrics.sourceRows = sourceImpl->SourceRowCount();
             metrics.dataRows = sourceImpl->DataRowCount();
         }
@@ -175,7 +175,7 @@ void TableView::CompleteTipInitializationIfEmpty() noexcept
     try
     {
         auto const source = m_activeSource.get();
-        auto const view = source ? winrt::get_self<::TableViewSource>(source)->GetItemsSourceView() : nullptr;
+        auto const view = source ? source.get()->GetItemsSourceView() : nullptr;
         if (!view || view.Count() == 0) { TableViewTip::CompleteInitialization(m_tip); }
     }
     catch (...)
@@ -245,7 +245,7 @@ void TableView::IgnoreTipInitializationUnloadedBeforeRender() noexcept
     try
     {
         auto const source = m_activeSource.get();
-        auto const view = source ? winrt::get_self<::TableViewSource>(source)->GetItemsSourceView() : nullptr;
+        auto const view = source ? source.get()->GetItemsSourceView() : nullptr;
         if (!view || view.Count() == 0) { return; }
         if (HasRowsViewport()) { TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::UnloadedBeforeRender); }
     }
@@ -309,18 +309,19 @@ void TableView::CompleteTipOperation(uint64_t generation) noexcept
     TableViewTip::CompleteOperation(m_tip, generation);
 }
 
-void TableView::AttachSourceTip(winrt::TableViewSource const& source)
+void TableView::AttachSourceTip(winrt::com_ptr<::TableViewShapingSource> const& source)
 {
-    auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    auto const sourceImpl = source.get();
     auto const weakThis = get_weak();
-    auto const weakSource = winrt::make_weak(source);
+    // The handlers live in the source, so it is alive whenever they run.
+    auto const* const rawSource = source.get();
     sourceImpl->SetShapingTipHandlers(*this,
-        [weakThis, weakSource](TableViewTip::Operation operation, bool admitted) noexcept -> uint64_t
+        [weakThis, rawSource](TableViewTip::Operation operation, bool admitted) noexcept -> uint64_t
         {
             if (auto self = weakThis.get())
             {
                 ++self->m_tipSourceMutationDepth;
-                if (self->m_activeSource.get() != weakSource.get())
+                if (self->m_activeSource.get().get() != rawSource)
                 {
                     ++self->m_tipMutationDepth;
                     return 0;
@@ -340,7 +341,7 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
             }
             return 0;
         },
-        [weakThis, weakSource](TableViewTip::Operation operation, uint64_t generation, bool failed,
+        [weakThis, rawSource](TableViewTip::Operation operation, uint64_t generation, bool failed,
             std::optional<TableViewTip::IgnoreReason> reason, std::optional<HRESULT> error,
             TableViewTip::AppFaultKind kind, TableViewTip::ContainedFaults contained) noexcept
         {
@@ -351,7 +352,7 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
                     --self->m_tipSourceMutationDepth;
                     self->EndTipOperation();
                 });
-                if (self->m_activeSource.get() != weakSource.get()) { return; }
+                if (self->m_activeSource.get().get() != rawSource) { return; }
                 auto const stage = operation == TableViewTip::Operation::Filter ? TableViewTip::Stage::Filter :
                     operation == TableViewTip::Operation::Sort ? TableViewTip::Stage::Sort : TableViewTip::Stage::Grouping;
                 // The verb carried on past app delegates that threw; whether or not it has a test, that is the app's.

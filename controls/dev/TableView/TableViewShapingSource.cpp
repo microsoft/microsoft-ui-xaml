@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 #include "TableViewTip.h"
 #include "RowMetadataProvider.h"
 #include "GroupedSourceAdapter.h"
@@ -41,16 +41,15 @@ namespace
     // not retried.
     constexpr uint32_t c_maxEndDeferRefreshRetries = 100;
 
-    void PostEndDeferRefresh(winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue, winrt::TableViewSource const& source, uint32_t attempt = 0) noexcept
+    void PostEndDeferRefresh(winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue, winrt::com_ptr<::TableViewShapingSource> const& source, uint32_t attempt = 0) noexcept
     {
         try
         {
             queue.TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Low, [queue, source, attempt]()
             {
-                auto const self = winrt::get_self<::TableViewSource>(source);
                 try
                 {
-                    self->ThrowIfEndDeferRefreshReentrant();
+                    source->ThrowIfEndDeferRefreshReentrant();
                 }
                 catch (...)
                 {
@@ -60,66 +59,20 @@ namespace
                     }
                     else
                     {
-                        TVDiag::LogRetailF(L"[TableViewSource] A refresh deferral could not be ended: every attempt ran inside an app delegate.");
+                        TVDiag::LogRetailF(L"[TableView] A refresh deferral could not be ended: every attempt ran inside an app delegate.");
                     }
                     return;
                 }
-                try { self->EndDeferRefresh(); } catch (...) {}
+                try { source->EndDeferRefresh(); } catch (...) {}
             });
         }
         catch (...) {}
     }
-
-    // DeferRefresh's IClosable. Close is idempotent and ends exactly one deferral.
-    struct TableViewSourceDeferral : winrt::implements<TableViewSourceDeferral, winrt::Windows::Foundation::IClosable>
-    {
-        // queue is the source's thread's queue, never null.
-        TableViewSourceDeferral(winrt::TableViewSource const& source, winrt::Microsoft::UI::Dispatching::DispatcherQueue const& queue) :
-            m_source(source),
-            m_queue(queue)
-        {
-        }
-
-        ~TableViewSourceDeferral()
-        {
-            if (!m_source)
-            {
-                return;
-            }
-
-            // Never closed: end it on a later turn of the source's thread, never inside Release, which
-            // may run on a finalizer thread or inside app code.
-            PostEndDeferRefresh(m_queue, m_source);
-        }
-
-        void Close()
-        {
-            if (!m_source)
-            {
-                return;
-            }
-            if (!m_queue.HasThreadAccess())
-            {
-                throw winrt::hresult_wrong_thread();
-            }
-
-            auto const self = winrt::get_self<::TableViewSource>(m_source);
-            // Refused before the deferral is consumed, so a later Close still ends it.
-            self->ThrowIfEndDeferRefreshReentrant();
-            // Held across the reshape: the source must outlive the call that ends its deferral.
-            auto const source = std::exchange(m_source, nullptr);
-            self->EndDeferRefresh();
-        }
-
-    private:
-        winrt::TableViewSource m_source{ nullptr };
-        winrt::Microsoft::UI::Dispatching::DispatcherQueue m_queue{ nullptr };
-    };
 }
 
-struct TableViewSource::ShapingTip
+struct TableViewShapingSource::ShapingTip
 {
-    ShapingTip(TableViewSource& source, TableViewTip::Operation kind, bool meaningful = true) :
+    ShapingTip(TableViewShapingSource& source, TableViewTip::Operation kind, bool meaningful = true) :
         source(source), kind(kind), handlers(source.m_shapingTipHandlers),
         previous(std::exchange(source.m_shapingTip, this)), ownerGeneration(source.m_ownerGeneration)
     {
@@ -174,7 +127,7 @@ struct TableViewSource::ShapingTip
         }
     }
 
-    TableViewSource& source;
+    TableViewShapingSource& source;
     TableViewTip::Operation kind;
     std::shared_ptr<ShapingTipHandlers> handlers;
     ShapingTip* previous{};
@@ -183,7 +136,7 @@ struct TableViewSource::ShapingTip
     TableViewTip::ShapingObservation observation;
 };
 
-void TableViewSource::SetShapingTipHandlers(
+void TableViewShapingSource::SetShapingTipHandlers(
     winrt::IInspectable const& owner,
     std::function<uint64_t(TableViewTip::Operation, bool)> begin,
     ShapingTipCompleted complete)
@@ -197,36 +150,18 @@ void TableViewSource::SetShapingTipHandlers(
     catch (...) { OutputDebugStringW(L"TableView TiP: source observation unavailable.\n"); }
 }
 
-TableViewSource::~TableViewSource()
+TableViewShapingSource::~TableViewShapingSource()
 {
     // An engine pass still on the stack keeps the engine alive; it must stop and not call back here.
     *m_obsolete = true;
     m_engine->SetProjectionRebuiltHandler(nullptr);
     m_engine->SetShapingChangedHandler(nullptr);
-    for (auto const& entry : m_trackedDelegates)
-    {
-        if (auto const tracked = entry.lock())
-        {
-            tracked->Release();
-        }
-    }
 }
 
-std::function<winrt::IInspectable(winrt::IInspectable const&)> TableViewSource::MakeKeySelector(winrt::TableViewKeySelector const& key)
-{
-    return [key = Track(key)](winrt::IInspectable const& item) -> winrt::IInspectable
-    {
-        auto const target = key->Get();
-        return target ? target(item) : nullptr;
-    };
-}
-
-TableViewSource::TableViewSource(winrt::IInspectable const& items) :
+TableViewShapingSource::TableViewShapingSource(winrt::IInspectable const& items) :
     m_engine(std::make_shared<::ShapedItemsSource>(items))
 {
-    // Diagnostics raised by the engine are contractual for apps written against this type, so
-    // keep naming it even though the engine itself must not know about it.
-    m_engine->DiagnosticName(L"TableViewSource");
+    m_engine->DiagnosticName(L"TableView");
     // Handlers are installed before Start() so the very first projection is observed like any
     // later one -- the control never has to special-case its own construction.
     m_engine->SetProjectionRebuiltHandler([this]() { OnProjectionRebuilt(); });
@@ -235,46 +170,22 @@ TableViewSource::TableViewSource(winrt::IInspectable const& items) :
     m_engine->Start();
 }
 
-winrt::TableViewSource TableViewSource::From(winrt::IInspectable const& items)
+winrt::com_ptr<TableViewShapingSource> TableViewShapingSource::Create(winrt::IInspectable const& items)
 {
     if (!items)
     {
         throw winrt::hresult_invalid_argument(L"items cannot be null.");
     }
 
-    return winrt::make<::TableViewSource>(items);
+    return winrt::make_self<::TableViewShapingSource>(items);
 }
 
-winrt::IInspectable TableViewSource::Source() const
+winrt::IInspectable TableViewShapingSource::Source() const
 {
     return m_engine->Source();
 }
 
-winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& predicate)
-{
-    if (!predicate)
-    {
-        throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
-    }
-    m_engine->ThrowIfReentrant();
-    ShapingTip tip{ *this, TableViewTip::Operation::Filter };
-    tip.Apply([&]()
-    {
-        m_engine->SetFilter([predicate = Track(predicate)](winrt::IInspectable const& item)
-        {
-            auto const target = predicate->Get();
-            return !target || target(item);
-        });
-    });
-    return *this;
-}
-
-winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key)
-{
-    return GroupBy(key, nullptr);
-}
-
-winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewGroupIdentitySelector const& groupIdentitySelector)
+void TableViewShapingSource::GroupBy(ShapingHelpers::KeySelector const& key, RowIdentity::IdentitySelector const& groupIdentitySelector)
 {
     if (!key)
     {
@@ -283,52 +194,13 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
 
     m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration };
-    RowIdentity::IdentitySelector groupIdentity{ nullptr };
-    if (groupIdentitySelector)
-    {
-        groupIdentity = [groupIdentitySelector = Track(groupIdentitySelector)](winrt::IInspectable const& item)
-        {
-            auto const target = groupIdentitySelector->Get();
-            return target ? target(item) : winrt::hstring{};
-        };
-    }
-
     tip.Apply([&]()
     {
-        m_engine->SetGroup(MakeKeySelector(key), groupIdentity);
+        m_engine->SetGroup(key, groupIdentitySelector);
     });
-    return *this;
 }
 
-winrt::TableViewSource TableViewSource::SortGroups(winrt::SortDirection direction)
-{
-    ThrowIfInvalidDirection(direction, true /* allowNone */);
-    m_engine->ThrowIfReentrant();
-    // Measured only when it reorders groups that exist.
-    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration,
-        m_engine->HasGroup() && m_engine->GroupSortDirection() != direction };
-    tip.Apply([&]() { m_engine->SetGroupSortDirection(direction); });
-    return *this;
-}
-
-// A clear is measured only when the engine holds something to clear.
-winrt::TableViewSource TableViewSource::ClearFilter()
-{
-    m_engine->ThrowIfReentrant();
-    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_engine->HasFilter() };
-    tip.Apply([&]() { m_engine->ClearFilter(); });
-    return *this;
-}
-
-winrt::TableViewSource TableViewSource::ClearGroupBy()
-{
-    m_engine->ThrowIfReentrant();
-    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
-    tip.Apply([&]() { m_engine->ClearGroup(); });
-    return *this;
-}
-
-winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
+void TableViewShapingSource::ParentBy(ShapingHelpers::KeySelector const& keySelector, ShapingHelpers::KeySelector const& parentKeySelector)
 {
     if (!keySelector || !parentKeySelector)
     {
@@ -336,41 +208,30 @@ winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector con
     }
 
     m_engine->ThrowIfReentrant();
-    m_engine->SetParent(MakeKeySelector(keySelector), MakeKeySelector(parentKeySelector));
-    return *this;
+    m_engine->SetParent(keySelector, parentKeySelector);
 }
 
-winrt::TableViewSource TableViewSource::ClearParentBy()
+void TableViewShapingSource::ClearParentBy()
 {
+    m_engine->ThrowIfReentrant();
     m_engine->ClearParentBy();
-    return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearSort()
+void TableViewShapingSource::ClearSort()
 {
     m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
     tip.Apply([&]() { m_engine->ClearSorts(); });
-    return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
+void TableViewShapingSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
     m_engine->ThrowIfReentrant();
     ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
-    return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
-{
-    m_engine->ThrowIfReentrant();
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortOtherThan(sortAxisToken) };
-    tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
-    return *this;
-}
-
-void TableViewSource::ThrowIfWrongThread() const
+void TableViewShapingSource::ThrowIfWrongThread() const
 {
     if (!m_engine->HasOwnerThreadAccess())
     {
@@ -378,61 +239,23 @@ void TableViewSource::ThrowIfWrongThread() const
     }
 }
 
-void TableViewSource::Refresh()
+void TableViewShapingSource::Refresh()
 {
     ThrowIfWrongThread();
     m_engine->RefreshShaping();
 }
 
-winrt::Microsoft::UI::Dispatching::DispatcherQueue TableViewSource::DeferralQueue()
-{
-    auto queue = m_engine->OwnerQueue();
-    if (!queue)
-    {
-        if (!m_deferralQueue)
-        {
-            m_deferralQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
-        }
-        queue = m_deferralQueue;
-    }
-    if (!queue)
-    {
-        throw winrt::hresult_illegal_method_call(L"DeferRefresh requires a thread with a DispatcherQueue.");
-    }
-    return queue;
-}
-
-winrt::Windows::Foundation::IClosable TableViewSource::DeferRefresh()
-{
-    ThrowIfWrongThread();
-
-    // An unclosed deferral is ended by a post to this queue.
-    auto const queue = DeferralQueue();
-    winrt::TableViewSource const self = *this;
-    m_engine->BeginDeferRefresh();
-    try
-    {
-        return winrt::make<TableViewSourceDeferral>(self, queue);
-    }
-    catch (...)
-    {
-        // Nothing was declared under this deferral yet, so ending it cannot reshape.
-        m_engine->EndDeferRefresh();
-        throw;
-    }
-}
-
-void TableViewSource::BeginDeferRefresh()
+void TableViewShapingSource::BeginDeferRefresh()
 {
     m_engine->BeginDeferRefresh();
 }
 
-void TableViewSource::EndDeferRefresh()
+void TableViewShapingSource::EndDeferRefresh()
 {
     m_engine->EndDeferRefresh();
 }
 
-void TableViewSource::EndDeferRefreshLater()
+void TableViewShapingSource::EndDeferRefreshLater()
 {
     auto queue = m_engine->OwnerQueue();
     if (!queue)
@@ -450,11 +273,10 @@ void TableViewSource::EndDeferRefreshLater()
         return;
     }
 
-    winrt::TableViewSource const self = *this;
-    PostEndDeferRefresh(queue, self);
+    PostEndDeferRefresh(queue, get_strong());
 }
 
-std::optional<winrt::hstring> TableViewSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key) const
+std::optional<winrt::hstring> TableViewShapingSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key) const
 {
     winrt::hstring identity;
     if (m_engine->TryGetGroupIdentityForKey(key, identity))
@@ -464,7 +286,7 @@ std::optional<winrt::hstring> TableViewSource::TryGetGroupIdentityForKey(winrt::
     return std::nullopt;
 }
 
-std::vector<TableViewSource::GroupInfo> TableViewSource::CurrentGroups() const
+std::vector<TableViewShapingSource::GroupInfo> TableViewShapingSource::CurrentGroups() const
 {
     std::vector<GroupInfo> groups;
     for (auto const& group : m_engine->CurrentGroups())
@@ -474,32 +296,22 @@ std::vector<TableViewSource::GroupInfo> TableViewSource::CurrentGroups() const
     return groups;
 }
 
-void TableViewSource::ThrowIfEndDeferRefreshReentrant() const
+void TableViewShapingSource::ThrowIfEndDeferRefreshReentrant() const
 {
     m_engine->ThrowIfEndDeferRefreshReentrant();
 }
 
-winrt::SortDirection TableViewSource::SortGroupsDirection() const
-{
-    return m_engine->GroupSortDirection();
-}
-
-bool TableViewSource::HasItemSort() const
+bool TableViewShapingSource::HasItemSort() const
 {
     return m_engine->HasSortAxis({});
 }
 
-bool TableViewSource::IsLiveShaping() const
+bool TableViewShapingSource::IsLiveShaping() const
 {
     return m_engine->IsLiveShapingEnabled();
 }
 
-void TableViewSource::IsLiveShaping(bool value)
-{
-    m_engine->SetLiveShaping(value);
-}
-
-std::vector<TableViewSource::ActiveSortAxisInfo> TableViewSource::ActiveSortAxisInfos() const
+std::vector<TableViewShapingSource::ActiveSortAxisInfo> TableViewShapingSource::ActiveSortAxisInfos() const
 {
     std::vector<ActiveSortAxisInfo> infos;
     for (auto const& axis : m_engine->ActiveSortAxisInfos())
@@ -509,7 +321,7 @@ std::vector<TableViewSource::ActiveSortAxisInfo> TableViewSource::ActiveSortAxis
     return infos;
 }
 
-winrt::hstring TableViewSource::SortAxisTokenForPath(winrt::hstring const& sortMemberPath)
+winrt::hstring TableViewShapingSource::SortAxisTokenForPath(winrt::hstring const& sortMemberPath)
 {
     // Distinct from the control's "column:<address>" tokens, so a path-declared axis and a
     // column-declared axis are never mistaken for one another even when they sort the same
@@ -517,76 +329,38 @@ winrt::hstring TableViewSource::SortAxisTokenForPath(winrt::hstring const& sortM
     return L"path:" + sortMemberPath;
 }
 
-winrt::TableViewKeySelector TableViewSource::MakePathKeySelector(winrt::hstring const& sortMemberPath)
+ShapingHelpers::KeySelector TableViewShapingSource::MakePathKeySelector(winrt::hstring const& path)
 {
-    if (sortMemberPath.empty())
+    if (path.empty())
     {
-        throw winrt::hresult_invalid_argument(L"sortMemberPath cannot be empty.");
+        throw winrt::hresult_invalid_argument(L"path cannot be empty.");
     }
 
     // One resolver per axis, captured by the selector and reused across every comparison: the
     // binding is built once per path, so steady-state cost is a DataContext write plus a property
     // read rather than a fresh binding per item.
-    auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
-    return winrt::TableViewKeySelector{
-        [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
-        {
-            return resolver->Resolve(item);
-        }
+    auto resolver = std::make_shared<SortMemberPathResolver>(path);
+    return [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
+    {
+        return resolver->Resolve(item);
     };
 }
 
-winrt::TableViewSource TableViewSource::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
-{
-    if (!key)
-    {
-        throw winrt::hresult_invalid_argument(L"key cannot be null.");
-    }
-    return ReplaceSortsCore({}, key, {}, direction);
-}
-
-winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
-{
-    if (sortMemberPath.empty())
-    {
-        throw winrt::hresult_invalid_argument(L"sortMemberPath cannot be empty.");
-    }
-    if (direction == winrt::SortDirection::None)
-    {
-        return ClearSort();
-    }
-    return ReplaceSortsCore(SortAxisTokenForPath(sortMemberPath), MakePathKeySelector(sortMemberPath), sortMemberPath, direction);
-}
-
-winrt::TableViewSource TableViewSource::ThenSort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
-{
-    if (!key)
-    {
-        throw winrt::hresult_invalid_argument(L"key cannot be null.");
-    }
-    return ThenSortCore({}, key, {}, direction);
-}
-
-winrt::TableViewSource TableViewSource::ThenSort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
-{
-    ThrowIfInvalidDirection(direction, false /* allowNone */);
-    return ThenSortCore(SortAxisTokenForPath(sortMemberPath), MakePathKeySelector(sortMemberPath), sortMemberPath, direction);
-}
-
-winrt::TableViewSource TableViewSource::SortExclusive(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+void TableViewShapingSource::SortExclusive(winrt::hstring const& sortAxisToken, ShapingHelpers::KeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
     if (direction == winrt::SortDirection::None)
     {
-        return ClearSort();
+        ClearSort();
+        return;
     }
     if (!key)
     {
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
-    return ReplaceSortsCore(sortAxisToken, key, sortMemberPath, direction);
+    ReplaceSortsCore(sortAxisToken, key, sortMemberPath, direction);
 }
 
-winrt::TableViewSource TableViewSource::ReplaceSortsCore(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+void TableViewShapingSource::ReplaceSortsCore(winrt::hstring const& sortAxisToken, ShapingHelpers::KeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
     ThrowIfInvalidDirection(direction, true /* allowNone */);
     m_engine->ThrowIfReentrant();
@@ -596,93 +370,38 @@ winrt::TableViewSource TableViewSource::ReplaceSortsCore(winrt::hstring const& s
     {
         m_engine->ReplaceSorts(
             sortAxisToken,
-            MakeKeySelector(key),
+            key,
             sortMemberPath,
             direction);
     });
-    return *this;
 }
 
-winrt::TableViewSource TableViewSource::ThenSortCore(winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
-{
-    ThrowIfInvalidDirection(direction, false /* allowNone */);
-    m_engine->ThrowIfReentrant();
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
-    tip.Apply([&]()
-    {
-        m_engine->ThenSort(
-            sortAxisToken,
-            MakeKeySelector(key),
-            sortMemberPath,
-            direction);
-    });
-    return *this;
-}
-
-winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
-{
-    return SortCore(previousSortAxisToken, sortAxisToken, key, sortMemberPath, direction);
-}
-
-winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
-{
-    if (!key)
-    {
-        throw winrt::hresult_invalid_argument(L"key cannot be null.");
-    }
-
-    // None is a defined value and removes this axis.
-    ThrowIfInvalidDirection(direction, true /* allowNone */);
-    m_engine->ThrowIfReentrant();
-
-    // The engine stores a std::function, which cannot be compared, so the delegate's address is
-    // handed over as the axis identity. It is not a reference; the axis's tracked key keeps the
-    // delegate reachable for as long as the axis lives.
-    void const* const keyIdentity = winrt::get_abi(key.as<winrt::Windows::Foundation::IUnknown>());
-    // Removing an axis that is not there is a no-op, measured no more than a clear with nothing to clear.
-    bool const meaningful = direction != winrt::SortDirection::None ||
-        m_engine->HasMatchingSort(sortAxisToken, keyIdentity) ||
-        (!previousSortAxisToken.empty() && previousSortAxisToken != sortAxisToken && m_engine->HasSortAxis(previousSortAxisToken));
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort, meaningful };
-    tip.Apply([&]()
-    {
-        m_engine->SetSort(
-            previousSortAxisToken,
-            sortAxisToken,
-            MakeKeySelector(key),
-            keyIdentity,
-            sortMemberPath,
-            direction);
-    });
-    return *this;
-}
-
-bool TableViewSource::IsGrouped() const
+bool TableViewShapingSource::IsGrouped() const
 {
     return m_engine->IsProjectedAsGrouped();
 }
 
-bool TableViewSource::HasFilter() const
+bool TableViewShapingSource::HasFilter() const
 {
     return m_engine->HasFilter();
 }
 
-bool TableViewSource::HasGroupBy() const
+bool TableViewShapingSource::HasGroupBy() const
 {
     return m_engine->HasGroup();
 }
 
-bool TableViewSource::HasParentBy() const
+bool TableViewShapingSource::HasParentBy() const
 {
     return m_engine->HasParentBy();
 }
 
-uint32_t TableViewSource::SourceRowCount() const
+uint32_t TableViewShapingSource::SourceRowCount() const
 {
     return m_engine->SourceRowCount();
 }
 
-uint32_t TableViewSource::DataRowCount() const
+uint32_t TableViewShapingSource::DataRowCount() const
 {
     // Rows() is only a snapshot of a tree's visible rows; the published index holds every node the filter keeps.
     if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
@@ -694,17 +413,17 @@ uint32_t TableViewSource::DataRowCount() const
     return rows ? rows.Size() : 0;
 }
 
-winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
+winrt::ItemsSourceView TableViewShapingSource::GetItemsSourceView()
 {
     return m_itemsSourceView.get();
 }
 
-TableViewRowMetadataProvider TableViewSource::GetRowMetadata()
+TableViewRowMetadataProvider TableViewShapingSource::GetRowMetadata()
 {
     return m_rowMetadata;
 }
 
-void TableViewSource::OnProjectionRebuilt()
+void TableViewShapingSource::OnProjectionRebuilt()
 {
     // The control-level reading of the projection: what an ItemsRepeater consumes, and how a row
     // at an index is described. The engine reports which shape it produced; deciding what that
@@ -718,7 +437,7 @@ void TableViewSource::OnProjectionRebuilt()
         {
             // A projection kind without its adapter is never published coherently; keep the
             // previous projection until the engine publishes again.
-            MUX_ASSERT_MSG(false, L"TableViewSource: Grouped projection published without a grouped adapter.");
+            MUX_ASSERT_MSG(false, L"TableViewShapingSource: Grouped projection published without a grouped adapter.");
             return;
         }
         // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
@@ -731,7 +450,7 @@ void TableViewSource::OnProjectionRebuilt()
         auto const adapter = m_engine->HierarchicalAdapter();
         if (!adapter)
         {
-            MUX_ASSERT_MSG(false, L"TableViewSource: Hierarchical projection published without a hierarchical adapter.");
+            MUX_ASSERT_MSG(false, L"TableViewShapingSource: Hierarchical projection published without a hierarchical adapter.");
             return;
         }
         // Same as grouped: consumed directly.
@@ -747,7 +466,7 @@ void TableViewSource::OnProjectionRebuilt()
         auto const hierarchicalAdapter = m_engine->HierarchicalAdapter();
         if (!groupedAdapter || !hierarchicalAdapter)
         {
-            MUX_ASSERT_MSG(false, L"TableViewSource: GroupedHierarchical projection published without both adapters.");
+            MUX_ASSERT_MSG(false, L"TableViewShapingSource: GroupedHierarchical projection published without both adapters.");
             return;
         }
         m_itemsSourceView.set(groupedAdapter->Entries());
@@ -785,7 +504,7 @@ void TableViewSource::OnProjectionRebuilt()
     NotifyOwnerProjectionChanged();
 }
 
-TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
+TableViewRowItemKeySelector TableViewShapingSource::MakeIdentitySelector() const
 {
     // Bridge the engine's Object-returning identity selector to the String-returning selector the
     // row-metadata provider consumes. The engine derives identity from each item's object identity
@@ -816,9 +535,9 @@ TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
     };
 }
 
-bool TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
+bool TableViewShapingSource::SetOwningTableView(winrt::IInspectable const& owner)
 {
-    // Sharing one shaped TableViewSource across two TableView controls has no coherent
+    // Sharing one shaped TableViewShapingSource across two TableView controls has no coherent
     // semantics: shaping verbs (Filter/Sort/GroupBy) mutate a single projection, and the two
     // controls would compete for it (last-writer-wins) while both cache the ItemsSourceView /
     // row-metadata / grouped-ness the first bind produced. Since only a single owner slot
@@ -840,27 +559,10 @@ bool TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
 
     if (m_owningTableView.get() != owner) { ++m_ownerGeneration; }
     m_owningTableView = winrt::weak_ref<winrt::IInspectable>{ owner };
-    RemoveOwnerReleasedHandler(owner);
     return true;
 }
 
-void TableViewSource::AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler)
-{
-    RemoveOwnerReleasedHandler(waiter);
-    m_ownerReleasedWaiters.push_back({ winrt::weak_ref<winrt::IInspectable>{ waiter }, std::move(handler) });
-}
-
-void TableViewSource::RemoveOwnerReleasedHandler(winrt::IInspectable const& waiter)
-{
-    // Also prunes waiters that have been collected.
-    std::erase_if(m_ownerReleasedWaiters, [&waiter](OwnerReleasedWaiter const& entry)
-    {
-        auto const entryWaiter = entry.Waiter.get();
-        return !entryWaiter || entryWaiter == waiter;
-    });
-}
-
-void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
+void TableViewShapingSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
 {
     // Only the owner can release; a table whose bind was refused must not detach the real owner.
     if (auto existingOwner = m_owningTableView.get(); existingOwner && existingOwner != owner)
@@ -880,40 +582,29 @@ void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
     m_engine->SetRowsReleasedHook(nullptr);
     m_engine->SetLiveItemReshapeHandler(nullptr);
 
-    // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
-    // it re-enters SetOwningTableView, and one that does not claim must not be retried.
-    while (!m_owningTableView.get() && !m_ownerReleasedWaiters.empty())
-    {
-        auto waiter = std::move(m_ownerReleasedWaiters.front());
-        m_ownerReleasedWaiters.erase(m_ownerReleasedWaiters.begin());
-        if (waiter.Waiter.get() && waiter.Handler)
-        {
-            waiter.Handler();
-        }
-    }
 }
 
-void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
+void TableViewShapingSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
 {
     m_engine->SetLiveItemChangedHook(std::move(hook));
 }
 
-void TableViewSource::SetLiveItemReshapeHandler(std::function<void()> handler)
+void TableViewShapingSource::SetLiveItemReshapeHandler(std::function<void()> handler)
 {
     m_engine->SetLiveItemReshapeHandler(std::move(handler));
 }
 
-void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)
+void TableViewShapingSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)
 {
     m_engine->SetRowsReleasedHook(std::move(hook));
 }
 
-bool TableViewSource::CanApplySort() const
+bool TableViewShapingSource::CanApplySort() const
 {
     return m_engine->CanProjectWithRowIdentity();
 }
 
-void TableViewSource::NotifyOwnerProjectionChanged()
+void TableViewShapingSource::NotifyOwnerProjectionChanged()
 {
     if (m_projectionChanged)
     {
@@ -925,7 +616,7 @@ void TableViewSource::NotifyOwnerProjectionChanged()
     }
 }
 
-void TableViewSource::NotifyOwnerShapingChanged(bool reorderOnly)
+void TableViewShapingSource::NotifyOwnerShapingChanged(bool reorderOnly)
 {
     // Only the in-place reorder notification proves computation; Refresh can merely defer.
     if (reorderOnly && m_shapingTip) { m_shapingTip->observation.published = true; }

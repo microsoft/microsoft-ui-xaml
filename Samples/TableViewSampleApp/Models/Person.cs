@@ -156,6 +156,9 @@ public sealed class Person : INotifyPropertyChanged
         set => Set(ref _isActive, value);
     }
 
+    /// <summary>Group key for the Active/Inactive grouping.</summary>
+    public string ActiveStatus => _isActive ? "Active" : "Inactive";
+
     /// <summary>
     /// Optional photo as an <c>ms-appx:///</c> URI string, or null. Bind it only through
     /// AvatarImageConverter; the AvatarTemplate shows initials when it is null.

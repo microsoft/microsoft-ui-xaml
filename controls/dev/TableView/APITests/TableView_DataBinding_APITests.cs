@@ -47,7 +47,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies every supported ItemsSource shape reads back by reference and renders one row per item in source order.")]
-        [TestProperty("data:SourceKind", "{List, ObservableCollection, TableViewSource}")]
+        [TestProperty("data:SourceKind", "{List, ObservableCollection, CollectionView}")]
         public void VerifyItemsSourceShapesRenderOneRowPerItem()
         {
             var sourceKind = ((string)TestContext.DataRow["SourceKind"]).Trim();
@@ -69,8 +69,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     case "ObservableCollection":
                         assigned = new ObservableCollection<ShapedPerson>(items);
                         break;
-                    case "TableViewSource":
-                        assigned = TableViewSource.From(items);
+                    case "CollectionView":
+                        assigned = new CollectionViewSource { Source = items }.View;
                         break;
                     default:
                         Verify.Fail($"Unhandled source kind '{sourceKind}'.");
@@ -802,8 +802,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 try
                 {
-                    // Not a collection of any kind. TableViewSource::From is documented to refuse it,
-                    // and TableView adopts that refusal deliberately rather than degrading.
+                    // Not a collection of any kind. TableView's internal projection refuses it
+                    // deliberately rather than degrading.
                     tableView.ItemsSource = 42;
                 }
                 catch (Exception e)
@@ -920,10 +920,578 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region 2.7 CollectionViewSource and ICollectionView
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an ungrouped CollectionViewSource.View renders one row per item in view order, without group headers, and follows changes to its source.")]
+        public void VerifyCollectionViewSourceViewRendersFlat()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                var cvs = new CollectionViewSource { Source = items };
+                Verify.IsNull(cvs.View.CollectionGroups, "An ungrouped CollectionViewSource view has no CollectionGroups.");
+
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowItems(tableView, items.ToList(), "ungrouped CollectionViewSource view");
+                Verify.AreEqual(0, GroupHeaderCount(tableView), "An ungrouped view must not produce group headers.");
+
+                items.Insert(1, new ShapedPerson("Zoe", "Engineer", "Platform"));
+                items.RemoveAt(items.Count - 1);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyRowItems(tableView, items.ToList(), "after changes to the view's source"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped CollectionViewSource.View (IsSourceGrouped) renders a header per CollectionGroups entry over its GroupItems, in the view's group order.")]
+        public void VerifyGroupedCollectionViewSourceRendersGroupsInViewOrder()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakePersonGroups(), IsSourceGrouped = true };
+                Verify.AreEqual(3, cvs.View.CollectionGroups.Count, "The grouped view exposes one CollectionGroups entry per group.");
+
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Studio before Platform: the view's order, not key order.
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei" },
+                    "grouped CollectionViewSource view");
+                Verify.AreEqual(3, GroupHeaderCount(tableView), "One header per group.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped CollectionViewSource.View follows item adds, group adds and group removes.")]
+        public void VerifyGroupedCollectionViewSourceFollowsGroupChanges()
+        {
+            TableView tableView = null;
+            ObservableCollection<PersonGroup> groups = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                groups = MakePersonGroups();
+                var cvs = new CollectionViewSource { Source = groups, IsSourceGrouped = true };
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                groups[1].Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+                groups.Add(new PersonGroup("Legal") { new ShapedPerson("Kai", "Counsel", "Legal") });
+                groups.RemoveAt(2);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(4)", "Diego", "Rafa", "Owen", "Zoe", "#Legal(1)", "Kai" },
+                    "after an item add, a group add and a group remove");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column sort over an ICollectionView raises Sorting only: the view keeps its order and Sorted is not raised.")]
+        public void VerifyColumnSortOnCollectionViewRaisesSortingOnly()
+        {
+            TableView tableView = null;
+            int sorting = 0;
+            int sorted = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakePersonGroups(), IsSourceGrouped = true };
+                tableView = CreateBindingTable(cvs.View);
+                tableView.Sorting += (sender, args) => sorting++;
+                tableView.Sorted += (sender, args) => sorted++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending),
+                    "The control does not sort a view it does not own.");
+                Verify.IsFalse(tableView.ToggleSortDirection(tableView.Columns[0]),
+                    "A header toggle does not sort the view either.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, sorting, "Each request raises Sorting so the app can sort its view.");
+                Verify.AreEqual(0, sorted, "Nothing was sorted, so Sorted is not raised.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "No arrow is lit for a sort that did not happen.");
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei" },
+                    "the view's order stands");
+            });
+        }
+
+        // A CollectionViewSource whose View is shaped (Filter set), over MakeShapedPeople.
+        private static CollectionViewSource MakeShapingSource(out ObservableCollection<ShapedPerson> items)
+        {
+            items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+            var cvs = new CollectionViewSource { Source = items };
+            cvs.Filter = item => true;
+            return cvs;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header click, SortByColumn and ToggleSortDirection on an ICollectionViewShaping view write the column's SortMemberPath to the view's SortDescriptions, the rows follow the view, and Sorting/Sorted are raised.")]
+        public void VerifyHeaderSortOnShapingCollectionViewSortsTheView()
+        {
+            TableView tableView = null;
+            CollectionViewSource cvs = null;
+            ICollectionViewShaping shaping = null;
+            int sorting = 0;
+            int sorted = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                cvs = MakeShapingSource(out _);
+                shaping = cvs.View as ICollectionViewShaping;
+                Verify.IsNotNull(shaping, "A shaped CollectionViewSource view implements ICollectionViewShaping.");
+
+                tableView = CreateBindingTable(cvs.View);
+                tableView.Sorting += (sender, args) => sorting++;
+                tableView.Sorted += (sender, args) => sorted++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, shaping.SortDescriptions.Count, "The header click wrote one SortDescription.");
+                Verify.AreEqual("Name", shaping.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(ListSortDirection.Ascending, shaping.SortDescriptions[0].Direction);
+                Verify.AreEqual(1, cvs.SortDescriptions.Count, "The view and its CollectionViewSource share the descriptors.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The arrow follows the view's sort.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "after the header click");
+                Verify.AreEqual(1, sorting);
+                Verify.AreEqual(1, sorted);
+
+                Verify.IsTrue(tableView.ToggleSortDirection(tableView.Columns[0]), "The toggle sorts the view.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ListSortDirection.Descending, shaping.SortDescriptions[0].Direction);
+                VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "after the toggle");
+
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "SortByColumn sorts the view.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, shaping.SortDescriptions.Count, "The column's sort replaces the previous one.");
+                Verify.AreEqual("Role", shaping.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection);
+                Verify.AreEqual("Architect", Person(GetProjectedItems(tableView).First()).Role);
+                Verify.AreEqual(3, sorting);
+                Verify.AreEqual(3, sorted);
+
+                // A sort applied to the view by someone else moves the arrow.
+                shaping.SortDescriptions.Clear();
+                shaping.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "The arrow follows a sort applied to the view.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "after the view was sorted directly");
+
+                Verify.IsTrue(tableView.ClearSort(), "ClearSort clears the view's sort.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, shaping.SortDescriptions.Count);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "after ClearSort");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSortComparer column sorts an ICollectionViewShaping view through its CustomSort, a path column's sort replaces it, and a comparer fault leaves the view's previous sort.")]
+        public void VerifyCustomSortComparerColumnSortsShapingCollectionView()
+        {
+            TableView tableView = null;
+            ICollectionViewShaping shaping = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out _);
+                shaping = (ICollectionViewShaping)cvs.View;
+                tableView = CreateBindingTable(cvs.View);
+                tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(shaping.CustomSort, "The comparer column sorts the view through its CustomSort.");
+                Verify.AreEqual(0, shaping.SortDescriptions.Count);
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Mei", "Asha", "Ines", "Owen", "Rafa", "Diego" }, "comparer ascending");
+
+                Verify.IsTrue(tableView.ToggleSortDirection(tableView.Columns[0]));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "The arrow stays on the comparer column.");
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen", "Ines", "Asha", "Mei" }, "comparer descending");
+
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(shaping.CustomSort, "A SortDescription replaces the CustomSort.");
+                Verify.AreEqual("Role", shaping.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+
+                tableView.Columns[0].CustomSortComparer = new ThrowingSortComparer();
+                var returned = true;
+                Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(
+                    () => returned = tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending)),
+                    "A comparer fault must not escape SortByColumn.");
+                Verify.IsFalse(returned, "SortByColumn reports that the sort was not applied.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(shaping.CustomSort, "The view's previous sort is put back.");
+                Verify.AreEqual(1, shaping.SortDescriptions.Count);
+                Verify.AreEqual("Role", shaping.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection);
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The previous arrow stays.");
+                Verify.AreEqual("Architect", Person(GetProjectedItems(tableView).First()).Role);
+
+                Verify.IsTrue(tableView.ClearSort());
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(shaping.CustomSort);
+                Verify.AreEqual(0, shaping.SortDescriptions.Count);
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "after ClearSort");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies source adds, removes and replaces on a sorted, filtered CollectionViewSource reach the TableView as incremental view changes, with no Reset, and the selected row stays selected.")]
+        public void VerifyIncrementalShapingCollectionViewChangesUpdateRows()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var changes = new List<global::Windows.Foundation.Collections.CollectionChange>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out items);
+                cvs.Filter = item => ((ShapedPerson)item).Role != "Architect";
+                cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                cvs.View.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Owen", "Rafa" }, "sorted, without the architect");
+                tableView.Select(3);
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "Precondition: Owen is selected.");
+                items.Add(new ShapedPerson("Bea", "Engineer", "Platform"));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Bea", "Diego", "Ines", "Owen", "Rafa" }, "after an add");
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "The selection stays on its row after an add.");
+                items.RemoveAt(1); // Diego
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Bea", "Ines", "Owen", "Rafa" }, "after a remove");
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "The selection stays on its row after a remove.");
+                items[0] = new ShapedPerson("Zed", "Designer", "Studio"); // replaces Asha
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Bea", "Ines", "Owen", "Rafa", "Zed" }, "after a replace");
+                Verify.AreEqual("Owen", Person(tableView.SelectedItem).Name, "The selection stays on its row after a replace.");
+                Verify.IsFalse(changes.Contains(global::Windows.Foundation.Collections.CollectionChange.Reset), "The view applied every change incrementally.");
+                Verify.AreEqual(4, changes.Count, "Insert, remove, then remove and insert for the moved replacement.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CollectionViewSource View with no descriptors offers ICollectionViewShaping, so a header click sorts it through SortDescriptions and the TableView keeps the same View.")]
+        public void VerifyHeaderSortOnDescriptorlessCollectionViewSourceView()
+        {
+            TableView tableView = null;
+            CollectionViewSource cvs = null;
+            ICollectionView view = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                cvs = new CollectionViewSource { Source = new ObservableCollection<ShapedPerson>(MakeShapedPeople()) };
+                view = cvs.View;
+                Verify.IsNotNull(view as ICollectionViewShaping, "A View over a vector is shapeable before any descriptor is set.");
+                tableView = CreateBindingTable(view);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, cvs.SortDescriptions.Count, "The header click wrote a SortDescription.");
+                Verify.IsTrue(ReferenceEquals(view, cvs.View) || view.Equals(cvs.View), "Starting to sort keeps the same View.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "after the header click");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Filter set through ICollectionViewShaping and a Refresh after an item edit update the TableView's rows.")]
+        public void VerifyFilterAndRefreshOnShapingCollectionViewUpdateRows()
+        {
+            TableView tableView = null;
+            ICollectionViewShaping shaping = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out items);
+                shaping = (ICollectionViewShaping)cvs.View;
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowItems(tableView, items.ToList(), "unfiltered");
+                shaping.Filter = item => ((ShapedPerson)item).Role == "Engineer";
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Rafa", "Owen" }, "filtered to engineers");
+
+                // A property edit is not a collection change; Refresh re-applies the filter.
+                items[0].Role = "Engineer";
+                shaping.Refresh();
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Rafa", "Owen" }, "after Refresh");
+                items.Add(new ShapedPerson("Zoe", "Engineer", "Platform"));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Rafa", "Owen", "Zoe" }, "after a source add");
+                shaping.Filter = null;
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyRowItems(tableView, items.ToList(), "after the filter was cleared"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies GroupDescriptions on a CollectionViewSource render group headers keyed by the group value, in first-appearance order, and sort within them.")]
+        public void VerifyGroupDescriptionsOnShapingCollectionViewRenderGroups()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out _);
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("DepartmentName"));
+                Verify.IsNotNull(cvs.View.CollectionGroups, "Grouping produces CollectionGroups.");
+                Verify.IsNotNull(cvs.View as ICollectionViewShaping, "The grouped view is shapeable too.");
+
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei" },
+                    "grouped by DepartmentName");
+                Verify.AreEqual("Studio", GetGroupInfo(tableView, 0).Key, "The header key is the group's value, not the computed group object.");
+
+                TableViewSortingTestHelpers.InvokeHeader(tableView, 0);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Groups follow first appearance in the sorted items: Asha (Studio), Diego (Platform), Mei (Research).
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Owen", "Rafa", "#Research(1)", "Mei" },
+                    "grouped and sorted by Name");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a collapsed CollectionViewSource group stays collapsed when the view recomputes its groups after a source change or Refresh.")]
+        public void VerifyCollapsedCollectionViewGroupSurvivesRecompute()
+        {
+            TableView tableView = null;
+            ICollectionViewShaping shaping = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out items);
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("DepartmentName"));
+                shaping = (ICollectionViewShaping)cvs.View;
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.CollapseGroup(GetGroupInfo(tableView, 0).Key));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(GetGroupInfo(tableView, 0).IsExpanded, "Precondition: Studio is collapsed.");
+
+                // Only the view is referenced: it must keep its CollectionViewSource, which shapes it, alive.
+                GC.Collect();
+                items.Add(new ShapedPerson("Zoe", "Designer", "Studio"));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var studio = GetGroupInfo(tableView, 0);
+                Verify.AreEqual("Studio", studio.Key);
+                Verify.IsFalse(studio.IsExpanded, "The group stays collapsed after the view recomputed its groups.");
+                Verify.AreEqual(3, studio.ItemCount, "The collapsed group took the new item.");
+                Verify.IsFalse(GetProjectedLabels(tableView, includeCount: false).Contains("Asha"), "A collapsed group's rows stay hidden.");
+                Verify.IsTrue(GetGroupInfo(tableView, 1).IsExpanded, "The other groups stay expanded.");
+
+                shaping.Refresh();
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(GetGroupInfo(tableView, 0).IsExpanded, "The group stays collapsed after Refresh.");
+                Verify.IsFalse(GetProjectedLabels(tableView, includeCount: false).Contains("Zoe"));
+            });
+        }
+
+        #endregion
+    }
+
+    // A CollectionViewSource group: the group object is itself the item list (no ItemsPath).
+    internal sealed class PersonGroup : ObservableCollection<ShapedPerson>
+    {
+        public PersonGroup(string key)
+        {
+            Key = key;
+        }
+
+        public string Key { get; }
+
+        public override string ToString() => Key;
     }
 
     internal static class TableViewBindingTestHelpers
     {
+        // MakeShapedPeople bucketed by department, in an order that is not key order.
+        internal static ObservableCollection<PersonGroup> MakePersonGroups()
+        {
+            var groups = new ObservableCollection<PersonGroup>();
+            foreach (var person in MakeShapedPeople())
+            {
+                var group = groups.FirstOrDefault(g => g.Key == person.DepartmentName);
+                if (group == null)
+                {
+                    group = new PersonGroup(person.DepartmentName);
+                    groups.Add(group);
+                }
+                group.Add(person);
+            }
+            return groups;
+        }
+
         // Two text template columns over Name and Role, tall enough that the six-item fixtures fully realize.
         internal static TableView CreateBindingTable(object itemsSource)
             => CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 500, height: 700);

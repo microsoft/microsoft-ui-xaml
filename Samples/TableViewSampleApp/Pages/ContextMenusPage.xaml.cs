@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -28,7 +29,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
     public ContextMenusPage()
     {
-        Source = TableViewSource.From(People);
+        Source = new CollectionViewSource { Source = People };
         InitializeComponent();
 
         _nameCellMenu = NameColumn.CellContextFlyout;
@@ -43,7 +44,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Header menus -------------------------------------------------------------------------

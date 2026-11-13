@@ -9,35 +9,46 @@ using TableViewSampleApp.Models;
 namespace TableViewSampleApp.Helpers;
 
 /// <summary>
-/// The parent/child relation a page offers to the Hierarchy shaping modes: the two selectors
-/// TableViewSource.ParentBy takes. KeyOf returns a row's unique key, ParentKeyOf its parent's key
-/// (null for a root; a key no row has makes an orphan root). Label names the relation in readouts.
+/// The parent/child relation a page offers to the Hierarchy shaping modes: the two property paths
+/// TableView.ItemKeyPath and ParentKeyPath take. KeyPath names a row's unique key, ParentKeyPath
+/// its parent's key (null for a root; a key no row has makes an orphan root). KeyOf and ParentKeyOf
+/// read the same values for the readouts. Label names the relation in readouts.
 /// </summary>
 public sealed class ParentRelation
 {
-    public ParentRelation(string label, Func<object?, object?> keyOf, Func<object?, object?> parentKeyOf)
+    public ParentRelation(string label, string keyPath, string parentKeyPath, Func<object?, object?> keyOf, Func<object?, object?> parentKeyOf)
     {
         Label = label;
+        KeyPath = keyPath;
+        ParentKeyPath = parentKeyPath;
         KeyOf = keyOf;
         ParentKeyOf = parentKeyOf;
     }
 
     // <snippet Hierarchy>
-    // The two selectors ParentBy takes: a row's unique key, and its parent's key (null for a root).
+    // The two paths the table takes: a row's unique key, and its parent's key (null for a root).
     // Person rows: EmployeeId under ManagerId (the org chart).
     public static ParentRelation Manager { get; } = new(
         "Manager",
+        nameof(Person.EmployeeId),
+        nameof(Person.ManagerId),
         row => (row as Person)?.EmployeeId,
         row => (row as Person)?.ManagerId);
 
     // Person rows: EmployeeId under MentorId, a second tree over the same rows.
     public static ParentRelation Mentor { get; } = new(
         "Mentor",
+        nameof(Person.EmployeeId),
+        nameof(Person.MentorId),
         row => (row as Person)?.EmployeeId,
         row => (row as Person)?.MentorId);
     // </snippet>
 
     public string Label { get; }
+
+    public string KeyPath { get; }
+
+    public string ParentKeyPath { get; }
 
     public Func<object?, object?> KeyOf { get; }
 
@@ -63,7 +74,7 @@ public sealed class ParentRelation
     }
 
     /// <summary>
-    /// Rows a filter keeps under ParentBy: every match plus its ancestors. The ancestors are shown as
+    /// Rows a filter keeps under a parent relation: every match plus its ancestors. The ancestors are shown as
     /// ordinary rows (selectable, nothing marks them as context), so they count as shown.
     /// </summary>
     public int CountWithAncestors<T>(IEnumerable<T> rows, Func<T, bool> matches)
@@ -86,7 +97,7 @@ public sealed class ParentRelation
 
     /// <summary>
     /// The rows in tree order with every row expanded: each root (in source order) followed by its
-    /// subtree, siblings in source order. That is the display order of an unsorted ParentBy source.
+    /// subtree, siblings in source order. That is the display order of an unsorted hierarchy.
     /// </summary>
     public List<T> TreeOrder<T>(IReadOnlyList<T> rows)
         where T : class

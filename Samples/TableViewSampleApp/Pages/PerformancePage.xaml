@@ -11,11 +11,11 @@
 
     <controls:SamplePresenter
         Header="Performance"
-        Description="Times the workloads that decide whether a large TableView feels responsive: binding 10,000 or 100,000 rows, sorting with TableView.SortByColumn, filtering and grouping with TableViewSource, and the per-item Add pattern to avoid. Each run builds its data off the clock, then measures the call plus one synchronous layout pass with a Stopwatch. Run a scenario twice and read the second number, because the first includes JIT warm-up. The numbers are quick triage on this machine, not a benchmark."
+        Description="Times the workloads that decide whether a large TableView feels responsive: binding 10,000 or 100,000 rows, sorting with TableView.SortByColumn, filtering and grouping with CollectionViewSource, and the per-item Add pattern to avoid. Each run builds its data off the clock, then measures the call plus one synchronous layout pass with a Stopwatch. Run a scenario twice and read the second number, because the first includes JIT warm-up. The numbers are quick triage on this machine, not a benchmark."
         Snippet="Performance"
         StretchExample="True"
-        TryIt="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Run Add 10,000 rows one at a time and compare it with Load 10,000 rows. Then switch Shaping to Grouped, which times GroupBy, and run the Add again: it stops after 2 seconds and shows what grouping once afterwards costs instead."
-        WhatToLookFor="A bulk load of 100,000 rows finishes in well under a second, because only the rows in or near the viewport are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA.">
+        TryIt="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Run Add 10,000 rows one at a time and compare it with Load 10,000 rows. Then switch Shaping to Grouped, which times the grouping, and run the Add again: it stops after 2 seconds and shows what grouping once afterwards costs instead."
+        WhatToLookFor="A bulk load of 100,000 rows finishes in well under a second, because only the rows in or near the viewport are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. While grouped every Add also regroups every row, so the cost grows with each row: detach the collection from the CollectionViewSource, add, and attach once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -87,7 +87,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Performance"
-                    Description="Grouping is timed too: Last action reports how long GroupBy or ClearGroupBy took on the current dataset. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping is timed too: Last action reports how long grouping or ungrouping took on the current dataset. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
@@ -102,8 +102,8 @@
                             AutomationProperties.AutomationId="PerformanceLoad10kButton"
                             Content="Load 10,000 rows"
                             Click="OnLoad10kClick"
-                            ToolTipService.ToolTip="Wraps a pre-built list in one ObservableCollection, calls TableViewSource.From and assigns ItemsSource once."
-                            AutomationProperties.HelpText="Wraps a pre-built list in one ObservableCollection, calls TableViewSource.From and assigns ItemsSource once."
+                            ToolTipService.ToolTip="Wraps a pre-built list in one ObservableCollection, wraps it in a CollectionViewSource and assigns its View once."
+                            AutomationProperties.HelpText="Wraps a pre-built list in one ObservableCollection, wraps it in a CollectionViewSource and assigns its View once."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button
@@ -129,8 +129,8 @@
                             AutomationProperties.AutomationId="PerformanceFilterButton"
                             Content="Filter to Engineering"
                             Click="OnFilterClick"
-                            ToolTipService.ToolTip="Calls TableViewSource.Filter with a Department predicate on the same source."
-                            AutomationProperties.HelpText="Calls TableViewSource.Filter with a Department predicate on the same source."
+                            ToolTipService.ToolTip="Sets CollectionViewSource.Filter to a Department predicate on the same source."
+                            AutomationProperties.HelpText="Sets CollectionViewSource.Filter to a Department predicate on the same source."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button
@@ -138,8 +138,8 @@
                             AutomationProperties.AutomationId="PerformanceClearFilterButton"
                             Content="Clear filter"
                             Click="OnClearFilterClick"
-                            ToolTipService.ToolTip="Calls TableViewSource.ClearFilter, so every row returns."
-                            AutomationProperties.HelpText="Calls TableViewSource.ClearFilter, so every row returns."
+                            ToolTipService.ToolTip="Sets CollectionViewSource.Filter to null, so every row returns."
+                            AutomationProperties.HelpText="Sets CollectionViewSource.Filter to null, so every row returns."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button

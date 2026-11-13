@@ -512,8 +512,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // One row per group, so headers and rows alternate.
-                var source = TableViewSource.From(MakeManyItems(200));
-                source.GroupBy(o => ((Person)o).Role);
+                var source = TableViewTreeTestHelpers.MakeShapingView(MakeManyItems(200), "Role").View;
                 tableView = CreateTableViewWithColumns(source, height: 200, columns: new[]
                 {
                     ("Name", new GridLength(150.0, GridUnitType.Pixel)),
@@ -597,8 +596,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var source = TableViewSource.From(MakeManyItems(200));
-                source.GroupBy(o => ((Person)o).Role);
+                var source = TableViewTreeTestHelpers.MakeShapingView(MakeManyItems(200), "Role").View;
                 tableView = CreateTableViewWithColumns(source, height: 200, columns: new[]
                 {
                     ("Name", new GridLength(150.0, GridUnitType.Pixel)),
@@ -687,8 +685,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // One row per group, so headers and rows alternate.
-                var source = TableViewSource.From(MakeManyItems(200));
-                source.GroupBy(o => ((Person)o).Role);
+                var source = TableViewTreeTestHelpers.MakeShapingView(MakeManyItems(200), "Role").View;
                 tableView = CreateTableViewWithColumns(source, height: 200);
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;

@@ -39,7 +39,7 @@
 
     <controls:SamplePresenter
         Header="Showcase"
-        Description="A people directory that combines the TableView features in one table. The Department pills and Salary tints are template cells bound through converters, so a live update recolors only the cells whose values changed. Click a header to sort, drag a header edge to resize (the Active column opts out with CanUserResize), and show or hide columns at run time with TableViewColumn.Visibility. SelectionMode switches between None and Single, HeadersVisibility hides the header row, and TableViewSource.GroupBy groups the same rows in place."
+        Description="A people directory that combines the TableView features in one table. The Department pills and Salary tints are template cells bound through converters, so a live update recolors only the cells whose values changed. Click a header to sort, drag a header edge to resize (the Active column opts out with CanUserResize), and show or hide columns at run time with TableViewColumn.Visibility. SelectionMode switches between None and Single, HeadersVisibility hides the header row, and a CollectionViewSource GroupDescription groups the same rows."
         Snippet="Showcase"
         StretchExample="True"
         TryIt="Live updates are on: watch the Salary tints and Active checkboxes change on the first rows. Click the Salary header to sort, select a row and give it a raise, and watch it move to its sorted place. Then switch Shaping to Grouped, or turn on the Shift, Office or Email column in the rail."
@@ -51,7 +51,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="ShowcaseTable"
                 AutomationProperties.Name="People directory"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
@@ -147,7 +147,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Showcase"
-                    Description="Grouped, a header sort orders the rows within each group and the groups follow their first rows, and live updates keep running. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped, a header sort orders the rows within each group and the groups follow their first rows, and live updates keep running. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
@@ -169,7 +169,7 @@
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                         <Button x:Name="MoveGroupButton" AutomationProperties.AutomationId="ShowcaseMoveSelectedButton"
                                 Content="Move selected row to the next group" Click="OnMoveSelectedGroupClick"
-                                ToolTipService.ToolTip="Changes the grouped-on value (Department when flat) to the next real value, then re-applies GroupBy so the row moves to its new group."
+                                ToolTipService.ToolTip="Changes the grouped-on value (Department when flat) to the next real value, then refreshes the view so the row moves to its new group."
                                 AutomationProperties.HelpText="Select a row first."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                         <Button x:Name="RaiseSalaryButton" AutomationProperties.AutomationId="ShowcaseRaiseSalaryButton"

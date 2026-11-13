@@ -56,6 +56,9 @@ namespace DirectUI
             _In_ wfc::IVector<IInspectable *> *pSource,
             _Outptr_ xaml_data::ICollectionView  **instance);
 
+        // Points the view at another vector and announces the swap as a Reset.
+        _Check_return_ HRESULT RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource);
+
     protected:
 
         _Check_return_ HRESULT SetSource(_In_ wfc::IVector<IInspectable *> *pSource);

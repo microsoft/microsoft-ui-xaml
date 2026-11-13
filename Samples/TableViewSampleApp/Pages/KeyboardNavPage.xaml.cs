@@ -35,16 +35,16 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 {
     // Reset restores values AND membership without new objects, so a UIA inspector stays valid across it.
     private readonly AccessibilityFixtureData _data = new();
-    private TableViewSource? _fixtureSource;
+    private CollectionViewSource? _fixtureSource;
     private bool _updating = true;
     private bool _listening;
 
     public KeyboardNavPage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);
+        Source = new CollectionViewSource { Source = People };
         InitializeComponent();
-        PeopleTable.ItemsSource = Source;
+        PeopleTable.ItemsSource = Source.View;
         ResetFixture(announce: false); // snippet:skip
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
@@ -60,7 +60,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     private void StartListeningToFixture()
@@ -94,7 +94,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
     }
 
     // In-cell editors write the model; re-bucket when the grouped-on value changed, because
-    // GroupBy takes a delegate and cannot follow PropertyChanged.
+    // Grouping does not follow PropertyChanged; the view regroups on Refresh().
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender is not Person person)
@@ -135,8 +135,8 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             AssessmentTable.IsEnabled = true;
             AssessmentTable.SelectionMode = TableViewSelectionMode.Single;
             ConfigureColumns();
-            _fixtureSource = TableViewSource.From(_data.Rows);
-            AssessmentTable.ItemsSource = _fixtureSource;
+            _fixtureSource = new CollectionViewSource { Source = _data.Rows };
+            AssessmentTable.ItemsSource = _fixtureSource.View;
         }
         finally
         {
@@ -259,17 +259,18 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
         if (GroupingToggle.IsOn)
         {
-            // The key selector receives the ROW; the identity selector receives the KEY.
-            _fixtureSource.GroupBy(item => ((AccessibilityRow)item).Department, SampleShaping.GroupIdentity);
+            _fixtureSource.GroupDescriptions.Add(new PropertyGroupDescription(nameof(AccessibilityRow.Department)));
         }
         else
         {
-            _fixtureSource.ClearGroupBy();
+            _fixtureSource.GroupDescriptions.Clear();
         }
 
+        // Turning grouping on or off gives the CollectionViewSource a new View.
+        AssessmentTable.ItemsSource = _fixtureSource.View;
         SetLastAction(GroupingToggle.IsOn
-            ? "Fixture grouped by Department on the same TableViewSource."
-            : "Fixture grouping cleared on the same TableViewSource.");
+            ? "Fixture grouped by Department on the same CollectionViewSource."
+            : "Fixture grouping cleared on the same CollectionViewSource.");
     }
 
     private void OnEnabledToggled(object sender, RoutedEventArgs e)

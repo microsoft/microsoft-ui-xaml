@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Proposal for API review (draft PR #12420, branch `user/hik/tableview/tableviewsource-api-proposal`) |
-| **Surface** | `controls/dev/TableView/TableView.idl`, `controls/dev/TableView/TableViewSource.idl`, `controls/dev/TabularShaping/SortDirection.idl`, plus `TabularControlsResources` and `XamlControlsTabularXamlMetaDataProvider` from `controls/dev/dll-tabular/Microsoft.UI.Xaml.Controls.Tabular.idl` |
+| **Surface** | `controls/dev/TableView/TableView.idl`, `controls/dev/TabularShaping/SortDirection.idl`, plus `TabularControlsResources` and `XamlControlsTabularXamlMetaDataProvider` from `controls/dev/dll-tabular/Microsoft.UI.Xaml.Controls.Tabular.idl` |
 | **Namespace / binary** | `Microsoft.UI.Xaml.Controls.Tabular`, `Microsoft.UI.Xaml.Controls.Tabular.dll`. Every type is `[MUX_PREVIEW]`. |
 | **Companion docs** | [API spec](../../api-specs/TableView/TableView-spec.md), [dev spec](TableView-dev-spec.md), [functional spec](TableView-functional-spec.md), [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md) |
 
@@ -11,84 +11,50 @@ The IDLs are the source of truth for shape. Behaviour in this document is the im
 
 ## 1. Purpose and scope
 
-TableView and TableViewSource are preview API. This review checks whether the proposed surface is ready to stabilize: whether it is complete for the core scenarios, consistent with WinUI conventions, and has precise contracts. Preview-only breaking changes are cheap now and impossible after stabilization, so this PR makes them now.
+TableView is preview API. This review checks whether the proposed surface is ready to stabilize: whether it is complete for the core scenarios, consistent with WinUI conventions, and has precise contracts. Preview-only breaking changes are cheap now and impossible after stabilization, so this PR makes them now.
 
-**In scope:** every public type in the three IDLs and the two Tabular DLL types. **Out of scope:** the framework-internal primitives `ResizeGripper` and `SortIndicator` (in `Microsoft.UI.Private.Controls`), the `[MUX_INTERNAL]` `TableViewRowTemplateSelector`, and the implicit template/theme-key surface (see §2.9 and §6).
+**In scope:** every public type in the two IDLs and the two Tabular DLL types. **Out of scope:** the framework-internal primitives `ResizeGripper` and `SortIndicator` (in `Microsoft.UI.Private.Controls`), the `[MUX_INTERNAL]` `TableViewRowTemplateSelector`, and the implicit template/theme-key surface (see §2.9 and §6).
 
 ### 1.1 Changes in this PR vs `main`
 
 | | Member | Reason |
 |---|---|---|
-| **Added** | `TableViewSource.ThenSort(String, SortDirection)` (`ThenSortByPath`), `ThenSort(TableViewKeySelector, SortDirection)` | Adding a sort level becomes explicit (LINQ `OrderBy`/`ThenBy`). Previously a key-selector `Sort` silently appended depending on delegate identity. |
-| Added | `TableViewSource.SortGroups(SortDirection)` | Group order never depends on call order. `None` (default) follows each group's first item (WPF parity); `Ascending`/`Descending` pins key order against item and header sorts. |
-| Added | `TableViewSource.Refresh()`, `IClosable DeferRefresh()` | Reshape on demand when live shaping is off; batch several calls into one Reset. |
-| Added | `TableViewSource.Source { get; }` | Read back the wrapped collection without the app keeping its own reference. |
+| **Added** | `TableView.ItemKeyPath`, `ParentKeyPath` (`String` DPs) | Hierarchical rows from a flat collection or a `CollectionViewSource` view, by property path. Replaces `TableViewSource.ParentBy` (§2.6). |
 | Added | `TableView.IndexOf(Object)`, `StartBringItemIntoView(Int32, BringIntoViewOptions)` | Map an item to the selection index space and reveal it; previously no way to select or show "this record" after shaping. |
 | Added | `TableView.ExpandGroup(Object)`, `CollapseGroup(Object)`, `GroupExpanding`, `GroupCollapsed` + args (`GroupKey`) | Per-group programmatic expansion and a notification for every group state change. |
 | Added | `TableViewColumn.NotifyCellContentChanged()` (protected) | Derived columns can regenerate their cells. |
 | Added | `TableViewColumn.DisplayMemberBinding` (`Binding`, CLR) | Restores the template-free "bind a collection, render data cleanly" baseline without a new column type, after `TableViewTextColumn` was cut: a read-only `TextBlock` cell bound against the row item, whose `Path` is the sort key when `SortMemberPath` is empty. WPF `GridViewColumn.DisplayMemberBinding` precedent, including its precedence: `DisplayMemberBinding` over `CellTemplate`, so a template column ignores its `CellTemplate` while `DisplayMemberBinding` is set. |
-| **Changed** | `Sort(...)` (both overloads): **replaces** all item sort levels | Was "append unless same path/delegate". Identity of a C# lambda is not visible to callers. |
 | Changed | `TableViewColumn.CanResize` → `CanUserResize`, `CanSort` → `CanUserSort` | Match `CanUserResizeColumns`/`CanUserSortColumns` and WPF. All four `CanUser*` flags gate user input only: programmatic sorts ignore them, and turning one off does not clear the active sort. |
 | Changed | `TableViewColumn.SortDirection` `{ get; }` → `{ get; set; }` | App-owned (e.g. server) sorts can show the arrow. Display only. |
-| Changed | `TableView.ClearSort()` clears column **and** source item sorts | Previously returned `false` when only a source key-selector sort was active. |
-| Changed | `TableViewIdentitySelector` → `TableViewGroupIdentitySelector` | Used only by `GroupBy`. |
+| **Changed** | Header sort on a `CollectionViewSource` view writes the view's `SortDescriptions` | The view, not the table, owns the shape; the column arrow follows the view's primary sort description. |
 | Changed | `TableViewDensity`: `Standard = 0`, `Compact = 1`, `Comfortable = 2` | Zero value now equals the default. Persisted integers change meaning. |
 | Changed | `TableViewGroupHeader.IsExpanded`/`IsExpandable` → read-only | Setters changed visuals but not rows, so UI/UIA could disagree with data. |
 | Changed | `TableViewColumnHeaderAutomationPeer` ctor `(TableView, TableViewColumn)` → `(TableViewColumnHeader owner)` | Owner is the element (WinUI convention); old ctor made the TableView the owner. Stays unsealed. |
 | Changed | `TableViewCellAutomationPeer` ctor `(FrameworkElement, TableViewRow, TableViewColumn, Int32)` → `(FrameworkElement owner)` | Owner-only, like every WinUI peer; row, column and index are derived from the cell, and a non-cell owner throws `E_INVALIDARG`. Stays unsealed. |
-| **Removed** | `TableViewFrozenEdge.Trailing` | Reserved no-op; appending it later is compatible, changing a shipped no-op is not. |
+| **Removed** | `TableViewSource`, `TableViewPredicate`, `TableViewKeySelector`, `TableViewGroupIdentitySelector` (was `TableViewIdentitySelector`) | Data shaping is `CollectionViewSource` (`SortDescriptions`, `Filter`, `GroupDescriptions`, `Refresh`; §2.1). The engine stays internal: TableView still sorts a plain collection on a header click. |
+| Removed | `TableViewFrozenEdge.Trailing` | Reserved no-op; appending it later is compatible, changing a shipped no-op is not. |
 | Removed | `TableViewGroupHeader.ToggleRequested`, `TableViewGroupHeaderToggleRequestedEventArgs` | Internal header→owner wiring; headers are control-created so apps could not subscribe usefully. Replaced by TableView-level events. |
 | Removed | `TableViewGroupInfo.Level` | Always 0 and 0-based while `TableViewRow.Level` is 1-based. Re-add with nested grouping. |
 | Removed | public `TableViewColumn.GenerateElement(Object)` | Only `GenerateElementCore` is an extension point. |
 | Removed | The editing surface: `TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, `CellEditEnded`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate`, `CommitCellEditCore` | Deferred to V2 / a future DataGrid (§2.5). V1 behaves as the old default `IsReadOnly = true`. |
 | Removed | `TableViewTextColumn` (and `Binding`) | Deferred to V2 (§5). A display-only text cell is `TableViewColumn.DisplayMemberBinding`; a styled one is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name now comes from the visible columns' `GetSortMemberPathCore()` values. |
-Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on WinRT enum keys compare by underlying value (previously `GroupBy` threw and sort ordered by address); re-entrant shaping calls from inside app callbacks are refused (`E_ILLEGAL_METHOD_CALL`) instead of destroying the running filter; a shaping verb whose rebuild throws rolls back its declaration (strong exception guarantee; `ClearParentBy` excepted).
 
 ## 2. API surface by area
 
-### 2.1 Data and shaping: `TableViewSource`
+### 2.1 Data and shaping: `CollectionViewSource`
 
-| Member | Type | Semantics / default |
-|---|---|---|
-| `static From(Object items)` | `TableViewSource` | Wraps `IVector<Object>`, `IBindableVector`, `IIterable<Object>` or `IBindableIterable`. Other types (including a `TableViewSource` or a `CollectionViewSource`) throw `E_INVALIDARG`. An `ICollectionView` is consumed as a flat list; its groups are ignored. |
-| `Source` | `Object` (get) | The `items` passed to `From`, same reference. |
-| `IsLiveShaping` | `Boolean` | Default `false`. When `true`, an item's `PropertyChanged` that moves its sort key, group key, filter result or parent reshapes (coalesced per dispatcher turn). When `false`, order is stale until `Refresh()` or a structural collection change. |
-| `Filter(TableViewPredicate)` | fluent | One predicate; a second call **replaces** it. Compose inside one predicate. |
-| `ClearFilter()` | fluent | Removes the filter. |
-| `Sort(String path, SortDirection)` (`SortByPath`) / `Sort(TableViewKeySelector, SortDirection)` | fluent | **Replaces** every item sort level with one level. `None` clears all item levels (= `ClearSort()`). `SortGroups` is untouched. |
-| `ThenSort(String path, SortDirection)` (`ThenSortByPath`) / `ThenSort(TableViewKeySelector, SortDirection)` | fluent | Appends a lower-precedence level; with no existing level behaves as `Sort`. `None` throws `E_INVALIDARG`. Same path as an existing level: replaces that level's direction in place, keeps its precedence. Key-selector form always appends. |
-| `ClearSort()` | fluent | Clears all item sort levels; keeps `SortGroups`. |
-| `GroupBy(TableViewKeySelector)` / `GroupBy(key, TableViewGroupIdentitySelector)` (`GroupByWithIdentity`) | fluent | Single level; a second call replaces. Group identity is a stable non-empty string: built in for boxed scalars and WinRT enums, otherwise from the identity selector (which receives the **key**, not the item). |
-| `SortGroups(SortDirection)` | fluent | `Ascending`/`Descending`: orders groups by key (enums by underlying value, numerics numerically, strings culture-aware, `DateTime` chronologically); item sorts then order rows only within groups. `None` (default) orders groups by the position of each group's first item in the filtered, item-sorted sequence (source order when there is no item sort), matching WPF `ListCollectionView` without group sort descriptions. |
-| `ClearGroupBy()` | fluent | Removes grouping; keeps the `SortGroups` declaration. |
-| `ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()` | fluent | Flat list → tree. Rules in the [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md). |
-| `Refresh()` | `void` | Re-applies all shaping now as one Reset. Inside a deferral: recorded, runs at outermost close. UI thread only. |
-| `DeferRefresh()` | `IClosable` | Ref-counted deferral; UI thread only; see below. |
-| `TableViewPredicate`, `TableViewKeySelector`, `TableViewGroupIdentitySelector` | delegates | `Boolean(Object)`, `Object(Object)`, `String(Object)`. |
+TableView has no shaping type of its own. `ItemsSource` takes a plain collection (`IVector<Object>`, `IBindableVector`, `IIterable<Object>`, `IBindableIterable`) or an `ICollectionView`. To sort, filter or group from code, wrap the collection in a `CollectionViewSource` and bind its `View`; the view publishes the rows and groups and TableView renders them. The framework shaping surface (`CollectionViewSource` and `ICollectionViewShaping`, behind `Feature_ExperimentalApi`) is specified in [CollectionViewSource shaping](../CollectionViewSourceShaping-POC.md):
 
-**Composition.** Declarations are independent; the pipeline order is fixed: filter → hierarchy (`ParentBy`) → group → sort. Item sort levels order rows **within** each group (and among siblings under `ParentBy`). Group order never depends on call order: with `SortGroups(None)` groups follow their first item in the item-sorted sequence, so an item sort can also reorder groups; with `SortGroups(Ascending/Descending)` groups are pinned to key order. `GroupBy` under `ParentBy` buckets the roots. A filter under `ParentBy` keeps matches plus ancestors. A group whose last row is filtered out disappears.
-
-**Lifetime and ordering contracts.**
-
-| Contract | Detail |
+| Member | Semantics |
 |---|---|
-| Fluent calls mutate | Every call changes this instance and returns it. `var b = a.Sort(...)` changes `a`. This differs from LINQ (immutable chain) and WPF (mutable, non-fluent). |
-| `SortGroups` is retained | Inactive without `GroupBy`; survives `GroupBy` replacement, `ClearGroupBy`, `ClearSort`, `Sort`, and column-header sorts. |
-| `DeferRefresh` | While any deferral is open, every shaping call (`Filter`/`Sort`/`ThenSort`/`GroupBy`/`ParentBy`/`SortGroups`/`Clear*`/`Refresh`) records its declaration without reshaping. Closing the **outermost** deferral runs one reshape (one Reset) if anything changed. Source collection changes during a deferral apply at close. Deferrals are ref-counted, so nested `DeferRefresh` calls need matching closes. `Close()` is idempotent (a second close does not decrement the count). UI thread only: `Close()` from another thread throws `RPC_E_WRONG_THREAD`. A deferral released without `Close()` (for example, garbage-collected) ends on a later dispatcher turn rather than synchronously, so always close it, ideally with `using`. |
-| Re-entrancy | Any shaping member called from inside an app delegate (filter, key, identity or parent-key selector) while the source is reshaping throws `E_ILLEGAL_METHOD_CALL`. This covers every verb and `Clear*`, the `IsLiveShaping` setter, `Refresh`, `DeferRefresh` and closing a deferral. |
-| Failure | Strong exception guarantee: a shaping verb whose rebuild throws is rolled back, so the declared state matches what is displayed and later reshapes do not keep throwing. Exception: `ClearParentBy()` is not rolled back; the relation is removed even if the rebuild throws. Invalid data that arrives later (not through a verb) leaves the declaration in place and throws on each reshape until fixed. Data errors arriving through the app's own collection change (e.g. a null group key on `Add`) are rethrown into that call, as WPF `ListCollectionView` does. No error event. |
-| Single owner | One owning `TableView` at a time. A second table is refused (renders empty, cannot sort) until the owner releases it (`ItemsSource` change or `Unloaded`); it then binds. Only signal: a log message. |
-| Threading | UI-thread affine. Collection changes must be raised on the UI thread; off-thread `PropertyChanged` is marshalled for live shaping. Callbacks always run on the UI thread. |
+| `SortDescriptions` | Ordered `SortDescription(propertyName, direction)` levels. A header sort writes the column's `SortMemberPath` as the single level. |
+| `Filter` | `CollectionViewFilter` predicate; `null` shows every row. |
+| `GroupDescriptions` | `PropertyGroupDescription(propertyName)`; first description only. Groups are keyed by value. Switching flat ↔ grouped gives a new `View`. |
+| `Refresh()` | Re-runs filter, sort and grouping. No live shaping: call it after a property edit. |
 
-**Nuances and edge cases.**
+Hierarchy is declared on TableView (`ItemKeyPath` / `ParentKeyPath`, §2.6) and applies on top of the view: the view's filter and sort run first, siblings keep the view order, and roots are placed in the view's groups.
 
-- **Path sort needs bindability.** `Sort(path)`/`ThenSort(path)` and column `SortMemberPath` evaluate a `{Binding}` on a probe element. A misspelled path, a non-bindable C++ item, or a trimmed/NativeAOT C# type silently yields null keys and no sort. Key-selector overloads avoid this and are the recommendation for AOT.
-- **Key comparison.** WinRT scalars compare by value. Enums compare by underlying value first (signed or unsigned as appropriate), so keys of different enum types interleave by value rather than by type name; group identity still includes the type. Keys that are not `IPropertyValue` compare by `ToString()` text if `IStringable`, otherwise by address; `IComparable` is not used, so .NET-only types (`DateOnly`, `BigInteger`, …) likely sort as text. Use a key selector that returns a WinRT scalar.
-- **Enum group keys cost a class-name lookup.** Grouping (and group identity) by an enum key calls `GetRuntimeClassName` once per key, by design: the identity must include the enum type, and caching by vtable alone is not collision-safe. Group by the underlying integer when this matters for large sources.
-- **Live shaping limits.** Re-evaluates every active callback on any `PropertyChanged`, whatever the property; nested paths (`A.B`) are not tracked. With Filter/GroupBy/ParentBy active, each single-item collection change rebuilds (O(N) per change); batch with `DeferRefresh`.
-- **Callback lifetime.** Callbacks are held strongly by native code. A C# callback capturing its page forms a cycle across the native boundary that the GC may not collect (finding B5, not yet run). Avoid capturing the page.
-- **Row identity** is object reference (node key under `ParentBy`). Selection and focus follow the item across a reshape but not across item re-creation; the same object on two rows fails fast while a verb is active.
-- **Throwing callbacks** are not yet handled uniformly (a throwing filter hides the row, a throwing sort key sorts as null, a throwing group key reports "null key"). See §6.
+**`TableViewSource` removed.** The earlier preview shipped a table-specific `TableViewSource` (fluent `Filter`/`Sort`/`ThenSort`/`GroupBy`/`SortGroups`/`ParentBy`, `IsLiveShaping`, `DeferRefresh`). It is removed so that TableView's public data-shaping story is `CollectionViewSource` only. The implementation stays internal (TableView wraps a plain collection to sort it from the headers and to nest rows). Capabilities that the CVS surface does not have yet, and that are therefore not available in V1: live shaping, key-selector and comparer sorts, group-order pinning (`SortGroups`), group identity selectors, `DeferRefresh`, keeping a match's ancestors under a filter, and regrouping without a new `View`. They are tracked as CVS gaps (§6).
 
 ### 2.2 Columns
 
@@ -127,10 +93,10 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
 | `SortByColumn(column, direction)` | `Boolean` | Declares the control's sort axis. `None` clears. |
 | `ToggleSortDirection(column)` | `Boolean` | Advances the column's `SortCycle`. |
-| `TableView.ClearSort()` | `Boolean` | Clears column sorts and item sorts on the effective source; keeps `SortGroups`. `true` if anything was cleared. |
+| `TableView.ClearSort()` | `Boolean` | Clears the column sort (and a view's `SortDescriptions` when the source is a `CollectionViewSource` view). `true` if anything was cleared. |
 | `Sorting` | `TableViewSortingEventArgs` (`Column`, `Direction`, `Cancel`) | Raised first; cancellable. |
 | `Sorted` | `TableViewSortedEventArgs` (`Column`, `Direction`) | Raised after. `Column == null` means clear-all. |
-| `SortDirection` enum | `None = 0`, `Ascending = 1`, `Descending = 2` | Shared by `TableViewSource` and `TableView`. |
+| `SortDirection` enum | `None = 0`, `Ascending = 1`, `Descending = 2` | Column and `TableView` sort state. |
 
 **Gates.**
 
@@ -139,14 +105,16 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | Header click / Enter / Space / UIA Invoke | gates | gates | yes | yes |
 | `SortByColumn` / `ToggleSortDirection` | ignored | ignored | yes | yes |
 | Setting `TableViewColumn.SortDirection` | ignored | ignored | no | **no** |
-| `TableViewSource.Sort(path, …)` | — | — | — | yes; lights the column whose path matches |
+| `CollectionViewSource.SortDescriptions` changed by code | — | — | — | yes; lights the column whose path matches the primary level |
 | Turning `CanUserSortColumns`/`CanUserSort` off | — | — | no | no; the active sort and arrow stay (WPF parity) |
 
-**Contracts.** One control sort axis is in force: a column sort replaces the source's item sort levels and a source `Sort` replaces the column's axis, so the arrow never shows a losing axis. A header sort on grouped data replaces item sort levels and keeps `SortGroups`; with `SortGroups(None)` it therefore **can reorder groups** (each group follows its first item), with `Ascending`/`Descending` it cannot. `SortByColumn`/`ToggleSortDirection` return `false` and change nothing when `Sorting` is cancelled, the column has no sort path and no comparer, rows lack identity, or the source is refused.
+**Contracts.** One sort axis is in force: a column sort replaces the view's `SortDescriptions` and an app change to them replaces the column's axis, so the arrow never shows a losing axis. On a plain collection the table sorts through its internal engine. A header sort on grouped data orders rows within each group. `SortByColumn`/`ToggleSortDirection` return `false` and change nothing when `Sorting` is cancelled, the column has no sort path and no comparer, rows lack identity, or the source is refused.
 
-**Display-only `SortDirection`.** Setting it updates the arrow and UIA state and records the column as lit by the app; it never reshapes. A non-`None` value clears the arrow on every other column. The next header click cycles from the displayed value. A value preset in XAML or before attach is applied when the column joins `Columns`. An app `ThenSort` after a header sort keeps the header sort as the primary level (and its arrow); only a foreign level declared before it displaces the column's axis. Setting `CustomSortComparer` while the arrow was set by the app neither reshapes nor raises events. Typical server-sort pattern: handle `Sorting`, set `Cancel = true`, fetch, set `Column.SortDirection`.
+**Display-only `SortDirection`.** Setting it updates the arrow and UIA state and records the column as lit by the app; it never reshapes. A non-`None` value clears the arrow on every other column. The next header click cycles from the displayed value. A value preset in XAML or before attach is applied when the column joins `Columns`. Setting `CustomSortComparer` while the arrow was set by the app neither reshapes nor raises events. Typical server-sort pattern: handle `Sorting`, set `Cancel = true`, fetch, set `Column.SortDirection`.
 
-**Nuances.** `Sorted(null, None)` is raised both for clear-all and for an app key-selector sort (§6). The direction contract of `ITableViewSortComparer` (does the control invert for `Descending`?) is not stated in the IDL (§6).
+**Nuances.** `Sorted(null, None)` is raised for clear-all. The direction contract of `ITableViewSortComparer` (does the control invert for `Descending`?) is not stated in the IDL (§6).
+
+**`ICollectionView` sources.** A view that implements `ICollectionViewShaping` (any `CollectionViewSource` view) is sorted through its `SortDescriptions`, as above; a `CustomSortComparer` column cannot sort it. For any other `ICollectionView` (§2.6) the view owns the order and has no sort contract to drive. A header click, `SortByColumn` or `ToggleSortDirection` still checks the gates and raises `Sorting`, then returns `false` without reshaping, lighting an arrow or raising `Sorted`. Apps sort the view in the `Sorting` handler (for example by rebuilding the grouped source) and set `TableViewColumn.SortDirection` to show the arrow, as in the server-sort pattern above. `ClearSort()` clears displayed arrows only.
 
 ### 2.4 Selection and navigation
 
@@ -177,16 +145,34 @@ Rationale: the V1 scenarios (Task Manager, File Explorer details view, File prop
 | `TableView.GroupHeaderTemplate` | `DataTemplate` | Content of the control-owned band; data context `TableViewGroupInfo`. |
 | `TableViewGroupInfo` | INPC; `Key`, `ItemCount`, `IsExpandable`, `IsExpanded`, `KeyText`, `ItemCountText` | Updated in place on recycle; `KeyText`/`ItemCountText` lazily culture-formatted. |
 | `TableViewGroupHeader` | unsealed `ContentControl`; `IsExpanded`, `IsExpandable` read-only DPs (`false`) | Realized band; written internally only. An external `SetValue` is reverted (observers may see a transient change notification); bind `OneWay` only. |
-| `ExpandGroup(Object key)` / `CollapseGroup(Object key)` | `void` | The key is resolved to a group identity exactly as `GroupBy` does (built-in identity, or the source's `TableViewGroupIdentitySelector`) and matched by identity; a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
+| `ExpandGroup(Object key)` / `CollapseGroup(Object key)` | `void` | The key is matched by value against the group keys (scalars by type and value); a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
 | `ExpandAllGroups()` / `CollapseAllGroups()` | `void` | Moves the default (applies to groups that appear later) and resets per-group exceptions. No-op when not grouped. |
 | `GroupExpanding` | args `GroupKey` | Always synchronous, before the state changes. Not cancellable. |
 | `GroupCollapsed` | args `GroupKey` | After the state changes. |
-| `ExpandAllRows()` / `CollapseAllRows()` | `void` | Tree rows under `ParentBy`; no-op otherwise. |
+| `ItemKeyPath` / `ParentKeyPath` | `String` DPs, `""` | Property paths of each item's key and its parent's key. Both set: rows nest (a null parent key is a root, an unknown one an orphan root); either empty: flat. Duplicate keys or a cycle throw `E_INVALIDARG` and keep the previous projection. Changing a path replaces the relation and collapses every row. Works over a plain collection and over a `CollectionViewSource` view (the view filters and sorts first; roots go into the view's groups). Keys are read when the source is reshaped, not on `PropertyChanged`. Replaces `TableViewSource.ParentBy`. |
+| `ExpandAllRows()` / `CollapseAllRows()` | `void` | Tree rows under `ItemKeyPath` / `ParentKeyPath`; no-op otherwise. |
 | `TableViewRow.Level` / `IsExpandable` / `IsExpanded` | read-only DPs | `Level` 1-based for tree rows, `0` otherwise (matches `AutomationProperties.Level`). |
 
-**Group events.** Raised for **every** group whose state changes, from any source: pointer, keyboard, UIA ExpandCollapse, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per changed group). Order: `GroupExpanding` (synchronous) → state change → UIA `ExpandCollapseState` change; `GroupCollapsed` after the change. A request that arrives during layout (including the measure/arrange of rows, headers and the cells panel) posts the **whole operation** to the next dispatcher turn, so the events are never raised after the state already changed. While `GroupExpanding` is raised and the state applied, the control holds a refresh deferral on the source: a handler that changes the source (lazy load, `Filter`, `Sort`) is coalesced into one reshape, and the group is then found again by identity. Exceptions thrown by group-event handlers are contained and logged. Once `GroupExpanding` has been raised the direction is pinned: the operation never toggles back after the handler, and a handler that calls `ExpandGroup` on the same group is a no-op (one `GroupExpanding`, no recursion). After the handler the control re-checks the state and the source generation, so a handler that swaps `ItemsSource` does not expand the new source's groups. A bulk request made while a `GroupExpanding` is being raised is queued until it finishes. `TableViewGroupHeader.IsExpanded`/`IsExpandable` revert an external `SetValue`; pooled headers re-prepare through internal writes that raise nothing.
+**Group events.** Raised for **every** group whose state changes, from any source: pointer, keyboard, UIA ExpandCollapse, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per changed group). Order: `GroupExpanding` (synchronous) → state change → UIA `ExpandCollapseState` change; `GroupCollapsed` after the change. A request that arrives during layout (including the measure/arrange of rows, headers and the cells panel) posts the **whole operation** to the next dispatcher turn, so the events are never raised after the state already changed. A handler may change the source (lazy load, `Filter`, `Sort`); the group is then found again by key. Exceptions thrown by group-event handlers are contained and logged. Once `GroupExpanding` has been raised the direction is pinned: the operation never toggles back after the handler, and a handler that calls `ExpandGroup` on the same group is a no-op (one `GroupExpanding`, no recursion). After the handler the control re-checks the state and the source generation, so a handler that swaps `ItemsSource` does not expand the new source's groups. A bulk request made while a `GroupExpanding` is being raised is queued until it finishes. `TableViewGroupHeader.IsExpanded`/`IsExpandable` revert an external `SetValue`; pooled headers re-prepare through internal writes that raise nothing.
 
-**Nuances.** Expansion is intent keyed by group identity, so a collapse survives sort, filter and regroup. Grouping is single-level. Tree rows have no per-row expand API and no events (§6). Group order: see §2.1 (`SortGroups(None)` follows first items; `Ascending`/`Descending` pins key order).
+**Nuances.** Expansion is intent keyed by group key, so a collapse survives sort, filter and refresh. Grouping is single-level. Tree rows have no per-row expand API and no events (§6). Group order follows the view.
+
+**`ICollectionView` sources (`CollectionViewSource.View`).** Assigned to `ItemsSource`, an `ICollectionView` is shown read-only, as the view shapes it: rows follow the view's order, and when `CollectionGroups` is non-null each `ICollectionViewGroup` becomes a group header (`TableViewGroupInfo.Key` = `ICollectionViewGroup.Group`, falling back to the group object when that is null) over its `GroupItems`, in `CollectionGroups` order. Empty groups have no header. Item and group changes reported by the view (`VectorChanged` on the view and on `CollectionGroups`) are followed; expansion, `ExpandGroup(group.Group)` and the group events work for every grouped view. TableView never filters or regroups the view, and sorts it only through `ICollectionViewShaping` (§2.3). An item that appears in two groups cannot be projected as grouped: the view is then shown flat and a retail diagnostic is logged. Not covered: current-item synchronization, a `CollectionViewSource` object assigned directly (assign its `View`), and a view whose `CollectionGroups` instance changes after assignment (re-assign `ItemsSource`).
+
+```xml
+<Page.Resources>
+    <CollectionViewSource x:Name="PeopleByTeam" Source="{x:Bind ViewModel.Teams}" IsSourceGrouped="True"/>
+</Page.Resources>
+<tabular:TableView ItemsSource="{x:Bind PeopleByTeam.View}">
+    <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+        <tabular:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+            </DataTemplate>
+        </tabular:TableViewTemplateColumn.CellTemplate>
+    </tabular:TableViewTemplateColumn>
+</tabular:TableView>
+```
 
 ### 2.7 Layout and visuals
 
@@ -226,7 +212,6 @@ Rationale: the V1 scenarios (Task Manager, File Explorer details view, File prop
 | `XamlControlsTabularXamlMetaDataProvider` (`IXamlMetadataProvider`, `static Initialize()`) | XAML type metadata for the Tabular DLL. |
 | `SortDirection` namespace | Declared into `Microsoft.UI.Xaml.Controls.Tabular`, not `Microsoft.UI.Xaml.Data` (C# consumers would hit `CS0234`). |
 | xmlns | `using:Microsoft.UI.Xaml.Controls.Tabular` |
-| Overload ABI names | `GroupBy`/`GroupByWithIdentity`, `Sort`/`SortByPath`, `ThenSort`/`ThenSortByPath` via `[default_overload]`/`[method_name]`; without them MIDL emits `*2` names. |
 | Implicit surface | `TabularSurface*` and `TableView*` theme keys and template parts; which are contract is open (§6). |
 
 ## 3. Parity
@@ -237,17 +222,17 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Where shaping lives | `TableViewSource` wrapping the collection | WinUI `ICollectionView` has no sort/filter. WPF `ICollectionView`. WCT ACV. 3P: descriptor collections on the grid. Qt proxy model, JavaFX `SortedList`/`FilteredList`. | P (concept) |
+| Where shaping lives | `CollectionViewSource` (`SortDescriptions`, `Filter`, `GroupDescriptions`) | WPF `ICollectionView`/`CollectionViewSource`. WCT ACV. 3P: descriptor collections on the grid. Qt proxy model, JavaFX `SortedList`/`FilteredList`. | P (WPF) |
 | Declaration style | Fluent, mutating, code-only delegates | WPF/ACV: mutable properties/collections, not fluent. LINQ: fluent, immutable. No WinUI IDL returns `this`. | I |
 | Filter | One predicate; replaces | WPF `ICollectionView.Filter`, ACV `Filter`, DevExpress `FilterCriteria` replace. WPF `CollectionViewSource.Filter` event, Swing `andFilter`, MUI `logicOperator`, Syncfusion `FilterPredicates` combine. | P (WPF) |
-| Multi-level sort | `Sort` replaces, `ThenSort` appends | LINQ `OrderBy`/`ThenBy`. WPF/ACV `SortDescriptions`, AG Grid `sortIndex`, TanStack `SortingState[]`, Swing `SortKey` list, `NSSortDescriptor[]`, w-ahmad `SortDescriptions`. | P (LINQ); descriptor list I |
-| Group order | `SortGroups(None)`: by first item in the item-sorted sequence; `SortGroups(Asc/Desc)`: by key | WPF `ListCollectionView` without group sort descriptions orders groups by first item; WPF `GroupDescription.SortDescriptions`/`CustomSort`; w-ahmad `GroupDescription.SortMode`/`Direction`; Telerik `GroupDescriptor.SortOrder`; AG Grid orders by the grouped column's sort. | P (separate declaration); by-count or custom group order G |
-| Refresh / batching | `Refresh()`, `IClosable DeferRefresh()` | WPF `Refresh`/`DeferRefresh` (`IDisposable`), ACV `DeferRefresh`; Syncfusion `BeginInit`/`EndInit`; DevExpress `BeginDataUpdate`; w-ahmad `RefreshSorting`/`RefreshFilter`/`RefreshGrouping`; AG Grid transactions; Qt `invalidate()`. No WinUI IDL has a defer API. | P (WPF) |
-| Live shaping | One `IsLiveShaping`, default off | WPF `IsLiveSorting/Filtering/Grouping` + property lists; Qt `dynamicSortFilter` (default on); Swing `sortsOnUpdates` (default off); JavaFX needs an extractor. | I (single switch); property scoping G |
+| Multi-level sort | `SortDescriptions` | WPF/ACV `SortDescriptions`, AG Grid `sortIndex`, TanStack `SortingState[]`, Swing `SortKey` list, `NSSortDescriptor[]`, w-ahmad `SortDescriptions`. | P (WPF) |
+| Group order | Follows the view | WPF `ListCollectionView` without group sort descriptions orders groups by first item; WPF `GroupDescription.SortDescriptions`/`CustomSort`; Telerik `GroupDescriptor.SortOrder`. | G (group sort on CVS) |
+| Refresh / batching | `CollectionViewSource.Refresh()` | WPF `Refresh`/`DeferRefresh` (`IDisposable`), ACV `DeferRefresh`; Syncfusion `BeginInit`/`EndInit`; DevExpress `BeginDataUpdate`; Qt `invalidate()`. | P (Refresh); `DeferRefresh` G |
+| Live shaping | None; call `Refresh()` | WPF `IsLiveSorting/Filtering/Grouping` + property lists; Qt `dynamicSortFilter` (default on); Swing `sortsOnUpdates` (default off); JavaFX needs an extractor. | G |
 | Read back source | `Source` (get-only) | WPF `CollectionViewSource.Source` (settable). | P; settable G |
 | Read back declared state | none | WPF `SortDescriptions`/`Filter`/`GroupDescriptions`, ACV, 3P descriptor collections. | G |
 | Index mapping | `TableView.IndexOf` (projection) | WPF `CollectionView.IndexOf`/`GetItemAt`/`Count`; ACV `IndexOf`; `ItemsSourceView.IndexOf`; Swing `convertRowIndexToModel/View`; Qt `mapToSource/FromSource`; JavaFX `getSourceIndex`/`getViewIndex`. | P (item→view); view→item, `Count` G |
-| Tree from flat list | `ParentBy(key, parentKey)` | DevExpress `KeyFieldName`/`ParentFieldName`; AG Grid `treeDataParentIdField`; Syncfusion `SfTreeGrid` (unv.); MUI `getTreeDataPath`. Filter keeps ancestors = AG Grid default. | P |
+| Tree from flat list | `TableView.ItemKeyPath` / `ParentKeyPath` | DevExpress `KeyFieldName`/`ParentFieldName`; AG Grid `treeDataParentIdField`; Syncfusion `SfTreeGrid` (unv.); MUI `getTreeDataPath`. | P (DevExpress); filter-keeps-ancestors G |
 | Custom comparer on source | none (column-level `ITableViewSortComparer` only) | WPF `CustomSort`; w-ahmad `SortDescription(path, dir, IComparer)`; Telerik `DelegateSortDescriptor`; AG Grid `comparator`; TanStack `sortingFn`. | G (deferred, §5) |
 | Errors in callbacks/data | Synchronous throw; rollback | WPF `ListCollectionView` propagates (inferred from source); ItemsRepeater throws HRESULTs; no framework documents callback-throw behaviour. | P |
 | Sharing a source | Single owner | WPF shares one view across controls; Qt, JavaFX share models; AG Grid row model per grid. | I |
@@ -277,7 +262,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Sort cycle | `SortCycle` incl. tri-state | WPF/AG Grid cycles (unv.). | P (tri-state is an addition) |
 | Multi-column header sort | none (single axis) | WPF Shift+click; w-ahmad Ctrl+click; AG Grid Shift; TanStack/MUI modifier. | G |
 | Sort direction enum | `SortDirection { None, Ascending, Descending }` | WPF/WCT/ACV `ListSortDirection { Ascending = 0, Descending = 1 }`, no `None`. | I |
-| Clear | `TableView.ClearSort()` (all item sorts) + `TableViewSource.ClearSort()` | WPF `SortDescriptions.Clear()`. | P |
+| Clear | `TableView.ClearSort()` (clears a view's `SortDescriptions` too) | WPF `SortDescriptions.Clear()`. | P |
 
 ### 3.4 Selection and navigation
 
@@ -333,12 +318,10 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 
 | Difference | Rationale |
 |---|---|
-| Shaping is code-first on `TableViewSource` (delegates), not XAML descriptors | WinRT has no generics, and delegates are not XAML-declarable; WinUI `ICollectionView` has no sort/filter to build on. Delegates for stateless callbacks match `ListViewItemToKeyHandler`. Key selectors also avoid reflection paths that fail silently or under AOT. |
+| Shaping is on `CollectionViewSource`, not a TableView-specific type | One shaping model for every items control, as in WPF. A table-specific `TableViewSource` was removed (§2.1). Hierarchy stays on TableView until hierarchy on CVS is decided. |
 | Fluent calls mutate and return `this` | Lets a declaration read as one chain while keeping one live object the control can own. Documented explicitly because it is novel to WinUI. |
-| `Sort`/`ThenSort` instead of a descriptor collection | Closest precedent to "replace vs. append" (LINQ); avoids exposing a mutable collection type that would need its own change semantics. Read-back stays open (§6). |
-| `SortGroups(direction)`: first-item order by default, key order when pinned | Group order must not depend on call order. The `None` default matches WPF `ListCollectionView`; an app that wants groups to stay put under header sorts pins key order. Ordering by count or by a custom comparer can be added as overloads. |
 | New `SortDirection` with `None = 0` | `ListSortDirection` has no `None` and is not a WinRT type; `None = 0` follows the WinUI zero-value convention. Shared by the headless `TabularShaping` layer, not TableView-specific. |
-| One `IsLiveShaping` switch | Simpler than WPF's three switches plus property lists; scoping can be added additively. |
+| Hierarchy by property paths (`ItemKeyPath` / `ParentKeyPath`) | XAML-declarable and DevExpress-shaped; key selectors are not XAML-declarable. Object-identity or computed keys need a model property. |
 | Single selection, `TableViewSelectionMode { None, Single }` | Multi-select needs an anchor/range model and gesture plumbing. A TableView-specific enum keeps `Multiple` from compiling and silently acting as `Single`; values match `ItemsViewSelectionMode`. |
 | Read-only `SelectedItem`/`SelectedIndex`, index-based `Select` | `ItemsView` parity; avoids `Selector`'s deferral/coercion layer. `IndexOf` closes the item→index gap. |
 | Projection index space includes group headers | Headers are rows in the virtualized list; one index space serves selection, reveal and UIA. |
@@ -347,7 +330,6 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Display-only settable `SortDirection` | Separates sort state (arrow) from sort execution, as WCT/AG Grid/TanStack/MUI do. |
 | `CanUser*` gate user input only | WPF naming and semantics; programmatic APIs are the app's own decision. |
 | No editing in V1 | Display-first control; the V1 scenarios need at most an app-owned rename (§2.5). Editing is additive later. |
-| Single owner per `TableViewSource` | The control writes expansion and sort-axis state into the source. Sharing would make one table's gestures reshape another. |
 | Synchronous throw, no error event | WinUI (ItemsRepeater) and WPF precedent; rollback keeps declared and actual state consistent. |
 | Containers and columns unsealed | WinUI container convention (`ItemContainer`, `TreeViewItem`); sealing later is breaking. |
 | No row headers, no column virtualization | Target is ~5–50 columns; row headers out of scope (`HeadersVisibility` has no `Row`). |
@@ -389,15 +371,14 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | **Multi-select** | `Multiple`/`Extended`, `SelectedItems`, anchor model. | Append enum values; add `SelectedItems` with them. |
 | **Column reorder** | No `DisplayIndex`; collection order is visual and UIA order. | Lock "collection order = visual order + `MoveColumn`" vs `DisplayIndex` before reorder ships. |
 | **Incremental loading** | No `ISupportIncrementalLoading` story. | Define how the shaped projection interacts with partial data. |
-| **`CollectionViewSource` interop** | `ICollectionView` consumed flat; `CollectionViewSource` throws. | Document migration; decide whether to honour `ICollectionView` groups. |
+| **`CollectionViewSource` interop** | Resolved: `TableView.ItemsSource` accepts an `ICollectionView` such as `CollectionViewSource.View`; `CollectionGroups` become group header rows (§2.6), and a header sort writes `SortDescriptions` through `ICollectionViewShaping` (§2.3). `TableViewSource` is removed. Still open: the `CollectionViewSource` object itself is not a collection (bind its `View`); current-item sync. | CVS gaps for V1 parity: live shaping, comparer sort, `DeferRefresh`, group converters and group order, incremental updates, regroup without a new `View`. Hierarchy on CVS (a `HierarchyDescription`) is future work. |
 | **Row identity selector** | Object-reference identity breaks for re-created items and possibly re-boxed primitives (untested). | Optional `getRowId`-style selector. |
 | Declared-state read-back | No way to read the current filter/sort/group declarations. | Descriptor read-back or getters. |
 | Source comparer overloads | §5. | Additive. |
 | Throwing callbacks | Five different behaviours today (filter hides row, sort key → null, …). | One documented policy; keep the original error. |
 | Key types | Non-WinRT keys fall back to text/address comparison. | Document; diagnostic on fallback. |
 | Shared source | Single owner is silent. | Debug diagnostic, or allow sharing. |
-| Live shaping cost | Any `PropertyChanged` re-evaluates every callback; single-item changes rebuild under Filter/GroupBy/ParentBy. | Property scoping; incremental paths. |
-| Callback lifetime | Possible page leak through native-held C# callbacks. | GC-tracked references or documentation; lifetime test. |
+| Shaping cost | The CVS POC recomputes the whole view on each change (O(n log n)); TableView then resets. | Incremental updates in CVS. |
 | Cell UIA control type | API spec says `Custom` ("cell"); implementation and dev spec use `DataItem`. | Decide with Narrator/Axe evidence. |
 | Peer `ClassName` | Mixed fully qualified vs short names. | Pick one before stabilizing. |
 | Theme keys / template parts | Which `TabularSurface*`/`TableView*` keys and parts are contract. | Publish the supported list. |

@@ -11,8 +11,8 @@ using TableViewSampleApp.Models;
 namespace TableViewSampleApp.Data;
 
 /// <summary>
-/// BCL-only fixture data. TableViewSource owns shaping; this collection stays in source order.
-/// Keeping the original objects is essential: TableViewSource uses object identity, not our ID.
+/// BCL-only fixture data. A CollectionViewSource owns shaping; this collection stays in source order.
+/// Keeping the original objects is essential: selection and expansion use object identity, not our ID.
 /// </summary>
 public sealed class AccessibilityFixtureData
 {

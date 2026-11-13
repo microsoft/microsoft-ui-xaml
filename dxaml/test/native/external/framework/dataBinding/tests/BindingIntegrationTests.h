@@ -293,6 +293,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify binding to CollectionView")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceShaping)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify experimental CollectionViewSource Filter, SortDescriptions and GroupDescriptions")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewShapingInterface)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a shaped CollectionViewSource view implements ICollectionViewShaping, shares the source's descriptors and reshapes in place")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceDeferRefresh)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.DeferRefresh batches descriptor and source changes into one recompute when the outermost deferral closes")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceCustomSort)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.CustomSort orders the view, replaces and is replaced by SortDescriptions as in WPF, and a throwing comparer leaves the rows")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupConverter)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify PropertyGroupDescription.Converter maps property values to group keys")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceIncrementalUpdates)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a flat shaped view applies source Add, Remove and Replace as matching vector changes at sorted positions instead of a Reset")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()

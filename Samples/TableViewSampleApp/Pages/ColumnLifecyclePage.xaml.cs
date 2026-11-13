@@ -10,6 +10,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -36,7 +37,7 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
     public ColumnLifecyclePage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
 
@@ -52,7 +53,7 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Column visibility: TableViewColumn.Visibility --------------------------------------
@@ -253,8 +254,8 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
             }
         }
 
-        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
-        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        // Grouping reads the value when the view refreshes, so the control cannot re-bucket the row
+        // on PropertyChanged; refresh the view when the grouped-on value changed.
         ReapplyIfGroupedOn(key);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }

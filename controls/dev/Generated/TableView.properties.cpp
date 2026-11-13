@@ -23,7 +23,9 @@ GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr }
 GlobalDependencyProperty TableViewProperties::s_GridLinesVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GroupHeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_ItemKeyPathProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_ParentKeyPathProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
@@ -151,6 +153,17 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::TableViewHeadersVisibility>::BoxValueIfNecessary(winrt::TableViewHeadersVisibility::Column),
                 winrt::PropertyChangedCallback(&OnHeadersVisibilityPropertyChanged));
     }
+    if (!s_ItemKeyPathProperty)
+    {
+        s_ItemKeyPathProperty =
+            InitializeDependencyProperty(
+                L"ItemKeyPath",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnItemKeyPathPropertyChanged));
+    }
     if (!s_ItemsSourceProperty)
     {
         s_ItemsSourceProperty =
@@ -161,6 +174,17 @@ void TableViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
+    }
+    if (!s_ParentKeyPathProperty)
+    {
+        s_ParentKeyPathProperty =
+            InitializeDependencyProperty(
+                L"ParentKeyPath",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnParentKeyPathPropertyChanged));
     }
     if (!s_RowBackgroundProperty)
     {
@@ -220,7 +244,9 @@ void TableViewProperties::ClearProperties()
     s_GridLinesVisibilityProperty = nullptr;
     s_GroupHeaderTemplateProperty = nullptr;
     s_HeadersVisibilityProperty = nullptr;
+    s_ItemKeyPathProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
+    s_ParentKeyPathProperty = nullptr;
     s_RowBackgroundProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
@@ -307,12 +333,28 @@ void TableViewProperties::OnHeadersVisibilityPropertyChanged(
     winrt::get_self<TableView>(owner)->OnHeadersVisibilityPropertyChanged(args);
 }
 
+void TableViewProperties::OnItemKeyPathPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnItemKeyPathPropertyChanged(args);
+}
+
 void TableViewProperties::OnItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnItemsSourcePropertyChanged(args);
+}
+
+void TableViewProperties::OnParentKeyPathPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnParentKeyPathPropertyChanged(args);
 }
 
 void TableViewProperties::OnRowBackgroundPropertyChanged(
@@ -461,6 +503,19 @@ winrt::TableViewHeadersVisibility TableViewProperties::HeadersVisibility()
     return ValueHelper<winrt::TableViewHeadersVisibility>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_HeadersVisibilityProperty));
 }
 
+void TableViewProperties::ItemKeyPath(winrt::hstring const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_ItemKeyPathProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::hstring TableViewProperties::ItemKeyPath()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_ItemKeyPathProperty));
+}
+
 void TableViewProperties::ItemsSource(winrt::IInspectable const& value)
 {
     [[gsl::suppress(con)]]
@@ -472,6 +527,19 @@ void TableViewProperties::ItemsSource(winrt::IInspectable const& value)
 winrt::IInspectable TableViewProperties::ItemsSource()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_ItemsSourceProperty));
+}
+
+void TableViewProperties::ParentKeyPath(winrt::hstring const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_ParentKeyPathProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::hstring TableViewProperties::ParentKeyPath()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_ParentKeyPathProperty));
 }
 
 void TableViewProperties::RowBackground(winrt::Brush const& value)

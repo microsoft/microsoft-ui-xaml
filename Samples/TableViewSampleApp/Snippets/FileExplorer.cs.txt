@@ -1,4 +1,4 @@
-Source = TableViewSource.From(Entries);    // created once; filtered and grouped in place
+Source = new CollectionViewSource { Source = Entries };    // created once; TableView shows its View
 InitializeComponent();
 
 FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
@@ -10,7 +10,7 @@ FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledE
 // Folder contents replace the items of this one collection; the source is never rebuilt.
 public ObservableCollection<FileSystemEntry> Entries { get; } = new();
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
 {
@@ -32,16 +32,16 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     switch (filter)
     {
         case "folders":
-            Source.Filter(item => item is FileSystemEntry { IsFolder: true });
+            Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: true });
             break;
         case "files":
-            Source.Filter(item => item is FileSystemEntry { IsFolder: false });
+            Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: false });
             break;
         case "none":
-            Source.Filter(_ => false);
+            Source.Filter = new CollectionViewFilter(_ => false);
             break;
         default:
-            Source.ClearFilter();
+            Source.Filter = null;
             break;
     }
 }

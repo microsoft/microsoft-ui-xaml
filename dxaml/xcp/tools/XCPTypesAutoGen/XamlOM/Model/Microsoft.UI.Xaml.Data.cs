@@ -522,6 +522,7 @@ namespace Microsoft.UI.Xaml.Data
     [CodeGen(partial: true)]
     [NativeName("CCollectionViewSource")]
     [Guids(ClassGuid = "a7dfaf16-d646-4018-99b6-a35729153b5f")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public sealed class CollectionViewSource
      : Microsoft.UI.Xaml.DependencyObject
     {
@@ -554,7 +555,175 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
+        // Opt-in shaping; see docs\design-notes\CollectionViewSourceShaping-POC.md.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewFilter Filter
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort
+        {
+            get;
+            set;
+        }
+
         public CollectionViewSource() { }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void Refresh()
+        {
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.IClosable DeferRefresh()
+        {
+            return null;
+        }
+    }
+
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [DXamlIdlGroup("coretypes2")]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    public enum ListSortDirection
+    {
+        Ascending = 0,
+        Descending = 1,
+    }
+
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("accepted")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Windows.Foundation.Boolean CollectionViewFilter(Windows.Foundation.Object item);
+
+    // WPF's ListCollectionView.CustomSort (IComparer) as a delegate: negative, zero or positive as x sorts before, with or after y.
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("result")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Windows.Foundation.Int32 CollectionViewComparer(Windows.Foundation.Object x, Windows.Foundation.Object y);
+
+    // Optional capability of an ICollectionView (like ICollectionViewFactory or ISupportIncrementalLoading):
+    // a view a CollectionViewSource shapes forwards these to the owning CollectionViewSource.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewShaping
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Microsoft.UI.Xaml.Data.CollectionViewFilter Filter { get; set; }
+
+        [OrderHint(3)]
+        void Refresh();
+
+        [OrderHint(4)]
+        Windows.Foundation.IClosable DeferRefresh();
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(5)]
+        Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort { get; set; }
+    }
+
+    [DXamlIdlGroup("coretypes2")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [ClassFlags(IsFreeThreaded = true)]
+    [ThreadingModel(ThreadingModel.Both)]
+    [FrameworkTypePattern]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "cb728e57-5e5e-48ee-8eb9-ec1fde42d732")]
+    public sealed class SortDescription
+        : Windows.Foundation.Object
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.String PropertyName
+        {
+            get;
+            private set;
+        }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.ListSortDirection Direction
+        {
+            get;
+            private set;
+        }
+
+        [FactoryMethodName("CreateInstance")]
+        public SortDescription([Optional] Windows.Foundation.String propertyName, Microsoft.UI.Xaml.Data.ListSortDirection direction) { }
+    }
+
+    [DXamlIdlGroup("coretypes2")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [ClassFlags(IsFreeThreaded = true)]
+    [ThreadingModel(ThreadingModel.Both)]
+    [FrameworkTypePattern]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "b161bc24-b3b5-4e1a-93e7-4174c0db7990")]
+    public sealed class PropertyGroupDescription
+        : Windows.Foundation.Object
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.String PropertyName
+        {
+            get;
+            private set;
+        }
+
+        // WPF's PropertyGroupDescription.Converter: maps the property value to the group key.
+        [AllowCrossThreadAccess]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [PropertyFlags(UseComPtr = true)]
+        public Microsoft.UI.Xaml.Data.IValueConverter Converter
+        {
+            get;
+            private set;
+        }
+
+        [FactoryMethodName("CreateInstance")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName) { }
+
+        [FactoryMethodName("CreateInstanceWithConverter")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter) { }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]

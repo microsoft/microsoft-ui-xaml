@@ -491,6 +491,18 @@ namespace Microsoft.UI.Xaml.Automation
         Other,
     };
 }
+namespace Microsoft.UI.Xaml.Data
+{
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    enum ListSortDirection
+    {
+        Ascending,
+        Descending,
+    };
+}
 namespace Microsoft.UI.Xaml.Hosting
 {
 
@@ -609,6 +621,7 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationOutlineStyles>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationStyleId>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationTextDecorationLineStyle>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Data.ListSortDirection>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Hosting.XamlSourceFocusNavigationReason>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.AlignmentX>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.AlignmentY>;
@@ -646,6 +659,20 @@ namespace Microsoft.UI.Xaml
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     delegate void BindingFailedEventHandler(Object sender, Microsoft.UI.Xaml.BindingFailedEventArgs e);
+
+}
+namespace Microsoft.UI.Xaml.Data
+{
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    delegate Int32 CollectionViewComparer(Object x, Object y);
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    delegate Boolean CollectionViewFilter(Object item);
 
 }
 namespace Microsoft.UI.Xaml.Markup
@@ -1983,6 +2010,19 @@ namespace Microsoft.UI.Xaml.Data
         Windows.Foundation.Collections.IObservableVector<Object> GroupItems{ get; };
     };
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    interface ICollectionViewShaping 
+    {
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions{ get; };
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions{ get; };
+        Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
+        void Refresh();
+        Windows.Foundation.IClosable DeferRefresh();
+        Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     interface INotifyDataErrorInfo 
@@ -2010,6 +2050,27 @@ namespace Microsoft.UI.Xaml.Data
         Int32 LastIndex{ get; };
     };
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    runtimeclass PropertyGroupDescription
+    {
+        [method_name("CreateInstance")] PropertyGroupDescription(String propertyName);
+        [method_name("CreateInstanceWithConverter")] PropertyGroupDescription(String propertyName, Microsoft.UI.Xaml.Data.IValueConverter converter);
+        String PropertyName{ get; };
+        Microsoft.UI.Xaml.Data.IValueConverter Converter{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    runtimeclass SortDescription
+    {
+        [method_name("CreateInstance")] SortDescription(String propertyName, Microsoft.UI.Xaml.Data.ListSortDirection direction);
+        String PropertyName{ get; };
+        Microsoft.UI.Xaml.Data.ListSortDirection Direction{ get; };
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     runtimeclass CollectionViewSource
@@ -2024,6 +2085,18 @@ namespace Microsoft.UI.Xaml.Data
         static Microsoft.UI.Xaml.DependencyProperty ViewProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty IsSourceGroupedProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty ItemsPathProperty{ get; };
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.Data.ICollectionViewSourceFeature_ExperimentalApi")]
+        {
+            Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions{ get; };
+            Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.PropertyGroupDescription> GroupDescriptions{ get; };
+            Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
+            Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
+            void Refresh();
+            Windows.Foundation.IClosable DeferRefresh();
+        }
     };
 
 }

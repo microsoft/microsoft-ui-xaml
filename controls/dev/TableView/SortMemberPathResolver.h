@@ -11,7 +11,7 @@
 // so a path that displays also sorts - including indexers and dotted paths.
 //
 // Shared by both sort front-ends: TableView turns a column's SortMemberPath into a key selector,
-// and TableViewSource turns the path handed to the fluent Sort verb into the same thing. One
+// and TableViewShapingSource turns the path handed to the fluent Sort verb into the same thing. One
 // evaluator means the two front-ends cannot disagree about what a path means.
 //
 // Not thread-safe and UI-thread affine (it drives the binding engine). Reuse one instance per

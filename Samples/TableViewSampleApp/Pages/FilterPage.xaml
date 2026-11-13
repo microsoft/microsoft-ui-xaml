@@ -28,7 +28,7 @@
 
     <controls:SamplePresenter
         Header="Filtering"
-        Description="TableViewSource.Filter(predicate) narrows the rows the table shows without touching the collection, and ClearFilter() brings them back. The query and Active only form one predicate on the same source that grouping uses, so a filtered, grouped view is one projection. Retype a Role or clear an Active box and the row can leave the view, because the page applies the filter again after each edit."
+        Description="CollectionViewSource.Filter narrows the rows the table shows without touching the collection, and setting it to null brings them back. The query and Active only form one predicate on the same source that grouping uses, so a filtered, grouped view is one projection. Retype a Role or clear an Active box and the row can leave the view, because the page applies the filter again after each edit."
         Snippet="Filter"
         StretchExample="True"
         TryIt="Type eng in Query, then switch Shaping mode to Grouped: the filter and the grouping apply together. Select a row and choose Mutate selected row out of the filter. Choose Filter to zero matches to see the EmptyTemplate, then Clear filter."
@@ -40,7 +40,7 @@
                 x:Name="FilterTable"
                 AutomationProperties.AutomationId="FilterTable"
                 AutomationProperties.Name="Filtered people"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 EmptyTemplate="{StaticResource FilterEmptyTemplate}"
                 VerticalAlignment="Stretch"
@@ -71,7 +71,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Filter"
-                    Description="The query and the Active only switch combine into one predicate handed to TableViewSource.Filter. Clearing both calls ClearFilter(); the source instance never changes.">
+                    Description="The query and the Active only switch combine into one predicate set as CollectionViewSource.Filter. Clearing both sets Filter to null; the source instance never changes.">
                     <TextBox
                         x:Name="SearchBox"
                         AutomationProperties.AutomationId="FilterQueryBox"
@@ -94,7 +94,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Filter"
-                    Description="Grouping applies to the filtered rows, so only groups with a match appear and their counts are the filtered counts. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping applies to the filtered rows, so only groups with a match appear and their counts are the filtered counts. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
@@ -118,8 +118,8 @@
                             AutomationProperties.AutomationId="FilterClearFilterButton"
                             Content="Clear filter"
                             Click="OnClearFilterClick"
-                            ToolTipService.ToolTip="Clears the query and Active only, then calls ClearFilter(): every row is back."
-                            AutomationProperties.HelpText="Clears the query and Active only, then calls ClearFilter()."
+                            ToolTipService.ToolTip="Clears the query and Active only, then sets Filter to null: every row is back."
+                            AutomationProperties.HelpText="Clears the query and Active only, then sets Filter to null."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button

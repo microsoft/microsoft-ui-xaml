@@ -1,0 +1,52 @@
+Shaped = new CollectionViewSource { Source = Processes };
+Shaped.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcessItem.Category)));
+InitializeComponent();
+// A view the CollectionViewSource shapes implements ICollectionViewShaping, so a header
+// click writes the view's SortDescriptions.
+ProcessTable.ItemsSource = Shaped.View;
+
+public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
+
+public CollectionViewSource Shaped { get; }
+
+private string Query => FilterBox?.Text?.Trim() ?? string.Empty;
+
+private void OnFilterChanged(object sender, TextChangedEventArgs e)
+{
+    var query = Query;
+    Shaped.Filter = query.Length == 0
+        ? null
+        : new CollectionViewFilter(item => ((ProcessItem)item).Name.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+}
+
+private void OnGroupToggled(object sender, RoutedEventArgs e)
+{
+    if (GroupToggle.IsOn)
+    {
+        Shaped.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcessItem.Category)));
+    }
+    else
+    {
+        Shaped.GroupDescriptions.Clear();
+    }
+
+    // Switching between flat and grouped output gives the CollectionViewSource a new View.
+    ProcessTable.ItemsSource = Shaped.View;
+}
+
+private void OnSortByMemoryClick(object sender, RoutedEventArgs e)
+{
+    Shaped.SortDescriptions.Clear();
+    Shaped.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), ListSortDirection.Descending));
+}
+
+private void OnRefreshClick(object sender, RoutedEventArgs e)
+{
+    foreach (var process in Processes)
+    {
+        UpdateValues(process);
+    }
+
+    // A property edit is not a collection change: Refresh() sorts, filters and groups again.
+    ((ICollectionViewShaping)Shaped.View).Refresh();
+}

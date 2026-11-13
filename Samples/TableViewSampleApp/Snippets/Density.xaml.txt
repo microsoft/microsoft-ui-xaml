@@ -2,7 +2,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People density"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     Density="Standard"
     SelectionMode="Single">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>

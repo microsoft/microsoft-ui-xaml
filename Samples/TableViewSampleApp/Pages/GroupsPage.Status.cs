@@ -52,7 +52,7 @@ public sealed partial class GroupsPage
         ExpansionText.Text = ExpansionSummary();
     }
 
-    // Under Grouped hierarchy GroupBy buckets only the roots: a nested row is in its root's group.
+    // Under Grouped hierarchy the grouping buckets only the roots: a nested row is in its root's group.
     private Func<Person, object> GroupInView(string key)
     {
         var rowOf = GroupingRowOf(People);

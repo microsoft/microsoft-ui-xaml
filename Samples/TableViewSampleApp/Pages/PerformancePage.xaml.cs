@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -28,11 +29,11 @@ public sealed partial class PerformancePage : SamplePageBase
 {
     private const int InitialRows = 1_000;
     private const int PerItemCap = 10_000;
-    private const int GroupedAddBudgetMs = 2_000;   // per-row Adds under GroupBy stop here (see RunPerItemAddGroupedAsync)
+    private const int GroupedAddBudgetMs = 2_000;   // per-row Adds while grouped stop here (see RunPerItemAddGroupedAsync)
     private const string FilterDepartment = "Engineering";
 
     private ObservableCollection<Person> _people;
-    private TableViewSource _source;           // one per loaded dataset; reshaped in place
+    private CollectionViewSource _source;       // one per loaded dataset; reshaped in place
     private TableViewTemplateColumn? _photoColumn;
     private TableViewTemplateColumn? _departmentChipColumn;
     private bool _templateColumns;
@@ -41,12 +42,12 @@ public sealed partial class PerformancePage : SamplePageBase
     public PerformancePage()
     {
         _people = new ObservableCollection<Person>(PersonData.Many(InitialRows));
-        _source = TableViewSource.From(_people);
+        _source = new CollectionViewSource { Source = _people };
         InitializeComponent();
-        PerfTable.ItemsSource = _source;
+        PerfTable.ItemsSource = _source.View;
         CaptureBaseline();
 
-        Shaping.TimeCall = Timed;   // GroupBy, ClearGroupBy, Expand all and Collapse all are timed like every run
+        Shaping.TimeCall = Timed;   // Grouping, ungrouping, Expand all and Collapse all are timed like every run
         InitializeSample(Status, Shaping.Attach(PerfTable, _source));
     }
 
@@ -143,12 +144,12 @@ public sealed partial class PerformancePage : SamplePageBase
 
     // <snippet>
     // Build the rows off the UI thread, then bind them once: one collection, one source, one assignment.
-    // Under GroupBy, adding rows one by one regroups every row: ClearGroupBy, add, then GroupBy once.
+    // While grouped, adding rows one by one regroups every row: detach the source, add, then attach once.
     private void BindRows(List<Person> rows)
     {
         _people = new ObservableCollection<Person>(rows);
-        _source = TableViewSource.From(_people);
-        PerfTable.ItemsSource = _source;
+        _source = new CollectionViewSource { Source = _people };
+        PerfTable.ItemsSource = _source.View;
     }
     // </snippet>
 
@@ -166,7 +167,7 @@ public sealed partial class PerformancePage : SamplePageBase
 
             result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
 
-            // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
+            // A new dataset gets the current shaping; grouping is timed separately (Group row).
             Shaping.Attach(PerfTable, _source);
             if (Shaping.IsShaped)
             {
@@ -213,7 +214,7 @@ public sealed partial class PerformancePage : SamplePageBase
         try
         {
             var source = _source;
-            var ms = Timed(() => source.Filter(item => item is Person { Department: FilterDepartment }));
+            var ms = Timed(() => source.Filter = new CollectionViewFilter(item => item is Person { Department: FilterDepartment }));
             var matches = _people.Count(p => p.Department == FilterDepartment);   // off the clock
             FilterText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1:N0} of {2:N0} rows match", ms, matches, _people.Count);
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to {0}: {1:N0} of {2:N0} rows in {3:N0} ms", FilterDepartment, matches, _people.Count, ms));
@@ -234,7 +235,7 @@ public sealed partial class PerformancePage : SamplePageBase
         try
         {
             var source = _source;
-            var ms = Timed(() => source.ClearFilter());
+            var ms = Timed(() => source.Filter = null);
             FilterText.Text = string.Format(CultureInfo.CurrentCulture, "Cleared in {0:N0} ms, {1:N0} rows", ms, _people.Count);
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cleared the filter: {0:N0} rows in {1:N0} ms", _people.Count, ms));
         }
@@ -280,15 +281,14 @@ public sealed partial class PerformancePage : SamplePageBase
         }
     }
 
-    // Under GroupBy or ParentBy every Add reshapes all rows so far (O(n^2)): time per-row Adds only up
-    // to a cap, then do the real Adds with the shaping detached and apply it once.
+    // While grouped or nested every Add reshapes all rows so far (O(n^2)): time per-row Adds only up
+    // to a cap, then do the real Adds with the source detached and shape once.
     private async Task RunPerItemAddShapedAsync(IReadOnlyList<Person> rows)
     {
-        var key = Shaping.SelectedKey;
         var shapingText = Shaping.AppliedText;
         var grouped = IsGrouped;
         var relation = IsHierarchical ? Shaping.Relation : null;
-        var verbs = grouped && relation is not null ? "GroupBy and ParentBy" : grouped ? "GroupBy" : "ParentBy";
+        var verbs = grouped && relation is not null ? "grouping and nesting" : grouped ? "grouping" : "nesting";
         var source = _source;
         var people = _people;
         Shaping.SetBusy(true);
@@ -330,18 +330,15 @@ public sealed partial class PerformancePage : SamplePageBase
             PerItemAddText.Text = "Adding with the shaping detached…";
             await Task.Delay(50);
 
-            // (2) DO: detach the shaping, add per row against the flat source, shape once.
+            // (2) DO: detach the collection from the CollectionViewSource, add per row, attach once.
             long addMs = 0;
             var regroupMs = 0L;
+            var table = PerfTable;
             var totalMs = Timed(() =>
             {
                 var stopwatch = Stopwatch.StartNew();
-                source.ClearGroupBy();
-                if (relation is not null)
-                {
-                    source.ClearParentBy();
-                }
-
+                table.ItemsSource = null;
+                source.Source = null;
                 people.Clear();
                 foreach (var person in rows)
                 {
@@ -349,16 +346,8 @@ public sealed partial class PerformancePage : SamplePageBase
                 }
 
                 addMs = stopwatch.ElapsedMilliseconds;
-                if (relation is not null)
-                {
-                    source.ParentBy(item => relation.KeyOf(item), item => relation.ParentKeyOf(item));
-                }
-
-                if (grouped)
-                {
-                    source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                }
-
+                source.Source = people;
+                table.ItemsSource = source.View;
                 regroupMs = stopwatch.ElapsedMilliseconds - addMs;
             });
 
@@ -382,10 +371,10 @@ public sealed partial class PerformancePage : SamplePageBase
         var ms = e.ElapsedMilliseconds;
         GroupText.Text = (e.IsGrouped, e.IsHierarchical) switch
         {
-            (true, true) => string.Format(CultureInfo.CurrentCulture, "GroupBy {0} + ParentBy: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
-            (false, true) => string.Format(CultureInfo.CurrentCulture, "ParentBy: {0:N0} ms, {1:N0} rows", ms, _people.Count),
-            (true, false) => string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
-            _ => string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count),
+            (true, true) => string.Format(CultureInfo.CurrentCulture, "Grouped by {0} + nested: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
+            (false, true) => string.Format(CultureInfo.CurrentCulture, "Nested: {0:N0} ms, {1:N0} rows", ms, _people.Count),
+            (true, false) => string.Format(CultureInfo.CurrentCulture, "Grouped by {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
+            _ => string.Format(CultureInfo.CurrentCulture, "Flat: {0:N0} ms, {1:N0} rows", ms, _people.Count),
         };
         e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", ms);
     }

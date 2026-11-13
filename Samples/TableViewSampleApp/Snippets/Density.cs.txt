@@ -1,9 +1,9 @@
-Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
 
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 {

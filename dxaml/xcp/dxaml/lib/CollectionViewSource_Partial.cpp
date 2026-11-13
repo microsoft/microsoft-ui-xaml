@@ -17,6 +17,15 @@ DirectUI::CollectionViewSource::CollectionViewSource():
 DirectUI::CollectionViewSource::~CollectionViewSource()
 {
     ctl::release_interface(m_pCVSViewChangedEventSource);
+
+    if (m_epShapedSourceVectorChangedHandler)
+    {
+        auto spSource = m_tpShapedSourceObservable.GetSafeReference();
+        if (spSource)
+        {
+            VERIFYHR(m_epShapedSourceVectorChangedHandler.DetachEventHandler(spSource.Get()));
+        }
+    }
 }
 
 _Check_return_ HRESULT DirectUI::CollectionViewSource::GetValue(_In_ const CDependencyProperty* pProperty, _Out_ IInspectable** ppValue)
@@ -154,12 +163,24 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
     HRESULT hr = S_OK;
     ICollectionView *pView = NULL;
     BOOLEAN valid = false;
+    bool isShapingRequested = false;
+
+    DetachShapedSource();
 
     // Only try to create a collection view if we have a source
     // otherwise we will just set the value to NULL
     if (pNewSource != NULL)
     {
-        IFC(CollectionViewManager::GetViewRecord(pNewSource, this, &pView));
+        IFC(IsShapingRequested(pNewSource, &isShapingRequested));
+        if (isShapingRequested)
+        {
+            IFC(CreateShapedView(pNewSource, nullptr /* pExistingView */, &pView));
+        }
+        else
+        {
+            IFC(CollectionViewManager::GetViewRecord(pNewSource, this, &pView));
+            IFC(OfferShapingOnView(pNewSource, pView));
+        }
 
         // A view should have been created by now, or we would have failed
         // if the source is not supported

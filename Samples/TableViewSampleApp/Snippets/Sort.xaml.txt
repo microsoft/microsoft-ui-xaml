@@ -38,7 +38,7 @@
 <tv:TableView
     x:Name="TeamsTable"
     AutomationProperties.Name="League standings"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single"
     EmptyTemplate="{StaticResource SortEmptyTemplate}"
     Sorted="OnTableSorted">

@@ -532,11 +532,13 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Data::IBindingExpressionBase IBindingExpressionBase;
     typedef ABI::Microsoft::UI::Xaml::Data::IBindingOperations IBindingOperations;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource ICollectionViewSource;
+    typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi ICollectionViewSourceFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs ICurrentChangingEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Data::IDataErrorsChangedEventArgs IDataErrorsChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionView ICollectionView;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewFactory ICollectionViewFactory;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup ICollectionViewGroup;
+    typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewShaping ICollectionViewShaping;
     typedef ABI::Microsoft::UI::Xaml::Data::ICustomProperty ICustomProperty;
     typedef ABI::Microsoft::UI::Xaml::Data::ICustomPropertyProvider ICustomPropertyProvider;
     typedef ABI::Microsoft::UI::Xaml::Data::IItemsRangeInfo IItemsRangeInfo;
@@ -547,7 +549,9 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Data::IItemIndexRange IItemIndexRange;
     typedef ABI::Microsoft::UI::Xaml::Data::IValueConverter IValueConverter;
     typedef ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgs IPropertyChangedEventArgs;
+    typedef ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription IPropertyGroupDescription;
     typedef ABI::Microsoft::UI::Xaml::Data::IRelativeSource IRelativeSource;
+    typedef ABI::Microsoft::UI::Xaml::Data::ISortDescription ISortDescription;
     typedef ABI::Microsoft::UI::Xaml::Documents::IBlock IBlock;
     typedef ABI::Microsoft::UI::Xaml::Documents::IBold IBold;
     typedef ABI::Microsoft::UI::Xaml::Documents::IGlyphs IGlyphs;

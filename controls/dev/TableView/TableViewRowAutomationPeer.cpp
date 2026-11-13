@@ -8,7 +8,7 @@
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
@@ -25,15 +25,13 @@ namespace
     {
         try
         {
-            // Grouping exists only on an app-assigned TableViewSource (the ItemsSource itself).
-            auto const source = tableImpl->ItemsSource().try_as<winrt::TableViewSource>();
             auto const repeater = tableImpl->GetRowsRepeaterInternal();
-            if (!source || !repeater)
+            if (!repeater)
             {
                 return false;
             }
 
-            auto const metadata = winrt::get_self<::TableViewSource>(source)->GetRowMetadata();
+            auto const metadata = tableImpl->RowMetadataInternal();
             return metadata && metadata->TryGetGroupMembership(repeater.ItemsSourceView(), rowIndex, positionInSet, sizeOfSet);
         }
         catch (...)
@@ -44,7 +42,7 @@ namespace
 
     bool TryGetGroupedRowSetMetadata(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
     {
-        if (!tableImpl || rowIndex < 0 || !tableImpl->IsTableViewSourceGrouped())
+        if (!tableImpl || rowIndex < 0 || !tableImpl->IsTableViewShapingSourceGrouped())
         {
             return false;
         }
@@ -935,7 +933,7 @@ bool TableViewRowAutomationPeer::TryGetSiblingPosition(int32_t& positionInSet, i
     auto const tableViewImpl = winrt::get_self<TableView>(tableView);
 
     TableViewRowInfo info{};
-    if (!tableViewImpl->TryGetTableViewSourceRowInfo(index, info) ||
+    if (!tableViewImpl->TryGetTableViewShapingSourceRowInfo(index, info) ||
         info.Kind != TableViewRowKind::Data ||
         info.SizeOfSet == 0)
     {

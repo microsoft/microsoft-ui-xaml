@@ -8,6 +8,7 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -30,7 +31,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
     public EmptyStatePage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
@@ -42,7 +43,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Data source: the ways of being empty ---------------------------------------------
@@ -102,7 +103,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
         if (!_sourceAttached)
         {
             // Grouping and filtering live on the source, so they come back with it.
-            PeopleTable.ItemsSource = Source;
+            PeopleTable.ItemsSource = Source.View;
             _sourceAttached = true;
         }
     }
@@ -167,9 +168,9 @@ public sealed partial class EmptyStatePage : SamplePageBase
         } // snippet:skip
 
         // Nobody joins in the future, so the filter matches nothing while the collection keeps
-        // every row. Filter mutates the source in place, like GroupBy.
+        // every row. Filter reshapes the view in place, like grouping.
         var today = DateTimeOffset.Now;
-        Source.Filter(item => item is Person p && p.JoinDate > today);
+        Source.Filter = new CollectionViewFilter(item => item is Person p && p.JoinDate > today);
         _filteredToZero = true; // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to people who joined after today: 0 of {0:N0} match", People.Count));
     }
@@ -197,8 +198,8 @@ public sealed partial class EmptyStatePage : SamplePageBase
             }
         }
 
-        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
-        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        // Grouping reads the value when the view refreshes, so the control cannot re-bucket the row
+        // on PropertyChanged; refresh the view when the grouped-on value changed.
         ReapplyIfGroupedOn(key);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
@@ -217,7 +218,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
     {
         if (_filteredToZero)
         {
-            Source.ClearFilter();
+            Source.Filter = null;
             _filteredToZero = false;
         }
     }

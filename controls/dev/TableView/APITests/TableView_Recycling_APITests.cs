@@ -650,11 +650,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     indexOf[items[i]] = i;
                 }
 
-                var source = TableViewSource.From(items).Sort(o => indexOf[(Person)o], SortDirection.Descending);
-                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+                tableView = CreateTableView(items, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+                tableView.Columns[0].CustomSortComparer = new SourceIndexDescendingComparer(indexOf);
                 LoadContent(tableView);
             });
 
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
+                "Precondition: the comparer column sorts."));
             SettleLayout(tableView);
 
             var bound = 0;
@@ -775,10 +779,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .Select(i => new Person { Name = $"Person {i}", Role = $"Group {i / ItemsPerGroup}" })
                 .ToList();
 
-            var source = TableViewSource.From(items);
-            source.GroupBy(o => ((Person)o).Role);
-
-            return CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+            return CreateTableView(TableViewTreeTestHelpers.MakeShapingView(items, "Role").View, headers: new[] { "Name", "Role" }, width: 500, height: 240);
         }
 
         // RealizationBound's viewport-plus-cache formula, sized by the shortest realized element so shorter group headers cannot exceed it.
@@ -1235,10 +1236,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static TableView CreateScrollableGroupedTable()
         {
-            var source = TableViewSource.From(MakeManyItems(RecyclingSourceCount));
-            source.GroupBy(o => ((Person)o).Role);
-
-            return CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+            return CreateTableView(TableViewTreeTestHelpers.MakeShapingView(MakeManyItems(RecyclingSourceCount), "Role").View,
+                headers: new[] { "Name", "Role" }, width: 500, height: 240);
         }
 
         internal static DataTemplate CreateRecyclingMarkerTemplate(string marker) => (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
@@ -1305,5 +1304,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         internal static string Describe(IEnumerable<string> texts) => string.Join(" | ", texts);
+    }
+
+    // Orders rows by descending source index.
+    internal sealed partial class SourceIndexDescendingComparer : ITableViewSortComparer
+    {
+        private readonly Dictionary<Person, int> _indexOf;
+
+        public SourceIndexDescendingComparer(Dictionary<Person, int> indexOf) { _indexOf = indexOf; }
+
+        public int Compare(object left, object right) => _indexOf[(Person)right].CompareTo(_indexOf[(Person)left]);
     }
 }

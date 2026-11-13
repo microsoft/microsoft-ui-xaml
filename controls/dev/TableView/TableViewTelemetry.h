@@ -30,7 +30,7 @@ namespace TableViewTelemetry
         constexpr uint32_t AppDerived = 1u << 2;
         constexpr uint32_t DisplayMemberBinding = 1u << 3;
     }
-    // TableView_Instance's SourceKinds bits: a plain collection TableView projected, or the app's own TableViewSource.
+    // TableView_Instance's SourceKinds bits: a source TableView projected (AppSupplied is no longer set).
     namespace SourceKind
     {
         constexpr uint32_t Projected = 1u << 0;
@@ -46,7 +46,7 @@ namespace TableViewTelemetry
         uint32_t enabledFeatures{};
         uint32_t columnKinds{};
         uint32_t sourceKinds{};
-        // TableViewSource's rows before and after the filter, and the containers the rows repeater has created. It
+        // TableViewShapingSource's rows before and after the filter, and the containers the rows repeater has created. It
         // creates one only when none is free, so this is the most rows realized at once, plus the most group headers
         // (they pool separately).
         uint32_t sourceRows{};

@@ -50,8 +50,7 @@ namespace MUXControlsTestApp
             }
 
             TouchBasicTableView.ItemsSource = _basicItems;
-            TouchGroupedTableView.ItemsSource = TableViewSource.From(_groupedItems)
-                .GroupBy(item => ((TableViewTestPerson)item).City);
+            TouchGroupedTableView.ItemsSource = TableViewPage.GroupedByCity(_groupedItems);
             TouchScrollingTableView.ItemsSource = _scrollingItems;
 
             TouchScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;

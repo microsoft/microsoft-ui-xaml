@@ -67,7 +67,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Selection"
-                    Description="Grouping keeps the selected person selected; only SelectedIndex changes, because the group headers above it take indexes. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping keeps the selected person selected; only SelectedIndex changes, because the group headers above it take indexes. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
@@ -109,7 +109,7 @@
                             AutomationProperties.AutomationId="SelectionMoveGroupButton"
                             Content="Move selected row to the next group"
                             Click="OnMoveGroupClick"
-                            ToolTipService.ToolTip="Changes the selected person's grouped-on value (next department, next office, or Active flipped) and re-applies GroupBy. The selection follows the person."
+                            ToolTipService.ToolTip="Changes the selected person's grouped-on value (next department, next office, or Active flipped) and refreshes the view. The selection follows the person."
                             AutomationProperties.HelpText="Select a row first."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>

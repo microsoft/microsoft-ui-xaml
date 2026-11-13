@@ -22,7 +22,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="CellTemplatingTable"
                 AutomationProperties.Name="People with templated cells"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
@@ -68,7 +68,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="CellTemplating"
-                    Description="Grouping realizes the templated cells again in reused row containers, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping realizes the templated cells again in reused row containers, and every editor keeps its value. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>
