@@ -771,7 +771,47 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
         return S_OK;
     }
 
+    // Flat shaping starting on a View that already offers ICollectionViewShaping keeps that View.
+    if (!m_tpShapedOutput)
+    {
+        UINT groupCount = 0;
+        ctl::ComPtr<xaml_data::ICollectionView> spView;
+        if (m_tpGroupDescriptions)
+        {
+            IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
+        }
+        IFC_RETURN(get_View(spView.ReleaseAndGetAddressOf()));
+
+        if (groupCount == 0 && spView && static_cast<CollectionView*>(spView.Get())->HasShapingOwner())
+        {
+            ctl::ComPtr<xaml_data::ICollectionView> spShapedView;
+            IFC_RETURN(CreateShapedView(spSource.Get(), spView.Get(), spShapedView.ReleaseAndGetAddressOf()));
+            return S_OK;
+        }
+    }
+
     IFC_RETURN(EnsureView(spSource.Get()));
+    return S_OK;
+}
+
+// A flat View over a vector source offers ICollectionViewShaping before any descriptor is set, so a consumer
+// that holds only View (for example a control's ItemsSource) can start shaping it.
+_Check_return_ HRESULT CollectionViewSource::OfferShapingOnView(_In_ IInspectable* pSource, _In_ xaml_data::ICollectionView* pView)
+{
+    BOOLEAN isSourceGrouped = FALSE;
+
+    IFC_RETURN(get_IsSourceGrouped(&isSourceGrouped));
+    if (!pView || isSourceGrouped || ctl::is<xaml_data::ICollectionViewFactory>(pSource))
+    {
+        return S_OK;
+    }
+
+    auto pCollectionView = static_cast<CollectionView*>(pView);
+    if (pCollectionView->GetTypeIndex() == KnownTypeIndex::VectorCollectionView)
+    {
+        IFC_RETURN(pCollectionView->SetShapingOwner(this));
+    }
+
     return S_OK;
 }
 
@@ -804,7 +844,9 @@ _Check_return_ HRESULT CollectionViewSource::IsShapingRequested(_In_ IInspectabl
     return S_OK;
 }
 
-_Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable* pSource, _Outptr_ xaml_data::ICollectionView** ppView)
+// pExistingView: a flat View this CVS already offers shaping on (see OfferShapingOnView). It is retargeted to the
+// shaped output, so a consumer holding View keeps it when shaping starts.
+_Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable* pSource, _In_opt_ xaml_data::ICollectionView* pExistingView, _Outptr_ xaml_data::ICollectionView** ppView)
 {
     ctl::ComPtr<wfc::IVector<IInspectable*>> spSourceVector;
     ctl::ComPtr<ShapedVector> spOutput;
@@ -831,7 +873,13 @@ _Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable*
     IFC_RETURN(hr);
 
     // The output is read-only, so index-based writes through View fail instead of reordering the source.
-    if (m_isShapedOutputGrouped)
+    if (pExistingView && !m_isShapedOutputGrouped)
+    {
+        IFC_RETURN(static_cast<VectorCollectionView*>(pExistingView)->RetargetSource(spOutput.Get()));
+        *ppView = pExistingView;
+        ctl::addref_interface(pExistingView);
+    }
+    else if (m_isShapedOutputGrouped)
     {
         IFC_RETURN(GroupedDataCollectionView::CreateInstance(spOutput.Get(), nullptr /* pItemsPath */, ppView));
     }

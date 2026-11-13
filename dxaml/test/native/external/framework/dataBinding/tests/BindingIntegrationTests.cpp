@@ -3551,6 +3551,65 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    namespace
+    {
+        InpcDataSource^ MakeShapingItem(Platform::String^ name, int32 value)
+        {
+            auto item = ref new InpcDataSource;
+            item->StringProperty = name;
+            item->Int32Property = value;
+            return item;
+        }
+
+        Platform::String^ ShapingNamesOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
+            }
+            return result;
+        }
+
+        // b1 d2 a1 c0
+        Platform::Collections::Vector<Object^>^ MakeShapingSource()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"b", 1));
+            source->Append(MakeShapingItem(L"d", 2));
+            source->Append(MakeShapingItem(L"a", 1));
+            source->Append(MakeShapingItem(L"c", 0));
+            return source;
+        }
+
+        struct VectorChangeCounts
+        {
+            int resets = 0;
+            int inserted = 0;
+            int removed = 0;
+            int changed = 0;
+            std::wstring log; // "+i" inserted, "-i" removed, "~i" changed, "R" reset
+
+            int Total() const { return resets + inserted + removed + changed; }
+        };
+
+        ::Windows::Foundation::EventRegistrationToken CountVectorChanges(::Windows::Foundation::Collections::IObservableVector<Object^>^ vector, std::shared_ptr<VectorChangeCounts> counts)
+        {
+            return vector->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [counts](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    switch (args->CollectionChange)
+                    {
+                    case ::Windows::Foundation::Collections::CollectionChange::Reset: counts->resets++; counts->log += L"R"; return;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemInserted: counts->inserted++; counts->log += L"+"; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemRemoved: counts->removed++; counts->log += L"-"; break;
+                    case ::Windows::Foundation::Collections::CollectionChange::ItemChanged: counts->changed++; counts->log += L"~"; break;
+                    }
+                    counts->log += std::to_wstring(args->Index);
+                });
+        }
+    }
+
     void BindingIntegrationTests::CollectionViewSourceShaping()
     {
         TestCleanupWrapper cleanup;
@@ -3658,15 +3717,29 @@ namespace Framework { namespace DataBinding {
             auto cvs = ref new CollectionViewSource();
             cvs->Source = source;
 
-            LOG_OUTPUT(L"An unshaped view does not offer ICollectionViewShaping.");
-            VERIFY_IS_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
+            LOG_OUTPUT(L"A view over a vector offers ICollectionViewShaping before any descriptor is set.");
+            auto unshapedView = cvs->View;
+            VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(unshapedView));
 
-            LOG_OUTPUT(L"A shaped view does, and shares the CollectionViewSource's descriptors.");
-            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            LOG_OUTPUT(L"An IsSourceGrouped view does not.");
+            auto groupedSource = ref new CollectionViewSource();
+            groupedSource->IsSourceGrouped = true;
+            groupedSource->Source = ref new Platform::Collections::Vector<Object^>();
+            VERIFY_IS_NULL(dynamic_cast<ICollectionViewShaping^>(groupedSource->View));
+
+            LOG_OUTPUT(L"Shaping started through the view keeps that view, and the view shares the CollectionViewSource's descriptors.");
+            auto unshapedCounts = std::make_shared<VectorChangeCounts>();
+            auto unshapedToken = CountVectorChanges(unshapedView, unshapedCounts);
+            VERIFY_IS_TRUE(unshapedView->MoveCurrentToPosition(1)); // d
+            dynamic_cast<ICollectionViewShaping^>(unshapedView)->Filter = ref new CollectionViewFilter([](Object^ item)
             {
                 return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
             });
             auto view = cvs->View;
+            VERIFY_IS_TRUE(view == unshapedView);
+            VERIFY_ARE_STRINGS_EQUAL(L"R", unshapedCounts->log.c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"d", safe_cast<InpcDataSource^>(view->CurrentItem)->StringProperty->Data());
+            unshapedView->VectorChanged -= unshapedToken;
             auto shaping = dynamic_cast<ICollectionViewShaping^>(view);
             VERIFY_IS_NOT_NULL(shaping);
             VERIFY_IS_TRUE(shaping->SortDescriptions == cvs->SortDescriptions);
@@ -3722,65 +3795,6 @@ namespace Framework { namespace DataBinding {
         });
     }
 
-    namespace
-    {
-        InpcDataSource^ MakeShapingItem(Platform::String^ name, int32 value)
-        {
-            auto item = ref new InpcDataSource;
-            item->StringProperty = name;
-            item->Int32Property = value;
-            return item;
-        }
-
-        Platform::String^ ShapingNamesOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
-        {
-            Platform::String^ result = L"";
-            for (unsigned int i = 0; i < items->Size; i++)
-            {
-                result += safe_cast<InpcDataSource^>(items->GetAt(i))->StringProperty;
-            }
-            return result;
-        }
-
-        // b1 d2 a1 c0
-        Platform::Collections::Vector<Object^>^ MakeShapingSource()
-        {
-            auto source = ref new Platform::Collections::Vector<Object^>();
-            source->Append(MakeShapingItem(L"b", 1));
-            source->Append(MakeShapingItem(L"d", 2));
-            source->Append(MakeShapingItem(L"a", 1));
-            source->Append(MakeShapingItem(L"c", 0));
-            return source;
-        }
-
-        struct VectorChangeCounts
-        {
-            int resets = 0;
-            int inserted = 0;
-            int removed = 0;
-            int changed = 0;
-            std::wstring log; // "+i" inserted, "-i" removed, "~i" changed, "R" reset
-
-            int Total() const { return resets + inserted + removed + changed; }
-        };
-
-        ::Windows::Foundation::EventRegistrationToken CountVectorChanges(::Windows::Foundation::Collections::IObservableVector<Object^>^ vector, std::shared_ptr<VectorChangeCounts> counts)
-        {
-            return vector->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
-                [counts](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
-                {
-                    switch (args->CollectionChange)
-                    {
-                    case ::Windows::Foundation::Collections::CollectionChange::Reset: counts->resets++; counts->log += L"R"; return;
-                    case ::Windows::Foundation::Collections::CollectionChange::ItemInserted: counts->inserted++; counts->log += L"+"; break;
-                    case ::Windows::Foundation::Collections::CollectionChange::ItemRemoved: counts->removed++; counts->log += L"-"; break;
-                    case ::Windows::Foundation::Collections::CollectionChange::ItemChanged: counts->changed++; counts->log += L"~"; break;
-                    }
-                    counts->log += std::to_wstring(args->Index);
-                });
-        }
-    }
-
     void BindingIntegrationTests::CollectionViewSourceDeferRefresh()
     {
         TestCleanupWrapper cleanup;
@@ -3797,10 +3811,10 @@ namespace Framework { namespace DataBinding {
                 return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
             });
             cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
-            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(cvs->View)->Data());
-            VERIFY_IS_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
-            delete deferral;
             auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
+            delete deferral;
+            VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(view));
             VERIFY_ARE_STRINGS_EQUAL(L"dba", ShapingNamesOf(view)->Data());
 

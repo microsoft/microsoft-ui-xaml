@@ -1283,6 +1283,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a CollectionViewSource View with no descriptors offers ICollectionViewShaping, so a header click sorts it through SortDescriptions and the TableView keeps the same View.")]
+        public void VerifyHeaderSortOnDescriptorlessCollectionViewSourceView()
+        {
+            TableView tableView = null;
+            CollectionViewSource cvs = null;
+            ICollectionView view = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                cvs = new CollectionViewSource { Source = new ObservableCollection<ShapedPerson>(MakeShapedPeople()) };
+                view = cvs.View;
+                Verify.IsNotNull(view as ICollectionViewShaping, "A View over a vector is shapeable before any descriptor is set.");
+                tableView = CreateBindingTable(view);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, cvs.SortDescriptions.Count, "The header click wrote a SortDescription.");
+                Verify.IsTrue(ReferenceEquals(view, cvs.View) || view.Equals(cvs.View), "Starting to sort keeps the same View.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "after the header click");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a Filter set through ICollectionViewShaping and a Refresh after an item edit update the TableView's rows.")]
         public void VerifyFilterAndRefreshOnShapingCollectionViewUpdateRows()
         {
