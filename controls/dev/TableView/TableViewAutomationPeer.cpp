@@ -438,13 +438,22 @@ void TableViewAutomationPeer::SetScrollPercent(double horizontalPercent, double 
 
     const double oldExtent = scroller.ExtentHeight();
     const bool toEnd = verticalPercent >= 100.0 - 1e-9;
-    // The default element anchoring pulls the offset back whenever a re-measured row above the viewport
-    // shifts the anchor, so aiming for the end could stall short of it. Anchor at the far edge meanwhile.
+    // Keep far-edge anchoring as the extent grows, but not a row anchor that can undo the explicit
+    // scroll when re-measured. A ratio of 1 still selects row anchors before reaching the far edge.
     auto const anchorRatioProperty = winrt::ScrollViewer::VerticalAnchorRatioProperty();
     auto const localAnchorRatio = scroller.ReadLocalValue(anchorRatioProperty);
+    winrt::ScrollViewer::AnchorRequested_revoker endAnchorRequestedRevoker;
     if (toEnd)
     {
         scroller.VerticalAnchorRatio(1.0);
+        endAnchorRequestedRevoker = scroller.AnchorRequested(winrt::auto_revoke,
+            [this, request](winrt::ScrollViewer const&, winrt::AnchorRequestedEventArgs const& args)
+            {
+                if (request == m_scrollRequest)
+                {
+                    args.AnchorCandidates().Clear();
+                }
+            });
     }
     auto restoreAnchorRatio = gsl::finally([&]()
     {
@@ -452,6 +461,7 @@ void TableViewAutomationPeer::SetScrollPercent(double horizontalPercent, double 
         {
             return;
         }
+        endAnchorRequestedRevoker.revoke();
         if (localAnchorRatio == winrt::DependencyProperty::UnsetValue())
         {
             scroller.ClearValue(anchorRatioProperty);

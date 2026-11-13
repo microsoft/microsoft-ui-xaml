@@ -6430,13 +6430,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             new Rect(0, 0, header.ActualWidth, header.ActualHeight));
                         var trailingInset = flow == FlowDirection.LeftToRight
                             ? headerBounds.Right - physicalBounds.Right : physicalBounds.Left - headerBounds.Left;
-                        Verify.IsLessThan(Math.Abs(header.Padding.Right + 4 - trailingInset), 0.1,
-                            $"The icon must follow header padding plus 4px at the trailing edge ({context}).");
+                        Verify.IsLessThan(Math.Abs(header.Padding.Right - trailingInset), 0.1,
+                            $"The icon must follow header padding at the trailing edge ({context}).");
                         var centerTolerance = 0.5 / header.XamlRoot.RasterizationScale + 0.01;
                         Verify.IsLessThan(Math.Abs((header.ActualHeight + header.Padding.Top - header.Padding.Bottom) / 2
                             - bounds.Top - bounds.Height / 2), centerTolerance, $"Center within the padded header ({context}).");
-                        Verify.IsLessThan(Math.Abs(presenter.Margin.Right - 24), 0.1,
-                            $"Reserve the icon and both 4px host paddings ({context}).");
+                        Verify.IsLessThan(Math.Abs(presenter.Margin.Right - 20), 0.1,
+                            $"Reserve the icon and its 4px text-side gap ({context}).");
                         var text = (TextBlock)presenter.Content;
                         var textBounds = text.TransformToVisual(root).TransformBounds(
                             new Rect(0, 0, text.ActualWidth, text.ActualHeight));
@@ -6470,7 +6470,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var header = RequireColumnHeader(tableView, 0);
                     var host = (Border)header.FindVisualChildByName("PART_SortIndicatorHost");
                     Verify.AreEqual(Visibility.Collapsed, host.Visibility, "Clearing sort hides the icon.");
-                    Verify.AreEqual(24.0, ((ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter")).Margin.Right,
+                    Verify.AreEqual(20.0, ((ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter")).Margin.Right,
                         "Unsorted headers must keep the same text reservation.");
                 });
             }

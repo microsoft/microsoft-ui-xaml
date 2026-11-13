@@ -15,6 +15,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
@@ -1175,16 +1176,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when a few very tall rows follow many short ones.")]
         public void VerifySetScrollPercentReachesLastRowWithShortThenTallRows()
         {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
+            foreach (var (notesWidth, density) in new[]
             {
-                tableView = CreateShortThenTallTable(width: 600);
-                LoadContent(tableView);
-            });
+                (280.0, TableViewDensity.Compact),
+                (320.0, TableViewDensity.Standard),
+                (360.0, TableViewDensity.Compact),
+                (360.0, TableViewDensity.Standard),
+                (360.0, TableViewDensity.Comfortable)
+            })
+            {
+                TableView tableView = null;
 
-            IdleSynchronizer.Wait();
-            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateShortThenTallTable(width: 600);
+                    tableView.Density = density;
+                    tableView.Columns[1].Width = new GridLength(notesWidth);
+                    Log.Comment($"Short/tall rows: density={density}, notes width={notesWidth}");
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+                VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
+            }
         }
 
         // 50 one-line rows, then 10 rows of wrapped text well over 100px tall, as on the sample's Fix demos page. Rows
@@ -1266,20 +1280,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static IScrollProvider BodyScrollProvider(TableView tableView) =>
             (IScrollProvider)FrameworkElementAutomationPeer.CreatePeerForElement(GetBodyScroller(tableView)).GetPattern(PatternInterface.Scroll);
 
+        private static void SetScrollPercentAndWaitForViewChange(TableView tableView, double verticalPercent)
+        {
+            using (var viewChanged = new AutoResetEvent(false))
+            {
+                ScrollViewer scroller = null;
+                EventHandler<ScrollViewerViewChangedEventArgs> handler = (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scroller = GetBodyScroller(tableView);
+                        scroller.ViewChanged += handler;
+                        var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                        scroll.SetScrollPercent(ScrollPatternIdentifiers.NoScroll, verticalPercent);
+                    });
+                    Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), "The requested scroll must complete.");
+                    IdleSynchronizer.Wait();
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (scroller != null)
+                        {
+                            scroller.ViewChanged -= handler;
+                        }
+                    });
+                }
+            }
+        }
+
         private static void VerifySetScrollPercentToEndAndBack(TableView tableView, double minLastRowHeight, bool verifyMidpoint)
         {
-            double noScroll = ScrollPatternIdentifiers.NoScroll;
-
             RunOnUIThread.Execute(() =>
             {
                 var scroll = RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll) as IScrollProvider;
                 Verify.IsNotNull(scroll, "The TableView peer must answer the Scroll pattern.");
                 Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "Precondition: the table starts at the top.");
-                scroll.SetScrollPercent(noScroll, 100.0);
-                Log.Comment($"Right after SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent}");
             });
 
-            IdleSynchronizer.Wait();
+            SetScrollPercentAndWaitForViewChange(tableView, 100.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1293,10 +1340,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(last != null && IsInViewport(last, scroller), "The last row must be realized and fully visible.");
                 Log.Comment($"Last row ActualHeight={last?.ActualHeight}");
                 Verify.IsGreaterThanOrEqual(last.ActualHeight, minLastRowHeight, "The last row must have its own height.");
-                scroll.SetScrollPercent(noScroll, 0.0);
+                Verify.IsNotNull(scroller.CurrentAnchor, "Row anchoring must resume after the explicit scroll.");
             });
 
-            IdleSynchronizer.Wait();
+            SetScrollPercentAndWaitForViewChange(tableView, 0.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1305,10 +1352,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be back at offset 0.");
                 var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
                 Verify.IsTrue(first != null && IsInViewport(first, GetBodyScroller(tableView)), "The first row must be visible again.");
-                if (verifyMidpoint)
-                {
-                    scroll.SetScrollPercent(noScroll, 50.0);
-                }
             });
 
             if (!verifyMidpoint)
@@ -1316,7 +1359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            IdleSynchronizer.Wait();
+            SetScrollPercentAndWaitForViewChange(tableView, 50.0);
 
             RunOnUIThread.Execute(() =>
             {
