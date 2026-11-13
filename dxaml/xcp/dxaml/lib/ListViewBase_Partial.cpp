@@ -2885,13 +2885,20 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
 
         focusIndex = selectedIndex;
     }
-    // For Tab/Shift+Tab, use the last focused item index only if an item last had focus.
-    // Otherwise, preserve the initial or restored group-header target.
-    else if (m_lastFocusedElementType == ElementType::Item &&
-             (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
-              focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous))
+    else if (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
+             focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous)
     {
-        focusIndex = GetLastFocusedIndex();
+        if (m_lastFocusedElementType == ElementType::Item)
+        {
+            focusIndex = GetLastFocusedIndex();
+        }
+        else if (m_lastFocusedElementType == ElementType::Other &&
+                 selectionMode == xaml_controls::ListViewSelectionMode_Single)
+        {
+            // Selection can establish an item target before any item receives focus.
+            // Otherwise, preserve the initial or restored group-header target.
+            IFC_RETURN(get_SelectedIndex(&focusIndex));
+        }
     }
 
     if (focusIndex != -1)

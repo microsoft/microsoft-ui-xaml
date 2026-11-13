@@ -10,6 +10,10 @@
     <Import_RootNamespace>TabView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)TabViewFocusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)MultipleTabViewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -44,6 +48,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)TabViewFocusPage.xaml.cs">
+      <DependentUpon>TabViewFocusPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)MultipleTabViewPage.xaml.cs">
       <DependentUpon>MultipleTabViewPage.xaml</DependentUpon>
     </Compile>
