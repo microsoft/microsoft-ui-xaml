@@ -409,8 +409,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the chevron is not a cell: clicking or double-clicking it leaves the selection unchanged and begins no edit, while a double-click on a cell of the same table does begin one.")]
-        public void ChevronClickDoesNotSelectOrEdit()
+        [TestProperty("Description", "Verifies the chevron is not a cell: clicking or double-clicking it leaves the selection unchanged.")]
+        public void ChevronClickDoesNotSelect()
         {
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -427,7 +427,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(HierarchyAdaExpanded, WaitForHierarchyField(TreeField, HierarchyAdaExpanded), "Precondition: the chevron click must expand Ada.");
                 Verify.AreEqual("Gus", ReadHierarchyField(SelectedField), "A chevron click must not change the selection.");
-                Verify.AreEqual("0", ReadHierarchyField(BeginningEditField), "A chevron click must not begin an edit.");
 
                 // Two quick presses on the chevron are two toggles, never a cell double-click.
                 ada = FindTreeRow(HierarchyTable, "Ada");
@@ -436,16 +435,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(HierarchyAdaExpanded, WaitForHierarchyField(TreeField, HierarchyAdaExpanded), "A chevron double-press must toggle twice, leaving Ada expanded.");
                 Verify.AreEqual("Gus", ReadHierarchyField(SelectedField), "A chevron double-press must not change the selection.");
-                Verify.AreEqual("0", ReadHierarchyField(BeginningEditField), "A chevron double-press must not begin an edit.");
-                Verify.AreEqual("False", ReadHierarchyField(EditingField), "No editor may be open after a chevron double-press.");
-
-                Log.Comment("Control: a double-click on a plain cell of the same table does begin an edit, so the readout can observe one.");
-                UIObject eve = FindTreeRow(HierarchyTable, "Eve");
-                if (eve == null) { return; }
-                DoubleClickRowAtColumnOffset(eve, HierarchyDeptCellCentreX);
-                Verify.AreEqual("1", WaitForHierarchyField(BeginningEditField, "1"), "A double-click on Eve's Dept cell must begin an edit.");
-
-                KeyboardHelper.PressKey(Key.Escape);
             }
         }
 

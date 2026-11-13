@@ -128,22 +128,6 @@ void TableView::NoteRecoveredAppFault(TableViewTip::Operation operation, TableVi
         TableViewTip::Attribution::Application, error, kind);
 }
 
-void TableView::NoteColumnFault(ActionTip* tip, TableViewTip::Operation operation, HRESULT error,
-    std::optional<TableViewTip::AppFaultKind> appFault) noexcept
-{
-    if (appFault)
-    {
-        if (tip) { tip->RecoveredAppFault(*appFault, error); }
-        else { NoteRecoveredAppFault(operation, TableViewTip::Stage::Editing, *appFault, error); }
-    }
-    else if (tip) { tip->Fail(error); }
-    else
-    {
-        TableViewTelemetry::ReportError(m_telemetrySession, 0, operation, TableViewTip::Stage::Editing, true,
-            TableViewTip::Attribution::Product, error);
-    }
-}
-
 void TableView::IgnoreTip(TableViewTip::IgnoreReason reason) noexcept
 {
     ++m_tipLifetimeGeneration;

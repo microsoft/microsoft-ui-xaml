@@ -3,12 +3,23 @@
     AutomationProperties.Name="People, right-to-left"
     ItemsSource="{x:Bind Source}"
     FlowDirection="RightToLeft"
-    SelectionMode="Single"
-    IsReadOnly="False">
-    <!-- The name columns are editable text so caret order and bidi text can be checked. -->
+    SelectionMode="Single">
+    <!-- The name columns are plain text so bidi text rendering can be checked. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-    <tv:TableViewTextColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="140" Binding="{Binding FirstName}" CellToolTipBinding="{Binding Bio}"/>
-    <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="120" Binding="{Binding LastName}"/>
+    <tv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="140" CellToolTipBinding="{Binding Bio}" SortMemberPath="FirstName">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding FirstName}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
+    <tv:TableViewTemplateColumn x:Name="LastNameColumn" Header="Last name" Width="120" SortMemberPath="LastName">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding LastName}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
     <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>

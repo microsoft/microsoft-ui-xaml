@@ -56,8 +56,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 observable.VectorChanged += OnVectorChanged;
                 try
                 {
-                    var first = new TableViewTextColumn { Header = "Name" };
-                    var second = new TableViewTextColumn { Header = "Role" };
+                    var first = new TableViewTemplateColumn { Header = "Name" };
+                    var second = new TableViewTemplateColumn { Header = "Role" };
 
                     tableView.Columns.Add(first);
                     tableView.Columns.Insert(0, second);
@@ -98,7 +98,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyHeaderColumns(tableView, tableView.Columns.ToArray(), "before the add");
                 VerifyEveryRowMatchesHeaders(tableView, "before the add");
 
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Role" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Role" });
                 Content.UpdateLayout();
             });
 
@@ -128,7 +128,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                inserted = new TableViewTextColumn { Header = "City" };
+                inserted = new TableViewTemplateColumn { Header = "City" };
                 tableView.Columns.Insert(1, inserted);
                 Content.UpdateLayout();
             });
@@ -240,7 +240,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 replaced = tableView.Columns[0];
                 untouched = tableView.Columns[1];
-                replacement = new TableViewTextColumn { Header = "City" };
+                replacement = new TableViewTemplateColumn { Header = "City" };
 
                 tableView.Columns[0] = replacement;
                 Content.UpdateLayout();
@@ -272,10 +272,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // control cannot rebuild incrementally; it must reconcile on first layout instead.
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
 
-                var scratch = new TableViewTextColumn { Header = "Scratch" };
+                var scratch = new TableViewTemplateColumn { Header = "Scratch" };
                 tableView.Columns.Add(scratch);
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
-                tableView.Columns.Insert(0, new TableViewTextColumn { Header = "Role" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Name" });
+                tableView.Columns.Insert(0, new TableViewTemplateColumn { Header = "Role" });
                 tableView.Columns.Remove(scratch);
 
                 LoadContent(tableView);
@@ -314,10 +314,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             var mutations = new (string Name, Action<TableView> Apply)[]
             {
-                ("add", tv => tv.Columns.Add(new TableViewTextColumn { Header = "City" })),
-                ("insert", tv => tv.Columns.Insert(0, new TableViewTextColumn { Header = "Score" })),
+                ("add", tv => tv.Columns.Add(new TableViewTemplateColumn { Header = "City" })),
+                ("insert", tv => tv.Columns.Insert(0, new TableViewTemplateColumn { Header = "Score" })),
                 ("remove", tv => tv.Columns.RemoveAt(1)),
-                ("replace", tv => tv.Columns[0] = new TableViewTextColumn { Header = "Notes" }),
+                ("replace", tv => tv.Columns[0] = new TableViewTemplateColumn { Header = "Notes" }),
                 ("clear", tv => tv.Columns.Clear()),
             };
 
@@ -603,7 +603,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
 
-        // Builds a TableView with the given text column headers, loads it, and lays it out.
+        // Builds a TableView with the given text template column headers, loads it, and lays it out.
         private TableView CreateLoadedTableView(params string[] headers)
         {
             var tableView = CreateTableView(headers: headers);
@@ -680,9 +680,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new string[0]);
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
-                tableView.Columns.Add(new TableViewTextColumn { Header = objectHeader });
-                tableView.Columns.Add(new TableViewTextColumn { Header = null });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Name" });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = objectHeader });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = null });
 
                 LoadContent(tableView);
             });
@@ -1366,28 +1366,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewCellFactoryTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies a realized TableViewTextColumn cell is a TextBlock.")]
-        public void VerifyTextColumnGenerateElementProducesTextBlock()
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView = CreateTableView(headers: new[] { "Name" });
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var element = GetCellContent(GetRowCell(GetProjectedRow(tableView, 0), 0));
-                Verify.IsNotNull(element, "The text column should produce a cell element.");
-                Verify.IsTrue(element is TextBlock, $"The built-in text cell should be a TextBlock, was {element.GetType().Name}.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies built-in columns do not set a local DataContext on generated cells.")]
         public void VerifyGenerateElementDoesNotSetLocalDataContext()
         {
@@ -1411,7 +1389,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // The IDL imposes this rule on third-party columns; the built-ins are its reference
                 // implementation and must follow it too.
                 Verify.AreEqual(DependencyProperty.UnsetValue, textElement.ReadLocalValue(FrameworkElement.DataContextProperty),
-                    "A text cell must not carry a local DataContext.");
+                    "A text template cell must not carry a local DataContext.");
                 Verify.AreEqual(DependencyProperty.UnsetValue, templateElement.ReadLocalValue(FrameworkElement.DataContextProperty),
                     "A template cell must not carry a local DataContext.");
             });
@@ -1646,6 +1624,151 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProbeCellsMatchRowData(tableView, "after scrolling");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a base TableViewColumn with DisplayMemberBinding renders a read-only text cell that tracks property changes and recycled rows.")]
+        public void VerifyDisplayMemberBindingRendersTextCell()
+        {
+            TableView tableView = null;
+            List<NotifyingPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = Enumerable.Range(0, 200)
+                    .Select(i => new NotifyingPerson { Name = $"Person {i:D3}", Role = $"Role {i:D3}" })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 500, 300);
+                tableView.Columns.Add(new TableViewColumn { Header = "Name", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cell = GetRowCell(GetProjectedRow(tableView, 0), 0);
+                var text = GetCellContent(cell) as TextBlock;
+                Verify.IsNotNull(text, "The cell content must be the generated TextBlock itself.");
+                Verify.AreEqual("Person 000", text.Text, "The cell must show the bound value.");
+                Verify.AreEqual(TextTrimming.CharacterEllipsis, text.TextTrimming, "Text cells trim with an ellipsis.");
+                Verify.AreEqual(VerticalAlignment.Center, text.VerticalAlignment, "Text cells are vertically centered.");
+                VerifyNoLocalDataContextOnCell(text);
+
+                items[0].Name = "Renamed";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Renamed", GetCellText(tableView, 0, 0), "The cell must track the item's change notification.");
+                GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(GetBodyScroller(tableView).VerticalOffset, 0.0, "The body should have actually scrolled.");
+                foreach (var row in GetRealizedRows(tableView))
+                {
+                    if (row.DataContext is NotifyingPerson person)
+                    {
+                        Verify.AreEqual(person.Name, GetCellText(GetRowCell(row, 0)), "A recycled row must show its own item.");
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies DisplayMemberBinding wins over a template column's CellTemplate (WPF GridViewColumn precedence), and CellTemplate applies once it is cleared.")]
+        public void VerifyTemplateColumnDisplayMemberBindingPrecedence()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                var both = MakeTemplateColumn("Both", MakeTextCellTemplate("Role"));
+                both.DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") };
+                tableView.Columns.Add(both);
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Text", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "Neither" });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetProjectedRow(tableView, 0);
+                Verify.IsTrue(GetCellContent(GetRowCell(row, 0)) is TextBlock, "DisplayMemberBinding must win when both are set.");
+                Verify.AreEqual("Asha", GetCellText(GetRowCell(row, 0)), "DisplayMemberBinding's value, not the template's, must show.");
+                Verify.IsTrue(GetCellContent(GetRowCell(row, 1)) is TextBlock, "Without a CellTemplate, DisplayMemberBinding must render text.");
+                Verify.AreEqual("Asha", GetCellText(GetRowCell(row, 1)), "The text cell must show the bound value.");
+                var empty = GetCellContent(GetRowCell(row, 2)) as ContentPresenter;
+                Verify.IsNotNull(empty, "With neither set, the cell keeps the empty presenter.");
+                Verify.IsNull(empty.Content, "The empty presenter must not render the item's string form.");
+
+                // Clearing DisplayMemberBinding hands the cell back to the template.
+                tableView.Columns[0].DisplayMemberBinding = null;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cell = GetRowCell(GetProjectedRow(tableView, 0), 0);
+                Verify.IsTrue(GetCellContent(cell) is ContentPresenter, "Clearing DisplayMemberBinding must fall back to CellTemplate.");
+                Verify.AreEqual("Designer", GetCellText(cell), "The fallback must show the template's value.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing DisplayMemberBinding at runtime regenerates realized cells, and clearing it leaves them empty.")]
+        public void VerifyDisplayMemberBindingChangeUpdatesRealizedCells()
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "Precondition: the cell shows Name.");
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Verify.AreEqual(MakeItems()[i].Role, GetCellText(tableView, i, 0), $"Row {i} must show the new binding's value.");
+                }
+                column.DisplayMemberBinding = null;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetCellContent(GetRowCell(GetProjectedRow(tableView, 0), 0)), "Clearing DisplayMemberBinding must leave a base column's cell empty.");
+            });
+        }
+
+        private static void VerifyNoLocalDataContextOnCell(FrameworkElement element)
+            => Verify.AreEqual(DependencyProperty.UnsetValue, element.ReadLocalValue(FrameworkElement.DataContextProperty),
+                "The text cell must inherit its DataContext so recycled rows update.");
 
         // Every realized row's custom cell must show that row's current data item.
         private static void VerifyProbeCellsMatchRowData(TableView tableView, string context)

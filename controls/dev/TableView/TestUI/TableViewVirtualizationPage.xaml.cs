@@ -73,9 +73,7 @@ namespace MUXControlsTestApp
 
         // Every item ever created, so "modified" still sees an item after it is removed from the source.
         private readonly List<TableViewVirtualizationItem> _allItems = new List<TableViewVirtualizationItem>();
-        private readonly List<string> _editEndings = new List<string>();
         private readonly TableViewVirtualizationItem _firstItem;
-        private int _beginningEditCount;
         private bool _refreshQueued;
         private ScrollViewer _bodyScroller;
         private ItemsRepeater _rowsRepeater;
@@ -100,23 +98,7 @@ namespace MUXControlsTestApp
             _firstItem = _items[0];
             LargeEditableTable.ItemsSource = _items;
 
-            LargeEditableTable.BeginningEdit += (s, args) =>
-            {
-                _beginningEditCount++;
-                QueueReadoutRefresh();
-            };
-
-            // A recycle-driven close posts this to the dispatcher (TableView::PostEditNotification), so it can
-            // arrive after the layout pass that closed the edit; the Low-priority refresh below follows it.
-            LargeEditableTable.CellEditEnding += (s, args) =>
-            {
-                var item = args.Item as TableViewVirtualizationItem;
-                _editEndings.Add(args.EditAction + "/" + (item == null ? "?" : item.Id.ToString(CultureInfo.InvariantCulture)));
-                QueueReadoutRefresh();
-            };
-
-            // Realization, recycling and editor teardown all happen in layout, so this keeps IsEditing and the
-            // editor list current without a polling timer.
+            // Realization and recycling happen in layout, so this keeps the readout current without a polling timer.
             LargeEditableTable.LayoutUpdated += (s, args) => RefreshReadout();
 
             QueueReadoutRefresh();
@@ -235,7 +217,6 @@ namespace MUXControlsTestApp
 
             EnsureTemplateParts();
 
-            var editors = new List<string>();
             int firstVisible = int.MaxValue;
             int lastVisible = int.MinValue;
 
@@ -252,14 +233,6 @@ namespace MUXControlsTestApp
                         continue;
                     }
 
-                    // A cell's display visual is a TextBlock, so any TextBox inside a row is an open editor.
-                    var textBoxes = new List<TextBox>();
-                    CollectDescendants(row, textBoxes);
-                    foreach (var editor in textBoxes)
-                    {
-                        editors.Add(item.Id.ToString(CultureInfo.InvariantCulture) + "/" + editor.Text);
-                    }
-
                     if (IsInViewport(row))
                     {
                         firstVisible = global::System.Math.Min(firstVisible, item.Id);
@@ -271,12 +244,8 @@ namespace MUXControlsTestApp
             string modified = string.Join(",", _allItems.Where(item => !item.IsSeeded).Select(item => item.Id.ToString(CultureInfo.InvariantCulture)));
 
             string text =
-                Facts.EditingField + "=" + LargeEditableTable.IsEditing + ";" +
-                Facts.BeginningEditField + "=" + _beginningEditCount.ToString(CultureInfo.InvariantCulture) + ";" +
-                Facts.EditEndingField + "=" + JoinOrNone(_editEndings) + ";" +
                 Facts.FirstItemField + "=" + _firstItem.Name + ";" +
                 Facts.ModifiedField + "=" + (modified.Length == 0 ? Facts.NoneValue : modified) + ";" +
-                Facts.EditorsField + "=" + JoinOrNone(editors) + ";" +
                 Facts.VisibleField + "=" + (firstVisible > lastVisible
                     ? Facts.NoneValue
                     : firstVisible.ToString(CultureInfo.InvariantCulture) + "-" + lastVisible.ToString(CultureInfo.InvariantCulture)) + ";" +
@@ -311,9 +280,6 @@ namespace MUXControlsTestApp
 
             return top + row.ActualHeight > 0.5 && top < _bodyScroller.ViewportHeight - 0.5;
         }
-
-        private static string JoinOrNone(List<string> entries) =>
-            entries.Count == 0 ? Facts.NoneValue : string.Join(",", entries);
 
         private static T FindDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement
         {
@@ -355,21 +321,6 @@ namespace MUXControlsTestApp
             }
 
             return null;
-        }
-
-        private static void CollectDescendants<T>(DependencyObject root, List<T> results) where T : class
-        {
-            int count = VisualTreeHelper.GetChildrenCount(root);
-            for (int i = 0; i < count; i++)
-            {
-                var child = VisualTreeHelper.GetChild(root, i);
-                if (child is T match)
-                {
-                    results.Add(match);
-                }
-
-                CollectDescendants(child, results);
-            }
         }
     }
 }

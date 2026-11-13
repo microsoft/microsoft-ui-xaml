@@ -69,7 +69,6 @@
                     AutomationProperties.Name="File properties"
                     ItemsSource="{x:Bind Source}"
                     SelectionMode="Single"
-                    IsReadOnly="True"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
                     <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->

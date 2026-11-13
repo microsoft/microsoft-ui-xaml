@@ -16,7 +16,7 @@ namespace TableViewSampleApp.Pages;
 
 /// <summary>
 /// Right-to-left layout: TableView.FlowDirection on a people table that mixes text and template
-/// cells, with Arabic and Hebrew rows, editing, sorting, filtering, grouping and column moves, so
+/// cells, with Arabic and Hebrew rows, sorting, filtering, grouping and column moves, so
 /// every right-to-left-sensitive adornment can be checked.
 /// </summary>
 public sealed partial class RightToLeftPage : SamplePageBase

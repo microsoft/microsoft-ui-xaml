@@ -29,7 +29,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
     private readonly DispatcherTimer _sampler = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private ObservableCollection<Person> _people;
     private TableViewSource _source;           // one per dataset; reshaped in place, never per shaping change
-    private TableViewTextColumn? _departmentTextColumn;
+    private TableViewTemplateColumn? _departmentTextColumn;
 
     public VirtualizationPage()
     {
@@ -89,11 +89,11 @@ public sealed partial class VirtualizationPage : SamplePageBase
             return;
         }
 
-        _departmentTextColumn ??= new TableViewTextColumn
+        _departmentTextColumn ??= new TableViewTemplateColumn
         {
             Header = "Department",
             Width = new GridLength((double)Application.Current.Resources["ColWidthChip"]),
-            Binding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath(nameof(Person.Department)) },
+            CellTemplate = SampleColumns.TextCellTemplate(nameof(Person.Department)),
             CanUserSort = false,
         };
 

@@ -11,6 +11,12 @@ TableViewTemplateColumn::TableViewTemplateColumn()
 
 winrt::FrameworkElement TableViewTemplateColumn::GenerateElementCore(const winrt::IInspectable& /*dataItem*/)
 {
+    // WPF GridViewColumn precedence: DisplayMemberBinding wins over CellTemplate.
+    if (auto textCell = GenerateDisplayMemberElementInternal())
+    {
+        return textCell;
+    }
+
     // Use a presenter so templates bind against the row data item.
     winrt::ContentPresenter presenter;
     presenter.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);

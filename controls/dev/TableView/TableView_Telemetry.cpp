@@ -12,8 +12,8 @@ namespace
     {
         uint32_t kinds{};
         if (column.try_as<winrt::TableViewTemplateColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Template; }
-        else if (column.try_as<winrt::TableViewTextColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Text; }
         if (TableViewDetails::IsAppDerivedColumn(column)) { kinds |= TableViewTelemetry::ColumnKind::AppDerived; }
+        if (column.DisplayMemberBinding()) { kinds |= TableViewTelemetry::ColumnKind::DisplayMemberBinding; }
         return kinds;
     }
 }
@@ -30,7 +30,6 @@ void TableView::SampleInstanceTelemetry() noexcept
         sample.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
         sample.templateIncomplete = m_templateIncomplete;
         bool anySortable{};
-        bool anyEditable{};
         if (auto const columns = Columns())
         {
             for (auto const& column : columns)
@@ -38,11 +37,9 @@ void TableView::SampleInstanceTelemetry() noexcept
                 if (!column) { continue; }
                 sample.columnKinds |= ColumnKindOf(column);
                 anySortable = anySortable || column.CanUserSort();
-                anyEditable = anyEditable || !column.IsReadOnly();
             }
         }
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }
-        if (!IsReadOnly() && anyEditable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Editing; }
         if (auto const source = m_activeSource.get())
         {
             auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);

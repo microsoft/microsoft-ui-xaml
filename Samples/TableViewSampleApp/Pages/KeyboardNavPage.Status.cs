@@ -22,11 +22,6 @@ public sealed partial class KeyboardNavPage
         FixtureSelectionText.Text = AssessmentTable.SelectedItem is AccessibilityRow selected
             ? string.Format(CultureInfo.CurrentCulture, "Record {0:00}, SelectedIndex {1}", selected.Id, AssessmentTable.SelectedIndex)
             : string.Format(CultureInfo.CurrentCulture, "(none), SelectedIndex {0}", AssessmentTable.SelectedIndex);
-        FixtureEditingText.Text = string.Format(
-            CultureInfo.CurrentCulture,
-            "{0} (IsReadOnly {1}, IsEnabled {2})",
-            AssessmentTable.IsEditing,
-            AssessmentTable.IsReadOnly,
-            AssessmentTable.IsEnabled);
+        FixtureEnabledText.Text = AssessmentTable.IsEnabled.ToString();
     }
 }

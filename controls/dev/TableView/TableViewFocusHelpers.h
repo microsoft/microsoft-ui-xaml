@@ -7,7 +7,7 @@ namespace TableViewDetails
 {
     // One step up that crosses popup boundaries. A popup's content (a ComboBox dropdown, a flyout)
     // is not a visual descendant of the element that owns it, so a plain VisualTreeHelper walk from
-    // a dropdown item never reaches the editor that opened it.
+    // a dropdown item never reaches the control that opened it.
     inline winrt::DependencyObject GetPopupAwareParent(
         winrt::DependencyObject const& element,
         winrt::IVectorView<winrt::Popup> const& openPopups)
@@ -95,31 +95,5 @@ namespace TableViewDetails
             current = GetPopupAwareParent(current, openPopups);
         }
         return false;
-    }
-
-    // Closes any dropdown open inside `root`. An editor removed with its dropdown open (Enter both
-    // opens a closed ComboBox and commits the edit) leaves the dropdown to restore focus to an
-    // element that is no longer in the tree, and focus falls back to an arbitrary element.
-    inline void CloseOpenDropDowns(winrt::DependencyObject const& root, int depth = 0)
-    {
-        if (!root || depth > 32)
-        {
-            return;
-        }
-
-        if (auto const comboBox = root.try_as<winrt::ComboBox>())
-        {
-            if (comboBox.IsDropDownOpen())
-            {
-                comboBox.IsDropDownOpen(false);
-            }
-            return;
-        }
-
-        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(root);
-        for (int32_t i = 0; i < count; ++i)
-        {
-            CloseOpenDropDowns(winrt::VisualTreeHelper::GetChild(root, i), depth + 1);
-        }
     }
 }

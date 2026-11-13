@@ -61,7 +61,13 @@
                     Height="360">
                     <!-- Decorative: the avatar template is never a tab stop. -->
                     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}" IsReadOnly="True"/>
+                    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
+                        <tv:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+                            </DataTemplate>
+                        </tv:TableViewTemplateColumn.CellTemplate>
+                    </tv:TableViewTemplateColumn>
                     <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
                     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                     <!-- Controls in cells: arrow to the cell, Enter moves into the control, Esc returns to the cell.
@@ -94,9 +100,6 @@
                         AutomationProperties.Name="Accessibility regression records"
                         SelectionMode="Single"
                         SelectionChanged="OnFixtureSelectionChanged"
-                        BeginningEdit="OnBeginningEdit"
-                        CellEditEnding="OnCellEditEnding"
-                        IsReadOnly="True"
                         Height="248"/>
                     <Button Content="After fixture table" HorizontalAlignment="Left"
                             AutomationProperties.AutomationId="A11yAfterTable"
@@ -115,7 +118,7 @@
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                     <TextBlock
-                        Text="For real high contrast, turn on a Windows Contrast theme in Settings, Accessibility, Contrast themes. Test the normal, selected, keyboard-focused, editing, read-only and disabled states. The app's Light and Dark themes are not Contrast themes. Increase the Windows text size and check that these instructions, the options, the focus targets and both tables stay reachable."
+                        Text="For real high contrast, turn on a Windows Contrast theme in Settings, Accessibility, Contrast themes. Test the normal, selected, keyboard-focused and disabled states. The app's Light and Dark themes are not Contrast themes. Increase the Windows text size and check that these instructions, the options, the focus targets and both tables stay reachable."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                 </StackPanel>
@@ -197,9 +200,6 @@
                     <ToggleSwitch x:Name="GroupingToggle" Header="Group by department"
                                   AutomationProperties.AutomationId="A11yGroupingToggle"
                                   Toggled="OnGroupingToggled"/>
-                    <ToggleSwitch x:Name="EditingToggle" Header="Allow text editing"
-                                  AutomationProperties.AutomationId="A11yEditingToggle"
-                                  Toggled="OnEditingToggled"/>
                     <ToggleSwitch x:Name="EnabledToggle" Header="Enable table" IsOn="True"
                                   AutomationProperties.AutomationId="A11yEnabledToggle"
                                   Toggled="OnEnabledToggled"/>
@@ -214,27 +214,17 @@
                         <ComboBoxItem Content="None" Tag="None"/>
                     </ComboBox>
                     <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="The fixture groups with its own switch instead of the Shaping list, so its baseline stays one control. Template-only scenarios have no cell editor even when text editing is allowed."/>
+                               Text="The fixture groups with its own switch instead of the Shaping list, so its baseline stays one control."/>
                 </controls:RailSection>
 
                 <controls:RailSection
                     Header="Actions"
-                    Description="These act on the fixture table. To edit, allow text editing, focus a text cell and press F2; Enter commits and Esc cancels. Leaving the editor can commit before a button runs, so test cancelling with Esc. Record 24 is a fixed object: press Home in the table and check that it is off screen first. Watch the Last action readout. Actions that change one row need a selected row.">
+                    Description="These act on the fixture table. Record 24 is a fixed object: press Home in the table and check that it is off screen first. Watch the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button Content="Reset fixture" Click="OnResetClick"
                                 AutomationProperties.AutomationId="A11yReset"
                                 ToolTipService.ToolTip="Restores the 24 original objects, their values and the baseline setup."
                                 AutomationProperties.HelpText="Restores the 24 original objects, their values and the baseline setup."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                        <Button Content="Call CommitEdit" Click="OnCommitEditClick"
-                                AutomationProperties.AutomationId="A11yCommitEdit"
-                                ToolTipService.ToolTip="Calls TableView.CommitEdit() and reports what it returned."
-                                AutomationProperties.HelpText="Calls TableView.CommitEdit() and reports what it returned."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                        <Button Content="Call CancelEdit" Click="OnCancelEditClick"
-                                AutomationProperties.AutomationId="A11yCancelEdit"
-                                ToolTipService.ToolTip="Calls TableView.CancelEdit() and reports what it returned."
-                                AutomationProperties.HelpText="Calls TableView.CancelEdit() and reports what it returned."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                         <Button Content="Mutate selected record" Click="OnMutateSelectedClick"
                                 AutomationProperties.AutomationId="A11yMutateSelected"
@@ -270,7 +260,7 @@
                     <TextBlock x:Name="ExpectedMajorText" controls:StatusPanel.Label="Expected RowOrColumnMajor" Text="RowMajor"/>
                     <TextBlock x:Name="FixtureRecordsText" controls:StatusPanel.Label="Fixture records" Text="24"/>
                     <TextBlock x:Name="FixtureSelectionText" controls:StatusPanel.Label="Fixture selection" Text="(none)"/>
-                    <TextBlock x:Name="FixtureEditingText" controls:StatusPanel.Label="Fixture IsEditing" Text="False"/>
+                    <TextBlock x:Name="FixtureEnabledText" controls:StatusPanel.Label="Fixture IsEnabled" Text="True"/>
                 </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>

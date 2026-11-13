@@ -93,8 +93,6 @@ configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`
   is marshaled to the source's thread first; if that post is refused, the change is picked up by
   the next live change on the source's thread. The reshape re-applies the whole pipeline: filter,
   sort, group and parent relation.
-- **Edits.** While a cell edit is in progress the reshape is held, and it runs once the edit
-  closes, so live data never ends the user's edit.
 - **Turning it on** subscribes every item and posts one catch-up reshape, because edits made while
   it was off were not tracked. Turning it off revokes every subscription.
 - **Cost.** One subscription and one snapshot per item, kept in step with collection changes, plus
@@ -386,9 +384,7 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
     always rebuild.
 - **Property changes.** With `IsLiveShaping` on, an item's
   key and parent key are observed and a change reparents the row on the next dispatcher turn. A
-  change raised on another thread is handed to the source's own thread first. While a cell editor
-  is open, the reshape waits and runs once the edit closes, so live data never ends a user's edit.
-  Otherwise reparenting through `INotifyPropertyChanged` on `ManagerId` takes effect at the next
+  change raised on another thread is handed to the source's own thread first. Otherwise reparenting through `INotifyPropertyChanged` on `ManagerId` takes effect at the next
   collection change or reshape, the same contract as sort keys. To reparent immediately, an app
   replaces the item or removes and re-inserts it.
 - **Custom comparer columns.** A header sort on a `CustomSortComparer` column ranks the rows once
@@ -498,7 +494,7 @@ reporting `LeafNode` on every row of a flat or grouped table would present it as
 
 ## 8. Keyboard
 
-On a focused hierarchical row (row container focused, not a cell editor):
+On a focused hierarchical row (row container focused, not a cell):
 
 | Key | Collapsed expandable | Expanded | Leaf |
 | --- | --- | --- | --- |

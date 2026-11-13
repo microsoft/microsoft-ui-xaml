@@ -96,8 +96,20 @@ One flat `ObservableCollection<Employee>`:
 ```xml
 <Page xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular" ...>
     <tv:TableView x:Name="Org" SelectionMode="Single">
-        <tv:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tv:TableViewTextColumn Header="Id"   Binding="{Binding Id}" />
+        <tv:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+            <tv:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tv:TableViewTemplateColumn.CellTemplate>
+        </tv:TableViewTemplateColumn>
+        <tv:TableViewTemplateColumn Header="Id" SortMemberPath="Id">
+            <tv:TableViewTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Id}" Style="{StaticResource TableCellTextStyle}" />
+                </DataTemplate>
+            </tv:TableViewTemplateColumn.CellTemplate>
+        </tv:TableViewTemplateColumn>
     </tv:TableView>
 </Page>
 ```

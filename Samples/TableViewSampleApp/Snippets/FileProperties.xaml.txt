@@ -11,8 +11,7 @@
     x:Name="PropTable"
     AutomationProperties.Name="File properties"
     ItemsSource="{x:Bind Source}"
-    SelectionMode="Single"
-    IsReadOnly="True">
+    SelectionMode="Single">
     <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
     <tv:TableViewTemplateColumn Header="Property" Width="170" CellTemplate="{StaticResource PropertyNameTemplate}" SortMemberPath="Property"/>
     <tv:TableViewTemplateColumn Header="Value" Width="*" MinWidth="140" CellTemplate="{StaticResource PropertyValueTemplate}" SortMemberPath="Value"/>

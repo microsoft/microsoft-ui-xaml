@@ -1609,7 +1609,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 list.Add(new TreeEmployee { Id = 8, ManagerId = 4, Name = "Hal", Dept = "Eng", Code = "H", ParentCode = "D", Score = 5 });
                 tableView = CreateTreeTable(Tree(list));
                 tableView.Columns[0].Width = new GridLength(30);
-                tableView.Columns.Add(MakeTextColumn("Dept", "Dept", new GridLength(1, GridUnitType.Star)));
+                tableView.Columns.Add(MakeTextTemplateColumn("Dept", "Dept", new GridLength(1, GridUnitType.Star)));
                 LoadContent(tableView);
             });
             SettleLayout(tableView);

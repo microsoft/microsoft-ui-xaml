@@ -6,14 +6,29 @@
     SelectionMode="Single">
     <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="56"
                                  CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-    <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120"
-                             Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120" SortMemberPath="FullName">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-    <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="140"
-                             Binding="{Binding Role}"/>
-    <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="100"
-                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewTemplateColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="140" SortMemberPath="Role">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Role}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
+    <tv:TableViewTemplateColumn x:Name="ColSalary" Header="Salary" Width="100" SortMemberPath="Salary">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="84"
                                  CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
     <!-- Starts hidden: TableViewColumn.Visibility, not removal from the vector. -->

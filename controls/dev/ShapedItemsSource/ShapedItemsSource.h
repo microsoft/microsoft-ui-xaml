@@ -244,11 +244,6 @@ public:
     void SetLiveShaping(bool enabled);
     bool IsLiveShapingEnabled() const noexcept { return m_liveShapingEnabled; }
 
-    // Lets the owner hold live restores (e.g. while a cell editor is open). A held restore stays
-    // dirty and runs the turn after ResumeHeldLiveShaping.
-    void SetLiveShapingHold(std::function<bool()> isHeld) { m_liveShapingHold = std::move(isHeld); }
-    void ResumeHeldLiveShaping();
-
     // Runs per live item change before snapshot comparison, so the owner can refresh state the
     // selectors read (comparer ranks). Arg: restore already posted. True forces a reshape. Also
     // runs for each arriving item, and once with a null item when live shaping turns on (every
@@ -560,10 +555,6 @@ private:
     // so a refused post or a failed restore is retried by the next change instead of stranding the
     // dirty flag.
     bool m_liveShapingRestorePosted{ false };
-    std::function<bool()> m_liveShapingHold{};
-    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it if still dirty.
-    // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
-    bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
     std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
     std::function<void()> m_liveItemReshape{};

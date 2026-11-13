@@ -3,7 +3,7 @@
 
 # Description
 
-`TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only by default with opt-in cell editing.
+`TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only: cell editing is deferred to V2 / a future DataGrid (see [Editing](#editing)).
 
 It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, hierarchical rows, column resize, cell-level keyboard navigation and a UIA grid/table model. Column reorder is not yet implemented.
 
@@ -13,7 +13,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 **WPF migration.** The API keeps WPF `DataGrid` concepts where they help:
 
-- `TableViewTextColumn.Binding` is a plain CLR property, like `DataGridBoundColumn.Binding`.
+- `TableViewColumn.CellToolTipBinding` is a plain CLR property, like `DataGridBoundColumn.Binding`.
 - `TableViewHeadersVisibility` has only `None` and `Column`; row headers are out of scope.
 - `TableViewGridLinesVisibility` keeps WPF's names and values, so persisted casts round-trip.
 - `Width` is a `GridLength`, so XAML can express `Pixel`, `Auto` and `*`.
@@ -24,7 +24,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 **`TableViewRow` is public and unsealed** although its properties are read-only. It is the realized row container (like `ListViewItem`), and the public row automation peer constructor takes it.
 
-**Two built-in column types.** `TableViewTextColumn` is the efficient common case (one `TextBlock` per cell); `TableViewTemplateColumn` hosts any visual through `CellTemplate`. Without a `CellTemplate` it renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
+**One built-in column type.** `TableViewTemplateColumn` hosts any visual through `CellTemplate`; a text cell is a template whose root is a bound `TextBlock`. A built-in text column is deferred to V2 (API spec, TableViewTextColumn (deferred)). Without a `CellTemplate` it renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
 
 # Functional spec link
 
@@ -33,7 +33,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 # Architectural overview
 
-`TableView` owns columns, row realization, the header band, scroll sync, frozen columns, sort, selection and edit state, keyboard navigation and the UIA root. Data shaping lives in a separate stack:
+`TableView` owns columns, row realization, the header band, scroll sync, frozen columns, sort, selection, keyboard navigation and the UIA root. Data shaping lives in a separate stack:
 
 ```text
 TableView / RowMetadataProvider                    consume visible rows and metadata
@@ -53,7 +53,7 @@ Arrows show data flow, not ownership: `TableView` holds a `TableViewSource`, whi
 |---|---|---|
 | `TableView` | unsealed `Control` | The table. Content property is `Columns`. |
 | `TableViewColumn` | unsealed `DependencyObject` | Width, header, sort, freeze, read-only, cell factory (`GenerateElementCore`). |
-| `TableViewTextColumn`, `TableViewTemplateColumn` | unsealed columns | Text cells and templated cells. |
+| `TableViewTemplateColumn` | unsealed column | Templated cells, including text cells. |
 | `TableViewRow` | unsealed `Control` | Realized data row. `IsSelected`, `Level`, `IsExpandable`, `IsExpanded` are read-only. |
 | `TableViewGroupHeader` | unsealed `ContentControl` | Realized group band. `IsExpanded`/`IsExpandable` are read-only; activation calls the owning `TableView`, which raises `GroupExpanding`/`GroupCollapsed`. |
 | `TableViewColumnHeader` | sealed `ContentControl` | One per column, created only by `TableView`. |
@@ -127,7 +127,6 @@ TableViewRow
 
 ## Gesture recognizer handling
 
-- **Begin edit** uses `PointerPressed` with click counting and `handledEventsToo`, not `DoubleTapped`: a row that takes part in selection marks the press handled, which suppresses `Tapped`/`DoubleTapped`.
 - **`ResizeGripper`** reads manipulation events, so touch, pen and multi-pointer arbitration come from the gesture recognizer. `ManipulationMode` (one translate axis) is set in the constructor, so a failed style load cannot disable resize. Because the gripper moves with the edge it drags, deltas are measured in `ManipulationContainer`, which `TableView` sets to itself (the primitive falls back to the `XamlRoot` content), not the gripper. Only the mouse is captured, so touch can still pan an ancestor `ScrollViewer`.
 
 # Implementation details
@@ -136,7 +135,7 @@ TableViewRow
 
 Width resolution is a **table-level** decision, made once per layout pass in `TableView::MeasureOverride` (engine in `TableView_Layout.cpp`):
 
-1. **Measure and cache.** Each realized `TableViewCellsPanel` measures its `Auto` cells unconstrained and caches the width per column (`MeasuredWidthForColumn`). If the column is narrower, the cell is re-measured at the column width so ellipsized content and the right gridline stay in the slot. `Pixel` and `*` cells are measured once at the resolved width, collapsed columns at zero, and an open editor at the column width without feeding `Auto`.
+1. **Measure and cache.** Each realized `TableViewCellsPanel` measures its `Auto` cells unconstrained and caches the width per column (`MeasuredWidthForColumn`). If the column is narrower, the cell is re-measured at the column width so ellipsized content and the right gridline stay in the slot. `Pixel` and `*` cells are measured once at the resolved width, and collapsed columns at zero.
 2. **Resolve.** `ResolveColumnWidths` takes the largest cached width per column across the header and realized rows and writes `ActualWidth`. `*` columns share the viewport left after fixed columns, with `MinWidth`/`MaxWidth` clamping and re-division (WPF's `ComputeStarColumnWidths` shape).
 3. **Share.** If a width changed, `TableView` invalidates the header and row panels directly.
 4. **Arrange.** Each panel places cells at `ActualWidth`. Cells have no `Width` binding.
@@ -186,7 +185,6 @@ A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` i
 
 On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **reactively** through inheritance and bindings. Cells are never re-stamped, because changing a live cell during the repeater's measure re-enters layout and fails fast.
 
-- `TableViewTextColumn` binds `TextBlock.Text` to its `Binding`.
 - `TableViewTemplateColumn` binds `ContentPresenter.Content` to the cell wrapper's inherited `DataContext`, because a `ContentPresenter` sets its own `DataContext` to its `Content`.
 - **Custom columns** must bind to the inherited `DataContext` and not set a local one. `dataItem` is for initial setup only; content that bakes it in (or initializes once, in `Loaded` or with `x:Bind` `OneTime`) shows the previous item after a scroll.
 
@@ -217,34 +215,21 @@ Group order never depends on call order. `SortGroups(None)` (the default) orders
 
 **Group identity fails fast.** Each group key needs a stable, non-empty string identity. Boxed scalars (`IPropertyValue`) have a built-in one; other keys need `GroupBy(keySelector, groupIdentitySelector)`. A null, empty or throwing identity, or two keys colliding without a selector, throws `E_INVALIDARG` when the projection is built. Row identity degrades instead, deliberately: it comes from app data the app may not control, while a bad group identity comes from a selector the app just wrote, and a silently ungrouped table gives no diagnostic.
 
-**Expansion is intent keyed by identity.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` just move the default, `ExpandGroup`/`CollapseGroup` record one exception by group identity (resolved as `GroupBy` does, including its identity selector), new groups take the current default, and a collapse survives a re-sort, filter or regroup. Each such move still runs a synchronous projection rebuild over all groups and rows on the UI thread. `RetainOnly` prunes identities that no longer exist. `GroupExpanding` is raised synchronously before the state change, and the direction is pinned once it is raised: nested requests for the same identity are no-ops, bulk requests made during a raise are queued, and after the handler the state and source generation are re-checked; a request during layout posts the whole operation (weak ref, alive check); a refresh deferral is held on the source while the handler runs, and the group is re-resolved by identity afterwards. Group-event handler exceptions are contained and logged like `CellEditEnded`.
+**Expansion is intent keyed by identity.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` just move the default, `ExpandGroup`/`CollapseGroup` record one exception by group identity (resolved as `GroupBy` does, including its identity selector), new groups take the current default, and a collapse survives a re-sort, filter or regroup. Each such move still runs a synchronous projection rebuild over all groups and rows on the UI thread. `RetainOnly` prunes identities that no longer exist. `GroupExpanding` is raised synchronously before the state change, and the direction is pinned once it is raised: nested requests for the same identity are no-ops, bulk requests made during a raise are queued, and after the handler the state and source generation are re-checked; a request during layout posts the whole operation (weak ref, alive check); a refresh deferral is held on the source while the handler runs, and the group is re-resolved by identity afterwards. Group-event handler exceptions are contained and logged.
 
 **Toggle.** The whole group band is the toggle target. Re-publishing destroys the realized header, so `TableView` queues the expansion by identity with a generation stamp, and restores focus by identity so a collapse does not drop focus to the top. A header's `Content` is a `TableViewGroupInfo` updated in place.
 
 **Hierarchy.** `ParentBy` builds a `ParentKeyIndex`. Rows start collapsed, sort applies per sibling set, a filter keeps matches plus ancestors, and `GroupBy` buckets the roots. See the [hierarchy design](Hierarchical-Data-Rows-Parent-Key-Design.md).
 
-**Live shaping** (`IsLiveShaping`) reshapes when an item's sort key, group key, filter result or parent changes, and holds reshapes while a cell is edited. Off-thread `PropertyChanged` is marshalled to the UI thread; collection changes must be raised on it.
+**Live shaping** (`IsLiveShaping`) reshapes when an item's sort key, group key, filter result or parent changes. Off-thread `PropertyChanged` is marshalled to the UI thread; collection changes must be raised on it.
 
 ## Selection
 
-Selection is single, row-scoped, independent of editing, and follows keyboard focus. Group headers share the row index space but are not selectable: `Select` on a header index is rejected and selection-follows-focus skips headers. Under grouping, `SelectedIndex` therefore counts headers and is not an `ItemsSource` index. Future `Multiple`/`Extended` modes will append enum values and a separate `MultiSelectStates` group, so existing templates stay valid.
+Selection is single, row-scoped, and follows keyboard focus. Pointer selection applies on release over the pressed row; a right press never selects. Group headers share the row index space but are not selectable: `Select` on a header index is rejected and selection-follows-focus skips headers. Under grouping, `SelectedIndex` therefore counts headers and is not an `ItemsSource` index. Future `Multiple`/`Extended` modes will append enum values and a separate `MultiSelectStates` group, so existing templates stay valid.
 
 ## Editing
 
-Editing is cell-scoped and starts only from user gestures (double-click, or `F2`). `TableView.IsReadOnly` defaults to `true`. `CellEditEnding` carries the live `EditingElement` and, for user and programmatic commits, is raised synchronously before the write (a layout- or DP-change-forced commit writes first and may post it); `CellEditEnded` follows once the edit has closed (after the write, before queued reshapes, never during layout); `IsEditing` is a read-only DP, `true` from the moment `BeginningEdit` is raised (reverted if it is cancelled or the begin is abandoned) and set to `false` synchronously at close (external `SetValue` is reverted, as for the group header's `IsExpanded`/`IsExpandable`); only `CellEditEnded` is ever posted (layout, or teardown forced by a DP change), and a posted one is flushed before the next `BeginningEdit`; editors outside the built-in binding list commit through the overridable `TableViewColumn.CommitCellEditCore`. The deferred features (`BeginEdit`, `RowEditEnding`, `ITableViewEditableItem`) are in the API spec's [Cell editing scope](../../api-specs/TableView/TableView-spec.md#cell-editing-scope).
-
-`TableView_Editing.cpp` owns the state machine, reachable entirely through the programmatic API; `TableView_EditingInput.cpp` maps gestures onto it. Gesture routing can change without touching the state machine, which is testable without input. `EditState` is `None → Beginning → {None, Editing}` and `Editing → Ending → {Editing, None}`; `Ending → Editing` is the veto path.
-
-**Gesture layer.** A primary press on a cell makes it the current cell and focuses it, so keyboard, UIA and current cell agree. Selection applies on release over the pressed row. A right press never selects.
-
-**Value transfer.** Editing bindings use `UpdateSourceTrigger=Explicit`; commit calls `UpdateSource()`, validates after the write and undoes a blocked write. A forced close (source change, or read-only) commits a valid value while the item is still in the source and passes the filter, else writes nothing, as WPF does. `CellEditEnding` and `CellEditEnded` always report the same `EditAction`, what the close actually did: `Commit` when the value was written and kept; `Cancel` when nothing was written, validation failed and the write was rolled back, or the item left the source. A rollback inside layout is posted, and skipped if the value changed meanwhile.
-
-**Re-entrancy rules.** Recycling, rebuilds and property callbacks can run inside layout, where moving focus fails fast (`0xc0000420`):
-
-- `TableViewRow::EndCellEdit` restores the display element and moves focus; it runs only on interactive close paths.
-- `TableViewRow::AbandonCellEdit` never touches focus. `TableView::TerminateEditWithoutVisualRestore` uses it from `OnRowElementClearing`, `RebuildCells`, `OnIsReadOnlyPropertyChanged` and `OnItemsSourcePropertyChanged`.
-- The cell restamp path keeps the edit open, because installing the editor itself triggers a re-measure.
-- The focus-loss commit is posted and re-evaluated once focus settles.
+Deferred to V2 / a future DataGrid. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/`CellEditEnded`, `TableViewEditAction`, `CellEditingTemplate`, `CommitCellEditCore`) and no built-in `TextBox` editor; `TableViewTextColumn` is display-only. The removed implementation (edit state machine, gesture layer, menu suppression while editing, live-shaping hold, and the settable cell `IValueProvider`) is recoverable from history when V2 revisits editing. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); deferred editing features are listed under [Deferred to V2 / future DataGrid](../../api-specs/TableView/TableView-spec.md#deferred-to-v2--future-datagrid).
 
 ## Keyboard navigation
 
@@ -264,7 +249,6 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Cell | `Left`/`Right`, `Home`/`End` | Move within the row, no wrap; `Left` on the first cell returns to the row. |
 | Cell | `Ctrl+Home`/`Ctrl+End` | First or last cell of the table. |
 | Cell | `Enter` / `Escape` | Into the cell's control / back out. |
-| Row, cell | `F2` | Begin edit. |
 | Row, cell | `Space` / `Ctrl+Space` | Select / toggle the row. `Ctrl` with a navigation key moves without selecting. |
 
 - **Re-entry.** `Tab`/`Shift+Tab` into the body from outside the table returns to the item that last had focus, even after a sort or filter, at the same level. If it is not available, entry lands on the first or last enabled row in the viewport, never a cache row. From the header band, entry lands on the first or last row (or group header) in the viewport.
@@ -278,7 +262,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 |---|---|---|
 | Table | `DataGrid` | `Grid`, `Table`, `ItemContainer`; `Selection` unless `SelectionMode` is `None`; `Scroll` from the body scroller. Bounds exclude cache rows. |
 | Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `VirtualizedItem` while virtualized. |
-| Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `Value` only when editable with a text editor; `VirtualizedItem`. |
+| Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `VirtualizedItem`. The peer implements `IValueProvider` read-only but does not offer `Value`. |
 | Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with the pattern's `CanResize` false while pinned. |
 | Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`. |
 
@@ -300,7 +284,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
 | `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
-| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
+| Theme keys | `TableViewHeaderFontSize` (14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
@@ -330,7 +314,7 @@ The scrollers are found as the nearest `ScrollViewer` ancestors of the header ho
 - Columns and rows hold weak back-pointers to their `TableView`; cross-object events use `auto_revoke`.
 - `Unloaded` clears `PART_RowsRepeater.ItemsSource` so queued repeater work cannot run on a detached subtree; `Loaded` restores it and the selection.
 - `ThemeSettings` is released on `Unloaded`, or earlier on `AppWindow.Destroying`, because removing its handler after the window is destroyed fails fast. Hosts with no `AppWindow`, or one on another thread, use `Unloaded`.
-- `TableView` and `TableViewSource` are UI-thread-affine. Editing re-entrancy rules are in [Editing](#editing).
+- `TableView` and `TableViewSource` are UI-thread-affine.
 
 ## Build, namespace and ABI notes
 
@@ -351,7 +335,7 @@ Tabular providers. It collects no item data and no per-row or per-cell counts (s
 *Events*), and it blames the app only when app code decided an outcome (see *Who is blamed*).
 
 On success an operation with a TiP test pays for its TiP start and stop and for reading the flow direction and the
-source's row counts for its metrics; a sort, filter or edit commit, or a request to expand or collapse one group or
+source's row counts for its metrics; a sort or filter, or a request to expand or collapse one group or
 tree node, also sets a used-feature bit. Each shaping verb resets and reads a count of app delegates that threw,
 each call into `SelectionModel` clears a one-entry note, and while a loaded session is active an expansion request
 first looks up whether it changes its group or node. Shaping also keeps two counts for the metrics: the rows the
@@ -363,14 +347,12 @@ last refresh read and, for a tree, the nodes the filter keeps. Attribution work 
 |---|---|---|
 | `TableViewInitializationTest` (64477764) | Once per template application, from the template applied with a source attached (whichever comes later) to the layout pass of the first row or group header, or at once for an empty view | `template_setup_failed` in `OnApplyTemplate`, `source_attach_failed` while attaching the source |
 | `TableViewSortTest` (64745033) | An accepted sort (column header, `SortByColumn`, `ClearSort`, or a `TableViewSource` sort verb), until the sorted rows are published and TableView has finished reacting on that turn (for a column sort, restoring selection, raising `Sorted` and the announcement) | `sort_failed` |
-| `TableViewEditBeginTest` (64745034) | A request to edit an editable cell, until its editor is ready | `edit_begin_failed` |
-| `TableViewEditCommitTest` (64745035) | A commit, until the value is written and the editor is closed | `edit_commit_failed`, also when TableView's own column cannot rebuild the cell's display after the commit |
 | `TableViewFilterTest` (64745036) | `Filter` or `ClearFilter` on the table's `TableViewSource`, until the rows are published and TableView has finished reacting on that turn | `filter_failed` |
 | `TableViewGroupExpansionTest` (64745037) | Expanding or collapsing one group, on the turn TableView applies the request | `group_expansion_failed` |
 | `TableViewHierarchyExpansionTest` (64745038) | Expanding or collapsing one tree node, on the turn TableView applies the request | `hierarchy_expansion_failed` |
 
 The operation tests share one implementation and report under their own measures (`OperationTestIdentity` in
-`TableViewTipTests.h`). Initialize closes Ignored with `app_template_incomplete` when a custom template lacks
+`TableViewTipTests.h`). Measures 64745034 and 64745035 belonged to the retired edit tests and are not reused. Initialize closes Ignored with `app_template_incomplete` when a custom template lacks
 `PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost`, and with `unloaded_before_render` when the table is
 unloaded while Initialize waits on rows to show and a non-zero body viewport (a realization fault, or a navigation
 faster than the first layout); any other unload closes a running test with `unloaded`. Every test's metrics bucket is the
@@ -379,7 +361,7 @@ before the filter (every node for a tree), 2 right-to-left, 3 right-to-left with
 carry `rightToLeft`, `largeData`, and the `SourceRowsBucket` and `DataRowsBucket` counts as `sourceRowsBucket` and
 `dataRowsBucket`. A source swap before Initialize has its verdict is part of Initialize.
 
-A source swap after Initialize's verdict, selection, a cancelled edit, group configuration, a subtree expansion and an
+A source swap after Initialize's verdict, selection, group configuration, a subtree expansion and an
 expansion request that changes nothing (its group or node is already in that state, or is gone) run no TiP test; a
 failure in one still writes `TableView_Error` while a loaded session is active (a source swap also before the first
 `Loaded`). Measure/arrange, cell realization, and expanding or collapsing all groups or rows are not tracked. A clear
@@ -398,10 +380,9 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
 - App code is blamed only when it decided the outcome: its exception left the operation, or its write
   stopped it. The test closes Ignored with `application_fault`; the `TableView_Error` diagnostic carries
   the category (callback, validation, write, factory or data).
-- An app fault TableView recovers from (a throwing `BeginningEdit` or `CellEditEnding` handler,
-  validation read, editing template or display factory) is reported, and the outcome stays TableView's.
-- A sort or expansion deferred past an edit close is replayed later, from a dispatcher callback or ahead of a newer
-  request, where no caller can see its exception. TableView swallows the exception there and reports it as a recovered
+- An app fault TableView recovers from (for example a throwing display factory) is reported, and the outcome
+  stays TableView's.
+- A deferred sort or expansion is replayed later, from a dispatcher callback or ahead of a newer request, where no caller can see its exception. TableView swallows the exception there and reports it as a recovered
   app fault under that deferred operation (sort, group expansion or hierarchy expansion). A header `Style`'s
   `ContentTemplateSelector` that throws is reported the same way under the header refresh, and the header falls back to its text.
 - The exception carries the blame. Each call into app code rethrows the app's exception tagged with the category,
@@ -412,10 +393,7 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
   type, so the call into `SelectionModel` tags the exception again when its error object is the one that left
   TableView's handler.
 - A column's display factory and sort member path are the app's code only when the app derived the column class
-  (it can override `GenerateElementCore` and `GetSortMemberPathCore`). The editing hooks are TableView's code for
-  every column (they are internal), so their failure fails the test, except where they realize or focus a
-  `CellEditingTemplate`'s content: that is the app's code, and a throw there is the app's. A write that does not land (a
-  converter throws, or the editor has no binding TableView can write through) is still the app's.
+  (it can override `GenerateElementCore` and `GetSortMemberPathCore`).
 - An app filter predicate, sort or group key selector, or custom comparer that throws is contained by design: the
   row is filtered out, the key is null, the pair compares equal. The verb's outcome stands, and `TableView_Error`
   reports a recovered callback fault with the first HRESULT and how many threw, also when the verb then fails. A verb
@@ -432,9 +410,7 @@ XAML refuses because a container outside the visual tree holds it. An app except
 back across any other ABI call loses its tag and counts as TableView's, and so does an app `SelectionChanged`
 handler that runs out of memory inside a `SelectionModel` call, since that failure has no error object to match. For
 the display factory and the sort member path the column class decides, so a built-in method that throws on an
-app-derived column without an override counts as the app's, and a built-in text column's binding converter that
-throws while the column builds a cell counts as TableView's. TableView's own layout or focus code that runs inside the
-calls that realize or focus a `CellEditingTemplate`'s content counts as the app's if it throws. Running out of memory
+app-derived column without an override counts as the app's. Running out of memory
 while walking an enumeration-only source counts as TableView's, because
 TableView's own allocation may be what failed. App delegates that throw outside a shaping verb (live shaping, a
 source change) are not reported, nor is a `ParentBy` parent key selector that throws (its row becomes a root).
@@ -447,7 +423,7 @@ so that commit counts as completed although the value did not land.
 |---|---|---|
 | `TableView_Loaded` | First `Loaded` in a process while a listener is enabled (a later `Loaded` retries) | `LoadedVersion`, control version, `UTCReplace_AppSessionGuid` |
 | `TableView_Instance` | Unloaded or destruction, once per loaded session, at most 64 per process | `InstanceVersion` and the fields below, `UTCReplace_AppSessionGuid` |
-| `TableView_Error` | A TableView failure, an app fault, or a caught header-rebuild error | Operation, stage, attribution, category, `HResult` with `HResultAvailable`, `FaultCount` (more than 1 only for contained app delegates), `IsRecoverable` (true when TableView carried on). Logging provider, VERBOSE, `KEYWORD_TABLEVIEW`, no telemetry keyword; the first per operation, attribution and recoverability in a session (within an edit or selection, an app fault that decided the outcome comes first) |
+| `TableView_Error` | A TableView failure, an app fault, or a caught header-rebuild error | Operation, stage, attribution, category, `HResult` with `HResultAvailable`, `FaultCount` (more than 1 only for contained app delegates), `IsRecoverable` (true when TableView carried on). Logging provider, VERBOSE, `KEYWORD_TABLEVIEW`, no telemetry keyword; the first per operation, attribution and recoverability in a session (within a selection, an app fault that decided the outcome comes first) |
 
 Every event also carries `SchemaVersion`.
 
@@ -457,11 +433,11 @@ Every event also carries `SchemaVersion`.
 |---|---|
 | `IsFirstLoad` | True for the instance's first loaded session |
 | `ContentShown` | Across the instance's loads: 0 nothing yet; 1 a row or group header was shown; 2 no row was shown and a sample saw a source with no data rows |
-| `EnabledFeatures`, `UsedFeatures` | Sorting 1, editing 2, filtering 4, grouping 8, hierarchy 16, live shaping 32 |
+| `EnabledFeatures`, `UsedFeatures` | Sorting 1, filtering 4, grouping 8, hierarchy 16, live shaping 32 (2 was editing; retired, not reused) |
 | `SourceRowsBucket` | Rows before the filter: every source row, or for a tree every node |
 | `DataRowsBucket` | Data rows after the filter, without group headers and whatever is expanded; for a tree, the nodes the filter keeps |
 | `PeakRealizedRowsBucket` | Containers the rows repeater has created since the template was applied. It creates one only when none is free and keeps them across loads, so this is the most rows realized at once, plus the most group headers, over the instance's loads |
-| `ColumnKinds` | Text 1, template 2, app-derived 4 (a column class that is not TableView's) |
+| `ColumnKinds` | Template 2, app-derived 4 (a column class that is not TableView's), `DisplayMemberBinding` set 8; 1 (text) is retired |
 | `SourceKinds` | A collection TableView projected 1, the app's own `TableViewSource` 2 |
 | `IsRightToLeft` | The table flows right to left |
 | `TemplateIncomplete` | The applied template lacks `PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost` |
@@ -470,9 +446,8 @@ TableView samples at `Loaded` and `Unloaded` while the event can still be writte
 the bits and the larger count, as a bucket: 0 for none, k for 2^(k-1) up to 2^k - 1. A session that ends by
 destruction without `Unloaded` carries the `Loaded` sample alone.
 
-Enabled means allowed by the table for sorting (`CanUserSortColumns` and a column that can sort) and editing (not
-`IsReadOnly`, and an editable column), and declared on the `TableViewSource` for the other four. Used counts only
-after the instance has shown rows: a sort, filter or edit commit that ran; a request to expand or collapse one
+Enabled means allowed by the table for sorting (`CanUserSortColumns` and a column that can sort), and declared on
+the `TableViewSource` for the other four. Used counts only after the instance has shown rows: a sort or filter that ran; a request to expand or collapse one
 group or tree node (expand-all and subtree requests do not count); or an item change that live shaping had to
 reshape for. A used feature is always reported enabled.
 
@@ -497,10 +472,10 @@ Each starts at 1, the first release.
 
 These contracts are documented only here; they belong in the [API spec](../../api-specs/TableView/TableView-spec.md).
 
-- **Sort methods.** `SortByColumn` and `ToggleSortDirection` ignore `CanUserSort` and `CanUserSortColumns`, which gate user input only (pointer, keyboard, UIA Invoke). Turning any `CanUser*` flag off, column or table level, does not clear the active sort (WPF parity). `SortByColumn(column, None)` clears. `ToggleSortDirection` walks the column's `SortCycle`. Both return `false`, changing nothing, when `Sorting` is canceled, an edit will not close, the column cannot sort (no sort path and no `CustomSortComparer`), rows lack identity, or the source is refused. `TableView.ClearSort()` clears column sorts and the item sort levels on the effective `TableViewSource`, keeps `SortGroups`, and returns `true` if anything was cleared.
+- **Sort methods.** `SortByColumn` and `ToggleSortDirection` ignore `CanUserSort` and `CanUserSortColumns`, which gate user input only (pointer, keyboard, UIA Invoke). Turning any `CanUser*` flag off, column or table level, does not clear the active sort (WPF parity). `SortByColumn(column, None)` clears. `ToggleSortDirection` walks the column's `SortCycle`. Both return `false`, changing nothing, when `Sorting` is canceled, the column cannot sort (no sort path and no `CustomSortComparer`), rows lack identity, or the source is refused. `TableView.ClearSort()` clears column sorts and the item sort levels on the effective `TableViewSource`, keeps `SortGroups`, and returns `true` if anything was cleared.
 - **Sort events.** `Sorting` is raised first and is cancellable, letting the app own the order and light the chevron with `TableViewSource.Sort(path, …)`. `Sorted` follows. A null `Column` means clear-all. An app that owns the order can instead set the column's display-only `SortDirection`.
 - **`SortCycle`** is per column. Its first direction is the opening one; the `*None` variants add a step back to source order.
-- **`SortMemberPath`.** When empty, `TableViewTextColumn` uses `Binding.Path.Path` if the binding targets the row item (no `Source`, `RelativeSource` or `ElementName`), through the overridable `GetSortMemberPathCore()`. `CustomSortComparer` wins over the path and must be a pure function. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and chevron stay, `Sorting` was raised and `Sorted` is not, and the fault is reported.
+- **`SortMemberPath`.** When empty, an app-derived column can supply a path through the overridable `GetSortMemberPathCore()`; otherwise the column sorts only through `CustomSortComparer`. `CustomSortComparer` wins over the path and must be a pure function. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and chevron stay, `Sorting` was raised and `Sorted` is not, and the fault is reported.
 - **`TableViewSource`.** `From` accepts `IVector<Object>`, `IBindableVector`, `IIterable<Object>` or `IBindableIterable`. Null items, predicate or key selector throw `E_INVALIDARG`; `groupIdentitySelector` may be null. Use `ClearFilter()` to remove a filter. `ParentBy` errors are in the [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md).
 - **Context flyouts.** First match wins. Cell: a `ContextFlyout` in the cell content, `CellContextFlyout`, the row's `ContextFlyout`, `TableView.ContextFlyout`. Header: a `ContextFlyout` in the header content, `HeaderContextFlyout`, `TableView.ContextFlyout`. Opening one focuses its target and does not change selection. When the table resolves the request (keyboard, or pointer on padding), a text control inside the content counts only with a locally set `ContextFlyout` (not a Style setter), and nested `TableView`s and items inside a nested items host are skipped.
 - **`TableViewRow.Level`** is 1-based for tree rows and `0` otherwise, matching `AutomationProperties.Level`.
@@ -515,6 +490,7 @@ These contracts are documented only here; they belong in the [API spec](../../ap
 
 ## Non-goals and deferred work
 
-- **Not yet implemented:** column reorder, trailing frozen columns, multi-select, `RowStyle`/`CellStyle`, programmatic `BeginEdit`, row-scoped editing.
-- **Deferred:** `Auto` shrink, multi-column sort, clipboard, incremental loading, editing announcements.
+- **Not yet implemented:** column reorder, trailing frozen columns, multi-select, `RowStyle`/`CellStyle`.
+- **Deferred:** `Auto` shrink, multi-column sort, clipboard, incremental loading.
+- **Deferred to V2 / future DataGrid:** cell editing (see [Editing](#editing)).
 - **Non-goals:** column virtualization, row headers, marquee selection, spreadsheet-style interaction.

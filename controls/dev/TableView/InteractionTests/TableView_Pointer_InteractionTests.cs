@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // gesture arrives at it.
     //
     // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
-    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // this file: they observe rows at row level, point at cells by coordinates, and read visual states
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
@@ -208,67 +208,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Focus must still move to the clicked cell: a display-only table remains keyboard-reachable.
                 Verify.AreEqual(AgeColumn, IndexOfFocusedCell(row), "Focus must still move to the clicked cell under SelectionMode.None.");
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a pointer press establishes the current cell so a following F2 opens the edit on the clicked column, both on a fresh row and on one that already has focus.")]
-        public void PointerPressEstablishesCurrentCellForKeyboardEditing()
-        {
-            // Spec: dev-spec:284 - the pointer handler is the ONLY place a pointer establishes the current
-            //   cell, and without it keyboard editing "silently fails". Since #11820 the first press focuses the
-            //   pressed CELL, so the second leg is "a cell is already focused and a different cell is pressed" -
-            //   cell-to-cell transfer of the current cell - rather than dev-spec:286's row-source hit-test fallback.
-            // Why Age is the load-bearing leg: a keyboard-only fallback resolves to the first editable
-            //   column, which is Name. A Name-only test would pass on a control that ignores the pointer.
-            // Observability: read through the page's BeginningEdit report (TableViewBeginningEditEventArgs
-            //   .Column is public IDL), an independent data-side channel.
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject tableView = FindElement.ById(BasicTable);
-                if (tableView == null)
-                {
-                    Verify.Fail("BasicTableView was not found on the test page.");
-                    return;
-                }
-
-                Edit report = FindElement.ById<Edit>(EditColumnReport);
-                if (report == null)
-                {
-                    Verify.Fail("EditColumnReportTextBlock was not found on the test page.");
-                    return;
-                }
-
-                UIObject row = GetRow(tableView, 0);
-                if (row == null)
-                {
-                    Verify.Fail("The first realized TableViewRow peer was not found under the rows host.");
-                    return;
-                }
-
-                Verify.AreEqual(string.Empty, ReadEditReport(), "Precondition: no edit should have been reported before the test acts.");
-
-                // Authored column widths on BasicTableView: Name 160, Age 100, ReadOnlyCity 160, Score 100, Template 200.
-                // Click x is expressed row-relative and converted to the center-relative offset InputHelper wants.
-                ClickRowAtColumnOffset(row, BasicColumnCentreX(AgeColumn));
-                KeyboardHelper.PressKey(Key.F2);
-                Wait.ForIdle();
-
-                Verify.AreEqual("Age;", ReadEditReport(), "F2 after pressing inside the Age column must open the edit on Age, not on the first editable column (dev-spec:284).");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Wait.ForIdle();
-
-                // Second leg: the row now holds focus, so the press arrives with the row as source and the
-                // control must fall back to hit-testing the pointer position (dev-spec:286).
-                ClickRowAtColumnOffset(row, BasicColumnCentreX(NameColumn));
-                KeyboardHelper.PressKey(Key.F2);
-                Wait.ForIdle();
-
-                Verify.AreEqual("Age;Name;", ReadEditReport(), "A press on an already-focused row must re-establish the current cell by hit-test, so F2 opens on Name (dev-spec:286).");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Wait.ForIdle();
             }
         }
 

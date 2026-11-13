@@ -21,9 +21,6 @@ public:
     void CellContextFlyout(winrt::FlyoutBase const& value);
     winrt::FlyoutBase CellContextFlyout();
 
-    void CellEditingTemplate(winrt::DataTemplate const& value);
-    winrt::DataTemplate CellEditingTemplate();
-
     void FrozenEdge(winrt::TableViewFrozenEdge const& value);
     winrt::TableViewFrozenEdge FrozenEdge();
 
@@ -44,9 +41,6 @@ public:
 
     void HeaderToolTip(winrt::IInspectable const& value);
     winrt::IInspectable HeaderToolTip();
-
-    void IsReadOnly(bool value);
-    bool IsReadOnly();
 
     void MaxWidth(double value);
     double MaxWidth();
@@ -73,7 +67,6 @@ public:
     static winrt::DependencyProperty CanUserResizeProperty() { return s_CanUserResizeProperty; }
     static winrt::DependencyProperty CanUserSortProperty() { return s_CanUserSortProperty; }
     static winrt::DependencyProperty CellContextFlyoutProperty() { return s_CellContextFlyoutProperty; }
-    static winrt::DependencyProperty CellEditingTemplateProperty() { return s_CellEditingTemplateProperty; }
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderContextFlyoutProperty() { return s_HeaderContextFlyoutProperty; }
@@ -81,7 +74,6 @@ public:
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
     static winrt::DependencyProperty HeaderToolTipProperty() { return s_HeaderToolTipProperty; }
-    static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty MaxWidthProperty() { return s_MaxWidthProperty; }
     static winrt::DependencyProperty MinWidthProperty() { return s_MinWidthProperty; }
     static winrt::DependencyProperty SortCycleProperty() { return s_SortCycleProperty; }
@@ -94,7 +86,6 @@ public:
     static GlobalDependencyProperty s_CanUserResizeProperty;
     static GlobalDependencyProperty s_CanUserSortProperty;
     static GlobalDependencyProperty s_CellContextFlyoutProperty;
-    static GlobalDependencyProperty s_CellEditingTemplateProperty;
     static GlobalDependencyProperty s_FrozenEdgeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderContextFlyoutProperty;
@@ -102,7 +93,6 @@ public:
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
     static GlobalDependencyProperty s_HeaderToolTipProperty;
-    static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_MaxWidthProperty;
     static GlobalDependencyProperty s_MinWidthProperty;
     static GlobalDependencyProperty s_SortCycleProperty;
@@ -119,10 +109,6 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCanUserSortPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnCellEditingTemplatePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -147,10 +133,6 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnHeaderToolTipPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnIsReadOnlyPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

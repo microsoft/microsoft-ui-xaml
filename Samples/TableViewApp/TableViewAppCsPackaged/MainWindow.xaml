@@ -37,8 +37,9 @@
                 </Grid.RowDefinitions>
                 <TextBlock Text="Table 1 - instantiated from MARKUP (XAML)" FontWeight="SemiBold" />
                 <tabular:TableView x:Name="MarkupTable" Grid.Row="1" ItemsSource="{x:Bind People}">
-                    <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-                    <tabular:TableViewTextColumn Header="Age" Binding="{Binding Age}" />
+                    <!-- DisplayMemberBinding: a read-only text cell, sorted by the binding's path. -->
+                    <tabular:TableViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
+                    <tabular:TableViewColumn Header="Age" DisplayMemberBinding="{Binding Age}" />
                 </tabular:TableView>
             </Grid>
 
