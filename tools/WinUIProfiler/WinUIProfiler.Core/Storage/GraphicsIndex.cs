@@ -44,10 +44,11 @@ internal sealed class GraphicsIndex : IDisposable
         internal Kind Kind { get; } = kind;
         internal long FirstSeq { get; } = sequence;
         internal long FirstQpc { get; } = qpc;
+        internal long KnownFromSeq { get; set; } = sequence;
+        internal long KnownFromQpc { get; set; } = qpc;
         internal long LastQpc { get; set; } = qpc;
         internal long? StartQpc { get; set; } = phase == Phase.Start ? qpc : null;
         internal long? EndQpc { get; set; }
-        internal long KnownFromQpc => StartQpc ?? FirstQpc;
         internal bool ReferenceOnly { get; set; } = phase == Phase.Reference;
         internal long? DeviceId { get; set; }
         internal ulong Resource { get; set; }
@@ -97,14 +98,16 @@ internal sealed class GraphicsIndex : IDisposable
     {
         this.connection = connection;
         insertObject = Sql.Prepare(connection, """
-            INSERT INTO GraphicsObjects (GraphicsObjectId, Kind, Handle, Qualifier, FirstSeq, FirstQpc, LastSeq, LastQpc,
-                FirstObservation, StartSeq, StartQpc)
-            VALUES ($id, $kind, $handle, $qualifier, $seq, $qpc, $seq, $qpc, $phase, $startSeq, $startQpc)
+            INSERT INTO GraphicsObjects (GraphicsObjectId, Kind, Handle, Qualifier, FirstSeq, FirstQpc,
+                KnownFromSeq, KnownFromQpc, LastSeq, LastQpc, FirstObservation, StartSeq, StartQpc)
+            VALUES ($id, $kind, $handle, $qualifier, $seq, $qpc, $seq, $qpc, $seq, $qpc, $phase, $startSeq, $startQpc)
             """, ("$id", SqliteType.Integer), ("$kind", SqliteType.Text), ("$handle", SqliteType.Text),
             ("$qualifier", SqliteType.Text), ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer),
             ("$phase", SqliteType.Text), ("$startSeq", SqliteType.Integer), ("$startQpc", SqliteType.Integer));
         observeObject = Sql.Prepare(connection, """
             UPDATE GraphicsObjects SET LastSeq = $seq, LastQpc = MAX(LastQpc, $qpc),
+                KnownFromSeq = CASE WHEN $qpc < KnownFromQpc THEN $seq ELSE KnownFromSeq END,
+                KnownFromQpc = MIN(KnownFromQpc, $qpc),
                 StartSeq = COALESCE(StartSeq, $startSeq), StartQpc = COALESCE(StartQpc, $startQpc)
             WHERE GraphicsObjectId = $id
             """, ("$id", SqliteType.Integer), ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer),
@@ -119,16 +122,19 @@ internal sealed class GraphicsIndex : IDisposable
         history = Sql.Prepare(connection, """
             SELECT g.GraphicsObjectId, g.Kind, g.FirstSeq, g.FirstQpc, g.LastQpc, g.FirstObservation, g.StartQpc,
                 g.EndSeq, g.EndQpc, g.DeviceId, g.StopQpc,
-                CASE WHEN $start AND g.StartQpc IS NULL THEN (SELECT MAX(p.LastQpc) FROM GraphicsObjects p
+                CASE WHEN $earlier AND g.StartQpc IS NULL AND $qpc <= g.KnownFromQpc THEN (SELECT MAX(p.LastQpc) FROM GraphicsObjects p
                     WHERE p.Kind IN ($kind1, $kind2, $kind3, $kind4) AND p.Handle = g.Handle AND p.Qualifier = g.Qualifier
-                        AND p.GraphicsObjectId <> g.GraphicsObjectId AND COALESCE(p.StartQpc, p.FirstQpc) < g.FirstQpc
-                        AND (p.StartQpc IS NOT NULL OR p.Kind <> g.Kind OR p.DeviceId <> COALESCE(g.DeviceId, $device))) END
+                        AND p.GraphicsObjectId <> g.GraphicsObjectId AND p.KnownFromQpc < g.KnownFromQpc
+                        AND (p.StartQpc IS NOT NULL OR p.Kind <> g.Kind OR p.DeviceId <> COALESCE(g.DeviceId, $device))) END,
+                g.KnownFromSeq, g.KnownFromQpc
             FROM GraphicsObjects g
-            WHERE g.Kind IN ($kind1, $kind2, $kind3, $kind4) AND g.Handle = $handle AND g.Qualifier = $qualifier AND g.EndQpc >= $qpc
+            WHERE g.Kind IN ($kind1, $kind2, $kind3, $kind4) AND g.Handle = $handle AND g.Qualifier = $qualifier
+                AND (g.EndQpc >= $qpc OR g.GraphicsObjectId = $candidate)
             ORDER BY g.EndQpc, g.GraphicsObjectId
             """, ("$kind1", SqliteType.Text), ("$kind2", SqliteType.Text), ("$kind3", SqliteType.Text),
             ("$kind4", SqliteType.Text), ("$handle", SqliteType.Text), ("$qualifier", SqliteType.Text),
-            ("$qpc", SqliteType.Integer), ("$device", SqliteType.Integer), ("$start", SqliteType.Integer));
+            ("$qpc", SqliteType.Integer), ("$device", SqliteType.Integer), ("$earlier", SqliteType.Integer),
+            ("$candidate", SqliteType.Integer));
         insertEvent = Sql.Prepare(connection,
             "INSERT INTO GraphicsObjectEvents (Seq, GraphicsObjectId, Role) VALUES ($seq, $id, $role)",
             ("$seq", SqliteType.Integer), ("$id", SqliteType.Integer), ("$role", SqliteType.Text));
@@ -242,7 +248,9 @@ internal sealed class GraphicsIndex : IDisposable
                     tracked.GlobalInvalidatedQpc = Math.Max(tracked.GlobalInvalidatedQpc ?? long.MinValue, target.KnownFromQpc);
             if (shape.Phase is Phase.Start or Phase.Rundown &&
                 shape.OptionalHandle(data, "hVidMmGlobalAlloc") is not null &&
-                data.TimestampQpc > (tracked.GlobalInvalidatedQpc ?? long.MinValue))
+                data.TimestampQpc > (tracked.GlobalInvalidatedQpc ?? long.MinValue) &&
+                (tracked.GlobalInvalidatedQpc is null ||
+                    globals.TryGetValue(global, out var current) && current.Targets.Count == 1))
                 tracked.GlobalCorrelatable = true;
             RefreshCorrelations(tracked);
         }
@@ -281,27 +289,29 @@ internal sealed class GraphicsIndex : IDisposable
     {
         active.TryGetValue(identity, out var tracked);
         var ownerChanged = deviceId is not null && tracked?.DeviceId is not null && tracked.DeviceId != deviceId;
+        var extend = tracked is { StartQpc: null } && tracked.Kind == kind && !ownerChanged &&
+            phase != Phase.Stop && qpc <= tracked.KnownFromQpc;
         var detached = tracked is not null && (qpc < tracked.KnownFromQpc && !tracked.ReferenceOnly ||
-            phase == Phase.Stop && qpc < tracked.LastQpc || phase == Phase.Start && qpc < tracked.LastQpc && !tracked.ReferenceOnly ||
+            phase == Phase.Stop && qpc < tracked.LastQpc || phase == Phase.Start && qpc < tracked.LastQpc ||
             ownerChanged && qpc < tracked.LastQpc);
         (long Seq, long Qpc)? boundary = null;
-        if (tracked is null || detached)
+        if (tracked is null || detached || extend)
         {
-            var past = FindHistorical(identity, kind, phase, qpc, deviceId, out boundary);
+            var past = FindHistorical(identity, kind, phase, qpc, deviceId, extend ? tracked : null, out boundary);
             if (past is not null)
             {
-                var latest = qpc >= past.LastQpc;
+                var latest = qpc >= past.LastQpc || past == tracked && past.ReferenceOnly;
                 Record(past, phase, sequence, qpc);
                 return (past, latest);
             }
             if (tracked is not null)
             {
-                var next = (Seq: tracked.FirstSeq, Qpc: Math.Max(tracked.KnownFromQpc, qpc));
+                var next = (Seq: tracked.KnownFromSeq, Qpc: Math.Max(tracked.KnownFromQpc, qpc));
                 if (boundary is null || next.Qpc < boundary.Value.Qpc) boundary = next;
             }
             detached = boundary is not null;
         }
-        if (!detached && tracked is not null && (tracked.Kind != kind || phase == Phase.Start && !tracked.ReferenceOnly || ownerChanged))
+        if (!detached && tracked is not null && (tracked.Kind != kind || phase == Phase.Start || ownerChanged))
         {
             End(tracked, sequence, qpc, "HandleReuse");
             tracked = null;
@@ -318,12 +328,12 @@ internal sealed class GraphicsIndex : IDisposable
             else End(tracked, boundary!.Value.Seq, boundary.Value.Qpc, "HandleReuse");
         }
         var newest = qpc >= tracked.LastQpc || tracked.ReferenceOnly;
-        if (phase != Phase.Reference) tracked.ReferenceOnly = false;
         Record(tracked, phase, sequence, qpc);
         return (tracked, newest);
     }
 
-    private Lifetime? FindHistorical(Identity identity, Kind kind, Phase phase, long qpc, long? deviceId, out (long Seq, long Qpc)? boundary)
+    private Lifetime? FindHistorical(Identity identity, Kind kind, Phase phase, long qpc, long? deviceId, Lifetime? candidate,
+        out (long Seq, long Qpc)? boundary)
     {
         var resourceIdentity = identity.Space == IdentitySpace.Resource;
         Set(history, ("$kind1", resourceIdentity ? Kind.Buffer.ToString() : kind.ToString()),
@@ -331,7 +341,7 @@ internal sealed class GraphicsIndex : IDisposable
             ("$kind3", resourceIdentity ? Kind.Texture2D.ToString() : kind.ToString()),
             ("$kind4", resourceIdentity ? Kind.Texture3D.ToString() : kind.ToString()),
             ("$handle", Hex(identity.Handle)), ("$qualifier", Hex(identity.Qualifier) ?? ""),
-            ("$qpc", qpc), ("$device", deviceId), ("$start", phase == Phase.Start));
+            ("$qpc", qpc), ("$device", deviceId), ("$earlier", phase != Phase.Stop), ("$candidate", candidate?.Id));
         boundary = null;
         Lifetime? match = null;
         using var rows = history.ExecuteReader();
@@ -339,25 +349,29 @@ internal sealed class GraphicsIndex : IDisposable
         {
             var firstQpc = rows.GetInt64(3);
             var startQpc = rows.IsDBNull(6) ? (long?)null : rows.GetInt64(6);
-            var knownFrom = startQpc ?? firstQpc;
-            var next = (Seq: qpc < knownFrom ? rows.GetInt64(2) : rows.GetInt64(7),
-                Qpc: qpc < knownFrom ? knownFrom : rows.GetInt64(8));
-            if (boundary is null || next.Qpc < boundary.Value.Qpc) boundary = next;
+            var knownFrom = rows.GetInt64(13);
+            (long Seq, long Qpc)? next = qpc < knownFrom ? (rows.GetInt64(12), knownFrom) :
+                rows.IsDBNull(8) ? null : (rows.GetInt64(7), rows.GetInt64(8));
+            if (next is { } bound && (boundary is null || bound.Qpc < boundary.Value.Qpc)) boundary = bound;
             if (rows.GetString(1) != kind.ToString() ||
                 deviceId is { } owner && !rows.IsDBNull(9) && rows.GetInt64(9) != owner) continue;
             if (phase == Phase.Start)
             {
                 if (startQpc is { } start ? start != qpc :
-                    qpc > firstQpc || !rows.IsDBNull(11) && qpc < rows.GetInt64(11)) continue;
+                    qpc > knownFrom || !rows.IsDBNull(11) && qpc < rows.GetInt64(11)) continue;
             }
-            else if (qpc < (startQpc ?? firstQpc)) continue;
+            else if (qpc < (startQpc ?? knownFrom) &&
+                (startQpc is not null || phase == Phase.Stop || !rows.IsDBNull(11) && qpc < rows.GetInt64(11))) continue;
             if (phase == Phase.Stop && (qpc < rows.GetInt64(4) || !rows.IsDBNull(10) && qpc != rows.GetInt64(10))) continue;
             if (match is not null) return null; // Multiple plausible lifetimes remain separate evidence.
-            match = new(rows.GetInt64(0), identity, kind, Enum.Parse<Phase>(rows.GetString(5)), rows.GetInt64(2), firstQpc)
+            match = candidate is { } current && current.Id == rows.GetInt64(0) ? current :
+                new(rows.GetInt64(0), identity, kind, Enum.Parse<Phase>(rows.GetString(5)), rows.GetInt64(2), firstQpc)
             {
-                LastQpc = rows.GetInt64(4), StartQpc = startQpc, EndQpc = rows.GetInt64(8),
+                LastQpc = rows.GetInt64(4), StartQpc = startQpc, EndQpc = rows.IsDBNull(8) ? null : rows.GetInt64(8),
                 DeviceId = rows.IsDBNull(9) ? null : rows.GetInt64(9)
             };
+            match.KnownFromSeq = rows.GetInt64(12);
+            match.KnownFromQpc = knownFrom;
         }
         return match;
     }
@@ -365,7 +379,13 @@ internal sealed class GraphicsIndex : IDisposable
     private void Record(Lifetime tracked, Phase phase, long sequence, long qpc)
     {
         tracked.LastQpc = Math.Max(tracked.LastQpc, qpc);
+        if (qpc < tracked.KnownFromQpc)
+        {
+            tracked.KnownFromSeq = sequence;
+            tracked.KnownFromQpc = qpc;
+        }
         if (phase == Phase.Start) tracked.StartQpc ??= qpc;
+        if (phase != Phase.Reference) tracked.ReferenceOnly = false;
         Record(tracked.Id, phase, sequence, qpc);
     }
 
@@ -397,7 +417,7 @@ internal sealed class GraphicsIndex : IDisposable
         if (tracked.Kind == Kind.AdapterAllocation && globals.TryGetValue(tracked.RegisteredGlobal, out var bucket))
         {
             // Do not join surviving, unclosed device-allocation records to a later reuse of this global pointer.
-            foreach (var child in bucket.Sources.Where(child => child.LastQpc <= qpc).ToArray())
+            foreach (var child in bucket.Sources.ToArray())
             {
                 child.GlobalCorrelatable = false;
                 child.GlobalInvalidatedQpc = Math.Max(child.GlobalInvalidatedQpc ?? long.MinValue, qpc);

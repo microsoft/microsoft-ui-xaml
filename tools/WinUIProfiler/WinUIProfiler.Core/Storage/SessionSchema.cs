@@ -88,6 +88,8 @@ internal static class SessionSchema
             Qualifier TEXT NOT NULL,   -- kernel device for a device allocation, adapter for an adapter allocation, empty otherwise
             FirstSeq INTEGER NOT NULL,
             FirstQpc INTEGER NOT NULL,
+            KnownFromSeq INTEGER NOT NULL,
+            KnownFromQpc INTEGER NOT NULL, -- earliest accepted observation, not an inferred creation time
             LastSeq INTEGER NOT NULL,
             LastQpc INTEGER NOT NULL,
             FirstObservation TEXT NOT NULL, -- Start, Rundown, Reference or Stop

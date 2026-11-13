@@ -1094,18 +1094,30 @@ Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation
 foreach (var failure in new[] { false, true })
 {
     List<string> calls = [];
+    var enabled = LiveEtwSource.EnableDirect3D(() => { });
     LiveEtwSource.CaptureGraphicsState((provider, _) =>
     {
         calls.Add(provider == XamlProviders.Direct3D11 ? "D3D11" : "DxgKrnl");
         if (failure && provider == XamlProviders.Direct3D11) throw new InvalidOperationException("Capture state failed after enabling.");
-    }, () => calls.Add("Restore"));
+    }, () => calls.Add("Restore"), enabled);
     Expect(calls.SequenceEqual(["D3D11", "Restore", "DxgKrnl"]),
         "D3D11 filters must be restored immediately after capture state, including failure, before kernel rundown.");
 }
+{
+    var enabled = LiveEtwSource.EnableDirect3D(() => throw new InvalidOperationException("Provider enable failed."));
+    List<Guid> requested = [];
+    LiveEtwSource.CaptureGraphicsState((provider, _) => requested.Add(provider),
+        () => throw new InvalidOperationException("A disabled provider must not be restored."), enabled);
+    Expect(!enabled && requested.SequenceEqual([XamlProviders.DxgKrnl]),
+        "Failure to enable optional D3D11 must skip its rundown and restoration without preventing kernel capture.");
+}
+ExpectThrows<InvalidOperationException>(() => LiveEtwSource.EnableDirect3D(
+    () => throw new InvalidOperationException("Filter update failed."), previouslyEnabled: true),
+    "Updating an enabled provider's filter must fail closed instead of leaving an apparently successful broader capture.");
 ExpectThrows<InvalidOperationException>(() => LiveEtwSource.CaptureGraphicsState((_, _) => { },
     () => throw new InvalidOperationException("Filter restoration failed.")),
     "A failed filter restoration must propagate rather than leave an apparently successful unfiltered capture.");
-Console.WriteLine("Passed: graphics capture-state restores selected filters on success and failure.");
+Console.WriteLine("Passed: optional graphics enable failures preserve capture; enabled-provider filters fail closed.");
 
 var graphicsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsIdentity-{Guid.NewGuid():N}.sqlite");
 try

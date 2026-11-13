@@ -15,10 +15,14 @@ internal static class GraphicsIndexTests
         KindChangingStops();
         HistoricalObservations();
         PromotedDeviceBounds();
+        PartialDeviceBounds();
+        RundownStartPromotion();
+        HistoricalRundownEvidence();
         HistoricalDeviceReferences();
         HistoricalStartBounds();
         ResourceDeviceReuse();
         StaleMappings();
+        DelayedGlobalStops();
         ClearedBridges();
         IndependentAllocationLinks();
         PartialAllocationIntervals();
@@ -162,6 +166,199 @@ internal static class GraphicsIndexTests
             });
         }
         Console.WriteLine("Passed: delayed resources retain their historical device across device-pointer reuse.");
+    }
+
+    private static void PartialDeviceBounds()
+    {
+        foreach (var closed in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Direct3D(12, 1, Device) with { TimestampQpc = 1_000 },
+                Direct3D(5, Device) with { TimestampQpc = 500 }
+            ];
+            if (closed) events.Add(Direct3D(4, Device) with { TimestampQpc = 2_000 });
+            events.AddRange(
+            [
+                Direct3D(6, 2, Device) with { TimestampQpc = 700 },
+                Direct3D(7, 2, Device) with { TimestampQpc = 800 },
+                Direct3D(13, 1, Device) with { TimestampQpc = 1_500 }
+            ]);
+            if (!closed) events.Add(Direct3D(4, Device) with { TimestampQpc = 2_000 });
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == 1 &&
+                    Count(connection, "GraphicsObjects", "DeviceId IS NOT NULL") == 2 &&
+                    Count(connection, "GraphicsLifetimes", "Kind = 'Buffer' AND DurationMs = 0.1") == 1,
+                    "Earlier device rundown must extend the accepted observation bound for active and historical references.");
+                Expect(Count(connection, "GraphicsObjects", "Kind = 'Device' AND FirstQpc = 1000 AND StartQpc IS NULL AND StopQpc = 2000") == 1,
+                    "Accepting earlier existence evidence must preserve the first-arrival timestamp and unknown creation.");
+            });
+        }
+        List<ProfilerEvent> retained =
+        [
+            Direct3D(12, 1, Device) with { TimestampQpc = 1_000 },
+            Direct3D(5, Device) with { TimestampQpc = 500 },
+            Direct3D(4, Device) with { TimestampQpc = 2_000 }
+        ];
+        retained.AddRange(Enumerable.Range(0, 6_000).Select(_ =>
+            new ProfilerEvent(0, 0, 10, 7, XamlProvider.Xaml, false, "UnrelatedEvent", 0, [new("Value", new string('x', 256))])));
+        retained.Add(Direct3D(6, 2, Device) with { TimestampQpc = 700 });
+        retained.Add(Direct3D(7, 2, Device) with { TimestampQpc = 800 });
+        WithRecording(retained, connection =>
+        {
+            Expect(Sql.Scalar(connection, "SELECT CompleteFromSeq FROM SessionInfo") > 3 &&
+                    Count(connection, "GraphicsObjects", "Kind = 'Device' AND FirstQpc = 1000 AND KnownFromSeq = 2 AND KnownFromQpc = 500 AND Trimmed") == 1 &&
+                    Count(connection, "GraphicsObjects", "DeviceId IS NOT NULL") == 2,
+                    "Historical device observation bounds must survive trimming of their original raw evidence.");
+        }, limitBytes: 1024 * 1024);
+        WithRecording(
+        [
+            Direct3D(12, 1, Device) with { TimestampQpc = 1_000 },
+            Direct3D(3, Device) with { TimestampQpc = 2_000 },
+            Direct3D(6, 2, Device) with { TimestampQpc = 2_500 },
+            Direct3D(13, 1, Device) with { TimestampQpc = 1_500 },
+            Direct3D(7, 2, Device) with { TimestampQpc = 2_600 },
+            Direct3D(4, Device) with { TimestampQpc = 3_000 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == 2 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Device' AND FirstObservation = 'Reference' AND StartQpc IS NULL AND EndQpc = 2000") == 1,
+                "A Start later than a device's reference must create a replacement, not promote the earlier placeholder.");
+            Expect(Sql.Scalar(connection, """
+                SELECT COUNT(*) FROM GraphicsObjects r JOIN GraphicsObjects d ON d.GraphicsObjectId = r.DeviceId
+                WHERE (r.Kind = 'Texture2D' AND d.FirstObservation = 'Reference' AND d.StartQpc IS NULL)
+                    OR (r.Kind = 'Buffer' AND d.StartQpc = 2000 AND d.StopQpc = 3000)
+                """) == 2,
+                "Resources before and after a later device Start must retain their distinct owning device lifetimes.");
+        });
+        Console.WriteLine("Passed: partial device bounds accept earlier rundown but reject later creation as placeholder promotion.");
+    }
+
+    private static void RundownStartPromotion()
+    {
+        (ProfilerEvent Start, ProfilerEvent Stop, ProfilerEvent Rundown)[] identities =
+        [
+            (Direct3D(3, Device), Direct3D(4, Device), Direct3D(5, Device)),
+            (Direct3D(12, 1), Direct3D(13, 1), Direct3D(14, 1)),
+            (Allocation(33, 2, 3, 100), Allocation(34, 2, 3, 100), Allocation(35, 2, 3, 100)),
+            (Allocation(36, 2, 3, 100), Allocation(37, 2, 3, 100), Allocation(38, 2, 3, 100))
+        ];
+        foreach (var (start, stop, rundown) in identities)
+        {
+            WithRecording(
+            [
+                rundown with { TimestampQpc = 2_000 },
+                start with { TimestampQpc = 1_000 },
+                stop with { TimestampQpc = 3_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects") == 1 &&
+                    Count(connection, "GraphicsLifetimes", "FirstObservation = 'Rundown' AND StartSeq = 2 AND StopSeq = 3 AND DurationMs = 2") == 1 &&
+                    Count(connection, "GraphicsObjectEvents") == 3,
+                    "An earlier Start must complete the unique compatible active rundown lifetime.");
+            });
+            WithRecording(
+            [
+                start with { TimestampQpc = 1_000 },
+                stop with { TimestampQpc = 2_000 },
+                rundown with { TimestampQpc = 4_000 },
+                start with { TimestampQpc = 500 },
+                stop with { TimestampQpc = 5_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects") == 3 &&
+                    Count(connection, "GraphicsLifetimes", "StartQpc = 500 AND StopQpc IS NULL AND EndQpc = 1000") == 1 &&
+                    Count(connection, "GraphicsLifetimes", "FirstQpc = 4000 AND StartQpc IS NULL AND StopQpc = 5000") == 1,
+                    "An earlier Start must not promote active rundown across an intervening known lifetime.");
+            });
+            WithRecording(
+            [
+                stop with { TimestampQpc = 2_000 },
+                rundown with { TimestampQpc = 4_000 },
+                start with { TimestampQpc = 1_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects") == 3 &&
+                    Count(connection, "GraphicsLifetimes", "DurationMs IS NOT NULL") == 0,
+                    "An earlier Start with both closed and active partial candidates must remain ambiguous.");
+            });
+        }
+        Console.WriteLine("Passed: earlier Starts promote only unique rundown lifetimes within proven reuse bounds.");
+    }
+
+    private static void HistoricalRundownEvidence()
+    {
+        (ProfilerEvent Start, ProfilerEvent Stop, ProfilerEvent Rundown)[] identities =
+        [
+            (Direct3D(3, Device), Direct3D(4, Device), Direct3D(5, Device)),
+            (Direct3D(12, 1), Direct3D(13, 1), Direct3D(14, 1)),
+            (Allocation(33, 2, 3, 100), Allocation(34, 2, 3, 100), Allocation(35, 2, 3, 100)),
+            (Allocation(36, 2, 3, 100), Allocation(37, 2, 3, 100), Allocation(38, 2, 3, 100))
+        ];
+        foreach (var (start, stop, rundown) in identities)
+        {
+            WithRecording(
+            [
+                stop with { TimestampQpc = 3_000 },
+                rundown with { TimestampQpc = 2_000 },
+                start with { TimestampQpc = 1_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects") == 1 &&
+                    Count(connection, "GraphicsLifetimes", "FirstObservation = 'Stop' AND StartSeq = 3 AND StopSeq = 1 AND DurationMs = 2") == 1 &&
+                    Count(connection, "GraphicsObjectEvents") == 3,
+                    "Earlier rundown must join a unique stop-only lifetime without fabricating a reuse boundary.");
+            });
+            WithRecording(
+            [
+                start with { TimestampQpc = 1_000 },
+                stop with { TimestampQpc = 2_000 },
+                stop with { TimestampQpc = 4_000 },
+                rundown with { TimestampQpc = 500 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects") == 3 &&
+                    Count(connection, "GraphicsLifetimes", "FirstQpc = 500 AND StopQpc IS NULL AND EndQpc = 1000") == 1,
+                    "Earlier rundown must not cross an intervening known lifetime to match a later stop-only row.");
+            });
+            WithRecording(
+            [
+                start with { TimestampQpc = 3_000 },
+                stop with { TimestampQpc = 4_000 },
+                start with { TimestampQpc = 1_000 }
+            ], connection =>
+            {
+                Expect(Count(connection, "GraphicsObjects") == 2 &&
+                    Count(connection, "GraphicsLifetimes", "StartQpc = 1000 AND StopQpc IS NULL AND EndQpc = 3000 AND EndSeq = 1") == 1,
+                    "A detached earlier lifetime must end at the replacement's beginning, not its later Stop.");
+            });
+        }
+        WithRecording(
+        [
+            Direct3D(4, Device) with { TimestampQpc = 3_000 },
+            Direct3D(12, 1, Device) with { TimestampQpc = 2_000 },
+            Direct3D(3, Device) with { TimestampQpc = 1_000 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == 1 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Device' AND StartSeq = 3 AND StopSeq = 1 AND DurationMs = 2") == 1 &&
+                Count(connection, "GraphicsObjects", "Kind = 'Texture2D' AND DeviceId IS NOT NULL") == 1,
+                "An earlier resource reference must match its unique stop-only parent device.");
+        });
+        WithRecording(
+        [
+            Direct3D(12, 1, Device) with { TimestampQpc = 1_000 },
+            Direct3D(3, Device) with { TimestampQpc = 500 },
+            Direct3D(4, Device) with { TimestampQpc = 2_000 },
+            Direct3D(3, Device) with { TimestampQpc = 100 }
+        ], connection =>
+        {
+            Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == 2 &&
+                Count(connection, "GraphicsLifetimes", "Kind = 'Device' AND StartQpc = 100 AND StopQpc IS NULL AND EndQpc = 500 AND EndSeq = 2") == 1,
+                "A historical reuse bound must use the sequence of the earliest accepted observation, not the first arrival.");
+        });
+        Console.WriteLine("Passed: stop-only lifetimes accept unique earlier existence evidence within historical bounds.");
     }
 
     private static void HistoricalStartBounds()
@@ -388,6 +585,35 @@ internal static class GraphicsIndexTests
             });
         }
         Console.WriteLine("Passed: missing bridge fields preserve mappings while explicit zero clears only the reported bridge.");
+    }
+
+    private static void DelayedGlobalStops()
+    {
+        foreach (var confirmationFirst in new[] { false, true })
+        {
+            List<ProfilerEvent> events =
+            [
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                Allocation(36, 2, 3, 100) with { TimestampQpc = 2_000 },
+                Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 2_500 },
+                Allocation(38, 2, 3, 100) with { TimestampQpc = 4_000 },
+                Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 }
+            ];
+            var replacement = Allocation(33, 2, 3, 100) with { TimestampQpc = 5_000 };
+            var stale = Allocation(38, 2, 3, 100) with { TimestampQpc = 4_500 };
+            events.AddRange(confirmationFirst ? [stale, replacement] : [replacement, stale]);
+            events.Add(Allocation(38, 2, 3, 100) with { TimestampQpc = 6_000 });
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal' AND StartSeq IN (6, 7)") == 0 &&
+                    Count(connection, "GraphicsLinks", "Kind = 'AllocationGlobal' AND StartSeq = 8 AND EndSeq IS NULL") == 1,
+                    "A delayed adapter Stop must invalidate every old bridge until confirmation newer than the replacement.");
+                Expect(Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation' AND StartSeq = 3 AND EndSeq IS NULL") == 1 &&
+                    Count(connection, "GraphicsResourceAllocations", "StartSeq = 5 AND EndSeq = 8 AND AdapterAllocationId IS NULL") == 1,
+                    "Global bridge invalidation must preserve the independent resource link and its unknown-adapter interval.");
+            });
+        }
+        Console.WriteLine("Passed: delayed adapter Stops cannot carry stale allocation bridges into replacement targets.");
     }
 
     private static void IndependentAllocationLinks()

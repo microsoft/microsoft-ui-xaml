@@ -563,6 +563,9 @@ separate from historical correlation intervals.
 Only actual Start/Stop events establish creation/destruction times.
 Rundown identifies an existing object, a resource can establish a
 reference-only device, and a Stop without a Start has unknown creation.
+`FirstSeq`/`FirstQpc` retain the first-arrival observation, while
+`KnownFromSeq`/`KnownFromQpc` retain the earliest accepted observation even
+after rolling retention. These existence bounds do not establish creation.
 Reuse creates a new surrogate and bounds the old lifetime without fabricating
 a destruction. An unknown end does not prove that the object is still alive.
 `GraphicsLifetimes` exposes endpoint availability, trimming and capture-loss

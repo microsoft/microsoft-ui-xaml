@@ -32,13 +32,15 @@ public sealed class LiveEtwSource : IDisposable
     private readonly IReadOnlyList<MarkerProviderSettings> markers;
     private readonly Thread reader;
     private int eventsLost;
+    private bool direct3DEnabled;
     private bool reading;
     private bool disposed;
 
-    private LiveEtwSource(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers)
+    private LiveEtwSource(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled)
     {
         this.session = session;
         this.markers = markers;
+        this.direct3DEnabled = direct3DEnabled;
         reader = new(Read) { IsBackground = true, Name = "WinUIProfiler ETW reader" };
     }
 
@@ -130,7 +132,7 @@ public sealed class LiveEtwSource : IDisposable
 
             // Other processes with the same executable name, and the launchers, stop writing to the session.
             var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
-            EnableProviders(session, options, options, markers);
+            direct3DEnabled = EnableProviders(session, options, options, markers, direct3DEnabled);
             XamlEventSubscription.SubscribeProcesses(session.Source, selected, markers, sink, launcherProcessId);
             CaptureGraphicsState(options);
             reader.Start();
@@ -166,10 +168,10 @@ public sealed class LiveEtwSource : IDisposable
         {
             // Open the consumer side before enabling, so events written before reading starts are kept.
             _ = session.Source;
-            EnableProviders(session, options, launcherOptions, enabled);
+            var direct3DEnabled = EnableProviders(session, options, launcherOptions, enabled);
             EnableGpuMemory(session);
             EnableFocus(session);
-            return new(session, enabled);
+            return new(session, enabled, direct3DEnabled);
         }
         catch
         {
@@ -193,27 +195,36 @@ public sealed class LiveEtwSource : IDisposable
     // so it is enabled for every process, and XamlEventSubscription keeps the target's events, and for a launcher
     // provider the launcher's. ETW enables a provider that has not registered yet when it does, so an app's provider
     // needs no special order.
-    private static void EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
-        TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers)
+    private static bool EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
+        TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled = false)
     {
         foreach (var provider in XamlProviders.XamlIds)
         {
             session.EnableProvider(provider, TraceEventLevel.Verbose, ulong.MaxValue, options);
         }
 
-        try
-        {
-            session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options);
-        }
-        catch (Exception error) when (error is not OutOfMemoryException)
-        {
-            Trace.TraceWarning($"Could not enable Direct3D11 device and resource events: {error.Message}");
-        }
+        var enabled = EnableDirect3D(
+            () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options), direct3DEnabled);
 
         foreach (var marker in markers)
         {
             session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
                 marker.Provider.Id == Win32kTraceLogging ? null : marker.Launcher ? launcherOptions : options);
+        }
+        return enabled;
+    }
+
+    internal static bool EnableDirect3D(Action enable, bool previouslyEnabled = false)
+    {
+        try
+        {
+            enable();
+            return true;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException && !previouslyEnabled)
+        {
+            Trace.TraceWarning($"Could not enable Direct3D11 device and resource events: {error.Message}");
+            return false;
         }
     }
 
@@ -253,9 +264,9 @@ public sealed class LiveEtwSource : IDisposable
     // rundown events too. They identify existing objects, not their original creation times.
     private void CaptureGraphicsState(TraceEventProviderOptions options) =>
         CaptureGraphicsState((provider, keywords) => session.CaptureState(provider, keywords),
-            () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options));
+            () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options), direct3DEnabled);
 
-    internal static void CaptureGraphicsState(Action<Guid, ulong> request, Action restoreDirect3D)
+    internal static void CaptureGraphicsState(Action<Guid, ulong> request, Action restoreDirect3D, bool direct3DEnabled = true)
     {
         foreach (var (provider, keywords) in new[]
         {
@@ -263,6 +274,7 @@ public sealed class LiveEtwSource : IDisposable
             (XamlProviders.DxgKrnl, GpuMemoryKeyword | GpuResourceKeyword)
         })
         {
+            if (provider == XamlProviders.Direct3D11 && !direct3DEnabled) continue;
             try
             {
                 request(provider, keywords);
