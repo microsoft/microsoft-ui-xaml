@@ -1739,6 +1739,14 @@ CImageSource::ReloadReleasedSoftwareImage()
         //ASSERT(!m_pImageSurfaceWrapper->MustKeepSystemMemory() || (m_spAbortableImageOperation != NULL));
 
         IFC_RETURN(RedecodeEncodedImage(TRUE));
+
+        // RedecodeEncodedImage leaves a DecodeToRenderSize image for the render walk to request, but the alpha mask
+        // path only requests a decode once the software surface exists. Track the image so the decode is requested
+        // after this frame.
+        if (m_fDecodeToRenderSize)
+        {
+            IFC_RETURN(GetContext()->StartTrackingImageForRenderWalk(this));
+        }
     }
 
     return S_OK;
@@ -2978,6 +2986,20 @@ CImageSource::DecodeStreamWithSize(
             decodeParams));
 
         xref_ptr<IAbortableImageOperation> spAbortableImageOperation;
+
+        if (decodeToRenderSize)
+        {
+            // Same recovery as RS5 Bug #18515061 below: a request that lost its decoder to another BitmapImage
+            // with the same URI can't decode.
+            if (m_spAbortableImageOperation != nullptr && !m_spAbortableImageOperation->HasDecoder())
+            {
+                m_spAbortableImageOperation.reset();
+            }
+
+            // Don't look up the hardware surface cache with the previous decode's size; upload from the new
+            // software surface instead.
+            m_spPendingDecodeParams = nullptr;
+        }
 
         // For printing purpose we need to do synchronousDecode and it should not affect the
         // already existing long running operation. However for SetSource we may also need to
