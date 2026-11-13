@@ -28,6 +28,7 @@ namespace DirectUI
         IFACEMETHOD(put_CustomSort)(_In_opt_ xaml_data::ICollectionViewComparer* pValue) override;
 
         _Check_return_ HRESULT SetShapingOwner(_In_ CollectionViewSource* pOwner);
+        bool HasShapingOwner() const { return !!m_tpShapingOwner; }
 
         typedef CFrameworkEventSource<ICurrentChangedEventSource, wf::IEventHandler<IInspectable*>, IInspectable, IInspectable> CurrentChangedEventSourceType;
         typedef CFrameworkEventSource<ICurrentChangingEventSource, xaml_data::ICurrentChangingEventHandler, IInspectable, xaml_data::ICurrentChangingEventArgs> CurrentChangingEventSourceType;
