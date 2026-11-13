@@ -41,7 +41,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowTemplateSelector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewShapingSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCollectionViewGroups.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
@@ -61,7 +61,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRowTemplateSelector.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTelemetry.cpp" />
@@ -86,7 +85,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewShapingSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewCollectionViewGroups.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_CurrentCell.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Grouping.cpp" />
@@ -109,7 +108,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)TableViewSource.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TableView.idl" />
   </ItemGroup>
 </Project>

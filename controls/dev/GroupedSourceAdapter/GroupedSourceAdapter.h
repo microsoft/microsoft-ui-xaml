@@ -92,7 +92,7 @@ private:
     std::unordered_set<winrt::hstring> m_ambiguousLiveGroupIdentityKeys;
 
     // Affinity assertion only (chk); the adapter never marshals. Teardown runs on the owning UI
-    // thread because every strong owner (TableViewSource / TableView) is a ReferenceTracker whose
+    // thread because every strong owner (TableViewShapingSource / TableView) is a ReferenceTracker whose
     // final_release marshals destruction there, so no revoke thread guard is needed.
     winrt::weak_ref<winrt::Microsoft::UI::Dispatching::DispatcherQueue> m_uiQueue{ nullptr };
 

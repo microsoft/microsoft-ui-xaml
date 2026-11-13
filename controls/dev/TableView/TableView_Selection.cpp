@@ -5,7 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 #include "TableViewGroupInfo.h"
 #include "GroupedEntry.h"
 #include "TVDiag.h"
@@ -232,7 +232,7 @@ bool TableView::DrainPendingSelection()
             int32_t candidate = -1;
             TableViewRowInfo info{};
             if (m_tableViewSourceRowMetadata->TryGetIndexForIdentity(pendingIdentity, candidate) &&
-                TryGetTableViewSourceRowInfo(candidate, info) && info.Kind == TableViewRowKind::Data)
+                TryGetTableViewShapingSourceRowInfo(candidate, info) && info.Kind == TableViewRowKind::Data)
             {
                 index = candidate;
             }
@@ -975,7 +975,7 @@ winrt::ItemsSourceView TableView::DisplayedRowsView() const
     }
     if (auto const source = m_activeSource.get())
     {
-        return winrt::get_self<::TableViewSource>(source)->GetItemsSourceView();
+        return source.get()->GetItemsSourceView();
     }
     return nullptr;
 }

@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 
 namespace
 {
@@ -42,7 +42,7 @@ void TableView::SampleInstanceTelemetry() noexcept
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }
         if (auto const source = m_activeSource.get())
         {
-            auto const* const sourceImpl = winrt::get_self<::TableViewSource>(source);
+            auto const* const sourceImpl = source.get();
             if (sourceImpl->HasFilter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
             if (sourceImpl->HasGroupBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
             if (sourceImpl->HasParentBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }

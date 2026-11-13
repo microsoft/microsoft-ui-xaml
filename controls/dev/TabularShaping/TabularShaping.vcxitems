@@ -3,11 +3,11 @@
   <!--
     TabularShaping — the shared shaping substrate.
 
-    ShapingHelpers is consumed by three components (TableViewSource/TableView_Sort/
+    ShapingHelpers is consumed by three components (TableViewShapingSource/TableView_Sort/
     GroupedSourceAdapter), so it is build-owned here rather than by any one
     of them.
 
-    SortDirection.idl is here for the same reason: the enum is named by TableViewSource,
+    SortDirection.idl is here for the same reason: the enum is named by TableViewShapingSource,
     TableViewColumn and TableViewSortingEventArgs, so no single consumer should own it.
 
     Consumers include it as "ShapingHelpers.h"; this file's AdditionalIncludeDirectories makes

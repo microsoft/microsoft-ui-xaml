@@ -288,6 +288,12 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     Object ItemsSource { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String ItemKeyPath { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String ParentKeyPath { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -357,6 +363,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewGroupCollapsedEventArgs> GroupCollapsed;
 
     static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ItemKeyPathProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ParentKeyPathProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };

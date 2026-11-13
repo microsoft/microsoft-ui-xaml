@@ -503,7 +503,7 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
 
 void GroupedSourceAdapter::UnsubscribeFromAllGroups()
 {
-    // Teardown is UI-thread-guaranteed by the owning ReferenceTrackers (TableViewSource / TableView),
+    // Teardown is UI-thread-guaranteed by the owning ReferenceTrackers (TableViewShapingSource / TableView),
     // so revoking here never crosses threads. SafeRevokeWith + the weak_from_this callbacks remain
     // for re-entrancy / GC-safety.
     for (auto& sub : m_innerSubscriptions)

@@ -737,7 +737,7 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
 
 void ShapedItemsSource::UnsubscribeFromSourceCollectionChanges()
 {
-    // Teardown runs on the owning UI thread: the projected owner (TableViewSource) is
+    // Teardown runs on the owning UI thread: the projected owner (TableViewShapingSource) is
     // reference-tracked, so its final_release marshals the whole delete -- and thus this
     // destructor-driven revoke -- back to the DispatcherQueue it was constructed on. The revoke
     // therefore never lands on the GC finalizer thread, so no thread guard is needed here.
