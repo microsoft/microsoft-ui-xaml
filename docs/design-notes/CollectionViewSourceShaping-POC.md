@@ -198,7 +198,7 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 
 ## End to end: TableView on a shaped CollectionViewSource
 
-The app gives TableView `cvs.View` as `ItemsSource` and no `TableViewSource`:
+The app gives TableView `cvs.View` as `ItemsSource`:
 
 ```csharp
 var cvs = new CollectionViewSource { Source = processes };
@@ -214,7 +214,7 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
   itself.
 - **Header sort.** When `ItemsSource` implements `ICollectionViewShaping`, a header click, `SortByColumn`,
   `ToggleSortDirection` and `ClearSort` write the column's `SortMemberPath` to the view's `SortDescriptions` (the
-  column's sort replaces the previous one, as with a `TableViewSource`), and `Sorting` / `Sorted` are raised. A column
+  column's sort replaces the previous one), and `Sorting` / `Sorted` are raised. A column
   without a `SortMemberPath` (a `CustomSortComparer` column) cannot sort the view.
 - **Sort arrow.** The arrow follows the view's primary `SortDescription`, including a sort the app or another
   consumer applies to the view directly (`TableView` listens to `SortDescriptions.VectorChanged`).
@@ -228,20 +228,44 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
   Task Manager-style flat data, grouped by `GroupDescriptions`, a filter box using `Filter`, `Refresh()` after a
   value update, and header sort through the view.
 
-### Known gap: hierarchy
+### TableViewSource removed
 
-`TableViewSource.ParentBy` (tree rows) and grouped hierarchy have **no CVS or WPF equivalent**. It is not just one
-more descriptor: in tree mode filter must keep ancestors, sort applies per sibling set, and grouping buckets roots
-only, and `ICollectionViewGroup` has no notion of depth. Task Manager's expandable Apps rows need it.
+The public `TableViewSource` (and its `TableViewPredicate`, `TableViewKeySelector` and
+`TableViewGroupIdentitySelector` delegates) is removed. Apps shape data with `CollectionViewSource` and hand
+TableView its `View`. A plain collection is still sorted by TableView itself on a header click, through the internal
+engine below.
 
-The recommended end state (investigation report 11, option (a)) is:
+### Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)
 
-- CVS owns sort, filter and group for flat and grouped data, as in WPF, reached through `ICollectionViewShaping`.
-- Hierarchy is declared on TableView (for example `TableView.ParentBy(key, parentKey)`), and TableView's internal
-  engine reads the CVS descriptors through `ICollectionViewShaping` and applies them tree-aware. In tree mode the CVS
-  `View` order and TableView's row order differ, which must be documented.
-- Do not add hierarchy to CVS (option (b)): no WPF precedent, and ListView, GridView and SemanticZoom gain nothing.
-- `TableViewSource` stays a `[MUX_PREVIEW]` bridge until this lands.
+Tree rows have **no CVS or WPF equivalent**. It is not just one more descriptor: in tree mode sort applies per
+sibling set and grouping buckets roots only, and `ICollectionViewGroup` has no notion of depth. Task Manager's
+expandable Apps rows need it.
+
+For V1 the relation is declared on TableView with two string property paths, `ItemKeyPath` and `ParentKeyPath`
+(preview, like the rest of TableView). They drive the internal engine's parent-key relation over whatever
+`ItemsSource` is: a plain collection, or a CVS `View`. Over a view the CVS filter, sort and grouping run first, then
+the rows are nested:
+
+- Siblings keep the view's order, so `SortDescriptions` sorts each sibling set.
+- The CVS filter runs before nesting: a match whose parent is filtered out is shown as an orphan root (the former
+  `TableViewSource` kept the ancestors of a match).
+- With a grouped view, each root is placed in its group and keeps its subtree.
+- No live shaping: a key edit takes effect on `Refresh()` or a collection change.
+
+Hierarchy on CVS itself (a `HierarchyDescription`, or option (b)) is future work; if it is approved, the relation
+moves from TableView into the view and `ItemKeyPath` / `ParentKeyPath` become a shorthand for it.
+
+### Internal components after TableViewSource removal
+
+None of these are in public IDL or the XAML metadata provider.
+
+| Component | Role | V1 | End state |
+|---|---|---|---|
+| `ShapedItemsSource` | Engine: sort, filter, group and live shaping for plain collections, plus the parent-key hierarchy. | Internal, unchanged. | Sort, filter and group retire once CVS has live shaping, comparer sort and incremental updates; TableView then wraps a plain list in an internal CVS. |
+| `TableViewShapingSource` (was `TableViewSource`) | Non-projected facade TableView creates over `ShapedItemsSource` for every `ItemsSource`; header sort on plain collections and `ItemKeyPath` / `ParentKeyPath` go through it. | Internal. | Shrinks with the engine to the hierarchy facade. |
+| `GroupedSourceAdapter` | Flattens groups into header and data rows for the repeater. | Internal, unchanged. | Stays: TableView's presentation layer over `ICollectionView.CollectionGroups`. |
+| `HierarchicalSourceAdapter` | Flattens the tree and tracks row expansion. | Internal, unchanged. | Stays in TableView (`ItemKeyPath` / `ParentKeyPath`), or moves into CVS if hierarchy on CVS is approved. |
+| `TableViewCollectionViewGroups` | Maps CVS `CollectionGroups` to the group contract the adapters read. | Internal, unchanged. | Stays while CVS groups feed the adapters. |
 
 ## Out of scope for the POC
 
@@ -254,7 +278,7 @@ The recommended end state (investigation report 11, option (a)) is:
 - `DeferRefresh()`. Each descriptor edit reshapes immediately.
 - XAML-declared descriptors (needs DP-backed collection properties and type-table entries).
 - `CanSort` / `CanFilter` / `CanGroup` on `ICollectionViewShaping`.
-- Hierarchy (see "Known gap: hierarchy").
+- Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
 - Performance work: incremental updates, virtualization, hashed group lookup. The POC is O(n log n) per refresh,
   plus O(n × groups) for grouping.
 

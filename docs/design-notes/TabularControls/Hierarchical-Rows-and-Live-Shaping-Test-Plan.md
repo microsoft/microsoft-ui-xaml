@@ -2,9 +2,17 @@
 
 This plan covers automated tests for:
 
-- **Hierarchical rows:** `TableViewSource.ParentBy` / `ClearParentBy`, `TableView.ExpandAllRows` /
-  `CollapseAllRows`, and `TableViewRow.Level` / `IsExpandable` / `IsExpanded`.
-- **Live shaping:** `TableViewSource.IsLiveShaping`.
+- **Hierarchical rows:** `TableView.ItemKeyPath` / `ParentKeyPath` (the engine's internal `ParentBy` /
+  `ClearParentBy`), `TableView.ExpandAllRows` / `CollapseAllRows`, and `TableViewRow.Level` /
+  `IsExpandable` / `IsExpanded`.
+- **Live shaping:** the engine's internal live shaping.
+
+> **Status after `TableViewSource` removal.** The public `TableViewSource` is gone, so the live shaping
+> suite (§4, `TableView_LiveShaping_APITests.cs`, and the hierarchy live tests) was deleted with it:
+> no public API reaches live shaping in V1. The hierarchy tests (§3) now declare the relation with
+> `ItemKeyPath` / `ParentKeyPath` and compose with a `CollectionViewSource` view for sort, filter and
+> group. Tests below that relied on selector-only behaviour (filter keeps ancestors, re-entrancy from
+> selectors, two relations sharing one source object) were removed or rewritten.
 
 The contract is in [Hierarchical-Data-Rows-Parent-Key-Design.md](Hierarchical-Data-Rows-Parent-Key-Design.md).
 Each test lists what it is for (**Intent**), what must happen (**Expected**), and what a failure tells
@@ -27,7 +35,7 @@ projection. These flat or grouped behaviours are already covered, so the plan do
 
 | Behaviour | Existing test | Plan action |
 | --- | --- | --- |
-| Live-off: filter / group key edit stays stale until a collection change | `TableViewSource_APITests.VerifyFilterMembershipPropertyChangeFollowsTheSameInvariant`, `VerifyGroupKeyPropertyChangeFollowsTheSameInvariant` | Covered; no new test. |
+| Live-off: filter / group key edit stays stale until a collection change | (removed with `TableViewSource_APITests`) | Not covered in V1. |
 | Live-off: sort key edit stays stale; a later change re-sorts | `VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange` (**Ignored**, product bug) | Covered; the test is Ignored for a product bug and should be re-enabled once fixed. |
 | `IsLiveShaping` defaults to off | `VerifyFreshSourceIsUnshaped` | Add a default-off assert there. |
 | Selection follows the item object across sort / filter | `VerifySelectionReanchorsAcrossAReshape` | Covered; no new test. |
@@ -90,7 +98,7 @@ edge case or perf guard.
 | H06 P1 | `NestedReexpandKeepsState` | Expansion intent is per node. | Collapse Ben, collapse Ada, expand Ada: Ben is still collapsed. | Collapsing a parent wipes its descendants' intent (regression from the design). |
 | H07 P0 | `ClearParentByReturnsFlat` | `ClearParentBy` restores the flat projection. | `Ada Ben Cy Dan Eve Fay Gus` (source order, Level 0). | Hierarchy state leaks after clear. |
 | H08 P1 | `ClearParentByReleasesRows` | Clear drops every reference the hierarchy held. | After clear plus GC, weak refs to the hierarchy's projected rows are dead (`alive=0`). | A leak through the adapter or the expansion-intent maps. |
-| H09 P1 | `TwoRelationsOneSource` | Two `TableViewSource`s over one collection keep independent trees. | Manager tree and mentor tree each match their own relation; expanding one does not affect the other. | State is shared across sources (static or global caching). |
+| H09 P1 | `TwoRelationsOneSource` | Two tables with different `ParentKeyPath`s over one collection keep independent trees. | Manager tree and mentor tree each match their own relation; expanding one does not affect the other. | State is shared across sources (static or global caching). |
 | H10 P1 | `RedeclareClearsIntent` | A second `ParentBy` replaces the relation and resets expansion (decision 5). | After expand plus redeclare: all roots collapsed. | Stale intent keyed to the old relation leaks into the new tree. |
 
 ### 3.2 Key semantics
