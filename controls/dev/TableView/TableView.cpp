@@ -1265,6 +1265,12 @@ void TableView::ApplyHierarchyPaths()
     if (auto const source = m_activeSource.get())
     {
         ApplyHierarchyPaths(source);
+        if (m_activeSourceReleased)
+        {
+            // A released source (not loaded yet, or unloaded) does not report projection changes,
+            // so the cached view would keep the previous projection's rows alive until Loaded.
+            RefreshCachedProjection();
+        }
     }
 }
 
@@ -2021,38 +2027,8 @@ void TableView::RefreshRowsPipeline()
     // Recompute the cached row view from whatever the active source currently projects. A shaping
     // verb can swap the projection underneath us, so this is refreshed on every re-entry, not just
     // on a source change.
-    winrt::IInspectable rowsSource{ nullptr };
-
-    // Held so the generation bump below can tell a genuine provider swap from a re-entry that
-    // merely re-reads the same one.
-    auto const previousRowMetadata = m_tableViewSourceRowMetadata;
-    m_tableViewSourceRowMetadata = nullptr;
-
-    if (auto const activeSource = m_activeSource.get())
-    {
-        auto* const sourceImpl = activeSource.get();
-        // Straight through: for a TableViewShapingSource the row view IS the projection's view.
-        m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
-        m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
-        rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
-    }
-    else
-    {
-        // Null ItemsSource: nothing to project, so the repeater empties out below.
-        m_rowsItemsSourceView = nullptr;
-    }
-
-    // Bump only when the provider that produced previously handed-out row identities has actually
-    // been replaced, so a request captured against the old one can tell it is stale. Identities are
-    // value-based strings, so without the bump the same string could name an unrelated group in a
-    // new projection. Bumping unconditionally is equally wrong in the other direction: this method
-    // also runs on re-entries that keep the very same projection (OnApplyTemplate, a Loaded repump
-    // after an unload drain, an applied sort), and a bump there silently discards a queued group
-    // toggle that is still perfectly valid.
-    if (m_tableViewSourceRowMetadata != previousRowMetadata)
-    {
-        ++m_rowMetadataGeneration;
-    }
+    RefreshCachedProjection();
+    winrt::IInspectable const rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
 
     if (auto repeater = m_rowsRepeater.get())
     {
@@ -2077,6 +2053,38 @@ void TableView::RefreshRowsPipeline()
         ResolveSelectionAfterSourceChange();
     }
     // else: OnApplyTemplate hasn't run yet; the repeater will be sourced from there.
+}
+
+void TableView::RefreshCachedProjection()
+{
+    // Held so the generation bump below can tell a genuine provider swap from a re-entry that
+    // merely re-reads the same one.
+    auto const previousRowMetadata = m_tableViewSourceRowMetadata;
+    m_tableViewSourceRowMetadata = nullptr;
+
+    if (auto const activeSource = m_activeSource.get())
+    {
+        // Straight through: for a TableViewShapingSource the row view IS the projection's view.
+        m_rowsItemsSourceView = activeSource->GetItemsSourceView();
+        m_tableViewSourceRowMetadata = activeSource->GetRowMetadata();
+    }
+    else
+    {
+        // Null ItemsSource: nothing to project, so the repeater empties out.
+        m_rowsItemsSourceView = nullptr;
+    }
+
+    // Bump only when the provider that produced previously handed-out row identities has actually
+    // been replaced, so a request captured against the old one can tell it is stale. Identities are
+    // value-based strings, so without the bump the same string could name an unrelated group in a
+    // new projection. Bumping unconditionally is equally wrong in the other direction: this method
+    // also runs on re-entries that keep the very same projection (OnApplyTemplate, a Loaded repump
+    // after an unload drain, an applied sort), and a bump there silently discards a queued group
+    // toggle that is still perfectly valid.
+    if (m_tableViewSourceRowMetadata != previousRowMetadata)
+    {
+        ++m_rowMetadataGeneration;
+    }
 }
 
 void TableView::OnTableViewShapingSourceProjectionChanged()
