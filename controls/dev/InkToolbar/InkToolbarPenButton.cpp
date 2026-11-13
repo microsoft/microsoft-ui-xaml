@@ -46,7 +46,8 @@ void InkToolbarPenButton::OnApplyTemplateCore()
     if (!palette || palette.Size() == 0)
     {
         auto colors = GetColors();
-        auto brushes = winrt::single_threaded_vector<winrt::Brush>();
+        // Observable so it is also an IVector<IInspectable>, which the pen flyout's ItemsSource requires.
+        auto brushes = winrt::single_threaded_observable_vector<winrt::Brush>();
         for (auto const& color : colors)
         {
             brushes.Append(winrt::SolidColorBrush(color));
@@ -174,7 +175,7 @@ double InkToolbarPenButton::ContrastRatio(winrt::Windows::UI::Color const& a, wi
 // WCAG contrast and 7.0 threshold inline.
 winrt::IVector<winrt::Brush> InkToolbarPenButton::GetHighContrastPalette(int highContrastAdjustment)
 {
-    auto hcPalette = winrt::single_threaded_vector<winrt::Brush>();
+    auto hcPalette = winrt::single_threaded_observable_vector<winrt::Brush>();
     try
     {
         winrt::Windows::UI::ViewManagement::UISettings settings;
