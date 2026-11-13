@@ -248,18 +248,18 @@ Entry c_typeEntries[] =
                     }
 
                     xamlType.AddMember(
-                        L"CustomSortComparer", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().CustomSortComparer(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewColumn>().CustomSortComparer(value ? value.as<winrt::Microsoft::UI::Xaml::Controls::Tabular::ITableViewSortComparer>() : nullptr); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"DisplayMemberBinding", /* propertyName */
                         L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().DisplayMemberBinding(); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewColumn>().DisplayMemberBinding(value ? value.as<winrt::Microsoft::UI::Xaml::Data::Binding>() : nullptr); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"CustomSortComparer", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().CustomSortComparer(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewColumn>().CustomSortComparer(value ? value.as<winrt::Microsoft::UI::Xaml::Controls::Tabular::ITableViewSortComparer>() : nullptr); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
