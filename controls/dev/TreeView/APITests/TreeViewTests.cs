@@ -2571,15 +2571,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: Node mode, Multiple selection, P(A(A0)),Q with P and A expanded and P selected. The test keeps the
-        //   TreeView's flat list (the inner list control's ItemsSource) and SelectedNodes, removes the TreeView from the
-        //   window, and lets the TreeView and its list control be collected. Then it edits the nodes and SelectedNodes.
-        // Expected: no crash, and the flat list still follows the node edits.
-        // Failure means: the flat list (ViewModel) uses its list control or TreeView through a weak reference without
-        //   checking that the target is still alive, or it calls the TreeView's NodeExpanding/NodeCollapsed handlers
-        //   after the TreeView is gone. In an app, the flat list outlives its list control only between a garbage
-        //   collection and the release of the list control, so the crash is intermittent. Keeping the flat list here
-        //   makes it happen every time.
+        // Edits nodes after the TreeView and its list control are collected, while the test keeps the ViewModel
+        // (the list's ItemsSource) alive. Keeping the ViewModel makes the crash deterministic.
         [TestMethod]
         public void TreeViewNodeEditsAfterTheTreeViewIsCollectedDoNotCrash()
         {
@@ -2615,12 +2608,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rows = flatList as IObservableVector<object>;
                 Verify.AreEqual("P,A,A0,Q", String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string)));
 
-                p.Children.Add(new TreeViewNode() { Content = "P1" }); // A new child of a selected node is selected too.
-                q.Children.Add(new TreeViewNode() { Content = "Q0" }); // Q.HasChildren changes.
-                p.IsExpanded = false;                                  // Raises NodeCollapsed.
-                p.IsExpanded = true;                                   // Raises NodeExpanding.
-                selectedNodes.Remove(p);                               // Updates the selection state of P and its children.
-                p.Children.Clear();                                    // P.HasChildren changes.
+                p.Children.Add(new TreeViewNode() { Content = "P1" });
+                q.Children.Add(new TreeViewNode() { Content = "Q0" });
+                p.IsExpanded = false;
+                p.IsExpanded = true;
+                selectedNodes.Remove(p);
+                p.Children.Clear();
 
                 Verify.IsFalse(selectedNodes.Contains(p));
                 Verify.AreEqual("P,Q", String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string)));
@@ -2628,9 +2621,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             GC.KeepAlive(flatList);
         }
 
-        // Shows a Multiple selection TreeView with the given root nodes and the first root selected, then removes it from
-        // the window. Returns weak references to the TreeView and its list control, and strong references to its flat
-        // list and SelectedNodes. Must be called on the UI thread.
+        // NoInlining, so no local here keeps the TreeView alive.
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private void ShowAndRemoveTreeView(AutoResetEvent unloaded, TreeViewNode[] rootNodes, out WeakReference treeViewReference,
             out WeakReference listControlReference, out object flatList, out IList<TreeViewNode> selectedNodes)

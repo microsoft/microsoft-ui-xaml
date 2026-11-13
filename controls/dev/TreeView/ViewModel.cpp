@@ -573,8 +573,6 @@ winrt::TreeViewList ViewModel::ListControl()
 
 bool ViewModel::IsInSingleSelectionMode()
 {
-    // The list control can be gone while nodes still raise events, for example after the TreeView is collected.
-    // Keep the last known mode then, so that BeginSelectionChanges and EndSelectionChanges stay balanced.
     if (const auto listControl = m_TreeViewList.get())
     {
         m_isInSingleSelectionMode = listControl.SelectionMode() == winrt::ListViewSelectionMode::Single;
@@ -1165,7 +1163,6 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
 
 void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const& sender, winrt::IDependencyPropertyChangedEventArgs const& args)
 {
-    // The list control can be gone while nodes still raise events, for example after the TreeView is collected.
     if (const auto listControl = m_TreeViewList.get())
     {
         auto targetNode = sender.as<winrt::TreeViewNode>();
