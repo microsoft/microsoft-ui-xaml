@@ -26,6 +26,7 @@ TableView and TableViewSource are preview API. This review checks whether the pr
 | Added | `TableView.IndexOf(Object)`, `StartBringItemIntoView(Int32, BringIntoViewOptions)` | Map an item to the selection index space and reveal it; previously no way to select or show "this record" after shaping. |
 | Added | `TableView.ExpandGroup(Object)`, `CollapseGroup(Object)`, `GroupExpanding`, `GroupCollapsed` + args (`GroupKey`) | Per-group programmatic expansion and a notification for every group state change. |
 | Added | `TableViewColumn.NotifyCellContentChanged()` (protected) | Derived columns can regenerate their cells. |
+| Added | `TableViewColumn.DisplayMemberBinding` (`Binding`, CLR) | Restores the template-free "bind a collection, render data cleanly" baseline without a new column type, after `TableViewTextColumn` was cut: a read-only `TextBlock` cell bound against the row item, whose `Path` is the sort key when `SortMemberPath` is empty. WPF `GridViewColumn.DisplayMemberBinding` precedent, including its precedence: `DisplayMemberBinding` over `CellTemplate`, so a template column ignores its `CellTemplate` while `DisplayMemberBinding` is set. |
 | **Changed** | `Sort(...)` (both overloads): **replaces** all item sort levels | Was "append unless same path/delegate". Identity of a C# lambda is not visible to callers. |
 | Changed | `TableViewColumn.CanResize` → `CanUserResize`, `CanSort` → `CanUserSort` | Match `CanUserResizeColumns`/`CanUserSortColumns` and WPF. All four `CanUser*` flags gate user input only: programmatic sorts ignore them, and turning one off does not clear the active sort. |
 | Changed | `TableViewColumn.SortDirection` `{ get; }` → `{ get; set; }` | App-owned (e.g. server) sorts can show the arrow. Display only. |
@@ -40,7 +41,7 @@ TableView and TableViewSource are preview API. This review checks whether the pr
 | Removed | `TableViewGroupInfo.Level` | Always 0 and 0-based while `TableViewRow.Level` is 1-based. Re-add with nested grouping. |
 | Removed | public `TableViewColumn.GenerateElement(Object)` | Only `GenerateElementCore` is an extension point. |
 | Removed | The editing surface: `TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, `CellEditEnded`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate`, `CommitCellEditCore` | Deferred to V2 / a future DataGrid (§2.5). V1 behaves as the old default `IsReadOnly = true`. |
-| Removed | `TableViewTextColumn` (and `Binding`) | Deferred to V2 (§5). A text cell is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name now comes from the visible columns' `SortMemberPath` values. |
+| Removed | `TableViewTextColumn` (and `Binding`) | Deferred to V2 (§5). A display-only text cell is `TableViewColumn.DisplayMemberBinding`; a styled one is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name now comes from the visible columns' `GetSortMemberPathCore()` values. |
 Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on WinRT enum keys compare by underlying value (previously `GroupBy` threw and sort ordered by address); re-entrant shaping calls from inside app callbacks are refused (`E_ILLEGAL_METHOD_CALL`) instead of destroying the running filter; a shaping verb whose rebuild throws rolls back its declaration (strong exception guarantee; `ClearParentBy` excepted).
 
 ## 2. API surface by area
@@ -102,12 +103,13 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | Sort members | — | See §2.3. |
 | `Visibility` | `Visibility`, `Visible` | Collapsed columns are absent from layout and from the UIA grid. |
 | `FrozenEdge` | `TableViewFrozenEdge`, `None` | `Leading` pins only within the contiguous prefix from column 0. Out-of-range values act as `None`. |
+| `DisplayMemberBinding` | `Binding` (CLR) | Read-only `TextBlock` cell bound against the row item (centred, density padding, ellipsis); `null` → the base column's cell is empty. Takes precedence over `CellTemplate` on a template column, as `GridViewColumn.DisplayMemberBinding` does in WPF. Its `Path` is the sort key when `SortMemberPath` is empty and the binding has no `Source`/`RelativeSource`/`ElementName`. Changing it regenerates realized cells. |
 | `CellToolTipBinding` | `Binding` (CLR) | Per-cell tooltip content, evaluated against the row item. |
 | `CellContextFlyout`, `HeaderContextFlyout` | `FlyoutBase` | See §2.7. |
-| `overridable GenerateElementCore(Object)` | `FrameworkElement` | Creates the cell element. `dataItem` is for initial setup only; content must bind to the inherited `DataContext` because rows recycle. |
+| `overridable GenerateElementCore(Object)` | `FrameworkElement` | Creates the cell element; the base returns the `DisplayMemberBinding` cell or `null`. `dataItem` is for initial setup only; content must bind to the inherited `DataContext` because rows recycle. |
 | `protected NotifyCellContentChanged()` | `void` | Regenerates realized cells for this column and resets `Auto` width. Queued if called during measure/arrange. |
-| `overridable GetSortMemberPathCore()` | `String` | Effective sort path; the base returns `SortMemberPath`, and an app-derived column can override it. |
-| `TableViewTemplateColumn.CellTemplate` | `DataTemplate` DP | Null → empty cell (never `ToString()`). |
+| `overridable GetSortMemberPathCore()` | `String` | Effective sort path; the base returns `SortMemberPath`, else `DisplayMemberBinding`'s path, and an app-derived column can override it. |
+| `TableViewTemplateColumn.CellTemplate` | `DataTemplate` DP | Ignored while `DisplayMemberBinding` is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, `CellTemplate`, `CellTemplateSelector`). Both null → empty cell (never `ToString()`). |
 | `TableViewColumnHeader` | sealed `ContentControl`, no ctor; `Column` (get) | `TargetType` for header styles. |
 | `TableView.Columns` | `IVector<TableViewColumn>` (get) | Collection order = visual and UIA order. |
 
@@ -120,7 +122,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 | `TableView.CanUserSortColumns` | `Boolean`, `true` | Gates **user input only** for the whole table. Turning it off does not clear the active sort. |
 | `TableViewColumn.CanUserSort` | `Boolean`, `true` | Gates **user input only** (pointer, keyboard, UIA Invoke on the header). Turning it off does not clear an active sort on the column. |
 | `TableViewColumn.SortDirection` | `SortDirection`, `None` | **Display only.** Set by the control on a column sort; settable by the app, including in XAML or before the column is added (honoured when it joins `Columns`; the last added wins). |
-| `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()`. |
+| `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()` (the base falls back to `DisplayMemberBinding`'s path). |
 | `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
 | `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
 | `SortByColumn(column, direction)` | `Boolean` | Declares the control's sort axis. `None` clears. |
@@ -256,7 +258,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Column types | `TableViewTemplateColumn` (text cells are a bound `TextBlock` template), derivable base | WPF/WCT `DataGridTextColumn`, `DataGridTemplateColumn`, plus check-box and combo-box columns (unv.). | P; more built-ins G |
+| Column types | Base column with `DisplayMemberBinding` (read-only text), `TableViewTemplateColumn`, derivable base | WPF `GridViewColumn.DisplayMemberBinding`/`CellTemplate`; WPF/WCT `DataGridTextColumn`, `DataGridTemplateColumn`, plus check-box and combo-box columns (unv.). | P; editable text and more built-ins G |
 | Cell factory | `GenerateElementCore` | ItemsRepeater `ElementFactory.GetElement`/`GetElementCore`; WPF `GenerateElement`/`GenerateEditingElement` (unv.). | P |
 | Cell refresh hook | `NotifyCellContentChanged()` | WPF `RefreshCellContent` (unv.). | P |
 | Width type | `GridLength` (Pixel/Auto/Star) | WPF `DataGridLength` (adds `SizeToHeader`/`SizeToCells`); WCT `ColumnWidth`. | I; auto-fit G |
@@ -356,7 +358,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 |---|---|---|---|
 | Seal `TableViewColumn`, or add a cell-refresh hook | IDL feedback #6 | Hook added (`NotifyCellContentChanged`); stays unsealed | Derivation is a supported scenario. |
 | Seal `TableViewTemplateColumn`, `TableViewRow`, `TableViewCellsPanel` | IDL feedback #7, #8, #29; stability review | Not taken | WinUI keeps containers and panels unsealed (`ItemContainer`, `TreeViewItem`, `NavigationViewItem`, `WrapPanel`). The gap is a row factory, not sealing (§6). |
-| `TableViewTextColumn` (`Binding`, built-in `TextBox` editor) | API review 2026-11-11 | Deferred to V2 | Overkill for V1: one property over the template path. A text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath` (cell editing is deferred too, §2.5). Unrealized rows are named from the visible columns' `SortMemberPath` values. A display-only text column returns if the template path misses the scroll-performance budget. |
+| `TableViewTextColumn` (`Binding`, built-in `TextBox` editor) | API review 2026-11-11 | Deferred to V2 | Overkill for V1: a column type for one property. Display-only text is `TableViewColumn.DisplayMemberBinding` on the base column (WPF `GridViewColumn` precedent), so no new type; a styled text cell is a `TableViewTemplateColumn` with a bound `TextBlock` (cell editing is deferred too, §2.5). Unrealized rows are named from the visible columns' `GetSortMemberPathCore()` values, which include the `DisplayMemberBinding` path. An editable text column is the V2 candidate. |
 | `ShapingFailed` event | Stability review; TVS feedback A9 | Rejected | No WinUI collection control has a failure event; WPF and ItemsRepeater throw synchronously. Replaced by consistent throws + rollback. |
 | `Sort(ITableViewSortComparer, …)` / `ThenSort(ITableViewSortComparer, …)` | IDL feedback #26; first draft of this PR | Deferred | Not in the final IDL; additive later. |
 | `HasFilter`/`HasSort`/`HasGroupBy`/`HasParentBy` | TVS feedback A6; first draft of this PR | Removed | Unobservable (no change notification, so not bindable) and insufficient as read-back: they expose presence, not the declared state. Full read-back stays open (§6). |

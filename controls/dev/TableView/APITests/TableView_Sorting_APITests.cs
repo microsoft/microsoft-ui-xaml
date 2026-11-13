@@ -127,6 +127,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies the base column infers its sort key from DisplayMemberBinding's path, and an explicit SortMemberPath wins.")]
+        public void VerifyDisplayMemberBindingPathIsSortKeyUnlessSortMemberPathIsSet()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var column = new SortPathProbeColumn { DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                Verify.AreEqual("Name", column.ReadSortMemberPath(), "With no SortMemberPath, the displayed path is the sort key.");
+
+                column.SortMemberPath = "Role";
+                Verify.AreEqual("Role", column.ReadSortMemberPath(), "An explicit SortMemberPath must win over the binding path.");
+
+                var sourced = new SortPathProbeColumn
+                {
+                    DisplayMemberBinding = new Binding { Source = new ShapedPerson("X", "Y", "Z"), Path = new PropertyPath("Name") },
+                };
+                Verify.AreEqual(string.Empty, sourced.ReadSortMemberPath(),
+                    "A path relative to an explicit Source is not a member of the row item, so it is not a sort key.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies invoking the header of a DisplayMemberBinding column sorts by the binding path, or by SortMemberPath when set.")]
+        public void VerifyHeaderInvokeSortsDisplayMemberBindingColumn()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                tableView.Columns.Add(new TableViewColumn { Header = "Name", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                tableView.Columns.Add(new TableViewColumn
+                {
+                    Header = "Shown as name",
+                    DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") },
+                    SortMemberPath = "Role",
+                });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => InvokeHeader(tableView, 0));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The header Invoke must sort the column.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the binding path must be the sort key");
+
+                InvokeHeader(tableView, 1);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The header Invoke must sort the column.");
+                VerifySequence(new[] { "Architect", "Designer", "Designer", "Engineer", "Engineer", "Engineer" },
+                    RowValues(tableView, person => person.Role), "SortMemberPath, not the displayed path, must be the sort key");
+            });
+        }
+
         #endregion
 
         #region 7.2 Programmatic sort state

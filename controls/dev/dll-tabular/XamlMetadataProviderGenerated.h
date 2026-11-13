@@ -256,6 +256,14 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"DisplayMemberBinding", /* propertyName */
+                        L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().DisplayMemberBinding(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewColumn>().DisplayMemberBinding(value ? value.as<winrt::Microsoft::UI::Xaml::Data::Binding>() : nullptr); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"CellToolTipBinding", /* propertyName */
                         L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().CellToolTipBinding(); },

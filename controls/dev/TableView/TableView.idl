@@ -129,6 +129,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
     MU_XC_NAMESPACE.TableViewFrozenEdge FrozenEdge { get; set; };
 
+    Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 

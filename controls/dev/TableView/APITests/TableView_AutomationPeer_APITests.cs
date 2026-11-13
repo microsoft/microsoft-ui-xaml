@@ -422,6 +422,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies an unrealized row of DisplayMemberBinding columns is named from the bound values, as its realized row is.")]
+        public void VerifyUnrealizedRowNameUsesDisplayMemberBinding()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            string unrealizedName = null;
+            // No ToString override, so a missing column value would surface as the type name.
+            var items = Enumerable.Range(0, 200).Select(i => new PlainPerson { Name = $"Person {i}", Role = $"Role {i}" }).ToList();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(new TableViewColumn { Header = "Name", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                tableView.Columns.Add(new TableViewColumn { Header = "Role", DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") } });
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                unrealizedName = itemPeer.GetName();
+                Verify.IsTrue(unrealizedName.Contains("Person 150") && unrealizedName.Contains("Role 150"),
+                    $"The unrealized row must be named from its DisplayMemberBinding values (got '{unrealizedName}').");
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsNotNull(row, "Realize must create the selected row.");
+                Verify.AreEqual(FrameworkElementAutomationPeer.CreatePeerForElement(row).GetName(), unrealizedName,
+                    "An unrealized row must be named as it is once realized.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a held data-item peer keeps its name when its row is realized, then forwards the row's enabled state, culture and ScrollItem.")]
         public void VerifyRealizedDataItemPeerForwardsRowState()
         {

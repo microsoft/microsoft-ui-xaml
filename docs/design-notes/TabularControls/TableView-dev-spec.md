@@ -437,7 +437,7 @@ Every event also carries `SchemaVersion`.
 | `SourceRowsBucket` | Rows before the filter: every source row, or for a tree every node |
 | `DataRowsBucket` | Data rows after the filter, without group headers and whatever is expanded; for a tree, the nodes the filter keeps |
 | `PeakRealizedRowsBucket` | Containers the rows repeater has created since the template was applied. It creates one only when none is free and keeps them across loads, so this is the most rows realized at once, plus the most group headers, over the instance's loads |
-| `ColumnKinds` | Template 2, app-derived 4 (a column class that is not TableView's); 1 (text) is retired |
+| `ColumnKinds` | Template 2, app-derived 4 (a column class that is not TableView's), `DisplayMemberBinding` set 8; 1 (text) is retired |
 | `SourceKinds` | A collection TableView projected 1, the app's own `TableViewSource` 2 |
 | `IsRightToLeft` | The table flows right to left |
 | `TemplateIncomplete` | The applied template lacks `PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost` |

@@ -13,6 +13,7 @@ namespace
         uint32_t kinds{};
         if (column.try_as<winrt::TableViewTemplateColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Template; }
         if (TableViewDetails::IsAppDerivedColumn(column)) { kinds |= TableViewTelemetry::ColumnKind::AppDerived; }
+        if (column.DisplayMemberBinding()) { kinds |= TableViewTelemetry::ColumnKind::DisplayMemberBinding; }
         return kinds;
     }
 }

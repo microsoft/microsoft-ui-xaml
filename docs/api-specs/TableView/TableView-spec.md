@@ -18,9 +18,9 @@ xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
 
 ## How to use TableView
 
-### Basic usage (text cells with a TableViewTemplateColumn)
+### Basic usage (text cells with DisplayMemberBinding)
 
-Set `TableView.ItemsSource` and add columns to `Columns`. V1 has no built-in text column (see [TableViewTextColumn (deferred)](#tableviewtextcolumn-deferred)): a text cell is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`. Write one `TextBlock` style for the text cells, and set `SortMemberPath` on each column so it sorts. `{x:Bind}` with an `x:DataType` on the template works as well as `{Binding}`.
+Set `TableView.ItemsSource` and add columns to `Columns`. For a plain text cell, set `TableViewColumn.DisplayMemberBinding` (the WPF `GridViewColumn.DisplayMemberBinding` pattern): each cell is a read-only `TextBlock` bound against its row's item, vertically centred, padded for the current `Density`, and trimmed with an ellipsis. The binding's `Path` is also the column's sort key unless `SortMemberPath` is set. The cell is display-only; V1 has no cell editing. For any other cell content, use a [template column](#template-columns-custom-cell-content).
 
 ```xaml
 <Page
@@ -29,47 +29,12 @@ Set `TableView.ItemsSource` and add columns to `Columns`. V1 has no built-in tex
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
-    <Page.Resources>
-        <!-- Written once: centred, padded to match the header, and trimmed with an ellipsis. -->
-        <Style x:Key="TableCellTextStyle" TargetType="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Padding" Value="8,4,8,4" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-        </Style>
-    </Page.Resources>
-
     <Grid Padding="24">
         <tabular:TableView ItemsSource="{x:Bind People}">
             <tabular:TableView.Columns>
-                <tabular:TableViewTemplateColumn
-                    Header="Name"
-                    SortMemberPath="Name">
-                    <tabular:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
-                        </DataTemplate>
-                    </tabular:TableViewTemplateColumn.CellTemplate>
-                </tabular:TableViewTemplateColumn>
-
-                <tabular:TableViewTemplateColumn
-                    Header="Role"
-                    SortMemberPath="Role">
-                    <tabular:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Role}" Style="{StaticResource TableCellTextStyle}" />
-                        </DataTemplate>
-                    </tabular:TableViewTemplateColumn.CellTemplate>
-                </tabular:TableViewTemplateColumn>
-
-                <tabular:TableViewTemplateColumn
-                    Header="Location"
-                    SortMemberPath="Location">
-                    <tabular:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Location}" Style="{StaticResource TableCellTextStyle}" />
-                        </DataTemplate>
-                    </tabular:TableViewTemplateColumn.CellTemplate>
-                </tabular:TableViewTemplateColumn>
+                <tabular:TableViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
+                <tabular:TableViewColumn Header="Role" DisplayMemberBinding="{Binding Role}" />
+                <tabular:TableViewColumn Header="Location" DisplayMemberBinding="{Binding Location}" />
             </tabular:TableView.Columns>
         </tabular:TableView>
     </Grid>
@@ -100,9 +65,20 @@ public sealed partial class PeoplePage : Page
 public sealed record Person(string Name, string Role, string Location);
 ```
 
+`DisplayMemberBinding` takes a `{Binding}`, not `{x:Bind}`: it is handed to each cell rather than evaluated against the column. A `Converter` or `TargetNullValue` on the binding applies as usual.
+
 ### Template columns (custom cell content)
 
-Use `TableViewTemplateColumn.CellTemplate` for custom cell layout or formatting.
+Use `TableViewTemplateColumn.CellTemplate` for custom cell layout or formatting. As with WPF's `GridViewColumn` (precedence `DisplayMemberBinding`, then `CellTemplate`), a template column that also has `DisplayMemberBinding` shows the `DisplayMemberBinding` text and ignores `CellTemplate`. The examples in this spec that put a `TextBlock` in a template style it with one shared `TableCellTextStyle`, which gives it the same look as a `DisplayMemberBinding` cell at the default density:
+
+```xaml
+<!-- Written once: centred, padded to match the header, and trimmed with an ellipsis. -->
+<Style x:Key="TableCellTextStyle" TargetType="TextBlock">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Padding" Value="8,4,8,4" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+</Style>
+```
 
 ```xaml
 <Page
@@ -184,7 +160,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height and header content is vertically centered; a text-cell template should centre its `TextBlock` too, as `TableCellTextStyle` does. `Density` does not reach the padding inside a `CellTemplate`.
+`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height and header content is vertically centered; a text-cell template should centre its `TextBlock` too, as `TableCellTextStyle` does. `Density` does not reach the padding inside a `CellTemplate`; a `DisplayMemberBinding` cell's padding follows it.
 
 > **Migrating from earlier previews:** `HeaderGridLinesVisibility` was removed. `GridLinesVisibility` affects only the body lines; to hide the header separators and the rule under the header, override `TabularSurfaceHeaderSeparatorBrush` with `Transparent`.
 
@@ -762,7 +738,7 @@ Base class for TableView columns.
 
 `TableViewColumn` derives from `Microsoft.UI.Xaml.DependencyObject` and has `Header` as its content property.
 
-`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`). `Pixel` is exact; `Auto` sizes to the widest realized cell and the current header; the cell width grows within a data set (it does not shrink as rows scroll out of view), while the header width follows the header as it is now (hiding the headers drops it, and a shorter header or turning off sorting narrows it); `*` takes a proportional share of the body viewport left after the fixed columns. `MinWidth`/`MaxWidth` clamp every mode. Auto widths reset when `ItemsSource` is assigned a new value or the whole `Columns` collection is replaced or reset, and for a single column when that column is added or replaced or its `Header`, `HeaderTemplate`, `HeaderTemplateSelector` or `CellTemplate` changes; they do not reset on an in-place collection `Reset` or clear-and-refill, a `TableViewSource` filter or refilter, or a `Density` change; to re-fit, re-assign `ItemsSource` (or give the column a `Pixel` `Width`).
+`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`). `Pixel` is exact; `Auto` sizes to the widest realized cell and the current header; the cell width grows within a data set (it does not shrink as rows scroll out of view), while the header width follows the header as it is now (hiding the headers drops it, and a shorter header or turning off sorting narrows it); `*` takes a proportional share of the body viewport left after the fixed columns. `MinWidth`/`MaxWidth` clamp every mode. Auto widths reset when `ItemsSource` is assigned a new value or the whole `Columns` collection is replaced or reset, and for a single column when that column is added or replaced or its `Header`, `HeaderTemplate`, `HeaderTemplateSelector`, `CellTemplate` or `DisplayMemberBinding` changes; they do not reset on an in-place collection `Reset` or clear-and-refill, a `TableViewSource` filter or refilter, or a `Density` change; to re-fit, re-assign `ItemsSource` (or give the column a `Pixel` `Width`).
 
 | Property | Type | Default | Description |
 |---|---|---|---|
@@ -779,11 +755,12 @@ Base class for TableView columns.
 | `CanUserResize` | `Boolean` | `true` | Whether the user can resize this column (pointer, keyboard, UI Automation); also requires `TableView.CanUserResizeColumns`. |
 | `CanUserSort` | `Boolean` | `true` | Whether the user can sort by this column's header. Gates user input only: `SortByColumn` and `ToggleSortDirection` ignore it, and turning it off does not clear an active sort. The table-level `CanUserSortColumns` and `CanUserResizeColumns` follow the same rule. |
 | `SortDirection` | `SortDirection` | `None` | The header's sort arrow. **Display only**: the control sets it when it sorts; an app that sorts itself (for example after cancelling `Sorting`) can set it. Setting it never reshapes data, and a non-`None` value clears the arrow on other columns. If a column's `CustomSortComparer` throws during a header sort or `SortByColumn`, the sort is aborted before commit: the previous sort and arrow stay, and `Sorted` is not raised. A value set in XAML or before the column is added is applied when it joins `Columns`. |
-| `SortMemberPath` | `String` | Empty string | Property path the column sorts by. When empty, an app-derived column's `GetSortMemberPathCore()` override can supply it; otherwise the column sorts only through `CustomSortComparer`. |
+| `SortMemberPath` | `String` | Empty string | Property path the column sorts by. When empty, the column sorts by `DisplayMemberBinding`'s `Path` (unless that binding names its own `Source`, `RelativeSource` or `ElementName`), and an app-derived column's `GetSortMemberPathCore()` override can supply it; otherwise the column sorts only through `CustomSortComparer`. |
 | `SortCycle` | `TableViewSortCycle` | `AscendingDescending` | Order of directions a header click or `ToggleSortDirection` steps through; the `*None` values add a step back to the unsorted order. |
 | `CustomSortComparer` | `ITableViewSortComparer` | `null` | Comparer for this column's sort; wins over `SortMemberPath`. Must be pure. |
 | `Visibility` | `Visibility` | `Visible` | Column visibility. |
 | `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
+| `DisplayMemberBinding` | `Binding` | `null` | Read-only text for each cell without a template, as WPF's `GridViewColumn.DisplayMemberBinding`. Each cell is a `TextBlock` whose `Text` takes this binding against its row's item; it is vertically centred, padded for `Density`, and trimmed with an ellipsis. Its `Path` is the sort key when `SortMemberPath` is empty. Takes precedence over a `TableViewTemplateColumn`'s `CellTemplate`, which is ignored while this is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, then `CellTemplate`). Display-only: V1 has no cell editing. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column; changing it regenerates realized cells. |
 | `CellToolTipBinding` | `Binding` | `null` | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column. |
 | `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
 
@@ -793,7 +770,7 @@ Methods:
 
 | Method | Description |
 |---|---|
-| `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. |
+| `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. The base implementation returns the `DisplayMemberBinding` text cell, or `null` (an empty cell) when it is not set. |
 | `NotifyCellContentChanged()` | Protected. Regenerates this column's realized cells and resets its `Auto` width; call it when a derived column's own property changes what it generates. Queued if called during layout. |
 
 ### Resizing columns
@@ -978,7 +955,7 @@ A column that uses a consumer-provided `DataTemplate` for cell content.
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `CellTemplate` | `DataTemplate` | `null` | Template used to display each cell. If null, the generated cell is empty. |
+| `CellTemplate` | `DataTemplate` | `null` | Template used to display each cell. Ignored while `DisplayMemberBinding` is set, which takes precedence as in WPF's `GridViewColumn`. If both are null, the generated cell is empty. |
 
 Controls in a `CellTemplate` are always live. Bind them to the item (`Mode=TwoWay` for interactive controls); TableView has no edit mode to buffer, commit or cancel their writes. See [Rename-in-place guidance](#rename-in-place-guidance) for an edit-on-demand pattern.
 
@@ -1339,6 +1316,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
         Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge { get; set; };
 
+        Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
         Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 
@@ -1751,7 +1729,7 @@ The display-only base delivered previously:
 
 - Preview API surface for display-only TableView.
 - Developer-defined columns through `TableView.Columns`.
-- Text cells through a `TableViewTemplateColumn` with a bound `TextBlock`.
+- Text cells through `TableViewColumn.DisplayMemberBinding`, or a `TableViewTemplateColumn` with a bound `TextBlock`.
 - Custom templated cells through `TableViewTemplateColumn`.
 - Column-header strip rendering.
 - Row virtualization through `ItemsRepeater`.
@@ -1774,24 +1752,22 @@ These ship additively in a later change — they are part of v1, not non-goals:
 
 Cut from V1 and deferred to V2; it can return additively:
 
-- `TableViewTextColumn` (`Binding`, with a built-in `TextBox` editor). V1 writes a text cell as a
-  `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set (see
-  [Basic usage](#basic-usage-text-cells-with-a-tableviewtemplatecolumn)):
+- `TableViewTextColumn` (`Binding`, with a built-in `TextBox` editor). For display-only text, V1 sets
+  `TableViewColumn.DisplayMemberBinding` on a base column instead (see
+  [Basic usage](#basic-usage-text-cells-with-displaymemberbinding)); its `Path` is the sort key unless
+  `SortMemberPath` is set:
 
   ```xaml
   <!-- Was: <tabular:TableViewTextColumn Header="Type" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey" /> -->
-  <tabular:TableViewTemplateColumn Header="Type" SortMemberPath="TypeSortKey">
-      <tabular:TableViewTemplateColumn.CellTemplate>
-          <DataTemplate>
-              <TextBlock Text="{Binding TypeDisplay}" Style="{StaticResource TableCellTextStyle}" />
-          </DataTemplate>
-      </tabular:TableViewTemplateColumn.CellTemplate>
-  </tabular:TableViewTemplateColumn>
+  <tabular:TableViewColumn Header="Type" DisplayMemberBinding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey" />
   ```
 
-  V1 has no cell editing either (see [Deferred to V2 / future DataGrid](#deferred-to-v2--future-datagrid)). If
-  the scroll performance of template text cells misses the budget, a display-only text column is the V2
-  candidate.
+  A text cell that needs its own look is a `TableViewTemplateColumn` whose `CellTemplate` is a bound
+  `TextBlock`; as in WPF's `GridViewColumn`, `DisplayMemberBinding` takes precedence over `CellTemplate`, so
+  leave it unset on such a column.
+
+  V1 has no cell editing either (see [Deferred to V2 / future DataGrid](#deferred-to-v2--future-datagrid)), so a
+  `DisplayMemberBinding` cell is read-only. An editable text column is the V2 candidate.
 
 ## Non-goals (out of scope for v1)
 

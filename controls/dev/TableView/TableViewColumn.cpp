@@ -31,8 +31,28 @@ winrt::FrameworkElement TableViewColumn::GenerateDisplayElement(const winrt::IIn
 
 winrt::FrameworkElement TableViewColumn::GenerateElementCore(const winrt::IInspectable& /*dataItem*/)
 {
-    // Base columns have no display surface.
-    return nullptr;
+    return GenerateDisplayMemberElementInternal();
+}
+
+winrt::FrameworkElement TableViewColumn::GenerateDisplayMemberElementInternal()
+{
+    auto const binding = m_displayMemberBinding.get();
+    if (!binding)
+    {
+        return nullptr;
+    }
+
+    // Bound against the inherited row DataContext, never the item it was generated for: rows recycle.
+    winrt::TextBlock textBlock;
+    textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+    textBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
+    // TableViewRow::RebuildCells restamps this padding when Density changes.
+    auto const owner = GetOwningTableView();
+    textBlock.Padding(owner
+        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
+        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
+    winrt::BindingOperations::SetBinding(textBlock, winrt::TextBlock::TextProperty(), binding);
+    return textBlock;
 }
 
 // Typed accessor for the owning TableView.
@@ -192,8 +212,27 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     }
 }
 
-winrt::hstring TableViewColumn::GetSortMemberPathCore(){
-    return SortMemberPath();
+winrt::hstring TableViewColumn::GetSortMemberPathCore()
+{
+    if (auto const explicitPath = SortMemberPath(); !explicitPath.empty())
+    {
+        return explicitPath;
+    }
+
+    // Sort on what the cell shows. A path relative to an explicit source names a member of THAT
+    // object, not of the row item, so it is not a sort key.
+    if (auto const binding = m_displayMemberBinding.get())
+    {
+        if (!binding.Source() && !binding.RelativeSource() && binding.ElementName().empty())
+        {
+            if (auto const path = binding.Path())
+            {
+                return path.Path();
+            }
+        }
+    }
+
+    return {};
 }
 
 void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
@@ -225,6 +264,23 @@ void TableViewColumn::NotifyCellContentChangedInternal(bool resetAutoWidth)
     if (auto owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, resetAutoWidth);
+    }
+}
+
+winrt::Microsoft::UI::Xaml::Data::Binding TableViewColumn::DisplayMemberBinding()
+{
+    return m_displayMemberBinding.get();
+}
+
+void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
+{
+    m_displayMemberBinding.set(value);
+
+    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
+    // The binding path can make the column sortable, which makes its header actionable.
+    if (auto const owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
     }
 }
 

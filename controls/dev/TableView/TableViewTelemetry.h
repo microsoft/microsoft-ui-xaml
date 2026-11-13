@@ -28,6 +28,7 @@ namespace TableViewTelemetry
         // Bit 0 (Text) is retired; not reused so existing telemetry stays comparable.
         constexpr uint32_t Template = 1u << 1;
         constexpr uint32_t AppDerived = 1u << 2;
+        constexpr uint32_t DisplayMemberBinding = 1u << 3;
     }
     // TableView_Instance's SourceKinds bits: a plain collection TableView projected, or the app's own TableViewSource.
     namespace SourceKind

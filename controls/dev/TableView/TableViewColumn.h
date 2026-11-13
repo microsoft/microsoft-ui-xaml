@@ -93,7 +93,13 @@ public:
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
 
-    // Setter lets XAML pass the Binding object through without evaluating it.
+    // Setters let XAML pass the Binding object through without evaluating it.
+    winrt::Microsoft::UI::Xaml::Data::Binding DisplayMemberBinding();
+    void DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
+
+    // Internal: the read-only text cell for DisplayMemberBinding, or null when it is not set.
+    winrt::FrameworkElement GenerateDisplayMemberElementInternal();
+
     winrt::Microsoft::UI::Xaml::Data::Binding CellToolTipBinding();
     void CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
 
@@ -142,6 +148,7 @@ private:
     bool m_cellContentChangeQueued{ false };
     bool m_queuedCellContentResetAutoWidth{ false };
 
+    tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_displayMemberBinding{ this };
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
