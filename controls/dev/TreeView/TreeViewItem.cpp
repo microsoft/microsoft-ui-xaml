@@ -691,6 +691,55 @@ bool TreeViewItem::HandleExpandCollapse(winrt::VirtualKey key)
             }
         }
     }
+    // Input for Expand
+    else if (key == winrt::VirtualKey::Add)
+    {
+        if (!isExpanded && targetNode.HasChildren()) // Is collapsed : need to expand
+        {
+            targetNode.IsExpanded(true);
+            handled = true;
+        }
+    }
+    // Input for Collapse
+    else if (key == winrt::VirtualKey::Subtract)
+    {
+        if (isExpanded) // Is expanded : need to collapse
+        {
+            targetNode.IsExpanded(false);
+            const auto targetValue = treeView->ContainerFromNode(targetNode);
+            if (targetValue)
+            {
+                const auto targetItem = targetValue.as<winrt::TreeViewItem>();
+                targetItem.Focus(winrt::FocusState::Keyboard);
+            }
+
+            handled = true;
+        }
+    }
+    // Input for Recursive Expand
+    else if (key == winrt::VirtualKey::Multiply)
+    {
+        const auto expandRecursively = [](auto&& self, winrt::TreeViewNode node) -> bool
+        {
+            bool handled = false;
+            if (node.HasChildren())
+            {
+                if (!node.IsExpanded()) // Is collapsed : need to expand
+                {
+                    node.IsExpanded(true);
+                    handled = true;
+                }
+                for (auto const& childInspectable : node.Children())
+                {
+                    auto childNode = childInspectable.as<winrt::TreeViewNode>();
+                    handled |= self(self, childNode);
+                }
+            }
+            return handled;
+        };
+
+        handled = expandRecursively(expandRecursively, targetNode);      
+    }
 
     return handled;
 }
