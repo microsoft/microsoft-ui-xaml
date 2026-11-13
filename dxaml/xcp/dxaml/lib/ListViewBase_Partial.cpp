@@ -2893,7 +2893,7 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
             focusIndex = GetLastFocusedIndex();
         }
         else if (m_lastFocusedElementType == ElementType::Other &&
-                 selectionMode == xaml_controls::ListViewSelectionMode_Single)
+                 selectionMode != xaml_controls::ListViewSelectionMode_None)
         {
             // Selection can establish an item target before any item receives focus.
             // Otherwise, preserve the initial or restored group-header target.
