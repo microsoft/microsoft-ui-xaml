@@ -43,9 +43,9 @@ CMRTResource::CMRTResource(_In_ IPALUri* pResourceUri, _In_ IPALUri* pPhysicalRe
 
 CMRTResource::~CMRTResource()
 {
-    // m_embeddedDataBuffer points into the read-only memory-mapped resource projected by
-    // m_spEmbeddedDataMemoryBuffer / m_spEmbeddedDataBufferReference. Those ComPtrs release the
-    // mapping; the pointer itself is not owned and must not be freed.
+    // m_embeddedDataBuffer points into the read-only PRI mapping kept alive by
+    // m_spEmbeddedDataMemoryBuffer / m_spEmbeddedDataBufferReference.
+    // The pointer is non-owning and must not be freed.
 }
 
 // See IPALResource::Load().
@@ -230,11 +230,11 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
 
     if (m_spEmbeddedDataBufferReference == nullptr)
     {
-        // Use the zero-copy accessor: ValueAsMemoryBuffer() projects the embedded resource bytes
-        // in place from the memory-mapped PRI instead of marshalling a full copy across the ABI
+        // Use the zero-copy accessor: ValueAsMemoryBuffer() exposes the embedded resource bytes
+        // directly from the memory-mapped PRI instead of marshalling a full copy across the ABI
         // (as get_ValueAsBytes does). The IMemoryBuffer and its IMemoryBufferReference are held as
-        // members so the projected bytes stay valid (and the mapping stays pinned) for the lifetime
-        // of this resource, matching the non-owning CResourceMemory created in Load().
+        // members so the bytes remain valid for the lifetime of this resource, matching the
+        // non-owning CResourceMemory created in Load().
         wrl::ComPtr<mwar::IResourceCandidate2> resourceCandidate2;
         IFC_RETURN(m_pResourceCandidate.As(&resourceCandidate2));
 
