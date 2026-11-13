@@ -3,8 +3,8 @@
 //
 // Single-column sort for TableView.
 //
-// The control owns the ordering for every source it can display: an ItemsSource that is not
-// already a TableViewSource is projected through one, so a header click installs a sort axis on
+// The control owns the ordering for every source it can display: every ItemsSource is
+// projected through an internal TableViewShapingSource, so a header click installs a sort axis on
 // that projection and the rows re-project. Sorting is raised first as a cancellable pre-event; an
 // app that would rather order its own collection cancels it and owns both the rows and the
 // column's sort state from there.
@@ -18,7 +18,7 @@
 #include "GroupedEntry.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
-#include "TableViewSource.h"
+#include "TableViewShapingSource.h"
 #include "TableViewSortingEventArgs.h"
 #include "TableViewSortedEventArgs.h"
 #include "TableViewAutomationHelpers.h"
@@ -32,7 +32,7 @@
 #include <numeric>
 #include <unordered_map>
 
-void TableViewSourceSortBinding::ResetCustomSort()
+void TableViewShapingSourceSortBinding::ResetCustomSort()
 {
     if (CustomSortState)
     {
@@ -40,7 +40,7 @@ void TableViewSourceSortBinding::ResetCustomSort()
     }
 }
 
-void TableViewSourceSortBinding::Clear()
+void TableViewShapingSourceSortBinding::Clear()
 {
     MemberPath = {};
     AxisToken = {};
@@ -106,7 +106,7 @@ void TableView::RerankCustomSortAfterReclaim()
     try
     {
         // A rerank after reclaim is control-driven, not a user sort, so it carries no TiP operation.
-        if (SyncTableViewSourceSort(column, direction, 0) && preservedSelection)
+        if (SyncTableViewShapingSourceSort(column, direction, 0) && preservedSelection)
         {
             ApplySelection(FindEntryIndexForDataItem(preservedSelection));
         }
@@ -136,9 +136,7 @@ namespace
         return winrt::hstring{ fallback };
     }
 
-    // Evaluates a property path against a row item; see SortMemberPathResolver.h. The same
-    // evaluator backs TableViewSource's path-based Sort verb, so a column and a fluent sort on
-    // the same path produce the same keys.
+    // Evaluates a property path against a row item; see SortMemberPathResolver.h.
 
     bool HasResolvedSortMemberPath(const winrt::TableViewColumn& column)
     {
@@ -162,7 +160,7 @@ namespace
 
     // Identity-derived so two columns with the same SortMemberPath still own separate axes; falls
     // back to the path only if the column has no usable identity.
-    winrt::hstring GetTableViewSourceSortAxisToken(const winrt::TableViewColumn& column, const winrt::hstring& sortMemberPath)
+    winrt::hstring GetTableViewShapingSourceSortAxisToken(const winrt::TableViewColumn& column, const winrt::hstring& sortMemberPath)
     {
         if (column)
         {
@@ -178,7 +176,7 @@ namespace
     }
 }
 
-winrt::TableViewSource TableView::ShapingSourceInternal() const
+winrt::com_ptr<::TableViewShapingSource> TableView::ShapingSourceInternal() const
 {
     // AdoptItemsSource is the single place that decides what the source is; everything else
     // reads the answer here rather than re-deriving it from ItemsSource.
@@ -199,11 +197,11 @@ bool TableView::IsSortClearStillValid(bool explicitClear) const
 bool TableView::HasClearableSourceSort() const
 {
     auto const source = ShapingSourceInternal();
-    if (!source || (m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this)))
+    if (!source || (m_activeSourceReleased && source.get()->IsOwnedByOther(*this)))
     {
         return false;
     }
-    return winrt::get_self<::TableViewSource>(source)->HasItemSort();
+    return source.get()->HasItemSort();
 }
 
 // Refused a source another table owns: there is nothing to sort until it is released, and the
@@ -211,7 +209,7 @@ bool TableView::HasClearableSourceSort() const
 bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort) const
 {
     // Unadopted after an unload, too, which no longer awaits it.
-    if (m_awaitedSource.get() || (!ShapingSourceInternal() && IsActiveSourceOwnedByOther()))
+    if (!ShapingSourceInternal() && IsActiveSourceOwnedByOther())
     {
         return false;
     }
@@ -225,11 +223,11 @@ bool TableView::CanApplySortTo(winrt::SortDirection direction) const
         return true;
     }
     auto const source = ShapingSourceInternal();
-    if (source && m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this))
+    if (source && m_activeSourceReleased && source.get()->IsOwnedByOther(*this))
     {
         return false;
     }
-    return !source || winrt::get_self<::TableViewSource>(source)->CanApplySort();
+    return !source || source.get()->CanApplySort();
 }
 
 bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort) const
@@ -419,10 +417,9 @@ bool TableView::IsActiveSourceOwnedByOther() const
     auto const source = ShapingSourceInternal();
     if (!source)
     {
-        // A refused reclaim leaves the source unadopted, also once unloaded and no longer awaiting it.
-        return static_cast<bool>(const_cast<TableView*>(this)->ItemsSource().try_as<winrt::TableViewSource>());
+        return false;
     }
-    return m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
+    return m_activeSourceReleased && source.get()->IsOwnedByOther(*this);
 }
 
 bool TableView::IsSortLitOnlyByApp() const
@@ -440,7 +437,7 @@ bool TableView::IsSortLitOnlyByApp() const
     {
         return false;
     }
-    auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    auto const sourceImpl = source.get();
     // Released but unowned (unloaded): the axes are still the app's.
     if (m_activeSourceReleased && sourceImpl->IsOwnedByOther(*this))
     {
@@ -658,12 +655,12 @@ bool TableView::RaiseSortingAndCheckCanceled(
 
 // The selector closes over the rank adapter by shared_ptr, so ResetCustomSort can drop the
 // comparer underneath a live selector.
-winrt::TableViewKeySelector TableView::CreateTableViewSourceSortKeySelector(
+ShapingHelpers::KeySelector TableView::CreateTableViewShapingSourceSortKeySelector(
     const winrt::hstring& sortMemberPath,
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> const& customSortState)
 {
     auto sortMemberPathResolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
-    return winrt::TableViewKeySelector{
+    return ShapingHelpers::KeySelector{
         [sortMemberPathResolver, customSortState](const winrt::IInspectable& item) -> winrt::IInspectable
         {
             if (customSortState && customSortState->HasComparer())
@@ -675,7 +672,7 @@ winrt::TableViewKeySelector TableView::CreateTableViewSourceSortKeySelector(
     };
 }
 
-bool TableView::SyncTableViewSourceSort(
+bool TableView::SyncTableViewShapingSourceSort(
     const winrt::TableViewColumn& trigger,
     winrt::SortDirection direction,
     uint64_t tipGeneration,
@@ -694,7 +691,7 @@ bool TableView::SyncTableViewSourceSort(
 
     // Released on Unloaded or before the first Loaded. While another table owns the source, this
     // table changes only its own state; a path axis left behind re-lights the column on reclaim.
-    if (m_activeSourceReleased && winrt::get_self<::TableViewSource>(tableViewSource)->IsOwnedByOther(*this))
+    if (m_activeSourceReleased && tableViewSource.get()->IsOwnedByOther(*this))
     {
         if (direction == winrt::SortDirection::None)
         {
@@ -720,7 +717,7 @@ bool TableView::SyncTableViewSourceSort(
         }
     });
 
-    winrt::TableViewKeySelector keySelector{ nullptr };
+    ShapingHelpers::KeySelector keySelector{ nullptr };
     // Built into locals and committed only once the source accepted the sort, so a failed sort
     // leaves the previous binding (and the arrow) as they were.
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> newSortState;
@@ -737,15 +734,15 @@ bool TableView::SyncTableViewSourceSort(
         if (const auto customComparer = trigger.CustomSortComparer())
         {
             newSortState = std::make_shared<ShapingHelpers::CustomSortRankAdapter>();
-            keySelector = CreateTableViewSourceSortKeySelector(L"", newSortState);
-            sortAxisToken = GetTableViewSourceSortAxisToken(trigger, L"");
+            keySelector = CreateTableViewShapingSourceSortKeySelector(L"", newSortState);
+            sortAxisToken = GetTableViewShapingSourceSortAxisToken(trigger, L"");
 
             if (direction != winrt::SortDirection::None)
             {
                 auto rowsView = m_rowsItemsSourceView;
                 if (!rowsView)
                 {
-                    rowsView = winrt::get_self<::TableViewSource>(tableViewSource)->GetItemsSourceView();
+                    rowsView = tableViewSource.get()->GetItemsSourceView();
                 }
 
                 // Snapshot the rows for the engine, which ranks over a plain vector and never sees
@@ -806,9 +803,9 @@ bool TableView::SyncTableViewSourceSort(
                 return false;
             }
             newSortState = std::make_shared<ShapingHelpers::CustomSortRankAdapter>();
-            keySelector = CreateTableViewSourceSortKeySelector(sortMemberPath, newSortState);
+            keySelector = CreateTableViewShapingSourceSortKeySelector(sortMemberPath, newSortState);
             newSortMemberPath = sortMemberPath;
-            sortAxisToken = GetTableViewSourceSortAxisToken(trigger, sortMemberPath);
+            sortAxisToken = GetTableViewShapingSourceSortAxisToken(trigger, sortMemberPath);
             axisSortMemberPath = sortMemberPath;
         }
     }
@@ -826,7 +823,7 @@ bool TableView::SyncTableViewSourceSort(
     // Limitation: this reshapes on explicit sort and on collection notifications only.
     // INotifyPropertyChanged-only mutations of the active sort key do not live re-sort until the
     // next collection change.
-    auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+    auto tableViewSourceImpl = tableViewSource.get();
     // An explicit clear needs no key selector: an app-declared axis lit on a column was never
     // installed by this control, yet clearing that column must still remove it. Any other clear
     // removes only the axis this control installed.
@@ -910,7 +907,7 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
             direction == winrt::SortDirection::Descending ? data::ListSortDirection::Descending : data::ListSortDirection::Ascending };
     }
 
-    // Last writer wins, as with a TableViewSource: the column's sort becomes the view's only sort.
+    // Last writer wins, as with a TableViewShapingSource: the column's sort becomes the view's only sort.
     // The view reshapes in place and raises Reset, which the projection over it follows.
     auto const sortDescriptions = m_collectionViewShaping.SortDescriptions();
     {
@@ -1123,7 +1120,7 @@ bool TableView::RecomputeSortDPsAndRaiseInternal(
         // afterwards so the selection follows the row rather than the slot.
         const auto preservedSelection = SelectedItemInternal();
         m_sortAbortedByComparerFault.reset();
-        const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration, explicitClear || static_cast<bool>(trigger));
+        const bool reshaped = SyncTableViewShapingSourceSort(trigger, requestedDirection, tipGeneration, explicitClear || static_cast<bool>(trigger));
         if (auto const aborted = std::exchange(m_sortAbortedByComparerFault, std::nullopt))
         {
             TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Sort, TableViewTip::Stage::Sort,
@@ -1164,7 +1161,7 @@ bool TableView::RecomputeSortDPsAndRaiseInternal(
         {
             if (auto const source = ShapingSourceInternal())
             {
-                keptSourceSort = winrt::get_self<::TableViewSource>(source)->HasItemSort();
+                keptSourceSort = source.get()->HasItemSort();
             }
         }
 
@@ -1291,7 +1288,7 @@ void TableView::ReconcileSortStateWithSource()
     const bool rerankCustomSort = std::exchange(m_rerankCustomSortOnReconcile, false);
 
     auto const& ownToken = m_tableViewSourceSort.AxisToken;
-    auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+    auto tableViewSourceImpl = tableViewSource.get();
     auto axes = tableViewSourceImpl->ActiveSortAxisInfos();
 
     // A comparer axis another table (or this one, before an ItemsSource change) installed ranks
@@ -1318,7 +1315,7 @@ void TableView::ReconcileSortStateWithSource()
     bool foreignBeforeOwn = false;
     // Infos arrive in precedence order, so the first foreign axis is the one that outranks ours
     // and is therefore the only one a single-column chevron could honestly describe.
-    ::TableViewSource::ActiveSortAxisInfo const* primaryForeignAxis = nullptr;
+    ::TableViewShapingSource::ActiveSortAxisInfo const* primaryForeignAxis = nullptr;
     for (auto const& axis : axes)
     {
         if (!ownToken.empty() && axis.AxisToken == ownToken)
@@ -1431,7 +1428,7 @@ void TableView::ReconcileSortStateWithSource()
     }
 
     // Raised directly rather than through RecomputeSortDPsAndRaiseInternal: that path would reshape
-    // through SyncTableViewSourceSort and re-declare the axis as the control's own, undoing the
+    // through SyncTableViewShapingSourceSort and re-declare the axis as the control's own, undoing the
     // app's ownership - and its stale-clear guard would swallow the event outright now that
     // m_sortedColumns can be non-empty here.
     if (m_sortedEventSource)

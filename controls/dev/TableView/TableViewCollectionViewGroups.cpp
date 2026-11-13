@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewCollectionViewGroups.h"
+#include "TableViewShapingSource.h"
 #include "TVDiag.h"
 
 #include <cwchar>
@@ -172,20 +173,22 @@ TableViewCollectionViewGroups::~TableViewCollectionViewGroups()
     }
 }
 
-void TableViewCollectionViewGroups::Attach(winrt::TableViewSource const& source)
+void TableViewCollectionViewGroups::Attach(winrt::com_ptr<::TableViewShapingSource> const& source)
 {
     auto self = shared_from_this();
-    source.GroupBy(
-        winrt::TableViewKeySelector{ [self](winrt::IInspectable const& item) -> winrt::IInspectable
+    source->GroupBy(
+        [self](winrt::IInspectable const& item) -> winrt::IInspectable
         {
             return self->KeyFor(item);
-        } },
-        winrt::TableViewGroupIdentitySelector{ [self](winrt::IInspectable const& key) -> winrt::hstring
+        },
+        [self](winrt::IInspectable const& key) -> winrt::hstring
         {
             return self->IdentityFor(key);
-        } });
+        });
 
-    m_source = winrt::make_weak(source);
+    // Not a strong ref: the source holds this object through the selectors above.
+    m_source = source.get();
+    m_sourceDestroyed = source->DestroyedFlag();
     std::weak_ptr<TableViewCollectionViewGroups> weakSelf = self;
     m_groupsChangedToken = m_groups.VectorChanged(
         [weakSelf](winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const&,
@@ -335,14 +338,13 @@ void TableViewCollectionViewGroups::OnGroupsChanged(winrt::Windows::Foundation::
 
 bool TableViewCollectionViewGroups::TryRefreshSource()
 {
-    auto const source = m_source.get();
-    if (!source)
+    if (!m_source || !m_sourceDestroyed || *m_sourceDestroyed)
     {
         return true;
     }
     try
     {
-        source.Refresh();
+        m_source->Refresh();
         return true;
     }
     catch (...)

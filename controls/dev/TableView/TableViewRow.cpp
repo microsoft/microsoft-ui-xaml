@@ -1465,7 +1465,7 @@ double TableViewRow::HierarchyIndent()
 
         // Under a group header, roots are indented by its gutter + spacing (not its Padding);
         // ungrouped roots stay flush.
-        if (ownerImpl->IsTableViewSourceGrouped())
+        if (ownerImpl->IsTableViewShapingSourceGrouped())
         {
             baseIndent = ownerImpl->GetGroupHeaderContentOffset();
         }

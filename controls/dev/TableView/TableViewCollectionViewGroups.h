@@ -7,11 +7,13 @@
 #include "common.h"
 
 #include <memory>
+
+class TableViewShapingSource;
 #include <unordered_map>
 #include <unordered_set>
 
-// Presents an ICollectionView's CollectionGroups through the GroupBy of the TableViewSource the
-// control projects it with: an item's group key is the Group of the ICollectionViewGroup holding
+// Presents an ICollectionView's CollectionGroups through the GroupBy of the TableViewShapingSource
+// the control projects it with: an item's group key is the Group of the ICollectionViewGroup holding
 // it (or that Group's "Key" value), and group order follows the view (each group's items are
 // contiguous in the flat view, so the default SortGroups(None) keeps the view's order). The view
 // stays the owner of its grouping. A group's identity derives from its key value, not the group
@@ -28,7 +30,7 @@ public:
     ~TableViewCollectionViewGroups();
 
     // Declares the grouping on `source` (throws what GroupBy throws) and then follows CollectionGroups changes.
-    void Attach(winrt::TableViewSource const& source);
+    void Attach(winrt::com_ptr<::TableViewShapingSource> const& source);
 
 private:
     struct Entry
@@ -48,7 +50,8 @@ private:
     winrt::Microsoft::UI::Xaml::Data::ICollectionView m_view{ nullptr };
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_groups{ nullptr };
     winrt::event_token m_groupsChangedToken{};
-    winrt::weak_ref<winrt::TableViewSource> m_source{ nullptr };
+    ::TableViewShapingSource* m_source{};
+    std::shared_ptr<bool const> m_sourceDestroyed{};
     // Keyed by canonical IUnknown address. An entry is trusted only after re-reading its slot,
     // so a stale map is detected without depending on event handler order.
     std::unordered_map<uintptr_t, Entry> m_entries{};

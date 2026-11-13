@@ -34,7 +34,7 @@ RowMetadataProvider::~RowMetadataProvider()
     m_alive.reset();
 
     // Teardown runs on the owning UI thread: every strong owner of this provider is a
-    // ReferenceTracker (TableViewSource, TableView) whose final_release marshals destruction to the
+    // ReferenceTracker (TableViewShapingSource, TableView) whose final_release marshals destruction to the
     // captured DispatcherQueue, so the shared_ptr that drops this object drops it on that thread.
     // Revoking the XAML subscription below is therefore safe without a thread guard.
     try

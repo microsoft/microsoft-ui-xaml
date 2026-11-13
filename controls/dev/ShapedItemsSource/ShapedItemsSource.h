@@ -215,7 +215,7 @@ public:
     // -- projection -----------------------------------------------------------------------
     // Name this engine uses to prefix caller-facing diagnostics. Layer 2 must not hardcode a
     // layer-4 type name, but the messages are contractual for apps that already ship against
-    // TableViewSource, so the consumer supplies its own name instead of the text changing.
+    // TableViewShapingSource, so the consumer supplies its own name instead of the text changing.
     void DiagnosticName(winrt::hstring const& value) { m_diagnosticName = value; }
     winrt::hstring const& DiagnosticName() const noexcept { return m_diagnosticName; }
     ProjectionKind Kind() const noexcept { return m_kind; }
