@@ -383,28 +383,23 @@ _Check_return_ HRESULT PropertyGroupDescriptionFactory::CreateInstanceImpl(
 
 _Check_return_ HRESULT CollectionView::SetShapingOwner(_In_ CollectionViewSource* pOwner)
 {
-    return ctl::AsWeak(pOwner, &m_shapingOwnerRef);
+    SetPtrValue(m_tpShapingOwner, static_cast<xaml_data::ICollectionViewSource*>(pOwner));
+    return S_OK;
 }
 
 _Check_return_ HRESULT CollectionView::GetShapingOwner(_Outptr_ CollectionViewSource** ppOwner)
 {
-    ctl::ComPtr<xaml_data::ICollectionViewSource> spOwner;
-
     *ppOwner = nullptr;
     IFC_RETURN(CheckThread());
-    if (m_shapingOwnerRef)
-    {
-        IFC_RETURN(m_shapingOwnerRef.As(&spOwner));
-    }
-    IFCEXPECTRC_RETURN(spOwner, RO_E_CLOSED);
-    *ppOwner = spOwner.Cast<CollectionViewSource>();
-    spOwner.Detach();
+    IFCEXPECTRC_RETURN(m_tpShapingOwner, RO_E_CLOSED);
+    *ppOwner = static_cast<CollectionViewSource*>(m_tpShapingOwner.Get());
+    ctl::addref_interface(*ppOwner);
     return S_OK;
 }
 
 HRESULT CollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewShaping)) && m_shapingOwnerRef)
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewShaping)) && m_tpShapingOwner)
     {
         *ppObject = static_cast<xaml_data::ICollectionViewShaping*>(this);
         AddRefOuter();

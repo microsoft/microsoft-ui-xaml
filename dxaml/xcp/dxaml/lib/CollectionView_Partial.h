@@ -138,6 +138,8 @@ namespace DirectUI
         ctl::ComPtr<CurrentChangingEventSourceType> m_spCurrentChangingEventSource;
         ctl::ComPtr<CurrentChangedEventSourceType> m_spCurrentChangedEventSource;
 
-        ctl::WeakRefPtr m_shapingOwnerRef;
+        // Keeps the owning CollectionViewSource alive while the view is: the view's shaping and
+        // its updates live on that CollectionViewSource, so an app may hold only View.
+        TrackerPtr<xaml_data::ICollectionViewSource> m_tpShapingOwner;
     };
 }
