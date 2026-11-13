@@ -17,9 +17,9 @@ namespace WinUIProfiler.Engine.Symbols;
 // - Other servers get the user's Windows credentials when they ask for them.
 // - A server that cannot be reached, or does not answer within 30 seconds, is not asked again. A dead server then
 //   costs one timeout rather than one per PDB.
-// - Stop fails new requests, cancels those waiting for an answer, and disposes the answers whose content is still
-//   being read (SymbolReader reads it synchronously, and drops a partial download).
-internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToken stop = default)
+// - Canceling a lookup (see Lookup) fails its new requests, cancels those waiting for an answer, and ends reads of answers
+//   in progress with an error. SymbolReader then drops the partial download rather than keeping a truncated PDB.
+internal sealed class SymbolServerHandler(Action<string>? warn)
     : DelegatingHandler(new HttpClientHandler { UseDefaultCredentials = true })
 {
     // The Azure application symweb accepts tokens for.
@@ -40,16 +40,21 @@ internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToke
 
     private sealed record SymwebToken(string Value, DateTimeOffset RefreshUtc);
 
+    // The token of the PDB lookup in progress, set by SymbolResolver. SymbolReader sends a lookup's requests from tasks it
+    // starts during the lookup.
+    internal CancellationToken Lookup { get; set; }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        stop.ThrowIfCancellationRequested();
+        var lookup = Lookup;
+        lookup.ThrowIfCancellationRequested();
         var uri = request.RequestUri ?? throw new InvalidOperationException("The symbol request has no URI.");
         if (deadServers.ContainsKey(uri.Authority))
         {
             throw new HttpRequestException($"{uri.Authority} is skipped because it did not respond earlier.");
         }
 
-        using var stopping = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop);
+        using var stopping = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lookup);
         SymwebToken? token = null;
         if (!tokenFailed &&
             request.Headers.Authorization is null &&
@@ -66,7 +71,7 @@ internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToke
         HttpResponseMessage response;
 
         // SymbolReader reads the content after this returns, so the timeout covers the server's first answer only. A
-        // stopped request is not the server's fault, so it does not mark the server dead.
+        // canceled request is not the server's fault, so it does not mark the server dead.
         using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(stopping.Token))
         {
             timeout.CancelAfter(RequestTimeout);
@@ -87,9 +92,6 @@ internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToke
             }
         }
 
-        // The registration lasts as long as the stop token's source, which is one symbolizing run.
-        stop.Register(response.Dispose);
-
         if (token is not null && response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             Interlocked.CompareExchange(ref cachedToken, null, token);
@@ -97,6 +99,28 @@ internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToke
             WarnToken(
                 $"{SymbolPaths.SymwebHost} refused the Azure CLI token ({(int)response.StatusCode}). " +
                 "Run 'az login' with an account that can read symweb.");
+        }
+
+        // SymbolReader reads the content after this returns. Reading it through LookupStream makes canceling the lookup
+        // end a read with an error; disposing the answer instead could make the read look like the end of the file.
+        if (lookup.CanBeCanceled && response.IsSuccessStatusCode)
+        {
+            try
+            {
+                var body = await response.Content.ReadAsStreamAsync(stopping.Token).ConfigureAwait(false);
+                var content = new StreamContent(new LookupStream(body, lookup));
+                foreach (var header in response.Content.Headers)
+                {
+                    content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+
+                response.Content = content;
+            }
+            catch
+            {
+                response.Dispose();
+                throw;
+            }
         }
 
         return response;
@@ -278,6 +302,58 @@ internal sealed class SymbolServerHandler(Action<string>? warn, CancellationToke
         catch (Exception error) when (error is InvalidOperationException or Win32Exception or NotSupportedException)
         {
             Trace.TraceWarning($"Could not stop az: {error.Message}");
+        }
+    }
+
+    // An answer's content that fails its reads once the lookup is canceled, including a read that returned just before.
+    private sealed class LookupStream(Stream inner, CancellationToken lookup) : Stream
+    {
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) =>
+            ReadAsync(buffer.AsMemory(offset, count), CancellationToken.None).AsTask().GetAwaiter().GetResult();
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            using var reading = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lookup);
+            var read = await inner.ReadAsync(buffer, reading.Token).ConfigureAwait(false);
+            lookup.ThrowIfCancellationRequested();
+            return read;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                inner.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

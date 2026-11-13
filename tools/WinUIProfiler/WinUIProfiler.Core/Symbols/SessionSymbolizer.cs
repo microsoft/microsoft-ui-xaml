@@ -111,9 +111,8 @@ public static class SessionSymbolizer
             readFromImage = identity is not null;
         }
 
-        var symbols = resolver.Open(identity);
-
-        // A canceled lookup fails, which must not be stored as the module's status.
+        // Open throws when the run is canceled during the lookup, and a run canceled after it stops here, before writing.
+        var symbols = resolver.Open(identity, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         using var transaction = connection.BeginTransaction();
         if (readFromImage)

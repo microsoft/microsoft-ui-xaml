@@ -47,6 +47,8 @@ internal sealed class CpuSampleIndex : IDisposable
     private long lastAddressId;
     private long lastStackId;
     private bool trimmed;
+    // Trim deleted the samples from before this time, with the events; a sample stored late from before it isn't stored.
+    private long keptFromQpc;
 
     internal CpuSampleIndex(SqliteConnection connection)
     {
@@ -73,16 +75,22 @@ internal sealed class CpuSampleIndex : IDisposable
     // The samples the file has: trimming deletes the oldest.
     internal long Samples { get; private set; }
 
-    // About how much storing the samples adds to the file: their rows, and the stack nodes and code addresses not stored
-    // yet, each once.
+    // About how much storing the samples adds to the file: the rows of those Add stores, and the stack nodes and code
+    // addresses not stored yet, each once.
     internal long IncomingBytes(List<CompletedSample> samples)
     {
         // Those the batch adds, with IDs below zero, which no stored row has.
         var newAddresses = new Dictionary<(SampledModule? Module, ulong Address), long>();
         var newStacks = new Dictionary<(long ParentId, long AddressId), long>();
-        var bytes = (long)samples.Count * SampleBytes;
+        long bytes = 0;
         foreach (var sample in samples)
         {
+            if (sample.Qpc < keptFromQpc)
+            {
+                continue;
+            }
+
+            bytes += SampleBytes;
             long stackId = 0;
             for (var i = sample.Frames.Length - 1; i >= 0; i--)
             {
@@ -108,8 +116,15 @@ internal sealed class CpuSampleIndex : IDisposable
         return bytes;
     }
 
+    // Doesn't store a sample from before the time Trim kept samples from: it goes as trimming would have taken it.
     internal void Add(CompletedSample sample, SqliteTransaction transaction)
     {
+        if (sample.Qpc < keptFromQpc)
+        {
+            trimmed = true;
+            return;
+        }
+
         insertModule.Transaction = transaction;
         insertAddress.Transaction = transaction;
         insertStack.Transaction = transaction;
@@ -159,10 +174,13 @@ internal sealed class CpuSampleIndex : IDisposable
         Samples++;
     }
 
-    // Deletes the samples from before qpc, as trimming the events deletes those from before it, and returns how many.
-    // Prune then deletes the stacks they leave unused.
-    internal long Trim(long qpc, SqliteTransaction transaction) =>
-        Deleted(Sql.Longs(connection, "DELETE FROM CpuSamples WHERE Qpc < $qpc RETURNING StackId", transaction, ("$qpc", qpc)));
+    // Deletes the samples from before qpc, as trimming the events deletes those from before it, and returns how many; Add
+    // then doesn't store one from before it. Prune then deletes the stacks they leave unused.
+    internal long Trim(long qpc, SqliteTransaction transaction)
+    {
+        keptFromQpc = Math.Max(keptFromQpc, qpc);
+        return Deleted(Sql.Longs(connection, "DELETE FROM CpuSamples WHERE Qpc < $qpc RETURNING StackId", transaction, ("$qpc", qpc)));
+    }
 
     // Deletes the first count samples stored, the oldest, but none from beforeQpc on when it's given, and returns how many
     // it deleted. Prune then deletes the stacks they leave unused.

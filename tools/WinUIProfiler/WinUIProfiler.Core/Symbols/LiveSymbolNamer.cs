@@ -18,6 +18,8 @@ public sealed class LiveSymbolNamer : IDisposable
     private static readonly TimeSpan RoundTime = TimeSpan.FromSeconds(2);
 
     private readonly object gate = new();
+    // Canceled by Dispose, to stop a running round.
+    private readonly CancellationTokenSource lifetime = new();
     private readonly Dictionary<long, string> names = [];
     // Addresses a round looked up, named or not; they aren't asked for again.
     private readonly HashSet<long> done = [];
@@ -82,21 +84,25 @@ public sealed class LiveSymbolNamer : IDisposable
     }
 
     // Names the addresses asked for, and returns how many it named. It returns early once it has named some and has run
-    // for a while, so call it until it returns 0. Throws as SessionFile.Open does.
+    // for a while, so call it until it returns 0. Throws as SessionFile.Open does, and OperationCanceledException when the
+    // token is canceled or the namer is disposed; the addresses the round didn't finish are asked for again.
     public int Name(CancellationToken cancellationToken = default)
     {
+        CancellationTokenSource round;
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             rounds++;
+            // Linked under the lock, so Dispose cannot dispose lifetime first.
+            round = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token);
         }
 
         try
         {
-            SessionSymbolizer.Gate.Wait(cancellationToken);
+            SessionSymbolizer.Gate.Wait(round.Token);
             try
             {
-                return NameRound(cancellationToken);
+                return NameRound(round.Token);
             }
             finally
             {
@@ -105,6 +111,7 @@ public sealed class LiveSymbolNamer : IDisposable
         }
         finally
         {
+            round.Dispose();
             SymbolResolver? closing = null;
             lock (gate)
             {
@@ -118,7 +125,7 @@ public sealed class LiveSymbolNamer : IDisposable
         }
     }
 
-    // A running round finishes (cancel it) before its PDBs are closed.
+    // Cancels a running round, whose PDBs are closed when it ends.
     public void Dispose()
     {
         SymbolResolver? closing = null;
@@ -136,6 +143,8 @@ public sealed class LiveSymbolNamer : IDisposable
             }
         }
 
+        lifetime.Cancel();
+        lifetime.Dispose();
         closing?.Dispose();
     }
 
@@ -200,7 +209,7 @@ public sealed class LiveSymbolNamer : IDisposable
             var found = new List<(long AddressId, string Name)>();
             try
             {
-                symbols = Find(module);
+                symbols = Find(module, cancellationToken);
                 if (symbols.FindName is { } findName)
                 {
                     for (var index = 0; index < pending.Count; index++)
@@ -250,7 +259,7 @@ public sealed class LiveSymbolNamer : IDisposable
         return named;
     }
 
-    private ModuleSymbols Find(SessionSymbolizer.StoredModule module)
+    private ModuleSymbols Find(SessionSymbolizer.StoredModule module, CancellationToken cancellationToken)
     {
         if (modules.TryGetValue(module.ModuleId, out var symbols))
         {
@@ -259,8 +268,9 @@ public sealed class LiveSymbolNamer : IDisposable
 
         var identity = SessionSymbolizer.StoredIdentity(module)
             ?? PeIdentity.Read(module.FilePath, module.TimeDateStamp, module.ImageSize);
-        resolver ??= new SymbolResolver(SymbolPath);
-        symbols = resolver.Open(identity);
+        // Made once and kept across rounds, so what it found is reused; a round's token only cuts short its own lookups.
+        resolver ??= new SymbolResolver(SymbolPath, cancellationToken: cancellationToken);
+        symbols = resolver.Open(identity, cancellationToken);
         if (symbols.Status != SymbolStatus.NoIdentity)
         {
             modules[module.ModuleId] = symbols;

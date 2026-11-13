@@ -31,6 +31,8 @@ internal sealed record ModuleSymbols(SymbolStatus Status, string? SymbolFile, Fu
 // - Network shares in the path are checked first, in parallel. One that does not answer within 10 seconds is left out,
 //   so a missing share costs one wait rather than one per PDB.
 // - Results are kept per PDB. Not thread-safe.
+// - Canceling a lookup cuts short its symbol server requests and downloads, and Open throws OperationCanceledException.
+//   Nothing is kept for that PDB, so it is looked up again next time.
 internal sealed class SymbolResolver : IDisposable
 {
     private static readonly TimeSpan ShareTimeout = TimeSpan.FromSeconds(10);
@@ -40,22 +42,25 @@ internal sealed class SymbolResolver : IDisposable
     private readonly HashSet<string> warned = [];
     private readonly Action<string>? warn;
     private readonly Dictionary<PdbIdentity, ModuleSymbols> results = [];
+    private readonly SymbolServerHandler handler;
     private readonly SymbolReader reader;
 
-    // Throws ArgumentException when the symbol path is malformed. Warnings may arrive on any thread, one at a time. Stop
-    // cuts short the wait for network shares and the symbol server requests, and a lookup it interrupts finds nothing.
-    internal SymbolResolver(string symbolPath, Action<string>? warn = null, TextWriter? log = null, CancellationToken stop = default)
+    // Throws ArgumentException when the symbol path is malformed. Warnings may arrive on any thread, one at a time. The
+    // cancellation token cuts short only the wait for network shares.
+    internal SymbolResolver(string symbolPath, Action<string>? warn = null, TextWriter? log = null, CancellationToken cancellationToken = default)
     {
         this.warn = warn;
-        var sources = Reachable(SymbolPaths.Sources(symbolPath), stop);
+        var sources = Reachable(SymbolPaths.Sources(symbolPath), cancellationToken);
         SearchPath = string.Join(';', sources);
         if (sources.Count == 0)
         {
             Warn("No location in the symbol path is reachable, so functions will not be named.");
         }
 
+        handler = new SymbolServerHandler(Warn);
+
         // SymbolReader reads _NT_SYMBOL_PATH only when given null.
-        reader = new SymbolReader(log ?? TextWriter.Null, SearchPath, new SymbolServerHandler(Warn, stop))
+        reader = new SymbolReader(log ?? TextWriter.Null, SearchPath, handler)
         {
             // PDBs from any location in the path are trusted; the user chose them.
             SecurityCheck = _ => true,
@@ -66,7 +71,7 @@ internal sealed class SymbolResolver : IDisposable
     // The symbol path SymbolReader searches.
     internal string SearchPath { get; }
 
-    internal ModuleSymbols Open(PdbIdentity? identity)
+    internal ModuleSymbols Open(PdbIdentity? identity, CancellationToken cancellationToken = default)
     {
         if (identity is null || identity.Guid == Guid.Empty || string.IsNullOrWhiteSpace(Path.GetFileName(identity.PdbName)))
         {
@@ -78,12 +83,30 @@ internal sealed class SymbolResolver : IDisposable
             return new ModuleSymbols(SymbolStatus.Portable, null, null);
         }
 
-        if (!results.TryGetValue(identity, out var result))
+        if (results.TryGetValue(identity, out var result))
         {
-            result = Find(identity);
-            results[identity] = result;
+            return result;
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+        handler.Lookup = cancellationToken;
+        try
+        {
+            result = Find(identity);
+        }
+        finally
+        {
+            handler.Lookup = default;
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            // SymbolReader remembers the PDBs it did not find, and setting its options makes it forget them.
+            reader.Options = reader.Options;
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        results[identity] = result;
         return result;
     }
 
@@ -130,7 +153,7 @@ internal sealed class SymbolResolver : IDisposable
     };
 
     // Leaves out locations on network shares that do not answer.
-    private List<SymbolSource> Reachable(List<SymbolSource> sources, CancellationToken stop)
+    private List<SymbolSource> Reachable(List<SymbolSource> sources, CancellationToken cancellationToken)
     {
         static string? ShareOf(string? location) =>
             location is not null && SymbolPaths.IsUnc(location) ? Path.GetPathRoot(location) : null;
@@ -147,7 +170,7 @@ internal sealed class SymbolResolver : IDisposable
 
         try
         {
-            Task.WaitAll([.. probes.Values], (int)ShareTimeout.TotalMilliseconds, stop);
+            Task.WaitAll([.. probes.Values], (int)ShareTimeout.TotalMilliseconds, cancellationToken);
         }
         catch (AggregateException)
         {

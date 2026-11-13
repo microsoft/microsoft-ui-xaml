@@ -109,6 +109,24 @@ named graphics resources, untracked versus observed lifetimes, four-group
 classification, missing captures and full-range 64-bit graphics comparisons.
 They also run the Copilot plugin server's checks (see Copilot plugin below).
 
+The CPU checks use the fixtures in `WinUIProfiler.Tests\Fixtures\NativeSymbols`.
+`NativeSymbols.dll` and `NativeSymbols.pdb` are built from `NativeSymbols.c` by
+`build.cmd`, run from an x64 Visual Studio developer command prompt. It builds
+them in a new directory at the root of the system drive, so neither has a path
+to the enlistment or the user.
+`CpuProfile.etl` is a recorded CPU profile of a thread running the DLL's code
+between two Microsoft.UI.Xaml events. It keeps only that process's threads,
+samples and stacks, the DLL's load and PDB identity, and the two events. After
+rebuilding the DLL, record the trace again from an elevated prompt:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -c Release -- --record-cpu-fixture "$PWD\WinUIProfiler.Tests\Fixtures\NativeSymbols\CpuProfile.etl"
+```
+
+Recording fails if the trace would name the user, the machine or the user's SID,
+or hold a path under a user profile or the enlistment, and the tests fail if the
+DLL or the PDB would.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
 target PID, creation time, runtime path and latest hello. Errors and timeouts
