@@ -100,8 +100,9 @@ public:
     winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
     void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
     // UIA sees each binding of this header to a group as its own element (the header peer's
-    // EventsSource), so a held element never moves to another group. A cleared header exposes none.
-    void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding);
+    // EventsSource), so a held element never moves to another group. With a group identity the
+    // element is the group's, shared through the owner; a cleared header exposes none.
+    void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity);
 
 private:
     void UpdateVisualStates(bool useTransitions);
@@ -128,6 +129,8 @@ private:
     winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
     tracker_ref<winrt::DataTemplate> m_inspectedContentTemplate{ this };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
+    // The current group's UIA element, kept across a clear so a same-group re-prepare restores it.
+    winrt::weak_ref<winrt::AutomationPeer> m_groupBinding{ nullptr };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };

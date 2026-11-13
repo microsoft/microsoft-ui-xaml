@@ -1171,7 +1171,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(recycled > 0, "Precondition: at least one row must have been recycled to another item.");
                 Verify.IsTrue(withNext > 0, "Row peers must reach their siblings.");
 
-
                 var next = probe.ToPeer(container.FindItemByProperty(probe.ToProvider(RowPeerOf(rows[0])), null, null));
                 Verify.AreSame(RowPeerOf(rows[1]), next, "FindItemByProperty after a row's peer must return the next row's peer.");
                 Verify.IsNull(container.FindItemByProperty(probe.ToProvider(stale), null, null),
@@ -1352,7 +1351,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             public IRawElementProviderSimple ToProvider(AutomationPeer peer) => ProviderFromPeer(peer);
         }
-
 
         private sealed class NamedPerson
         {

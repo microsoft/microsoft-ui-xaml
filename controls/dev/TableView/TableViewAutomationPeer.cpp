@@ -26,6 +26,7 @@ namespace
     // Marked composable like the IDL-generated peer bases, which ReferenceTracker relies on.
     template <typename D, typename... I>
     using ComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
+    namespace Peers = winrt::Microsoft::UI::Xaml::Automation::Peers;
 
     // A realized row's name as composed from its text cells, read from the item without realizing the row.
     winrt::hstring ComposeTextColumnValues(TableView& table, winrt::IInspectable const& item)
@@ -104,8 +105,6 @@ namespace
             , m_bound(true)
         {
         }
-
-        int32_t IndexInternal() { return ItemIndex(); }
 
         // Rebinding to the selected index picks the right occurrence of a duplicated item.
         bool TryRebind(winrt::IInspectable const& item, int32_t index)
@@ -199,8 +198,9 @@ namespace
 
         hstring GetClassNameCore() { return winrt::hstring_name_of<winrt::TableViewRow>(); }
         winrt::AutomationControlType GetAutomationControlTypeCore() { return winrt::AutomationControlType::DataItem; }
-        bool IsContentElementCore() { return true; }
-        bool IsControlElementCore() { return true; }
+        // Forwarded so the row's AutomationProperties.AccessibilityView still applies.
+        bool IsContentElementCore() { return FromRowPeer([](auto const& p) { return p.IsContentElement(); }, true); }
+        bool IsControlElementCore() { return FromRowPeer([](auto const& p) { return p.IsControlElement(); }, true); }
 
         hstring GetNameCore()
         {
@@ -220,8 +220,8 @@ namespace
             return ItemToName(item);
         }
 
-        hstring GetAutomationIdCore() { auto const p = RealizedRowPeer(Index()); return p ? p.GetAutomationId() : hstring{}; }
-        hstring GetHelpTextCore() { auto const p = RealizedRowPeer(Index()); return p ? p.GetHelpText() : hstring{}; }
+        hstring GetAutomationIdCore() { return FromRowPeer([](auto const& p) { return p.GetAutomationId(); }, hstring{}); }
+        hstring GetHelpTextCore() { return FromRowPeer([](auto const& p) { return p.GetHelpText(); }, hstring{}); }
 
         void ShowContextMenuCore()
         {
@@ -254,8 +254,8 @@ namespace
             return p ? p.GetCulture() : __super::GetCultureCore();
         }
 
-        bool IsOffscreenCore() { auto const p = RealizedRowPeer(Index()); return !p || p.IsOffscreen(); }
-        winrt::Rect GetBoundingRectangleCore() { auto const p = RealizedRowPeer(Index()); return p ? p.GetBoundingRectangle() : winrt::Rect{}; }
+        bool IsOffscreenCore() { return FromRowPeer([](auto const& p) { return p.IsOffscreen(); }, true); }
+        winrt::Rect GetBoundingRectangleCore() { return FromRowPeer([](auto const& p) { return p.GetBoundingRectangle(); }, winrt::Rect{}); }
         // A selected-item peer does not forward: the framework re-parents returned children, which would
         // steal the row's cell peers. A bound peer is the row to UIA, so the cells belong to it.
         winrt::IVector<winrt::AutomationPeer> GetChildrenCore()
@@ -263,10 +263,41 @@ namespace
             auto const p = m_bound ? RealizedRowPeer(RequireIndex()) : nullptr;
             return p ? p.GetChildren() : nullptr;
         }
-        winrt::Point GetClickablePointCore() { auto const p = RealizedRowPeer(Index()); return p ? p.GetClickablePoint() : winrt::Point{}; }
-        bool HasKeyboardFocusCore() { auto const p = RealizedRowPeer(Index()); return p && p.HasKeyboardFocus(); }
-        bool IsKeyboardFocusableCore() { auto const p = RealizedRowPeer(Index()); return p && p.IsKeyboardFocusable(); }
-        void SetFocusCore() { if (auto const p = RealizedRowPeer(Index())) { p.SetFocus(); } }
+        winrt::Point GetClickablePointCore() { return FromRowPeer([](auto const& p) { return p.GetClickablePoint(); }, winrt::Point{}); }
+        bool HasKeyboardFocusCore() { return FromRowPeer([](auto const& p) { return p.HasKeyboardFocus(); }, false); }
+        bool IsKeyboardFocusableCore() { return FromRowPeer([](auto const& p) { return p.IsKeyboardFocusable(); }, false); }
+
+        void SetFocusCore()
+        {
+            if (auto const p = RealizedRowPeer(Index()))
+            {
+                p.SetFocus();
+            }
+        }
+
+        // UIA reads these from this peer, not the row's: forward them, as ItemAutomationPeer does to its container,
+        // so the row peer's set position and the row's AutomationProperties still reach clients.
+        int32_t GetPositionInSetCore() { return FromRowPeer([](auto const& p) { return p.GetPositionInSet(); }, -1); }
+        int32_t GetSizeOfSetCore() { return FromRowPeer([](auto const& p) { return p.GetSizeOfSet(); }, -1); }
+        int32_t GetLevelCore() { return FromRowPeer([](auto const& p) { return p.GetLevel(); }, -1); }
+        hstring GetAcceleratorKeyCore() { return FromRowPeer([](auto const& p) { return p.GetAcceleratorKey(); }, hstring{}); }
+        hstring GetAccessKeyCore() { return FromRowPeer([](auto const& p) { return p.GetAccessKey(); }, hstring{}); }
+        hstring GetItemStatusCore() { return FromRowPeer([](auto const& p) { return p.GetItemStatus(); }, hstring{}); }
+        hstring GetItemTypeCore() { return FromRowPeer([](auto const& p) { return p.GetItemType(); }, hstring{}); }
+        hstring GetFullDescriptionCore() { return FromRowPeer([](auto const& p) { return p.GetFullDescription(); }, hstring{}); }
+        hstring GetLocalizedLandmarkTypeCore() { return FromRowPeer([](auto const& p) { return p.GetLocalizedLandmarkType(); }, hstring{}); }
+        winrt::AutomationPeer GetLabeledByCore() { return FromRowPeer([](auto const& p) { return p.GetLabeledBy(); }, winrt::AutomationPeer{ nullptr }); }
+        winrt::IVectorView<winrt::AutomationPeer> GetControlledPeersCore() { return FromRowPeer([](auto const& p) { return p.GetControlledPeers(); }, winrt::IVectorView<winrt::AutomationPeer>{ nullptr }); }
+        winrt::IVector<Peers::AutomationPeerAnnotation> GetAnnotationsCore() { return FromRowPeer([](auto const& p) { return p.GetAnnotations(); }, winrt::IVector<Peers::AutomationPeerAnnotation>{ nullptr }); }
+        Peers::AutomationOrientation GetOrientationCore() { return FromRowPeer([](auto const& p) { return p.GetOrientation(); }, Peers::AutomationOrientation::None); }
+        Peers::AutomationLiveSetting GetLiveSettingCore() { return FromRowPeer([](auto const& p) { return p.GetLiveSetting(); }, Peers::AutomationLiveSetting::Off); }
+        Peers::AutomationLandmarkType GetLandmarkTypeCore() { return FromRowPeer([](auto const& p) { return p.GetLandmarkType(); }, Peers::AutomationLandmarkType::None); }
+        Peers::AutomationHeadingLevel GetHeadingLevelCore() { return FromRowPeer([](auto const& p) { return p.GetHeadingLevel(); }, Peers::AutomationHeadingLevel::None); }
+        bool IsPasswordCore() { return FromRowPeer([](auto const& p) { return p.IsPassword(); }, false); }
+        bool IsRequiredForFormCore() { return FromRowPeer([](auto const& p) { return p.IsRequiredForForm(); }, false); }
+        bool IsPeripheralCore() { return FromRowPeer([](auto const& p) { return p.IsPeripheral(); }, false); }
+        bool IsDataValidForFormCore() { return FromRowPeer([](auto const& p) { return p.IsDataValidForForm(); }, true); }
+        bool IsDialogCore() { return FromRowPeer([](auto const& p) { return p.IsDialog(); }, false); }
 
         bool IsSelected()
         {
@@ -286,33 +317,20 @@ namespace
             return peer ? ProviderFromPeer(peer) : nullptr;
         }
 
+        // Bound or not, act through this peer: the index is resolved (and the binding rechecked) after the
+        // enabled check, which can run app code that rebinds the row.
         void AddToSelection()
         {
-            if (m_bound)
-            {
-                LiveRowPeer().AddToSelection();
-                return;
-            }
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Add);
         }
 
         void RemoveFromSelection()
         {
-            if (m_bound)
-            {
-                LiveRowPeer().RemoveFromSelection();
-                return;
-            }
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Remove);
         }
 
         void Select()
         {
-            if (m_bound)
-            {
-                LiveRowPeer().Select();
-                return;
-            }
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Select);
         }
 
@@ -410,12 +428,13 @@ namespace
         // Stale bound peers throw from every member; a selected-item peer degrades instead.
         int32_t Index() { return m_bound ? RequireIndex() : ItemIndex(); }
 
-        // The binding is current while the row's own peer still routes UIA to this peer.
+        // The binding is current while the row's own peer still routes UIA to this peer. Compared by COM
+        // identity: the source can be any object an app installed.
         bool IsBound(winrt::TableViewRow const& row)
         {
             auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(row);
-            auto const source = peer ? peer.EventsSource().try_as<winrt::IVirtualizedItemProvider>() : nullptr;
-            return source && winrt::get_self<TableViewRowItemAutomationPeer>(source) == this;
+            auto const source = peer ? peer.EventsSource() : nullptr;
+            return source && source == get_strong().as<winrt::AutomationPeer>();
         }
 
         TableViewRowAutomationPeer& LiveRowPeer()
@@ -453,6 +472,14 @@ namespace
         {
             auto const row = RealizedRow(index);
             return row ? winrt::FrameworkElementAutomationPeer::CreatePeerForElement(row) : nullptr;
+        }
+
+        // The base AutomationPeer's value is the fallback: this peer has no owner of its own to read.
+        template <typename T, typename Forward>
+        T FromRowPeer(Forward&& forward, T fallback)
+        {
+            auto const p = RealizedRowPeer(Index());
+            return p ? static_cast<T>(forward(p)) : fallback;
         }
 
         winrt::weak_ref<winrt::TableView> m_table{ nullptr };

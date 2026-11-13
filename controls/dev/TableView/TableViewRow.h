@@ -328,6 +328,8 @@ private:
     bool m_cellsInvalidated{ false };
     // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
     bool m_inRecyclePool{ false };
+    // The binding SyncItemAutomationPeer last installed as the row peer's EventsSource.
+    winrt::weak_ref<winrt::AutomationPeer> m_itemAutomationPeer{ nullptr };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };

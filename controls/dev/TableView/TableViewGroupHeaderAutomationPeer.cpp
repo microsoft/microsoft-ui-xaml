@@ -141,9 +141,10 @@ void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
     try
     {
-        // UIA sees the header through its group's element when it has one.
-        auto const source = EventsSource();
-        (source ? source : get_strong().as<winrt::AutomationPeer>()).RaisePropertyChangedEvent(
+        // Raised on this peer, as TableViewRowAutomationPeer does: the framework resolves the window
+        // through this peer's owner, then routes the event to the group's element (EventsSource).
+        // The element has no owner, so raising on it directly finds no window and the event is dropped.
+        RaisePropertyChangedEvent(
             winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
             box_value(oldState),
             box_value(newState));

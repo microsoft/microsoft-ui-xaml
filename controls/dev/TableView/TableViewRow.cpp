@@ -355,6 +355,12 @@ winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
 
 void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding)
 {
+    // An EventsSource the app installed wins; only replace or clear the binding this row installed.
+    if (auto const current = rowPeer.EventsSource(); current && current != m_itemAutomationPeer.get())
+    {
+        return;
+    }
+
     auto const owner = GetOwningTableView();
     if (!owner || m_inRecyclePool)
     {
@@ -362,7 +368,9 @@ void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, 
     }
     else if (newBinding || !rowPeer.EventsSource())
     {
-        rowPeer.EventsSource(TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this));
+        auto const binding = TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this);
+        m_itemAutomationPeer = winrt::make_weak(binding);
+        rowPeer.EventsSource(binding);
     }
 }
 
@@ -1103,7 +1111,6 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     }
 
     return chromeRefreshed;
-
 }
 
 // Rewire realized rows when Columns changes but the owner identity does not.

@@ -2134,6 +2134,8 @@ void TableView::RefreshRowsPipeline()
     if (m_tableViewSourceRowMetadata != previousRowMetadata)
     {
         ++m_rowMetadataGeneration;
+        m_pendingGroupExpansionStates.clear();
+        m_groupAutomationElements.clear();
     }
 
     if (auto repeater = m_rowsRepeater.get())

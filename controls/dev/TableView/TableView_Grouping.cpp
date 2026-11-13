@@ -509,6 +509,14 @@ void TableView::ApplyGroupExpansionByIdentity(
     // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
     // queued edit reshapes.
     auto const provider = m_tableViewSourceRowMetadata;
+    // Captured before the toggle so the header can announce it even if the reshape moves the group to another
+    // container (see m_pendingGroupExpansionStates).
+    std::optional<winrt::ExpandCollapseState> groupStateBefore;
+    if (axis == BulkExpansionAxis::Groups && !subtree &&
+        winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        groupStateBefore = TryGetGroupExpandCollapseState(identity);
+    }
     if (provider && generation == m_rowMetadataGeneration)
     {
         // While actions are tracked, every request is, so a failure writes TableView_Error. A request that changes one
@@ -561,6 +569,11 @@ void TableView::ApplyGroupExpansionByIdentity(
     // told clients to re-read a structure that had not changed yet.
     if (changed)
     {
+        if (groupStateBefore)
+        {
+            // Keep the earliest state: two toggles before the header is re-prepared net out to no change.
+            m_pendingGroupExpansionStates.try_emplace(identity, *groupStateBefore);
+        }
         QueueGroupExpansionRowRefresh();
         // The toggled row keeps its index, so it is never re-prepared; restamp it here. In a tree,
         // rows below the splice may still report pre-reconcile indices, so restamp again once the
@@ -585,6 +598,35 @@ void TableView::ApplyGroupExpansionByIdentity(
     {
         AnnounceRowExpansionChange(identity);
     }
+}
+
+// Built the way TableViewGroupHeaderAutomationPeer::ExpandCollapseState reports it, so an announced
+// pair always matches what the provider returns.
+static winrt::ExpandCollapseState GroupExpandCollapseState(bool isExpandable, bool isExpanded)
+{
+    return !isExpandable ? winrt::ExpandCollapseState::LeafNode
+        : isExpanded ? winrt::ExpandCollapseState::Expanded
+        : winrt::ExpandCollapseState::Collapsed;
+}
+
+std::optional<winrt::ExpandCollapseState> TableView::TryGetGroupExpandCollapseState(winrt::hstring const& identity)
+{
+    try
+    {
+        int32_t index = -1;
+        TableViewRowInfo info{};
+        if (m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) &&
+            TryGetTableViewSourceRowInfo(index, info) && info.Kind == TableViewRowKind::GroupHeader)
+        {
+            return GroupExpandCollapseState(info.IsExpandable, info.IsExpanded);
+        }
+    }
+    catch (...)
+    {
+        // Best-effort: the grouping source or its state can change during cleanup.
+    }
+    return std::nullopt;
 }
 
 void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
@@ -1203,15 +1245,33 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     //    provider will never return.
     //
     // Raised from here, not from the IsExpanded DP: a recycled container often already carries the
-    // incoming value, so the DP never changes and a DP-based raise stays silent.
+    // incoming value, so the DP never changes and a DP-based raise stays silent. A toggle's reshape
+    // can also give the group a container that last showed another group, so a toggled group takes
+    // its previous state from m_pendingGroupExpansionStates rather than from this container.
     const bool sameGroup = existing && SameGroupKey(existing.Key(), groupKey);
-    const auto previousState = !existing ? winrt::ExpandCollapseState::LeafNode
-        : !existing.IsExpandable() ? winrt::ExpandCollapseState::LeafNode
-        : existing.IsExpanded() ? winrt::ExpandCollapseState::Expanded
-        : winrt::ExpandCollapseState::Collapsed;
-    const auto newState = !isExpandable ? winrt::ExpandCollapseState::LeafNode
-        : isExpanded ? winrt::ExpandCollapseState::Expanded
-        : winrt::ExpandCollapseState::Collapsed;
+    auto previousState = !existing ? winrt::ExpandCollapseState::LeafNode
+        : GroupExpandCollapseState(existing.IsExpandable(), existing.IsExpanded());
+    bool announce = sameGroup;
+    winrt::hstring identity;
+    if (hasRowInfo && m_tableViewSourceRowMetadata)
+    {
+        try
+        {
+            identity = m_tableViewSourceRowMetadata->GetIdentity(index);
+        }
+        catch (...)
+        {
+            // Best-effort: the grouping source or its state can change during cleanup.
+        }
+    }
+    if (auto const pending = identity.empty() ? m_pendingGroupExpansionStates.end() : m_pendingGroupExpansionStates.find(identity);
+        pending != m_pendingGroupExpansionStates.end())
+    {
+        previousState = pending->second;
+        announce = true;
+        m_pendingGroupExpansionStates.erase(pending);
+    }
+    const auto newState = GroupExpandCollapseState(isExpandable, isExpanded);
 
     if (sameGroup)
     {
@@ -1236,10 +1296,16 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     }
     if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(header))
     {
-        headerImpl->SyncGroupAutomationPeerInternal(headerPeer, !sameGroup);
+        headerImpl->SyncGroupAutomationPeerInternal(headerPeer, !sameGroup, identity);
+    }
+    else if (!identity.empty() && GetGroupAutomationElementInternal(identity))
+    {
+        // A client still holds this group's element: give it this container now, or it would stay
+        // on the header the group left until UIA happens to reach this one. Peer creation syncs.
+        winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
     }
 
-    if (sameGroup && previousState != newState)
+    if (announce && previousState != newState)
     {
         headerImpl->RaiseExpandCollapseStateChanged(previousState, newState);
     }
@@ -1282,6 +1348,9 @@ void TableView::RefreshRealizedGroupHeadersAfterExpansion()
     {
         PrepareGroupHeaderElement(header, index);
     });
+
+    // A toggled group that is not realized has no header to announce on.
+    m_pendingGroupExpansionStates.clear();
 }
 
 void TableView::OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
