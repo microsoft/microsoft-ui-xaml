@@ -4023,6 +4023,7 @@ enum class KnownMethodIndex: UINT16
     CollectionViewGroup_GetIndexedProperty,
     CollectionViewGroup_GetStringRepresentation,
     CollectionViewSource_Refresh,
+    CollectionViewSource_DeferRefresh,
     Matrix3D_GetHasInverse,
     Matrix3D_GetIsIdentity,
     Matrix3D_Invert,
