@@ -1185,8 +1185,10 @@ private:
         winrt::FocusState gestureState = winrt::FocusState::Unfocused);
     winrt::hstring CaptureFocusedContainerForRestore();
     void RestoreContainerFocusIfPending(winrt::hstring const& identity);
+    // With expectedFocus set, the restore lands only while focus is still where the toggle left it.
     void ArmContainerFocusRestore(
-        winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft);
+        winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft,
+        uint64_t generation, winrt::weak_ref<winrt::DependencyObject> const& expectedFocus = nullptr);
     bool FocusContainerByIdentity(
         winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, bool finalAttempt);
     static constexpr int32_t s_containerFocusRestoreAttempts{ 4 };
@@ -1325,6 +1327,10 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     bool m_pendingGroupFocusFromPointerGesture{ false };
+    // Focus on another row when the toggle was captured; focus moves to the toggled row only if it hides that row.
+    winrt::hstring m_pendingGroupFocusCollapsedIdentity{};
+    uint64_t m_pendingGroupFocusGeneration{ 0 };
+    winrt::weak_ref<winrt::DependencyObject> m_pendingGroupFocusCollapsedFocus{ nullptr };
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};

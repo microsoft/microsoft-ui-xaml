@@ -2496,21 +2496,26 @@ std::vector<winrt::IInspectable> ShapedItemsSource::VisibleHierarchicalRows() co
 
 void ShapedItemsSource::ResliceGroupsFromHierarchy()
 {
-    // Pin/snapshot state up front: SetItems below runs app handlers that may tear down or rebuild.
+    // Pin/snapshot state up front: SpliceItems below runs app handlers that may tear down or rebuild.
     auto const adapter = m_hierarchicalAdapter;
     if (!adapter || m_hierarchyGroups.empty())
     {
         return;
     }
 
-    // SetItems triggers a grouped rebuild that must not re-enter. UI-thread only, so a plain bool.
+    // SpliceItems triggers a grouped splice that must not re-enter. UI-thread only, so a plain bool.
     if (m_reslicingGroups)
     {
+        // A handler changed the hierarchy mid-publish; the outer pass replays it.
+        m_resliceRequested = true;
         return;
     }
 
+    bool replay = false;
+
     {
         m_reslicingGroups = true;
+        m_resliceRequested = false;
         auto guard = wil::scope_exit([this]() noexcept { m_reslicingGroups = false; });
 
         // On a throwing handler, still complete deferred work: teardown now, Refresh posted.
@@ -2574,18 +2579,25 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
 
         for (size_t i = 0; i < groups.size(); ++i)
         {
-            // Stale: an earlier SetItems handler replaced the hierarchy.
+            // Stale: an earlier SpliceItems handler replaced the hierarchy.
             if (generation != m_hierarchyGeneration)
             {
                 break;
             }
 
-            // Count before items: SetItems re-mints the header from the count.
+            // Count before items: handlers read the header count.
             groups[i]->GroupChildCount(rootCounts[i]);
-            groups[i]->SetItems(slices[i]);
+            groups[i]->SpliceItems(slices[i]);
         }
 
+        replay = std::exchange(m_resliceRequested, false) && generation == m_hierarchyGeneration;
         completion.release();
+    }
+
+    if (replay)
+    {
+        ResliceGroupsFromHierarchy();
+        return;
     }
 
     // Replay a deferred Refresh unless an outer Refresh/incremental pass will.
