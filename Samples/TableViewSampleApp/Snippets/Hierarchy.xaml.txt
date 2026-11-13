@@ -2,7 +2,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People by parent relation"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
@@ -24,7 +24,7 @@
         </tv:TableViewTemplateColumn.CellTemplate>
     </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-    <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
+    <!-- EmployeeId is the ItemKeyPath key: read-only, so an edit cannot cut a subtree loose. -->
     <tv:TableViewTemplateColumn Header="#" Width="80" SortMemberPath="EmployeeId">
         <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate>

@@ -35,7 +35,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People, with an empty state"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single"
     EmptyTemplate="{StaticResource EmptyStateTemplate}">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>

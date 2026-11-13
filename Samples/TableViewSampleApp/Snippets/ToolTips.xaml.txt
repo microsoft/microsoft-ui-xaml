@@ -12,7 +12,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with tooltips"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"

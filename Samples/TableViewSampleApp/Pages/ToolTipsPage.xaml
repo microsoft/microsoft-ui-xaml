@@ -38,7 +38,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="ToolTipsTable"
                 AutomationProperties.Name="People with tooltips"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
@@ -113,7 +113,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="ToolTips"
-                    Description="Grouping leaves the columns alone, so every tooltip survives it, and group header bands are not cells, so they never get a cell tooltip. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping leaves the columns alone, so every tooltip survives it, and group header bands are not cells, so they never get a cell tooltip. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                 </controls:ShapingOptions>

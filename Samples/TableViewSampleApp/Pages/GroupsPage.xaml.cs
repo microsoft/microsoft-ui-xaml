@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -19,10 +20,10 @@ using TableViewSampleApp.Models;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Grouped rows: TableViewSource.GroupBy reshapes one source in place, TableView.GroupHeaderTemplate
+/// Grouped rows: a PropertyGroupDescription on one CollectionViewSource groups the rows, TableView.GroupHeaderTemplate
 /// customises the header, and ExpandAllGroups / CollapseAllGroups drive every group. The page
-/// starts Grouped by Department. Edits and actions that change a group key re-apply GroupBy,
-/// because the key selector is a delegate the control cannot observe.
+/// starts Grouped by Department. Edits and actions that change a group key refresh the view,
+/// because grouping does not follow PropertyChanged.
 /// </summary>
 public sealed partial class GroupsPage : SamplePageBase
 {
@@ -50,7 +51,7 @@ public sealed partial class GroupsPage : SamplePageBase
         _layoutUpdatedHandler = OnTableLayoutUpdated;
 
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         ApplyGroupHeaderTemplate();
         // </snippet>
@@ -83,7 +84,7 @@ public sealed partial class GroupsPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Group header template ----------------------------------------------------------
@@ -129,8 +130,8 @@ public sealed partial class GroupsPage : SamplePageBase
         {
             case nameof(Person.Department):
             case nameof(Person.IsActive):
-                // GroupBy takes a delegate, not a property path, so the control cannot re-bucket
-                // the row on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+                // Grouping reads the value when the view refreshes, so the control cannot re-bucket
+                // the row on PropertyChanged; refresh the view when the grouped-on value changed.
                 ReapplyIfGroupedOn(e.PropertyName);
                 SetLastAction(string.Format(
                     CultureInfo.CurrentCulture,
@@ -149,7 +150,7 @@ public sealed partial class GroupsPage : SamplePageBase
         _wasAllCollapsed = ExpansionSummary() == AllCollapsed;
     }
 
-    // Re-applying GroupBy rebuilds the groups, so restore the bulk expansion state the readout
+    // Regrouping rebuilds the groups, so restore the bulk expansion state the readout
     // reports; a mixed state resets to expanded.
     protected override void OnShapingApplied(ShapingAppliedEventArgs e)
     {
@@ -237,7 +238,7 @@ public sealed partial class GroupsPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0:N0} rows (every 4th) to the next department", moved));
     }
 
-    // Adding and removing rows needs no GroupBy call: the projection follows collection changes.
+    // Adding and removing rows needs no Refresh call: the view follows collection changes.
     private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {
         if (!_newHires.TryDequeue(out var person))

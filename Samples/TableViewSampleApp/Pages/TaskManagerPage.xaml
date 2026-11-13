@@ -55,7 +55,7 @@
 
     <controls:SamplePresenter
         Header="Task Manager"
-        Description="A Task Manager-style process list built from TableViewTemplateColumn cells: an icon and name, a status, and four metric cells whose tint deepens with load. A DispatcherTimer updates the metrics live, and sorting a metric column keeps the list in order as the values change. The search box filters the same TableViewSource with Filter, and Shaping groups it into the Task Manager categories with GroupBy. Select a process to end it or move it to another category."
+        Description="A Task Manager-style process list built from TableViewTemplateColumn cells: an icon and name, a status, and four metric cells whose tint deepens with load. A DispatcherTimer updates the metrics live, and sorting a metric column keeps the list in order as the values change. The search box filters the same CollectionViewSource with Filter, and Shaping groups it into the Task Manager categories with GroupDescriptions. Select a process to end it or move it to another category."
         Snippet="TaskManager"
         StretchExample="True"
         TryIt="Click the CPU header and watch the busiest processes trade places on every live update. Type edge in the search box to filter, then select a process and choose End task. Switch Shaping to Grouped to band the processes into Apps, Background processes and Windows processes."
@@ -110,7 +110,7 @@
                     Grid.Row="1"
                     AutomationProperties.AutomationId="TaskManagerTable"
                     AutomationProperties.Name="Processes"
-                    ItemsSource="{x:Bind Source}"
+                    ItemsSource="{x:Bind Source.View}"
                     SelectionMode="Single"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
@@ -132,7 +132,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Live data"
-                    Description="A DispatcherTimer rewrites every process's CPU, memory, disk and network values, and the cells follow through their bindings. A value change does not move a row, so while a metric column is sorted each update re-declares that sort with TableViewSource.Sort(path, direction).">
+                    Description="A DispatcherTimer rewrites every process's CPU, memory, disk and network values, and the cells follow through their bindings. A value change does not move a row, so while a metric column is sorted each update calls Refresh() on the CollectionViewSource.">
                     <ToggleSwitch
                         x:Name="LiveUpdatesToggle"
                         AutomationProperties.AutomationId="TaskManagerLiveUpdatesToggle"
@@ -158,7 +158,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="TaskManager"
-                    Description="Grouping bands the processes by category, as Task Manager does, or by status. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping bands the processes by category, as Task Manager does, or by status. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Category" Tag="Category"/>
                     <ComboBoxItem Content="Status" Tag="StatusText"/>
                 </controls:ShapingOptions>

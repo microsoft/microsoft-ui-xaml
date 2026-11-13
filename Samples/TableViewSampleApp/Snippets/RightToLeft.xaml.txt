@@ -1,7 +1,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People, right-to-left"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     FlowDirection="RightToLeft"
     SelectionMode="Single">
     <!-- The name columns are plain text so bidi text rendering can be checked. -->

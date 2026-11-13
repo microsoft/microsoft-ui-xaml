@@ -1,4 +1,4 @@
-Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
+Source = new CollectionViewSource { Source = Processes };  // created once; TableView shows its View
 InitializeComponent();
 
 ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
@@ -12,7 +12,7 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
 
 public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {
@@ -32,11 +32,11 @@ private void ApplySearch()
 {
     if (_searchText is not { } text)
     {
-        Source.ClearFilter();
+        Source.Filter = null;
         return;
     }
 
-    Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+    Source.Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
 }
 
 private static bool MatchesSearch(ProcessItem process, string query) =>

@@ -9,7 +9,7 @@
 <tv:TableView
     x:Name="FileTable"
     AutomationProperties.Name="Folder contents"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- Name, Type and Size sort by a folders-first key; Date modified sorts by the DateModified value,
          not its display text. -->

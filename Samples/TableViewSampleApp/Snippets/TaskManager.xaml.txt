@@ -41,7 +41,7 @@
 <tv:TableView
     x:Name="ProcessTable"
     AutomationProperties.Name="Processes"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- SortMemberPath names the raw value behind each template; a cell is announced by its value. -->
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
