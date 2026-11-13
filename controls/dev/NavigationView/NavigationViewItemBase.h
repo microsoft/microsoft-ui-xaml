@@ -55,6 +55,8 @@ public:
 
     virtual void OnNavigationViewItemBaseIsSelectedChanged() {}
 
+    virtual void OnNavigationViewItemBaseLoaded() {}
+    
     winrt::NavigationView GetNavigationView() const;
     winrt::SplitView GetSplitView() const;
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
