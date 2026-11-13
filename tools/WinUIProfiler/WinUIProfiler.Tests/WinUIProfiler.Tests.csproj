@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
     <ProjectReference Include="..\WinUIProfiler.Cli\WinUIProfiler.Cli.csproj" />
+    <ProjectReference Include="..\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj" />
     <ProjectReference Include="..\..\..\perf\tooling\XamlTimeline\XamlTimeline.csproj" />
     <Content Include="..\..\..\perf\profiles\XAML.regions.complete.with.startup.xml"
              Link="XAML.regions.complete.with.startup.xml" CopyToOutputDirectory="PreserveNewest" />

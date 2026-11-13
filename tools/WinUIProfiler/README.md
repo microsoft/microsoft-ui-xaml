@@ -106,6 +106,7 @@ and verify that migrated performance regions distinguish Start/Stop without
 also matching legacy manifest events. Snapshot checks cover allocator deltas,
 named graphics resources, untracked versus observed lifetimes, four-group
 classification, missing captures and full-range 64-bit graphics comparisons.
+They also run the Copilot plugin server's checks (see Copilot plugin below).
 DirectX checks cover device/resource event selection, allocation ownership,
 process isolation, original ETW IDs/versions, and lossless 64-bit handles in
 stored payloads and readable JSON. Processed-index checks cover lifetimes,
@@ -628,6 +629,19 @@ SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY 
 `InterestingRows` uses the `EventsByType` index. On a 148 MB file, it takes
 about 0.15 s, and `FrameList` about 0.65 s. Files written before the views were
 added are not read; record them again.
+
+SQLite 3.54.0 and 3.54.1 can't read `InterestingRows`, `InterestingRowEvents`
+or `FrameList`: they stop with "VIEWs and/or subqueries nested too deep", a
+nesting limit 3.54.0 added. Read them with another version, such as 3.53,
+which the app, the CLI and the Copilot plugin bundle.
+
+The app, the CLI and the Copilot plugin read session files with `SessionFile`
+(`Storage\SessionFile.cs`). `SessionQueries.Observe` shows a caller each
+statement those reads run for it, once its rows are read: the file, the SQL
+with its parameters' values written in, so that it runs as is in the `sqlite3`
+shell, and how many rows it read. The statements that check a file's version,
+views and columns, and statements that fail, aren't shown. The plugin uses it
+to show the SQL behind each answer (see Copilot plugin below).
 
 ### UI elements
 
@@ -1174,6 +1188,85 @@ wpr -start launch.wprp -filemode               # from an elevated prompt, before
 wpr -stop launch.etl
 & $cli processes launch.etl                    # to find the app's PID
 & $cli launch launch.etl --pid <pid>
+```
+
+## Copilot plugin
+
+This folder is also a plugin for GitHub Copilot CLI, `winui-profiler`. It
+answers questions about session files from what the app's processors stored:
+how the launch went, UI-thread ticks and slow ticks, regions of interest, and
+the UI elements and composition visuals the events mention. Its MCP server,
+`WinUIProfiler.Mcp`, reads session files with `SessionFile` and the views
+above, where they are and without changing them, even while the app is still
+recording one. It never returns the events' field values. It doesn't read
+traces: read a trace into a session file first, with **Open trace** or the
+CLI's `record` command (see "Recorded, from a trace file" above).
+
+To install it from a clone, run from this directory:
+
+```powershell
+copilot plugin marketplace add $PWD.Path
+copilot plugin install winui-profiler@microsoft-ui-xaml
+```
+
+`marketplace.json` makes this folder a plugin marketplace, `microsoft-ui-xaml`,
+whose one plugin is this folder, so Copilot loads the plugin from the clone and
+doesn't copy it. To use the plugin in one session without installing it, start
+Copilot with `copilot --plugin-dir $PWD.Path` from this directory.
+
+The first time Copilot starts the server, and again after its sources or the
+.NET SDK change, `scripts\Start-McpServer.ps1` builds it into
+`%LOCALAPPDATA%\WinUIProfiler\Mcp\<hash>`. Building needs the .NET SDK that
+`global.json` names and usually takes well under a minute. When NuGet doesn't
+have the packages yet, the first build also downloads them (about 36 MB). The
+build logs are in the `logs` folder there, and each build deletes the builds
+that no session has started for 30 days.
+
+| Tool | Views | What they answer |
+| --- | --- | --- |
+| `sessions` | `list`, `summary` | Which session files there are; what one holds, and which tools have data in it |
+| `launch` | `milestones`, `frames` | How the launch went, from `LaunchSummary`, `InterestingRows` and `Ticks`, and how soon the first frames drew |
+| `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
+| `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
+
+One skill, `analyze-session`, tells Copilot how to use the tools. Copilot
+reads it for questions about a WinUI app's performance, and
+`/winui-profiler:analyze-session [session.sqlite | folder]` runs it to
+summarize a session or list a folder's sessions. When no session file is
+given, the tools use the newest one in `%LOCALAPPDATA%\WinUIProfiler\Sessions`.
+
+Each tool's result also says how it got its answer. Copilot doesn't write SQL:
+each view runs fixed statements, then sorts, groups, counts and pages their
+rows in code. `queries` lists the statements the call ran, in the order they
+first ran and each once, with the arguments' values written in, so each runs
+as is with `sqlite3 -readonly` on a SQLite version that reads the session
+file's views (see Shared queries above). Each has `rows`, the rows it read in
+all its runs, and `runs`, when it ran more than once. The statements ran on
+the session file the result describes, or, for `sessions` view `list`, once
+on each file it lists that could be read; one that ran on another file would
+also have `files`, the files it ran on. `computed` says what the call did
+with the rows. The statements that check a file's version, views and columns,
+and statements that fail, aren't listed; a call that fails returns only its
+error. The skill ends every answer with a **How I got this** section that
+shows each call with its `queries` and `computed`, copied as returned, so the
+answer can be checked by running the statements.
+
+The plugin answers only what a processor stores. It doesn't answer questions
+about the events' field values, GPU memory, CPU samples, call stacks, thread
+waits or the XAML and composition trees; tools for them come with the
+processors that store them. Its `launch` milestones are its own, from
+`LaunchSummary`, `InterestingRows` and `Ticks`, not the Launch tab's: it
+doesn't give the marker configuration's milestones, such as an app's own
+markers, or the launcher's.
+
+The server's checks run with the other checks in WinUIProfiler.Tests (see
+Build and run above). They write their session files with the app's
+`SessionWriter`, so the processors build the tables the tools read, and also
+check the plugin's manifests and skills. To list the server's tools:
+
+```powershell
+dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
+& '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe' --listtools
 ```
 
 ## Limitations

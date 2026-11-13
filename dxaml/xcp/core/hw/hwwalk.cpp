@@ -3269,7 +3269,8 @@ HWWalk::IsShapeMaskRequiredForRectangle(
 
     XCORNERRADIUS cornerRadius = pFrameworkElement->GetCornerRadius();
     CBrush * pBackgroundBrush = pFrameworkElement->GetBackgroundBrush();
-    CBrush * pBorderBrush = pFrameworkElement->GetBorderBrush();
+    // A border brush with zero thickness draws nothing.
+    CBrush * pBorderBrush = CBorder::HasNonZeroThickness(pFrameworkElement->GetBorderThickness()) ? pFrameworkElement->GetBorderBrush() : nullptr;
 
     // Borders can often be drawn as simple SpriteVisuals, like Rectangles.
     // We will fallback to using a rasterized mask to render the shape if any of the following are true:
@@ -3945,7 +3946,7 @@ CBrush*
 BorderOutlinePart::GetBrush(
     )
 {
-    return m_pFrameworkElement->GetBorderBrush();
+    return CBorder::HasNonZeroThickness(m_pFrameworkElement->GetBorderThickness()) ? m_pFrameworkElement->GetBorderBrush() : nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -3989,7 +3990,9 @@ bool BorderOutlinePart::ShouldUseCollapsedNineGrid()
     // Only use the nine grid memory optimization for border-like elements (Border/Grid/ContentPresenter) with a solid
     // color, gradient, or XamlCompositionBrushBase backrounds. Image brushes can have additional clips due to the image's
     // stretch mode, and we haven't tested all combinations for correctness yet.
-    CBrush* borderBrush = GetBrush();
+    // Use the BorderBrush property, not GetBrush(). GetBrush() ignores a brush with zero thickness, and that
+    // shouldn't change whether the background mask collapses.
+    CBrush* borderBrush = m_pFrameworkElement->GetBorderBrush();
     return !borderBrush
         || borderBrush->OfTypeByIndex(KnownTypeIndex::SolidColorBrush)
         || borderBrush->OfTypeByIndex(KnownTypeIndex::LinearGradientBrush)

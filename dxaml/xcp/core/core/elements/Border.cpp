@@ -905,7 +905,7 @@ bool CBorder::IsMaskDirty(
         || pHwShapeRealization->MaskNeedsUpdate(
             renderCollapsedMask,
             m_pBackgroundBrush, m_fNWBackgroundBrushDirty, isFillBrushAnimated, pIsFillForHitTestOnly,
-            m_pBorderBrush, m_fNWBorderBrushDirty, isStrokeBrushAnimated, pIsStrokeForHitTestOnly);
+            HasNonZeroThickness(GetBorderThickness()) ? m_pBorderBrush : nullptr, m_fNWBorderBrushDirty, isStrokeBrushAnimated, pIsStrokeForHitTestOnly);
 }
 
 void CBorder::OnContentDirty()

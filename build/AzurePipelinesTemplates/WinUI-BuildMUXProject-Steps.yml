@@ -124,6 +124,9 @@ steps:
 
   - task: PowerShell@2
     displayName: GenerateVersionInfo
+    ${{ if eq(parameters.IsMonobuild, 'true') }}:
+      env:
+        WindowsAppSDKBinaryVersion: $(WindowsAppSDKBinaryVersion)
     inputs:
       filePath: '$(REPOROOT)\build\PipelineScripts\GenerateVersionInfo.ps1'
       arguments: >
