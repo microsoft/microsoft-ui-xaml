@@ -5,6 +5,8 @@
 #include <XamlTailored.h>
 #include <FileLoader.h>
 #include <Utils.h>
+#include <memorybuffer.h>
+#include <psapi.h>
 #include "ResourceLoadingIntegrationTests.h"
 #include <TestCleanupWrapper.h>
 #include "CustomResourceLoader.h"
@@ -466,6 +468,67 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         {
             auto button = safe_cast<Button^>(rootPanel->FindName(L"testButton"));
             VERIFY_IS_NULL(button->Background);
+        });
+    }
+
+    void ResourceLoadingIntegrationTests::EmbeddedDataUsesReadOnlyPriMapping()
+    {
+        RunOnUIThread([]()
+        {
+            namespace mrt = ::Microsoft::Windows::ApplicationModel::Resources;
+            auto priPath = mrt::ResourceLoader::GetDefaultResourceFilePath();
+            auto resourceManager = ref new mrt::ResourceManager(priPath);
+            auto candidate = resourceManager->MainResourceMap->GetValue(
+                L"Files/Microsoft.UI.Xaml/DensityStyles/Compact.xbf");
+            VERIFY_ARE_EQUAL(mrt::ResourceCandidateKind::EmbeddedData, candidate->Kind);
+
+            auto expectedBytes = candidate->ValueAsBytes;
+            auto memoryBuffer = candidate->ValueAsMemoryBuffer();
+            auto reference = memoryBuffer->CreateReference();
+            wrl::ComPtr<IInspectable> inspectableReference = reinterpret_cast<IInspectable*>(reference);
+            wrl::ComPtr<::Windows::Foundation::IMemoryBufferByteAccess> byteAccess;
+            VERIFY_SUCCEEDED(inspectableReference.As(&byteAccess));
+
+            BYTE* bytes = nullptr;
+            UINT32 size = 0;
+            VERIFY_SUCCEEDED(byteAccess->GetBuffer(&bytes, &size));
+            VERIFY_IS_NOT_NULL(bytes);
+            VERIFY_IS_TRUE(size > 0);
+            VERIFY_ARE_EQUAL(expectedBytes->Length, size);
+
+            candidate = nullptr;
+            resourceManager = nullptr;
+            memoryBuffer = nullptr;
+
+            // Confirm the entire buffer lies in committed, read-only memory.
+            MEMORY_BASIC_INFORMATION information{};
+            VERIFY_ARE_EQUAL(sizeof(information), VirtualQuery(bytes, &information, sizeof(information)));
+            VERIFY_ARE_EQUAL(static_cast<DWORD>(MEM_COMMIT), information.State);
+            VERIFY_ARE_EQUAL(static_cast<DWORD>(PAGE_READONLY), information.Protect);
+
+            const SIZE_T bytesInRegion = information.RegionSize
+                - static_cast<SIZE_T>(bytes - static_cast<BYTE*>(information.BaseAddress));
+            VERIFY_IS_TRUE(size <= bytesInRegion);
+
+            // Confirm that memory is mapped directly from the expected PRI file.
+            VERIFY_ARE_EQUAL(static_cast<DWORD>(MEM_MAPPED), information.Type);
+            wil::unique_hfile priFile(CreateFile2(
+                priPath->Data(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                OPEN_EXISTING, nullptr));
+            VERIFY_IS_TRUE(priFile.is_valid());
+            std::vector<wchar_t> expectedFileName(32768);
+            const auto expectedFileNameLength = GetFinalPathNameByHandleW(
+                priFile.get(), expectedFileName.data(), static_cast<DWORD>(expectedFileName.size()),
+                FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
+            VERIFY_IS_TRUE(expectedFileNameLength > 0 && expectedFileNameLength < expectedFileName.size());
+
+            std::vector<wchar_t> mappedFileName(32768);
+            const auto mappedFileNameLength = GetMappedFileNameW(
+                GetCurrentProcess(), bytes, mappedFileName.data(), static_cast<DWORD>(mappedFileName.size()));
+            VERIFY_IS_TRUE(mappedFileNameLength > 0 && mappedFileNameLength < mappedFileName.size());
+            VERIFY_ARE_EQUAL(0, _wcsicmp(expectedFileName.data(), mappedFileName.data()));
+
+            VERIFY_ARE_EQUAL(0, memcmp(expectedBytes->Data, bytes, size));
         });
     }
 } } } } } }

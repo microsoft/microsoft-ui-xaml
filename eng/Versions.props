@@ -56,7 +56,7 @@
     <!-- ====================================================================================== -->
     <!-- OSS builds currently pin to last-known-good versions. -->
     <FoundationTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.6.6-experimental</FoundationTransportPackageVersion>
-    <FrameworkUdkPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">3.0.0-experimental-27300.1893.260705-0915.0</FrameworkUdkPackageVersion>
+    <FrameworkUdkPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">3.0.0-experimental-27300.1916.260924-1429.0</FrameworkUdkPackageVersion>
     <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.6.6-experimental</IxpTransportPackageVersion>
     <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.6.6-experimental</BasePackageVersion>
     <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.10.0-experimental.20260826.0</WinUIDetailsNugetVersion>
