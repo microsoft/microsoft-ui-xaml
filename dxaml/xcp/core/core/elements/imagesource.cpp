@@ -1527,6 +1527,11 @@ CImageSource::GetPixelHeight() const
     }
 }
 
+bool CImageSource::HasIntrinsicSize() const
+{
+    return IsMetadataAvailable() && m_imageMetadataView->GetImageMetadata()->hasIntrinsicSize;
+}
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -2638,11 +2643,13 @@ CImageSource::DecodeToRenderSize(
     ASSERT(IsMetadataAvailable() && m_fDecodeToRenderSize);
     auto imageMetadata = m_imageMetadataView->GetImageMetadata();
 
-    // Clamp to the layout size which is the original size of the image.
+    // Clamp to the layout size which is the original size of the image. An SVG with an intrinsic size stays sharp
+    // above that size, so it isn't clamped.
     // Width/Height == 0 indicates full width/height from the render walk, so adjust it to the natural width/height
     if ((width == 0) ||
         ((width > imageMetadata->width) &&
-        (imageMetadata->width != 0)))
+        (imageMetadata->width != 0) &&
+        !imageMetadata->hasIntrinsicSize))
     {
         width = imageMetadata->width;
         height = imageMetadata->height;
@@ -2650,7 +2657,8 @@ CImageSource::DecodeToRenderSize(
 
     if ((height == 0) ||
         ((height > imageMetadata->height) &&
-        (imageMetadata->height != 0)))
+        (imageMetadata->height != 0) &&
+        !imageMetadata->hasIntrinsicSize))
     {
         width = imageMetadata->width;
         height = imageMetadata->height;
