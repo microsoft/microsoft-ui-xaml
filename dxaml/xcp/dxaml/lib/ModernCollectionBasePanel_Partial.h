@@ -2328,6 +2328,13 @@ public:
         // there is a sticky header.
         _Check_return_ HRESULT GetVerticalViewportPadding(_Out_ FLOAT *verticalViewportPadding);
 
+        _Check_return_ HRESULT GetStickyHeaderHeightForItem(
+            _In_ INT itemIndex,
+            _Out_ FLOAT* headerHeight,
+            _Out_opt_ bool* headerAvailable = nullptr);
+
+        bool IsScrollIntoViewPending() const { return m_containerManager.m_isScrollIntoViewPending; }
+
     public:
         // Gets the default cache length
         static DOUBLE GetDefaultCacheLength();

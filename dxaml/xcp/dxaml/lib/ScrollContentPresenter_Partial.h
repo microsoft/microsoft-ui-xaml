@@ -271,7 +271,9 @@ namespace DirectUI
                 DOUBLE offsetY,
                 _Out_ wf::Rect* resultRectangle,
                 _Out_opt_ DOUBLE* appliedOffsetX = nullptr,
-                _Out_opt_ DOUBLE* appliedOffsetY = nullptr);
+                _Out_opt_ DOUBLE* appliedOffsetY = nullptr,
+                // Pending offsets are not exposed by IScrollInfo until layout commits them.
+                _Out_opt_ bool* scrollRequested = nullptr);
 
             // Determine how down we need to scroll to accommodate the desired
             // view.
@@ -670,4 +672,3 @@ namespace DirectUI
                 _In_ ScrollData* scrollData);
     };
 }
-

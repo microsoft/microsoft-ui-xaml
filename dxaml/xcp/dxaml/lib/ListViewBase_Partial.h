@@ -566,6 +566,9 @@ namespace DirectUI
             // Which is the case on phone when the user is using the (phone) AppBar since the latter don't take focus.
             BOOLEAN m_isInOnSelectionModeChanged;
 
+            // Item index that keyboard navigation has already scrolled into view with focus padding.
+            INT m_indexScrolledForKeyboardFocus = -1;
+
             ctl::EventPtr<UIElementGettingFocusEventCallback> m_gettingFocusHandler;
 
             // Helper for getting next focusable control outside of LVB.
@@ -1070,6 +1073,20 @@ namespace DirectUI
             _Check_return_ HRESULT FocusItem(
                 _In_ xaml::FocusState focusState,
                 _In_ ListViewBaseItem* pItem);
+
+            _Check_return_ HRESULT ScrollIntoViewWithFocusPadding(
+                _In_ UIElement* element,
+                _In_ INT itemIndex);
+
+            _Check_return_ HRESULT IsElementFullyVisibleInViewport(
+                _In_ UIElement* element,
+                _In_ INT itemIndex,
+                _Out_ bool* isFullyVisible);
+
+            // Whether keyboard navigation already scrolled this item into view and its container is still fully visible.
+            _Check_return_ HRESULT IsAlreadyScrolledForKeyboardFocus(
+                _In_ INT index,
+                _Out_ bool* isAlreadyScrolled);
 
             // Focus a ListViewBaseItem at the given index and optionally scroll it
             // into view.
