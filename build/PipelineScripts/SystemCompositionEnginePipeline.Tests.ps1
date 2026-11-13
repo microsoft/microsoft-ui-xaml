@@ -255,38 +255,21 @@ Describe 'System composition engine pipeline review fixes' {
     }
 
     Context 'exact TAEF selection generation' {
-        It 'uses the shorter positive selection for the 102-exclusion case' {
+        It 'uses the shorter positive selection for the 119-exclusion case' {
             $workItemName = 'WPF-Foundation-Graphics-ImplicitAnimationTests'
             $excludedTestNames = @(
                 Import-Csv -LiteralPath $script:excludedTestsManifest |
                     Where-Object { $_.WorkItem -ceq $workItemName } |
                     ForEach-Object { [string]$_.TestName }
             )
-            $excludedTestNames.Count | Should Be 102
+            $excludedTestNames.Count | Should Be 119
             $implicitAnimationClass = (
                 'Microsoft::UI::Xaml::Tests::Foundation::Graphics::' +
                 'ImplicitAnimationTests')
             $remainingTestNames = @(
-                'CollapsePopup'
-                'CollapsePopupAncestor'
-                'CollapseWhilePopupDescendantHasHideAnimation'
-                'CollapseWhilePopupDescendantHasHideAnimation2'
-                'GridView1WUCFull'
-                'GridView2WUCFull'
-                'GridView3WUCFull'
                 'HideAnimation_CollapseOrRemovePopupChild'
-                'HideAnimation6WUCFull'
-                'Popup11'
-                'Popup12'
-                'Popup14'
-                'Popup14b'
-                'Popup20'
-                'Popup4'
-                'Popup6'
-                'Popup7'
-                'Popup8'
             ) | ForEach-Object { '{0}::{1}' -f $implicitAnimationClass, $_ }
-            @($remainingTestNames | Sort-Object -Unique).Count | Should Be 18
+            @($remainingTestNames | Sort-Object -Unique).Count | Should Be 1
             @(
                 @($excludedTestNames + $remainingTestNames) |
                     Sort-Object -Unique
@@ -333,7 +316,7 @@ Describe 'System composition engine pipeline review fixes' {
                 $command | Should Not Match (
                     [regex]::Escape("@Name='$excludedTestName'"))
             }
-            @($result.MatchedExcludedTests).Count | Should Be 102
+            @($result.MatchedExcludedTests).Count | Should Be 119
         }
 
         It 'falls back to a negative selection when a remaining name is not representable' {
