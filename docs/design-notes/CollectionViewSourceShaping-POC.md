@@ -12,7 +12,8 @@ all WPF scenarios") asks for.
 ## Goals
 
 - Add WPF-style `SortDescriptions`, `GroupDescriptions` and `Filter` to the framework `CollectionViewSource` (CVS).
-- Make it strictly opt-in. With no descriptor and no `Filter`, `View` is created by the same code as before.
+- Make it strictly opt-in. With no descriptor and no `Filter`, `View` is created by the same code as before (it
+  only additionally answers `ICollectionViewShaping`; see "Behavior").
 - Produce standard `ICollectionView` / `ICollectionViewGroup` output, so ListView, GridView and SemanticZoom work
   unchanged, and TableView can consume the same contract.
 
@@ -131,7 +132,10 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 
 - **Opt-in.** Shaping starts when `SortDescriptions` or `GroupDescriptions` is non-empty or `Filter` or
   `CustomSort` is non-null.
-  Touching the collections without adding anything does not rebuild `View`.
+  Touching the collections without adding anything does not rebuild `View`. Before that, `View` is the usual
+  unshaped view, but a flat `View` over a vector source (`IVector` or `IBindableVector`, not `IsSourceGrouped`, not
+  `ICollectionViewFactory`) already answers `ICollectionViewShaping`, so a consumer given only
+  `new CollectionViewSource { Source = items }.View` (for example a control's `ItemsSource`) can start shaping it.
 - **Precedence.** `IsSourceGrouped = true` and sources that implement `ICollectionViewFactory` keep their existing
   behavior. Descriptors are ignored for them in the POC.
 - **Pipeline.** Filter, then stable multi-key sort, then group. Groups appear in first-appearance order of the sorted
@@ -154,9 +158,11 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   triggers a **full recompute** and one `Reset`. `Refresh()` always recomputes fully. Plain `IVector` sources need
   `Refresh()`. `IIterable`-only sources are snapshotted, so re-set `Source`.
 - **Descriptor changes.** A change to `SortDescriptions`, `GroupDescriptions` or `Filter` reshapes an already
-  shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. A new `View` is created
-  only when shaping first starts, or when output switches between flat and grouped (a different view class), the
-  same way changing `IsSourceGrouped` does today. Clearing every descriptor of a flat shaped view keeps that view, in
+  shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. When flat shaping first
+  starts on a `View` that already answers `ICollectionViewShaping`, that same `View` is retargeted to the shaped
+  output (one `Reset`; currency follows the item). A new `View` is created only when shaping first starts on any
+  other view, or when output switches between flat and grouped (a different view class), the same way changing
+  `IsSourceGrouped` does today. Clearing every descriptor of a flat shaped view keeps that view, in
   source order; clearing the last `GroupDescription` returns a new `View` (unshaped if no sort or filter remains).
   Wrap several changes in `DeferRefresh()` to recompute (and raise `Reset`) once.
 - **Currency.** After a source-driven refresh, the previous `CurrentItem` is restored if it is still in the view.
@@ -206,8 +212,9 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 9. **`ICollectionViewShaping` is an optional interface on the view**, not a change to the frozen `ICollectionView`.
    It follows the `ICollectionViewFactory` / `ISupportIncrementalLoading` pattern of QI-able capabilities. The
    existing `CollectionView` base implements it, and `QueryInterfaceImpl` answers it only when a CVS has set itself
-   as the view's shaping owner (`CollectionView::SetShapingOwner`, a weak reference). An unshaped view, or a view
-   created any other way, does not offer it. Every member forwards to the owning CVS, so the view and the CVS share
+   as the view's shaping owner (`CollectionView::SetShapingOwner`). That is every shaped view, plus the CVS's unshaped
+   flat `VectorCollectionView` over a vector source; an `IsSourceGrouped` view, a factory view, or a view created any
+   other way does not offer it. Every member forwards to the owning CVS, so the view and the CVS share
    one set of descriptor collections.
 
 ## How controls consume it
@@ -252,7 +259,9 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
   change, so selection and realized rows follow the item (Task Manager's periodic edits no longer tear the table
   down). Grouped views still `Reset`; TableView keeps expansion and selection across it by key and identity.
 - **Plain `ICollectionView`.** A view without `ICollectionViewShaping` keeps today's contract: the header click raises
-  `Sorting` only, and the app sorts the view.
+  `Sorting` only, and the app sorts the view. A descriptor-less CVS `View` over a vector is not such a view: it is
+  shapeable, so `table.ItemsSource = new CollectionViewSource { Source = items }.View` header-sorts with no opt-in,
+  and the table keeps that `View` when the sort starts. An `IsSourceGrouped` CVS view still raises `Sorting` only.
 - **Group identity.** A CVS recomputes its group objects on every `Refresh` or source change, so TableView keys a
   group by its key **value** (the group's `Key` property, else `ICollectionViewGroup.Group`; scalars compare by type
   and value), not by the group object's address. Expansion state therefore survives a recompute: a collapsed group
@@ -377,8 +386,9 @@ Hand-written files: `CollectionViewSource_Partial.h/.cpp` (hook in `EnsureView`)
 - grouping (`CollectionGroups`, `Key`, `GroupItems`);
 - returning to the unshaped view.
 
-`BindingIntegrationTests::CollectionViewShapingInterface` covers `ICollectionViewShaping`: not offered by an unshaped
-view; offered by flat and grouped shaped views; shared descriptor collections; sort, `Filter` and `Refresh()` through
+`BindingIntegrationTests::CollectionViewShapingInterface` covers `ICollectionViewShaping`: offered by a descriptor-less
+flat view and not by an `IsSourceGrouped` view; starting shaping through it keeps the same view (one `Reset`, currency
+kept); offered by flat and grouped shaped views; shared descriptor collections; sort, `Filter` and `Refresh()` through
 the view reshaping the same view in place; and the grouped-view switch.
 
 The capabilities added after the first POC each have a test in the same class:
@@ -405,6 +415,8 @@ The capabilities added after the first POC each have a test in the same class:
 - `VerifyCustomSortComparerColumnSortsShapingCollectionView`: a `CustomSortComparer` column sorts the view through
   `CustomSort` in both directions; a path column's sort replaces it; a throwing comparer leaves the previous sort,
   rows and arrow; `ClearSort` clears both.
+- `VerifyHeaderSortOnDescriptorlessCollectionViewSourceView`: a header click on a plain CVS `View` writes
+  `SortDescriptions` and the `View` stays the same object.
 - `VerifyIncrementalShapingCollectionViewChangesUpdateRows`: add, remove and replace on a sorted, filtered view reach
   the rows with no `Reset`, and the selection stays on its item.
 
