@@ -419,6 +419,20 @@ _Check_return_ HRESULT PropertyGroupDescriptionFactory::CreateInstanceImpl(
     return S_OK;
 }
 
+_Check_return_ HRESULT PropertyGroupDescriptionFactory::CreateInstanceWithConverterImpl(
+    _In_opt_ HSTRING propertyName,
+    _In_opt_ xaml_data::IValueConverter* pConverter,
+    _Outptr_ xaml_data::IPropertyGroupDescription** ppInstance)
+{
+    ctl::ComPtr<PropertyGroupDescription> spDescription;
+
+    IFC_RETURN(ctl::make(&spDescription));
+    IFC_RETURN(spDescription->put_PropertyName(propertyName));
+    IFC_RETURN(spDescription->put_Converter(pConverter));
+    IFC_RETURN(spDescription.CopyTo(ppInstance));
+    return S_OK;
+}
+
 _Check_return_ HRESULT CollectionView::SetShapingOwner(_In_ CollectionViewSource* pOwner)
 {
     SetPtrValue(m_tpShapingOwner, static_cast<xaml_data::ICollectionViewSource*>(pOwner));
@@ -785,6 +799,9 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
     std::vector<ShapingKeySelector> sortSelectors;
     ShapingKeySelector groupSelector;
     bool hasGroupSelector = false;
+    ctl::ComPtr<xaml_data::IValueConverter> spGroupConverter;
+    wrl_wrappers::HStringReference groupKeyTypeName(L"Object");
+    wxaml_interop::TypeName groupKeyType = { groupKeyTypeName.Get(), wxaml_interop::TypeKind_Primitive };
     ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
     ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort = m_tpCustomSort.Get();
     std::vector<Entry> entries;
@@ -829,6 +846,7 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
                 wrl_wrappers::HString path;
                 IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
                 IFC_RETURN(CreateKeySelector(path.Get(), &groupSelector));
+                IFC_RETURN(spDescription->get_Converter(spGroupConverter.ReleaseAndGetAddressOf()));
                 hasGroupSelector = true;
             }
         }
@@ -862,6 +880,12 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
         if (hasGroupSelector)
         {
             IFC_RETURN(EvaluateKey(groupSelector, entry.item.Get(), entry.groupKey.ReleaseAndGetAddressOf()));
+            if (spGroupConverter)
+            {
+                ctl::ComPtr<IInspectable> spConverted;
+                IFC_RETURN(spGroupConverter->Convert(entry.groupKey.Get(), groupKeyType, nullptr /* parameter */, nullptr /* language */, spConverted.ReleaseAndGetAddressOf()));
+                entry.groupKey = std::move(spConverted);
+            }
         }
 
         entries.push_back(std::move(entry));

@@ -43,6 +43,22 @@ HRESULT DirectUI::PropertyGroupDescription::QueryInterfaceImpl(_In_ REFIID iid, 
 }
 
 // Properties.
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get_Converter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    
+    IFC(m_pConverter.CopyTo(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT DirectUI::PropertyGroupDescription::put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue)
+{
+    HRESULT hr = S_OK;
+    
+    m_pConverter = pValue;
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get_PropertyName(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
@@ -96,6 +112,15 @@ IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstance(_In_opt
     
     ARG_VALIDRETURNPOINTER(ppInstance);
     IFC(CreateInstanceImpl(propertyName, ppInstance));
+Cleanup:
+    return hr;
+}
+IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstanceWithConverter(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance)
+{
+    HRESULT hr = S_OK;
+    
+    ARG_VALIDRETURNPOINTER(ppInstance);
+    IFC(CreateInstanceWithConverterImpl(propertyName, pConverter, ppInstance));
 Cleanup:
     return hr;
 }

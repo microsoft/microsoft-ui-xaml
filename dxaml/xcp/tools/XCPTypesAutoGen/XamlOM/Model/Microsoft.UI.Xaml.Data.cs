@@ -709,8 +709,21 @@ namespace Microsoft.UI.Xaml.Data
             private set;
         }
 
+        // WPF's PropertyGroupDescription.Converter: maps the property value to the group key.
+        [AllowCrossThreadAccess]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [PropertyFlags(UseComPtr = true)]
+        public Microsoft.UI.Xaml.Data.IValueConverter Converter
+        {
+            get;
+            private set;
+        }
+
         [FactoryMethodName("CreateInstance")]
         public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName) { }
+
+        [FactoryMethodName("CreateInstanceWithConverter")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter) { }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]
