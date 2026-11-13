@@ -51,6 +51,23 @@ internal static class XamlEventSubscription
             });
     }
 
+    internal static void SubscribeProcesses(TraceEventDispatcher source, IReadOnlyDictionary<int, long?> processes,
+        IReadOnlyCollection<MarkerProviderSettings> markers, Action<ProfilerEvent> sink, int? launcherProcessId)
+    {
+        var launcherProviders = markers.Where(marker => marker.Launcher).Select(marker => marker.Provider.Id).ToHashSet();
+        Match(source, null, markers, (data, provider, marker, owner) =>
+        {
+            if (MatchesProcess(processes, owner, data.TimeStamp.ToFileTimeUtc()) ||
+                owner == launcherProcessId && marker is not null && launcherProviders.Contains(marker.Id))
+            {
+                sink(Capture(data, provider, marker, owner));
+            }
+        });
+    }
+
+    internal static bool MatchesProcess(IReadOnlyDictionary<int, long?> processes, int processId, long eventFileTime) =>
+        processes.TryGetValue(processId, out var created) && (created is null || eventFileTime >= created);
+
     // Calls match for each event Subscribe delivers, with its provider (and for a marker event, the marker provider) and
     // the process it belongs to, without copying it. TraceEvent reuses the event object after the call. A marker provider
     // that is a XAML provider, DxgKrnl or Win32k is not read again. For one process, otherProcess, if given, gets the

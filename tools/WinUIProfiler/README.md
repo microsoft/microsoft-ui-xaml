@@ -64,13 +64,24 @@ private WinUI DLLs (see "Profile an app with private WinUI DLLs").
 
 ## Build and run
 
-Requires Windows 11, .NET SDK 10.0.403, Windows SDK 10.0.26100.0 and Visual Studio
-with MSBuild plus the x64 and ARM64 C++ toolchains. This tool has a standalone
-build boundary and does not require a WinUI product build or product initialization.
+Requires Windows 11, Visual Studio 2022 or 2026 (any edition, including Build
+Tools) with MSBuild and the x64 and ARM64 C++ build tools, Windows SDK
+10.0.26100.0, .NET SDK 10.0.403 or a later 10.0 SDK, and Git. This tool has a
+standalone build boundary and does not require a WinUI product build or product
+initialization.
+
+`scripts\Install-Prerequisites.ps1` checks these and lists the missing ones.
+When you approve, it installs them all and asks for administrator rights once:
+the .NET SDK and Git with winget, and the C++ build tools and Windows SDK with
+the Visual Studio Installer, or as Visual Studio Build Tools 2022 from winget
+when no Visual Studio can take them. `-WhatIf` only lists them; `-Force`
+installs them without asking. Like `Profile-App.ps1`, it needs PowerShell 7.4
+or later.
 
 Run from this directory:
 
 ```powershell
+.\scripts\Install-Prerequisites.ps1
 .\scripts\Build-App.ps1 -Configuration Release -Platform x64
 $output = (Get-Content .\WinUIProfiler.App\obj\ProfilerAppOutput.x64.Release.txt -Raw).Trim()
 & (Join-Path $output 'WinUIProfiler.App.exe')
@@ -95,6 +106,7 @@ and verify that migrated performance regions distinguish Start/Stop without
 also matching legacy manifest events. Snapshot checks cover allocator deltas,
 named graphics resources, untracked versus observed lifetimes, four-group
 classification, missing captures and full-range 64-bit graphics comparisons.
+They also run the Copilot plugin server's checks (see Copilot plugin below).
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -124,8 +136,10 @@ Use `-ExePath`, with optional `-Arguments`, for an unpackaged app, and `-Aumid`
 for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
 
 1. Builds the profiler with `Build-App.ps1` (Release, for this machine's
-   architecture) when this checkout has no build. `-Build` rebuilds it;
-   `-ProfilerPath` uses another `WinUIProfiler.App.exe`.
+   architecture) when this checkout has no build. It first runs
+   `Install-Prerequisites.ps1`, which offers to install the missing build tools
+   (see "Build and run"). `-Build` rebuilds it; `-ProfilerPath` uses another
+   `WinUIProfiler.App.exe`.
 2. Asks for administrator rights with a UAC prompt, because reading ETW live
    and creating the links below need them. The app runs without them.
 3. Checks that the DLLs are MUX and MUXC builds for the app's architecture,
@@ -144,17 +158,22 @@ for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
    (see `WinUIProfiler.Launcher\README.md`) so that it loads the private DLLs,
    and connects from process start. The connection fails if the app loaded
    another `Microsoft.UI.Xaml.dll`. Each Connect launches the app again with
-   the same DLLs.
-7. Waits for you to close the profiler. Then it closes the app if it is
+   the same DLLs. For a same-executable startup handoff, such as Notepad's,
+   the helper propagates to validated startup descendants and the connection
+   selects the process that loads private WinUI.
+7. Waits for you to close the profiler. Then it closes only the exact launched
+   process instances if they are
    running, deletes the staged runtime (the links, not the files they point
    to), and prints each launch's process ID, the private DLLs it loaded and the
    session files saved. `<run>\launch\<n>` keeps each launch's `launch.json`
-   and `redirect.jsonl`.
+   and per-process redirect logs. `recordings.json` maps startup processes to
+   their separate SQLite recordings. The UI child remains the displayed
+   process; other processes' samples, objects and frames are not combined with it.
 
 It exits with 0 when the app ran with the private DLLs and the staged runtime
-was deleted, 4 when the UAC prompt was declined and 1 otherwise. A runtime
-that cannot be deleted, for example because the app is still running, is kept
-and reported.
+was deleted, 4 when the UAC prompt in step 2 was declined and 1 otherwise. A
+runtime that cannot be deleted, for example because the app is still running,
+is kept and reported.
 
 The private DLLs must match the app's Windows App SDK version: the launcher
 replaces the two DLLs, not the rest of the runtime. UWP (AppContainer) apps are
@@ -395,6 +414,15 @@ The app reads ETW with one real-time session per connection
   executable name are skipped. The target is launched normally, not suspended,
   so its launch timing is unchanged. With private WinUI DLLs, the launcher
   creates it suspended to add its helper first, which adds to the launch time.
+- **Private-runtime startup handoff:** the same session keeps all validated
+  startup process IDs enabled, up to eight, not only the activation or UI PID.
+  Each process has its own queue, counters and SQLite writer. Retained process
+  handles prevent PID reuse during recording, and the consumer rejects events
+  predating each instance. Unrelated same-image processes are excluded.
+  TAP, live process metrics and the default displayed recording stay attached
+  to the selected UI child; the connection UI is unchanged. `recordings.json`
+  and the capture script list the other session paths and identify processes
+  with no observed XAML telemetry.
 - **Attach:** the session filters on the process ID from the start and reads
   from the time of connection.
 
@@ -417,7 +445,8 @@ the events 1, 2, 3... Today the processors count events
 The connection panel shows the event counts, events lost by ETW, and events
 dropped because the queue was full. When the queue is full, new events are
 dropped and counted rather than stopping the session. The session stops when
-the connection ends; the last counts stay visible. If the session cannot start,
+the connection ends; its reader drains the final ETW buffers before the
+recordings close, and the last counts stay visible. If the session cannot start,
 the panel shows why and the metrics keep working.
 
 An ETW session outlives a profiler that crashes or is killed, and keeps the
@@ -429,15 +458,23 @@ whose profiler process no longer exists. To stop one by hand, find it with
 ### Session files
 
 While connected, or while it reads a trace, the app saves every event it
-receives to a SQLite file, one per connection or trace read, in
+receives to a SQLite file, one per process in a connection or one per trace read, in
 `%LOCALAPPDATA%\WinUIProfiler\Sessions`, named
 `<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
 
+Startup members share one ETW session, but not process-local object/frame
+indexes or metric histories. The ETW lost-event count describes the shared
+session; queue drops and stored-event counts are per process. A bootstrap that
+does not load WinUI can have no XAML events without invalidating the UI capture.
+Analyze a particular startup process by passing its own session file to the
+existing CLI commands. Live collection writes SQLite, not a raw `.etl` file;
+recorded-ETL replay remains supported as before.
+
 | Table | Contents |
 | --- | --- |
-| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that launched it, when known: the profiler for a launch from the app, or for a trace, the parent the kernel's event for the process's creation names |
+| `SessionInfo` | One row: the process, source (live or trace), coverage, time zero and QPC frequency, size limit, how and when the session ended, events lost by ETW and dropped by the profiler. For a live session, `StartedUtc` and `StartedQpc` are read together, which places the process's creation time on the event clock. For a trace, `ProcessStartQpc` is the process's creation, when the trace has the kernel's process events. `LauncherProcessId` and `LauncherName` are the process that created it, when known: its parent for a launch from the app, such as the profiler, or for a trace, the parent the kernel's event for the process's creation names |
 | `EventTypes` | One row per provider, event name, opcode, field layout and kind: the field names and their .NET types, such as `Int64,Int32,String,Boolean`, and `TraceLogging`, 1 for a TraceLogging event and 0 for a manifest event. `ProviderName` and `ProviderId` are the ETW provider's name and GUID; `Provider` is `Marker` for a provider of the marker configuration. `Launcher` is 1 for an event of the launcher (see [Launcher milestones](#launcher-milestones)), and 0 for the app's |
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
@@ -495,6 +532,19 @@ SELECT Seq, Ms, Name, Bucket, Fields FROM TickEvents WHERE TickId = :tick ORDER 
 `InterestingRows` uses the `EventsByType` index. On a 148 MB file, it takes
 about 0.15 s, and `FrameList` about 0.65 s. Files written before the views were
 added are not read; record them again.
+
+SQLite 3.54.0 and 3.54.1 can't read `InterestingRows`, `InterestingRowEvents`
+or `FrameList`: they stop with "VIEWs and/or subqueries nested too deep", a
+nesting limit 3.54.0 added. Read them with another version, such as 3.53,
+which the app, the CLI and the Copilot plugin bundle.
+
+The app, the CLI and the Copilot plugin read session files with `SessionFile`
+(`Storage\SessionFile.cs`). `SessionQueries.Observe` shows a caller each
+statement those reads run for it, once its rows are read: the file, the SQL
+with its parameters' values written in, so that it runs as is in the `sqlite3`
+shell, and how many rows it read. The statements that check a file's version,
+views and columns, and statements that fail, aren't shown. The plugin uses it
+to show the SQL behind each answer (see Copilot plugin below).
 
 ### UI elements
 
@@ -813,8 +863,10 @@ command prints the same timeline for a trace or a session file.
 - The first frame drawn is when the first tick that drew on the first UI thread
   ended, the first of the ticks the Frames tab gives for a launch.
 - Attached to a running process, the recording starts after the launch: the
-  tab says when, from the process's creation, and the milestones before it,
-  and the first frame drawn, are missing.
+  tab says when, from the process's creation, and the milestones before it
+  are missing, as are the first frame drawn and the milestones whose event
+  repeats (`repeats`), such as **First frame start**: the first such event
+  the recording saw need not be the launch's.
 - When the session file has deleted its oldest events to stay within its size
   limit before the tab read them, as when **Reload** reads a long recording
   again, milestones among them may be missing or show a later event, and the
@@ -826,24 +878,47 @@ command prints the same timeline for a trace or a session file.
 The marker configuration is a JSON file, which can have comments and trailing
 commas: the providers to record along with the XAML providers, and the
 milestones. The profiler uses `%LOCALAPPDATA%\WinUIProfiler\markers.json` when
-it exists, and otherwise the default, `Launch\markers.json`: Windows' launch
-events (see [Launcher milestones](#launcher-milestones)), the process's
-creation, the first UI thread frame (`Microsoft.UI.Xaml`'s
-`FirstUiThreadFrameEnd`), the first frame drawn, Windows' measures of when the
-app's UI responded and was complete, which some apps log, such as Paint, and
-the Microsoft Store's launch scenarios. **Edit markers** in the Launch tab
-creates the file from the default the first time and opens it; once it is
-saved, **Reload** reads it again and shows its milestones. When the file is
-not valid, the tab says why and uses the default, so a mistake in it never
-stops a connection. The CLI does the same, with a warning; it reads another
-file with `--markers`, and stops with exit code 3 when that file is not valid.
+it exists, and otherwise the default, `Launch\markers.json`, whose milestones
+are the steps a WinUI app's launch goes through:
+
+| Milestone | Event |
+| --- | --- |
+| User click, Activation requested, ShellExecute | Windows' launch events, from the launcher (see [Launcher milestones](#launcher-milestones)) |
+| Process created | Built in |
+| XAML init | Microsoft-Windows-XAML `InitializeCore/Start`: WinUI starts initializing on the app's UI thread |
+| First XAML load | Microsoft-Windows-XAML `ApplicationLoadComponent/Start`: the first XAML the app loads, usually its `App.xaml` |
+| Window creation | Microsoft-Windows-XAML `CreateWindow/Start` |
+| Root visual set | Microsoft-Windows-XAML `PutRootVisual/Start` |
+| Window shown | Win32kTraceLogging `FirstMainWindowShownForProcess`: Windows first shows the app's main window |
+| First frame start | Microsoft-Windows-XAML `Frame/Start`: the first UI thread frame starts |
+| First layout done | Microsoft-Windows-XAML `Layout/Stop` |
+| Loaded events | Microsoft-Windows-XAML `RaiseAllLoadedEvents/Stop` |
+| First UI thread frame | Microsoft.UI.Xaml `FirstUiThreadFrameEnd`: the first UI thread frame ends, whether or not it drew |
+| First frame drawn | Built in |
+| UI responsive, Visible complete | Microsoft.Windows.AppLifeCycle `ModernAppLaunch_UIResponsive/Stop` and `ModernAppLaunch_VisibleComplete/Stop`: Windows' measures of when the app's UI responded and was complete, which some apps log, such as Paint |
+
+No event marks an app's `WinMain`; the nearest is **XAML init**. The tab
+shows the milestones in time order, which can differ from the table's: an app
+can draw its first frame before Windows shows its window, so **Window shown**
+can come after **First frame drawn**. **Edit markers** in the Launch tab
+creates the file from the default the first time and opens it in Notepad, or
+in the app that opens `.json` files if Notepad can't start; once it is saved,
+**Reload** reads it again and shows its milestones. The file is a copy, so it
+doesn't get the default's later changes, such as new milestones; delete it to
+use the default again. When the file is not valid, the tab says why and uses
+the default, so a mistake in it never stops a connection. The CLI does the
+same, with a warning; it reads another file with `--markers`, and stops with
+exit code 3 when that file is not valid.
 
 The configuration's providers are recorded for the same process as the XAML
 providers, live at their level and keywords, and from a trace as the trace has
 them; those a launcher milestone names are recorded for the launcher too.
-Their events are saved to the session file. A provider added to the
-configuration is recorded from the next connection or trace read; a milestone
-added for a provider already recorded shows at once.
+Their events are saved to the session file. Live, Win32kTraceLogging is
+enabled for every process, because Windows registers it in the kernel, and ETW
+doesn't enable a provider registered in the kernel for a session that filters
+by process; the events of other processes are skipped as they are read. A
+provider added to the configuration is recorded from the next connection or
+trace read; a milestone added for a provider already recorded shows at once.
 
 An app marks a milestone by writing an event, such as with an `EventSource` in
 C#:
@@ -888,12 +963,13 @@ them without listing them. A milestone has:
 | Property | Meaning |
 | --- | --- |
 | `builtin` | `ProcessCreated` or `FirstFrameDrawn`, labelled "Process created" and "First frame drawn" unless it has a `label` |
-| `provider`, `event` | Instead of `builtin`: the first event of this name from this provider marks the milestone. The provider is one in `providers`, or one the profiler always records, such as `Microsoft.UI.Xaml` |
+| `provider`, `event` | Instead of `builtin`: the first event of this name from this provider marks the milestone. The provider is one in `providers`, or one the profiler always records, such as `Microsoft.UI.Xaml` or `Microsoft-Windows-XAML` |
 | `where` | Field values the event needs, such as `{ "Items": 200 }`. A number matches a numeric field with that value; a string, `true` or `false` matches the field's value as text, case-insensitively |
 | `label` | The milestone's name |
-| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, as the Store's `PerfMetrics` events name each launch scenario in `scenario` |
+| `labelFrom` | Instead of `label`: a field of the event. The first event with each value of the field is a milestone named by the value, for an app that writes one event for all its milestones and names each in a field |
 | `process` | An executable name, with or without `.exe`: the milestone is only for that app, and for a session whose process name is not known |
 | `from` | `app`, the default, or `launcher`: an event of the process that launched the app marks the milestone (see [Launcher milestones](#launcher-milestones)). Its provider is one in `providers`; a built-in milestone has no `from` |
+| `repeats` | `true` for an event the app writes again after its launch, such as once a frame or once a UI thread, as the default's XAML events are. A session attached to a running app doesn't reach the milestone, as the first such event it records need not be the launch's. A built-in or launcher milestone has no `repeats` |
 
 Provider, event and field names match case-insensitively. Property names are
 case-sensitive, and an unknown one is an error. An EventSource method named
@@ -908,27 +984,28 @@ PowerShell gives an EventSource's:
 ### Launcher milestones
 
 A milestone with `"from": "launcher"` is marked by an event of the target's
-launcher, the process that launched it: the profiler for a launch from the
-app, or in a trace, the process that created it, such as File Explorer or
-PowerShell. The default configuration has three, from Windows' launch events:
-**User click** (`AppLaunch_UserClick`), which the shell writes for a user's
-click that launches an app, but not for a launch by UI Automation,
+launcher, the process that created it: for a launch from the app, the
+profiler, or with private WinUI DLLs, the process that starts the app for it;
+in a trace, such as File Explorer or PowerShell. The default configuration has
+three, from Windows' launch events: **User click** (`AppLaunch_UserClick`),
+which the shell writes for a user's click that launches an app, but not for a
+launch from the profiler or by UI Automation,
 **Activation requested** (`TryActivateDesktopAppXApplication/Start`), when a
 packaged desktop app is activated, and **ShellExecute**
 (`ShellExecuteExW/Start`). The times are from the earliest of them before the
 process's creation, so the timeline starts where the launch did; the summary
 says which, and names the launcher.
 
-- The session knows the launcher for a launch from the app, the profiler, and
-  for a trace with the kernel's process events, from the event for the
-  process's creation, which names its parent. An attach, or a trace without
-  those events, has no launcher milestones, and doesn't list them as not
-  reached.
+- The session knows the launcher for a launch from the app, the process's
+  parent, and for a trace with the kernel's process events, from the event for
+  the process's creation, which names its parent. An attach, or a trace
+  without those events, has no launcher milestones, and doesn't list them as
+  not reached.
 - A launcher can launch other apps, so only its events within 10 seconds of
   the process's creation count, and the one nearest the creation marks the
   milestone. A start event after the creation started something else, such as
-  the profiler's `ShellExecuteExW/Start` when **Edit markers** opens the
-  configuration, and doesn't count.
+  a `ShellExecuteExW/Start` when the launcher opens another file, and doesn't
+  count.
 - In a trace, only the launcher's events that are part of the launch count, so
   each app a script launches gets its own:
   - An event with an activity ID, as the start and stop events of
@@ -972,7 +1049,11 @@ says which, and names the launcher.
 - For a launch from the app, the profiler activates a packaged app itself, so
   the launch has **Activation requested** and **ShellExecute**, but creates an
   unpackaged app's process directly, which writes neither. With private WinUI
-  DLLs, `ProfilerLauncher.exe` starts the app, so the launch has neither.
+  DLLs, `ProfilerLauncher.exe` starts the app: it activates a packaged app
+  through a COM surrogate, `dllhost.exe`, which creates the process and is its
+  launcher, so the launch has both; it creates an unpackaged app's process
+  directly, so the launch has neither, and has exited by the time the profiler
+  looks, so the summary shows only its process ID.
 - A UWP app's process is created by a Windows service, svchost.exe, rather
   than by the process that launched it, so its launcher is that service.
 
@@ -983,11 +1064,12 @@ launches apart with the kernel's thread events. The `logman` commands of
 kernel's process and thread events. WPR can record them in one file with the
 providers: use a profile with the kernel's process and thread events, the
 providers in `providers.txt`, and the configuration's providers, such as an
-app's own. Microsoft-Windows-DxgKrnl and Microsoft-Windows-Win32k write from
-the kernel, so only to a session in nonpaged memory, which WPR uses only for a
-provider with `NonPagedMemory="true"`: give them that, in a small collector of
-their own, or their GPU memory and window focus events are lost. The default
-configuration's providers are:
+app's own. Microsoft-Windows-DxgKrnl, Microsoft-Windows-Win32k and
+Win32kTraceLogging write from the kernel, so only to a session in nonpaged
+memory, which WPR uses only for a provider with `NonPagedMemory="true"`: give
+them that, in a small collector of their own, or their GPU memory, window
+focus and window shown events are lost. The default configuration's providers
+are:
 
 | Provider | GUID |
 | --- | --- |
@@ -995,7 +1077,10 @@ configuration's providers are:
 | Microsoft.Windows.ApplicationModel.DesktopAppx | `5526aed1-f6e5-5896-cbf0-27d9f59b6be7` |
 | Microsoft.Windows.ShellExecute | `382b5e24-181e-417f-a8d6-2155f749e724` |
 | Microsoft.Windows.AppLifeCycle | `ef00584a-2655-462c-bc24-e7de630e7fbf` |
-| Microsoft-Windows-Store | `9c2a37f3-e5fd-5cae-bcd1-43dafeee1ff0` |
+| Win32kTraceLogging | `487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53` |
+
+Record Win32kTraceLogging with keywords `0x400000000000`, as the configuration
+does, which keeps it to a few events.
 
 Then, with the profile in `launch.wprp` and `$cli` as above:
 
@@ -1005,6 +1090,85 @@ wpr -start launch.wprp -filemode               # from an elevated prompt, before
 wpr -stop launch.etl
 & $cli processes launch.etl                    # to find the app's PID
 & $cli launch launch.etl --pid <pid>
+```
+
+## Copilot plugin
+
+This folder is also a plugin for GitHub Copilot CLI, `winui-profiler`. It
+answers questions about session files from what the app's processors stored:
+how the launch went, UI-thread ticks and slow ticks, regions of interest, and
+the UI elements and composition visuals the events mention. Its MCP server,
+`WinUIProfiler.Mcp`, reads session files with `SessionFile` and the views
+above, where they are and without changing them, even while the app is still
+recording one. It never returns the events' field values. It doesn't read
+traces: read a trace into a session file first, with **Open trace** or the
+CLI's `record` command (see "Recorded, from a trace file" above).
+
+To install it from a clone, run from this directory:
+
+```powershell
+copilot plugin marketplace add $PWD.Path
+copilot plugin install winui-profiler@microsoft-ui-xaml
+```
+
+`marketplace.json` makes this folder a plugin marketplace, `microsoft-ui-xaml`,
+whose one plugin is this folder, so Copilot loads the plugin from the clone and
+doesn't copy it. To use the plugin in one session without installing it, start
+Copilot with `copilot --plugin-dir $PWD.Path` from this directory.
+
+The first time Copilot starts the server, and again after its sources or the
+.NET SDK change, `scripts\Start-McpServer.ps1` builds it into
+`%LOCALAPPDATA%\WinUIProfiler\Mcp\<hash>`. Building needs the .NET SDK that
+`global.json` names and usually takes well under a minute. When NuGet doesn't
+have the packages yet, the first build also downloads them (about 36 MB). The
+build logs are in the `logs` folder there, and each build deletes the builds
+that no session has started for 30 days.
+
+| Tool | Views | What they answer |
+| --- | --- | --- |
+| `sessions` | `list`, `summary` | Which session files there are; what one holds, and which tools have data in it |
+| `launch` | `milestones`, `frames` | How the launch went, from `LaunchSummary`, `InterestingRows` and `Ticks`, and how soon the first frames drew |
+| `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
+| `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
+
+One skill, `analyze-session`, tells Copilot how to use the tools. Copilot
+reads it for questions about a WinUI app's performance, and
+`/winui-profiler:analyze-session [session.sqlite | folder]` runs it to
+summarize a session or list a folder's sessions. When no session file is
+given, the tools use the newest one in `%LOCALAPPDATA%\WinUIProfiler\Sessions`.
+
+Each tool's result also says how it got its answer. Copilot doesn't write SQL:
+each view runs fixed statements, then sorts, groups, counts and pages their
+rows in code. `queries` lists the statements the call ran, in the order they
+first ran and each once, with the arguments' values written in, so each runs
+as is with `sqlite3 -readonly` on a SQLite version that reads the session
+file's views (see Shared queries above). Each has `rows`, the rows it read in
+all its runs, and `runs`, when it ran more than once. The statements ran on
+the session file the result describes, or, for `sessions` view `list`, once
+on each file it lists that could be read; one that ran on another file would
+also have `files`, the files it ran on. `computed` says what the call did
+with the rows. The statements that check a file's version, views and columns,
+and statements that fail, aren't listed; a call that fails returns only its
+error. The skill ends every answer with a **How I got this** section that
+shows each call with its `queries` and `computed`, copied as returned, so the
+answer can be checked by running the statements.
+
+The plugin answers only what a processor stores. It doesn't answer questions
+about the events' field values, GPU memory, CPU samples, call stacks, thread
+waits or the XAML and composition trees; tools for them come with the
+processors that store them. Its `launch` milestones are its own, from
+`LaunchSummary`, `InterestingRows` and `Ticks`, not the Launch tab's: it
+doesn't give the marker configuration's milestones, such as an app's own
+markers, or the launcher's.
+
+The server's checks run with the other checks in WinUIProfiler.Tests (see
+Build and run above). They write their session files with the app's
+`SessionWriter`, so the processors build the tables the tools read, and also
+check the plugin's manifests and skills. To list the server's tools:
+
+```powershell
+dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
+& '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe' --listtools
 ```
 
 ## Limitations

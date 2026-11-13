@@ -75,6 +75,11 @@ public:
     BEGIN_TEST_METHOD(RoundedCornersWithNoChildren)
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(RoundedCornersZeroBorderThickness)
+        TEST_METHOD_PROPERTY(L"Description", L"A BorderBrush with rounded corners and a zero BorderThickness draws no outline visual.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(RasterizationScale)
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
