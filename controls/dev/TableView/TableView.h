@@ -1003,6 +1003,9 @@ private:
     // The view's CustomSort this table installed for a CustomSortComparer column; the arrow stays
     // on that column while the view still sorts with it.
     winrt::Microsoft::UI::Xaml::Data::CollectionViewComparer m_collectionViewCustomSort{ nullptr };
+    // The view's current sort is one this table wrote (not the app's): only then does an implicit
+    // clear remove it, or a new CustomSortComparer re-sort it.
+    bool m_collectionViewSortByTable{ false };
 
     // Row semantics for the current projection (row kind, identity, group expansion). Null when no
     // TableViewShapingSource is bound, or when the projection is degraded and carries no shaped identity.
@@ -1119,7 +1122,7 @@ private:
     // An ICollectionViewShaping source: the sort is written to the view's SortDescriptions (or, for a
     // CustomSortComparer column, its CustomSort), and the arrow follows the view's primary SortDescription.
     bool CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const;
-    bool SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
+    bool SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, bool explicitClear);
     void ReconcileSortStateWithCollectionView();
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip,
         bool requireCanSort = true, bool resort = false);
