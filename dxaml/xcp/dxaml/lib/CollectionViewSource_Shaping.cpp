@@ -1180,7 +1180,12 @@ _Check_return_ HRESULT CollectionViewSource::OnShapedSourceVectorChanged(_In_ wf
     }
 
     IFC_RETURN(pArgs->get_CollectionChange(&change));
-    IFC_RETURN(pArgs->get_Index(&index));
+
+    // Some vectors (C++/CX Platform::Collections) fail Index on a Reset.
+    if (change != wfc::CollectionChange_Reset)
+    {
+        IFC_RETURN(pArgs->get_Index(&index));
+    }
 
     if (m_areShapedSourceIndicesValid && !m_isShapedOutputGrouped && change != wfc::CollectionChange_Reset)
     {
