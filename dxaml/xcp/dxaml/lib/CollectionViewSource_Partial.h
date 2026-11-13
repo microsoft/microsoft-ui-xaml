@@ -55,7 +55,8 @@ namespace DirectUI
 
         // Implemented in CollectionViewSource_Shaping.cpp.
         _Check_return_ HRESULT IsShapingRequested(_In_ IInspectable *pSource, _Out_ bool *pIsRequested);
-        _Check_return_ HRESULT CreateShapedView(_In_ IInspectable *pSource, _Outptr_ xaml_data::ICollectionView **ppView);
+        _Check_return_ HRESULT CreateShapedView(_In_ IInspectable *pSource, _In_opt_ xaml_data::ICollectionView *pExistingView, _Outptr_ xaml_data::ICollectionView **ppView);
+        _Check_return_ HRESULT OfferShapingOnView(_In_ IInspectable *pSource, _In_ xaml_data::ICollectionView *pView);
         _Check_return_ HRESULT ComputeShapedOutput();
         _Check_return_ HRESULT RefreshShapedView();
         _Check_return_ HRESULT OnShapedSourceVectorChanged(_In_ wfc::IVectorChangedEventArgs* pArgs);

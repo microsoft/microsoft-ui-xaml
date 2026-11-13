@@ -174,11 +174,12 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
         IFC(IsShapingRequested(pNewSource, &isShapingRequested));
         if (isShapingRequested)
         {
-            IFC(CreateShapedView(pNewSource, &pView));
+            IFC(CreateShapedView(pNewSource, nullptr /* pExistingView */, &pView));
         }
         else
         {
             IFC(CollectionViewManager::GetViewRecord(pNewSource, this, &pView));
+            IFC(OfferShapingOnView(pNewSource, pView));
         }
 
         // A view should have been created by now, or we would have failed
