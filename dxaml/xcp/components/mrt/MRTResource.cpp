@@ -6,7 +6,6 @@
 #include <palexports.h>
 #include <palmemory.h>
 #include <PalResourceManager.h>
-#include <shlwapi.h>
 
 #include "FilePathResource.h"
 #include "MRTKnownQualifierNames.h"
@@ -139,33 +138,6 @@ _Check_return_ HRESULT CMRTResource::TryGetFilePath(_Out_ xstring_ptr* pstrFileP
 
     IFC_RETURN(EnsureFilePathResource());
     IFC_RETURN(m_pFilePathResource->TryGetFilePath(pstrFilePath));
-
-    return S_OK;
-}
-
-// See IPALResource::TryGetRawStream().
-// If this object represents a MRT embedded data resource, first ensure that
-// the data has been read out into a buffer, then use the buffer to initialize
-// an IStream
-_Check_return_ HRESULT CMRTResource::TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream)
-{
-    *ppStream = nullptr;
-
-    if (m_kind != mwar::ResourceCandidateKind::ResourceCandidateKind_EmbeddedData)
-    {
-        // If our resource type is not EmbeddedData, we can't supply a stream.
-        return S_OK;
-    }
-
-    IFC_RETURN(EnsureEmbeddedDataResource());
-
-    // We only support supplying an IStream.
-    if (streamType == PALResources::RawStreamType::IStream)
-    {
-        IStream* pMemStream = SHCreateMemStream(m_embeddedDataBuffer, m_embeddedDataBufferSize);
-        IFCOOM_RETURN(pMemStream);
-        *ppStream = pMemStream;
-    }
 
     return S_OK;
 }
