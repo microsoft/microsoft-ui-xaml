@@ -1388,11 +1388,50 @@ static inline void UpdateTrackedIndex(
     }
 }
 
+// Finds the current index of pItem, or -1 if it's no longer in pItems.
+// expectedIndex is used when it still holds pItem, so duplicate items resolve to the expected one.
+static _Check_return_ HRESULT FindItemIndex(
+    _In_ wfc::IVector<IInspectable*>* pItems,
+    _In_opt_ IInspectable* pItem,
+    _In_ INT expectedIndex,
+    _Out_ INT* pIndex)
+{
+    UINT size = 0;
+    UINT index = 0;
+    BOOLEAN found = FALSE;
+
+    *pIndex = -1;
+
+    IFC_RETURN(pItems->get_Size(&size));
+    if (expectedIndex >= 0 && static_cast<UINT>(expectedIndex) < size)
+    {
+        ctl::ComPtr<IInspectable> spItemAtExpectedIndex;
+        bool areEqual = false;
+
+        IFC_RETURN(pItems->GetAt(expectedIndex, &spItemAtExpectedIndex));
+        IFC_RETURN(PropertyValue::AreEqual(spItemAtExpectedIndex.Get(), pItem, &areEqual));
+        if (areEqual)
+        {
+            *pIndex = expectedIndex;
+            return S_OK;
+        }
+    }
+
+    IFC_RETURN(pItems->IndexOf(pItem, &index, &found));
+    if (found)
+    {
+        *pIndex = static_cast<INT>(index);
+    }
+
+    return S_OK;
+}
+
 // Reorder the given list of items (given as a list of indexes) to the given index.
 // Items are inserted in their original order.
 // Optionally, pTrackedIndex can be specified. It should hold the index of an item you're
 // interested in tracking. When the function returns successfully, pTrackedIndex will be updated
-// with the new index location of the item originally at *pTrackedIndex.
+// with the new index location of the item originally at *pTrackedIndex, or -1 if that item was
+// removed while the moved items were being re-selected.
 _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
     _In_ std::vector<UINT>* pReorderItemIndexes,
     _In_ INT insertIndex,
@@ -1440,10 +1479,15 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
         // We need this to account for indexes shifting during reorder.
         INT numItemsReorderedSoFar = 0;
 
-        // Re-selecting a moved item must not clear the other selected items when several can be selected,
-        // otherwise only the first re-selected item of a multi-item reorder stays selected.
-        BOOLEAN canSelectMultiple = FALSE;
-        IFC(get_CanSelectMultiple(&canSelectMultiple));
+        // Moved items that were selected. Removing an item unselects it, so these are re-selected once
+        // every item has moved: re-selecting raises SelectionChanged, and a handler that changes the items
+        // or the selection must not invalidate the indexes the moves still rely on.
+        struct MovedSelectedItem
+        {
+            ctl::ComPtr<IInspectable> item;
+            INT index;
+        };
+        std::vector<MovedSelectedItem> movedSelectedItems;
 
         // Increment the Reorder Counter (used for content animations).
         IFC(OnItemsReordered(pReorderItemIndexes->size()));
@@ -1496,6 +1540,14 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                     insertIndex,
                     pTrackedIndex2);
 
+                for (auto& movedSelectedItem : movedSelectedItems)
+                {
+                    UpdateTrackedIndex(
+                        realItemIndex,
+                        insertIndex,
+                        &movedSelectedItem.index);
+                }
+
                 IFC(m_selection.Has(realItemIndex, currentReorderedItemIndexInSelection, isCurrentReorderedItemSelected));
                 IFC(spItemSourceVector->GetAt(realItemIndex, &spCurrentItem));
                 {
@@ -1508,12 +1560,73 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 // If this item was selected, we need to re-select it.
                 if (isCurrentReorderedItemSelected)
                 {
-                    // call the Selector::SelectOneItemInternal
-                    IFC(SelectOneItemInternal(insertIndex, spCurrentItem.Get(), !canSelectMultiple /* clearOldSelection */));
+                    movedSelectedItems.push_back({ spCurrentItem, insertIndex });
                 }
             }
 
             numItemsReorderedSoFar++;
+        }
+
+        if (!movedSelectedItems.empty())
+        {
+            // Remember the tracked items: SelectionChanged handlers may move them while the selection is restored.
+            ctl::ComPtr<IInspectable> spTrackedItem1;
+            ctl::ComPtr<IInspectable> spTrackedItem2;
+            bool hasTrackedItem1 = false;
+            bool hasTrackedItem2 = false;
+            UINT itemsCount = 0;
+            UINT reselectedCount = 0;
+
+            IFC(spItemSourceVector->get_Size(&itemsCount));
+            if (pTrackedIndex1 != nullptr && *pTrackedIndex1 >= 0 && static_cast<UINT>(*pTrackedIndex1) < itemsCount)
+            {
+                IFC(spItemSourceVector->GetAt(*pTrackedIndex1, &spTrackedItem1));
+                hasTrackedItem1 = true;
+            }
+            if (pTrackedIndex2 != nullptr && *pTrackedIndex2 >= 0 && static_cast<UINT>(*pTrackedIndex2) < itemsCount)
+            {
+                IFC(spItemSourceVector->GetAt(*pTrackedIndex2, &spTrackedItem2));
+                hasTrackedItem2 = true;
+            }
+
+            // Re-select in the items' original order. Each selection raises SelectionChanged, so the selection mode
+            // and each item's index are read again right before it is selected.
+            for (auto movedSelectedItem = movedSelectedItems.rbegin(); movedSelectedItem != movedSelectedItems.rend(); ++movedSelectedItem)
+            {
+                xaml_controls::ListViewSelectionMode selectionMode = xaml_controls::ListViewSelectionMode_None;
+                BOOLEAN canSelectMultiple = FALSE;
+                INT currentIndex = -1;
+
+                IFC(get_SelectionMode(&selectionMode));
+                IFC(get_CanSelectMultiple(&canSelectMultiple));
+
+                // Stop if nothing can be selected anymore, or if only one item can be selected and a handler
+                // already chose the selection after an earlier moved item was re-selected.
+                if (selectionMode == xaml_controls::ListViewSelectionMode_None ||
+                    (!canSelectMultiple && reselectedCount > 0))
+                {
+                    break;
+                }
+
+                IFC(FindItemIndex(spItemSourceVector.Get(), movedSelectedItem->item.Get(), movedSelectedItem->index, &currentIndex));
+                if (currentIndex < 0)
+                {
+                    continue;
+                }
+
+                // call the Selector::SelectOneItemInternal
+                IFC(SelectOneItemInternal(currentIndex, movedSelectedItem->item.Get(), !canSelectMultiple /* clearOldSelection */));
+                ++reselectedCount;
+            }
+
+            if (hasTrackedItem1)
+            {
+                IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem1.Get(), *pTrackedIndex1, pTrackedIndex1));
+            }
+            if (hasTrackedItem2)
+            {
+                IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem2.Get(), *pTrackedIndex2, pTrackedIndex2));
+            }
         }
     }
 

@@ -17,6 +17,83 @@ using namespace test_infra;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Enterprise { namespace RangeSelection {
 
+    namespace
+    {
+        int IndexOfItem(Platform::Collections::Vector<Platform::Object^>^ items, Platform::String^ name)
+        {
+            for (unsigned int i = 0; i < items->Size; ++i)
+            {
+                if (Platform::String::CompareOrdinal(safe_cast<Platform::String^>(items->GetAt(i)), name) == 0)
+                {
+                    return static_cast<int>(i);
+                }
+            }
+            return -1;
+        }
+
+        // Loads an Extended ListView with ten items, selects items 1-3, focuses item 3 and presses Alt+Shift+Down,
+        // which moves the three items past item 4. onFirstReselect runs once, from the first SelectionChanged
+        // that re-selects one of the moved items.
+        void ReorderSelectedItemsWithKeyboard(
+            std::function<void(xaml_controls::ListView^, Platform::Collections::Vector<Platform::Object^>^)> onFirstReselect,
+            xaml_controls::ListView^& listView,
+            Platform::Collections::Vector<Platform::Object^>^& items)
+        {
+            auto isArmed = std::make_shared<bool>(false);
+            ::Windows::Foundation::EventRegistrationToken selectionChangedToken = {};
+
+            RunOnUIThread([&]()
+            {
+                listView = safe_cast<xaml_controls::ListView^>(xaml_markup::XamlReader::Load(
+                    L"<ListView Height='500' Width='200' SelectionMode='Extended' CanDragItems='True' CanReorderItems='True' AllowDrop='True' "
+                    L"xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' />"));
+
+                items = ref new Platform::Collections::Vector<Platform::Object^>();
+                for (int i = 0; i < 10; ++i)
+                {
+                    items->Append(ref new Platform::String((L"Item " + std::to_wstring(i)).c_str()));
+                }
+
+                listView->ItemsSource = items;
+                TestServices::WindowHelper->WindowContent = listView;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                listView->SelectRange(ref new Microsoft::UI::Xaml::Data::ItemIndexRange(1, 3));
+                VERIFY_ARE_EQUAL(3u, listView->SelectedItems->Size);
+
+                auto localListView = listView;
+                auto localItems = items;
+                selectionChangedToken = listView->SelectionChanged += ref new xaml_controls::SelectionChangedEventHandler(
+                    [isArmed, localListView, localItems, onFirstReselect](Platform::Object^, xaml_controls::SelectionChangedEventArgs^ args)
+                    {
+                        if (*isArmed && args->AddedItems->Size > 0)
+                        {
+                            *isArmed = false;
+                            onFirstReselect(localListView, localItems);
+                        }
+                    });
+                *isArmed = true;
+
+                auto focusedContainer = safe_cast<xaml_controls::ListViewItem^>(listView->ContainerFromIndex(3));
+                VERIFY_IS_NOT_NULL(focusedContainer);
+                focusedContainer->Focus(xaml::FocusState::Keyboard);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            LOG_OUTPUT(L"Moving the three selected items down with Shift/Alt/Down.");
+            TestServices::KeyboardHelper->PressKeySequence(L"$d$_shift#$d$_alt#$d$_down#$u$_down#$u$_alt#$u$_shift");
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                listView->SelectionChanged -= selectionChangedToken;
+                VERIFY_IS_FALSE(*isArmed);
+            });
+        }
+    }
     bool RangeSelectionIntegrationTests::ClassSetup()
     {
         CommonTestSetupHelper::CommonTestClassSetup();
@@ -192,6 +269,51 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
             VERIFY_ARE_EQUAL(firstIndex, listView->SelectedRanges->GetAt(0)->FirstIndex);
             VERIFY_ARE_EQUAL(3u, listView->SelectedRanges->GetAt(0)->Length);
+        });
+
+        // this applies only to Desktop runs
+        if (TestServices::Utilities->IsDesktop)
+        {
+            // Workaround for a known issue
+            TestServices::WindowHelper->RestoreForegroundWindow();
+        }
+    }
+
+    void RangeSelectionIntegrationTests::ValidateReorderReselectionAfterItemsChangeInSelectionChanged()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::ListView^ listView = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ items = nullptr;
+
+        ReorderSelectedItemsWithKeyboard(
+            [](xaml_controls::ListView^, Platform::Collections::Vector<Platform::Object^>^ items)
+            {
+                LOG_OUTPUT(L"SelectionChanged handler: removing item 0.");
+                items->RemoveAt(0);
+            },
+            listView,
+            items);
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(-1, IndexOfItem(items, L"Item 0"));
+            VERIFY_ARE_EQUAL(0, IndexOfItem(items, L"Item 4"));
+
+            // The moved items keep their order and their selection.
+            VERIFY_ARE_EQUAL(3u, listView->SelectedItems->Size);
+            for (int i = 1; i <= 3; ++i)
+            {
+                auto name = ref new Platform::String((L"Item " + std::to_wstring(i)).c_str());
+                VERIFY_ARE_EQUAL(i, IndexOfItem(items, name));
+
+                auto container = safe_cast<xaml_controls::ListViewItem^>(listView->ContainerFromIndex(i));
+                VERIFY_IS_NOT_NULL(container);
+                VERIFY_IS_TRUE(container->IsSelected);
+            }
+
+            // Keyboard focus stays on the item that had it before the reorder.
+            VERIFY_IS_TRUE(listView->ContainerFromIndex(3)->Equals(xaml_input::FocusManager::GetFocusedElement(listView->XamlRoot)));
         });
 
         // this applies only to Desktop runs
