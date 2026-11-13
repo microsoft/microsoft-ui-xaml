@@ -278,7 +278,8 @@ bool TableView::ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& c
 
 bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
 {
-    if (!column || column.SortDirection() == winrt::SortDirection::None || (m_itemsSourceIsCollectionView && !m_collectionViewShaping))
+    // On a view, only a sort this table wrote is re-applied; the app's sort stays the app's.
+    if (!column || column.SortDirection() == winrt::SortDirection::None || (m_itemsSourceIsCollectionView && !m_collectionViewSortByTable))
     {
         return false;
     }
@@ -680,7 +681,7 @@ bool TableView::SyncTableViewShapingSourceSort(
 {
     if (m_itemsSourceIsCollectionView)
     {
-        return SyncCollectionViewSort(trigger, direction);
+        return SyncCollectionViewSort(trigger, direction, explicitClear);
     }
 
     auto tableViewSource = ShapingSourceInternal();
@@ -881,9 +882,15 @@ bool TableView::CanSortThroughCollectionView(const winrt::TableViewColumn& colum
     return m_collectionViewShaping && (direction == winrt::SortDirection::None || CanSortColumn(column));
 }
 
-bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction)
+bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, bool explicitClear)
 {
     if (!m_collectionViewShaping)
+    {
+        return false;
+    }
+
+    // An implicit clear (a column leaving) removes only a sort this table wrote, not the app's.
+    if (!trigger && !explicitClear && !m_collectionViewSortByTable)
     {
         return false;
     }
@@ -1004,6 +1011,7 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
     }
 
     m_collectionViewCustomSort = customSort;
+    m_collectionViewSortByTable = static_cast<bool>(customSort) || static_cast<bool>(description);
     RefreshRowsPipeline();
     UpdateEmptyState();
     return true;
@@ -1239,7 +1247,11 @@ bool TableView::RecomputeSortDPsAndRaiseInternal(
         bool keptSourceSort = false;
         if (!trigger && !explicitClear && !m_activeSourceReleased)
         {
-            if (auto const source = ShapingSourceInternal())
+            if (m_collectionViewShaping)
+            {
+                keptSourceSort = m_collectionViewShaping.SortDescriptions().Size() > 0 || m_collectionViewShaping.CustomSort();
+            }
+            else if (auto const source = ShapingSourceInternal())
             {
                 keptSourceSort = source.get()->HasItemSort();
             }

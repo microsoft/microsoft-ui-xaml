@@ -2093,6 +2093,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         m_collectionViewGroups = nullptr;
         m_collectionViewShaping = nullptr;
         m_collectionViewCustomSort = nullptr;
+        m_collectionViewSortByTable = false;
         m_collectionViewSortChangedRevoker.revoke();
     }
 
@@ -2140,6 +2141,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
                     {
                         if (auto strongThis = weakThis.get(); strongThis && !strongThis->m_updatingCollectionViewSort)
                         {
+                            strongThis->m_collectionViewSortByTable = false;
                             strongThis->QueueReconcileSortStateWithSource();
                         }
                     });
