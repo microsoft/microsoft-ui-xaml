@@ -31,6 +31,7 @@ namespace ctl
         IFACEMETHOD(put_Filter)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue) override { return This()->put_Filter(pValue); }
         IFACEMETHOD(get_GroupDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue) override { return This()->get_GroupDescriptions(ppValue); }
         IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
+        IFACEMETHOD(DeferRefresh)(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue) override { return This()->DeferRefresh(ppReturnValue); }
         IFACEMETHOD(Refresh)() override { return This()->Refresh(); }
     };
 }
@@ -91,6 +92,9 @@ namespace DirectUI
         // Events.
 
         // Methods.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE DeferRefresh(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue);
+#endif
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         _Check_return_ HRESULT STDMETHODCALLTYPE Refresh();
 #endif
