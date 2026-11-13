@@ -7,6 +7,8 @@
 #include "TVDiag.h"
 
 #include <cwchar>
+#include <optional>
+#include <string>
 
 #include <winrt/Microsoft.UI.Dispatching.h>
 
@@ -21,13 +23,115 @@ namespace
         return reinterpret_cast<uintptr_t>(winrt::get_abi(value.as<winrt::Windows::Foundation::IUnknown>()));
     }
 
+    // The group's key value when its Group object exposes one as a "Key" property (the IGrouping<K,T>
+    // idiom, and CollectionViewSource's computed groups), else the Group object itself.
     winrt::IInspectable GroupKey(winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup const& group)
     {
-        if (auto key = group.Group())
+        auto key = group.Group();
+        if (!key)
         {
-            return key;
+            return group;
         }
-        return group;
+        if (auto const provider = key.try_as<winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider>())
+        {
+            try
+            {
+                if (auto const property = provider.GetCustomProperty(L"Key"); property && property.CanRead())
+                {
+                    if (auto value = property.GetValue(key))
+                    {
+                        return value;
+                    }
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+        return key;
+    }
+
+    std::optional<winrt::hstring> ScalarIdentity(winrt::IInspectable const& value)
+    {
+        using winrt::Windows::Foundation::PropertyType;
+        auto const scalar = value.try_as<winrt::Windows::Foundation::IPropertyValue>();
+        if (!scalar)
+        {
+            return std::nullopt;
+        }
+
+        auto const type = scalar.Type();
+        std::wstring text;
+        switch (type)
+        {
+        case PropertyType::String: text = scalar.GetString(); break;
+        case PropertyType::Boolean: text = scalar.GetBoolean() ? L"1" : L"0"; break;
+        case PropertyType::Char16: text = std::to_wstring(static_cast<uint32_t>(scalar.GetChar16())); break;
+        case PropertyType::UInt8: text = std::to_wstring(scalar.GetUInt8()); break;
+        case PropertyType::Int16: text = std::to_wstring(scalar.GetInt16()); break;
+        case PropertyType::UInt16: text = std::to_wstring(scalar.GetUInt16()); break;
+        case PropertyType::Int32: text = std::to_wstring(scalar.GetInt32()); break;
+        case PropertyType::UInt32: text = std::to_wstring(scalar.GetUInt32()); break;
+        case PropertyType::Int64: text = std::to_wstring(scalar.GetInt64()); break;
+        case PropertyType::UInt64: text = std::to_wstring(scalar.GetUInt64()); break;
+        case PropertyType::Single: text = std::to_wstring(scalar.GetSingle()); break;
+        case PropertyType::Double: text = std::to_wstring(scalar.GetDouble()); break;
+        case PropertyType::DateTime: text = std::to_wstring(scalar.GetDateTime().time_since_epoch().count()); break;
+        case PropertyType::TimeSpan: text = std::to_wstring(scalar.GetTimeSpan().count()); break;
+        case PropertyType::Guid:
+        {
+            wchar_t buffer[40]{};
+            ::StringFromGUID2(scalar.GetGuid(), buffer, ARRAYSIZE(buffer));
+            text = buffer;
+            break;
+        }
+        default:
+            return std::nullopt;
+        }
+
+        // The type is part of the identity, so 1 and "1" stay distinct groups.
+        return winrt::hstring{ L"cvgroup:v" + std::to_wstring(static_cast<int>(type)) + L":" + text };
+    }
+
+    // A view may recreate its group objects on every recompute (CollectionViewSource shaping does), so a
+    // group is identified by its key value rather than by the group object's address. Expansion state
+    // follows the identity, so a collapsed group stays collapsed across a Refresh.
+    winrt::hstring KeyIdentity(winrt::IInspectable const& key)
+    {
+        if (auto identity = ScalarIdentity(key))
+        {
+            return *identity;
+        }
+
+        // A computed group exposes its key as a "Key" property (the IGrouping<K,T> idiom).
+        if (auto const provider = key.try_as<winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider>())
+        {
+            try
+            {
+                if (auto const property = provider.GetCustomProperty(L"Key"); property && property.CanRead())
+                {
+                    auto const value = property.GetValue(key);
+                    if (!value)
+                    {
+                        return L"cvgroup:null";
+                    }
+                    if (auto identity = ScalarIdentity(value))
+                    {
+                        return *identity;
+                    }
+                    wchar_t buffer[48];
+                    swprintf_s(buffer, L"cvgroup:k%p", reinterpret_cast<void*>(CanonicalAddress(value)));
+                    return winrt::hstring{ buffer };
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+
+        wchar_t buffer[48];
+        swprintf_s(buffer, L"cvgroup:%p", reinterpret_cast<void*>(CanonicalAddress(key)));
+        return winrt::hstring{ buffer };
     }
 }
 
@@ -143,7 +247,7 @@ winrt::IInspectable TableViewCollectionViewGroups::TryFind(uintptr_t address) co
     {
         return nullptr;
     }
-    return GroupKey(entry.Group);
+    return entry.Key;
 }
 
 winrt::hstring TableViewCollectionViewGroups::IdentityFor(winrt::IInspectable const& key) const
@@ -152,9 +256,7 @@ winrt::hstring TableViewCollectionViewGroups::IdentityFor(winrt::IInspectable co
     {
         return L"cvgroup:ungrouped";
     }
-    wchar_t buffer[48];
-    swprintf_s(buffer, L"cvgroup:%p", reinterpret_cast<void*>(CanonicalAddress(key)));
-    return winrt::hstring{ buffer };
+    return KeyIdentity(key);
 }
 
 void TableViewCollectionViewGroups::Rebuild()
@@ -176,12 +278,13 @@ void TableViewCollectionViewGroups::Rebuild()
         {
             continue;
         }
+        auto const key = GroupKey(group);
         uint32_t const itemCount = items.Size();
         for (uint32_t i = 0; i < itemCount; ++i)
         {
             if (auto const address = CanonicalAddress(items.GetAt(i)))
             {
-                m_entries.try_emplace(address, Entry{ group, i });
+                m_entries.try_emplace(address, Entry{ group, i, key });
             }
         }
     }

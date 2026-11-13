@@ -12,8 +12,10 @@
 
 // Presents an ICollectionView's CollectionGroups through the GroupBy of the TableViewSource the
 // control projects it with: an item's group key is the Group of the ICollectionViewGroup holding
-// it, and group order follows the view (each group's items are contiguous in the flat view, so the
-// default SortGroups(None) keeps the view's order). The view stays the owner of its grouping.
+// it (or that Group's "Key" value), and group order follows the view (each group's items are
+// contiguous in the flat view, so the default SortGroups(None) keeps the view's order). The view
+// stays the owner of its grouping. A group's identity derives from its key value, not the group
+// object, so expansion state survives a view that recreates its groups on every recompute.
 class TableViewCollectionViewGroups final : public std::enable_shared_from_this<TableViewCollectionViewGroups>
 {
 public:
@@ -33,6 +35,7 @@ private:
     {
         winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup Group{ nullptr };
         uint32_t Index{};
+        winrt::IInspectable Key{ nullptr };
     };
 
     winrt::IInspectable KeyFor(winrt::IInspectable const& item);
