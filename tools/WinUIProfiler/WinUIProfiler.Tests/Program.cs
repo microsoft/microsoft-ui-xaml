@@ -1018,6 +1018,8 @@ finally
 }
 Console.WriteLine("Passed: parent/child recordings, equal addresses, launcher markers and absent telemetry stay process-isolated.");
 
+WinUIProfiler.Tests.CompositionLifetimeTests.Run();
+
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
 

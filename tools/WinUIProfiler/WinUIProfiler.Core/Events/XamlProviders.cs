@@ -20,6 +20,8 @@ public enum XamlProvider
     DxgKrnl,
     // Window focus changes in the process (Microsoft-Windows-Win32k).
     Win32k,
+    // Native Composition object lifetimes (Microsoft.Windows.Dwm.DComp).
+    DComp,
     // A provider from the marker configuration; the event's Marker names it.
     Marker
 }
@@ -33,6 +35,7 @@ public static class XamlProviders
     public static readonly Guid MicrosoftUIXamlControls = new("21e0ae07-56a7-55b5-12f9-011e6bc08cca");
     public static readonly Guid DxgKrnl = new("802ec45a-1e99-4b83-9920-87c98277ba9d");
     public static readonly Guid Win32k = new("8c416c79-d49b-4f01-a467-e56d3aa8234c");
+    public static readonly Guid DComp = new("93112de2-0aa3-4ed7-91e3-4264555220c1");
 
     // The XAML providers, whose events are all read. DxgKrnl and Win32k events are matched by ID in XamlEventSubscription.
     private static readonly Dictionary<Guid, XamlProvider> XamlProviderIds = new()
@@ -49,9 +52,9 @@ public static class XamlProviders
     public static bool TryGet(Guid providerId, out XamlProvider provider) =>
         XamlProviderIds.TryGetValue(providerId, out provider);
 
-    // Whether the profiler reads the provider's events anyway: a XAML provider, DxgKrnl or Win32k.
+    // Whether the profiler already reads selected events from the provider.
     public static bool IsBuiltIn(Guid providerId) =>
-        providerId == DxgKrnl || providerId == Win32k || XamlProviderIds.ContainsKey(providerId);
+        providerId == DxgKrnl || providerId == Win32k || providerId == DComp || XamlProviderIds.ContainsKey(providerId);
 
     // The provider's ETW ID; Guid.Empty for Marker, whose events carry their provider.
     public static Guid IdOf(XamlProvider provider) => provider switch
@@ -63,6 +66,7 @@ public static class XamlProviders
         XamlProvider.MicrosoftUIXamlControls => MicrosoftUIXamlControls,
         XamlProvider.DxgKrnl => DxgKrnl,
         XamlProvider.Win32k => Win32k,
+        XamlProvider.DComp => DComp,
         _ => Guid.Empty
     };
 
@@ -76,6 +80,7 @@ public static class XamlProviders
         XamlProvider.MicrosoftUIXamlControls => "Microsoft.UI.Xaml.Controls",
         XamlProvider.DxgKrnl => "Microsoft-Windows-DxgKrnl",
         XamlProvider.Win32k => "Microsoft-Windows-Win32k",
+        XamlProvider.DComp => "Microsoft.Windows.Dwm.DComp",
         _ => "Marker"
     };
 }

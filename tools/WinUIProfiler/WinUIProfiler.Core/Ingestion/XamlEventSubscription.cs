@@ -88,6 +88,18 @@ internal static class XamlEventSubscription
         IgnoreOtherProviders(source, markerIds);
         source.Dynamic.All += data =>
         {
+            if (data.ProviderGuid == XamlProviders.DComp)
+            {
+                if ((int)data.Channel == TraceLoggingChannel &&
+                    data.EventName is "CompositionObjectCreated" or "CompositionObjectDestroyed" &&
+                    (processId is null || data.ProcessID == processId))
+                {
+                    match(data, XamlProvider.DComp, null, data.ProcessID);
+                }
+
+                return;
+            }
+
             if (data.ProviderGuid == XamlProviders.DxgKrnl)
             {
                 // The System process writes some of a process's rows, such as those written when it exits, so the

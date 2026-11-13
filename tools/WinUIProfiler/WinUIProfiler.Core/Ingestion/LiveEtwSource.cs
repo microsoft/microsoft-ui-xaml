@@ -19,6 +19,7 @@ public sealed class LiveEtwSource : IDisposable
     private const ulong GpuMemoryKeyword = 0x4;
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
+    private const ulong CompositionDiagnosticKeyword = 0x1;
     private const string SessionPrefix = "WinUIProfiler-";
     // Win32kTraceLogging, a provider of the default marker configuration.
     private static readonly Guid Win32kTraceLogging = new("487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53");
@@ -195,6 +196,15 @@ public sealed class LiveEtwSource : IDisposable
         foreach (var provider in XamlProviders.XamlIds)
         {
             session.EnableProvider(provider, TraceEventLevel.Verbose, ulong.MaxValue, options);
+        }
+
+        try
+        {
+            session.EnableProvider(XamlProviders.DComp, TraceEventLevel.Verbose, CompositionDiagnosticKeyword, options);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not enable Composition lifetime events: {error.Message}");
         }
 
         foreach (var marker in markers)

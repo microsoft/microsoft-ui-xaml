@@ -67,6 +67,19 @@ public sealed record LaunchFrame(long FrameNumber, double Milliseconds, bool Fro
 // ended, in milliseconds from the start of the recording.
 public sealed record DrawnFrame(long TickId, int ThreadId, double EndMilliseconds);
 
+public sealed record CompositionLifetime(Guid ObjectId, string? TypeName, long? CreatedSeq, long? DestroyedSeq,
+    double? CreatedMilliseconds, double? DestroyedMilliseconds, string Status, string? ObjectPointer,
+    Guid? PublicInterfaceId, string? PublicInterfacePointer, long CreatedEvents, long DestroyedEvents);
+
+public sealed record CompositionWinUIReference(long Sequence, double? Milliseconds, string Field, Guid InterfaceId,
+    string Address, string? SurfaceId, long Candidates, Guid? ObjectId, string Status);
+
+// Counts the retained GUID cohort, independently of IXamlDiagnostics factory counters. Session carries capture
+// boundaries, trimming and loss; no observed events does not establish support or an empty process.
+public sealed record CompositionLifetimeSummary(SessionFileInfo Session, long CreatedObjects, long DestroyedObjects,
+    long MatchedDestroyed, long OutstandingObserved, long UnmatchedDestructions, long AmbiguousLifetimes,
+    long InvalidOrderLifetimes, long MalformedEvents, long WinUILinkedObjects, long UnmatchedReferences, long AmbiguousReferences);
+
 // Reads a session file written by SessionWriter, also while it is still being written. Each statement a read runs is
 // reported to SessionQueries once its rows are read.
 public static class SessionFile
@@ -87,6 +100,87 @@ public static class SessionFile
 
     // Opens one consistent snapshot of the session file, also of one that is still being written.
     public static Snapshot OpenSnapshot(string path) => new(path);
+
+    public static CompositionLifetimeSummary ReadCompositionSummary(string path)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        RequireCompositionViews(connection, transaction);
+        var (info, _, _) = ReadSession(connection, transaction);
+        using var command = Command(connection, transaction, """
+            SELECT CreatedObjects, DestroyedObjects, MatchedDestroyed, OutstandingObserved, UnmatchedDestructions,
+                AmbiguousLifetimes, InvalidOrderLifetimes, MalformedEvents, WinUILinkedObjects, UnmatchedReferences, AmbiguousReferences
+            FROM CompositionLifetimeSummary
+            """);
+        using var reader = command.ExecuteReader();
+        if (!reader.Read()) throw new InvalidDataException("The session file has no Composition summary.");
+        var summary = new CompositionLifetimeSummary(info, reader.GetInt64(0), reader.GetInt64(1), reader.GetInt64(2),
+            reader.GetInt64(3), reader.GetInt64(4), reader.GetInt64(5), reader.GetInt64(6), reader.GetInt64(7),
+            reader.GetInt64(8), reader.GetInt64(9), reader.GetInt64(10));
+        SessionQueries.Report(command, 1);
+        return summary;
+    }
+
+    public static IReadOnlyList<CompositionLifetime> ReadCompositionLifetimes(string path)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        RequireCompositionViews(connection, transaction);
+        using var command = Command(connection, transaction, """
+            SELECT ObjectId, TypeName, CreatedSeq, DestroyedSeq, CreatedMs, DestroyedMs, Status,
+                ObjectPointer, PublicInterfaceId, PublicInterfacePointer, CreatedEvents, DestroyedEvents
+            FROM CompositionObjectLifetimes ORDER BY COALESCE(CreatedQpc, DestroyedQpc), ObjectId
+            """);
+        using var reader = command.ExecuteReader();
+        var lifetimes = new List<CompositionLifetime>();
+        while (reader.Read())
+        {
+            lifetimes.Add(new(Guid.Parse(reader.GetString(0)), NullableString(reader, 1), NullableInt64(reader, 2),
+                NullableInt64(reader, 3), NullableDouble(reader, 4), NullableDouble(reader, 5), reader.GetString(6),
+                Pointer(reader, 7), reader.IsDBNull(8) ? null : Guid.Parse(reader.GetString(8)), Pointer(reader, 9),
+                reader.GetInt64(10), reader.GetInt64(11)));
+        }
+
+        SessionQueries.Report(command, lifetimes.Count);
+        return lifetimes;
+    }
+
+    public static IReadOnlyList<CompositionWinUIReference> ReadCompositionReferences(string path)
+    {
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        RequireCompositionViews(connection, transaction);
+        using var command = Command(connection, transaction, """
+            SELECT Seq, Ms, Field, InterfaceId, Address, SurfaceId, Candidates, ObjectId, Status
+            FROM CompositionWinUILinks ORDER BY Seq, Field
+            """);
+        using var reader = command.ExecuteReader();
+        var references = new List<CompositionWinUIReference>();
+        while (reader.Read())
+        {
+            references.Add(new(reader.GetInt64(0), NullableDouble(reader, 1), reader.GetString(2), Guid.Parse(reader.GetString(3)),
+                Pointer(reader, 4)!, Pointer(reader, 5), reader.GetInt64(6),
+                reader.IsDBNull(7) ? null : Guid.Parse(reader.GetString(7)), reader.GetString(8)));
+        }
+
+        SessionQueries.Report(command, references.Count);
+        return references;
+    }
+
+    private static string? Pointer(SqliteDataReader reader, int ordinal) =>
+        reader.IsDBNull(ordinal) ? null : $"0x{reader.GetInt64(ordinal):X16}";
+
+    private static void RequireCompositionViews(SqliteConnection connection, SqliteTransaction transaction)
+    {
+        if (Sql.Scalar(connection, """
+            SELECT COUNT(*) FROM sqlite_master WHERE type = 'view'
+                AND name IN ('CompositionObjectLifetimes', 'CompositionWinUILinks', 'CompositionLifetimeSummary')
+            """, transaction) != 3)
+        {
+            throw new InvalidDataException(
+                "This recording predates Composition lifetime indexing. Record it again with the updated profiler.");
+        }
+    }
 
     // What a session file held at one moment: its info, events and frames, and the clock its events are timed by, which
     // for a recorded trace whose frequency was not given changes once the events span a second (SessionWriter). Dispose it

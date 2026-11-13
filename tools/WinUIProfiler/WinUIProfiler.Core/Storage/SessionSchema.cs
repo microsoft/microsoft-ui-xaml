@@ -66,6 +66,23 @@ internal static class SessionSchema
             Field INTEGER NOT NULL,    -- index of the field in the event; -1 - i when field i holds its parent (cleared children)
             PRIMARY KEY (Seq, ObjectId, Field)) WITHOUT ROWID;
         CREATE INDEX ObjectTimeline ON ObjectEvents (ObjectId, Seq);
+        CREATE TABLE CompositionObjectEvents (
+            Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
+            ObjectId TEXT NOT NULL,    -- per-lifetime GUID, not an address
+            Created INTEGER NOT NULL,
+            TypeName TEXT,
+            ObjectPointer INTEGER,     -- signed storage of the original 64 pointer bits
+            PublicInterfaceId TEXT,
+            PublicInterfacePointer INTEGER);
+        CREATE INDEX CompositionLifetimeEvents ON CompositionObjectEvents (ObjectId, Created);
+        CREATE INDEX CompositionPublicInterfaces ON CompositionObjectEvents (PublicInterfaceId, PublicInterfacePointer) WHERE Created = 1;
+        CREATE TABLE CompositionReferences (
+            Seq INTEGER NOT NULL REFERENCES Events (Seq),
+            Field TEXT NOT NULL,       -- the WinUI event's public-interface field, not a wrapper address
+            InterfaceId TEXT NOT NULL,
+            Address INTEGER NOT NULL,
+            SurfaceId INTEGER,         -- WinUI DCompSurface wrapper, when the event supplies it
+            PRIMARY KEY (Seq, Field)) WITHOUT ROWID;
         CREATE TABLE Frames (          -- UI-thread ticks (FrameIndex)
             FrameId INTEGER PRIMARY KEY,
             ThreadId INTEGER NOT NULL,
@@ -341,6 +358,70 @@ internal static class SessionSchema
             AND k.ThreadId = (SELECT ThreadId FROM TickList ORDER BY TickId LIMIT 1)
         ORDER BY k.TickId
         LIMIT 10;
+        CREATE VIEW CompositionObjectLifetimes AS
+        -- Native lifetimes evidenced by retained events of this process. GUIDs pair endpoints regardless of arrival
+        -- order; address reuse never merges GUIDs. Missing endpoints, duplicate GUID events and invalid timestamps
+        -- stay explicit. OutstandingObserved is an observed creation without a destruction, not a leak or a rundown.
+        WITH Paired AS (
+            SELECT c.ObjectId,
+                MIN(CASE WHEN c.Created THEN e.Seq END) AS CreatedSeq,
+                MIN(CASE WHEN NOT c.Created THEN e.Seq END) AS DestroyedSeq,
+                MIN(CASE WHEN c.Created THEN e.Qpc END) AS CreatedQpc,
+                MIN(CASE WHEN NOT c.Created THEN e.Qpc END) AS DestroyedQpc,
+                SUM(c.Created) AS CreatedEvents, SUM(NOT c.Created) AS DestroyedEvents,
+                MAX(c.TypeName) AS TypeName, MAX(c.ObjectPointer) AS ObjectPointer,
+                MAX(c.PublicInterfaceId) AS PublicInterfaceId, MAX(c.PublicInterfacePointer) AS PublicInterfacePointer
+            FROM CompositionObjectEvents c JOIN Events e ON e.Seq = c.Seq GROUP BY c.ObjectId)
+        SELECT p.*,
+            (p.CreatedQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS CreatedMs,
+            (p.DestroyedQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS DestroyedMs,
+            CASE WHEN p.CreatedEvents > 1 OR p.DestroyedEvents > 1 THEN 'Ambiguous'
+                WHEN p.CreatedEvents = 0 THEN 'DestroyedWithoutCreation'
+                WHEN p.DestroyedEvents = 0 THEN 'OutstandingObserved'
+                WHEN p.DestroyedQpc < p.CreatedQpc THEN 'InvalidOrder'
+                ELSE 'Destroyed' END AS Status
+        FROM Paired p CROSS JOIN SessionInfo s;
+        CREATE VIEW CompositionWinUILinks AS
+        -- WinUI-observed references, not ownership or creation claims. Match the exact public IID/address in this
+        -- process and inside its native lifetime. Multiple candidates, invalid/duplicate lifetimes and equal-time
+        -- boundaries do not establish a link. Missing destruction can make later address reuse ambiguous.
+        WITH Candidates AS (
+            SELECT r.Seq, r.Field, l.ObjectId,
+                MIN(l.Status IN ('Destroyed', 'OutstandingObserved') AND ce.Qpc < re.Qpc
+                    AND (l.DestroyedQpc IS NULL OR re.Qpc < l.DestroyedQpc)) AS CanLink
+            FROM CompositionReferences r
+            JOIN Events re ON re.Seq = r.Seq
+            JOIN CompositionObjectEvents c ON c.Created = 1
+                AND c.PublicInterfaceId = r.InterfaceId AND c.PublicInterfacePointer = r.Address
+            JOIN Events ce ON ce.Seq = c.Seq
+            JOIN CompositionObjectLifetimes l ON l.ObjectId = c.ObjectId
+            WHERE ce.Qpc <= re.Qpc AND (l.Status <> 'Destroyed' OR re.Qpc <= l.DestroyedQpc)
+            GROUP BY r.Seq, r.Field, l.ObjectId)
+        SELECT r.Seq, e.Qpc, (e.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS Ms,
+            r.Field, r.InterfaceId, r.Address, r.SurfaceId, COUNT(c.ObjectId) AS Candidates,
+            CASE WHEN COUNT(c.ObjectId) = 1 AND MIN(c.CanLink) = 1 THEN MAX(c.ObjectId) END AS ObjectId,
+            CASE WHEN COUNT(c.ObjectId) = 0 THEN 'Unmatched'
+                WHEN COUNT(c.ObjectId) = 1 AND MIN(c.CanLink) = 1 THEN 'Linked' ELSE 'Ambiguous' END AS Status
+        FROM CompositionReferences r JOIN Events e ON e.Seq = r.Seq CROSS JOIN SessionInfo s
+        LEFT JOIN Candidates c ON c.Seq = r.Seq AND c.Field = r.Field
+        GROUP BY r.Seq, r.Field;
+        CREATE VIEW CompositionLifetimeSummary AS
+        -- Distinct GUID counts in retained events, not IXamlDiagnostics factory totals or total live objects.
+        SELECT COUNT(CASE WHEN CreatedEvents > 0 THEN 1 END) AS CreatedObjects,
+            COUNT(CASE WHEN DestroyedEvents > 0 THEN 1 END) AS DestroyedObjects,
+            COUNT(CASE WHEN Status = 'Destroyed' THEN 1 END) AS MatchedDestroyed,
+            COUNT(CASE WHEN Status = 'OutstandingObserved' THEN 1 END) AS OutstandingObserved,
+            COUNT(CASE WHEN Status = 'DestroyedWithoutCreation' THEN 1 END) AS UnmatchedDestructions,
+            COUNT(CASE WHEN Status = 'Ambiguous' THEN 1 END) AS AmbiguousLifetimes,
+            COUNT(CASE WHEN Status = 'InvalidOrder' THEN 1 END) AS InvalidOrderLifetimes,
+            (SELECT COUNT(*) FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId
+                WHERE t.Provider = 'DComp' AND t.TraceLogging = 1 AND t.Launcher = 0
+                    AND t.Name IN ('CompositionObjectCreated', 'CompositionObjectDestroyed'))
+                - (SELECT COUNT(*) FROM CompositionObjectEvents) AS MalformedEvents,
+            (SELECT COUNT(DISTINCT ObjectId) FROM CompositionWinUILinks WHERE Status = 'Linked') AS WinUILinkedObjects,
+            (SELECT COUNT(*) FROM CompositionWinUILinks WHERE Status = 'Unmatched') AS UnmatchedReferences,
+            (SELECT COUNT(*) FROM CompositionWinUILinks WHERE Status = 'Ambiguous') AS AmbiguousReferences
+        FROM CompositionObjectLifetimes;
         CREATE VIEW QueryCatalog (Name, Shows, RowsAreIdentifiedBy, Example) AS
         -- What each view shows, how its rows are identified, and an example. Start here.
         VALUES
@@ -360,6 +441,12 @@ internal static class SessionSchema
                 'SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex'),
             ('LaunchSummary', 'When the first 10 ticks that drew ended, from process start or recording start', 'Position',
                 'SELECT * FROM LaunchSummary'),
+            ('CompositionObjectLifetimes', 'Native Composition lifetimes from retained GUID endpoints, not wrapper or GPU lifetimes',
+                'ObjectId (lifetime GUID)', 'SELECT * FROM CompositionObjectLifetimes ORDER BY COALESCE(CreatedQpc, DestroyedQpc)'),
+            ('CompositionWinUILinks', 'Public-interface references observed by WinUI, with unique lifetime links or explicit uncertainty',
+                'Seq, Field', 'SELECT * FROM CompositionWinUILinks WHERE Status <> ''Linked'' ORDER BY Seq, Field'),
+            ('CompositionLifetimeSummary', 'Observed native GUID counts and WinUI correlation health; no total-live or leak claims',
+                'One row', 'SELECT * FROM CompositionLifetimeSummary'),
             ('QueryCatalog', 'This list', 'Name', 'SELECT * FROM QueryCatalog');
         """;
 }
