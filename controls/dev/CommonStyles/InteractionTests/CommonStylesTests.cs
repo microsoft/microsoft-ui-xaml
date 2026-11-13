@@ -388,5 +388,193 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             return true;
         }
+
+        // A padded selected item must be the initial Tab target, not its partly visible neighbor.
+        [TestMethod]
+        public void ListViewTabEntryTargetsSelectedItemWithoutScrollingNeighbor()
+        {
+            foreach (bool neverFocused in new[] { false, true })
+            foreach (bool vertical in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            foreach (string position in new[] { "Leading with padding", "Trailing with padding" })
+            {
+                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+            }
+        }
+
+        [TestMethod]
+        public void ListViewTabEntryPreservesFocusPadding()
+        {
+            foreach (bool neverFocused in new[] { false, true })
+            foreach (bool vertical in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            foreach (string position in new[] { "Leading", "Trailing" })
+            {
+                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+            }
+        }
+
+        // Items that were not visible keep their existing behavior: they end with the usual focus padding.
+        [TestMethod]
+        public void ListViewFocusEntryStillPadsHiddenSelectedItem()
+        {
+            foreach (bool neverFocused in new[] { false, true })
+            foreach (bool vertical in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            foreach (string position in new[] { "Before", "After", "Partial" })
+            {
+                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+            }
+        }
+
+        [TestMethod]
+        public void ListViewTabEntryIgnoresUnfocusableSelectedItem()
+        {
+            foreach (bool fromAfterList in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+                {
+                    Log.Comment($"Unfocusable selected item: fromAfterList={fromAfterList}.");
+                    // Five items with a cache keep every container realized, so the disabled selected item is known to be unfocusable.
+                    new CheckBox(FindElement.ById("FiveItems")).Check();
+                    new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
+                    new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                    Wait.ForIdle();
+
+                    // Select the last (Tab) or first (Shift+Tab) item, then use Ctrl+arrows to move only focus to item 2.
+                    if (!fromAfterList)
+                    {
+                        KeyboardHelper.PressKey(Key.End);
+                        Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntrySelectedIndex") == "4");
+                    }
+                    Key towardItem2 = fromAfterList ? Key.Right : Key.Left;
+                    KeyboardHelper.PressKey(towardItem2, ModifierKey.Control);
+                    KeyboardHelper.PressKey(towardItem2, ModifierKey.Control);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                    Verify.AreEqual(fromAfterList ? "0" : "4", GetFocusEntryText("FocusEntrySelectedIndex"));
+
+                    // Make the selected item unable to take focus and move focus out of the list.
+                    new Button(FindElement.ById(fromAfterList ? "DisableSelectedItemFocusAfter" : "DisableSelectedItemFocusBefore")).Invoke();
+                    Wait.ForIdle();
+                    Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
+
+                    PressTabIntoList(fromAfterList);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                    Verify.AreEqual("2", GetFocusEntryText("FocusEntryFocusedIndex"),
+                        "Tab must enter the list at the last focused item when the selected item cannot take focus.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ListViewFocusFromCodeRestoresLastFocusedItem()
+        {
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+            {
+                new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                Wait.ForIdle();
+
+                // Ctrl+Right moves focus without changing the selection.
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                Verify.AreEqual("0", GetFocusEntryText("FocusEntrySelectedIndex"));
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "-1");
+
+                new Button(FindElement.ById("FocusListFromCode")).Invoke();
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") != "-1");
+                Verify.AreEqual("2", GetFocusEntryText("FocusEntryFocusedIndex"),
+                    "Focusing the list from code must restore the last focused item, not the selected one.");
+            }
+        }
+
+        // Selects item index 10, positions the viewport relative to it, then moves focus into the list with
+        // Tab (from before the list) or Shift+Tab (from after it). Focus is redirected to the selected item.
+        private void VerifyListViewFocusEntry(bool vertical, bool fromAfterList, string position, bool neverFocused)
+        {
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+            {
+                Log.Comment($"Focus entry: vertical={vertical}, fromAfterList={fromAfterList}, position={position}, neverFocused={neverFocused}.");
+                if (vertical)
+                {
+                    new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                }
+                if (neverFocused)
+                {
+                    new CheckBox(FindElement.ById("ResetWithoutFocus")).Check();
+                }
+                new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                Wait.ForIdle();
+                new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(position);
+                new Button(FindElement.ById(fromAfterList ? "PrepareFocusEntryAfter" : "PrepareFocusEntryBefore")).Invoke();
+                Wait.ForIdle();
+
+                int itemSize = vertical ? 100 : 200;
+                int viewportSize = 3 * itemSize;
+                bool alreadyPadded = position == "Leading with padding" || position == "Trailing with padding";
+                double initialOffset =
+                    position == "Leading with padding" ? 10 * itemSize - 20 :
+                    position == "Trailing with padding" ? 11 * itemSize - viewportSize + 20 :
+                    position == "Leading" ? 10 * itemSize :
+                    position == "Trailing" ? 11 * itemSize - viewportSize :
+                    position == "Before" ? 0 :
+                    position == "After" ? 15 * itemSize :
+                    10.5 * itemSize;
+                double expectedOffset =
+                    alreadyPadded ? initialOffset :
+                    position == "Before" || position == "Trailing" ? 11 * itemSize - viewportSize + 20 :
+                    10 * itemSize - 20;
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    IsFocusEntryOffsetNear(initialOffset) && GetFocusEntryText("FocusEntryChanges") == "0");
+                Verify.IsTrue(IsFocusEntryOffsetNear(initialOffset),
+                    $"Expected initial offset {initialOffset}, actual {GetFocusEntryText("FocusEntryOffset")}.");
+                Verify.AreEqual("10", GetFocusEntryText("FocusEntrySelectedIndex"));
+                Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
+
+                PressTabIntoList(fromAfterList);
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "10");
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => IsFocusEntryOffsetNear(expectedOffset));
+                Wait.ForIdle();
+
+                string diagnostics =
+                    $"offset={GetFocusEntryText("FocusEntryOffset")}, offset changes={GetFocusEntryText("FocusEntryChanges")}, " +
+                    $"offset history={GetFocusEntryText("FocusEntryOffsetHistory")}, offset at focus={GetFocusEntryText("FocusEntryOffsetAtFocus")}";
+                Verify.AreEqual("10", GetFocusEntryText("FocusEntryFocusedIndex"), "Focus entering the list must go to the selected item.");
+                Verify.IsTrue(IsFocusEntryOffsetNear(expectedOffset),
+                    $"Expected offset {expectedOffset} after focus entered the list; {diagnostics}.");
+                if (alreadyPadded)
+                {
+                    Verify.AreEqual("0", GetFocusEntryText("FocusEntryChanges"),
+                        $"Tab entry must not scroll a neighboring item when the selected item already has focus padding; {diagnostics}.");
+                }
+            }
+        }
+
+        private static void PressTabIntoList(bool backward)
+        {
+            if (backward)
+            {
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+            }
+            else
+            {
+                KeyboardHelper.PressKey(Key.Tab);
+            }
+        }
+
+        private static string GetFocusEntryText(string automationId)
+        {
+            return new TextBlock(FindElement.ById(automationId)).GetText();
+        }
+
+        // Animated views can settle a fraction of a pixel away from the requested offset (e.g. 999.993 instead of 1000).
+        private static bool IsFocusEntryOffsetNear(double expectedOffset)
+        {
+            return double.TryParse(GetFocusEntryText("FocusEntryOffset"), System.Globalization.NumberStyles.Float,
+                       System.Globalization.CultureInfo.InvariantCulture, out double offset) &&
+                Math.Abs(offset - expectedOffset) < 0.5;
+        }
     }
 }
