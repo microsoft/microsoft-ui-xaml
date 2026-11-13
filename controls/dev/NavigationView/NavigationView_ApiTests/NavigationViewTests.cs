@@ -1487,7 +1487,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     child = (NavigationViewItem)parent.MenuItems[0];
                     Content = navView;
                 });
-                IdleSynchronizer.Wait();
+                DrainLowPriorityDispatcherQueue();
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -1572,7 +1572,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.FooterMenuItems.Add(footerRoot);
                 Content = navView;
             });
-            IdleSynchronizer.Wait();
+            DrainLowPriorityDispatcherQueue();
 
             RunOnUIThread.Execute(() =>
             {
@@ -1601,7 +1601,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 added = new NavigationViewItem { Content = "Added", IsSelected = true };
                 children.Add(added);
             });
-            IdleSynchronizer.Wait();
+            DrainLowPriorityDispatcherQueue();
 
             RunOnUIThread.Execute(() =>
             {
@@ -3161,6 +3161,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // IdleSynchronizer.Wait() can return before Low-priority dispatcher work has run, such as the callback in which
+        // NavigationViewItem selects its preselected children, so use this before checking state that such work sets.
         static void DrainLowPriorityDispatcherQueue()
         {
             IdleSynchronizer.Wait();
