@@ -16,7 +16,7 @@ namespace TableViewSampleApp.Pages;
 
 /// <summary>
 /// CollectionViewSource shaping: the framework's CollectionViewSource sorts, filters and groups a
-/// flat process list, and TableView renders its View. No TableViewSource is involved.
+/// flat process list, and TableView renders its View.
 /// </summary>
 public sealed partial class CollectionViewShapingPage : SamplePageBase
 {

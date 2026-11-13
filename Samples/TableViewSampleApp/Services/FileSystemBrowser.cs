@@ -25,9 +25,11 @@ public static class FileSystemBrowser
     public static string InitialDirectory =>
         Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
 
-    /// <summary>An entry under the folder that contains it (TableViewSource.ParentBy selectors).</summary>
+    /// <summary>An entry under the folder that contains it (TableView.ItemKeyPath and ParentKeyPath).</summary>
     public static ParentRelation ParentFolder { get; } = new(
         "Folder",
+        nameof(FileSystemEntry.FullPath),
+        nameof(FileSystemEntry.ParentFolderPath),
         row => (row as FileSystemEntry)?.FullPath,
         row => row is FileSystemEntry entry ? Path.GetDirectoryName(entry.FullPath) : null);
 

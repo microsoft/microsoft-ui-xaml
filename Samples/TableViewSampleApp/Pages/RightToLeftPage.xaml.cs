@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Models;
 
@@ -28,7 +29,7 @@ public sealed partial class RightToLeftPage : SamplePageBase
     public RightToLeftPage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
         _originalColumnOrder = PeopleTable.Columns.ToArray();
@@ -43,7 +44,7 @@ public sealed partial class RightToLeftPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Flow direction and filter ------------------------------------------------------
@@ -71,7 +72,7 @@ public sealed partial class RightToLeftPage : SamplePageBase
 
         var term = ApplyFilter();
         SetLastAction(term.Length == 0
-            ? "ClearFilter()"
+            ? "Filter = null"
             : string.Format(CultureInfo.CurrentCulture, "Filter -> \"{0}\"", term));
     }
 
@@ -80,13 +81,13 @@ public sealed partial class RightToLeftPage : SamplePageBase
         var term = FilterBox.Text.Trim();
         if (term.Length == 0)
         {
-            Source.ClearFilter();
+            Source.Filter = null;
         }
         else
         {
-            // Filter reshapes the same source in place and composes with GroupBy and the sort. It
-            // evaluates the predicate on a reshape only, so an edit to a matched value re-applies it.
-            Source.Filter(item => item is Person person && Matches(person, term));
+            // Filter composes with the grouping and the sort. It evaluates the predicate on a
+            // refresh only, so an edit to a matched value re-applies it.
+            Source.Filter = new CollectionViewFilter(item => item is Person person && Matches(person, term));
         }
 
         return term;

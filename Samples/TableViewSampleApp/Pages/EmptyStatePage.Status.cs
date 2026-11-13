@@ -11,7 +11,7 @@ public sealed partial class EmptyStatePage
     protected override void RefreshReadouts()
     {
         var shown = !_sourceAttached ? 0 : _filteredToZero ? 0 : People.Count;
-        ItemsSourceText.Text = !_sourceAttached ? "null" : _filteredToZero ? "TableViewSource (filtered)" : "TableViewSource";
+        ItemsSourceText.Text = !_sourceAttached ? "null" : _filteredToZero ? "CollectionViewSource.View (filtered)" : "CollectionViewSource.View";
         EmptyTemplateText.Text = shown == 0 ? "Shown" : "Hidden";
         Status.Rows = shown == People.Count
             ? SampleShaping.RowCountText(People.Count)

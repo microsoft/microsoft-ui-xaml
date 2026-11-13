@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -35,7 +36,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     {
         RandomizeAll();
         // <snippet>
-        Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
+        Source = new CollectionViewSource { Source = Processes };  // created once; TableView shows its View
         InitializeComponent();
         ProcessTable.Sorted += OnProcessTableSorted; // snippet:skip
         ProcessTable.SelectionChanged += OnSelectionChanged; // snippet:skip
@@ -58,7 +59,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
         // </snippet>
 
         UpdateTotals();
-        InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key), ProcessData.ParentProcess));
+        InitializeSample(Status, Shaping.Attach(ProcessTable, Source, ProcessData.GroupPathOf, ProcessData.ParentProcess));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
     }
 
@@ -67,7 +68,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Column order -------------------------------------------------------------------
@@ -169,8 +170,8 @@ public sealed partial class TaskManagerPage : SamplePageBase
         ResortIfMetricSorted();
     }
 
-    // PropertyChanged updates a cell but does not move its row; re-declaring the active sort with the
-    // column's own path re-sorts the source and keeps the column's sort indicator.
+    // PropertyChanged updates a cell but does not move its row; Refresh() re-sorts the view and keeps
+    // the column's sort indicator.
     private void ResortIfMetricSorted()
     {
         var column = SampleShaping.ActiveSortColumn(ProcessTable);
@@ -180,7 +181,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             return;
         }
 
-        Source.Sort(column.SortMemberPath, column.SortDirection);
+        Source.Refresh();
     }
 
     private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
@@ -198,7 +199,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0}, {1}", args.Column.Header, args.Direction == SortDirection.Descending ? "descending" : "ascending"));
     }
 
-    // ---- Search (TableViewSource.Filter) ------------------------------------------------
+    // ---- Search (CollectionViewSource.Filter) ------------------------------------------
 
     // <snippet>
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -224,11 +225,11 @@ public sealed partial class TaskManagerPage : SamplePageBase
     {
         if (_searchText is not { } text)
         {
-            Source.ClearFilter();
+            Source.Filter = null;
             return;
         }
 
-        Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+        Source.Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
     }
     // </snippet>
 
@@ -242,7 +243,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     private int VisibleCount() =>
         _searchText is { } text ? CountShown(Processes, process => MatchesSearch(process, text)) : Processes.Count;
 
-    // Child processes are rows only while the source is nested: ParentBy then shows each under its app.
+    // Child processes are rows only while the source is nested: ParentKeyPath then shows each under its app.
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
         var show = e.Mode is "hierarchy" or "groupedHierarchy";
@@ -328,7 +329,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
         var from = process.Category;
         process.Category = SampleShaping.Next(ProcessData.Categories, from);
 
-        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row. The
+        // Grouping reads the value when the view refreshes, so refresh it to re-bucket the row. The
         // search matches on Category too, so re-apply it as well (it would keep showing the row).
         ReapplyIfGroupedOn(nameof(ProcessItem.Category));
         if (_searchText is not null)

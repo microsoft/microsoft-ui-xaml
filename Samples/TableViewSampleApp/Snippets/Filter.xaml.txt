@@ -14,7 +14,7 @@
 <tv:TableView
     x:Name="FilterTable"
     AutomationProperties.Name="Filtered people"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single"
     EmptyTemplate="{StaticResource FilterEmptyTemplate}">
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>

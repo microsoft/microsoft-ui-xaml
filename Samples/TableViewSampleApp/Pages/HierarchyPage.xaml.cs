@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -19,8 +20,9 @@ using TableViewSampleApp.Models;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Hierarchy: TableViewSource.ParentBy over one flat list of people, by manager or by mentor, with
-/// Filter, Sort, GroupBy (through the shared Shaping section) and IsLiveShaping on the same source.
+/// Hierarchy: TableView.ItemKeyPath and ParentKeyPath over one flat list of people, by manager or by
+/// mentor, with Filter, SortDescriptions and GroupDescriptions (through the shared Shaping section) on
+/// one CollectionViewSource.
 /// </summary>
 public sealed partial class HierarchyPage : SamplePageBase
 {
@@ -35,8 +37,7 @@ public sealed partial class HierarchyPage : SamplePageBase
     public HierarchyPage()
     {
         // <snippet>
-        Source = TableViewSource.From(People);     // one source; ParentBy, Filter, Sort and GroupBy reshape it in place
-        Source.IsLiveShaping = true;               // an edit to a key or shaped value reshapes the tree
+        Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
         PeopleTable.SelectionChanged += OnSelectionChanged;
@@ -49,7 +50,7 @@ public sealed partial class HierarchyPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     private Person? SelectedPerson => PeopleTable.SelectedItem as Person;
@@ -70,22 +71,9 @@ public sealed partial class HierarchyPage : SamplePageBase
         var relation = SampleShaping.SelectedTag(RelationSelector, "Manager") == "Mentor" ? ParentRelation.Mentor : ParentRelation.Manager;
         Shaping.SetRelation(relation);
         SetLastAction(Shaping.IsHierarchical
-            ? string.Format(CultureInfo.CurrentCulture, "Parent relation -> {0}: ParentBy declared again, every row collapsed", relation.Label)
+            ? string.Format(CultureInfo.CurrentCulture, "Parent relation -> {0}: key paths set again, every row collapsed", relation.Label)
             : string.Format(CultureInfo.CurrentCulture, "Parent relation -> {0}; choose a Hierarchy shaping mode to see it", relation.Label));
     }
-
-    // <snippet>
-    private void OnLiveToggled(object sender, RoutedEventArgs e)
-    {
-        if (!IsLoaded) // snippet:skip
-        { // snippet:skip
-            return; // snippet:skip
-        } // snippet:skip
-
-        Source.IsLiveShaping = ((ToggleSwitch)sender).IsOn;
-        SetLastAction(Source.IsLiveShaping ? "IsLiveShaping -> True" : "IsLiveShaping -> False: edits wait for the next reshape");
-    }
-    // </snippet>
 
     // <snippet>
     private void OnFilterChanged(object sender, TextChangedEventArgs e)
@@ -93,17 +81,17 @@ public sealed partial class HierarchyPage : SamplePageBase
         var text = ((TextBox)sender).Text.Trim();
         if (text.Length == 0)
         {
-            Source.ClearFilter();
+            Source.Filter = null;
         }
         else
         {
-            // Matches rows; the ancestors of a match stay as ordinary rows, expanded while the filter is on.
-            Source.Filter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+            // The view filters before the rows are nested: a match whose parent is filtered out is a root.
+            Source.Filter = new CollectionViewFilter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
         }
 
         SetLastAction(text.Length == 0
             ? "Filter cleared"
-            : string.Format(CultureInfo.CurrentCulture, "Filter -> \u201C{0}\u201D: {1:N0} matches, {2:N0} rows with their ancestors", text, People.Count(p => Matches(p, text)), Relation.CountWithAncestors(People, p => Matches(p, text))));
+            : string.Format(CultureInfo.CurrentCulture, "Filter -> \u201C{0}\u201D: {1:N0} matches", text, People.Count(p => Matches(p, text))));
     }
     // </snippet>
 
@@ -115,18 +103,18 @@ public sealed partial class HierarchyPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        // Sort replaces every item sort level, so ClearSort only matters for the unsorted choice.
-        Source.ClearSort();
+        // The view sorts; nesting keeps that order within each sibling set.
+        Source.SortDescriptions.Clear();
         switch (((ComboBox)sender).SelectedIndex)
         {
             case 1:
-                Source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
+                Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Ascending));
                 break;
             case 2:
-                Source.Sort(item => ((Person)item).FullName, SortDirection.Descending);
+                Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Descending));
                 break;
             case 3:
-                Source.Sort(item => ((Person)item).Role, SortDirection.Ascending);
+                Source.SortDescriptions.Add(new SortDescription(nameof(Person.Role), ListSortDirection.Ascending));
                 break;
         }
 
@@ -146,6 +134,7 @@ public sealed partial class HierarchyPage : SamplePageBase
         selected.FirstName = selected.FirstName.StartsWith(RenamePrefix, StringComparison.Ordinal)
             ? selected.FirstName.Substring(RenamePrefix.Length)
             : RenamePrefix + selected.FirstName;
+        Source.Refresh();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Renamed {0} to {1}", from, selected.FullName));
     }
 
@@ -160,6 +149,7 @@ public sealed partial class HierarchyPage : SamplePageBase
 
         var from = selected.Department;
         selected.Department = SampleShaping.Next(PersonData.Departments, from);
+        Source.Refresh();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", selected.FullName, from, selected.Department));
     }
 
@@ -194,8 +184,7 @@ public sealed partial class HierarchyPage : SamplePageBase
     }
 
     // Moves the selected row under another parent, never under itself or its own subtree (a cycle).
-    // With live shaping a key change reparents in place; without it, replace the item so the
-    // collection change carries the new key.
+    // A key edit is not a collection change: Refresh() makes the table read the new parent key.
     private void OnReparentClick(object sender, RoutedEventArgs e)
     {
         if (SelectedPerson is not { } selected)
@@ -231,22 +220,17 @@ public sealed partial class HierarchyPage : SamplePageBase
                 continue;
             }
 
-            var target = Source.IsLiveShaping ? selected : CopyOf(selected);
             if (IsMentorRelation)
             {
-                target.MentorId = candidate.EmployeeId;
+                selected.MentorId = candidate.EmployeeId;
             }
             else
             {
-                target.ManagerId = candidate.EmployeeId;
+                selected.ManagerId = candidate.EmployeeId;
             }
 
-            if (!Source.IsLiveShaping)
-            {
-                People[index] = target;
-            }
-
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reparented {0} under {1}{2}", selected.FullName, candidate.FullName, Source.IsLiveShaping ? string.Empty : " (item replaced)"));
+            Source.Refresh();
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reparented {0} under {1}", selected.FullName, candidate.FullName));
             return;
         }
 
@@ -276,30 +260,11 @@ public sealed partial class HierarchyPage : SamplePageBase
         return person;
     }
 
-    private static Person CopyOf(Person p) => new()
-    {
-        FirstName = p.FirstName,
-        LastName = p.LastName,
-        Email = p.Email,
-        Department = p.Department,
-        Role = p.Role,
-        Bio = p.Bio,
-        JoinDate = p.JoinDate,
-        ShiftStart = p.ShiftStart,
-        Salary = p.Salary,
-        IsActive = p.IsActive,
-        AvatarPath = p.AvatarPath,
-        EmployeeId = p.EmployeeId,
-        ManagerId = p.ManagerId,
-        MentorId = p.MentorId,
-        Office = p.Office,
-    };
-
     // ---- 100,000-row probe ----------------------------------------------------------------
 
     private async void OnPerfClick(object sender, RoutedEventArgs e) => await RunPerfAsync();
 
-    // Times ParentBy, Sort and ExpandAllRows against a GroupBy(Department) baseline, each step with a
+    // Times the key paths, a sort and ExpandAllRows against a grouping-by-Department baseline, each step with a
     // synchronous layout pass, and reports the median of three runs.
     private async Task RunPerfAsync()
     {
@@ -335,8 +300,8 @@ public sealed partial class HierarchyPage : SamplePageBase
                 }
             }
 
-            string[] hierarchySteps = { "ParentBy", "Sort(Name)", "ExpandAllRows" };
-            string[] groupSteps = { "GroupBy(Department)", "Sort(Name)", "ExpandAllGroups" };
+            string[] hierarchySteps = { "ParentKeyPath", "Sort(Name)", "ExpandAllRows" };
+            string[] groupSteps = { "Group(Department)", "Sort(Name)", "ExpandAllGroups" };
             lines.Add(string.Format(CultureInfo.InvariantCulture, "{0:N0} rows, Manager relation, median of {1} runs, ms ({2})", PerfCount, PerfRuns, BuildFlavor()));
             for (int i = 0; i < 3; i++)
             {
@@ -354,8 +319,15 @@ public sealed partial class HierarchyPage : SamplePageBase
         }
         finally
         {
-            // MeasureRun swaps in temporary sources; give the table its own source back.
-            PeopleTable.ItemsSource = Source;
+            // MeasureRun swaps in temporary sources; give the table its own source and relation back.
+            PeopleTable.ItemsSource = null;
+            PeopleTable.ParentKeyPath = string.Empty;
+            PeopleTable.ItemsSource = Source.View;
+            if (Shaping.IsHierarchical)
+            {
+                PeopleTable.ItemKeyPath = Relation.KeyPath;
+                PeopleTable.ParentKeyPath = Relation.ParentKeyPath;
+            }
             Shaping.SetBusy(false);
             PerfButton.IsEnabled = true;
             _perfRunning = false;
@@ -367,26 +339,29 @@ public sealed partial class HierarchyPage : SamplePageBase
 
     private static double[] MeasureRun(TableView table, List<Person> data, bool isHierarchy)
     {
-        var source = TableViewSource.From(data);
-        table.ItemsSource = source;
+        var source = new CollectionViewSource { Source = data };
+        table.ParentKeyPath = string.Empty;
+        table.ItemsSource = source.View;
         table.UpdateLayout();
 
         var times = new double[3];
         var stopwatch = Stopwatch.StartNew();
         if (isHierarchy)
         {
-            source.ParentBy(item => ((Person)item).EmployeeId, item => ((Person)item).ManagerId);
+            table.ItemKeyPath = nameof(Person.EmployeeId);
+            table.ParentKeyPath = nameof(Person.ManagerId);
         }
         else
         {
-            source.GroupBy(item => ((Person)item).Department);
+            source.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Person.Department)));
+            table.ItemsSource = source.View;
         }
 
         table.UpdateLayout();
         times[0] = stopwatch.Elapsed.TotalMilliseconds;
 
         stopwatch.Restart();
-        source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
+        source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Ascending));
         table.UpdateLayout();
         times[1] = stopwatch.Elapsed.TotalMilliseconds;
 

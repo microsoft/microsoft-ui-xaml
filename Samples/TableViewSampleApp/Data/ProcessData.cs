@@ -26,11 +26,17 @@ public static class ProcessData
 
     private const int NewTaskFirstPid = 20_000;
 
-    /// <summary>A process under the app that started it (TableViewSource.ParentBy selectors).</summary>
+    /// <summary>A process under the app that started it (TableView.ItemKeyPath and ParentKeyPath).</summary>
     public static ParentRelation ParentProcess { get; } = new(
         "Parent process",
+        nameof(ProcessItem.Pid),
+        nameof(ProcessItem.ParentPid),
         row => (row as ProcessItem)?.Pid,
         row => (row as ProcessItem)?.ParentPid);
+
+    /// <summary>The ProcessItem property a group-key Tag groups by.</summary>
+    public static string GroupPathOf(string key) =>
+        key == nameof(ProcessItem.StatusText) ? nameof(ProcessItem.StatusText) : nameof(ProcessItem.Category);
 
     public static object GroupKeyOf(ProcessItem? process, string key)
     {

@@ -1,10 +1,10 @@
-Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
-PeopleTable.ItemsSource = Source;
+PeopleTable.ItemsSource = Source.View;
 
 public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 // Select takes a display index; group headers take indexes too but cannot be selected, so walk
 // in from one end until IsSelected confirms a row took the selection.

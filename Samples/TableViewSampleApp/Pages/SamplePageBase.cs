@@ -33,15 +33,15 @@ public partial class SamplePageBase : Page
 
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
 
-    // Under Grouped hierarchy GroupBy buckets only the roots: a nested row is shown in its root's group.
+    // Under Grouped hierarchy the grouping buckets only the roots: a nested row is shown in its root's group.
     protected Func<T, T> GroupingRowOf<T>(IEnumerable<T> rows)
         where T : class =>
         IsHierarchical && _shaping?.Relation is { } relation ? relation.RootMap(rows) : row => row;
 
-    // Rows a filter leaves in the projection. Under ParentBy that is every match plus its ancestors.
+    // Rows a filter leaves in the projection. The CollectionViewSource filters before the rows are
+    // nested, so a match whose parent is filtered out is shown as a root.
     protected int CountShown<T>(IEnumerable<T> rows, Func<T, bool> matches)
-        where T : class =>
-        IsHierarchical && _shaping?.Relation is { } relation ? relation.CountWithAncestors(rows, matches) : rows.Count(matches);
+        where T : class => rows.Count(matches);
 
     protected void InitializeSample(StatusPanel status, ShapingOptions? shaping = null)
     {

@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -29,15 +30,15 @@ public sealed partial class VirtualizationPage : SamplePageBase
 {
     private readonly DispatcherTimer _sampler = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private ObservableCollection<Person> _people;
-    private TableViewSource _source;           // one per dataset; reshaped in place, never per shaping change
+    private CollectionViewSource _source;       // one per dataset; reshaped in place, never per shaping change
     private TableViewColumn? _departmentTextColumn;
 
     public VirtualizationPage()
     {
         _people = new ObservableCollection<Person>(PersonData.Many(10_000));
-        _source = TableViewSource.From(_people);
+        _source = new CollectionViewSource { Source = _people };
         InitializeComponent();
-        PeopleTable.ItemsSource = _source;
+        PeopleTable.ItemsSource = _source.View;
         UpdateActionLabels();
 
         InitializeSample(Status, Shaping.Attach(PeopleTable, _source));
@@ -67,8 +68,8 @@ public sealed partial class VirtualizationPage : SamplePageBase
         // TableView virtualizes by default. Build the whole list, then assign it once: adding rows
         // one at a time to a bound collection raises one change notification per row.
         _people = new ObservableCollection<Person>(PersonData.Many(count));
-        _source = TableViewSource.From(_people);
-        PeopleTable.ItemsSource = _source;
+        _source = new CollectionViewSource { Source = _people };
+        PeopleTable.ItemsSource = _source.View;
         // </snippet>
         _peakContainers = 0;
 

@@ -25,7 +25,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People directory"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
     SelectionMode="Single">
     <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>

@@ -1,4 +1,4 @@
-Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
 
 // Wrapping, trimming and line limit shared by every Bio cell.
@@ -6,7 +6,7 @@ public static TextWrapState WrapState { get; } = new();
 
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnWrapToggled(object sender, RoutedEventArgs e)
 {

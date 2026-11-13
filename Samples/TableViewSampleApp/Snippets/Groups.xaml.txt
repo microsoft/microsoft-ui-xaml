@@ -28,7 +28,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="Grouped people"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single"
     EmptyTemplate="{StaticResource GroupsEmptyTemplate}">
     <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->

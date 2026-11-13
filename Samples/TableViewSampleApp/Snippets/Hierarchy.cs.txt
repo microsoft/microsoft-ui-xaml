@@ -1,44 +1,38 @@
-Source = TableViewSource.From(People);     // one source; ParentBy, Filter, Sort and GroupBy reshape it in place
-Source.IsLiveShaping = true;               // an edit to a key or shaped value reshapes the tree
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
 
 public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
-public TableViewSource Source { get; }
-
-private void OnLiveToggled(object sender, RoutedEventArgs e)
-{
-    Source.IsLiveShaping = ((ToggleSwitch)sender).IsOn;
-}
+public CollectionViewSource Source { get; }
 
 private void OnFilterChanged(object sender, TextChangedEventArgs e)
 {
     var text = ((TextBox)sender).Text.Trim();
     if (text.Length == 0)
     {
-        Source.ClearFilter();
+        Source.Filter = null;
     }
     else
     {
-        // Matches rows; the ancestors of a match stay as ordinary rows, expanded while the filter is on.
-        Source.Filter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+        // The view filters before the rows are nested: a match whose parent is filtered out is a root.
+        Source.Filter = new CollectionViewFilter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
     }
 }
 
 private void OnSortChanged(object sender, SelectionChangedEventArgs e)
 {
-    // Sort replaces every item sort level, so ClearSort only matters for the unsorted choice.
-    Source.ClearSort();
+    // The view sorts; nesting keeps that order within each sibling set.
+    Source.SortDescriptions.Clear();
     switch (((ComboBox)sender).SelectedIndex)
     {
         case 1:
-            Source.Sort(item => ((Person)item).FullName, SortDirection.Ascending);
+            Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Ascending));
             break;
         case 2:
-            Source.Sort(item => ((Person)item).FullName, SortDirection.Descending);
+            Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Descending));
             break;
         case 3:
-            Source.Sort(item => ((Person)item).Role, SortDirection.Ascending);
+            Source.SortDescriptions.Add(new SortDescription(nameof(Person.Role), ListSortDirection.Ascending));
             break;
     }
 }
@@ -60,10 +54,13 @@ private void SetFirstColumn(bool photoFirst)
 }
 
 // From Controls\ShapingOptions.xaml.cs
-// ParentBy takes each row's key and its parent's key. A second ParentBy replaces the relation and
-// resets expansion, so declare it once.
-private static void NestRows(TableViewSource source, ParentRelation relation) =>
-    source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+// ItemKeyPath names each row's key and ParentKeyPath its parent's key. Changing either replaces
+// the relation and resets expansion, so set them once.
+private static void NestRows(TableView table, ParentRelation relation)
+{
+    table.ItemKeyPath = relation.KeyPath;
+    table.ParentKeyPath = relation.ParentKeyPath;
+}
 
 // From Controls\ShapingOptions.xaml.cs
 // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
@@ -95,16 +92,20 @@ private static void CollapseEvery(TableView table, bool grouped, bool hierarchic
 }
 
 // From Helpers\ParentRelation.cs
-// The two selectors ParentBy takes: a row's unique key, and its parent's key (null for a root).
+// The two paths the table takes: a row's unique key, and its parent's key (null for a root).
 // Person rows: EmployeeId under ManagerId (the org chart).
 public static ParentRelation Manager { get; } = new(
     "Manager",
+    nameof(Person.EmployeeId),
+    nameof(Person.ManagerId),
     row => (row as Person)?.EmployeeId,
     row => (row as Person)?.ManagerId);
 
 // Person rows: EmployeeId under MentorId, a second tree over the same rows.
 public static ParentRelation Mentor { get; } = new(
     "Mentor",
+    nameof(Person.EmployeeId),
+    nameof(Person.MentorId),
     row => (row as Person)?.EmployeeId,
     row => (row as Person)?.MentorId);
 
