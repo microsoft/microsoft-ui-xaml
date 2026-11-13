@@ -30,6 +30,9 @@ public:
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
+    // IContentControlOverrides
+    void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent);
+
     void OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -62,6 +65,7 @@ private:
     void UpdateForeground();
     void RequestClose();
     void OnHeaderChanged();
+    void UpdateHeaderContentPresenterVisibility();
     void OnIconSourceChanged();
     void UpdateWidthModeVisualState();
     void UpdateDragDropVisualState(bool isVisible);
@@ -94,6 +98,7 @@ private:
     bool m_isPointerOver = false;
     bool m_isCheckingforDrag = false;
     bool m_firstTimeSettingToolTip{ true };
+    bool m_isHeaderContentPresenterCollapsed{ false };
 
     tracker_ref<winrt::Path> m_selectedBackgroundPath{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
