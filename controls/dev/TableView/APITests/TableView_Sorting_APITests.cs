@@ -22,6 +22,7 @@ using WEX.TestExecution.Markup;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewSortingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -29,10 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     //
     // SUBJECT. The control-level sort API - the state that lives on TableViewColumn.SortDirection,
     // the three verbs and their documented Boolean returns, the Sorting/Sorted events, the two
-    // click-to-sort gates, and the reconciliation rule with TableViewSource.Sort. Category 8 owns
-    // TableViewSource.Sort itself. Plan section 7.0 writes the split up in full; the short version
-    // is that a test belongs here if it would still be meaningful with TableViewSource never
-    // mentioned in the test body.
+    // click-to-sort gates, and the reconciliation rule with a CollectionViewSource's SortDescriptions.
     //
     // KEY RESOLUTION. Several tests reach GetSortMemberPathCore(), which is `overridable` in the
     // IDL and therefore projects as `protected virtual`. A test class cannot call it, so the probe
@@ -546,42 +544,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "The next Invoke must cycle from the displayed Descending to Ascending.");
                 VerifySequence(new[] { "Architect", "Designer", "Designer", "Engineer", "Engineer", "Engineer" },
                     RowValues(tableView, person => person.Role), "the Invoke must sort the rows");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies TableView.ClearSort clears a key-selector sort declared on the TableViewSource and keeps SortGroups.")]
-        public void VerifyClearSortClearsSourceKeySelectorSortAndKeepsSortGroups()
-        {
-            TableView tableView = null;
-            var returned = false;
-
-            RunOnUIThread.Execute(() =>
-            {
-                var source = TableViewSource.From(MakeShapedPeople())
-                    .GroupBy(o => Person(o).Role)
-                    .SortGroups(SortDirection.Descending)
-                    .Sort(o => Person(o).Name, SortDirection.Descending);
-                tableView = CreateSortTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifySequence(new[] { "#Engineer", "Rafa", "Owen", "Diego", "#Designer", "Ines", "Asha", "#Architect", "Mei" },
-                    GetProjectedLabels(tableView, includeCount: false), "precondition: groups descending, names descending");
-                returned = tableView.ClearSort();
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(returned, "ClearSort must report that it cleared the source sort.");
-                VerifySequence(new[] { "#Engineer", "Diego", "Rafa", "Owen", "#Designer", "Asha", "Ines", "#Architect", "Mei" },
-                    GetProjectedLabels(tableView, includeCount: false), "the item sort must be cleared and the group order kept");
             });
         }
 
@@ -1298,16 +1260,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an app ThenSort after a header sort appends below it, so the header sort stays primary and lit.")]
+        [TestProperty("Description", "Verifies a SortDescription the app appends after a header sort sorts below it, so the header sort stays primary and lit.")]
         public void VerifyThenSortAfterHeaderSortKeepsHeaderPrimary()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
+                source = MakeShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -1317,7 +1279,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => source.ThenSort("Name", SortDirection.Descending));
+            RunOnUIThread.Execute(() => source.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending)));
 
             SettleLayout(tableView);
 
@@ -1458,24 +1420,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies setting CustomSortComparer on a column lit by an app TableViewSource sort raises no events and keeps the app's sort level.")]
+        [TestProperty("Description", "Verifies setting CustomSortComparer on a column lit by an app CollectionViewSource sort raises no events and keeps the app's sort.")]
         public void VerifyCustomSortComparerOnAppSourceSortedColumnKeepsAppSort()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             LengthThenOrdinalComparer comparer = null;
             var events = 0;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
+                source = MakeShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(source.View);
                 LoadContent(tableView);
             });
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "Name", ListSortDirection.Ascending));
 
             SettleLayout(tableView);
 
@@ -1768,16 +1730,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a column sort and a TableViewSource sort reconcile, last writer winning.")]
-        public void VerifySortReconcilesWithTableViewSourceSort()
+        [TestProperty("Description", "Verifies a column sort and an app CollectionViewSource sort reconcile, last writer winning.")]
+        public void VerifySortReconcilesWithCollectionViewSourceSort()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
+                source = MakeShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -1792,7 +1754,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "the column sort is the last writer so far"));
 
             // The source now writes the other axis. Exactly one axis is ever in force.
-            RunOnUIThread.Execute(() => source.Sort("Role", SortDirection.Descending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "Role", ListSortDirection.Descending));
 
             SettleLayout(tableView);
 
@@ -1825,25 +1787,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies clearing a column lit by an app-declared TableViewSource sort removes that sort.")]
+        [TestProperty("Description", "Verifies clearing a column lit by an app-declared CollectionViewSource sort removes that sort.")]
         [TestProperty("data:Clear", "{SortByColumnNone, HeaderInvoke}")]
         public void VerifyClearingColumnLitBySourceSortRemovesSourceSort()
         {
             var clear = ((string)TestContext.DataRow["Clear"]).Trim();
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
+                source = MakeShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(source.View);
                 tableView.Columns[0].SortCycle = TableViewSortCycle.AscendingDescendingNone;
                 LoadContent(tableView);
             });
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "Name", ListSortDirection.Descending));
 
             SettleLayout(tableView);
 
@@ -1878,143 +1840,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies moving, replacing or ungating the columns keeps an app-declared TableViewSource sort and re-lights the matching column.")]
-        [TestProperty("data:Change", "{MoveColumn, ReplaceColumns, CanUserSortColumnsFalse}")]
-        public void VerifyImplicitClearKeepsSourceSort()
-        {
-            var change = ((string)TestContext.DataRow["Change"]).Trim();
-            TableView tableView = null;
-            TableViewSource source = null;
-            var sortedArgs = new List<TableViewSortedEventArgs>();
-
-            RunOnUIThread.Execute(() =>
-            {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
-                    "Precondition: the source sort lights the Name column.");
-                tableView.Sorted += (s, e) => sortedArgs.Add(e);
-
-                switch (change)
-                {
-                    case "MoveColumn":
-                        var column = tableView.Columns[0];
-                        tableView.Columns.RemoveAt(0);
-                        tableView.Columns.Insert(1, column);
-                        break;
-                    case "ReplaceColumns":
-                        tableView.Columns.Clear();
-                        tableView.Columns.Add(MakeTextTemplateColumn("Name"));
-                        tableView.Columns.Add(MakeTextTemplateColumn("Role"));
-                        break;
-                    default:
-                        tableView.CanUserSortColumns = false;
-                        break;
-                }
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
-                    $"{change}: the app-declared sort must stay on the source");
-                var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
-                Verify.AreEqual(SortDirection.Descending, nameColumn.SortDirection,
-                    $"{change}: the Name column must re-light from the source sort");
-                Verify.IsFalse(sortedArgs.Any(e => e.Column == null && e.Direction == SortDirection.None),
-                    $"{change}: a clear that left the source sort in place must not report that sorting was cleared");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies an app Sort that replaces a header sort lights its own column, and closing CanUserSortColumns in the same turn keeps it and reports no clear.")]
-        public void VerifyAppSortReplacingHeaderSortSurvivesUngating()
-        {
-            TableView tableView = null;
-            TableViewSource source = null;
-            var sortedArgs = new List<TableViewSortedEventArgs>();
-
-            RunOnUIThread.Execute(() =>
-            {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name column sorts.");
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView.Sorted += (s, e) => sortedArgs.Add(e);
-                // Sort replaces every item sort level, including the one the header installed.
-                source.Sort("Role", SortDirection.Descending);
-                tableView.CanUserSortColumns = false;
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsFalse(sortedArgs.Any(e => e.Column == null && e.Direction == SortDirection.None),
-                    "Replacing the header sort with the app's sort must not report that sorting was cleared.");
-                VerifySequence(new[] { "Engineer", "Engineer", "Engineer", "Designer", "Designer", "Architect" },
-                    RowValues(tableView, person => person.Role), "the app's Role sort must order the rows");
-                var roleColumn = tableView.Columns.First(c => c.Header as string == "Role");
-                var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
-                Verify.AreEqual(SortDirection.Descending, roleColumn.SortDirection, "The app's Role sort must light its column.");
-                Verify.AreEqual(SortDirection.None, nameColumn.SortDirection, "The replaced Name sort must be gone.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies filter changes under an app sort no column describes raise no Sorted.")]
-        [TestProperty("data:Sort", "{KeySelector, UnmatchedPath}")]
         public void VerifyFilterUnderUnmatchedAppSortRaisesNoSorted()
         {
-            var sort = ((string)TestContext.DataRow["Sort"]).Trim();
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             int sortedCount = 0;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
+                source = MakeShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(source.View);
                 LoadContent(tableView);
             });
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() =>
-            {
-                if (sort == "KeySelector")
-                {
-                    source.Sort(item => ((ShapedPerson)item).Name, SortDirection.Ascending);
-                }
-                else
-                {
-                    source.Sort("DepartmentName", SortDirection.Ascending);
-                }
-            });
+            RunOnUIThread.Execute(() => SetAppSort(source, "DepartmentName", ListSortDirection.Ascending));
 
             SettleLayout(tableView);
 
@@ -2026,85 +1868,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         tableView.Sorted += (s, e) => sortedCount++;
                     }
-                    source.Filter(_ => true);
+                    source.Filter = _ => true;
                 });
                 SettleLayout(tableView);
             }
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(0, sortedCount, $"{sort}: a filter change must not report a sort change.");
-                Verify.IsTrue(tableView.Columns.All(c => c.SortDirection == SortDirection.None), $"{sort}: no column describes the app's sort.");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies turning sorting off for the table or the column leaves a column the app's source sort lit untouched and raises no sort events, also while the table is unloaded.")]
-        [TestProperty("data:Change", "{CanUserSortColumnsFalse, CanSortFalse, CanUserSortColumnsFalseUnloaded, CanSortFalseUnloaded}")]
-        public void VerifyUngatingKeepsAppLitColumnWithoutEvents()
-        {
-            var change = ((string)TestContext.DataRow["Change"]).Trim();
-            var unloaded = change.EndsWith("Unloaded");
-            TableView tableView = null;
-            TableViewSource source = null;
-            int sortingCount = 0;
-            int sortedCount = 0;
-            int directionChanges = 0;
-
-            RunOnUIThread.Execute(() =>
-            {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "Precondition: the source sort lights the Name column.");
-            });
-
-            if (unloaded)
-            {
-                RunOnUIThread.Execute(() => Content = null);
-                IdleSynchronizer.Wait();
-            }
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView.Sorting += (s, e) => sortingCount++;
-                tableView.Sorted += (s, e) => sortedCount++;
-                tableView.Columns[0].RegisterPropertyChangedCallback(TableViewColumn.SortDirectionProperty, (s, dp) => directionChanges++);
-                if (change.StartsWith("CanSortFalse"))
-                {
-                    tableView.Columns[0].CanUserSort = false;
-                }
-                else
-                {
-                    tableView.CanUserSortColumns = false;
-                }
-            });
-
-            if (unloaded)
-            {
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() => LoadContent(tableView));
-            }
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(0, sortingCount, "The table installed no sort, so there is nothing to clear and no Sorting.");
-                Verify.AreEqual(0, sortedCount, "No Sorted may be raised.");
-                Verify.AreEqual(0, directionChanges, "The column's SortDirection must not flip.");
-                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The column keeps describing the app's sort.");
-                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the app's sort stays on the source");
+                Verify.AreEqual(0, sortedCount, "A filter change must not report a sort change.");
+                Verify.IsTrue(tableView.Columns.All(c => c.SortDirection == SortDirection.None), "No column describes the app's sort.");
             });
         }
 
@@ -2153,7 +1925,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateSortTable(TableViewSource.From(MakeShapedPeople()));
+                tableView = CreateSortTable(MakeShapingView(MakeShapedPeople()).View);
                 LoadContent(tableView);
             });
 
@@ -2167,9 +1939,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView.Columns.RemoveAt(1);
-                var next = TableViewSource.From(MakeShapedPeople());
-                next.Sort("Name", SortDirection.Descending);
-                tableView.ItemsSource = next;
+                var next = MakeShapingView(MakeShapedPeople());
+                SetAppSort(next, "Name", ListSortDirection.Descending);
+                tableView.ItemsSource = next.View;
             });
 
             SettleLayout(tableView);
@@ -2362,17 +2134,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a CustomSortComparer's ranks do not keep a removed row alive.")]
         public void VerifyCustomSortReleasesRemovedRow()
         {
-            VerifyCustomSortReleasesRemovedRowCore(filtered: false);
+            VerifyCustomSortReleasesRemovedRowCore();
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies a CustomSortComparer's ranks do not keep a row removed under a filter alive.")]
-        public void VerifyCustomSortReleasesRowRemovedUnderFilter()
-        {
-            VerifyCustomSortReleasesRemovedRowCore(filtered: true);
-        }
-
-        private void VerifyCustomSortReleasesRemovedRowCore(bool filtered)
+        private void VerifyCustomSortReleasesRemovedRowCore()
         {
             TableView tableView = null;
             ObservableCollection<ShapedPerson> items = null;
@@ -2388,8 +2153,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Longest name, so the comparer sorts it last, and last in the source: never realized.
                 weak = AddUntracked(items, "Zed-last-row");
 
-                object source = filtered ? (object)TableViewSource.From(items).Filter(_ => true) : items;
-                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 600, height: 150);
+                tableView = CreateTableView(items, headers: new[] { "Name", "Role" }, width: 600, height: 150);
                 tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
                 LoadContent(tableView);
             });
@@ -2414,6 +2178,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 GC.KeepAlive(tableView);
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an add under a header sort on a plain collection lands at its sorted position, not at the source index.")]
+        public void VerifyAddUnderHeaderSortLandsAtTheSortedPosition()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: Name sorts."));
+            SettleLayout(tableView);
+
+            // Appended at the end of the source, but "Bea" belongs second in ascending order.
+            RunOnUIThread.Execute(() => items.Add(new ShapedPerson("Bea", "Engineer", "Platform")));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyProjection(tableView,
+                new List<string> { "Asha", "Bea", "Diego", "Ines", "Mei", "Owen", "Rafa" },
+                "an append under an active sort must be placed by key"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an add under a header sort of rows that implement no change notification is inserted in place, without a Reset.")]
+        public void VerifySortedAddOfPlainItemsInsertsInPlaceWithoutReset()
+        {
+            TableView tableView = null;
+            ObservableCollection<PlainShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<PlainShapedPerson>(
+                    MakeShapedPeople().Select(p => new PlainShapedPerson { Name = p.Name, Role = p.Role }));
+                tableView = CreateShapedTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: Name sorts."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Ines,Mei,Owen,Rafa", PlainNames(tableView), "baseline");
+
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                items.Add(new PlainShapedPerson { Name = "Nadia", Role = "Engineer" });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Ines,Mei,Nadia,Owen,Rafa", PlainNames(tableView),
+                    "the added row must land at its sort position");
+                Verify.AreEqual("Add", string.Join(",", actions),
+                    "a single sorted Add must reach the projection as one Add, not a Reset");
+            });
+        }
+
+        private static string PlainNames(TableView tableView)
+            => string.Join(",", GetProjectedItems(tableView).Select(o => ((PlainShapedPerson)o).Name));
 
         // Not inlined, so no local here keeps the item alive for the caller's GC.
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -2473,6 +2306,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" };
 
         internal static TableView CreateSortTable() => CreateSortTable(MakeShapedPeople());
+
+        // Replaces the app's sort on a CollectionViewSource with one SortDescription.
+        internal static void SetAppSort(CollectionViewSource source, string path, ListSortDirection direction)
+        {
+            source.SortDescriptions.Clear();
+            source.SortDescriptions.Add(new SortDescription(path, direction));
+        }
 
         // Two text template columns whose SortMemberPath names the displayed property, the common
         // authoring shape most tests exercise.

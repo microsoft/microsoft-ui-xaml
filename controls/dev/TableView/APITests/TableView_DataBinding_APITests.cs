@@ -47,7 +47,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies every supported ItemsSource shape reads back by reference and renders one row per item in source order.")]
-        [TestProperty("data:SourceKind", "{List, ObservableCollection, TableViewSource}")]
+        [TestProperty("data:SourceKind", "{List, ObservableCollection, CollectionView}")]
         public void VerifyItemsSourceShapesRenderOneRowPerItem()
         {
             var sourceKind = ((string)TestContext.DataRow["SourceKind"]).Trim();
@@ -69,8 +69,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     case "ObservableCollection":
                         assigned = new ObservableCollection<ShapedPerson>(items);
                         break;
-                    case "TableViewSource":
-                        assigned = TableViewSource.From(items);
+                    case "CollectionView":
+                        assigned = new CollectionViewSource { Source = items }.View;
                         break;
                     default:
                         Verify.Fail($"Unhandled source kind '{sourceKind}'.");
@@ -802,8 +802,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 try
                 {
-                    // Not a collection of any kind. TableViewSource::From is documented to refuse it,
-                    // and TableView adopts that refusal deliberately rather than degrading.
+                    // Not a collection of any kind. TableView's internal projection refuses it
+                    // deliberately rather than degrading.
                     tableView.ItemsSource = 42;
                 }
                 catch (Exception e)
