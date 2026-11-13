@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using MUXControlsTestApp;
 using Common;
 
@@ -2577,7 +2578,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void TreeViewNodeEditsAfterTheTreeViewIsCollectedDoNotCrash()
         {
             TreeViewNode p = null, q = null;
-            object flatList = null;
+            IObservableVector<object> flatList = null;
             IList<TreeViewNode> selectedNodes = null;
             IList<object> selectedItems = null;
             WeakReference treeViewReference = null, listControlReference = null;
@@ -2606,8 +2607,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var rows = flatList as IObservableVector<object>;
-                Func<string> describeRows = () => String.Join(",", rows.Select(row => (row as TreeViewNode)?.Content as string));
+                Func<string> describeRows = () => String.Join(",", flatList.Select(row => (row as TreeViewNode)?.Content as string));
                 Verify.AreEqual("P,A,A0,Q", describeRows());
 
                 var p1 = new TreeViewNode() { Content = "P1" };
@@ -2638,9 +2638,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // NoInlining, so no local here keeps the TreeView alive.
-        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void ShowAndRemoveTreeView(AutoResetEvent unloaded, TreeViewNode[] rootNodes, out WeakReference treeViewReference,
-            out WeakReference listControlReference, out object flatList, out IList<TreeViewNode> selectedNodes, out IList<object> selectedItems)
+            out WeakReference listControlReference, out IObservableVector<object> flatList, out IList<TreeViewNode> selectedNodes, out IList<object> selectedItems)
         {
             var treeView = new TreeView() { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Multiple };
             foreach (var node in rootNodes)
@@ -2653,7 +2653,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             treeView.SelectedNodes.Add(rootNodes[0]);
 
             var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-            flatList = listControl.ItemsSource;
+            flatList = (IObservableVector<object>)listControl.ItemsSource;
             selectedNodes = treeView.SelectedNodes;
             selectedItems = treeView.SelectedItems;
             treeViewReference = new WeakReference(treeView);
