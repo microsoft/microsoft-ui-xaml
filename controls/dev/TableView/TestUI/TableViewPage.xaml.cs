@@ -359,6 +359,54 @@ namespace MUXControlsTestApp
             {
                 FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic);
             }
+
+            if (HideAgeInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                AgeColumn.Visibility = Visibility.Collapsed;
+            }
+
+            if (DisableSecondRowInCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                TableViewRow row = FindRowForItem(BasicTableView, _basicItems[1]);
+                if (row != null)
+                {
+                    ReenableDisabledRow();
+                    _disabledRow = row;
+                    _disabledRowItem = row.DataContext;
+                    row.DataContextChanged += OnDisabledRowDataContextChanged;
+                    row.IsEnabled = false;
+                }
+            }
+        }
+
+        private void OnHideAgeInCommitUnchecked(object sender, RoutedEventArgs e)
+        {
+            AgeColumn.Visibility = Visibility.Visible;
+        }
+
+        private void OnDisableSecondRowInCommitUnchecked(object sender, RoutedEventArgs e)
+        {
+            ReenableDisabledRow();
+        }
+
+        private static TableViewRow FindRowForItem(DependencyObject root, object item)
+        {
+            if (root is TableViewRow row && object.Equals(row.DataContext, item))
+            {
+                return row;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                TableViewRow found = FindRowForItem(VisualTreeHelper.GetChild(root, i), item);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         // Reports the editor an edit opened, by an in-process visual-tree walk. Posted at Low priority: the
@@ -456,6 +504,12 @@ namespace MUXControlsTestApp
         private void OnToggleBasicFlowDirectionClick(object sender, RoutedEventArgs e)
         {
             BasicTableView.FlowDirection = BasicTableView.FlowDirection == FlowDirection.RightToLeft
+                ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+        }
+
+        private void OnToggleScrollingFlowDirectionClick(object sender, RoutedEventArgs e)
+        {
+            ScrollingTableView.FlowDirection = ScrollingTableView.FlowDirection == FlowDirection.RightToLeft
                 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
         }
 
