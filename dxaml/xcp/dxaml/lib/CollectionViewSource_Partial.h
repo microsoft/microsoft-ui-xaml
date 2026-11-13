@@ -58,6 +58,8 @@ namespace DirectUI
         _Check_return_ HRESULT CreateShapedView(_In_ IInspectable *pSource, _Outptr_ xaml_data::ICollectionView **ppView);
         _Check_return_ HRESULT ComputeShapedOutput();
         _Check_return_ HRESULT RefreshShapedView();
+        _Check_return_ HRESULT OnShapedSourceVectorChanged(_In_ wfc::IVectorChangedEventArgs* pArgs);
+        _Check_return_ HRESULT ApplyShapedSourceChange(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
         void DetachShapedSource();
 
     protected:
@@ -81,6 +83,13 @@ namespace DirectUI
         ctl::EventPtr<VectorChangedEventCallback> m_epShapedSourceVectorChangedHandler;
         bool m_isShapedOutputGrouped = false;
         bool m_isComputingShape = false;
+
+        // Flat output only: the source index of each output item, so a source Add, Remove or
+        // Replace updates the view incrementally. Invalid after a change that was not applied.
+        std::vector<UINT> m_shapedSourceIndices;
+        bool m_areShapedSourceIndicesValid = false;
+        UINT m_shapedSourceSize = 0;
+        UINT m_shapedSourceChangeCount = 0;
 
         // Open DeferRefresh deferrals; a change made while any is open recomputes once, when the last closes.
         UINT m_deferRefreshLevel = 0;
