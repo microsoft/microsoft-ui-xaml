@@ -76,6 +76,7 @@ public:
 
     winrt::UIElement GetElementImpl(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElementImpl(const winrt::UIElement& element);
+    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
 
     // Mapping APIs (exception based)
     int GetElementIndexImpl(const winrt::UIElement& element);
@@ -143,7 +144,6 @@ private:
     void EnsureDefaultLayoutState();
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
-    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
 
     winrt::IIterable<winrt::DependencyObject> CreateChildrenInTabFocusOrderIterable();
 
