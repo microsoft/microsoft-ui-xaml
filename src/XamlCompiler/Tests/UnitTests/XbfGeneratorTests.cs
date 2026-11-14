@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Win8Xaml.CompilerProxies;
 
@@ -133,16 +131,8 @@ namespace UnitTests
         {
             object output = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.FileIO.StreamXbfOutput")
                 .CreateInstance(new object[] { path, sourceXamlPath });
-            IntPtr written = Marshal.AllocHGlobal(sizeof(int));
-            try
-            {
-                ((IStream)output).Write(contents, contents.Length, written);
-                Assert.AreEqual(contents.Length, Marshal.ReadInt32(written));
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(written);
-            }
+            // What GenXbf.dll does through the COM IStream (StreamImpl)
+            output.GetType().GetMethod("Write", new[] { typeof(byte[]) }).Invoke(output, new object[] { contents });
             return (IDisposable)output;
         }
     }

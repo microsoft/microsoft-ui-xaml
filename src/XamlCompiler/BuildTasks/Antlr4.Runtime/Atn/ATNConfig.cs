@@ -417,9 +417,6 @@ namespace Antlr4.Runtime.Atn
 
         public virtual string ToDotString()
         {
-#if COMPACT
-            throw new NotImplementedException("The current platform does not provide RuntimeHelpers.GetHashCode(object).");
-#else
             StringBuilder builder = new StringBuilder();
             builder.Append("digraph G {\n");
             builder.Append("rankdir=LR;\n");
@@ -444,7 +441,6 @@ namespace Antlr4.Runtime.Atn
             }
             builder.Append("}\n");
             return builder.ToString();
-#endif
         }
 
         public override string ToString()

@@ -16,7 +16,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// SRM's ISignatureTypeProvider.GetPinnedType returns TType, so we encode
     /// the pinned flag into the Type itself and strip it later via SignatureUnwrap.
     /// </summary>
-    internal sealed class SignaturePinnedType : Type
+    internal sealed class SignaturePinnedType : LmrTypeBase
     {
         internal Type Underlying { get; }
 
@@ -37,27 +37,27 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         public override Type UnderlyingSystemType => Underlying.UnderlyingSystemType;
         public override string Name => Underlying.Name;
 
-        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr) => Underlying.GetConstructors(bindingAttr);
+        internal override ConstructorInfo[] GetConstructorsCore(BindingFlags bindingAttr) => Underlying.GetConstructorsLmr(bindingAttr);
         public override object[] GetCustomAttributes(bool inherit) => Underlying.GetCustomAttributes(inherit);
         public override object[] GetCustomAttributes(Type attributeType, bool inherit) => Underlying.GetCustomAttributes(attributeType, inherit);
         public override Type GetElementType() => Underlying.GetElementType();
-        public override EventInfo GetEvent(string name, BindingFlags bindingAttr) => Underlying.GetEvent(name, bindingAttr);
-        public override EventInfo[] GetEvents(BindingFlags bindingAttr) => Underlying.GetEvents(bindingAttr);
-        public override FieldInfo GetField(string name, BindingFlags bindingAttr) => Underlying.GetField(name, bindingAttr);
-        public override FieldInfo[] GetFields(BindingFlags bindingAttr) => Underlying.GetFields(bindingAttr);
-        public override Type GetInterface(string name, bool ignoreCase) => Underlying.GetInterface(name, ignoreCase);
-        public override Type[] GetInterfaces() => Underlying.GetInterfaces();
-        public override MemberInfo[] GetMembers(BindingFlags bindingAttr) => Underlying.GetMembers(bindingAttr);
-        public override MethodInfo[] GetMethods(BindingFlags bindingAttr) => Underlying.GetMethods(bindingAttr);
-        public override Type GetNestedType(string name, BindingFlags bindingAttr) => Underlying.GetNestedType(name, bindingAttr);
-        public override Type[] GetNestedTypes(BindingFlags bindingAttr) => Underlying.GetNestedTypes(bindingAttr);
-        public override PropertyInfo[] GetProperties(BindingFlags bindingAttr) => Underlying.GetProperties(bindingAttr);
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters) => Underlying.InvokeMember(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
+        internal override EventInfo GetEventCore(string name, BindingFlags bindingAttr) => Underlying.GetEventLmr(name, bindingAttr);
+        internal override EventInfo[] GetEventsCore(BindingFlags bindingAttr) => Underlying.GetEventsLmr(bindingAttr);
+        internal override FieldInfo GetFieldCore(string name, BindingFlags bindingAttr) => Underlying.GetFieldLmr(name, bindingAttr);
+        internal override FieldInfo[] GetFieldsCore(BindingFlags bindingAttr) => Underlying.GetFieldsLmr(bindingAttr);
+        internal override Type GetInterfaceCore(string name, bool ignoreCase) => Underlying.GetInterfaceLmr(name, ignoreCase);
+        internal override Type[] GetInterfacesCore() => Underlying.GetInterfacesLmr();
+        internal override MemberInfo[] GetMembersCore(BindingFlags bindingAttr) => Underlying.GetMembersLmr(bindingAttr);
+        internal override MethodInfo[] GetMethodsCore(BindingFlags bindingAttr) => Underlying.GetMethodsLmr(bindingAttr);
+        internal override Type GetNestedTypeCore(string name, BindingFlags bindingAttr) => Underlying.GetNestedTypeLmr(name, bindingAttr);
+        internal override Type[] GetNestedTypesCore(BindingFlags bindingAttr) => Underlying.GetNestedTypesLmr(bindingAttr);
+        internal override PropertyInfo[] GetPropertiesCore(BindingFlags bindingAttr) => Underlying.GetPropertiesLmr(bindingAttr);
+        internal override object InvokeMemberCore(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters) => Underlying.InvokeMemberLmr(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
         public override bool IsDefined(Type attributeType, bool inherit) => Underlying.IsDefined(attributeType, inherit);
         protected override TypeAttributes GetAttributeFlagsImpl() => Underlying.Attributes;
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) => Underlying.GetConstructor(bindingAttr, binder, callConvention, types, modifiers);
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) => Underlying.GetMethod(name, bindingAttr, binder, callConvention, types, modifiers);
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers) => Underlying.GetProperty(name, bindingAttr, binder, returnType, types, modifiers);
+        internal override ConstructorInfo GetConstructorImplCore(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) => Underlying.GetConstructorLmr(bindingAttr, binder, callConvention, types, modifiers);
+        internal override MethodInfo GetMethodImplCore(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers) => Underlying.GetMethodLmr(name, bindingAttr, binder, callConvention, types, modifiers);
+        internal override PropertyInfo GetPropertyImplCore(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers) => Underlying.GetPropertyLmr(name, bindingAttr, binder, returnType, types, modifiers);
         protected override bool HasElementTypeImpl() => Underlying.HasElementType;
         protected override bool IsArrayImpl() => Underlying.IsArray;
         protected override bool IsByRefImpl() => Underlying.IsByRef;

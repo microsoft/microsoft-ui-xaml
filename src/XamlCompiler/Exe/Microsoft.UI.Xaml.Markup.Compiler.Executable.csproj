@@ -4,22 +4,74 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
     <AssemblyName>XamlCompiler</AssemblyName>
-    <TargetFrameworks>net472</TargetFrameworks>
-    <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>
+    <!--
+      The XAML compiler. Published as a Native AOT, self-contained binary (XamlCompiler.exe), so it can be launched directly by
+      the CompileXaml task (Tasks\Microsoft.UI.Xaml.Markup.Compiler.Tasks.csproj) without any requirement on the host (.NET
+      runtime or SDK, MSBuild flavor), for every build (see Microsoft.UI.Xaml.Markup.Compiler.interop.targets). The unit tests run
+      the IL build of the same code (XamlCompiler.dll) on CoreCLR.
+    -->
+    <TargetFramework>net10.0</TargetFramework>
+    <OutDir>$(OutDir)$(TargetFramework)\</OutDir>
+    <TargetDestination>$(MarkupCompilerDestinationPath).Executable\$(TargetFramework)</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn);0419;1570;1572;1573;1574;1591;3021;0618;0672;0436;0108;SYSLIB0003;SYSLIB0005;SYSLIB0012;SYSLIB0019;SYSLIB0021;CA2002;CA1060;CA1063;CA2229;CA1001;CA1033;CA1416;CA2101;CA2213;CA2231</NoWarn>
-    <!-- USE_CLR_V4 is only for the LMR code -->
-    <DefineConstants>$(DefineConstants);USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
+    <NoWarn>$(NoWarn);3021;0618;0672;0108;SYSLIB0005;SYSLIB0012;CA2002;CA1063;CA1033;CA1416;CA2213;CA2231</NoWarn>
     <BuildTasksDir>$(MSBuildThisFileDirectory)..\BuildTasks\</BuildTasksDir>
     <SystemXamlPathRoot>$(BuildTasksDir)System.Xaml</SystemXamlPathRoot>
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <WarningsAsErrors>false</WarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup>
+    <SymbolsBinDir>$(ProductSymbolsBinplacePath)\Executable\$(TargetFramework)</SymbolsBinDir>
+    <PublishAot>true</PublishAot>
+    <!-- Link both GC modes (the CompileXaml task selects one through the 'DOTNET_gcServer' variable of the compiler process) -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <!-- Run CsWin32 as a build task rather than as a source generator: https://microsoft.github.io/CsWin32/docs/getting-started.html -->
+    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+    <!-- Only the runtime pack of the RID that is published is needed, not those of the other frameworks (ASP.NET Core, Windows Desktop) -->
+    <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <!-- Misc NativeAOT options to save size and maximize speed -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <OptimizationPreference>Speed</OptimizationPreference>
+    <!--
+      Enable CFG (Control Flow Guard), to make the resulting native binary more resilient to some exploit types.
+      Also see: https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/security#control-flow-guard.
+      And: https://learn.microsoft.com/en-us/windows/win32/secbp/control-flow-guard#how-does-cfg-really-work.
+    -->
+    <ControlFlowGuard>Guard</ControlFlowGuard>
+    <!--
+      Disables data dehydration (which is re-hydrated at startup otherwise).
+      Small launch performance improvement, and a small memory use reduction as well.
+    -->
+    <IlcDehydrate>false</IlcDehydrate>
+    <!-- Legacy formatter-serialization members in the shared System.Xaml/LMR/ANTLR sources -->
+    <NoWarn>$(NoWarn);SYSLIB0050;SYSLIB0051;CA2235</NoWarn>
+    <_NativeXamlCompilerDir>$(OutDir)native\</_NativeXamlCompilerDir>
+    <!-- The IL-only output isn't deployed, only the native binary published below is -->
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+    <!-- Required by the source-generated COM/P/Invoke interop used for XBF generation (see NativeMethods.cs) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--
+      Regression guard: this build has no trim/AOT/single-file warning at all, neither from the analyzers nor from ILC, so keep any
+      new one an error even when warnings in general aren't (e.g. /p:TreatWarningsAsErrors=false). Reflection over the types of the
+      compiled projects goes through LmrReflection (see LmrTypeBase and KnownRuntimeTypes), and the System.Xaml fork only has its
+      schema and parser (no object writer/reader, invokers or value conversion). The analyzer IDs are the ones this build had to fix.
+    -->
+    <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL2046;IL2055;IL2057;IL2060;IL2067;IL2070;IL2072;IL2073;IL2075;IL2080;IL2085;IL2092;IL2093;IL2094;IL2111;IL3000;IL3001;IL3002;IL3003;IL3050;IL3051;CA1420</WarningsAsErrors>
+  </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(BuildTasksDir)AssertionTraceListener.cs" />
     <Compile Include="$(BuildTasksDir)ConsoleLogger.cs" />
     <Compile Include="$(BuildTasksDir)Program.cs" />
     <Compile Include="$(BuildTasksDir)ConsoleCompileXaml.cs" />
+    <Compile Include="$(BuildTasksDir)CompilerJsonContext.cs" />
+  </ItemGroup>
+  <!-- The Win32 P/Invokes and COM interfaces CsWin32 generates for the interop with GenXbf.dll and vcmeta.dll (see NativeMethods.cs) -->
+  <ItemGroup>
+    <AdditionalFiles Include="$(BuildTasksDir)NativeMethods.txt;$(BuildTasksDir)NativeMethods.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(BuildTasksDir)Microsoft\Xaml\XamlCompiler\CodeGenerators\CX\CXMetadataDelegates.cs">
@@ -403,91 +455,68 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="$(BuildTasksDir)XamlCompiler.bp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(BuildTasksDir)app.config" />
-    <None Include="$(BuildTasksDir)packages.config" />
-  </ItemGroup>
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>;0419;1570;1572;1573;1574;1591;3021;0618</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>;0419;1570;1572;1573;1574;1591;3021;0618</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" />
+    <!-- CompilerErrorCollection, used by the preprocessed T4 templates of the code generators (see T4Base) -->
+    <PackageReference Include="System.CodeDom" Version="8.0.0" />
+    <!-- Generates the Windows P/Invokes and COM interfaces (see BuildTasks\NativeMethods.txt), and only the code that is needed: not a runtime dependency -->
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj">
-      <Project>{a1175d44-d47d-4d3e-a319-cefc7170d29c}</Project>
-      <Name>Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop</Name>
-    </ProjectReference>
-    <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.IO\Microsoft.UI.Xaml.Markup.Compiler.IO.csproj">
-      <Project>{1fbde93d-5c21-4761-87d6-2504f772bf28}</Project>
-      <Name>Microsoft.UI.Xaml.Markup.Compiler.IO</Name>
-    </ProjectReference>
+    <!-- Never compiled against: it is embedded as a resource, see below -->
+    <ProjectReference Include="Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes\Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier;PublishDir;_IsPublishing"
+                      OutputItemType="XamlProxyTypesAssembly" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(NuGetPackageRoot)\system.text.json\$(SystemTextJsonVersion)\lib\netstandard2.0\System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(OutDir)$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(OutDir)$(TargetName).exe.config" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Memory.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Buffers.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Numerics.Vectors.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Text.Encodings.Web.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.Bcl.AsyncInterfaces.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Runtime.CompilerServices.Unsafe.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.Build.Framework.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)Microsoft.Build.Utilities.Core.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-
-    <!-- IO dependencies -->
-    <PackageContent Include="$(TargetDir)Microsoft.Bcl.AsyncInterfaces.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(TargetDir)System.Text.Encodings.Web.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-    <PackageContent Include="$(TargetDir)System.Runtime.CompilerServices.Unsafe.dll" PackageLocation="$(ToolsPackageLocation)\net8.0" />
-
-    <!-- Include some extra dependencies for the .NET Framework executable compiler -->
-    <PackageContent Include="$(TargetDir)Microsoft.Build.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Collections.Immutable.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Threading.Tasks.Dataflow.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
-    <PackageContent Include="$(TargetDir)System.Threading.Tasks.Extensions.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
+  <!-- The XAML compiler loads this metadata-only assembly at runtime to get the proxy types it uses for some markup extensions (see XamlTypeUniverse.GetXamlProxyAssembly) -->
+  <Target Name="EmbedXamlProxyTypes" AfterTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <EmbeddedResource Include="@(XamlProxyTypesAssembly)" LogicalName="Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes.dll" />
+    </ItemGroup>
+  </Target>
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' ">
     <PackageContent Include="NOTICE.txt" PackageLocation="$(ToolsPackageLocation)" />
   </ItemGroup>
+  <!--
+    The native compiler of each flavor: always win-x64, which also runs the XAML compiler of the repo's own builds whatever the
+    flavor (like eng\BuildGenXbfForMSBuild always builds the x64 GenXbf.dll it loads), plus win-arm64 in arm64 flavors. The package
+    has them under tools\win-<rid>, next to the tasks that run them (tools\Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll); the
+    pipeline only keeps the binary of the flavor's architecture in its packaging artifact, like for GenXbf.dll.
+  -->
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == '' ">
+    <_NativeXamlCompilerRid Include="win-x64" />
+    <_NativeXamlCompilerRid Include="win-arm64" Condition="'$(_BuildArch)' == 'arm64'" />
+    <_NativeXamlCompilerRid Update="@(_NativeXamlCompilerRid)" PublishedPath="$(_NativeXamlCompilerDir)%(Identity)\$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\%(Identity)" />
+    <PackageContent Include="@(_NativeXamlCompilerRid->'%(PublishedPath)')" />
+  </ItemGroup>
+  <!--
+    PublishAot only takes effect on publish, which needs a RuntimeIdentifier, so build the native binaries through nested publishes
+    of the current target framework. This runs before the binplace targets, which pick up the native binaries and their symbols.
+    The native binaries are always optimized: without it (Debug flavors), ILC generates code that makes XAML compilation several
+    times slower, and every build of the repository with XAML runs it. The IL build (XamlCompiler.dll) is the one to debug.
+  -->
+  <Target Name="PublishNativeXamlCompiler"
+          AfterTargets="Build"
+          BeforeTargets="AddBinplaceItems"
+          Condition=" '$(RuntimeIdentifier)' == '' ">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Publish"
+             Properties="TargetFramework=$(TargetFramework);RuntimeIdentifier=%(_NativeXamlCompilerRid.Identity);OutDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\build\;PublishDir=$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\;_IsPublishing=true;Optimize=true" />
+    <ItemGroup>
+      <BinplaceItem Include="$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).exe">
+        <Destination>$(TargetDestination)\%(_NativeXamlCompilerRid.Identity)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).pdb" Condition="Exists('$(_NativeXamlCompilerDir)%(_NativeXamlCompilerRid.Identity)\$(TargetName).pdb')">
+        <Destination>$(SymbolsBinDir)\%(_NativeXamlCompilerRid.Identity)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+  </Target>
   <!-- Referencing a .NET Standard project includes a reference to System.Xaml, which conflicts with our private System.Xaml.  Remove the auto-included reference here -->
   <Target Name="RemoveSystemXamlReference" BeforeTargets="ResolveAssemblyReferences">
     <ItemGroup>
@@ -502,6 +531,7 @@
   <Import Project="$(BuildTasksDir)Core.projitems" Label="Shared" />
   <Import Project="..\Microsoft.UI.Xaml.Markup.Compiler.Core\Microsoft.UI.Xaml.Markup.Compiler.Core.projitems" Label="Shared" />
   <Import Project="..\Microsoft.UI.Xaml.Markup.Compiler.Parsing\Microsoft.UI.Xaml.Markup.Compiler.Parsing.projitems" Label="Shared" />
+  <Import Project="..\Contracts\Contracts.projitems" Label="Shared" />
 
 	<Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
 </Project>

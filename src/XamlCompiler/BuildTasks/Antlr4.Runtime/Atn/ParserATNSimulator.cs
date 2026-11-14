@@ -305,13 +305,11 @@ namespace Antlr4.Runtime.Atn
     public class ParserATNSimulator : ATNSimulator
     {
 #pragma warning disable 0162 // Unreachable code detected
-#if !PORTABLE
         public const bool debug = false;
 
         public const bool dfa_debug = false;
 
         public const bool retry_debug = false;
-#endif
 
         [NotNull]
         private Antlr4.Runtime.Atn.PredictionMode predictionMode = Antlr4.Runtime.Atn.PredictionMode.Ll;
@@ -592,14 +590,12 @@ namespace Antlr4.Runtime.Atn
                 DFAState target = GetExistingTargetState(s, t);
                 if (target == null)
                 {
-#if !PORTABLE
 					#pragma warning disable 162, 429
 					if (dfa_debug && t >= 0)
                     {
                         System.Console.Out.WriteLine("no edge for " + _parser.Vocabulary.GetDisplayName(t));
                     }
 					#pragma warning restore 162, 429
-#endif
                     int alt;
                     SimulatorState initialState = new SimulatorState(outerContext, s, state.useContext, remainingOuterContext);
                     alt = ExecATN(dfa, input, startIndex, initialState);
@@ -1763,24 +1759,20 @@ namespace Antlr4.Runtime.Atn
                     continue;
                 }
                 bool evaluatedResult = EvalSemanticContext(pair.pred, outerContext, pair.alt);
-#if !PORTABLE
 				#pragma warning disable 162, 429
 				if (debug || dfa_debug)
                 {
                     System.Console.Out.WriteLine("eval pred " + pair + "=" + evaluatedResult);
                 }
 				#pragma warning restore 162, 429
-#endif
                 if (evaluatedResult)
                 {
-#if !PORTABLE
 					#pragma warning disable 162, 429
 					if (debug || dfa_debug)
                     {
                         System.Console.Out.WriteLine("PREDICT " + pair.alt);
                     }
 					#pragma warning restore 162, 429
-#endif
                     predictions.Set(pair.alt);
                     if (!complete)
                     {
@@ -2321,7 +2313,6 @@ namespace Antlr4.Runtime.Atn
             return GetTokenName(input.La(1));
         }
 
-#if !PORTABLE
         public virtual void DumpDeadEndConfigs(NoViableAltException nvae)
         {
             System.Console.Error.WriteLine("dead end configs: ");
@@ -2349,7 +2340,6 @@ namespace Antlr4.Runtime.Atn
                 System.Console.Error.WriteLine(c.ToString(_parser, true) + ":" + trans);
             }
         }
-#endif
 
         [return: NotNull]
         protected internal virtual NoViableAltException NoViableAlt(ITokenStream input, ParserRuleContext outerContext, ATNConfigSet configs, int startIndex)
@@ -2508,14 +2498,12 @@ namespace Antlr4.Runtime.Atn
                 return newState;
             }
             DFAState added = dfa.AddState(newState);
-#if !PORTABLE
 			#pragma warning disable 162, 429
 			if (debug && added == newState)
             {
                 System.Console.Out.WriteLine("adding new DFA state: " + newState);
             }
 			#pragma warning restore 162, 429
-#endif
             return added;
         }
 
@@ -2527,7 +2515,6 @@ namespace Antlr4.Runtime.Atn
 
         protected internal virtual void ReportAttemptingFullContext(DFA dfa, BitSet conflictingAlts, SimulatorState conflictState, int startIndex, int stopIndex)
         {
-#if !PORTABLE
 			#pragma warning disable 162, 429
 			if (debug || retry_debug)
             {
@@ -2535,7 +2522,6 @@ namespace Antlr4.Runtime.Atn
                 System.Console.Out.WriteLine("reportAttemptingFullContext decision=" + dfa.decision + ":" + conflictState.s0.configs + ", input=" + ((ITokenStream)_parser.InputStream).GetText(interval));
             }
 			#pragma warning restore 162, 429
-#endif
             if (_parser != null)
             {
                 ((IParserErrorListener)_parser.ErrorListenerDispatch).ReportAttemptingFullContext(_parser, dfa, startIndex, stopIndex, conflictingAlts, conflictState);
@@ -2544,7 +2530,6 @@ namespace Antlr4.Runtime.Atn
 
         protected internal virtual void ReportContextSensitivity(DFA dfa, int prediction, SimulatorState acceptState, int startIndex, int stopIndex)
         {
-#if !PORTABLE
 			#pragma warning disable 162, 429
             if (debug || retry_debug)
             {
@@ -2552,7 +2537,6 @@ namespace Antlr4.Runtime.Atn
                 System.Console.Out.WriteLine("reportContextSensitivity decision=" + dfa.decision + ":" + acceptState.s0.configs + ", input=" + ((ITokenStream)_parser.InputStream).GetText(interval));
             }
 			#pragma warning restore 162, 429
-#endif
             if (_parser != null)
             {
                 ((IParserErrorListener)_parser.ErrorListenerDispatch).ReportContextSensitivity(_parser, dfa, startIndex, stopIndex, prediction, acceptState);
@@ -2562,7 +2546,6 @@ namespace Antlr4.Runtime.Atn
         /// <summary>If context sensitive parsing, we know it's ambiguity not conflict</summary>
         protected internal virtual void ReportAmbiguity(DFA dfa, DFAState D, int startIndex, int stopIndex, bool exact, BitSet ambigAlts, ATNConfigSet configs)
         {
-#if !PORTABLE
 			#pragma warning disable 162, 429
             if (debug || retry_debug)
             {
@@ -2570,7 +2553,6 @@ namespace Antlr4.Runtime.Atn
                 System.Console.Out.WriteLine("reportAmbiguity " + ambigAlts + ":" + configs + ", input=" + ((ITokenStream)_parser.InputStream).GetText(interval));
             }
 			#pragma warning restore 162, 429
-#endif
             if (_parser != null)
             {
                 ((IParserErrorListener)_parser.ErrorListenerDispatch).ReportAmbiguity(_parser, dfa, startIndex, stopIndex, exact, ambigAlts, configs);

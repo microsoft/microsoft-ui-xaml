@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Security;
-using System.Security.Permissions;
 using System.Xml;
 using MS.Internal.Xaml.Context;
 using System.Xaml.MS.Impl;
@@ -82,12 +81,7 @@ namespace System.Xaml
         /// <SecurityNote>
         /// Critical: calls Critical method Exception.GetObjectData
         /// </SecurityNote>
-#if TARGETTING35SP1
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-        [SecurityTreatAsSafe, SecurityCritical]
-#else
         [SecurityCritical]
-#endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
@@ -133,23 +127,6 @@ namespace System.Xaml
     }
 
     [Serializable]  // FxCop advised this be Serializable.
-    public class XamlObjectWriterException : XamlException
-    {
-        // FxCop required this, default constructor.
-        public XamlObjectWriterException() { }
-
-        public XamlObjectWriterException(string message)
-            : base(message) { }
-
-        public XamlObjectWriterException(string message, Exception innerException)
-            : base(message, innerException) { }
-
-        // FxCop required this.
-        protected XamlObjectWriterException(SerializationInfo info, StreamingContext context)
-            : base(info, context) { }
-    }
-
-    [Serializable]  // FxCop advised this be Serializable.
     public class XamlDuplicateMemberException : XamlException
     {
         public XamlMember DuplicateMember { get; set; }
@@ -184,12 +161,7 @@ namespace System.Xaml
         /// <SecurityNote>
         /// Critical: calls Critical method Exception.GetObjectData
         /// </SecurityNote>
-#if TARGETTING35SP1
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
-        [SecurityTreatAsSafe, SecurityCritical]
-#else
         [SecurityCritical]
-#endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info == null)
@@ -236,29 +208,6 @@ namespace System.Xaml
 
         protected XamlSchemaException(SerializationInfo info, StreamingContext context)
             : base(info, context) { }
-    }
-
-    [Serializable]
-    public class XamlObjectReaderException : XamlException
-    {
-        public XamlObjectReaderException()
-        {
-        }
-
-        public XamlObjectReaderException(string message)
-            : base(message)
-        {
-        }
-
-        public XamlObjectReaderException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
-        protected XamlObjectReaderException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 
     [Serializable]

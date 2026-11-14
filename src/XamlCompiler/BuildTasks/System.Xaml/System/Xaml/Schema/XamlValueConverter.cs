@@ -6,8 +6,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Markup;
-using System.Security.Permissions;
-using System.Threading;
 using System.Xaml.MS.Impl;
 using System.Xaml.Schema;
 using System.Collections.Generic;
@@ -19,11 +17,7 @@ namespace System.Xaml.Schema
     public class XamlValueConverter<TConverterBase> : IEquatable<XamlValueConverter<TConverterBase>> 
         where TConverterBase : class
     {
-        // Assignment should be idempotent
-        private TConverterBase _instance;
         private ThreeValuedBool _isPublic;
-
-        private volatile bool _instanceIsSet; // volatile for the same reason as valid flags in TypeReflector/MemberReflector
 
         public string Name { get; private set; }
         public Type ConverterType { get; private set; }
@@ -45,19 +39,6 @@ namespace System.Xaml.Schema
             Name = name ?? GetDefaultName();
         }
 
-        public TConverterBase ConverterInstance
-        {
-            get
-            {
-                if (!_instanceIsSet)
-                {
-                    Interlocked.CompareExchange(ref _instance, CreateInstance(), null);
-                    _instanceIsSet = true;
-                }
-                return _instance;
-            }
-        }
-
         public override string ToString()
         {
             return Name;
@@ -73,25 +54,6 @@ namespace System.Xaml.Schema
                 }
                 return _isPublic == ThreeValuedBool.True;
             }
-        }
-
-        protected virtual TConverterBase CreateInstance()
-        {
-            if (ConverterType == typeof(EnumConverter) &&
-                TargetType.UnderlyingType != null && TargetType.UnderlyingType.IsEnum)
-            {
-                return (TConverterBase)(object)new EnumConverter(TargetType.UnderlyingType);
-            }
-            else if (ConverterType != null)
-            {
-                if (!typeof(TConverterBase).IsAssignableFrom(ConverterType))
-                {
-                    throw new XamlSchemaException(SR.Get(SRID.ConverterMustDeriveFromBase,
-                       ConverterType, typeof(TConverterBase)));
-                }
-                return (TConverterBase)SafeReflectionInvoker.CreateInstance(ConverterType, null);
-            }
-            return null;
         }
 
         private string GetDefaultName()

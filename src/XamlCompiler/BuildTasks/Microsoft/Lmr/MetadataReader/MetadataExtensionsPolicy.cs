@@ -128,9 +128,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             Type[] typeArgs = { elementType };
 
             Type[] interfaces = new Type[3] { 
-                m_universe.GetTypeXFromName("System.Collections.Generic.IList`1").MakeGenericType(typeArgs),
-                m_universe.GetTypeXFromName("System.Collections.Generic.ICollection`1").MakeGenericType(typeArgs),
-                m_universe.GetTypeXFromName("System.Collections.Generic.IEnumerable`1").MakeGenericType(typeArgs),
+                m_universe.GetTypeXFromName("System.Collections.Generic.IList`1").MakeGenericTypeLmr(typeArgs),
+                m_universe.GetTypeXFromName("System.Collections.Generic.ICollection`1").MakeGenericTypeLmr(typeArgs),
+                m_universe.GetTypeXFromName("System.Collections.Generic.IEnumerable`1").MakeGenericTypeLmr(typeArgs),
             };
 
             return interfaces;

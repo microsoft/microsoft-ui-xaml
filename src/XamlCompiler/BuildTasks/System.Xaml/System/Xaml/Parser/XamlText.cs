@@ -329,21 +329,8 @@ namespace MS.Internal.Xaml.Parser
             new CodePointRange ( 0x1100, 0x11FF ),     // Hangul
             new CodePointRange ( 0x2E80, 0x2FD5 ),     // CJK and KangXi Radicals
             new CodePointRange ( 0x2FF0, 0x2FFB ),     // Ideographic Description
-#if NICE_COMMENTED_RANGES
-            new CodePointRange ( 0x3040, 0x309F ),     // Hiragana
-            new CodePointRange ( 0x30A0, 0x30FF ),     // Katakana
-            new CodePointRange ( 0x3100, 0x312F ),     // Bopomofo
-            new CodePointRange ( 0x3130, 0x318F ),     // Hangul Compatibility Jamo
-            new CodePointRange ( 0x3190, 0x319F ),     // Kanbun
-
-            new CodePointRange ( 0x31F0, 0x31FF ),     // Katakana Phonetic Extensions
-            new CodePointRange ( 0x3400, 0x4DFF ),     // CJK Unified Ideographs Extension A
-            new CodePointRange ( 0x4E00, 0x9FFF ),     // CJK Unified Ideographs
-            new CodePointRange ( 0xA000, 0xA4CF ),     // Yi
-#else
             new CodePointRange ( 0x3040, 0x319F ),
             new CodePointRange ( 0x31F0, 0xA4CF ),
-#endif
             new CodePointRange ( 0xAC00, 0xD7A3 ),     // Hangul Syllables
             new CodePointRange ( 0xF900, 0xFAFF ),     // CJK Compatibility
             new CodePointRange ( 0xFF00, 0xFFEF ),     // Halfwidth and Fullwidth forms

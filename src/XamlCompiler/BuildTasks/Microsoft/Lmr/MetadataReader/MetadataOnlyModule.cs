@@ -17,7 +17,7 @@ using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
 using System.Threading;
-
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;  
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
@@ -28,6 +28,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     internal partial class MetadataOnlyModule : Module, IModule2, IDisposable
     {
+        // The same messages as the ones on the members of Module.
+        // MetadataOnlyModule is the only LMR implementation of Module, so the annotated members of Module are overridden here, once,
+        // and forward to unannotated "*Core" members, the same way as for types (see LmrTypeBase).
+        internal const string NameRequiresAssemblyFilesMessage = "Returns <Unknown> for modules with no file path";
+        internal const string FieldsMightBeRemovedMessage = "Fields might be removed";
+        internal const string MethodsMightBeRemovedMessage = "Methods might be removed";
+        internal const string TrimmingChangesMetadataTokensMessage = "Trimming changes metadata tokens";
+
         readonly private IMetadataExtensionsPolicy m_policy;
         readonly private IReflectionFactory m_factory;
         readonly private string m_modulePath;
@@ -83,7 +91,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             m_modulePath = modulePath;
         }
 
-        public override string FullyQualifiedName
+        [RequiresAssemblyFiles(NameRequiresAssemblyFilesMessage)]
+        public sealed override string FullyQualifiedName
+        {
+            get
+            {
+                return FullyQualifiedNameCore;
+            }
+        }
+
+        // The path of the metadata file this module was read from (empty if it was read from memory).
+        internal string FullyQualifiedNameCore
         {
             get
             {
@@ -196,7 +214,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override string Name
+        [RequiresAssemblyFiles(NameRequiresAssemblyFilesMessage)]
+        public sealed override string Name
+        {
+            get
+            {
+                return NameCore;
+            }
+        }
+
+        internal string NameCore
         {
             get
             {
@@ -331,7 +358,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     var t = m_factory.CreateTypeRef(this, (TypeReferenceHandle)handle);
                     if ((typeArgs != null) && (typeArgs.Length > 0))
                     {
-                        t = t.MakeGenericType(typeArgs);
+                        t = t.MakeGenericTypeLmr(typeArgs);
                     }
                     return t;
 
@@ -505,7 +532,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             Type declaringType = ResolveTypeTokenInternal(declaringTypeHandle, context);
 
-            FieldInfo f = declaringType.GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+            FieldInfo f = declaringType.GetFieldLmr(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
             Debug.Assert(f != null);
             return f;
         }
@@ -527,7 +554,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override string ResolveString(int metadataToken)
+        [RequiresUnreferencedCode(TrimmingChangesMetadataTokensMessage)]
+        public sealed override string ResolveString(int metadataToken)
+        {
+            return ResolveStringCore(metadataToken);
+        }
+
+        internal string ResolveStringCore(int metadataToken)
         {
             var handle = MetadataTokens.UserStringHandle(metadataToken);
             return m_reader.GetUserString(handle);
@@ -568,7 +601,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     // the name lookup here (so use Name instead of FullName)
                     // This lookup will trigger a Type resolution on tOuter.
 
-                    result = tOuter.GetNestedType(name, BindingFlags.Public | BindingFlags.NonPublic);
+                    result = tOuter.GetNestedTypeLmr(name, BindingFlags.Public | BindingFlags.NonPublic);
                     return result;
 
                 case HandleKind.AssemblyReference:
@@ -595,12 +628,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                         }
                     }
 
-                    result = assembly.GetType(name, true);
+                    result = assembly.GetTypeLmr(name, true);
                     return result;
 
                 case HandleKind.ModuleReference:
                     Module module = ResolveModuleRef(resScope);
-                    result = module.GetType(typeReference.FullName);
+                    result = module.GetTypeLmr(typeReference.FullName);
                     return result;
 
                 case HandleKind.ModuleDefinition:
@@ -609,7 +642,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     // The spec in TypeRef table definition (II.22.38 “TypeRef : 0x01”) mentions ResolutionScope value:
                     //      d. a Module token, if the target type is defined in the current module - 
                     //         this should not occur in a CLI (“compressed metadata”) module [WARNING]
-                    return this.GetType(typeReference.FullName);
+                    return this.GetTypeCore(typeReference.FullName, false, false);
             }
 
             // The Ecma spec states that a typeRef scope token must be one
@@ -941,7 +974,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             //methods are sorted in the order of inheritance,
             //the most derived is at the first.
 
-            var methods = type.GetMethods(bindingAttr);
+            var methods = type.GetMethodsLmr(bindingAttr);
 
             if (binder == null)
             {
@@ -1050,7 +1083,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             //
             if (WalkInheritanceChain(flags) && (type.BaseType != null))
             {
-                MethodInfo[] inheritedMethods = type.BaseType.GetMethods(flags);
+                MethodInfo[] inheritedMethods = type.BaseType.GetMethodsLmr(flags);
                 List<MethodInfo> filteredInheritedMembers = new List<MethodInfo>();
 
                 // Filter out any methods that don't match flags or that are overriden by methods on the type
@@ -1369,7 +1402,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             if (m1.IsGenericMethodDefinition)
             {
                 Type[] args = methodCandidate.GetGenericArguments();
-                m1 = (m1 as MethodInfo).MakeGenericMethod(args);
+                m1 = (m1 as MethodInfo).MakeGenericMethodLmr(args);
                 p1 = m1.GetParameters();
             }
 
@@ -1458,7 +1491,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             //
             if (WalkInheritanceChain(flags) && (type.BaseType != null))
             {
-                FieldInfo[] inheritedFields = type.BaseType.GetFields(flags);
+                FieldInfo[] inheritedFields = type.BaseType.GetFieldsLmr(flags);
                 List<FieldInfo> filteredInheritedFields = new List<FieldInfo>();
 
                 // Filter out any fields that don't match flags.
@@ -1528,7 +1561,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             //
             if (WalkInheritanceChain(flags) && (type.BaseType != null))
             {
-                PropertyInfo[] inheritedProperties = type.BaseType.GetProperties(flags);
+                PropertyInfo[] inheritedProperties = type.BaseType.GetPropertiesLmr(flags);
 
                 // Filter out any properties that are overriden by properties on the type
                 // itself. There should be no overrides in inheritedProperties array if base type(s) correctly 
@@ -1590,7 +1623,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             //
             if (WalkInheritanceChain(flags) && (type.BaseType != null))
             {
-                EventInfo[] inheritedEvents = type.BaseType.GetEvents(flags);
+                EventInfo[] inheritedEvents = type.BaseType.GetEventsLmr(flags);
 
                 // Filter out any events that are hidden by events on the type
                 // itself. There should be no overrides in inheritedEvents array if base type(s) correctly 
@@ -1710,7 +1743,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 foreach (int typeToken in e)
                 {
-                    Type type = ResolveType(typeToken);
+                    Type type = ResolveTypeCore(typeToken, null, null);
                     const bool isStatic = false;
                     bool isPublic = type.IsPublic || type.IsNestedPublic;
 
@@ -1844,9 +1877,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 MemberInfo member;
                 if (arg.Kind == CustomAttributeNamedArgumentKind.Field)
-                    member = constructorInfo.DeclaringType.GetField(arg.Name, BindingFlags.Instance | BindingFlags.Public);
+                    member = constructorInfo.DeclaringType.GetFieldLmr(arg.Name, BindingFlags.Instance | BindingFlags.Public);
                 else
-                    member = constructorInfo.DeclaringType.GetProperty(arg.Name);
+                    member = constructorInfo.DeclaringType.GetPropertyLmr(arg.Name);
 
                 Debug.Assert(member != null, "Expected to find appropriate field/property on an attribute instance.");
 
@@ -1880,7 +1913,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             // can use any name. The name is not part of the standard. The CLS just says that there must be
             // one and only one instance field on an enum type. 
 
-            FieldInfo[] valueFields = enumType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo[] valueFields = enumType.GetFieldsLmr(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             Debug.Assert(valueFields != null, "Enums must have public instance fields.");
             Debug.Assert(valueFields.Length == 1, "Enums must have exactly one public instance field.");
 
@@ -2288,7 +2321,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         Dictionary<String , Type> _typeCache = new Dictionary<String, Type>();
 
-        override public Type GetType(string className, bool throwOnError, bool ignoreCase)
+        [RequiresUnreferencedCode(LmrAssemblyBase.GetTypeRequiresUnreferencedCodeMessage)]
+        public sealed override Type GetType(string className, bool throwOnError, bool ignoreCase)
+        {
+            return GetTypeCore(className, throwOnError, ignoreCase);
+        }
+
+        internal Type GetTypeCore(string className, bool throwOnError, bool ignoreCase)
         {
             if (ignoreCase)
             {
@@ -2314,7 +2353,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 bool throwOnErrorInCallback = false;
                 if (assembly != null)
                 {
-                    Type t = assembly.GetType(simpleTypeName, throwOnErrorInCallback, ignoreCaseInCallback);
+                    Type t = assembly.GetTypeLmr(simpleTypeName, throwOnErrorInCallback, ignoreCaseInCallback);
                     _typeCache[className]=t;
                     return t;
                 }
@@ -2335,18 +2374,25 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 }
             };
 
-            return Type.GetType(className, assemblyResolverCallback, typeResolver, throwOnError);
+            return LmrTypeNameResolver.GetType(className, assemblyResolverCallback, typeResolver, throwOnError);
         }
 
 
         // Reflection version which returns an array. See code:GetTypeList() for enum version.
-        override public Type[] GetTypes()
+        [RequiresUnreferencedCode(LmrAssemblyBase.TypesMightBeRemovedMessage)]
+        public sealed override Type[] GetTypes()
+        {
+            return GetTypesCore();
+        }
+
+        internal Type[] GetTypesCore()
         {
             List<Type> l = new List<Type>(GetTypeList());
             return l.ToArray();
         }
 
-        override public Type[] FindTypes(TypeFilter filter, object filterCriteria)
+        [RequiresUnreferencedCode(LmrAssemblyBase.TypesMightBeRemovedMessage)]
+        public sealed override Type[] FindTypes(TypeFilter filter, object filterCriteria)
         {
             List<Type> l = new List<Type>();
             foreach (Type t in GetTypeList())
@@ -2361,10 +2407,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         private const BindingFlags DefaultLookup = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
 
-        public override FieldInfo GetField(string name, BindingFlags bindingAttr)
+        [RequiresUnreferencedCode(FieldsMightBeRemovedMessage)]
+        public sealed override FieldInfo GetField(string name, BindingFlags bindingAttr)
+        {
+            return GetFieldCore(name, bindingAttr);
+        }
+
+        internal FieldInfo GetFieldCore(string name, BindingFlags bindingAttr)
         {
             if (name == null) throw new ArgumentNullException("name");
-            FieldInfo[] fs = GetFields(bindingAttr);
+            FieldInfo[] fs = GetFieldsCore(bindingAttr);
             foreach (FieldInfo f in fs)
             {
                 if (f.Name.Equals(name))
@@ -2374,7 +2426,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
             return null;
         }
-        public override FieldInfo[] GetFields(BindingFlags bindingFlags)
+
+        [RequiresUnreferencedCode(FieldsMightBeRemovedMessage)]
+        public sealed override FieldInfo[] GetFields(BindingFlags bindingFlags)
+        {
+            return GetFieldsCore(bindingFlags);
+        }
+
+        internal FieldInfo[] GetFieldsCore(BindingFlags bindingFlags)
         {
             CheckBindingFlagsInMethod(bindingFlags, "GetFields");
 
@@ -2398,14 +2457,26 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return result.ToArray();
         }
 
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        [RequiresUnreferencedCode(MethodsMightBeRemovedMessage)]
+        protected sealed override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        {
+            return GetMethodImplCore(name, bindingAttr, binder, callConvention, types, modifiers);
+        }
+
+        internal MethodInfo GetMethodImplCore(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             CheckBinderAndModifiersforLMR(binder, modifiers);
-            MethodInfo[] methods = GetMethods(bindingAttr);
+            MethodInfo[] methods = GetMethodsCore(bindingAttr);
             return FilterMethod(methods, name, bindingAttr, callConvention, types);
         }
 
-        public override MethodInfo[] GetMethods(BindingFlags bindingFlags)
+        [RequiresUnreferencedCode(MethodsMightBeRemovedMessage)]
+        public sealed override MethodInfo[] GetMethods(BindingFlags bindingFlags)
+        {
+            return GetMethodsCore(bindingFlags);
+        }
+
+        internal MethodInfo[] GetMethodsCore(BindingFlags bindingFlags)
         {
             CheckBindingFlagsInMethod(bindingFlags, "GetMethods");
 
@@ -2448,7 +2519,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         #endregion
 
-        public override Type ResolveType(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        [RequiresUnreferencedCode(TrimmingChangesMetadataTokensMessage)]
+        public sealed override Type ResolveType(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        {
+            return ResolveTypeCore(metadataToken, genericTypeArguments, genericMethodArguments);
+        }
+
+        internal Type ResolveTypeCore(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
         {
             // This handles TypeDef,Ref,Specs.
             // Note that the generic context is only used for a TypeSpec. So if we pass in a TypeDef for List<T>, we
@@ -2463,7 +2540,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return t;
         }
 
-        public override FieldInfo ResolveField(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        [RequiresUnreferencedCode(TrimmingChangesMetadataTokensMessage)]
+        public sealed override FieldInfo ResolveField(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        {
+            return ResolveFieldCore(metadataToken, genericTypeArguments, genericMethodArguments);
+        }
+
+        internal FieldInfo ResolveFieldCore(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
         {
             // This handles FieldDef, MemberRef, 
             // Just as with code:ResolveType, the generic args are used to resolve specs, but not used for
@@ -2471,19 +2554,27 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return this.ResolveFieldTokenInternal(MetadataTokens.EntityHandle(metadataToken), new GenericContext(genericTypeArguments, genericMethodArguments));
         }
 
-        public override MethodBase ResolveMethod(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        [RequiresUnreferencedCode(TrimmingChangesMetadataTokensMessage)]
+        public sealed override MethodBase ResolveMethod(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        {
+            return ResolveMethodCore(metadataToken, genericTypeArguments, genericMethodArguments);
+        }
+
+        internal MethodBase ResolveMethodCore(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
         {
             // Don't use GetGenericMethod(), that has the wrong semantics around generics. It will apply generic args to a MethodDef.
             // Whereas ResolveMethod() should only apply the generic args to a ref / spec.
             return this.ResolveMethodTokenInternal(MetadataTokens.EntityHandle(metadataToken), new GenericContext(genericTypeArguments, genericMethodArguments));
         }
 
-        public override MemberInfo ResolveMember(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+        [RequiresUnreferencedCode(TrimmingChangesMetadataTokensMessage)]
+        public sealed override MemberInfo ResolveMember(int metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
         {
             throw new NotImplementedException();
         }
 
-        public override byte[] ResolveSignature(int metadataToken)
+        [RequiresUnreferencedCode(TrimmingChangesMetadataTokensMessage)]
+        public sealed override byte[] ResolveSignature(int metadataToken)
         {
             throw new NotImplementedException();
         }

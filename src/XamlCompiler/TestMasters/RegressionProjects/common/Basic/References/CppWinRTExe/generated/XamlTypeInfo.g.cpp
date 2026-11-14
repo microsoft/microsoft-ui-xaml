@@ -14,17 +14,17 @@
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#if __has_include(<winrt/CppWinRTComponent.h>)
-#include <winrt/CppWinRTComponent.h>
-#endif
-#if __has_include(<winrt/CppWinRTExe.h>)
-#include <winrt/CppWinRTExe.h>
-#endif
 #if __has_include(<winrt/CSharpWinrtComponent.h>)
 #include <winrt/CSharpWinrtComponent.h>
 #endif
 #if __has_include(<winrt/CSharpWinrtComponent.CSharpWinrtComponent_XamlTypeInfo.h>)
 #include <winrt/CSharpWinrtComponent.CSharpWinrtComponent_XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/CppWinRTComponent.h>)
+#include <winrt/CppWinRTComponent.h>
+#endif
+#if __has_include(<winrt/CppWinRTExe.h>)
+#include <winrt/CppWinRTExe.h>
 #endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>

@@ -323,56 +323,63 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         private void SaveFile(string fileName)
         {
-            XmlWriter writer = XmlWriter.Create(fileName);
-            using (writer)
+            AtomicFile.Write(fileName, stream =>
             {
-                writer.WriteStartElement(XMLNAME_XamlCompilerSaveState);
-
-                writer.WriteElementString(XMLNAME_XamlFeatureControlFlags, XamlFeatureControlFlags);
-                writer.WriteElementString(XMLNAME_EnabledXamlOptionalChanges, EnabledXamlOptionalChanges);
-                writer.WriteElementString(XMLNAME_DisabledXamlOptionalChanges, DisabledXamlOptionalChanges);
-                if (XamlTypeInfoHasMetadataProvider.HasValue)
+                using (XmlWriter writer = XmlWriter.Create(stream))
                 {
-                    writer.WriteElementString(XMLNAME_XamlTypeInfoHasMetadataProvider, XamlTypeInfoHasMetadataProvider.Value.ToString());
+                    WriteState(writer);
                 }
+            });
+        }
 
-                // Write: ReferenceAssemblyList
-                writer.WriteStartElement(XMLNAME_ReferenceAssemblyList);
-                if (!String.IsNullOrEmpty(LocalAssemblyName))
-                {
-                    Guid guid;
-                    if (ReferenceAssemblyGuids.TryGetValue(LocalAssemblyName, out guid))
-                    {
-                        writer.WriteStartElement(XMLNAME_LocalAssembly);
-                        writer.WriteAttributeString(XMLNAME_PathName, LocalAssemblyName);
-                        writer.WriteAttributeString(XMLNAME_HashGuid, guid.ToString());
-                        writer.WriteEndElement();
-                    }
-                }
-                foreach (string pathname in ReferenceAssemblyList)
-                {
-                    Guid guid;
-                    if (ReferenceAssemblyGuids.TryGetValue(pathname, out guid))
-                    {
-                        writer.WriteStartElement(XMLNAME_ReferenceAssembly);
-                        writer.WriteAttributeString(XMLNAME_PathName, pathname);
-                        writer.WriteAttributeString(XMLNAME_HashGuid, guid.ToString());
-                        writer.WriteEndElement();
-                    }
-                }
-                writer.WriteEndElement();
+        private void WriteState(XmlWriter writer)
+        {
+            writer.WriteStartElement(XMLNAME_XamlCompilerSaveState);
 
-                // Write: XamlSourceFileDataList
-                writer.WriteStartElement(XMLNAME_XamlSourceFileDataList);
-                foreach (string filename in this.XamlPerFileInfo.Keys)
-                {
-                    SaveStatePerXamlFile perFile = XamlPerFileInfo[filename];
-                    perFile.WriteXmlElement(writer, XMLNAME_XamlSourceFileData);
-                }
-                writer.WriteEndElement();
-
-                writer.WriteEndElement();                
+            writer.WriteElementString(XMLNAME_XamlFeatureControlFlags, XamlFeatureControlFlags);
+            writer.WriteElementString(XMLNAME_EnabledXamlOptionalChanges, EnabledXamlOptionalChanges);
+            writer.WriteElementString(XMLNAME_DisabledXamlOptionalChanges, DisabledXamlOptionalChanges);
+            if (XamlTypeInfoHasMetadataProvider.HasValue)
+            {
+                writer.WriteElementString(XMLNAME_XamlTypeInfoHasMetadataProvider, XamlTypeInfoHasMetadataProvider.Value.ToString());
             }
+
+            // Write: ReferenceAssemblyList
+            writer.WriteStartElement(XMLNAME_ReferenceAssemblyList);
+            if (!String.IsNullOrEmpty(LocalAssemblyName))
+            {
+                Guid guid;
+                if (ReferenceAssemblyGuids.TryGetValue(LocalAssemblyName, out guid))
+                {
+                    writer.WriteStartElement(XMLNAME_LocalAssembly);
+                    writer.WriteAttributeString(XMLNAME_PathName, LocalAssemblyName);
+                    writer.WriteAttributeString(XMLNAME_HashGuid, guid.ToString());
+                    writer.WriteEndElement();
+                }
+            }
+            foreach (string pathname in ReferenceAssemblyList)
+            {
+                Guid guid;
+                if (ReferenceAssemblyGuids.TryGetValue(pathname, out guid))
+                {
+                    writer.WriteStartElement(XMLNAME_ReferenceAssembly);
+                    writer.WriteAttributeString(XMLNAME_PathName, pathname);
+                    writer.WriteAttributeString(XMLNAME_HashGuid, guid.ToString());
+                    writer.WriteEndElement();
+                }
+            }
+            writer.WriteEndElement();
+
+            // Write: XamlSourceFileDataList
+            writer.WriteStartElement(XMLNAME_XamlSourceFileDataList);
+            foreach (string filename in this.XamlPerFileInfo.Keys)
+            {
+                SaveStatePerXamlFile perFile = XamlPerFileInfo[filename];
+                perFile.WriteXmlElement(writer, XMLNAME_XamlSourceFileData);
+            }
+            writer.WriteEndElement();
+
+            writer.WriteEndElement();                
         }
     }
 }

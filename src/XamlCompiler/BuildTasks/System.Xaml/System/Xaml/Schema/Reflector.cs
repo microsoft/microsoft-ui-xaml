@@ -85,14 +85,6 @@ namespace System.Xaml.Schema
                 {
                     return ((DictionaryKeyPropertyAttribute)attributes[0]).Name;
                 }
-                if (attributeType == typeof(XamlSetMarkupExtensionAttribute))
-                {
-                    return ((XamlSetMarkupExtensionAttribute)attributes[0]).XamlSetMarkupExtensionHandler;
-                }
-                if (attributeType == typeof(XamlSetTypeConverterAttribute))
-                {
-                    return ((XamlSetTypeConverterAttribute)attributes[0]).XamlSetTypeConverterHandler;
-                }
                 if (attributeType == typeof(UidPropertyAttribute))
                 {
                     return ((UidPropertyAttribute)attributes[0]).Name;
@@ -216,10 +208,6 @@ namespace System.Xaml.Schema
                 if (attributeType == typeof(MarkupExtensionReturnTypeAttribute))
                 {
                     return ((MarkupExtensionReturnTypeAttribute)attributes[0]).ReturnType;
-                }
-                if (attributeType == typeof(ValueSerializerAttribute))
-                {
-                    return ((ValueSerializerAttribute)attributes[0]).ValueSerializerType;
                 }
                 Debug.Fail("Unexpected attribute type requested: " + attributeType.Name);
                 return null;

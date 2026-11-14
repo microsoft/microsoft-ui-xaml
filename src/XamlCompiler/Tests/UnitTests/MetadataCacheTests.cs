@@ -15,6 +15,7 @@ namespace UnitTests
     {
         string _directory;
         XamlTypeUniverse _universe;
+        Assembly _coreLibrary;
         Assembly _runtimeLookupAssembly;
 
         [TestInitialize]
@@ -23,7 +24,8 @@ namespace UnitTests
             _directory = Path.Combine(Path.GetTempPath(), "XamlCompilerMetadataTests", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(_directory);
             _universe = new XamlTypeUniverse(false);
-            _universe.LoadAssemblyFromFile(typeof(object).Assembly.Location);
+            // The runtime's core library (System.Private.CoreLib)
+            _coreLibrary = _universe.LoadAssemblyFromFile(typeof(object).Assembly.Location);
         }
 
         [TestCleanup]
@@ -104,7 +106,8 @@ namespace UnitTests
         public void MetadataCache_AssemblyQualifiedNamesMatchRuntimeReflection()
         {
             string path = CreateLookupAssembly();
-            Assembly runtime = _runtimeLookupAssembly;
+            // The PersistedAssemblyBuilder that created it (see SaveAssembly) isn't a runtime assembly, so load the saved one instead
+            Assembly runtime = Assembly.Load(File.ReadAllBytes(path));
             Assembly metadata = _universe.LoadAssemblyFromFile(path);
             foreach (string name in new[] { "GlobalType", "CacheTests.First.Shared", "CacheTests.Outer+OnlyNested", "CacheTests.Generic`1" })
             {
@@ -118,7 +121,7 @@ namespace UnitTests
 
             Type runtimeGeneric = runtime.GetType("CacheTests.Generic`1", true);
             Type metadataGeneric = metadata.GetType("CacheTests.Generic`1", true);
-            Type metadataInt = _universe.GetSystemAssembly().GetType("System.Int32", true);
+            Type metadataInt = _coreLibrary.GetType("System.Int32", true);
             Assert.AreEqual(runtimeGeneric.MakeGenericType(typeof(int)).AssemblyQualifiedName,
                 metadataGeneric.MakeGenericType(metadataInt).AssemblyQualifiedName);
             Assert.IsNull(metadataGeneric.GetGenericArguments()[0].AssemblyQualifiedName);
@@ -280,11 +283,11 @@ namespace UnitTests
         {
             string fileName = name + "." + version + ".dll";
             var assemblyName = new AssemblyName(name) { Version = version };
-            AssemblyBuilder assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(
-                assemblyName, AssemblyBuilderAccess.RunAndSave, _directory);
-            ModuleBuilder module = assembly.DefineDynamicModule(moduleName ?? name, fileName);
+            // .NET has no AssemblyBuilderAccess.RunAndSave: PersistedAssemblyBuilder saves the assembly, but can't run it
+            var assembly = new PersistedAssemblyBuilder(assemblyName, typeof(object).Assembly);
+            ModuleBuilder module = assembly.DefineDynamicModule(moduleName ?? name);
             defineTypes(module);
-            assembly.Save(fileName);
+            assembly.Save(Path.Combine(_directory, fileName));
             return Path.Combine(_directory, fileName);
         }
 

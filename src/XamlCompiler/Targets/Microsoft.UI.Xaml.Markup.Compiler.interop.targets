@@ -21,10 +21,8 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <UseVCMetaManaged Condition="'$(UseVCMetaManaged)' == ''">true</UseVCMetaManaged>
         <DisableXbfGeneration Condition="'$(DisableXbfGeneration)' == '' AND '$(TargetPlatformVersion)' == '8.0'">true</DisableXbfGeneration>
         <DisableXbfGeneration Condition="'$(DisableXbfGeneration)' == ''">false</DisableXbfGeneration>
-        <_MuxPackageToolsFolder Condition=" '$(MSbuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\tools\net8.0\</_MuxPackageToolsFolder>
-        <_MuxPackageToolsFolder Condition=" '$(_MuxPackageToolsFolder)' == '' ">$(MSBuildThisFileDirectory)..\tools\net472\</_MuxPackageToolsFolder>
-        <GenXbfPath Condition="$(GenXbfPath) == ''">$(_MuxPackageToolsFolder)..\</GenXbfPath>
-        <UseXamlCompilerExecutable Condition=" '$(MSbuildRuntimeType)' == 'Core' ">true</UseXamlCompilerExecutable>
+        <_MuxPackageToolsFolder>$(MSBuildThisFileDirectory)..\tools\</_MuxPackageToolsFolder>
+        <GenXbfPath Condition="$(GenXbfPath) == ''">$(_MuxPackageToolsFolder)</GenXbfPath>
 
         <XamlSavedStateFileName Condition="'$(XamlSavedStateFileName)' == ''">XamlSaveStateFile.xml</XamlSavedStateFileName>
         <XamlSavedStateFilePath>$(IntermediateOutputPath)\$(XamlSavedStateFileName)</XamlSavedStateFilePath>
@@ -182,25 +180,52 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <XamlGeneratedOutputPath Condition="'$(XamlGeneratedOutputPath)' == ''">$(IntermediateOutputPath)</XamlGeneratedOutputPath>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(XamlCompilerTaskPath) == ''">
-        <XamlCompilerTaskPath>$(_MuxPackageToolsFolder)Microsoft.UI.Xaml.Markup.Compiler.dll</XamlCompilerTaskPath>
+    <!--
+        The XAML compiler is XamlCompiler.exe, a self-contained Native AOT binary (so it has no requirements on the host: no .NET SDK or
+        runtime), which the CompileXaml task (Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll, a thin .NET Standard task that both .NET
+        Framework MSBuild and .NET MSBuild load) runs for every build, including design-time builds. The package has one binary per
+        architecture under tools\win-<rid>: a package built from a single flavor only has win-x64, which also runs on ARM64 (emulated),
+        like GenXbf. XamlCompilerNativeExePath can be set to use a specific build of the compiler: the x64 fallback only applies to the
+        default path.
+    -->
+    <PropertyGroup>
+        <!-- Customers used to point XamlCompilerTaskPath at the .NET Framework in-process compiler (tools\net472\Microsoft.UI.Xaml.Markup.Compiler.dll), which doesn't exist anymore. Any other path is used as is (it may be built later in the same build). -->
+        <_XamlCompilerTaskPathIgnored Condition="'$(XamlCompilerTaskPath)' != '' and ('$(XamlCompilerTaskPath.ToLowerInvariant().Contains(`\net472\`))' == 'true' or '$([System.IO.Path]::GetFileName(`$(XamlCompilerTaskPath)`))' == 'Microsoft.UI.Xaml.Markup.Compiler.dll')">$(XamlCompilerTaskPath)</_XamlCompilerTaskPathIgnored>
+        <XamlCompilerTaskPath Condition="'$(_XamlCompilerTaskPathIgnored)' != ''"></XamlCompilerTaskPath>
+        <XamlCompilerTaskPath Condition="'$(XamlCompilerTaskPath)' == ''">$(_MuxPackageToolsFolder)Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll</XamlCompilerTaskPath>
+        <!-- What the tasks are loaded from: XamlCompilerTaskPath can't be reset when it is a global property -->
+        <_XamlCompilerTaskAssembly>$(XamlCompilerTaskPath)</_XamlCompilerTaskAssembly>
+        <_XamlCompilerTaskAssembly Condition="'$(_XamlCompilerTaskPathIgnored)' != ''">$(_MuxPackageToolsFolder)Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll</_XamlCompilerTaskAssembly>
+
+        <_XamlCompilerNativeRid Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">win-arm64</_XamlCompilerNativeRid>
+        <_XamlCompilerNativeRid Condition="'$(_XamlCompilerNativeRid)' == ''">win-x64</_XamlCompilerNativeRid>
+        <_XamlCompilerNativeExePathIsDefault Condition="'$(XamlCompilerNativeExePath)' == ''">true</_XamlCompilerNativeExePathIsDefault>
+        <XamlCompilerNativeExePath Condition="'$(XamlCompilerNativeExePath)' == ''">$(_MuxPackageToolsFolder)$(_XamlCompilerNativeRid)\XamlCompiler.exe</XamlCompilerNativeExePath>
+        <XamlCompilerNativeExePath Condition="'$(_XamlCompilerNativeExePathIsDefault)' == 'true' and '$(_XamlCompilerNativeRid)' == 'win-arm64' and !Exists('$(XamlCompilerNativeExePath)')">$(_MuxPackageToolsFolder)win-x64\XamlCompiler.exe</XamlCompilerNativeExePath>
+
+        <!-- Lets the MSBuild node build other projects while the compiler runs (the task reads the IDE's unsaved files before yielding) -->
+        <XamlCompilerYieldDuringToolExecution Condition="'$(XamlCompilerYieldDuringToolExecution)' == ''">true</XamlCompilerYieldDuringToolExecution>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(XamlCompilerJsonTaskPath) == ''">
-        <XamlCompilerJsonTaskPath>$(_MuxPackageToolsFolder)Microsoft.UI.Xaml.Markup.Compiler.IO.dll</XamlCompilerJsonTaskPath>
-    </PropertyGroup>
+    <Target Name="_ValidateXamlCompiler" BeforeTargets="MarkupCompilePass1;MarkupCompilePass2;DesignTimeMarkupCompilationCT" Condition="'@(Page)' != '' or '@(ApplicationDefinition)' != ''">
+        <Error Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86' or '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm'"
+               Text="The XAML compiler requires a 64-bit version of Windows." />
+        <Error Condition="!Exists('$(XamlCompilerNativeExePath)')" Text="The XAML compiler was not found at '$(XamlCompilerNativeExePath)'." />
+        <Warning Condition="'$(_XamlCompilerTaskPathIgnored)' != ''"
+                 Text="XamlCompilerTaskPath is ignored: '$(_XamlCompilerTaskPathIgnored)' is not the XAML compiler task assembly (Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll). The .NET Framework XAML compiler doesn't exist anymore: the XAML compiler is always the native XamlCompiler.exe. Remove the property, or use XamlCompilerNativeExePath to select a specific XAML compiler." />
+        <Warning Condition="'$(XamlCompilerExePath)' != ''"
+                 Text="XamlCompilerExePath is no longer supported and is ignored (the .NET Framework XAML compiler executable doesn't exist anymore). Use XamlCompilerNativeExePath to select a specific native XAML compiler." />
+        <Message Importance="low" Condition="'$(UseXamlCompilerExecutable)' != '' or '$(UseNativeXamlCompiler)' != '' or '$(XamlCompilerJsonTaskPath)' != ''"
+                 Text="UseXamlCompilerExecutable, UseNativeXamlCompiler and XamlCompilerJsonTaskPath are obsolete and ignored: the XAML compiler is always the native XamlCompiler.exe." />
+    </Target>
 
-    <PropertyGroup Condition="$(XamlCompilerExePath) == ''">
-        <XamlCompilerExePath>$(_MuxPackageToolsFolder)..\net472\XamlCompiler.exe</XamlCompilerExePath>
-    </PropertyGroup>
-
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(XamlCompilerTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(XamlCompilerTaskPath)" />
-
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.InputSerializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.OutputDeserializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
-
+    <!--
+        No Runtime/TaskFactory on purpose: in design-time builds, Visual Studio gives the CompileXaml task its host object (the editor's unsaved
+        files), which needs the task to run in the MSBuild node.
+    -->
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(_XamlCompilerTaskAssembly)" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(_XamlCompilerTaskAssembly)" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(_XamlCompilerTaskAssembly)" />
     <PropertyGroup>
         <!--If the path to the sign tool is not set, assume the SDK path -->
         <SignToolPath Condition="'$(SignToolPath)' == ''">$(FrameworkSDKRoot)bin</SignToolPath>
@@ -234,16 +259,10 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
     <!-- Include the Xaml compiler in the appx manifest metadata
          as an indicator of what the app was built with.
-         Normally include the Xaml compiler task dll,
-         but if we're using the executable Xaml compiler
-         include that instead.
     -->
-    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'!='true'">
-        <AppxManifestMetadata Include="$(XamlCompilerTaskPath)" />
-    </ItemGroup>
-
-    <ItemGroup Label="AppxManifestMetadata" Condition="'$(UseXamlCompilerExecutable)'=='true'">
-        <AppxManifestMetadata Include="$(XamlCompilerExePath)" />
+    <ItemGroup Label="AppxManifestMetadata">
+        <AppxManifestMetadata Include="$(_XamlCompilerTaskAssembly)" />
+        <AppxManifestMetadata Include="$(XamlCompilerNativeExePath)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -298,11 +317,17 @@ Licensed under the MIT License. See LICENSE in the project root for license info
       <PropertyGroup Condition="'$(VCToolsInstallDir)' == '' and '$(VsInstallRoot)' != ''">
         <VCToolsInstallDir Condition="'$(VCToolsInstallDir)' == ''">$(VsInstallRoot)\VC\Tools\MSVC\$(LatestMSVCVersion)\</VCToolsInstallDir>
       </PropertyGroup>
+      <!--
+        vcmeta.dll is loaded by XamlCompiler.exe (only with UseVCMetaManaged=false), whatever the architecture of MSBuild: use the one
+        native to the compiler. XamlCompilerNativeArchitecture (x64 or arm64) is the architecture of XamlCompilerNativeExePath: arm64
+        if it is in a win-arm64 directory (like in the package), x64 otherwise; set it for an ARM64 compiler somewhere else.
+      -->
       <PropertyGroup Condition="'$(VCToolsInstallDir)' != ''">
-        <_VCInstallPathHostArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'x86'">X86</_VCInstallPathHostArchitecture>
-        <_VCInstallPathHostArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' != 'x86'">X64</_VCInstallPathHostArchitecture>
-        <VCInstallPath32>$(VCToolsInstallDir)bin\Host$(_VCInstallPathHostArchitecture)\x86\vcmeta.dll</VCInstallPath32>
-        <VCInstallPath64>$(VCToolsInstallDir)bin\Host$(_VCInstallPathHostArchitecture)\x64\vcmeta.dll</VCInstallPath64>
+        <_VCInstallPathArchitecture>$(XamlCompilerNativeArchitecture)</_VCInstallPathArchitecture>
+        <_VCInstallPathArchitecture Condition="'$(_VCInstallPathArchitecture)' == '' and '$(XamlCompilerNativeExePath.ToLowerInvariant().Contains(`\win-arm64\`))' == 'true'">arm64</_VCInstallPathArchitecture>
+        <_VCInstallPathArchitecture Condition="'$(_VCInstallPathArchitecture)' == ''">x64</_VCInstallPathArchitecture>
+        <VCInstallPath32>$(VCToolsInstallDir)bin\HostX86\x86\vcmeta.dll</VCInstallPath32>
+        <VCInstallPath64>$(VCToolsInstallDir)bin\Host$(_VCInstallPathArchitecture)\$(_VCInstallPathArchitecture)\vcmeta.dll</VCInstallPath64>
       </PropertyGroup>
     </Target>
 
@@ -368,8 +393,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </PropertyGroup>
 
     <Target Name="DesignTimeMarkupCompilation">
-        <!-- BuildingProject is used in Managed builds (always true in Native) -->
-        <!-- DesignTimeBuild is used in Native builds (always false in Managed) -->
+        <!-- BuildingProject is false in the design-time builds of managed projects (CPS), DesignTimeBuild is true in the design-time builds of both managed and C++ projects -->
         <CallTarget Condition="'$(BuildingProject)' != 'true' Or $(DesignTimeBuild) == 'true'" Targets="DesignTimeMarkupCompilationCT" />
     </Target>
 
@@ -377,14 +401,14 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     <Target Name="DesignTimeMarkupCompilationCT"
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
-        <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true'" />
-
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
-        <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
+        <CompileXaml
+                XamlCompilerPath="$(XamlCompilerNativeExePath)"
+                EnableServerGC="$(XamlCompilerEnableServerGC)"
+                YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
                 Language="$(XamlLanguage)"
                 RootNamespace="$(RootNamespace)"
@@ -433,61 +457,6 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 <Output ItemName="_GeneratedXamlFiles" TaskParameter="GeneratedXamlFiles" />
             </CompileXaml>
 
-        <PropertyGroup>
-            <XamlCompilerExeInputJson>$(XamlGeneratedOutputPath)\input.json</XamlCompilerExeInputJson>
-            <XamlCompilerExeOutputJson>$(XamlGeneratedOutputPath)\output.json</XamlCompilerExeOutputJson>
-        </PropertyGroup>
-        <InputSerializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
-            JsonFilePath="$(XamlCompilerExeInputJson)"
-            LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
-            Language="$(XamlLanguage)"
-            RootNamespace="$(RootNamespace)"
-            XamlPages="@(Page)"
-            XamlApplications="@(ApplicationDefinition)"
-            PriIndexName="$(PriIndexName)"
-            ProjectName="$(XamlProjectName)"
-            IsPass1="True"
-            CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)"
-            CIncludeDirectories="$(XamlCppIncludeDirectories)"
-            ProjectPath="$(MSBuildProjectFullPath)"
-            OutputPath="$(XamlGeneratedOutputPath)"
-            OutputType="$(OutputType)"
-            ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-            ReferenceAssemblies="@(ReferencePath)"
-            ForceSharedStateShutdown="False"
-            ContinueOnError="True"
-            CompileMode="DesignTimeBuild"
-            XAMLFingerprint="$(XAMLFingerprint)"
-            FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)"
-            VCInstallDir="$(VCInstallDir)"
-            SavedStateFile="$(XamlSavedStateFilePath)"
-            SuppressWarnings="$(SuppressXamlWarnings)"
-            TargetPlatformMinVersion="$(TargetPlatformMinVersion)"
-            WindowsSdkPath="$(WindowsSdkPath)"
-            XamlResourceMapName="$(XamlResourceMapName)"
-            XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
-            FeatureControlFlags="@(XamlFeatureControlFlags)"
-            VCInstallPath32="$(VCInstallPath32)"
-            VCInstallPath64="$(VCInstallPath64)"
-            GenXbfPath="$(GenXbfPath)"
-            PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
-            EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
-            DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
-
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
-
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
-            <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
-
-            <!--
-                Add to the list of files written.
-                It is used in Microsoft.Common.Targets for a next clean build
-            -->
-            <Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
-            <Output ItemName="FileWrites" TaskParameter="GeneratedXamlFiles" />
-            <Output ItemName="_GeneratedCodeFiles" TaskParameter="GeneratedCodeFiles" />
-            <Output ItemName="_GeneratedXamlFiles" TaskParameter="GeneratedXamlFiles" />
-        </OutputDeserializer>
 
         <ItemGroup>
             <FileWrites Include="$(XamlSavedStateFilePath)" />
@@ -508,14 +477,14 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     <Target Name="MarkupCompilePass1"
           DependsOnTargets="$(MarkupCompilePass1DependsOn)"
           Condition="'@(Page)' != '' Or '@(ApplicationDefinition)' != '' " >
-        <Error  Text="The executable Xaml compiler is no longer supported.  Please set UseXamlCompilerExecutable=false."
-                Condition=" '$(MSBuildRuntimeType)' != 'Core' And '$(UseXamlCompilerExecutable)' == 'true'" />
-
         <MakeDir Condition="'$(ManagedAssembly)'!='false'" Directories="$(XamlGeneratedOutputPath)intermediatexaml\" />
         <ItemGroup>
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
-        <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
+        <CompileXaml
+                XamlCompilerPath="$(XamlCompilerNativeExePath)"
+                EnableServerGC="$(XamlCompilerEnableServerGC)"
+                YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
                 Language="$(XamlLanguage)"
                 RootNamespace="$(RootNamespace)"
@@ -564,61 +533,6 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
             </CompileXaml>
 
-        <PropertyGroup>
-            <XamlCompilerExeInputJson>$(XamlGeneratedOutputPath)\input.json</XamlCompilerExeInputJson>
-            <XamlCompilerExeOutputJson>$(XamlGeneratedOutputPath)\output.json</XamlCompilerExeOutputJson>
-        </PropertyGroup>
-        <InputSerializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
-                JsonFilePath="$(XamlCompilerExeInputJson)"
-                LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
-                Language="$(XamlLanguage)"
-                RootNamespace="$(RootNamespace)"
-                XamlPages="@(Page)"
-                XamlApplications="@(ApplicationDefinition)"
-                PriIndexName="$(PriIndexName)"
-                ProjectName="$(XamlProjectName)"
-                IsPass1="True"
-                CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)"
-                ProjectPath="$(MSBuildProjectFullPath)"
-                CIncludeDirectories="$(XamlCppIncludeDirectories)"
-                OutputPath="$(XamlGeneratedOutputPath)"
-                OutputType="$(OutputType)"
-                ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-                ReferenceAssemblies="@(ReferencePath)"
-                ForceSharedStateShutdown="False"
-                CompileMode="RealBuildPass1"
-                XAMLFingerprint="$(XAMLFingerprint)"
-                FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)"
-                VCInstallDir="$(VCInstallDir)"
-                SavedStateFile="$(XamlSavedStateFilePath)"
-                SuppressWarnings="$(SuppressXamlWarnings)"
-                TargetPlatformMinVersion="$(TargetPlatformMinVersion)"
-                WindowsSdkPath="$(WindowsSdkPath)"
-                XamlResourceMapName="$(XamlResourceMapName)"
-                XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
-                FeatureControlFlags="@(XamlFeatureControlFlags)"
-                VCInstallPath32="$(VCInstallPath32)"
-                VCInstallPath64="$(VCInstallPath64)"
-                GenXbfPath="$(GenXbfPath)"
-                PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
-                EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
-                DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
-
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
-
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
-            <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
-
-            <!--
-                FileWrites is used in Microsoft.Common.Targets for "Clean" build
-            -->
-            <Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
-            <Output ItemName="FileWrites" TaskParameter="GeneratedXamlFiles" />
-            <Output ItemName="FileWrites" TaskParameter="GeneratedXbfFiles" />
-            <Output ItemName="_GeneratedCodeFiles" TaskParameter="GeneratedCodeFiles" />
-            <Output ItemName="_GeneratedXamlFiles" TaskParameter="GeneratedXamlFiles" />
-            <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
-        </OutputDeserializer>
 
 
         <ItemGroup>
@@ -687,7 +601,10 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <XamlReferencesToCompile Include="@(_DistinctXamlReferencesToCompile)" />
         </ItemGroup>
 
-        <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
+        <CompileXaml
+                XamlCompilerPath="$(XamlCompilerNativeExePath)"
+                EnableServerGC="$(XamlCompilerEnableServerGC)"
+                YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
                 Language="$(XamlLanguage)"
                 RootNamespace="$(RootNamespace)"
@@ -745,70 +662,6 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
             </CompileXaml>
 
-        <PropertyGroup>
-            <XamlCompilerExeInputJson>$(XamlGeneratedOutputPath)\input.json</XamlCompilerExeInputJson>
-            <XamlCompilerExeOutputJson>$(XamlGeneratedOutputPath)\output.json</XamlCompilerExeOutputJson>
-        </PropertyGroup>
-        <InputSerializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
-            JsonFilePath="$(XamlCompilerExeInputJson)"
-            LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
-            Language="$(XamlLanguage)"
-            RootNamespace="$(RootNamespace)"
-            XamlPages="@(Page)"
-            XamlApplications="@(ApplicationDefinition)"
-            SdkXamlPages="@(SdkXamlItems)"
-            PriIndexName="$(PriIndexName)"
-            ProjectName="$(XamlProjectName)"
-            IsPass1="False"
-            DisableXbfGeneration="$(DisableXbfGeneration)"
-            DisableXbfLineInfo="$(DisableXbfLineInfo)"
-            CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)"
-            ClIncludeFiles="@(ClInclude)"
-            CIncludeDirectories="$(XamlCppIncludeDirectories)"
-            LocalAssembly="$(XamlLocalAssembly)"
-            ProjectPath="$(MSBuildProjectFullPath)"
-            OutputPath="$(XamlGeneratedOutputPath)"
-            OutputType="$(OutputType)"
-            ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-            ReferenceAssemblies="@(XamlReferencesToCompile)"
-            ForceSharedStateShutdown="False"
-            CompileMode="RealBuildPass2"
-            XAMLFingerprint="$(XAMLFingerprint)"
-            FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)"
-            VCInstallDir="$(VCInstallDir)"
-            WindowsSdkPath="$(WindowsSdkPath)"
-            SavedStateFile="$(XamlSavedStateFilePath)"
-            RootsLog="$(XamlRootsLog)"
-            SuppressWarnings="$(SuppressXamlWarnings)"
-            TargetPlatformMinVersion="$(TargetPlatformMinVersion)"
-            XamlResourceMapName="$(XamlResourceMapName)"
-            XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
-            FeatureControlFlags="@(XamlFeatureControlFlags)"
-            VCInstallPath32="$(VCInstallPath32)"
-            VCInstallPath64="$(VCInstallPath64)"
-            GenXbfPath="$(GenXbfPath)"
-            PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
-            EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
-            DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
-
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
-
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
-            <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
-            <Output Condition="'$(ManagedAssembly)'=='false' " ItemName="XamlGFiles" TaskParameter="GeneratedCodeFiles" />
-
-            <!--
-                FileWrites is used in Microsoft.Common.Targets for "Clean" build
-            -->
-            <Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
-            <Output ItemName="FileWrites" TaskParameter="GeneratedXamlFiles" />
-            <Output ItemName="FileWrites" TaskParameter="GeneratedXbfFiles" />
-            <Output ItemName="FileWrites" TaskParameter="GeneratedXamlPagesFiles" />
-            <Output ItemName="_GeneratedCodeFiles" TaskParameter="GeneratedCodeFiles" />
-            <Output ItemName="_GeneratedXamlFiles" TaskParameter="GeneratedXamlFiles" />
-            <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
-            <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
-        </OutputDeserializer>
         <ItemGroup>
             <FileWrites Include="$(XamlSavedStateFilePath)" />
             <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
@@ -847,57 +700,13 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </ItemGroup>
     </Target>
 
+    <!--
+        Runs when XamlPreCompile fails (see OnXamlPreCompileErrorTarget). It used to release the state that the in-process compiler kept
+        in the MSBuild node between the two passes; XamlCompiler.exe keeps no state across runs, so there is nothing left to do. The
+        target is kept for projects that extend it (_OnXamlPrecompileErrorDependsOn).
+    -->
     <Target Name="_OnXamlPreCompileError"
-            DependsOnTargets="$(_OnXamlPrecompileErrorDependsOn)" >
-
-        <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
-                ProjectPath="$(MSBuildProjectFullPath)"
-                Language="$(XamlLanguage)"
-                LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
-                OutputPath="$(XamlGeneratedOutputPath)"
-                ReferenceAssemblies="@(ReferencePath)"
-                ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-                XamlPages="@(Page)"
-                XamlApplications="@(ApplicationDefinition)"
-                ForceSharedStateShutdown="True"
-                CompileMode="OnErrorShutdown"
-                SavedStateFile="$(XamlSavedStateFilePath)"
-                TargetPlatformMinVersion="$(TargetPlatformMinVersion)"
-                XamlResourceMapName="$(XamlResourceMapName)"
-                XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
-                GenXbfPath="$(GenXbfPath)"
-            >
-        </CompileXaml>
-
-        <PropertyGroup>
-            <XamlCompilerExeInputJson>$(XamlGeneratedOutputPath)\input.json</XamlCompilerExeInputJson>
-            <XamlCompilerExeOutputJson>$(XamlGeneratedOutputPath)\output.json</XamlCompilerExeOutputJson>
-        </PropertyGroup>
-        <InputSerializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
-            JsonFilePath="$(XamlCompilerExeInputJson)"
-            ProjectPath="$(MSBuildProjectFullPath)"
-            Language="$(XamlLanguage)"
-            LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
-            OutputPath="$(XamlGeneratedOutputPath)"
-            ReferenceAssemblies="@(ReferencePath)"
-            ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-            XamlPages="@(Page)"
-            XamlApplications="@(ApplicationDefinition)"
-            ForceSharedStateShutdown="True"
-            CompileMode="OnErrorShutdown"
-            SavedStateFile="$(XamlSavedStateFilePath)"
-            TargetPlatformMinVersion="$(TargetPlatformMinVersion)"
-            XamlResourceMapName="$(XamlResourceMapName)"
-            XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
-            GenXbfPath="$(GenXbfPath)"/>
-
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
-
-        <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
-                     JsonFilePath="$(XamlCompilerExeOutputJson)">
-        </OutputDeserializer>
-    </Target>
-
+            DependsOnTargets="$(_OnXamlPrecompileErrorDependsOn)" />
     <Target Name="Prep_ComputeProcessXamlFiles"
             Condition="'@(ApplicationDefinition)'!='' or '@(Page)'!=''"
             DependsOnTargets="$(Prep_ComputeProcessXamlFilesDependsOn)" >

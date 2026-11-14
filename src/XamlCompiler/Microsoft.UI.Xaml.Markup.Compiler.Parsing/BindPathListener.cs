@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
 {
@@ -375,14 +376,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
                 return property.Type;
             }
 
-            PropertyInfo propertyInfo = sourceType.UnderlyingType.GetProperty(propertyName);
+            PropertyInfo propertyInfo = sourceType.UnderlyingType.GetPropertyLmr(propertyName);
             if (propertyInfo != null)
             {
                 memberInfo = propertyInfo;
                 return sourceType.SchemaContext.GetXamlType(propertyInfo.PropertyType);
             }
 
-            FieldInfo fieldInfo = sourceType.UnderlyingType.GetField(propertyName);
+            FieldInfo fieldInfo = sourceType.UnderlyingType.GetFieldLmr(propertyName);
             if (fieldInfo != null)
             {
                 memberInfo = fieldInfo;
@@ -544,14 +545,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
             const BindingFlags memberFlags = dpFlags |
                                          BindingFlags.NonPublic | BindingFlags.Instance;
 
-            MemberInfo[] memberInfos = type.GetMember(name, memberFlags);
+            MemberInfo[] memberInfos = type.GetMemberLmr(name, memberFlags);
             if (memberInfos.Length == 0)
             {
                 // We also need to look at the list of interfaces, as that's how certain language specific types
                 // like IList<T> or IVector<T> are projected.
-                foreach (Type interfaceType in type.GetInterfaces())
+                foreach (Type interfaceType in type.GetInterfacesLmr())
                 {
-                    memberInfos = interfaceType.GetMember(name, memberFlags);
+                    memberInfos = interfaceType.GetMemberLmr(name, memberFlags);
                     if (memberInfos.Length > 0)
                     {
                         return memberInfos;

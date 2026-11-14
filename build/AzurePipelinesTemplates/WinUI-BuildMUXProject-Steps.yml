@@ -538,14 +538,15 @@ steps:
     condition: and(succeeded(), eq(variables['buildConfiguration'], 'Release'))
     inputs:
       sourceFolder: ${{ parameters.buildArtifactsDirectory }}\packaging\
-      # We only want to copy GenXbf from the packaging output if its target architecture
-      # actually matches the target architecture of the current build (that is, it exists
-      # because it is an intended product binary, not a side effect of needing to satisfy
-      # a build-time dependency)
+      # We only want to copy GenXbf and the XAML compiler from the packaging output if their
+      # target architecture actually matches the target architecture of the current build (that
+      # is, they exist because they are intended product binaries, not a side effect of needing
+      # to satisfy a build-time dependency: every flavor builds the x64 ones it runs)
       contents: |
         **\*
         !**\*.pdb
         !**\tools\!($(buildPlatform))\GenXbf.dll
+        !**\tools\!(win-$(buildPlatform))\XamlCompiler.exe
       targetFolder: $(ob_outputDirectory)\packaging
 
   - ${{ each step in parameters.prePublishSymbolsSteps }}:
@@ -642,9 +643,7 @@ steps:
             **/Microsoft.ui.xaml.resources.19h1.dll
             **/Microsoft.ui.xaml.resources.common.dll
             **/WinUIEdit.dll
-            **/Microsoft.UI.Xaml.Markup.Compiler.dll
-            **/Microsoft.UI.Xaml.Markup.Compiler.IO.dll
-            **/Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
+            **/Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll
             **/Microsoft.UI.Xaml.Design.dll
             **/XamlCompiler.exe
             **/GenXbf.dll
