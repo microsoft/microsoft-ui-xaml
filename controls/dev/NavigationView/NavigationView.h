@@ -470,7 +470,6 @@ private:
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
-    bool m_initialListSizeStateSet{ false };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 

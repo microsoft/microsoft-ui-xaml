@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <deque>
+#include <map>
+#include <optional>
 #include "SplitView.g.h"
 
 namespace DirectUI
@@ -51,7 +54,19 @@ namespace DirectUI
         _Check_return_ HRESULT OnBackButtonPressedImpl(_Out_ BOOLEAN* pReturnValue);
 
     private:
-        _Check_return_ HRESULT OnIsPaneOpenChanged(bool isOpen);
+        struct PaneRequest
+        {
+            uint64_t id{ 0 };
+            bool isLightDismissClose{ false };
+            bool usesFallback{ false };
+            bool isVisualStateUpdated{ false };
+        };
+
+        _Check_return_ HRESULT BeginPaneRequest(bool isOpen, _Out_ PaneRequest* request);
+        _Check_return_ HRESULT AbandonPaneRequest(const PaneRequest& request);
+        _Check_return_ HRESULT PublishPaneStateChange(uint64_t requestId, bool isPaneOpen);
+        _Check_return_ HRESULT PublishFallbackPaneStateChanges();
+        _Check_return_ HRESULT OnIsPaneOpenChanged(bool isOpen, PaneRequest& request);
         _Check_return_ HRESULT OnDisplayModeChanged();
 
         _Check_return_ HRESULT OnLoaded(_In_ IInspectable* pSender, _In_ xaml::IRoutedEventArgs* pArgs);
@@ -115,6 +130,31 @@ namespace DirectUI
         TrackerPtr<xaml::IFrameworkElement> m_tpContentRoot;
         TrackerPtr<xaml::IVisualStateGroup> m_tpDisplayModeStates;
 
-        bool m_isPaneOpeningOrClosing{ false };
+        struct PendingPaneStateChange
+        {
+            uint64_t completionSequence;
+            uint64_t requestId;
+            bool isPaneOpen;
+        };
+        static constexpr size_t c_maxTrackedPaneStateChanges = 32;
+        std::deque<PendingPaneStateChange> m_pendingPaneStateChanges;
+        std::map<uint64_t, std::optional<bool>> m_receivedPaneStateChanges;
+        uint64_t m_nextPaneRequestId{ 0 };
+
+        // Without DisplayModeStates, each request publishes its completion when it finishes;
+        // these keep the completions in request order when a callback makes a newer request.
+        // A template change also moves the requests whose group went away here.
+        struct FallbackPaneStateChange
+        {
+            uint64_t requestId;
+            bool isPaneOpen;
+            bool isComplete;
+        };
+        std::deque<FallbackPaneStateChange> m_fallbackPaneStateChanges;
+
+        // Requests whose OnPropertyChanged2 is still running (they nest through callbacks).
+        std::vector<uint64_t> m_inProgressPaneRequestIds;
+
+        void MovePendingPaneStateChangesToFallback();
     };
 }
