@@ -3,10 +3,7 @@
 
 using Common;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation.Metadata;
-using Windows.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -96,6 +93,14 @@ namespace MUXControlsTestApp
         private void AlwaysUseFallbackButton_Unchecked(object sender, RoutedEventArgs e)
         {
             _acrylicBrush.AlwaysUseFallback = false;
+        }
+
+        private void IsNoiseEnabledButton_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (_acrylicBrush != null)
+            {
+                _acrylicBrush.IsNoiseEnabled = IsNoiseEnabledButton.IsChecked == true;
+            }
         }
 
         private void TintOpacity_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
