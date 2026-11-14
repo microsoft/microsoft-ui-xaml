@@ -97,7 +97,7 @@ extends:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
-    - ${{ if and(eq(parameters.MUXFinalRelease, 'false'), eq(parameters.QuickBuild, false)) }}:
+    - ${{ if and(eq(parameters.MUXFinalRelease, false), eq(parameters.QuickBuild, false)) }}:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
@@ -112,6 +112,9 @@ extends:
           pipelineKind: QuickPR
         ${{ else }}:
           pipelineKind: PR
+
+    - ${{ if and(eq(parameters.MUXFinalRelease, false), eq(parameters.QuickBuild, false)) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunSystemCompositionEngineTests-Stage.yml
 
     - ${{ if eq(parameters.QuickBuild, false) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml

@@ -19,6 +19,8 @@ namespace Private
             interface IWin32Host;
 
             interface IWin32HostFactory;
+
+            interface IWin32HostFactorySystemCompositionEngine;
         }
     }
 }
@@ -74,6 +76,13 @@ namespace Private
                 HRESULT Create([in] Private.Infrastructure.Hosting.DpiAwarenessContext dpiAwarenessContext,
                     [in] boolean initCore,
                     [out] [retval] Windows.Foundation.IAsyncOperation<IInspectable*>** value);
+            }
+
+            [uuid(1499E536-DF13-4C72-9150-B8B06B384B69)]
+            [version(0x0A000000)]
+            interface IWin32HostFactorySystemCompositionEngine : IInspectable
+            {
+                HRESULT ConfigureSystemCompositionEngine([in] HSTRING launchRequestPath);
             }
         }
     }
