@@ -256,6 +256,355 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateNonVirtualLayoutReplacesItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (bool useUIElements in new[] { false, true })
+                {
+                    foreach (int count in new[] { 1, 10 })
+                    {
+                        var items = new ObservableCollection<object>();
+                        for (int i = 0; i < count; i++)
+                        {
+                            items.Add(useUIElements ? (object)new TextBlock { Text = i.ToString() } : i);
+                        }
+
+                        var repeater = new ItemsRepeater
+                        {
+                            Layout = new NonVirtualStackLayout(),
+                            ItemsSource = items
+                        };
+                        Content = repeater;
+                        Content.UpdateLayout();
+
+                        foreach (int index in new[] { 0, count / 2, count - 1 }.Distinct())
+                        {
+                            var previousElements = Enumerable.Range(0, count).Select(repeater.TryGetElement).ToList();
+                            int clearedCount = 0;
+                            int preparedCount = 0;
+                            TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> clearing =
+                                (sender, args) => clearedCount++;
+                            TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> prepared =
+                                (sender, args) => preparedCount++;
+                            repeater.ElementClearing += clearing;
+                            repeater.ElementPrepared += prepared;
+
+                            items[index] = useUIElements
+                                ? (object)new TextBlock { Text = "1000" }
+                                : 1000;
+                            Content.UpdateLayout();
+
+                            Verify.AreEqual(1, clearedCount);
+                            Verify.AreEqual(1, preparedCount);
+                            for (int i = 0; i < count; i++)
+                            {
+                                var child = repeater.TryGetElement(i) as TextBlock;
+                                Verify.IsNotNull(child);
+                                Verify.AreEqual(i, repeater.GetElementIndex(child));
+                                if (i == index)
+                                {
+                                    Verify.AreEqual("1000", child.Text);
+                                    if (useUIElements)
+                                    {
+                                        Verify.AreSame(items[i], child);
+                                        Verify.AreEqual(-1, repeater.GetElementIndex(previousElements[i]));
+                                    }
+                                }
+                                else
+                                {
+                                    Verify.AreSame(previousElements[i], child);
+                                }
+                            }
+
+                            repeater.ElementClearing -= clearing;
+                            repeater.ElementPrepared -= prepared;
+                        }
+
+                        Content = null;
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ValidateNonVirtualLayoutReplacesItemRanges()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (int index in new[] { 0, 4, 9 })
+                {
+                    var items = new CustomItemsSource(Enumerable.Range(0, 10).ToList());
+                    var repeater = new ItemsRepeater
+                    {
+                        Layout = new NonVirtualStackLayout(),
+                        ItemsSource = items,
+                        ItemTemplate = (DataTemplate)XamlReader.Load(
+                            @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                                <TextBlock Text='{Binding}' Height='20'/>
+                            </DataTemplate>")
+                    };
+                    Content = repeater;
+                    Content.UpdateLayout();
+
+                    foreach (int newCount in new[] { 3, 1 })
+                    {
+                        int oldCount = newCount == 3 ? 1 : 3;
+                        var followingElement = index + oldCount < items.Inner.Count
+                            ? repeater.TryGetElement(index + oldCount)
+                            : null;
+                        items.Replace(index, oldCount, newCount, reset: false);
+                        Content.UpdateLayout();
+
+                        Verify.AreEqual(newCount == 3 ? 12 : 10, items.Inner.Count);
+                        for (int i = 0; i < items.Inner.Count; i++)
+                        {
+                            var child = repeater.TryGetElement(i) as TextBlock;
+                            Verify.IsNotNull(child);
+                            Verify.AreEqual(items.Inner[i].ToString(), child.Text);
+                            Verify.AreEqual(i, repeater.GetElementIndex(child));
+                        }
+                        if (followingElement != null)
+                        {
+                            Verify.AreSame(followingElement, repeater.TryGetElement(index + newCount));
+                        }
+                    }
+
+                    Content = null;
+                }
+            });
+        }
+
+        // Scenario: a non-virtualizing layout with an ItemTemplate over 10 strings; replace item 0, 5 and 9, each twice.
+        // Expected: each Replace raises one ElementClearing for the old element and one ElementPrepared for the new
+        //     item's index; the replaced index shows the new item and every other index keeps its element.
+        // A failure means: the non-virtualizing layout kept showing the old element for a replaced item.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing templated items under a non-virtualizing layout recycles the old element and prepares a new one.")]
+        public void ValidateNonVirtualLayoutReplacesTemplatedItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater
+                {
+                    Layout = new NonVirtualStackLayout(),
+                    ItemsSource = items,
+                    ItemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='20'/>
+                        </DataTemplate>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                foreach (int index in new[] { 0, 5, 9 })
+                {
+                    for (int round = 0; round < 2; round++)
+                    {
+                        var previousElements = Enumerable.Range(0, items.Count).Select(repeater.TryGetElement).ToList();
+                        var cleared = new List<UIElement>();
+                        var preparedIndices = new List<int>();
+                        TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> clearing =
+                            (sender, args) => cleared.Add(args.Element);
+                        TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> prepared =
+                            (sender, args) => preparedIndices.Add(args.Index);
+                        repeater.ElementClearing += clearing;
+                        repeater.ElementPrepared += prepared;
+
+                        items[index] = $"Replaced {index} round {round}";
+                        Content.UpdateLayout();
+
+                        string context = $"index {index}, round {round}";
+                        Verify.AreEqual(1, cleared.Count, context + ": ElementClearing count");
+                        Verify.AreSame(previousElements[index], cleared[0], context + ": the old element is cleared");
+                        Verify.AreEqual(1, preparedIndices.Count, context + ": ElementPrepared count");
+                        Verify.AreEqual(index, preparedIndices[0], context + ": prepared index");
+                        for (int i = 0; i < items.Count; i++)
+                        {
+                            var child = repeater.TryGetElement(i) as TextBlock;
+                            Verify.IsNotNull(child, $"{context}: element {i}");
+                            Verify.AreEqual(items[i], child.Text, $"{context}: text of element {i}");
+                            Verify.AreEqual(i, repeater.GetElementIndex(child), $"{context}: index of element {i}");
+                            if (i != index)
+                            {
+                                Verify.AreSame(previousElements[i], child, $"{context}: element {i} is kept");
+                            }
+                        }
+
+                        repeater.ElementClearing -= clearing;
+                        repeater.ElementPrepared -= prepared;
+                    }
+                }
+
+                Content = null;
+            });
+        }
+
+        // Scenario: a UIElement items source without an ItemTemplate under a non-virtualizing layout; items 2..4 are
+        //     replaced by three new elements in one notification, then items 1..3 by one new element. The notifications
+        //     carry placeholder items only, like IObservableVector sources.
+        // Expected: every replaced element is removed from the repeater (none is skipped), the new elements are its
+        //     children at the right indices, and the following elements keep their elements.
+        // A failure means: a replaced UIElement stayed in the repeater, or removing one replaced element made the
+        //     repeater skip the next one.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that range replaces of UIElement items without a template under a non-virtualizing layout remove every replaced element.")]
+        public void ValidateNonVirtualLayoutReplacesUIElementRanges()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = new UIElementRangeSource(Enumerable.Range(0, 6).Select(i => (UIElement)new TextBlock { Text = "e" + i, Height = 20 }));
+                var repeater = new ItemsRepeater
+                {
+                    Layout = new NonVirtualStackLayout(),
+                    ItemsSource = source
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                foreach (var (index, oldCount, newCount) in new[] { (2, 3, 3), (1, 3, 1) })
+                {
+                    string context = $"Replace({index}, {oldCount}, {newCount})";
+                    var oldElements = source.Inner.Skip(index).Take(oldCount).ToList();
+                    var newElements = Enumerable.Range(0, newCount).Select(i => (UIElement)new TextBlock { Text = $"n{index}.{i}", Height = 20 }).ToList();
+                    source.Replace(index, oldCount, newElements);
+                    Content.UpdateLayout();
+
+                    foreach (var oldElement in oldElements)
+                    {
+                        Verify.IsNull(VisualTreeHelper.GetParent(oldElement), $"{context}: {((TextBlock)oldElement).Text} is removed from the repeater.");
+                    }
+                    Verify.AreEqual(source.Inner.Count, VisualTreeHelper.GetChildrenCount(repeater), $"{context}: child count");
+                    for (int i = 0; i < source.Inner.Count; i++)
+                    {
+                        Verify.AreSame(source.Inner[i], repeater.TryGetElement(i), $"{context}: element {i}");
+                        Verify.AreEqual(i, repeater.GetElementIndex(source.Inner[i]), $"{context}: index of element {i}");
+                    }
+                }
+
+                Content = null;
+            });
+        }
+
+        // Scenario: a non-virtualizing layout; before layout runs, replace item 0 and then insert an item at 0; after
+        //     layout, replace item 3 and then remove item 3 before layout runs.
+        // Expected: after each layout every index shows its item with one element per index, and the element of the
+        //     replaced-then-removed item is cleared exactly once.
+        // A failure means: a Replace followed by another change before layout left a stale element or cleared an
+        //     element twice.
+        [TestMethod]
+        [TestProperty("Description", "Verifies Replace followed by Insert or Remove before layout under a non-virtualizing layout.")]
+        public void ValidateNonVirtualLayoutReplaceFollowedByChangeBeforeLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var items = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater
+                {
+                    Layout = new NonVirtualStackLayout(),
+                    ItemsSource = items,
+                    ItemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Width='60' Height='10'/>
+                        </DataTemplate>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                items[0] = "Replaced 0";
+                items.Insert(0, "Inserted");
+                Content.UpdateLayout();
+                ViewManagerTests.VerifyElementMapping(repeater, items, "after Replace(0) + Insert(0)");
+
+                var element3 = repeater.TryGetElement(3);
+                int element3Clearings = 0;
+                repeater.ElementClearing += (sender, args) =>
+                {
+                    if (args.Element == element3)
+                    {
+                        element3Clearings++;
+                    }
+                };
+                items[3] = "Replaced 3";
+                items.RemoveAt(3);
+                Content.UpdateLayout();
+                ViewManagerTests.VerifyElementMapping(repeater, items, "after Replace(3) + RemoveAt(3)");
+                Verify.AreEqual(1, element3Clearings, "The element of item 3 is cleared once.");
+
+                Content = null;
+            });
+        }
+
+        // Scenario: a non-virtualizing layout over 5 items; an item is added and GetOrCreateElement realizes it as an
+        //     anchor before layout; the item is then replaced before layout.
+        // Expected: after layout the element at index 5 shows the new item.
+        // A failure means: the anchor element realized for the old item was used for the new item.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing an item whose element was realized by GetOrCreateElement shows the new item under a non-virtualizing layout.")]
+        public void ValidateNonVirtualLayoutReplaceOfAnchorElement()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var items = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater
+                {
+                    Layout = new NonVirtualStackLayout(),
+                    ItemsSource = items,
+                    ItemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Width='60' Height='10'/>
+                        </DataTemplate>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                items.Add("Item #5");
+                var anchor = (TextBlock)repeater.GetOrCreateElement(5);
+                Verify.AreEqual("Item #5", anchor.Text);
+
+                items[5] = "Replaced 5";
+                Content.UpdateLayout();
+                ViewManagerTests.VerifyElementMapping(repeater, items, "after replacing the anchor's item");
+
+                Content = null;
+            });
+        }
+
+        // A UIElement items source that raises Replace notifications with placeholder (null) items for a range.
+        private class UIElementRangeSource : CustomItemsSourceView
+        {
+            public UIElementRangeSource(IEnumerable<UIElement> items)
+            {
+                Inner = items.ToList();
+            }
+
+            public List<UIElement> Inner { get; }
+
+            public void Replace(int index, int oldCount, IList<UIElement> newItems)
+            {
+                Inner.RemoveRange(index, oldCount);
+                Inner.InsertRange(index, newItems);
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    global::System.Collections.Specialized.NotifyCollectionChangedAction.Replace,
+                    oldStartingIndex: index,
+                    oldItemsCount: oldCount,
+                    newStartingIndex: index,
+                    newItemsCount: newItems.Count));
+            }
+
+            protected override int GetSizeCore()
+            {
+                return Inner.Count;
+            }
+
+            protected override object GetAtCore(int index)
+            {
+                return Inner[index];
+            }
+        }
+
+        [TestMethod]
         public void VerifyItemsRepeaterNullLayoutIsTreatedAsStackLayout()
         {
             // ItemsRepeater.Layout defaults to 'null'.

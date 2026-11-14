@@ -155,6 +155,8 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     m_owner->OnElementClearing(element);
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    // MoveOwnershipToElementFactory resets the index, which focus recovery below still needs.
+    const int clearedIndex = virtInfo->Index();
     virtInfo->MoveOwnershipToElementFactory();
 
     // During creation of this object, we were the one setting the DataContext, so clear it now.
@@ -212,7 +214,6 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         // Focused element is going away. Remove the tracked last focused element
         // and pick a reasonable next focus if we can find one within the layout 
         // realized elements.
-        const int clearedIndex = virtInfo->Index();
         MoveFocusFromClearedIndex(clearedIndex);
     }
 
@@ -307,7 +308,7 @@ winrt::Control ViewManager::FindFocusCandidate(int clearedIndex, winrt::UIElemen
     {
         focusedChild = previousElement.try_as<winrt::UIElement>();
         focusCandidate = previousElement.try_as<winrt::Control>();
-        if (!previousElement)
+        if (!focusCandidate)
         {
             if (auto lastFocus = winrt::FocusManager::FindLastFocusableElement(previousElement))
             {
@@ -451,7 +452,10 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     case winrt::NotifyCollectionChangedAction::Replace:
     {
         // Requirement: oldStartIndex == newStartIndex. It is not a replace if this is not true.
-        // Two cases here
+        // Two cases here for virtualizing layouts. They are notified through OnItemsChangedCore: StackLayout,
+        // UniformGridLayout and FlowLayout recycle the replaced elements there (ElementManager), while the base
+        // VirtualizingLayout implementation only invalidates measure. Non-virtualizing layouts are handled in
+        // OnItemsReplacedForNonVirtualizingLayout.
         // case 1: oldCount == newCount 
         //         indices are not affected. nothing to do here.  
         // case 2: oldCount != newCount
@@ -477,7 +481,14 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         }
 
         const int countChange = newCount - oldCount;
-        if (countChange != 0)
+        const auto layout = m_owner->Layout();
+        if (layout && layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            // A NonVirtualizingLayout is not notified of collection changes and finds its elements by index only,
+            // so the elements of the replaced items are retired here.
+            OnItemsReplacedForNonVirtualizingLayout(oldStartIndex, oldCount, newCount);
+        }
+        else if (countChange != 0)
         {
             // countChange > 0 : countChange items were added
             // countChange < 0 : -countChange  items were removed
@@ -563,6 +574,132 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
         break;
     }
+}
+
+// A NonVirtualizingLayout reads its elements by index (GetElementIfAlreadyHeldByLayout), so after a Replace it would
+// keep getting the elements of the old items. Retire them, and move the following elements when the count changed.
+void ViewManager::OnItemsReplacedForNonVirtualizingLayout(int startIndex, int oldCount, int newCount)
+{
+    const int oldEndIndex = startIndex + oldCount;
+    const int countChange = newCount - oldCount;
+    const auto children = m_owner->Children();
+
+    // Elements held by the layout for the replaced items. Elements with the animator are left to it. Elements in the
+    // pinned pool are not retired either: a pinned element keeps its index and shows the old item, and a layout that
+    // asks for that index again gets it back from the pinned pool (a known limitation, as for Remove).
+    std::vector<winrt::UIElement> replacedElements;
+    for (unsigned i = 0u; i < children.Size(); ++i)
+    {
+        const auto element = children.GetAt(i);
+        const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+        const int dataIndex = virtInfo->Index();
+        if (virtInfo->IsHeldByLayout() && startIndex <= dataIndex && dataIndex < oldEndIndex)
+        {
+            replacedElements.push_back(element);
+        }
+    }
+
+    // An element can itself be one of the new items (for example items[i] = items[i] with UIElement items, or
+    // RadioButton items in RadioButtons). Such an element is kept and moved to its new index: clearing it would
+    // recycle it while it is realized again for the new item. The new items are read from the source, because
+    // NewItems only holds placeholders for IObservableVector sources, and only up to the end of the source.
+    std::vector<std::pair<winrt::UIElement, int>> reusedElements;
+    if (!replacedElements.empty())
+    {
+        std::vector<winrt::IUnknown> newElementItems;
+        std::unordered_map<void*, int> newElementItemOffsets;
+        const auto itemsSourceView = m_owner->ItemsSourceView();
+        const int newItemsInSource = std::max(0, std::min(newCount, itemsSourceView.Count() - startIndex));
+        for (int offset = 0; offset < newItemsInSource; ++offset)
+        {
+            if (const auto item = itemsSourceView.GetAt(startIndex + offset).try_as<winrt::UIElement>())
+            {
+                const auto itemIdentity = item.as<winrt::IUnknown>();
+                newElementItemOffsets.emplace(winrt::get_abi(itemIdentity), offset);
+                newElementItems.push_back(itemIdentity);
+            }
+        }
+
+        if (!newElementItemOffsets.empty())
+        {
+            auto replacedEnd = std::remove_if(replacedElements.begin(), replacedElements.end(),
+                [&](const winrt::UIElement& element)
+                {
+                    const auto found = newElementItemOffsets.find(winrt::get_abi(element.as<winrt::IUnknown>()));
+                    if (found != newElementItemOffsets.end())
+                    {
+                        reusedElements.emplace_back(element, startIndex + found->second);
+                        return true;
+                    }
+                    return false;
+                });
+            replacedElements.erase(replacedEnd, replacedElements.end());
+        }
+    }
+
+    // Clear every replaced element before any index changes, so that handlers of ElementIndexChanged never find a
+    // replaced element at an index that a moved element now uses. A handler of the events raised while clearing can
+    // itself clear elements (for example by setting ItemTemplate, ItemsSource or Layout), so each element is checked
+    // again right before it is cleared.
+    // The focused element is cleared last, so that focus moves once, past the replaced range, instead of moving to
+    // another replaced element that is cleared next.
+    if (const auto lastFocusedElement = m_lastFocusedElement.get())
+    {
+        std::stable_partition(replacedElements.begin(), replacedElements.end(),
+            [&lastFocusedElement](const winrt::UIElement& element) { return element != lastFocusedElement; });
+    }
+
+    for (const auto& element : replacedElements)
+    {
+        const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+        const int dataIndex = virtInfo->Index();
+        if (virtInfo->IsHeldByLayout() && startIndex <= dataIndex && dataIndex < oldEndIndex)
+        {
+            m_owner->ClearElementImpl(element);
+        }
+    }
+
+    // Move the kept elements within the replaced range and the following elements past it. In this order, an index
+    // that an ElementIndexChanged handler looks up resolves to the element that just moved there.
+    const auto updateReusedElements = [this, &reusedElements]()
+    {
+        for (const auto& [element, newIndex] : reusedElements)
+        {
+            const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+            if (virtInfo->IsHeldByLayout())
+            {
+                UpdateElementIndex(element, virtInfo, newIndex);
+            }
+        }
+    };
+
+    if (countChange < 0)
+    {
+        updateReusedElements();
+    }
+
+    if (countChange != 0)
+    {
+        for (unsigned i = 0u; i < children.Size(); ++i)
+        {
+            const auto element = children.GetAt(i);
+            const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+            const int dataIndex = virtInfo->Index();
+            if (virtInfo->IsRealized() && dataIndex >= oldEndIndex)
+            {
+                UpdateElementIndex(element, virtInfo, dataIndex + countChange);
+            }
+        }
+    }
+
+    if (countChange >= 0)
+    {
+        updateReusedElements();
+    }
+
+    // The next lookup recomputes the range from all children. Lookups of a NonVirtualizingLayout are never forced,
+    // so the range is rebuilt from every element the layout holds.
+    InvalidateRealizedIndicesHeldByLayout();
 }
 
 void ViewManager::EnsureFirstLastRealizedIndices()

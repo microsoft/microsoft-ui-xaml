@@ -75,6 +75,12 @@ void RadioButtons::OnApplyTemplate()
     UpdateVisualStateForIsEnabledChange();
 }
 
+static bool IsRealizedItemContainer(const winrt::ItemsRepeater& repeater, const winrt::DependencyObject& element)
+{
+    auto const elementAsUIE = element.try_as<winrt::UIElement>();
+    return elementAsUIE && repeater.GetElementIndex(elementAsUIE) >= 0;
+}
+
 // When focus comes from outside the RadioButtons control we will put focus on the selected radio button.
 void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
@@ -96,8 +102,10 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                 }
             }
 
-            // Selection follows focus unless control is held down.
-            else if ((winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+            // Selection follows focus unless control is held down, or focus is only leaving a container that was
+            // recycled because its item was removed or replaced.
+            else if ((winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down &&
+                IsRealizedItemContainer(repeater, oldFocusedElement))
             {
                 if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
                 {
@@ -265,6 +273,12 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             {
                 Select(args.Index());
             }
+            // Check the container of the selected item. Select could not check it when the item was selected before
+            // its container was created, for example right after the item replaced another one.
+            else if (args.Index() == m_selectedIndex && IsSelectedItemAt(args.Index()))
+            {
+                toggleButton.IsChecked(true);
+            }
         }
         if (auto const repeater = m_repeater.get())
         {
@@ -288,7 +302,17 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
         {
             if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
-                Select(-1);
+                if (m_currentlySelecting)
+                {
+                    // Select clears the selection once it finishes. Uncheck the container now: a container from
+                    // the ItemTemplate is recycled as is and would select its next item when it is reused.
+                    elementAsToggle.IsChecked(false);
+                    m_selectedContainerClearedWhileSelecting = true;
+                }
+                else
+                {
+                    Select(-1);
+                }
             }
         }
     }
@@ -305,7 +329,7 @@ void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, co
         {
             if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
             {
-                Select(args.NewIndex());
+                Select(args.NewIndex(), args.OldIndex() == m_selectedIndex /* selectedItemMoved */);
             }
         }
     }
@@ -329,8 +353,10 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
     }
 }
 
-void RadioButtons::Select(int index)
+void RadioButtons::Select(int index, bool selectedItemMoved)
 {
+    bool selectedContainerCleared = false;
+    int indexToSelectAfterwards = -1;
     if(!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
     {
         // Calling Select updates the checked state on the radio button being selected
@@ -340,6 +366,9 @@ void RadioButtons::Select(int index)
         auto clearSelecting = gsl::finally([this]()
             {
                 m_currentlySelecting = false;
+                m_raisingSelectionChanged = false;
+                m_selectedContainerClearedWhileSelecting = false;
+                m_selectionSetBySelectionChangedHandler = SelectionSetBySelectionChangedHandler::None;
             });
         m_currentlySelecting = true;
 
@@ -347,7 +376,12 @@ void RadioButtons::Select(int index)
         m_selectedIndex = index;
 
         auto const newSelectedItem = GetDataAtIndex(m_selectedIndex, true);
-        auto const previousSelectedItem = GetDataAtIndex(previousSelectedIndex, false);
+        // Uncheck the container at the previous index.
+        GetDataAtIndex(previousSelectedIndex, false);
+        // Report the item that was selected, not the one now at its index: the selected item may have been
+        // removed or replaced by the collection change that triggered this selection change.
+        auto const previousSelectedItem = m_selectedItem.get();
+        m_selectedItem.set(newSelectedItem);
 
         SelectedIndex(m_selectedIndex);
         SelectedItem(newSelectedItem);
@@ -365,8 +399,78 @@ void RadioButtons::Select(int index)
         {
             addedItems.Append(newSelectedItem);
         }
-        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(removedItems, addedItems));
+
+        // When the selected item only moved to another index (items were inserted or removed before it), the
+        // selection did not change: like Selector, update SelectedIndex without raising SelectionChanged.
+        if (!selectedItemMoved)
+        {
+            m_raisingSelectionChanged = true;
+            m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(removedItems, addedItems));
+            m_raisingSelectionChanged = false;
+        }
+
+        // A SelectionChanged handler removed or replaced the selected item, which recycled its container.
+        if (m_selectedContainerClearedWhileSelecting)
+        {
+            selectedContainerCleared = true;
+            indexToSelectAfterwards = GetIndexSetBySelectionChangedHandler();
+        }
     }
+
+    if (selectedContainerCleared)
+    {
+        // Select the item that the handler selected, if any (SelectedIndex and SelectedItem are not applied while
+        // selecting), otherwise clear the selection. The selected index has no container anymore, so it is cleared
+        // first when the handler selected the item now at that index.
+        if (indexToSelectAfterwards == m_selectedIndex)
+        {
+            Select(-1);
+        }
+        Select(indexToSelectAfterwards);
+    }
+}
+
+int RadioButtons::GetIndexSetBySelectionChangedHandler()
+{
+    switch (m_selectionSetBySelectionChangedHandler)
+    {
+    case SelectionSetBySelectionChangedHandler::Index:
+        return SelectedIndex();
+    case SelectionSetBySelectionChangedHandler::Item:
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                return itemsSourceView.IndexOf(SelectedItem());
+            }
+        }
+        return -1;
+    default:
+        return -1;
+    }
+}
+
+// Whether the item at index is the item selected by the last Select call. m_selectedIndex is not updated when the
+// collection changes while Select raises SelectionChanged, so it can point to another item.
+bool RadioButtons::IsSelectedItemAt(int index)
+{
+    if (auto const selectedItem = m_selectedItem.get())
+    {
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                if (index >= 0 && index < itemsSourceView.Count())
+                {
+                    // A source of value-type items can return a new boxed value on each read, so compare
+                    // with the source's equality when the references differ.
+                    return itemsSourceView.GetAt(index) == selectedItem ||
+                        itemsSourceView.IndexOf(selectedItem) == index;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 winrt::IInspectable RadioButtons::GetDataAtIndex(int index, bool containerIsChecked)
@@ -533,6 +637,10 @@ void RadioButtons::UpdateSelectedIndex()
     {
         Select(SelectedIndex());
     }
+    else if (m_raisingSelectionChanged)
+    {
+        m_selectionSetBySelectionChangedHandler = SelectionSetBySelectionChangedHandler::Index;
+    }
 }
 
 void RadioButtons::UpdateSelectedItem()
@@ -546,6 +654,10 @@ void RadioButtons::UpdateSelectedItem()
                 Select(itemsSourceView.IndexOf(SelectedItem()));
             }
         }
+    }
+    else if (m_raisingSelectionChanged)
+    {
+        m_selectionSetBySelectionChangedHandler = SelectionSetBySelectionChangedHandler::Item;
     }
 }
 

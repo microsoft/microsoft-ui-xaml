@@ -101,6 +101,41 @@ namespace MUXControlsTestApp
             RadioButtonsHasFocusCheckBox.IsChecked = false;
         }
 
+        // The X key replaces and Backspace removes the item whose container has focus, so that tests can change the
+        // source while the keyboard is the last input device.
+        private void TestRadioButtons_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key != Windows.System.VirtualKey.X && e.Key != Windows.System.VirtualKey.Back)
+            {
+                return;
+            }
+
+            var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
+            var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
+            var index = repeater.GetElementIndex(e.OriginalSource as UIElement);
+            if (index < 0 || !(TestRadioButtons.ItemsSource is IList items))
+            {
+                return;
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Back)
+            {
+                items.RemoveAt(index);
+            }
+            else if (ItemTypeComboBox.SelectedItem == StringsComboBoxItem)
+            {
+                items[index] = "Replaced";
+            }
+            else
+            {
+                var radioButton = new RadioButton() { Content = "Replaced", Name = "Replaced Radio Button" };
+                radioButton.SetValue(AutomationProperties.NameProperty, "Replaced Radio Button");
+                items[index] = radioButton;
+            }
+
+            e.Handled = true;
+        }
+
         private void SetMaxColumnsButton_Click(object sender, RoutedEventArgs e)
         {
             if (UInt32.TryParse(MaxColumnsTextBlock.Text, out uint value))

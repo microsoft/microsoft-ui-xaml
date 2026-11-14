@@ -56,6 +56,8 @@ private:
 
     void UpdateElementIndex(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int index);
 
+    void OnItemsReplacedForNonVirtualizingLayout(int startIndex, int oldCount, int newCount);
+
     void InvalidateRealizedIndicesHeldByLayout();
     void EnsureFirstLastRealizedIndices();
 
