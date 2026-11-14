@@ -35,6 +35,7 @@ steps:
     inputs:
       environment: 'PRODEXT'
       teamId: '19357'
+      serviceTreeId: $(CDP_SERVICE_TREE_ID)
       authType: 'FederatedIdentityTDBuild'
       FederatedIdentityTDBuildServiceConnection: "WinUI-TDBuild-ServiceConnection"
       relativePathRoot: $(Build.SourcesDirectory)
