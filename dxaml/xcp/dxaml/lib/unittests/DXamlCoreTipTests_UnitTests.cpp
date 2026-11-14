@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <ole2.h>
+#include <string>
 #define wil_details_GetKernelBaseModuleHandle() GetModuleHandleW(L"kernelbase.dll")
 #include <tip.h>
 #include <tip/tip_test_helper.h>
