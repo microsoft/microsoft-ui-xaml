@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
@@ -32,7 +33,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 if (Parent.ImplementsINDEI)
                 {
-                    var propertyInfo = this.Parent.ValueType.UnderlyingType.GetProperty(PropertyName);
+                    var propertyInfo = this.Parent.ValueType.UnderlyingType.GetPropertyLmr(PropertyName);
                     if (propertyInfo != null)
                     {
                         return DirectUI.ReflectionHelper.FindAttributeByShortTypeName(propertyInfo, KnownTypes.RequiredAttribute) != null;

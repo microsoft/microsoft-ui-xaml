@@ -138,47 +138,47 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return m_type;
         }
 
-        public override MethodInfo[] GetMethods(System.Reflection.BindingFlags flags)
+        internal override MethodInfo[] GetMethodsCore(System.Reflection.BindingFlags flags)
         {
             return new MethodInfo[0];
         }
 
-        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
+        internal override ConstructorInfo[] GetConstructorsCore(BindingFlags bindingAttr)
         {
             return new ConstructorInfo[0];
         }
 
-        public override FieldInfo[] GetFields(System.Reflection.BindingFlags flags)
+        internal override FieldInfo[] GetFieldsCore(System.Reflection.BindingFlags flags)
         {
             return new FieldInfo[0];
         }
 
-        public override PropertyInfo[] GetProperties(System.Reflection.BindingFlags flags)
+        internal override PropertyInfo[] GetPropertiesCore(System.Reflection.BindingFlags flags)
         {
             return new PropertyInfo[0];
         }
 
-        public override EventInfo[] GetEvents(System.Reflection.BindingFlags flags)
+        internal override EventInfo[] GetEventsCore(System.Reflection.BindingFlags flags)
         {
             return new EventInfo[0];
         }
 
-        public override EventInfo GetEvent(string name, System.Reflection.BindingFlags flags)
+        internal override EventInfo GetEventCore(string name, System.Reflection.BindingFlags flags)
         {
             return null;
         }
 
-        public override FieldInfo GetField(string name, BindingFlags bindingAttr)
+        internal override FieldInfo GetFieldCore(string name, BindingFlags bindingAttr)
         {
             return null;
         }
 
-        public override Type GetNestedType(string name, BindingFlags bindingAttr)
+        internal override Type GetNestedTypeCore(string name, BindingFlags bindingAttr)
         {
             return null;
         }
 
-        public override Type[] GetNestedTypes(BindingFlags bindingAttr)
+        internal override Type[] GetNestedTypesCore(BindingFlags bindingAttr)
         {
             return Type.EmptyTypes;
         }
@@ -189,34 +189,34 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return 0;
         }
 
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override MethodInfo GetMethodImplCore(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             return null;
         }
 
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
+        internal override PropertyInfo GetPropertyImplCore(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             return null;
         }
 
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override ConstructorInfo GetConstructorImplCore(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             return null;
         }
 
 
-        public override Type[] GetInterfaces()
+        internal override Type[] GetInterfacesCore()
         {
             return new Type[0];
         }
 
-        public override Type GetInterface(string name, bool ignoreCase)
+        internal override Type GetInterfaceCore(string name, bool ignoreCase)
         {
             if (name == null) throw new ArgumentNullException("name");
             return null;
         }
 
-        public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMembersCore(BindingFlags bindingAttr)
         {
             return MetadataOnlyTypeDef.GetMembersHelper(this, bindingAttr);
         }
@@ -231,7 +231,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return true;
         }
 
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        internal override object InvokeMemberCore(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
         {
             throw new NotSupportedException();
         }

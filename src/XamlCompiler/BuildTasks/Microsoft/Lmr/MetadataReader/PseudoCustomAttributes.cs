@@ -64,7 +64,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             // Get constructor for TypeForwardedToAttribute.
             Assembly systemAssembly = itu.GetSystemAssembly();
-            Type attributeType = systemAssembly.GetType(TypeForwardedToAttributeName, false, false);
+            Type attributeType = systemAssembly.GetTypeLmr(TypeForwardedToAttributeName, false, false);
 
             // If system assembly doesn't have TypeForwardedTo defined then there is no support
             // for type forwarding.
@@ -75,7 +75,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             foreach (UnresolvedTypeName utn in raw)
             {
-                ConstructorInfo[] constructors = attributeType.GetConstructors();
+                ConstructorInfo[] constructors = attributeType.GetConstructorsLmr();
                 Debug.Assert(constructors.Length == 1, "TypeForwardedToAttribute should have only one constructor.");
 
                 //ConvertToType can throw if the type's assembly wasn't resolvable.  In that case we just don't add its TypeForwardedTo attribute.
@@ -268,13 +268,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         {
             // Get constructor for SerializableAttribute(). No args.
             Assembly systemAssembly = module.AssemblyResolver.GetSystemAssembly();
-            Type attributeType = systemAssembly.GetType(SerializableAttributeName, isRequired, false);
+            Type attributeType = systemAssembly.GetTypeLmr(SerializableAttributeName, isRequired, false);
             if (attributeType == null)
             {
                 return null;
             }
 
-            ConstructorInfo[] constructors = attributeType.GetConstructors();
+            ConstructorInfo[] constructors = attributeType.GetConstructorsLmr();
             Debug.Assert(constructors.Length == 1, "SerializableAttribute should have only one constructor.");
 
             var typedArguments = new List<CustomAttributeTypedArgument>(0);

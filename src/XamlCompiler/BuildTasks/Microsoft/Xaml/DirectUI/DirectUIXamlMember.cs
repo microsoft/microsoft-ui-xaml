@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Xaml;
 using System.Xaml.Schema;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
 {
@@ -294,7 +295,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 Type d = this.Type.UnderlyingType;
                 if (d.BaseType == typeof(MulticastDelegate))
                 {
-                    MethodInfo handler = d.GetMethod(KnownMembers.Invoke);
+                    MethodInfo handler = d.GetMethodLmr(KnownMembers.Invoke);
                     if (handler != null)
                     {
                         ParameterInfo[] handlerParameters = handler.GetParameters();

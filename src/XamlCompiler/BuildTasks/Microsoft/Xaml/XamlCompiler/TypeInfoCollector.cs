@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
@@ -512,7 +513,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 Type[] allTypes = null;
                 try
                 {
-                    allTypes = asm.GetTypes();
+                    allTypes = asm.GetTypesLmr();
                 }
                 catch (Exception ex)
                 {
@@ -623,7 +624,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             Type iface = null;
             try
             {
-                iface = type.GetInterface(InterfaceName);
+                iface = type.GetInterfaceLmr(InterfaceName);
             }
             catch (Exception)
             {
