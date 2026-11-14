@@ -401,8 +401,22 @@ void TreeView::OnApplyTemplate()
         }
         viewModel->PrepareView(m_rootNode.get());
         viewModel->SetOwners(listControl, *this);
-        viewModel->NodeExpanding({ get_weak(), &TreeView::OnNodeExpanding });
-        viewModel->NodeCollapsed({ get_weak(), &TreeView::OnNodeCollapsed });
+        // TreeView is unsealed, so don't use get_weak() here (cppwinrt #1431).
+        const auto weakThis = winrt::make_weak(static_cast<winrt::TreeView>(*this));
+        viewModel->NodeExpanding([weakThis](const winrt::TreeViewNode& sender, const winrt::IInspectable& args)
+        {
+            if (const auto strongThis = weakThis.get())
+            {
+                winrt::get_self<TreeView>(strongThis)->OnNodeExpanding(sender, args);
+            }
+        });
+        viewModel->NodeCollapsed([weakThis](const winrt::TreeViewNode& sender, const winrt::IInspectable& args)
+        {
+            if (const auto strongThis = weakThis.get())
+            {
+                winrt::get_self<TreeView>(strongThis)->OnNodeCollapsed(sender, args);
+            }
+        });
 
         const auto selectionMode = SelectionMode();
         if (selectionMode == winrt::TreeViewSelectionMode::Single)
