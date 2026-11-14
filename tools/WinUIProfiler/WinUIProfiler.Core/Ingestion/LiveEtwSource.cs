@@ -31,16 +31,19 @@ public sealed class LiveEtwSource : IDisposable
     private readonly TraceEventSession session;
     private readonly IReadOnlyList<MarkerProviderSettings> markers;
     private readonly Thread reader;
+    private readonly bool gpuMemoryEnabled;
     private int eventsLost;
     private bool direct3DEnabled;
     private bool reading;
     private bool disposed;
 
-    private LiveEtwSource(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled)
+    private LiveEtwSource(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled,
+        bool gpuMemoryEnabled)
     {
         this.session = session;
         this.markers = markers;
         this.direct3DEnabled = direct3DEnabled;
+        this.gpuMemoryEnabled = gpuMemoryEnabled;
         reader = new(Read) { IsBackground = true, Name = "WinUIProfiler ETW reader" };
     }
 
@@ -169,9 +172,9 @@ public sealed class LiveEtwSource : IDisposable
             // Open the consumer side before enabling, so events written before reading starts are kept.
             _ = session.Source;
             var direct3DEnabled = EnableProviders(session, options, launcherOptions, enabled);
-            EnableGpuMemory(session);
+            var gpuMemoryEnabled = EnableGpuMemory(session);
             EnableFocus(session);
-            return new(session, enabled, direct3DEnabled);
+            return new(session, enabled, direct3DEnabled, gpuMemoryEnabled);
         }
         catch
         {
@@ -232,15 +235,21 @@ public sealed class LiveEtwSource : IDisposable
     // the provider is enabled for every process and XamlEventSubscription keeps the target's by their ProcessId
     // or hProcessId field. A kernel provider writes only to sessions in nonpaged memory, which TraceEventSession uses.
     // Best effort: without these events the session still reads the XAML events.
-    private static void EnableGpuMemory(TraceEventSession session)
+    private static bool EnableGpuMemory(TraceEventSession session, bool previouslyEnabled = false) =>
+        EnableGpuMemory(options => session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose,
+            GpuMemoryKeyword | GpuResourceKeyword, options), previouslyEnabled);
+
+    internal static bool EnableGpuMemory(Action<TraceEventProviderOptions> enable, bool previouslyEnabled = false)
     {
         try
         {
-            session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, GpuMemoryKeyword | GpuResourceKeyword);
+            enable(new() { EventIDsToEnable = [33, 34, 35, 36, 37, 38, 366, 367] });
+            return true;
         }
-        catch (Exception error) when (error is not OutOfMemoryException)
+        catch (Exception error) when (error is not OutOfMemoryException && !previouslyEnabled)
         {
             Trace.TraceWarning($"Could not enable the kernel's GPU memory and allocation events: {error.Message}");
+            return false;
         }
     }
 
@@ -264,17 +273,19 @@ public sealed class LiveEtwSource : IDisposable
     // rundown events too. They identify existing objects, not their original creation times.
     private void CaptureGraphicsState(TraceEventProviderOptions options) =>
         CaptureGraphicsState((provider, keywords) => session.CaptureState(provider, keywords),
-            () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options), direct3DEnabled);
+            () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options),
+            () => EnableGpuMemory(session, previouslyEnabled: true), direct3DEnabled, gpuMemoryEnabled);
 
-    internal static void CaptureGraphicsState(Action<Guid, ulong> request, Action restoreDirect3D, bool direct3DEnabled = true)
+    internal static void CaptureGraphicsState(Action<Guid, ulong> request, Action restoreDirect3D, Action restoreGpuMemory,
+        bool direct3DEnabled = true, bool gpuMemoryEnabled = true)
     {
-        foreach (var (provider, keywords) in new[]
+        foreach (var (provider, keywords, enabled, restore) in new[]
         {
-            (XamlProviders.Direct3D11, Direct3D11Keywords),
-            (XamlProviders.DxgKrnl, GpuMemoryKeyword | GpuResourceKeyword)
+            (XamlProviders.Direct3D11, Direct3D11Keywords, direct3DEnabled, restoreDirect3D),
+            (XamlProviders.DxgKrnl, GpuMemoryKeyword | GpuResourceKeyword, gpuMemoryEnabled, restoreGpuMemory)
         })
         {
-            if (provider == XamlProviders.Direct3D11 && !direct3DEnabled) continue;
+            if (!enabled) continue;
             try
             {
                 request(provider, keywords);
@@ -286,7 +297,7 @@ public sealed class LiveEtwSource : IDisposable
             finally
             {
                 // CaptureState re-enables its provider without filters, even when the subsequent state request fails.
-                if (provider == XamlProviders.Direct3D11) restoreDirect3D();
+                restore();
             }
         }
     }

@@ -41,6 +41,10 @@ internal static class GraphicsIndexTests
         ReusedHandles();
         DelayedObservations();
         AmbiguousAndChangingBridges();
+        DisjointLifetimes();
+        PromotedDisjointLifetimes();
+        RefinedGlobalEnds();
+        SinglePassGraphicsTrim();
         TrimmedLifetimes();
     }
 
@@ -1467,6 +1471,168 @@ internal static class GraphicsIndexTests
                 "The allocation's latest declared handles must still remain available separately from observed links.");
         });
         Console.WriteLine("Passed: multiple allocations, ambiguous claims, changing bridges and adapter scoping stay correct.");
+    }
+
+    private static void DisjointLifetimes()
+    {
+        foreach (var global in new[] { false, true })
+        foreach (var sourceEnds in new[] { false, true })
+        foreach (var alreadyClosed in new[] { false, true })
+        foreach (var gap in new[] { 0, 1_000 })
+        {
+            ProfilerEvent Source(int phase, long qpc) =>
+                (global ? Allocation(36 + phase, 2, 3, 100) : Direct3D(12 + phase, 1, kernelResource: 100))
+                    with { TimestampQpc = qpc };
+            ProfilerEvent Target(int phase, long qpc) =>
+                Allocation((global ? 33 : 36) + phase, 2, 3, 100) with { TimestampQpc = qpc };
+            List<ProfilerEvent> events =
+            [
+                Source(0, sourceEnds ? 1_000 : 2_000 + gap),
+                Target(0, sourceEnds ? 2_000 + gap : 1_000)
+            ];
+            if (alreadyClosed) events.Add(sourceEnds ? Target(1, 4_000) : Source(1, 4_000));
+            events.Add(sourceEnds ? Source(1, 2_000) : Target(1, 2_000));
+            WithRecording(events, connection =>
+            {
+                var kind = global ? "AllocationGlobal" : "ResourceAllocation";
+                Expect(Count(connection, "GraphicsLinks", $"Kind = '{kind}'") == (gap == 0 ? 1 : 0),
+                    $"A delayed Stop must retract only provably disjoint {kind} links, including closed intervals " +
+                    $"(source ends: {sourceEnds}; closed: {alreadyClosed}; gap: {gap}).");
+                Expect(Count(connection, "Events") == events.Count &&
+                    Count(connection, "GraphicsObjects", "StopQpc = 2000 AND EndReason = 'Stop'") == 1,
+                    "Retracting a derived association must preserve every raw observation and its actual lifetime end.");
+                if (!global)
+                    Expect(Count(connection, "GraphicsResourceAllocations") == (gap == 0 ? 1 : 0),
+                        "Disproved resource associations must disappear from the public allocation view too.");
+            });
+        }
+        foreach (var allocationFirst in new[] { false, true })
+        {
+            List<ProfilerEvent> events = [Direct3D(12, 1, kernelResource: 100) with { TimestampQpc = 1_000 }];
+            var allocation = Allocation(36, 2, 3, 100) with { TimestampQpc = 2_000 };
+            if (allocationFirst) events.Add(allocation);
+            events.Add(Direct3D(13, 1, kernelResource: 100) with { TimestampQpc = 3_000 });
+            events.Add(Direct3D(12, 4, kernelResource: 100) with { TimestampQpc = 5_000 });
+            if (!allocationFirst) events.Add(allocation);
+            events.Add(Allocation(37, 2, 3, 100) with { TimestampQpc = 2_500 });
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsResourceAllocations", """
+                    ResourceId = (SELECT GraphicsObjectId FROM GraphicsObjects WHERE Kind = 'Texture2D' AND StartQpc = 5000)
+                    """) == 0 &&
+                    Count(connection, "GraphicsLinks", "Kind = 'ResourceAllocation'") == (allocationFirst ? 1 : 0),
+                    "A delayed allocation Stop must invalidate a reused resource bridge without deleting a valid older association.");
+            });
+        }
+        Console.WriteLine("Passed: delayed endpoint Stops retract disjoint and reused resource/global links without rejecting equal-time bounds.");
+    }
+
+    private static void PromotedDisjointLifetimes()
+    {
+        foreach (var global in new[] { false, true })
+        foreach (var sourceUnknown in new[] { false, true })
+        foreach (var promote in new[] { false, true })
+        {
+            ProfilerEvent Source(int phase, long qpc) =>
+                (global ? Allocation(36 + phase, 2, 3, 100) : Direct3D(12 + phase, 1, kernelResource: 100))
+                    with { TimestampQpc = qpc };
+            ProfilerEvent Target(int phase, long qpc) =>
+                Allocation((global ? 33 : 36) + phase, 2, 3, 100) with { TimestampQpc = qpc };
+            List<ProfilerEvent> events =
+            [
+                sourceUnknown ? Source(2, 5_000) : Target(2, 5_000),
+                sourceUnknown ? Target(0, 1_000) : Source(0, 1_000),
+                sourceUnknown ? Target(1, 2_000) : Source(1, 2_000)
+            ];
+            if (promote) events.Add(sourceUnknown ? Source(0, 3_000) : Target(0, 3_000));
+            WithRecording(events, connection =>
+            {
+                var kind = global ? "AllocationGlobal" : "ResourceAllocation";
+                Expect(Count(connection, "GraphicsLinks", $"Kind = '{kind}'") == (promote ? 0 : 1),
+                    $"Unknown creation must permit a partial {kind} association until a delayed Start proves it impossible " +
+                    $"(source unknown: {sourceUnknown}; promoted: {promote}).");
+                Expect(Count(connection, "Events") == events.Count &&
+                    Count(connection, "GraphicsObjects", "FirstObservation = 'Rundown'") == 1,
+                    "Creation promotion must correct derived links without replacing the original partial lifetime.");
+            });
+        }
+        Console.WriteLine("Passed: partial resource/global links survive unknown creation and retract after disjoint Start promotion.");
+    }
+
+    private static void RefinedGlobalEnds()
+    {
+        foreach (var (otherLifetime, trim, keepRefined) in new[]
+        {
+            (false, false, false), (true, false, false), (true, true, false), (false, true, true)
+        })
+        {
+            List<ProfilerEvent> events = [];
+            if (otherLifetime)
+                events.AddRange(
+                [
+                    Allocation(33, 2, 3, 100) with { TimestampQpc = 3_500 },
+                    Allocation(34, 2, 3, 100) with { TimestampQpc = 4_500 }
+                ]);
+            events.AddRange(
+            [
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 1_000 },
+                Allocation(36, 2, 3, 100) with { TimestampQpc = 4_000 },
+                Allocation(33, 2, 3, 100) with { TimestampQpc = 5_000 }
+            ]);
+            if (trim)
+                for (var i = 0; i < 6_000; i++)
+                {
+                    events.Add(new(0, 0, 10, 7, XamlProvider.Xaml, false, "UnrelatedEvent", 0,
+                        [new("Value", new string('x', 256))]));
+                    if (keepRefined && i % 64 == 0)
+                        events.Add(Allocation(35, 2, 3, 100) with { TimestampQpc = 1_500 });
+                }
+            events.Add(Allocation(34, 2, 3, 100) with { TimestampQpc = 3_000 });
+            WithRecording(events, connection =>
+            {
+                Expect(Count(connection, "GraphicsLinks", """
+                    Kind = 'AllocationGlobal' AND EndSeq IS NULL
+                    AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects
+                        WHERE Kind = 'AdapterAllocation' AND StartQpc = 5000)
+                    """) == (otherLifetime ? 0 : 1),
+                    "Refining a reuse end must remove its superseded bound, but preserve independent retained and trimmed ends.");
+                if (trim)
+                {
+                    Expect(Sql.Scalar(connection, "SELECT CompleteFromSeq FROM SessionInfo") > 5,
+                        "The refined-end fixture must really discard the original graphics events.");
+                    Expect(Count(connection, "GraphicsObjects", "StopQpc = 4500") == 0,
+                        "The independent closed bound must survive even after its lifetime row is trimmed.");
+                }
+                if (!trim || keepRefined)
+                    Expect(Count(connection, "GraphicsObjects", "StartQpc = 1000 AND StopQpc = 3000 AND EndQpc = 3000") == 1,
+                        "Retained lifetime ends must remain refinable rather than becoming permanent trimmed-history bounds.");
+            }, limitBytes: trim ? 1024 * 1024 : SessionWriter.DefaultLimitBytes);
+        }
+        Console.WriteLine("Passed: refined global ends preserve independent history without freezing retained reuse boundaries.");
+    }
+
+    private static void SinglePassGraphicsTrim()
+    {
+        foreach (var (closedChild, cutoff) in new[] { (true, 5L), (false, 4L), (true, 3L) })
+        {
+            List<ProfilerEvent> events = [Direct3D(3, Device), Direct3D(12, 1, Device, 100)];
+            if (closedChild) events.Add(Direct3D(13, 1, Device, 100));
+            events.Add(Direct3D(4, Device));
+            WithRecording(events, connection =>
+            {
+                using (var graphics = new GraphicsIndex(connection))
+                using (var transaction = connection.BeginTransaction())
+                {
+                    graphics.Trim(cutoff, transaction);
+                    transaction.Commit();
+                }
+                var retained = !closedChild || cutoff == 3;
+                Expect(Count(connection, "GraphicsObjects", "Kind = 'Device'") == (retained ? 1 : 0) &&
+                    Count(connection, "GraphicsObjects", "Kind = 'Texture2D'") == (retained ? 1 : 0),
+                    "One trim must remove an eligible closed child and parent, but retain open children and cutoff-boundary evidence.");
+            });
+        }
+        Console.WriteLine("Passed: one graphics trim removes eligible child/parent pairs and retains referenced or boundary lifetimes.");
     }
 
     private static void TrimmedLifetimes()

@@ -1116,32 +1116,82 @@ Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation
 }
 Console.WriteLine("Passed: live/offline memory counters exclude allocations without losing budget, usage or legacy counts.");
 
-foreach (var failure in new[] { false, true })
+foreach (var reverse in new[] { false, true })
+{
+    (XamlProvider Provider, double Time)[] observations =
+    [
+        (XamlProvider.Direct3D11, 1), (XamlProvider.Xaml, 2), (XamlProvider.Direct3D11, 3)
+    ];
+    if (reverse) Array.Reverse(observations);
+    var tally = new OfflineEtlSource.ProcessTally(10, null, observations[0].Time);
+    foreach (var (provider, time) in observations) tally.Count(provider, time, null);
+    tally.Count(XamlProvider.Win32k, 0, null);
+    tally.Count(XamlProvider.Win32k, 4, null);
+    Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
+        tally.XamlEvents == 1 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
+        "D3D events must extend both process time bounds without changing counts or Win32k focus semantics.");
+}
+{
+    var tally = new OfflineEtlSource.ProcessTally(10, null, 2);
+    tally.Count(XamlProvider.Direct3D11, 1, 12);
+    tally.Count(XamlProvider.Direct3D11, 3, 13);
+    Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
+        tally.XamlEvents == 0 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
+        "D3D-only processes must track their event bounds without becoming eligible for the XAML process list.");
+}
+Console.WriteLine("Passed: D3D events extend offline process bounds in either order without affecting discovery or counters.");
+
+foreach (var failure in new Guid?[] { null, XamlProviders.Direct3D11, XamlProviders.DxgKrnl })
 {
     List<string> calls = [];
     var enabled = LiveEtwSource.EnableDirect3D(() => { });
+    var gpuEnabled = LiveEtwSource.EnableGpuMemory(options =>
+        Expect(options.EventIDsToEnable.SequenceEqual([33, 34, 35, 36, 37, 38, 366, 367]) &&
+            options.ProcessIDFilter is null && options.ProcessNameFilter is null,
+            "The kernel provider must enable only allocation/rundown and memory IDs, without filtering event-header ownership."));
     LiveEtwSource.CaptureGraphicsState((provider, _) =>
     {
         calls.Add(provider == XamlProviders.Direct3D11 ? "D3D11" : "DxgKrnl");
-        if (failure && provider == XamlProviders.Direct3D11) throw new InvalidOperationException("Capture state failed after enabling.");
-    }, () => calls.Add("Restore"), enabled);
-    Expect(calls.SequenceEqual(["D3D11", "Restore", "DxgKrnl"]),
-        "D3D11 filters must be restored immediately after capture state, including failure, before kernel rundown.");
+        if (provider == failure) throw new InvalidOperationException("Capture state failed after enabling.");
+    }, () => calls.Add("RestoreD3D11"), () => calls.Add("RestoreDxgKrnl"), enabled, gpuEnabled);
+    Expect(calls.SequenceEqual(["D3D11", "RestoreD3D11", "DxgKrnl", "RestoreDxgKrnl"]),
+        "Each enabled graphics provider's filters must be restored immediately after successful or failed capture state.");
 }
+foreach (var d3dEnabled in new[] { false, true })
+foreach (var gpuEnabled in new[] { false, true })
 {
-    var enabled = LiveEtwSource.EnableDirect3D(() => throw new InvalidOperationException("Provider enable failed."));
+    var enabledD3D = LiveEtwSource.EnableDirect3D(() =>
+    {
+        if (!d3dEnabled) throw new InvalidOperationException("Provider enable failed.");
+    });
+    var enabledGpu = LiveEtwSource.EnableGpuMemory(_ =>
+    {
+        if (!gpuEnabled) throw new InvalidOperationException("Provider enable failed.");
+    });
     List<Guid> requested = [];
     LiveEtwSource.CaptureGraphicsState((provider, _) => requested.Add(provider),
-        () => throw new InvalidOperationException("A disabled provider must not be restored."), enabled);
-    Expect(!enabled && requested.SequenceEqual([XamlProviders.DxgKrnl]),
-        "Failure to enable optional D3D11 must skip its rundown and restoration without preventing kernel capture.");
+        () => Expect(d3dEnabled, "A disabled D3D11 provider must not be restored."),
+        () => Expect(gpuEnabled, "A disabled kernel provider must not be restored."), enabledD3D, enabledGpu);
+    Expect(enabledD3D == d3dEnabled && enabledGpu == gpuEnabled &&
+        requested.SequenceEqual(new[] { XamlProviders.Direct3D11, XamlProviders.DxgKrnl }
+            .Where(provider => provider == XamlProviders.Direct3D11 ? d3dEnabled : gpuEnabled)),
+        "Optional provider enable failures must skip only that provider's rundown and restoration.");
 }
 ExpectThrows<InvalidOperationException>(() => LiveEtwSource.EnableDirect3D(
     () => throw new InvalidOperationException("Filter update failed."), previouslyEnabled: true),
     "Updating an enabled provider's filter must fail closed instead of leaving an apparently successful broader capture.");
-ExpectThrows<InvalidOperationException>(() => LiveEtwSource.CaptureGraphicsState((_, _) => { },
-    () => throw new InvalidOperationException("Filter restoration failed.")),
-    "A failed filter restoration must propagate rather than leave an apparently successful unfiltered capture.");
+ExpectThrows<InvalidOperationException>(() => LiveEtwSource.EnableGpuMemory(
+    _ => throw new InvalidOperationException("Filter update failed."), previouslyEnabled: true),
+    "Updating an enabled kernel provider's filter must fail closed instead of leaving a broader capture.");
+ExpectThrows<OutOfMemoryException>(() => LiveEtwSource.EnableGpuMemory(_ => throw new OutOfMemoryException()),
+    "Optional provider handling must not suppress resource exhaustion.");
+foreach (var kernelFailure in new[] { false, true })
+{
+    ExpectThrows<InvalidOperationException>(() => LiveEtwSource.CaptureGraphicsState((_, _) => { },
+        () => { if (!kernelFailure) throw new InvalidOperationException("D3D11 filter restoration failed."); },
+        () => { if (kernelFailure) throw new InvalidOperationException("Kernel filter restoration failed."); }),
+        "Either failed filter restoration must propagate rather than leave an apparently successful unfiltered capture.");
+}
 Console.WriteLine("Passed: optional graphics enable failures preserve capture; enabled-provider filters fail closed.");
 
 var graphicsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsIdentity-{Guid.NewGuid():N}.sqlite");

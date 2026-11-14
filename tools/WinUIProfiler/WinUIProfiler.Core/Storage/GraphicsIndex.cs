@@ -20,6 +20,7 @@ internal sealed class GraphicsIndex : IDisposable
     private sealed class GlobalHistory
     {
         internal long? EndQpc { get; set; }
+        internal long? TrimmedEndQpc { get; set; }
         internal long LastSeq { get; set; }
         internal int References { get; set; }
     }
@@ -98,6 +99,7 @@ internal sealed class GraphicsIndex : IDisposable
     private readonly SqliteCommand allocation;
     private readonly SqliteCommand insertLink;
     private readonly SqliteCommand endLink;
+    private readonly SqliteCommand disjointLinks;
     private readonly SqliteCommand[] commands;
     private long objectCount;
 
@@ -199,7 +201,15 @@ internal sealed class GraphicsIndex : IDisposable
             WHERE SourceId = $source AND TargetId = $target AND Kind = $kind AND StartSeq = $start
             """, ("$source", SqliteType.Integer), ("$target", SqliteType.Integer), ("$kind", SqliteType.Text),
             ("$start", SqliteType.Integer), ("$seq", SqliteType.Integer), ("$reason", SqliteType.Text));
-        commands = [insertObject, observeObject, endObject, history, globalEnds, insertEvent, device, deviceReference, resource, allocation, insertLink, endLink];
+        disjointLinks = Sql.Prepare(connection, """
+            DELETE FROM GraphicsLinks
+            WHERE (SourceId = $id OR TargetId = $id) AND EXISTS (
+                SELECT 1 FROM GraphicsObjects s JOIN GraphicsObjects t
+                    ON t.GraphicsObjectId = GraphicsLinks.TargetId
+                WHERE s.GraphicsObjectId = GraphicsLinks.SourceId
+                    AND (s.EndQpc < t.StartQpc OR t.EndQpc < s.StartQpc))
+            """, ("$id", SqliteType.Integer));
+        commands = [insertObject, observeObject, endObject, history, globalEnds, insertEvent, device, deviceReference, resource, allocation, insertLink, endLink, disjointLinks];
     }
 
     internal void Add(long sequence, long typeId, ProfilerEvent data, SqliteTransaction transaction)
@@ -416,18 +426,24 @@ internal sealed class GraphicsIndex : IDisposable
     {
         if (!globalHistory.TryGetValue(identity, out var retained))
         {
-            Set(globalEnds, ("$handle", Hex(identity.Allocation)), ("$adapter", Hex(identity.Adapter)));
             globalHistory[identity] = retained = new()
             {
-                EndQpc = globalEnds.ExecuteScalar() is long end ? end : null
+                EndQpc = GlobalEndOf(identity)
             };
         }
         retained.LastSeq = sequence;
         return retained;
     }
 
+    private long? GlobalEndOf(GlobalIdentity identity)
+    {
+        Set(globalEnds, ("$handle", Hex(identity.Allocation)), ("$adapter", Hex(identity.Adapter)));
+        return globalEnds.ExecuteScalar() is long end ? end : null;
+    }
+
     private void Record(Lifetime tracked, Phase phase, long sequence, long qpc)
     {
+        var promoted = phase == Phase.Start && tracked.StartQpc is null;
         tracked.LastQpc = Math.Max(tracked.LastQpc, qpc);
         if (qpc < tracked.KnownFromQpc)
         {
@@ -437,6 +453,7 @@ internal sealed class GraphicsIndex : IDisposable
         if (phase == Phase.Start) tracked.StartQpc ??= qpc;
         if (phase != Phase.Reference) tracked.ReferenceOnly = false;
         Record(tracked.Id, phase, sequence, qpc);
+        if (promoted) DiscardDisjointLinks(tracked.Id);
     }
 
     private void Record(long id, Phase phase, long sequence, long qpc)
@@ -459,12 +476,14 @@ internal sealed class GraphicsIndex : IDisposable
 
     private void End(Lifetime tracked, long sequence, long qpc, string reason)
     {
+        var previousEnd = tracked.EndQpc;
         tracked.EndQpc = qpc;
         if (active.GetValueOrDefault(tracked.Identity) == tracked) active.Remove(tracked.Identity);
         if (tracked.Kind == Kind.Device) activeDevices.Remove(tracked.Id);
         Set(endObject, ("$id", tracked.Id), ("$seq", sequence), ("$qpc", qpc), ("$reason", reason),
             ("$stopSeq", reason == "Stop" ? sequence : null), ("$stopQpc", reason == "Stop" ? qpc : null));
         endObject.ExecuteNonQuery();
+        DiscardDisjointLinks(tracked.Id);
         if (tracked.GlobalObservations is { } observations)
         {
             foreach (var (retained, _, _) in observations.Values) retained.References--;
@@ -476,9 +495,20 @@ internal sealed class GraphicsIndex : IDisposable
         {
             var identity = new GlobalIdentity(tracked.Identity.Qualifier, tracked.Identity.Handle);
             var retained = GlobalHistoryOf(identity, sequence);
-            retained.EndQpc = Math.Max(retained.EndQpc ?? long.MinValue, qpc);
+            if (previousEnd is { } previous && qpc < previous && retained.EndQpc == previous)
+            {
+                var end = GlobalEndOf(identity);
+                retained.EndQpc = retained.TrimmedEndQpc is { } trimmed ? Math.Max(end ?? long.MinValue, trimmed) : end;
+            }
+            else retained.EndQpc = Math.Max(retained.EndQpc ?? long.MinValue, qpc);
             if (globals.TryGetValue(identity, out var bucket)) pending[bucket] = reason;
         }
+    }
+
+    private void DiscardDisjointLinks(long id)
+    {
+        Set(disjointLinks, ("$id", id));
+        disjointLinks.ExecuteNonQuery();
     }
 
     private void RefreshCorrelations(Lifetime tracked)
@@ -585,12 +615,33 @@ internal sealed class GraphicsIndex : IDisposable
             DELETE FROM GraphicsLinks WHERE EndSeq < $cutoff;
             UPDATE GraphicsLinks SET Trimmed = 1 WHERE StartSeq < $cutoff;
             UPDATE GraphicsObjects SET Trimmed = 1 WHERE FirstSeq < $cutoff;
-            DELETE FROM GraphicsObjects WHERE EndSeq < $cutoff
+            """, transaction, ("$cutoff", cutoff));
+        using (var remove = Sql.Prepare(connection, """
+            DELETE FROM GraphicsObjects WHERE EndSeq < $cutoff AND (Kind = 'Device') = $devices
                 AND NOT EXISTS (SELECT 1 FROM GraphicsObjectEvents e WHERE e.GraphicsObjectId = GraphicsObjects.GraphicsObjectId)
                 AND NOT EXISTS (SELECT 1 FROM GraphicsLinks l
                     WHERE l.SourceId = GraphicsObjects.GraphicsObjectId OR l.TargetId = GraphicsObjects.GraphicsObjectId)
-                AND NOT EXISTS (SELECT 1 FROM GraphicsObjects r WHERE r.DeviceId = GraphicsObjects.GraphicsObjectId);
-            """, transaction, ("$cutoff", cutoff));
+                AND NOT EXISTS (SELECT 1 FROM GraphicsObjects r WHERE r.DeviceId = GraphicsObjects.GraphicsObjectId)
+            RETURNING Kind, Handle, Qualifier, EndQpc
+            """, ("$cutoff", SqliteType.Integer), ("$devices", SqliteType.Integer)))
+        {
+            remove.Transaction = transaction;
+            foreach (var devices in new[] { false, true })
+            {
+                Set(remove, ("$cutoff", cutoff), ("$devices", devices));
+                using var rows = remove.ExecuteReader();
+                while (rows.Read())
+                {
+                    if (rows.GetString(0) != "AdapterAllocation" || rows.GetString(2).Length == 0) continue;
+                    var identity = new GlobalIdentity(
+                        ulong.Parse(rows.GetString(2).AsSpan(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                        ulong.Parse(rows.GetString(1).AsSpan(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture));
+                    if (globalHistory.TryGetValue(identity, out var retained))
+                        // Only deleted rows become permanent bounds; retained rows can still receive earlier Stops.
+                        retained.TrimmedEndQpc = Math.Max(retained.TrimmedEndQpc ?? long.MinValue, rows.GetInt64(3));
+                }
+            }
+        }
         foreach (var (identity, retained) in globalHistory.ToArray())
             if (retained.References == 0 && retained.LastSeq < cutoff &&
                 !active.ContainsKey(new(IdentitySpace.AdapterAllocation, identity.Allocation, identity.Adapter)))

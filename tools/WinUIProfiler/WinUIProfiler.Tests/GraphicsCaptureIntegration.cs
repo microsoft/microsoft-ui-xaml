@@ -37,7 +37,9 @@ internal static class GraphicsCaptureIntegration
                     writer.Process(++sequence, data);
                 });
                 session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, 0x6);
-                session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, 0x44);
+                Expect(LiveEtwSource.EnableGpuMemory(options =>
+                    session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, 0x44, options)),
+                    "The live kernel integration requires allocation and memory event-ID filtering.");
                 var reader = new Thread(() =>
                 {
                     try { session.Source.Process(); }
@@ -117,16 +119,23 @@ internal static class GraphicsCaptureIntegration
         try
         {
             int otherProcess;
+            long filteredFrom;
             using (var session = new TraceEventSession($"WinUIProfiler-GraphicsFilter-{Environment.ProcessId}-{Guid.NewGuid():N}", path))
             {
                 var options = new TraceEventProviderOptions { ProcessIDFilter = [Environment.ProcessId] };
                 session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, 0x6, options);
+                // Establish a real unfiltered control before verifying capture-state restores the kernel ID filter.
+                session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, 0x44);
+                ExerciseDirect3D();
                 LiveEtwSource.CaptureGraphicsState((provider, keywords) =>
                 {
-                    if (provider != XamlProviders.Direct3D11) return;
                     session.CaptureState(provider, keywords);
                     if (failure) throw new InvalidOperationException("Capture state failed after enabling.");
-                }, () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, 0x6, options));
+                }, () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, 0x6, options),
+                    () => LiveEtwSource.EnableGpuMemory(kernelOptions =>
+                        session.EnableProvider(XamlProviders.DxgKrnl, TraceEventLevel.Verbose, 0x44, kernelOptions),
+                        previouslyEnabled: true));
+                filteredFrom = Stopwatch.GetTimestamp();
                 var start = new ProcessStartInfo(Environment.ProcessPath!)
                 {
                     UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true
@@ -149,11 +158,24 @@ internal static class GraphicsCaptureIntegration
             }
             var selectedEvents = 0;
             var otherEvents = 0;
+            var kernelEvents = 0;
+            var unrelatedKernelEvents = 0;
+            var unfilteredKernelEvents = 0;
             using (var source = new ETWTraceEventSource(path))
             {
                 source.AllEvents += data =>
                 {
-                    if (data.ProviderGuid != XamlProviders.Direct3D11) return;
+#pragma warning disable CS0618 // Compare the event's native timestamp with the filter-restoration boundary.
+                    var afterRestore = data.TimeStampQPC >= filteredFrom;
+#pragma warning restore CS0618
+                    if (data.ProviderGuid == XamlProviders.DxgKrnl)
+                    {
+                        var selected = (int)data.ID is >= 33 and <= 38 or 366 or 367;
+                        if (!afterRestore && !selected) unfilteredKernelEvents++;
+                        if (afterRestore && selected) kernelEvents++;
+                        if (afterRestore && !selected) unrelatedKernelEvents++;
+                    }
+                    if (data.ProviderGuid != XamlProviders.Direct3D11 || !afterRestore) return;
                     if (data.ProcessID == Environment.ProcessId) selectedEvents++;
                     if (data.ProcessID == otherProcess) otherEvents++;
                 };
@@ -161,14 +183,18 @@ internal static class GraphicsCaptureIntegration
             }
             Expect(selectedEvents > 0 && otherEvents == 0,
                 $"Capture state must retain the selected PID filter (selected: {selectedEvents}; unrelated: {otherEvents}; failure: {failure}).");
+            Expect(unfilteredKernelEvents > 0 && kernelEvents > 0 && unrelatedKernelEvents == 0,
+                $"Capture state must restore the kernel event-ID filter (unfiltered control: {unfilteredKernelEvents}; " +
+                $"selected: {kernelEvents}; unrelated: {unrelatedKernelEvents}; failure: {failure}).");
             using var output = new StringWriter();
             using var error = new StringWriter();
             Expect(CliApplication.Run(["processes", path], output, error, CancellationToken.None) == 0,
-                $"The CLI must read the D3D-only trace: {error}");
+                $"The CLI must read the graphics-only trace: {error}");
             Expect(!output.ToString().Split('\n').Any(line =>
                 int.TryParse(line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(), out _)),
-                "The CLI must not list D3D-only processes as XAML processes.");
-            Console.WriteLine($"Passed: live PID filtering after {(failure ? "failed" : "successful")} capture state; D3D-only CLI discovery stays empty.");
+                "The CLI must not list graphics-only processes as XAML processes.");
+            Console.WriteLine($"Passed: live PID/kernel event-ID filtering after {(failure ? "failed" : "successful")} capture state; " +
+                $"graphics-only CLI discovery stays empty (unfiltered kernel: {unfilteredKernelEvents}; filtered kernel: {kernelEvents}).");
         }
         finally { File.Delete(path); }
     }

@@ -235,9 +235,10 @@ public static class OfflineEtlSource
                     if (eventId is not (>= 33 and <= 38)) GpuMemoryEvents++;
                     break;
                 case XamlProvider.Win32k:
-                case XamlProvider.Direct3D11:
-                    // Focus and D3D events alone don't make this a XAML process.
                     return;
+                case XamlProvider.Direct3D11:
+                    // Track time without making graphics-only processes eligible for the XAML process list.
+                    break;
                 default:
                     XamlEvents++;
                     break;
