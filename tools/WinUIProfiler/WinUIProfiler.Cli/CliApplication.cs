@@ -326,14 +326,14 @@ internal static class CliApplication
             perProvider[(int)profilerEvent.Provider]++;
         }, cancellationToken);
 
-        // In a trace, every process that uses the GPU has GPU memory events, every process with windows has focus events,
+        // In a trace, non-XAML processes can have GPU memory/resource events, every process with windows has focus events,
         // and any process can write a marker provider's events; only those with XAML events are listed. A session file
         // has its process's launcher's events too.
         var launcherProcessId = options.IsSessionFile ? SessionFile.ReadInfo(options.InputPath).LauncherProcessId : null;
         output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
         foreach (var (processId, perProvider) in counts
             .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] +
-                entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
+                entry.Value[(int)XamlProvider.Direct3D11] + entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
             .OrderByDescending(entry => entry.Value.Sum()))
         {
             output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
@@ -800,6 +800,7 @@ internal static class CliApplication
         XamlProvider.MicrosoftUIXamlControls => "MUXC",
         XamlProvider.Win32k => "Win32k",
         XamlProvider.Marker => "Marker",
+        XamlProvider.Direct3D11 => "Direct3D11",
         _ => "DxgKrnl"
     };
 
