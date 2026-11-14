@@ -78,7 +78,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "dowActivatedEventArgs const&)\r\n{\r\n    Initialize();\r\n}\r\n\r\nvoid XamlBindings::Dat" +
                     "aContextChanged(\r\n    FrameworkElement const&,\r\n    DataContextChangedEventArgs " +
                     "const& args)\r\n{\r\n    if (_pBindings->SetDataRoot(args.NewValue()))\r\n    {\r\n     " +
-                    "   Update();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::SubscribeForDataContextChanged(Fram" +
+                    "   Update();\r\n    }\r\n    else\r\n    {\r\n        // SetDataRoot detached listeners;" +
+                    " restore only sources that do not need an item.\r\n        _pBindings->UpdateStati" +
+                    "cBindings();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::SubscribeForDataContextChanged(Fram" +
                     "eworkElement const& object)\r\n{\r\n    _pBindings->SubscribeForDataContextChanged(o" +
                     "bject, *this);\r\n}\r\n\r\nvoid XamlBindings::DisconnectUnloadedObject(int connectionI" +
                     "d)\r\n{\r\n    _pBindings->DisconnectUnloadedObject(connectionId);\r\n}\r\n\r\nvoid XamlBi" +

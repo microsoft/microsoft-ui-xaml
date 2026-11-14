@@ -264,7 +264,7 @@
       winrt/BindTestbedModel.h, so this project needs the component's metadata too.
     -->
     <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Private>false</Private>
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
 

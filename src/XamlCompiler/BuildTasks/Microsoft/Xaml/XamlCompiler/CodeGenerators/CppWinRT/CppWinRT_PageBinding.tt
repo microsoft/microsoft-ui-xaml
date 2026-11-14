@@ -13,6 +13,50 @@
         , public <#=Projection(ProjectInfo.RootNamespace)#>::implementation::IXamlBindingTracking
 <#  }#>
 {
+<#  if (bindUniverse.NeedsStaticBindingsUpdate) {#>
+        using Base = <#=Projection(ProjectInfo.RootNamespace)#>::implementation::<#=bindUniverse.DataRootType.NeedsBoxUnbox() ? "ValueTypeXamlBindings" : "ReferenceTypeXamlBindings"#><<#=bindUniverse.DataRootType#>, <#=GetBindingTrackingClassName(bindUniverse, Model.CodeInfo)#>>;
+
+        bool SetDataRoot(IInspectable const& data) override
+        {
+            // Only this affected template opts into cleanup and missing-item validity. Leave
+            // ordinary templates, pages and ControlTemplates on the shared legacy setter.
+            ReleaseAllListeners();
+<#      if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
+            // No forward path, argument or reverse receiver needs this untyped item.
+            // Do not convert it to the synthetic DataTemplate root, even when non-null.
+            return true;
+<#      } else {#>
+            this->_hasDataRoot = data != nullptr;
+            if (!this->_hasDataRoot)
+            {
+                this->ClearDataRoot();
+                return false;
+            }
+            return Base::SetDataRoot(data);
+<#      }#>
+        }
+
+<#  }#>
+<#  if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
+        void Update() override
+        {
+            UpdateStaticBindings();
+        }
+
+<#  } else if (bindUniverse.NeedsItemBindingInitialization) {#>
+        void Update() override
+        {
+            Base::Update();
+            this->_itemBindingsInitialized |= this->_hasDataRoot;
+        }
+
+        void StopTracking() override
+        {
+            Base::StopTracking();
+            this->_itemBindingsInitialized = false;
+        }
+
+<#  }#>
         <#=bindUniverse.BindingsClassName#>()
         {
 <#  if (bindUniverse.NeedsBindingsTracking) {#>
@@ -152,6 +196,9 @@
                         _dataContextChangedToken.value = 0;
                     }
                     _isInitialized = true;
+<#      if (bindUniverse.NeedsItemBindingInitialization) {#>
+                    this->_itemBindingsInitialized |= this->_hasDataRoot;
+<#      }#>
                  }
                  break;
 <#      foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) { #>
@@ -174,7 +221,11 @@
                 break;
 <#      } #>
             }
+<#      if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
+            UpdateStaticBindings(1 << phase);
+<#      } else {#>
             Update_(::winrt::unbox_value<<#=bindUniverse.RootStep.ValueType#>>(item) , 1 << phase);
+<#      }#>
         }
 <# } else if (bindUniverse.NeedsIDataTemplateComponent) { #>
         void Recycle() override
@@ -217,6 +268,13 @@
 <#  }#>
 
     private:
+<#  if (bindUniverse.NeedsStaticBindingsUpdate && !bindUniverse.IsDataIndependentUntypedTemplate) {#>
+        // A missing item differs from default(T), even while independent bindings are initialized.
+        bool _hasDataRoot = false;
+<#  }#>
+<#  if (bindUniverse.NeedsItemBindingInitialization) {#>
+        bool _itemBindingsInitialized = false;
+<#  }#>
 <#  if (bindUniverse.BoundElements != null && bindUniverse.BoundElements.Any()) { #>
         // Fields for each control that has bindings.
 <#  }#>
@@ -260,6 +318,20 @@
 
         // Update methods for each path node used in binding steps.
 <#  }#>
+<#  if (bindUniverse.NeedsStaticBindingsUpdate) {#>
+        // Reconnect static/named sources and dispatch their functions without walking the data root.
+        void UpdateStaticBindings() override
+        {
+            UpdateStaticBindings(this->NOT_PHASED);
+        }
+
+        void UpdateStaticBindings(int32_t phase)
+        {
+<#      Output_Update_Steps(false, bindUniverse.RootStep.Children.OfType<RootNamedElementStep>(), true, "phase");#>
+<#      Output_Update_Independent_Steps(bindUniverse);#>
+            this->_isInitialized = true;
+        }
+<#  }#>
 <#  foreach (var bindStep in bindUniverse.BindPathSteps.Values.Where(bindStep => bindStep.IsIncludedInUpdate == true)) { #>
 
 <#      if (bindStep is FunctionStep) { #>
@@ -277,10 +349,7 @@
 <#          Output_Binding_Phased_SetValue(distinctPhase, false, bindStep, false);#>
 <#      }#>
 <#      if (bindStep is RootStep) { #>
-<#          Output_Update_Steps(false, bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");#>
-<#          if (bindUniverse.NeedsCompleteUpdate) { #>
-            CompleteUpdate(phase);
-<#          }#>
+<#          Output_Update_Independent_Steps(bindUniverse);#>
 <#      }#>
         }
 <#  }#>
@@ -587,6 +656,7 @@
 
 <#+ private void Output_Connect_TwoWayBinding(BindAssignment ba)#>
 <#+ {#>
+<#+     // Forward initialization and reverse receiver validity are separate requirements.#>
 <#+     Output_ApiInformationCall_Push(ba.ApiInformation, Indent.None); #>
 <#+     if (ba.NeedsLostFocusForTwoWay) { #>
                 <#=ba.ConnectionIdElement.ReferenceExpression#>.LostFocus(
@@ -609,7 +679,7 @@
 <#+     } #>
                         if (auto strongThis{ weakThis.lock() })
                         {
-                            if (IsInitialized())
+                            if (<#=ba.NeedsItemBindingInitialization ? "this->_itemBindingsInitialized" : "IsInitialized()"#><#=ba.NeedsDataRootForReverseAssignment ? " && this->_hasDataRoot" : ""#>)
                             {
                                 // Update Two Way binding
 <#+     MethodStep bindBackStep = ba.BindBackStep as MethodStep; #>
@@ -1010,6 +1080,19 @@
 <#+     }#>
 <#+ }#>
 
+<#+ private void Output_Update_Independent_Steps(BindUniverse bindUniverse)#>
+<#+ {#>
+<#+     // Static paths retain their existing update behavior. Only affected templates detach#>
+<#+     // namescope listeners in SetDataRoot, so only those scopes need to restore them here.#>
+<#+     Output_Update_Steps(false, bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");#>
+<#+     if (bindUniverse.NeedsStaticBindingsUpdate && bindUniverse.ElementRootStep != null) {#>
+<#+         Output_Update_Steps(false, bindUniverse.BindPathSteps.Values.Where(s => s.Parent == bindUniverse.ElementRootStep), false, "phase");#>
+<#+     }#>
+<#+     if (bindUniverse.NeedsCompleteUpdate) {#>
+            CompleteUpdate(phase);
+<#+     }#>
+<#+ }#>
+
 <#+ private void Output_TryGetValueFunctions(BindUniverse bindUniverse)#>
 <#+ {#>
 <#+     foreach (BindPathStep step in bindUniverse.TryGetValueSteps)#>
@@ -1017,6 +1100,13 @@
 
         bool <#=step.TryGetValueCodeName#>(<#=step.ValueType#>& val)
         {
+<#+         if (bindUniverse.NeedsStaticBindingsUpdate && step is RootStep root && !root.IsElementRoot) {#>
+            // A missing value-type item must not resolve successfully as its default value.
+            if (!this->_hasDataRoot)
+            {
+                return false;
+            }
+<#+         }#>
 <#+         if (!step.IsRetrievedThroughParent) {#>
             val = <#=step.CodeGen().PathExpression#>;
             return true;

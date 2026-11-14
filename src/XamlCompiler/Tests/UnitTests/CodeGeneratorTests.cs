@@ -24,6 +24,133 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void CodeGenerator_NamedTemplateSourceConnection_CSharp()
+        {
+            AssertNamedTemplateSourceConnection(CodeGenLanguage.CSharp, false);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_DeferredNamedTemplateSourceConnection_CSharp()
+        {
+            AssertNamedTemplateSourceConnection(CodeGenLanguage.CSharp, true);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_NamedTemplateSourceConnection_CppWinRT()
+        {
+            AssertNamedTemplateSourceConnection(CodeGenLanguage.CppWinRT, false);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_DeferredNamedTemplateSourceConnection_CppWinRT()
+        {
+            AssertNamedTemplateSourceConnection(CodeGenLanguage.CppWinRT, true);
+        }
+
+        private void AssertNamedTemplateSourceConnection(CodeGenLanguage language, bool deferred)
+        {
+            string deferredAttribute = deferred ? "x:DeferLoadStrategy='Lazy'" : "";
+            string xaml = $@"
+<Page
+    x:Class='LibManagedDll.BindPathParserClass'
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Grid>
+        <TextBlock x:Name='pageSource' Text='page source'/>
+        <TextBlock Text='{{x:Bind pageSource.Text, Mode=OneWay}}'/>
+        <ContentControl>
+            <ContentControl.ContentTemplate>
+                <DataTemplate x:DataType='x:String'>
+                    <StackPanel>
+                        <TextBlock x:Name='templateSource' {deferredAttribute} Text='template source'/>
+                        <TextBlock Text='{{x:Bind templateSource.Text, Mode=OneWay}}'/>
+                    </StackPanel>
+                </DataTemplate>
+            </ContentControl.ContentTemplate>
+        </ContentControl>
+        <Button>
+            <Button.Template>
+                <ControlTemplate TargetType='Button'>
+                    <StackPanel>
+                        <TextBlock x:Name='controlSource' {deferredAttribute} Text='control source'/>
+                        <TextBlock Text='{{x:Bind controlSource.Text, Mode=OneWay}}'/>
+                    </StackPanel>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</Page>";
+            var context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest), "NamedTemplateSource_" + language + "_" + deferred);
+            DirectUISchemaContext schema = _testHelper.LoadSchema(
+                SchemaMode.ManagedRuntime | SchemaMode.LoadUserDll);
+            var rewrittenXaml = new List<string>();
+            List<FileNameAndContentPair> pairs = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, language, rewrittenXaml);
+            Assert.AreEqual(1, rewrittenXaml.Count);
+            string code = string.Join(Environment.NewLine, pairs.Select(pair => pair.Contents));
+
+            foreach (string name in new[] { "pageSource", "controlSource", "templateSource" })
+            {
+                Match element = Regex.Match(rewrittenXaml[0],
+                    $@"<TextBlock\b[^>]*\bx:Name\s*=\s*['""]{name}['""][^>]*>");
+                Assert.IsTrue(element.Success, $"Named source '{name}' was lost during rewriting.");
+                Match connection = Regex.Match(element.Value,
+                    @"\bx:ConnectionId\s*=\s*['""](?<id>\d+)['""]");
+                Assert.IsTrue(connection.Success,
+                    $"Named source '{name}' must have a connection ID ({language}, deferred={deferred}): {element.Value}");
+                string id = connection.Groups["id"].Value;
+                if (language == CodeGenLanguage.CSharp)
+                {
+                    // Disconnect and connector-factory switches reuse IDs; inspect the actual Connect case.
+                    var sections = CSharpSyntaxTree.ParseText(code).GetRoot().DescendantNodes()
+                        .OfType<MethodDeclarationSyntax>()
+                        .Where(method => method.Identifier.ValueText == "Connect")
+                        .Where(method => name == "pageSource" ||
+                            (method.Parent is ClassDeclarationSyntax type &&
+                             type.Identifier.ValueText.EndsWith("_Bindings", StringComparison.Ordinal)))
+                        .SelectMany(method => method.DescendantNodes().OfType<SwitchSectionSyntax>())
+                        .Where(section => section.Labels.OfType<CaseSwitchLabelSyntax>()
+                            .Any(label => label.Value is LiteralExpressionSyntax literal &&
+                                literal.Token.ValueText == id)).ToList();
+                    Assert.AreEqual(1, sections.Count,
+                        $"Expected one Connect case for '{name}' ({id}).");
+                    if (name == "templateSource")
+                    {
+                        Assert.IsTrue(sections[0].DescendantNodes().OfType<AssignmentExpressionSyntax>()
+                            .Any(assignment => assignment.IsKind(SyntaxKind.SimpleAssignmentExpression) &&
+                                assignment.Left is MemberAccessExpressionSyntax field &&
+                                field.Name.Identifier.ValueText == "obj" + id &&
+                                assignment.Right.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+                                    .Any(identifier => identifier.Identifier.ValueText == "target")),
+                            $"The DataTemplate source's Connect case must assign its field from target: {sections[0]}");
+                    }
+                }
+                else
+                {
+                    // Generated C++ closes methods at their declaration's indentation. Bound the method
+                    // and switch case so a later Disconnect assignment cannot satisfy this assertion.
+                    var methods = Regex.Matches(code,
+                        @"(?m)^(?<indent>[ \t]*)void [^\r\n]*\bConnect\([^\r\n]*\)(?<override>[ \t]+override)?[ \t]*\r?\n\k<indent>\{(?<body>[\s\S]*?)^\k<indent>\}")
+                        .Cast<Match>().Where(method => name == "pageSource" || method.Groups["override"].Success);
+                    var cases = methods.Select(method => Regex.Match(method.Groups["body"].Value,
+                        $@"(?m)^(?<indent>[ \t]*)case {id}:[^\r\n]*\r?\n(?<body>[\s\S]*?)(?=^\k<indent>(?:case \d+:|default:)|\z)"))
+                        .Where(match => match.Success).ToList();
+                    Assert.AreEqual(1, cases.Count,
+                        $"Expected one Connect case for '{name}' ({id}).");
+                    if (name == "templateSource")
+                    {
+                        string body = cases[0].Groups["body"].Value;
+                        Assert.IsTrue(Regex.IsMatch(body,
+                            @"\bauto\s+targetElement\s*=\s*target\.as<[^;]+>\(\);"));
+                        Assert.IsTrue(Regex.IsMatch(body, $@"\bobj{id}\s*=\s*targetElement\s*;"),
+                            $"The DataTemplate source's Connect case must assign its field from targetElement: {body}");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void CodeGenerator_ControlTemplateBoundLoad_CSharp()
         {
             AssertControlTemplateBoundLoad(CodeGenLanguage.CSharp, false /* rootHasBindings */, false /* namedTemplate */);
