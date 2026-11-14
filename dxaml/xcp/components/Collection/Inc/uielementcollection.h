@@ -97,7 +97,7 @@ public:
     // Special callback used by XamlDiagnosics for repositioning the in-app toolbar when it's added
     void SetToolbarAddedCallback(_In_ std::function<HRESULT(CUIElement*)> toolbarHandleCallback)
     {
-        m_toolbarAddedCallback = toolbarHandleCallback;
+        m_toolbarAddedCallback = std::move(toolbarHandleCallback);
     }
 
 protected:

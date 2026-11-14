@@ -399,7 +399,7 @@ namespace DependencyLocator
         void RegisterActivator(_In_ ActivatorFunction activator, _In_ StoragePolicyFlags flags)
         {
             LocalDependencyStorage& storage = LocalDependencyStorage::Instance();
-            storage.RegisterActivator<T>(activator, flags);
+            storage.RegisterActivator<T>(std::move(activator), flags);
         }
 
         template<class T>

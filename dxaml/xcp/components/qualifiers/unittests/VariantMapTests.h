@@ -39,6 +39,14 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(UpdateItem)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies an item in VariantMapItem can be updated.")
             END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ClearItems)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies clearing a target removes all matching items and reevaluates selection.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ClearMissingItems)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies clearing a missing target preserves the remaining items.")
+            END_TEST_METHOD()
         };
     }
 } } } }
