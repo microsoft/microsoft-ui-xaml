@@ -56,6 +56,13 @@
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
                                                                       HorizontalAlignment="Left" />
                                     </ScrollViewer>
+                                    <Rectangle x:Name="PART_ColumnReorderIndicator"
+                                               x:Load="False"
+                                               Visibility="Collapsed"
+                                               HorizontalAlignment="Left"
+                                               IsHitTestVisible="False"
+                                               Width="{StaticResource TableViewColumnReorderIndicatorWidth}"
+                                               Fill="{ThemeResource TableViewColumnReorderIndicatorBrush}" />
                                 </Grid>
                             </Border>
                             <ScrollViewer x:Name="PART_BodyScroller"

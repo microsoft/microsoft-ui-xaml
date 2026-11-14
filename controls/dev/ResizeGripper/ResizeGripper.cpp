@@ -304,7 +304,16 @@ void ResizeGripper::BeginDrag()
     m_lastRaisedDelta = 0.0;
     SetValue(s_IsDraggingProperty, box_value(true));
     // Before raising: a handler may end the drag re-entrantly.
-    AttachCancelKeyHandler();
+    m_escapeHook.Attach(XamlRoot(), [weakThis = get_weak()]()
+        {
+            auto const strongThis = weakThis.get();
+            if (!strongThis || !strongThis->IsDragging())
+            {
+                return false;
+            }
+            strongThis->EndDrag(true /* canceled */);
+            return true;
+        });
     UpdateVisualState();
     m_dragStartedEventSource(*this, nullptr);
 }
@@ -338,7 +347,7 @@ void ResizeGripper::EndDrag(bool canceled)
 
     const double totalDelta = m_lastRaisedDelta;
 
-    DetachCancelKeyHandler();
+    m_escapeHook.Detach();
 
     // Clear the flag before raising: a throwing handler would otherwise leave IsDragging stuck
     // true, wedging every later BeginDrag.
@@ -348,76 +357,6 @@ void ResizeGripper::EndDrag(bool canceled)
 
     auto eventArgs = winrt::make<::ResizeGripperDragCompletedEventArgs>(totalDelta, canceled);
     m_dragCompletedEventSource(*this, eventArgs);
-}
-
-// Escape cancels the drag. A pointer drag takes no focus, so the hook lives on the XamlRoot content,
-// and only for the drag.
-void ResizeGripper::AttachCancelKeyHandler()
-{
-    if (m_cancelKeyHandler)
-    {
-        return;
-    }
-
-    auto const xamlRoot = XamlRoot();
-    if (!xamlRoot)
-    {
-        return;
-    }
-
-    auto const root = xamlRoot.Content().try_as<winrt::UIElement>();
-    if (!root)
-    {
-        return;
-    }
-
-    // RemoveHandler needs the same boxed instance, so it is stored.
-    auto const handler = winrt::box_value(winrt::KeyEventHandler(
-        [weakThis = get_weak()](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
-        {
-            if (auto const strongThis = weakThis.get())
-            {
-                strongThis->OnCancelKeyDown(sender, args);
-            }
-        }));
-
-    // handledEventsToo: a host handling Escape first must not strand the drag.
-    root.AddHandler(winrt::UIElement::KeyDownEvent(), handler, true /* handledEventsToo */);
-
-    m_cancelKeyHandler = handler;
-    m_cancelKeyRoot = winrt::make_weak(root);
-}
-
-void ResizeGripper::DetachCancelKeyHandler()
-{
-    auto const handler = m_cancelKeyHandler;
-    m_cancelKeyHandler = nullptr;
-
-    if (!handler)
-    {
-        return;
-    }
-
-    auto const root = m_cancelKeyRoot.get();
-    m_cancelKeyRoot = nullptr;
-
-    if (root)
-    {
-        root.RemoveHandler(winrt::UIElement::KeyDownEvent(), handler);
-    }
-}
-
-void ResizeGripper::OnCancelKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
-{
-    if (args.Key() != winrt::VirtualKey::Escape || !IsDragging())
-    {
-        return;
-    }
-
-    EndDrag(true /* canceled */);
-
-    // An Escape with no drag in flight belongs to the app.
-    args.Handled(true);
 }
 
 void ResizeGripper::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

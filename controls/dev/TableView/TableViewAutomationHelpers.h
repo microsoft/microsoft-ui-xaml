@@ -77,6 +77,32 @@ private:
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
 }
 
+// Best effort: a missing peer, PRI or UIA never fails the action being announced. The text is built
+// only when a client listens.
+inline void RaiseTableViewNotification(
+    const winrt::UIElement& element,
+    winrt::AutomationNotificationKind kind,
+    const std::function<winrt::hstring()>& text,
+    const wchar_t* activityId) noexcept
+{
+    try
+    {
+        if (!element || !winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
+        {
+            return;
+        }
+        auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(element);
+        auto const message = peer ? text() : winrt::hstring{};
+        if (!message.empty())
+        {
+            peer.RaiseNotificationEvent(kind, winrt::AutomationNotificationProcessing::MostRecent, message, activityId);
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.
 inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)

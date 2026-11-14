@@ -24,6 +24,7 @@
                 AutomationProperties.Name="People, right-to-left"
                 ItemsSource="{x:Bind Source}"
                 FlowDirection="RightToLeft"
+                CanUserReorderColumns="True"
                 SelectionMode="Single"
                 IsReadOnly="False"
                 VerticalAlignment="Stretch"

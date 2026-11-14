@@ -18,6 +18,7 @@
 
 #include "ResizeGripper.g.h"
 #include "ResizeGripper.properties.h"
+#include "DragEscapeHook.h"
 
 // The registered default for KeyboardIncrement, and the fallback when a host supplies an unusable
 // one - the two must agree, so the IDL's MUX_DEFAULT_VALUE names this rather than restating 8.0.
@@ -63,10 +64,7 @@ private:
     double EffectiveKeyboardIncrement();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void AttachCancelKeyHandler();
-    void DetachCancelKeyHandler();
     void ReleaseCapturedPointer() noexcept;
-    void OnCancelKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     double m_lastRaisedDelta{ 0.0 };
     bool m_isPointerOver{ false };
@@ -75,7 +73,5 @@ private:
     uint32_t m_capturedPointerId{ 0 };
     bool m_isCapturedPointerReleased{ false };
     bool m_templateApplied{ false };
-    // Boxed handler passed to AddHandler and its target; null when not dragging.
-    winrt::IInspectable m_cancelKeyHandler{ nullptr };
-    winrt::weak_ref<winrt::UIElement> m_cancelKeyRoot{ nullptr };
+    DragEscapeHook m_escapeHook;
 };
