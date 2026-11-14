@@ -100,9 +100,6 @@ Given that the `Width` and `Height` getters don't always return the current clie
 while the window is open when you need the current client-area size for layout. `Bounds` reflects the
 live size except when the window is minimized.
 
-After the window closes, valid assignments to `Width` and `Height` have no effect. Their getters return
-the values preserved at close. See [Sizing properties after the window closes](#24-sizing-properties-after-the-window-closes).
-
 You can set the `Width` and `Height` properties in XAML markup and in code-behind. You can use
 `x:Bind` (`{x:Bind ...}`) bindings to set the `Width` and `Height` properties, but you can't use classic
 data binding (`{Binding ...}`) to set them. This is because the `Window` type is not a `FrameworkElement`.
@@ -230,37 +227,38 @@ In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
 
 ## 2.4. Sizing properties after the window closes
 
-Closing a window freezes its `Width` and `Height` values. Valid assignments after close are ignored:
-they do not change the preserved values, create a pending resize, raise `SizeChanged`, or reopen the
-window. The getters remain available on the owning thread.
+After a window closes, you can still read and set its `Width` and `Height`. Setting either property
+to a valid value changes what that property returns, but does not reopen the window or raise
+`SizeChanged`.
 
-Each preserved value is the value its getter would have returned after the `Closed` handlers complete
-without canceling and immediately before native teardown, not necessarily the last value assigned by your app:
+If you have not set a new value after closing, each property returns the value saved when the window closed.
+WinUI saves these values after the `Closed` event handlers finish, before it destroys the underlying window:
 
-- If the user resized the restored window, preserve the resulting client size.
-- If the window is minimized or maximized, preserve the restored size, not the live size.
-- If a request is still pending, such as before first activation or while using a non-default
-  presenter, preserve that request.
+- If your app requested a size that WinUI has not yet applied, the property returns the exact requested
+  value. This can happen before first activation or while using `FullScreen` or `CompactOverlay`.
+- Otherwise, the property returns the last known restored client size in logical pixels (DIPs), including
+  any user resize. If the window closes while minimized or maximized, this is the restored size, not
+  the minimized or maximized size.
 
-For example, this code runs on the owning thread and assumes no `Closed` handler cancels closing:
+For example, this code runs on the thread that created the window and assumes no `Closed` event handler
+cancels closing:
 
 ```csharp
 window.Close();
 double closedWidth = window.Width;
 double closedHeight = window.Height;
 
-window.Width = 800;  // Ignored. Width still returns closedWidth.
-window.Height = 600; // Ignored. Height still returns closedHeight.
+window.Width = 800;  // Width now returns 800.
+window.Height = 600; // Height now returns 600.
 ```
 
-The `Closed` event is raised before native teardown, and a handler can cancel closing by setting
-`Handled` to `true`. During those handlers, the sizing properties retain their normal open-window
-behavior. A canceled close does not freeze them.
+The `Closed` event occurs before WinUI destroys the underlying window. A handler can cancel closing
+by setting `Handled` to `true`. While these handlers run, `Width` and `Height` behave as they do on an
+open window. If a handler cancels closing, that behavior continues.
 
-Closing alone is not an error for these properties. Argument validation and thread affinity still
-apply: invalid sizes return `E_INVALIDARG`, and access from another thread returns
-`RPC_E_WRONG_THREAD`. A valid post-close assignment succeeds without changing either preserved value.
-This behavior does not change the closed-state contract of other members, such as `Bounds`.
+Reading or setting these properties does not fail just because the window has closed. The same size
+and thread requirements still apply: invalid sizes return `E_INVALIDARG`, and reading or setting either
+property from another thread returns `RPC_E_WRONG_THREAD`.
 
 # 3. Examples
 
@@ -391,13 +389,15 @@ public double Width { get; set; }
   it returns the restored width -- the last width the window had in the restored state
   (whether set by your code or by the user resizing), or a value you set on
   `Width` while in the non-default presenter.
-- After the window closes, it returns the width preserved immediately before native teardown.
-  Subsequent assignments do not change this value.
+- After the window closes, `Width` returns the value saved at close: either a width your app requested
+  that WinUI has not yet applied, or the last known restored client width. If you then set `Width` to
+  another valid value, the `Width` property returns exactly that value.
 
 **Setter**: while the window is open, requests a client width of `value` logical pixels.
 The window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor
-DPI. Height is left unchanged. After close, a valid assignment has no effect.
+DPI. Height is left unchanged. After the window closes, setting `Width` to a valid value changes
+what the `Width` property returns without resizing or reopening the window.
 
 Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
@@ -426,8 +426,8 @@ affecting the live window in the meantime.
 - **CompactOverlay** (picture-in-picture, via
   `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen. The live window is
   unchanged; the restored size is updated and applied on return to `Overlapped`.
-- **Closed**: valid assignments are ignored. The getter returns its preserved pre-teardown value.
-  No pending resize or size-change event is created. A canceled close leaves normal behavior intact.
+- **Closed**: setting `Width` to a valid value changes what the `Width` property returns, without reopening
+  the window or raising `SizeChanged`.
 
 ### 4.1.2. Remarks
 
@@ -438,8 +438,8 @@ pixels using the window's current per-monitor DPI:
 physicalPixels = round(logicalPixels * GetDpiForWindow(hwnd) / 96.0)
 ```
 
-Because of integer-pixel rounding, the value you read back from the getter may
-differ from the value you passed to the setter by up to a couple of logical pixels. The
+When WinUI applies a requested size to an open window, integer-pixel rounding means the value you read
+from `Width` may differ from the value you set by up to a couple of logical pixels. The
 scenario tests allow a 2-logical-pixel tolerance when comparing.
 
 **DPI changes during the window's lifetime.** If the window moves to a monitor
@@ -467,8 +467,8 @@ in XAML markup.
 
 For all errors the runtime calls RoOriginateError with a specific error message to help the app developer diagnose the problem.
 
-Argument validation applies both before and after close. Closing alone does not cause an error.
-The resizing effects below apply only while the window is open; valid post-close assignments are ignored.
+The same size requirements apply before and after the window closes. The resizing effects below apply
+only while the window is open.
 
 | Input                         | Result                              |
 | ----------------------------- | ----------------------------------- |
@@ -501,13 +501,15 @@ public double Height { get; set; }
   it returns the restored height -- the last height the window had in the restored state
   (whether set by your code or by the user resizing), or a value you set on
   `Height` while in the non-default presenter.
-- After the window closes, it returns the height preserved immediately before native teardown.
-  Subsequent assignments do not change this value.
+- After the window closes, `Height` returns the value saved at close: either a height your app requested
+  that WinUI has not yet applied, or the last known restored client height. If you then set `Height` to
+  another valid value, the `Height` property returns exactly that value.
 
 **Setter**: while the window is open, requests a client height of `value` logical pixels.
 The window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor DPI. Width is
-left unchanged. After close, a valid assignment has no effect.
+left unchanged. After the window closes, setting `Height` to a valid value changes what the
+`Height` property returns without resizing or reopening the window.
 
 Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
@@ -536,8 +538,8 @@ affecting the live window in the meantime.
 - **CompactOverlay** (picture-in-picture, via
   `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen. The live window is
   unchanged; the restored size is updated and applied on return to `Overlapped`.
-- **Closed**: valid assignments are ignored. The getter returns its preserved pre-teardown value.
-  No pending resize or size-change event is created. A canceled close leaves normal behavior intact.
+- **Closed**: setting `Height` to a valid value changes what the `Height` property returns, without reopening
+  the window or raising `SizeChanged`.
 
 ### 4.2.2. Remarks
 
@@ -642,8 +644,9 @@ state:
   `AppWindow.Changed`; when the presenter changes back to one that supports sizing,
   it applies the pending value through the restored-state path above. If no value was
   ever set there is nothing pending, so a presenter change does nothing.
-- **Closed**: validate the argument and return success without changing sizing state or accessing
-  native window resources.
+- **Closed**: validate the value and store it in the existing pending-value field for `Width` or `Height`.
+  The property returns the stored value instead of the restored size saved at close.
+  Do not access native window resources.
 
 **User resize clears pending state.** A value set via `Width`/`Height` in the
 restored state is applied immediately and has no further effect.  If the user then
@@ -663,8 +666,9 @@ or minimized, the live rects do not represent normal chrome, so the style-based
 calculation is used instead, with a correction that zeros out the top chrome when
 `ExtendsContentIntoTitleBar` is active.
 
-**Reading the size back.** While the window is open, the getter returns the restored client-area
-size in logical pixels. After close, it returns the preserved pre-teardown value.
+**Reading the size back.** While the window is open, `Width` and `Height` return the restored client-area
+size in logical pixels. After closing, each property first checks its pending-value field. That field
+holds either a request that was still pending when the window closed or a valid value set after closing.
 
 - In the pre-activated state, before ShowWindow is called, the getters return the
   restored size (same as `Window.Bounds` at that point, unless the app set a new value).

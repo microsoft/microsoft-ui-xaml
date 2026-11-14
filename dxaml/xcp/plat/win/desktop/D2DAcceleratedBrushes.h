@@ -53,6 +53,9 @@ public:
 protected:
     CD2DSolidColorBrush();
     ~CD2DSolidColorBrush() override;
+
+private:
+    bool m_graphicsResourceTracked = false;
 };
 
 
@@ -70,6 +73,9 @@ public:
 protected:
     CD2DBitmapBrush();
     ~CD2DBitmapBrush() override;
+
+private:
+    bool m_graphicsResourceTracked = false;
 };
 
 
@@ -87,6 +93,9 @@ public:
 protected:
     CD2DLinearGradientBrush();
     ~CD2DLinearGradientBrush() override;
+
+private:
+    bool m_graphicsResourceTracked = false;
 };
 
 
@@ -104,4 +113,7 @@ public:
 protected:
     CD2DRadialGradientBrush();
     ~CD2DRadialGradientBrush() override;
+
+private:
+    bool m_graphicsResourceTracked = false;
 };

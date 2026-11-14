@@ -29,6 +29,7 @@ public:
     // Revokes every subscription whose item is not in `live`.
     void RetainOnly(std::unordered_set<void const*> const& live);
     void UnsubscribeAll() noexcept;
+    bool Empty() const noexcept { return m_subscriptions.empty(); }
 
 private:
     struct Subscription
@@ -40,6 +41,16 @@ private:
         // Only for an item without weak reference support (Revoker is empty then).
         winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged StrongSource{ nullptr };
         winrt::event_token Token{};
+
+        Subscription() = default;
+        Subscription(Subscription const&) = delete;
+        Subscription& operator=(Subscription const&) = delete;
+        Subscription(Subscription&&) noexcept = default;
+        // Entries live in a node-based map and are never reassigned.
+        Subscription& operator=(Subscription&&) = delete;
+        // Backstop for the strong path, which has no auto-revoker: a dropped entry must not leave
+        // its handler attached. A moved-from or revoked entry has nothing left to revoke.
+        ~Subscription() { Revoke(); }
 
         void Revoke() noexcept;
     };

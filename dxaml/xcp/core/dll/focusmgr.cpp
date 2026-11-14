@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include "FocusProperties.h"
@@ -2588,36 +2589,43 @@ CDependencyObject* CFocusManager::FindNextFocus(
         direction == DirectUI::FocusNavigationDirection::Right || direction == DirectUI::FocusNavigationDirection::Up ||
         direction == DirectUI::FocusNavigationDirection::Next || direction == DirectUI::FocusNavigationDirection::Previous);
 
-     switch (direction)
-     {
-         case DirectUI::FocusNavigationDirection::Next:
-           TraceXYFocusEnteredBegin(L"Next");
-           break;
-         case DirectUI::FocusNavigationDirection::Previous:
-           TraceXYFocusEnteredBegin(L"Previous");
-           break;
-         case DirectUI::FocusNavigationDirection::Up:
-           TraceXYFocusEnteredBegin(L"Up");
-           break;
-         case DirectUI::FocusNavigationDirection::Down:
-           TraceXYFocusEnteredBegin(L"Down");
-           break;
-         case DirectUI::FocusNavigationDirection::Left:
-           TraceXYFocusEnteredBegin(L"Left");
-           break;
-         case DirectUI::FocusNavigationDirection::Right:
-           TraceXYFocusEnteredBegin(L"Right");
-           break;
-         default:
-           TraceXYFocusEnteredBegin(L"Invalid");
-     }
-
+    PCWSTR xyFocusDirectionName = L"Invalid";
+    switch (direction)
+    {
+        case DirectUI::FocusNavigationDirection::Next:
+          xyFocusDirectionName = L"Next";
+          break;
+        case DirectUI::FocusNavigationDirection::Previous:
+          xyFocusDirectionName = L"Previous";
+          break;
+        case DirectUI::FocusNavigationDirection::Up:
+          xyFocusDirectionName = L"Up";
+          break;
+        case DirectUI::FocusNavigationDirection::Down:
+          xyFocusDirectionName = L"Down";
+          break;
+        case DirectUI::FocusNavigationDirection::Left:
+          xyFocusDirectionName = L"Left";
+          break;
+        case DirectUI::FocusNavigationDirection::Right:
+          xyFocusDirectionName = L"Right";
+          break;
+        default:
+          xyFocusDirectionName = L"Invalid";
+          break;
+    }
     xref_ptr<CDependencyObject> nextFocusedElement;
     CControl* const engagedControl = xyFocusOptions.considerEngagement ? m_spEngagedControl : nullptr;
 
     //If we're hosting a component (for e.g. WebView) and focus is moving from within one of our hosted component's children,
     //we interpret the component (WebView) as previously focused element
     auto currentFocusedElementOrComponent = (component == nullptr) ? m_pFocusedElement : component;
+
+    XamlTelemetry::XYFocusEnteredBegin(currentFocusedElementOrComponent, xyFocusDirectionName);
+    auto xyFocusTraceGuard = wil::scope_exit([currentFocusedElementOrComponent]()
+    {
+        XamlTelemetry::XYFocusEnteredEnd(currentFocusedElementOrComponent);
+    });
 
     if (direction == DirectUI::FocusNavigationDirection::Previous ||
         direction == DirectUI::FocusNavigationDirection::Next ||
@@ -2677,8 +2685,6 @@ CDependencyObject* CFocusManager::FindNextFocus(
 
         nextFocusedElement = m_xyFocus.GetNextFocusableElement(direction, currentFocusedElementOrComponent, engagedControl, m_contentRoot.GetVisualTreeNoRef(), updateManifolds, xyFocusOptions);
     }
-
-    TraceXYFocusEnteredEnd();
 
     return nextFocusedElement;
 }

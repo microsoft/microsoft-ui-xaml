@@ -1,0 +1,89 @@
+<Application
+    x:Class="WinUIProfiler.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <controls:XamlControlsResources />
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Wherever a UI element or a visual is listed, an element is blue and a visual amber. The row tints are light enough
+                 to keep the text readable; the badges name the kind, so it shows without the colors too. In the Frames tab, a
+                 region of interest and the tick it ends with are teal, and an interesting row that is not a tick is gray; an
+                 accent bar marks them too. -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="ElementRowBackground" Color="#EAF1FB" />
+                    <SolidColorBrush x:Key="VisualRowBackground" Color="#FDF3E3" />
+                    <SolidColorBrush x:Key="ElementBadgeBackground" Color="#CFE0F7" />
+                    <SolidColorBrush x:Key="ElementBadgeForeground" Color="#1B4A80" />
+                    <SolidColorBrush x:Key="ElementBadgeBorderBrush" Color="#CFE0F7" />
+                    <SolidColorBrush x:Key="VisualBadgeBackground" Color="#F8E0B8" />
+                    <SolidColorBrush x:Key="VisualBadgeForeground" Color="#7A4A00" />
+                    <SolidColorBrush x:Key="VisualBadgeBorderBrush" Color="#F8E0B8" />
+                    <SolidColorBrush x:Key="RegionRowBackground" Color="#D6EBEB" />
+                    <SolidColorBrush x:Key="RegionTickRowBackground" Color="#E8F4F4" />
+                    <SolidColorBrush x:Key="RegionAccent" Color="#0F6C74" />
+                    <SolidColorBrush x:Key="NonTickRowBackground" Color="#EDEDED" />
+                    <SolidColorBrush x:Key="NonTickAccent" Color="#8A8A8A" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="ElementRowBackground" Color="#213247" />
+                    <SolidColorBrush x:Key="VisualRowBackground" Color="#3B3020" />
+                    <SolidColorBrush x:Key="ElementBadgeBackground" Color="#2C4B70" />
+                    <SolidColorBrush x:Key="ElementBadgeForeground" Color="#D6E6FA" />
+                    <SolidColorBrush x:Key="ElementBadgeBorderBrush" Color="#2C4B70" />
+                    <SolidColorBrush x:Key="VisualBadgeBackground" Color="#5C4420" />
+                    <SolidColorBrush x:Key="VisualBadgeForeground" Color="#F8E3C0" />
+                    <SolidColorBrush x:Key="VisualBadgeBorderBrush" Color="#5C4420" />
+                    <SolidColorBrush x:Key="RegionRowBackground" Color="#1D3A3C" />
+                    <SolidColorBrush x:Key="RegionTickRowBackground" Color="#172C2E" />
+                    <SolidColorBrush x:Key="RegionAccent" Color="#4FB8C0" />
+                    <SolidColorBrush x:Key="NonTickRowBackground" Color="#2E2E2E" />
+                    <SolidColorBrush x:Key="NonTickAccent" Color="#9A9A9A" />
+                </ResourceDictionary>
+                <!-- High contrast keeps the system colors; the badges and accent bars still tell the kinds apart. -->
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="ElementRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="VisualRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ElementBadgeBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="ElementBadgeForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="ElementBadgeBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="VisualBadgeBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="VisualBadgeForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="VisualBadgeBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="RegionRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="RegionTickRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="RegionAccent" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="NonTickRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="NonTickAccent" Color="{ThemeResource SystemColorGrayTextColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <Style x:Key="KindBadgeStyle" TargetType="Border">
+                <Setter Property="Padding" Value="6,0" />
+                <Setter Property="MinHeight" Value="18" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="ElementBadgeStyle" TargetType="Border" BasedOn="{StaticResource KindBadgeStyle}">
+                <Setter Property="Background" Value="{ThemeResource ElementBadgeBackground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource ElementBadgeBorderBrush}" />
+            </Style>
+            <Style x:Key="VisualBadgeStyle" TargetType="Border" BasedOn="{StaticResource KindBadgeStyle}">
+                <Setter Property="Background" Value="{ThemeResource VisualBadgeBackground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource VisualBadgeBorderBrush}" />
+            </Style>
+            <Style x:Key="ElementBadgeTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource ElementBadgeForeground}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="VisualBadgeTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource VisualBadgeForeground}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

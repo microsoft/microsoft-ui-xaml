@@ -21,6 +21,7 @@ namespace Simple
         /// </summary>
         public App()
         {
+            this.UnhandledException += (sender, args) => Console.Error.WriteLine(args.Exception);
             this.InitializeComponent();
         }
 
@@ -34,7 +35,29 @@ namespace Simple
             rootFrame.NavigationFailed += OnNavigationFailed;
             m_window = new Window();
             m_window.Content = rootFrame;
-            rootFrame.Navigate(typeof(MainPage), args.Arguments);
+            string[] commandLine = Environment.GetCommandLineArgs();
+            if (commandLine.Length == 2 && commandLine[1] == "FindNameTest")
+            {
+                m_window.Activate();
+                try
+                {
+                    MainPage.ValidateStringNameLookup();
+                }
+                catch (System.Runtime.InteropServices.COMException exception)
+                {
+                    Console.Error.WriteLine(exception);
+                    throw;
+                }
+                Console.WriteLine("Named string lookup tests passed.");
+                this.Exit();
+                return;
+            }
+            string navigationParameter = args.Arguments;
+            if (commandLine.Length == 2 && commandLine[1] == "IncrementalTest")
+            {
+                navigationParameter = "IncrementalTest";
+            }
+            rootFrame.Navigate(typeof(MainPage), navigationParameter);
             m_window.Activate();
         }
 
@@ -45,7 +68,7 @@ namespace Simple
         /// <param name="e">Details about the navigation failure</param>
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+            throw new Exception("Failed to load Page " + e.SourcePageType.FullName, e.Exception);
         }
 
         private Window m_window;

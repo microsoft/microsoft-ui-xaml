@@ -34,6 +34,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewKeyboardInteractionTests
     {
         [ClassInitialize]
@@ -161,6 +162,112 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject last = rowsHost.Children[rowsHost.Children.Count - 1];
                 Verify.IsTrue(last.HasKeyboardFocus, "End should focus the last row.");
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Down past the bottom of the viewport keeps each newly focused row fully in view (dev-spec Keyboard).")]
+        public void DownArrowKeepsFocusedRowInView()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+
+                for (int press = 1; press <= rowsPerViewport + 3; press++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    int position = FocusedPositionInSet();
+                    Verify.AreEqual(1 + press, position, string.Format("Down #{0} must advance exactly one row.", press));
+                    VerifyScrollingRowInView(position, string.Format("after Down #{0}", press));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "End and Ctrl+End reach the last row of a virtualized table and keep it in view; selection follows End (dev-spec Keyboard).")]
+        public void EndAndCtrlEndReachLastRowOfVirtualizedTable()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                Verify.AreEqual(ScrollingItemCount, FocusedPositionInSet(), "End at row level must focus the last row.");
+                VerifyScrollingRowInView(ScrollingItemCount, "after End");
+                UIObject focusedRow = FindFocusedRow(GetRowsHost(ScrollingTable));
+                Verify.IsTrue(focusedRow != null && IsSelected(focusedRow), "End must select the row it focuses.");
+
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: Home must return to the first row.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(FindFocusedBodyElement(GetRowsHost(ScrollingTable))),
+                    "Precondition: Right must drill into the first cell.");
+
+                KeyboardHelper.PressKey(Key.End, ModifierKey.Control);
+                Wait.ForIdle();
+                UIObject focusedBody = FindFocusedBodyElement(GetRowsHost(ScrollingTable));
+                if (focusedBody == null) { Verify.Fail("Ctrl+End must leave focus in the body."); return; }
+                Verify.AreEqual(focusedBody.Children.Count - 1, IndexOfFocusedCell(focusedBody), "Ctrl+End must focus the last cell.");
+
+                // Home and Left return to row level in the same row, where PositionInSet names the row.
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                Verify.AreEqual(ScrollingItemCount, FocusedPositionInSet(), "Ctrl+End must reach the last row.");
+                VerifyScrollingRowInView(ScrollingItemCount, "after Ctrl+End");
+
+                KeyboardHelper.PressKey(Key.Home, ModifierKey.Control);
+                Wait.ForIdle();
+                VerifyFocusedCell(ScrollingTable, 0, 0, "Ctrl+Home must reach the first cell of the first row.");
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Ctrl+Home must reach the first row.");
+            }
+        }
+
+        // Asserts the Scrolling-table row at a 1-based position lies inside the body viewport, from the page readout.
+        private static void VerifyScrollingRowInView(int positionInSet, string when)
+        {
+            string offsets = ReadScrollOffsets();
+            double offset = ReadScrollOffsetComponent(offsets, "V");
+            double viewport = ReadScrollOffsetComponent(offsets, "VH");
+            double rowHeight = ReadScrollOffsetComponent(offsets, "RowH");
+            if (double.IsNaN(offset) || double.IsNaN(viewport) || double.IsNaN(rowHeight) || rowHeight <= 0)
+            {
+                Verify.Fail(string.Format("The scroll readout did not publish V, VH and RowH: '{0}'.", offsets));
+                return;
+            }
+
+            // V is published rounded and RowH rounding accumulates over 200 rows, so allow two DIPs.
+            double top = (positionInSet - 1) * rowHeight;
+            Log.Comment("Row {0} {1}: top={2}, offsets '{3}'.", positionInSet, when, top, offsets);
+            Verify.IsTrue(top >= offset - 2 && top + rowHeight <= offset + viewport + 2,
+                string.Format("Row {0} must be in view {1}: top {2}, viewport {3}..{4}.",
+                    positionInSet, when, top, offset, offset + viewport));
         }
 
         [TestMethod]
@@ -299,6 +406,254 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             object value = focused.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_SizeOfSetPropertyId));
             return value is int size ? size : -1;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Page Down first moves to the last fully visible row without scrolling, then pages one viewport; Page Up mirrors it (dev-spec Keyboard, ListView paging).")]
+        public void PageDownLandsOnLastVisibleRowThenPages()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+                string offsets = ReadScrollOffsets();
+                double viewport = ReadScrollOffsetComponent(offsets, "VH");
+                double rowHeight = ReadScrollOffsetComponent(offsets, "RowH");
+                // At V=0 the last fully visible row (half a DIP of slack, as the product) is exact.
+                int lastVisible = (int)Math.Floor((viewport + 0.5) / rowHeight);
+
+                KeyboardHelper.PressKey(Key.PageDown);
+                Wait.ForIdle();
+                int firstPage = FocusedPositionInSet();
+                Verify.AreEqual(lastVisible, firstPage, "The first PageDown must focus the last fully visible row.");
+                Verify.AreEqual(VerticalOffsetOf(offsets), VerticalOffsetOf(ReadScrollOffsets()),
+                    "The first PageDown must not scroll: its target is already in view.");
+
+                KeyboardHelper.PressKey(Key.PageDown);
+                Wait.ForIdle();
+                int secondPage = FocusedPositionInSet();
+                Log.Comment("PageDown: {0} -> {1}; rows per viewport {2}.", firstPage, secondPage, rowsPerViewport);
+                Verify.IsTrue(Math.Abs((secondPage - firstPage) - (rowsPerViewport - 1)) <= 1,
+                    string.Format("The second PageDown must page one viewport less one row: travelled {0}, rows per viewport {1}.",
+                        secondPage - firstPage, rowsPerViewport));
+                VerifyScrollingRowInView(secondPage, "after the second PageDown");
+
+                // The second page aligned its row to the bottom, so the viewport now holds the same number of whole rows.
+                string offsetsBeforeUp = ReadScrollOffsets();
+                KeyboardHelper.PressKey(Key.PageUp);
+                Wait.ForIdle();
+                int firstPageUp = FocusedPositionInSet();
+                Verify.AreEqual(secondPage - firstPage + 1, firstPageUp, "The first PageUp must focus the first fully visible row.");
+                Verify.AreEqual(VerticalOffsetOf(offsetsBeforeUp), VerticalOffsetOf(ReadScrollOffsets()),
+                    "The first PageUp must not scroll: its target is already in view.");
+
+                KeyboardHelper.PressKey(Key.PageUp);
+                Wait.ForIdle();
+                int secondPageUp = FocusedPositionInSet();
+                Log.Comment("PageUp: {0} -> {1}.", firstPageUp, secondPageUp);
+                Verify.IsTrue(Math.Abs((firstPageUp - secondPageUp) - Math.Min(rowsPerViewport - 1, firstPageUp - 1)) <= 1,
+                    string.Format("The second PageUp must page one viewport less one row: travelled {0}, rows per viewport {1}.",
+                        firstPageUp - secondPageUp, rowsPerViewport));
+                VerifyScrollingRowInView(secondPageUp, "after the second PageUp");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Repeated Page Down keeps the focused row in view and keeps moving focus forward.")]
+        public void HeldPageDownKeepsFocusInView()
+        {
+            // No waits between the presses of a burst, like key auto-repeat.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+                string offsets = ReadScrollOffsets();
+                int lastVisible = (int)Math.Floor(
+                    (ReadScrollOffsetComponent(offsets, "VH") + 0.5) / ReadScrollOffsetComponent(offsets, "RowH"));
+
+                // Exact travel depends on partial rows and realization timing, so assert direction and
+                // visibility rather than a computed row count.
+                const int bursts = 3;
+                const int pressesPerBurst = 2;
+                int position = 1;
+                for (int burst = 0; burst < bursts; burst++)
+                {
+                    for (int press = 0; press < pressesPerBurst; press++)
+                    {
+                        KeyboardHelper.PressKey(Key.PageDown, skipWait: true);
+                    }
+                    Wait.ForIdle();
+
+                    int next = FocusedPositionInSet();
+                    Log.Comment("Burst {0}: focus moved from {1} to {2}; last visible row {3}; rows per viewport {4}.",
+                        burst, position, next, lastVisible, rowsPerViewport);
+                    Verify.IsTrue(next > position,
+                        string.Format("PageDown burst {0} must move focus forward: was {1}, now {2}.", burst, position, next));
+                    VerifyScrollingRowInView(next, string.Format("after PageDown burst {0}", burst));
+                    position = next;
+                }
+
+                // Every press pages from the last visible row, so the bursts end beyond the first page.
+                Verify.IsTrue(position > lastVisible,
+                    string.Format("{0} PageDowns must leave the first page (last visible row {1}): reached {2}.",
+                        bursts * pressesPerBurst, lastVisible, position));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Page Down in grouped data pages over group headers at the viewport edge instead of stepping one header at a time.")]
+        public void GroupedPageDownPagesPastGroupHeaders()
+        {
+            // GroupedPagingTableView alternates header, row (one item per group) in a body 3.5 containers
+            // tall, so a bottom-aligned page ending on a header holds a single data row. Paging by data rows
+            // alone then stepped one container per press; headers at the edge must count as page targets.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(GroupedPagingPivotItem)) { Verify.Fail(GoToButton(GroupedPagingPivotItem) + " was not found."); return; }
+
+                UIObject table = GetTable(GroupedPagingTable);
+                if (table == null) { return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost.Children.Count < 4) { Verify.Fail("Need realized group headers and rows."); return; }
+
+                UIObject firstRow = rowsHost.Children[1];
+                Verify.IsTrue(IsRow(firstRow), "Precondition: the first group header is followed by its row.");
+                firstRow.SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FlattenedIndexOfGroupedPagingFocus(table), "Precondition: focus starts on the first row.");
+
+                int fullyVisible = 0;
+                foreach (UIObject child in rowsHost.Children)
+                {
+                    if (IsFullyInGroupedPagingViewport(table, child.BoundingRectangle)) { fullyVisible++; }
+                }
+                Log.Comment("Containers fully in the viewport at the top: {0}.", fullyVisible);
+                Verify.IsTrue(fullyVisible >= 3, "Precondition: the viewport must hold at least three whole containers.");
+
+                // The first press only reaches the last visible container; every later press pages from the edge.
+                int lastIndex = (GroupedPagingItemCount * 2) - 1;
+                int position = 1;
+                for (int press = 0; press < 5; press++)
+                {
+                    KeyboardHelper.PressKey(Key.PageDown);
+                    Wait.ForIdle();
+
+                    int next = FlattenedIndexOfGroupedPagingFocus(table);
+                    Log.Comment("PageDown {0}: focus moved from {1} to {2}.", press, position, next);
+                    Verify.IsTrue(next > position,
+                        string.Format("PageDown {0} must move focus forward: was {1}, now {2}.", press, position, next));
+                    if (press > 0 && next < lastIndex)
+                    {
+                        Verify.IsTrue(next - position > 1,
+                            string.Format("PageDown {0} must page past the group header at the edge: moved {1} -> {2}.", press, position, next));
+                    }
+
+                    UIObject focused = FindFocusedRow(GetRowsHost(table));
+                    Verify.IsNotNull(focused, "Focus must stay on a row or group header of the body.");
+                    if (focused == null) { return; }
+                    Verify.IsTrue(IsFullyInGroupedPagingViewport(table, focused.BoundingRectangle),
+                        string.Format("The focused {0} '{1}' must be fully in view after PageDown {2}: bounds {3}, table {4}.",
+                            focused.ClassName, focused.Name, press, focused.BoundingRectangle, table.BoundingRectangle));
+
+                    position = next;
+                    if (position >= lastIndex) { break; }
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Space and Enter on the focused last group header of a scrolled grouped table toggle it without jumping the viewport away from it.")]
+        public void GroupHeaderKeyboardToggleAtBottomKeepsViewport()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(GroupedPagingPivotItem)) { Verify.Fail(GoToButton(GroupedPagingPivotItem) + " was not found."); return; }
+
+                UIObject table = GetTable(GroupedPagingTable);
+                if (table == null) { return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized group headers and rows."); return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+
+                int lastHeader = (GroupedPagingItemCount - 1) * 2;
+                Verify.AreEqual(lastHeader, FlattenedIndexOfGroupedPagingFocus(table), "Precondition: End then Up focuses the last group header.");
+
+                bool expanded = true;
+                foreach (Key key in new[] { Key.Space, Key.Space, Key.Enter, Key.Enter })
+                {
+                    expanded = !expanded;
+                    UIObject before = FindFocusedRow(GetRowsHost(table));
+                    if (before == null) { Verify.Fail("Precondition: a body container holds focus."); return; }
+                    var beforeBounds = before.BoundingRectangle;
+
+                    KeyboardHelper.PressKey(key);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual(lastHeader, FlattenedIndexOfGroupedPagingFocus(table), "Focus must stay on the toggled header after " + key + ".");
+                    UIObject after = FindFocusedRow(GetRowsHost(table));
+                    if (after == null) { Verify.Fail("Focus must stay in the body after " + key + "."); return; }
+                    Verify.AreEqual(expanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                        new ExpandCollapseImplementation(after).ExpandCollapseState, key + " must toggle the group.");
+                    var afterBounds = after.BoundingRectangle;
+                    Log.Comment("{0}: header bounds {1} -> {2}, table {3}.", key, beforeBounds, afterBounds, table.BoundingRectangle);
+
+                    Verify.IsTrue(IsFullyInGroupedPagingViewport(table, afterBounds),
+                        string.Format("The toggled header must stay fully in view after {0}: bounds {1}, table {2}.", key, afterBounds, table.BoundingRectangle));
+                    // Collapsing at the end of the extent moves the header down by at most its group's row.
+                    Verify.IsLessThanOrEqual(Math.Abs(afterBounds.Top - beforeBounds.Top), beforeBounds.Height + 1,
+                        string.Format("The viewport must not jump after {0}: header top {1} -> {2}.", key, beforeBounds.Top, afterBounds.Top));
+                }
+            }
+        }
+
+        // The flattened index of the focused GroupedPagingTableView container (header 2n, row 2n+1), or -1.
+        private static int FlattenedIndexOfGroupedPagingFocus(UIObject table)
+        {
+            ElementCache.Clear();
+            UIObject focused = FindFocusedRow(GetRowsHost(table));
+            if (focused == null) { return -1; }
+
+            for (int id = 0; id < GroupedPagingItemCount; id++)
+            {
+                if (IsRow(focused) && focused.Name.Contains(GroupedPagingName(id))) { return (id * 2) + 1; }
+                if (IsGroupHeader(focused) && focused.Name.Contains(GroupedPagingSection(id))) { return id * 2; }
+            }
+
+            Log.Comment("Unrecognized focused container {0} '{1}'.", focused.ClassName, focused.Name);
+            return -1;
+        }
+
+        // The body fills the table inside its 1px border (HeadersVisibility is None); one pixel of slack for rounding.
+        private static bool IsFullyInGroupedPagingViewport(UIObject table, System.Drawing.Rectangle bounds)
+        {
+            var viewport = table.BoundingRectangle;
+            return bounds.Height > 0 && bounds.Top >= viewport.Top - 1 && bounds.Bottom <= viewport.Bottom + 1;
         }
 
         [TestMethod]
@@ -503,13 +858,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Shift+Tab from the body lands on the header band, and a second Shift+Tab leaves the table upstream.")]
+        [TestProperty("Description", "Left on a focused row scrolls a horizontally scrolled body back and leaves focus on the row.")]
+        public void LeftOnFocusedRowScrollsBodyBack()
+        {
+            // PART_BodyScroller scrolls on Left before the key bubbles to the TableView.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                UIObject rowsHost = GetRowsHost(tableView);
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                UIObject row = rowsHost.Children[1];
+                row.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(row.HasKeyboardFocus, "Precondition: the row should hold focus.");
+
+                if (!DragHorizontalScrollBar(tableView, 30)) { Verify.Fail("The body scroller's horizontal ScrollBar was not found."); return; }
+
+                string offsetsBefore = ReadScrollOffsets();
+                double before = ReadScrollOffsetComponent(offsetsBefore, "H");
+                Verify.IsTrue(GetRowsHost(tableView).Children[1].HasKeyboardFocus, "Precondition: dragging the ScrollBar must not move focus.");
+                Verify.IsTrue(before > 0, string.Format("Precondition: the body must be scrolled horizontally: '{0}'.", offsetsBefore));
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+
+                string offsetsAfter = ReadScrollOffsets();
+                double after = ReadScrollOffsetComponent(offsetsAfter, "H");
+                Log.Comment("Body offsets '{0}' -> '{1}' after Left.", offsetsBefore, offsetsAfter);
+                Verify.IsTrue(after < before, "Left on a row must scroll the body back toward the start.");
+                Verify.IsTrue(GetRowsHost(tableView).Children[1].HasKeyboardFocus, "Left on a row must leave focus on that row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "The table is one tab stop: Shift+Tab from the body leaves the table upstream in a single press.")]
         public void ShiftTabMovesFocusOutOfTableUpstream()
         {
-            // Rewritten for the two-band tab model.
-            // dev-spec:135 rejects one tab stop per column header; the header band as exactly one stop ahead of the
-            // body is the #11820 model (spec debt). Failure means Shift+Tab skips the header band, so headers are
-            // unreachable backwards, or walks it header by header.
             // The upstream landing control is page layout and is deliberately not named.
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -525,24 +913,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
-                UIObject headerAfterFirst = FindFocusedHeader(BasicTable);
-                UIObject rowAfterFirst = FindFocusedRow(GetRowsHost(BasicTable));
-                Log.Comment("After Shift+Tab 1: header={0}, row focused={1}.",
-                    headerAfterFirst == null ? "<none>" : headerAfterFirst.Name, rowAfterFirst != null);
-
-                Verify.IsNull(rowAfterFirst, "No row should hold focus after the first Shift+Tab.");
-                Verify.IsNotNull(headerAfterFirst, "The first Shift+Tab from the body must land on the header band.");
-
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                Wait.ForIdle();
-
-                UIObject headerAfterSecond = FindFocusedHeader(BasicTable);
-                UIObject rowAfterSecond = FindFocusedRow(GetRowsHost(BasicTable));
-                Log.Comment("After Shift+Tab 2: header={0}, row focused={1}.",
-                    headerAfterSecond == null ? "<none>" : headerAfterSecond.Name, rowAfterSecond != null);
-
-                Verify.IsNull(headerAfterSecond, "The second Shift+Tab must leave the header band: the band is ONE tab stop, not one per column.");
-                Verify.IsNull(rowAfterSecond, "The second Shift+Tab must not return to the body.");
+                Log.Comment("After Shift+Tab: focused element {0}.", DescribeFocused());
+                Verify.IsNull(FindFocusedHeader(BasicTable), "Shift+Tab from the body must not stop on the header row.");
+                Verify.IsNull(FindFocusedRow(GetRowsHost(BasicTable)), "Shift+Tab from the body must leave the rows.");
 
                 UIObject afterTable = FindElement.ById(AfterTableButton);
                 if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
@@ -581,6 +954,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
 
+                // With the header row hidden the body is the table's tab stop.
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
@@ -600,6 +975,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                // With the header row hidden the body is the table's tab stop.
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
 
                 UIObject rowsHost = GetRowsHost(ScrollingTable);
                 if (rowsHost == null) { Verify.Fail(ScrollingTable + " exposed no rows host."); return; }
@@ -620,9 +997,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(FindElement.ById(AfterTableButton).HasKeyboardFocus, "Precondition: focus should have left the table.");
 
-                // Enabled rows intersecting the body viewport (below the header band, inside the table's box).
+                // Enabled rows intersecting the body viewport (the header row is hidden).
                 UIObject table = GetTable(ScrollingTable);
-                int viewportTop = GetHeaderHost(table).BoundingRectangle.Bottom;
+                int viewportTop = table.BoundingRectangle.Top;
                 int viewportBottom = table.BoundingRectangle.Bottom;
                 var viewportRows = new List<string>();
                 foreach (UIObject candidate in GetRowsHost(table).Children)
@@ -679,6 +1056,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
 
+                // With the header row hidden the body is the table's tab stop.
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
@@ -731,6 +1110,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
 
+                // With the header row hidden the body is the table's tab stop.
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
@@ -750,6 +1131,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail("Could not select the 'Scrolling' pivot item."); return; }
+                // With the header row hidden the body is the table's tab stop.
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
 
                 UIObject tableView = GetTable(ScrollingTable);
                 if (tableView == null) { return; }
@@ -803,13 +1186,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Tab enters the table at the header band, the next Tab enters the body, and neither selects a row.")]
-        public void TabIntoTableFocusesAHeaderThenARowWithoutSelecting()
+        [TestProperty("Description", "Tab enters the table on the header row without selecting, and the next Tab leaves the table.")]
+        public void TabIntoTableFocusesHeaderRowAndNextTabLeaves()
         {
-            // Previously named TabIntoTableFocusesARowWithoutSelecting. The header band first and the body second is the #11820
-            // two-band model (spec debt, see ShiftTabMovesFocusOutOfTableUpstream). Selection is checked BEFORE any
-            // navigation key, because navigation keys are entitled to select (KeyboardFocusMoveCarriesSelection).
-            // Failure means the header band is skipped, the body is not tab-reachable, or tabbing in selects.
+            // The table is one tab stop and that stop is the header row. Selection is checked BEFORE any navigation
+            // key, because navigation keys are entitled to select (KeyboardFocusMoveCarriesSelection).
             using (var setup = new TestSetupHelper(PageName))
             {
                 var selectionMode = FindElement.ById<ComboBox>(SelectionModeComboBox);
@@ -825,7 +1206,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     if (FindFocusedBodyElement(GetRowsHost(BasicTable)) != null)
                     {
-                        Verify.Fail("Tab reached the body before any column header: the header band was skipped.");
+                        Verify.Fail("Tab reached the body: the header row must be the table's tab stop.");
                         return;
                     }
 
@@ -837,24 +1218,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.Fail("Tab never reached the header band of BasicTableView within three presses.");
                     return;
                 }
-                Log.Comment("Header band entered on '{0}'.", header.Name);
+                Log.Comment("Header row entered on '{0}'.", header.Name);
 
-                VerifyNoRowSelected("entering the header band");
+                VerifyNoRowSelected("entering the header row");
 
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
 
-                Verify.IsNull(FindFocusedHeader(BasicTable), "The next Tab must leave the header band (one tab stop for the whole band).");
-                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost(BasicTable)),
-                    "The next Tab after the header band must enter the body (a row or one of its cells).");
-
-                VerifyNoRowSelected("entering the body");
-
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-
-                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost(BasicTable)),
-                    "After entering the body, Down must keep focus on a row (or a cell of a row).");
+                Verify.IsNull(FindFocusedHeader(BasicTable), "The next Tab must leave the header row.");
+                Verify.IsNull(FindFocusedBodyElement(GetRowsHost(BasicTable)),
+                    "The table is one tab stop: the next Tab must leave the table, not enter the body.");
+                VerifyNoRowSelected("leaving the table");
             }
         }
 
@@ -960,6 +1334,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(focusKeptShift, "Alt+Shift+Right must resize, not move focus off the Name header.");
                 Verify.IsTrue(deltaShift > deltaPlain,
                     string.Format("Alt+Shift+Right should grow by a larger step than Alt+Right ({0}px vs {1}px).", deltaShift, deltaPlain));
+
+                MoveFocusOffTableBeforeTeardown();
             }
         }
 
@@ -1055,13 +1431,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (IDL:156-158).")]
+        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanSort).")]
         public void HeaderClickDoesNotSortColumnWithCanSortFalse()
         {
-            // TableView.idl:156-158 states the gate as a fact about the CLICK: "Per-column opt-out for the
-            // click-to-sort UX. Default true. When false the header click handler ignores this column;
-            // programmatic SortByColumn still works." No API test can assert that sentence - API 7 can only
-            // cover the programmatic half - so the route test is the only place the opt-out is checked.
+            // The only check of the click half of CanSort; API tests cover SortByColumn/ToggleSortDirection.
             //
             // The ReadOnlyCity column of BasicTableView is authored CanSort="False"; Age is CanSort="True".
             // Clicking Age afterwards is a NEGATIVE CONTROL and is the point of the test: without it, a click
@@ -1333,6 +1706,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "After Left collapses the first group from its header, Up goes to the header row and Down never lands on a row of the collapsed group.")]
+        public void CollapsedGroupHeaderUpReachesHeaderRowAndDownSkipsHiddenRows()
+        {
+            VerifyCollapsedGroupHeaderVerticalKeys(singleGroupedRow: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With one group of one row, after Left collapses the group, Up goes to the header row and Down stays on the group header.")]
+        public void CollapsedSingleGroupHeaderUpReachesHeaderRow()
+        {
+            VerifyCollapsedGroupHeaderVerticalKeys(singleGroupedRow: true);
+        }
+
+        private static void VerifyCollapsedGroupHeaderVerticalKeys(bool singleGroupedRow)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null) { return; }
+
+                if (singleGroupedRow)
+                {
+                    var filter = FindElement.ById<Button>(SingleGroupedRowFilterButton);
+                    if (filter == null) { Verify.Fail(SingleGroupedRowFilterButton + " was not found."); return; }
+                    filter.InvokeAndWait();
+                    Wait.ForIdle();
+                }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null) { Verify.Fail("No group header peer was found in the grouped table."); return; }
+                if (!TabToFirstGroupHeader(tableView, rowsHost, groupHeader)) { Verify.Fail("Tab and Down never reached the first group header."); return; }
+
+                string groupName = groupHeader.Name;
+                string focusedGroup = string.Format("'{0}' [TableViewGroupHeader]", groupName);
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                Verify.AreEqual(ExpandCollapseState.Collapsed, new ExpandCollapseImplementation(GetFirstGroupHeader(rowsHost)).ExpandCollapseState, "Precondition: Left collapses the group.");
+                Verify.AreEqual(focusedGroup, DescribeFocused(), "Precondition: the group header keeps focus across its collapse.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Log.Comment("After Down: {0}.", DescribeFocused());
+                if (singleGroupedRow)
+                {
+                    Verify.AreEqual(focusedGroup, DescribeFocused(), "Down from the only, collapsed group header must stay on it.");
+                }
+                else
+                {
+                    string next = DescribeFocused();
+                    Verify.IsTrue(next.Contains("[TableViewGroupHeader]") && next != focusedGroup,
+                        "Down from a collapsed group header must land on the next group header, not a hidden row.");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                    Verify.AreEqual(focusedGroup, DescribeFocused(), "Up from the next group header must return to the collapsed group's header.");
+                }
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Log.Comment("After Up: {0}.", DescribeFocused());
+                VerifyFocusedHeader(GroupedTable, "GroupedName", "Up from the first group header must reach the header row, not a row of the collapsed group.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Verify.AreEqual(focusedGroup, DescribeFocused(), "Down from the header row must land on the collapsed group's header.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Enter and Space on a group header each raise ToggleRequested exactly once, carrying that group's key, and that the key survives a handler that mutates the header re-entrantly.")]
         public void GroupHeaderKeyboardToggleRaisesToggleRequestedWithGroupKey()
         {
@@ -1574,12 +2017,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #region N.1 Keyboard - cell level (new tests for the #11820 model)
 
         [TestMethod]
-        [TestProperty("Description", "At cell level Left/Right move one visible column within the focused row and do not wrap across rows or leave the table (dev-spec:201).")]
+        [TestProperty("Description", "At cell level Left/Right move between the row's actionable cells, skipping inactive ones, and do not wrap or leave the table.")]
         public void CellLeftRightMoveWithinRowWithoutWrapping()
         {
-            // dev-spec:201 - Left/Right move the cell cursor WITHIN the focused row. No-wrap is the WPF/ListView
-            // convention of the #11820 model (spec debt). Failure means horizontal movement skips cells, wraps into
-            // another row, or escapes the table at an edge.
+            // BasicTableView: ReadOnlyCity (column 2) is read-only with no tooltip or control, so it is inactive.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!DrillIntoRow(BasicTable, 1)) { return; }
@@ -1588,25 +2029,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 VerifyFocusedCell(BasicTable, 1, 1, "One Right from cell 0 must reach cell 1 of the SAME row.");
 
-                int cellCount = GetRowsHost(BasicTable).Children[1].Children.Count;
-                Verify.IsGreaterThan(cellCount, 2, "Precondition: BasicTableView rows expose one cell per visible column.");
-
-                KeyboardHelper.PressKey(Key.Right, numPresses: (uint)(cellCount - 2));
+                KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell(BasicTable, 1, cellCount - 1, "Right must reach the last visible cell of the row.");
+                VerifyFocusedCell(BasicTable, 1, 3, "Right must skip the inactive ReadOnlyCity cell.");
+
+                int lastCell = GetRowsHost(BasicTable).Children[1].Children.Count - 1;
+                KeyboardHelper.PressKey(Key.Right, numPresses: 3);
+                Wait.ForIdle();
+                VerifyFocusedCell(BasicTable, 1, lastCell, "Right on the last cell must not wrap to the next row or leave the table.");
+
+                KeyboardHelper.PressKey(Key.Left, numPresses: 3);
+                Wait.ForIdle();
+                VerifyFocusedCell(BasicTable, 1, 1, "Left must skip the inactive ReadOnlyCity cell on the way back.");
+
+                KeyboardHelper.PressKey(Key.Left, numPresses: 2);
+                Wait.ForIdle();
+                UIObject row = GetRowsHost(BasicTable).Children[1];
+                Verify.IsTrue(row.HasKeyboardFocus, "Left on the first actionable cell must return to the row, not wrap to the previous row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "In a read-only table only cells with a tooltip or a control take focus; Right on a row reaches the first of them.")]
+        public void ReadOnlyTableFocusesOnlyActionableCells()
+        {
+            // Read-only: Name (tooltip) and Action (Button) stay actionable; every other cell is inactive.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!DrillIntoRow(BasicTable, 1)) { return; }
+
+                int lastCell = GetRowsHost(BasicTable).Children[1].Children.Count - 1;
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell(BasicTable, 1, lastCell, "Right from the tooltip cell must skip to the Action cell.");
+
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                VerifyFocusedCell(BasicTable, 1, 0, "Home must reach the first actionable cell, the tooltip cell.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                VerifyFocusedCell(BasicTable, 2, 0, "Down keeps the column when the cell below is actionable.");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell(BasicTable, 1, cellCount - 1, "Right on the last cell must not wrap to the next row or leave the table.");
-
-                KeyboardHelper.PressKey(Key.Left, numPresses: (uint)(cellCount - 1));
-                Wait.ForIdle();
-                VerifyFocusedCell(BasicTable, 1, 0, "Left must walk back to cell 0 of the same row.");
-
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                UIObject row = GetRowsHost(BasicTable).Children[1];
-                Verify.IsTrue(row.HasKeyboardFocus, "Left on cell 0 must return to the row, not wrap to the previous row's last cell.");
+                VerifyFocusedCell(BasicTable, 2, 0, "Left from the Action cell must skip back to the tooltip cell.");
             }
         }
 
@@ -1790,6 +2260,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Enter on a cell whose only interactive content is an inline Hyperlink focuses the Hyperlink, and Escape returns to the cell.")]
+        public void EnterOnHyperlinkOnlyCellFocusesHyperlinkAndEscapeReturnsToCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
+                if (!DrillIntoRow(ScrollingTable, 0)) { return; }
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+
+                UIObject row = GetRowsHost(ScrollingTable).Children[0];
+                int linkCell = row.Children.Count - 1;
+                VerifyFocusedCell(ScrollingTable, 0, linkCell, "Precondition: End reaches the Link cell.");
+
+                UIObject link = FindDescendantByName(row.Children[linkCell], CellHyperlink);
+                if (link == null) { Verify.Fail("The Link cell does not expose its Hyperlink to UIA."); return; }
+
+                KeyboardHelper.PressKey(Key.Enter);
+                Wait.ForIdle();
+                Log.Comment("Focused {0}.", DescribeFocused());
+                Verify.IsTrue(link.HasKeyboardFocus, "Enter on a hyperlink-only cell must focus the Hyperlink.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+                Verify.IsFalse(link.HasKeyboardFocus, "Escape must leave the Hyperlink.");
+                VerifyFocusedCell(ScrollingTable, 0, linkCell, "Escape must return focus to the Link cell itself.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Under RTL the drill-in and cell arrows follow reading order: Left drills in and moves forward, Right moves back and pops out.")]
         public void RightToLeftDrillInAndCellArrowsMirror()
         {
@@ -1867,11 +2369,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Right, numPresses: (uint)headerCount);
                 Wait.ForIdle();
                 VerifyFocusedHeader(BasicTable, lastHeaderName, "Right past the last header must leave the last header focused.");
+
+                MoveFocusOffTableBeforeTeardown();
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "A CanSort=False header is still keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
+        [TestProperty("Description", "A header with nothing to do is skipped by Left/Right, does not take focus on click, and reports IsKeyboardFocusable=false.")]
+        public void NonActionableHeaderIsSkippedAndClickDoesNotFocusIt()
+        {
+            // With resizing off, ReadOnlyCity (CanSort=False, no tooltip, no menu) has nothing to do.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(CanUserResizeColumnsCheckBox, false)) { return; }
+
+                UIObject city = GetHeader(BasicTable, "ReadOnlyCity");
+                if (city == null) { Verify.Fail("The ReadOnlyCity header was not found."); return; }
+                Verify.IsFalse(city.IsKeyboardFocusable, "A non-actionable header must report IsKeyboardFocusable=false.");
+
+                UIObject age = GetHeader(BasicTable, "Age");
+                age.SetFocus();
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Precondition: the sortable Age header takes focus.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Score", "Right must skip the non-actionable ReadOnlyCity header.");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Left must skip it on the way back.");
+
+                ClickHeader(BasicTable, "ReadOnlyCity");
+                Wait.ForIdle();
+                Verify.IsFalse(GetHeader(BasicTable, "ReadOnlyCity").HasKeyboardFocus, "Clicking a non-actionable header must not focus it.");
+                VerifyFocusedHeader(BasicTable, "Age", "Focus must stay where it was.");
+
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A CanSort=False header that is still actionable (resizable) is keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
         public void NonSortableHeaderIsFocusableAndEnterDoesNotSort()
         {
             // TableView.idl:156-158 (CanSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the
@@ -1904,6 +2443,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending
                 Wait.ForIdle();
                 Verify.IsLessThan(IndexOfSelectedRow(BasicTable), bottomIndex, "Positive control: Enter twice on Age must sort Descending and lift the bottom row.");
+
+                MoveFocusOffTableBeforeTeardown();
             }
         }
 
@@ -1953,11 +2494,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Shift+Tab from a cell lands on that column's header, and Tab back lands on a cell in the same column.")]
-        public void TabBetweenBandsPreservesColumn()
+        [TestProperty("Description", "Shift+Tab from after the table lands on the header in the column last used in the body, and Down returns to that column's cell.")]
+        public void ShiftTabFromAfterTableLandsOnRememberedHeader()
         {
-            // Shared column cursor across bands is the #11820 model (spec debt), consistent with dev-spec:201 making
-            // the column the unit of vertical movement. Failure means crossing bands loses the user's column.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!DrillIntoRow(BasicTable, 0)) { return; }
@@ -1966,17 +2505,467 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 VerifyFocusedCell(BasicTable, 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
 
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                Verify.IsTrue(afterTable.HasKeyboardFocus, "Tab from a cell must leave the table.");
+
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
-                VerifyFocusedHeader(BasicTable, "Age", "Shift+Tab from the Age cell must land on the Age header.");
+                VerifyFocusedHeader(BasicTable, "Age", "Shift+Tab from after the table must land on the remembered Age header, not the last row.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                VerifyFocusedCell(BasicTable, 0, 1, "Down from the Age header must return to the first row's Age cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With the column headers hidden the body is the tab stop: entry with no remembered row lands on the selected row in view.")]
+        public void HiddenHeadersMakeBodyTheTabStopAtSelectedRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
+
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null || rowsHost.Children.Count < 4) { Verify.Fail("Need several realized rows."); return; }
+                SelectRow(rowsHost.Children[2]);
+
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                afterTable.SetFocus();
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                UIObject row = GetRowsHost(BasicTable).Children[2];
+                Log.Comment("After Shift+Tab: focused element {0}.", DescribeFocused());
+                Verify.IsTrue(row.HasKeyboardFocus, "Body entry must land on the selected row in view.");
 
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
+                Verify.IsTrue(FindElement.ById(AfterTableButton).HasKeyboardFocus, "Tab from the body must leave the table.");
+            }
+        }
 
-                int rowIndex, cellIndex;
-                FindFocusedCell(BasicTable, out rowIndex, out cellIndex);
-                Log.Comment("After Tab back: row={0}, cell={1}.", rowIndex, cellIndex);
-                Verify.AreEqual(1, cellIndex, "Tab from the header band must return to a cell in the same column (Age).");
+        [TestMethod]
+        [TestProperty("Description", "Down from the header row returns to the remembered row, not the first row, and keeps it selected.")]
+        public void DownFromHeaderReturnsToRememberedRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null || rowsHost.Children.Count < 6) { Verify.Fail("Need several realized rows."); return; }
+                rowsHost.Children[3].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(BasicTable).Children[4].HasKeyboardFocus, "Precondition: Down reaches row 4.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                Verify.IsNotNull(FindFocusedHeader(BasicTable), "Precondition: Shift+Tab from after the table lands on the header row.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                rowsHost = GetRowsHost(BasicTable);
+                Log.Comment("After Down: focused element {0}.", DescribeFocused());
+                Verify.IsTrue(rowsHost.Children[4].HasKeyboardFocus, "Down from the header row must return to the remembered row 4.");
+                Verify.IsTrue(IsSelected(rowsHost.Children[4]), "The remembered row must stay selected.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "One Down from the header row reaches a newer selection that was scrolled out of the realized rows.")]
+        public void DownFromHeaderReachesUnrealizedNewerSelection()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+
+                // Focus leaves the body first, so scrolling cannot recycle the focused row and move focus, and the
+                // selection made afterward is newer than the remembered row.
+                UIObject header = GetHeader(ScrollingTable, "FrozenName");
+                if (header == null) { Verify.Fail("The FrozenName header was not found."); return; }
+                header.SetFocus();
+                Wait.ForIdle();
+                UIObject selected = GetRowsHost(tableView).Children[3];
+                string selectedName = selected.Name;
+                var select = FindElement.ById<Button>(SelectScrollingRow3Button);
+                if (select == null) { Verify.Fail(SelectScrollingRow3Button + " was not found."); return; }
+                select.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsTrue(IsSelected(GetRowsHost(tableView).Children[3]), "Precondition: the app selected row 3.");
+
+                for (int i = 0; i < 8; i++)
+                {
+                    WheelAtPoint(CentreOf(tableView), -10 * 120);
+                }
+                double offset = ReadScrollOffsetComponent(ReadScrollOffsets(), "V");
+                Verify.IsTrue(offset > 1000, "Precondition: the body is scrolled far past the selected row, which is no longer realized (offset " + offset + ").");
+                Verify.IsNotNull(FindFocusedHeader(ScrollingTable), "Precondition: the header row has focus.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                Log.Comment("After Down: focused element {0}.", DescribeFocused());
+                Verify.IsNull(FindFocusedHeader(ScrollingTable), "One Down must move focus off the header row.");
+                UIObject focused = UIObject.Focused;
+                Verify.AreEqual(selectedName, focused == null ? null : focused.Name, "Down must land on the selected row.");
+                Verify.IsTrue(IsSelected(focused), "The selected row must stay selected.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With no rows, focusable EmptyTemplate content is the body: Down from the header row and body entry reach it, and Tab walks its controls before leaving the table.")]
+        public void EmptyTemplateContentIsReachableByKeyboard()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(EmptyBasicCheckBox, true)) { return; }
+
+                UIObject name = GetHeader(BasicTable, "Name");
+                if (name == null) { Verify.Fail("The Name header was not found."); return; }
+                name.SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject emptyButton = FindElement.ById(EmptyStateButton);
+                if (emptyButton == null) { Verify.Fail(EmptyStateButton + " was not found."); return; }
+                Verify.IsTrue(emptyButton.HasKeyboardFocus, "Down from the header row of an empty table must reach the empty-state content.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(FindElement.ById(EmptyStateImportButton).HasKeyboardFocus, "Tab must reach every control in the empty-state content.");
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(FindElement.ById(AfterTableButton).HasKeyboardFocus, "Tab from the last empty-state control must leave the table.");
+
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
+                FindElement.ById(AfterTableButton).SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                Verify.IsTrue(FindElement.ById(EmptyStateImportButton).HasKeyboardFocus, "With no header row, Shift+Tab entry must reach the last empty-state control.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A read-only table with no actionable cells keeps row focus, and Left/Right at row level scroll it horizontally (RTL, headers hidden).")]
+        public void ReadOnlyWideTableScrollsWithArrowsAtRowLevel()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
+
+                UIObject row = GetRowsHost(RtlTable).Children[1];
+                row.SetFocus();
+                Wait.ForIdle();
+                int before = row.Children[0].BoundingRectangle.X;
+
+                // Under RTL, Left is reading-order forward.
+                KeyboardHelper.PressKey(Key.Left, numPresses: 3);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                int after = row.Children[0].BoundingRectangle.X;
+                Log.Comment("First cell X {0} -> {1}.", before, after);
+                Verify.IsTrue(row.HasKeyboardFocus, "Focus must stay on the row: no cell is actionable.");
+                Verify.AreEqual(-1, IndexOfFocusedCell(row), "No inactive cell may take focus.");
+                Verify.AreNotEqual(before, after, "Left at row level must scroll the wide table.");
+
+                KeyboardHelper.PressKey(Key.Right, numPresses: 3);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                Verify.AreEqual(before, row.Children[0].BoundingRectangle.X, "Right must scroll back.");
+                Verify.IsTrue(row.HasKeyboardFocus, "Focus must stay on the row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "In a wide read-only table whose only actionable column is a frozen tooltip column, Right and End on that cell scroll on, and Home scrolls back.")]
+        public void WideTableScrollsPastLastActionableCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "Precondition: Right enters the frozen tooltip cell, the only actionable one.");
+
+                double start = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                double afterRight = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                double afterEnd = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Log.Comment("Horizontal offset {0} -> {1} (Right) -> {2} (End); offsets '{3}', focused {4}.", start, afterRight, afterEnd, ReadScrollOffsets(), DescribeFocused());
+                Verify.IsTrue(afterRight > start, "Right on the last actionable cell must scroll toward the remaining columns.");
+                Verify.IsTrue(afterEnd > afterRight, "End on the last actionable cell must scroll to the last column.");
+                Verify.AreEqual(0, IndexOfFocusedCell(FindFocusedBodyElement(GetRowsHost(tableView))), "Focus must stay on the actionable cell.");
+
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                Verify.IsTrue(ReadScrollOffsetComponent(ReadScrollOffsets(), "H") <= start + 0.5, "Home must scroll back to the start.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "End on the last actionable cell, right after a frozen column and before wide trailing content, keeps that cell clear of the frozen band.")]
+        public void EndKeepsLastActionableCellClearOfFrozenColumn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollCityMenuCheckBox, true)) { return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "Precondition: Right enters the frozen tooltip cell.");
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                double afterEnd = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Log.Comment("Offsets after End '{0}'; focused {1}.", ReadScrollOffsets(), DescribeFocused());
+                Verify.AreEqual(1, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "End must reach ScrollCity, the last actionable cell.");
+                // ScrollCity starts where the 180-DIP frozen column ends, so any scroll slides it under that column.
+                Verify.IsTrue(afterEnd <= 1.0, "End must not scroll the focused cell under the frozen column (offset " + afterEnd + ").");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A horizontal wheel scroll after Right drills in expires the one-step undo: Left then steps back through the user's scroll instead of jumping to the offset before the drill-in.")]
+        public void HorizontalWheelAfterDrillInExpiresLeftRestore()
+        {
+            VerifyScrollAfterDrillInExpiresLeftRestore(tableView => HorizontalWheelAtPoint(CentreOf(tableView), 5 * 120));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A horizontal scroll with no pointer or wheel input (app code, like a touchpad pan) after a drill-in moves the body off the offset the drill-in left, so Left steps back instead of restoring.")]
+        public void ScrollWithoutInputAfterDrillInExpiresLeftRestore()
+        {
+            VerifyScrollAfterDrillInExpiresLeftRestore(tableView =>
+            {
+                var scroll = FindElement.ById<Button>(ScrollScrollingBodyButton);
+                if (scroll == null) { Verify.Fail(ScrollScrollingBodyButton + " was not found."); return; }
+                scroll.InvokeAndWait();
+                Wait.ForIdle();
+            });
+        }
+
+        private void VerifyScrollAfterDrillInExpiresLeftRestore(Action<UIObject> scroll)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                GetRowsHost(tableView).Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]), "Precondition: Right enters the frozen tooltip cell.");
+
+                scroll(tableView);
+                double scrolled = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Verify.IsTrue(scrolled > 60, "Precondition: the body scrolled horizontally (offset " + scrolled + ").");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                double afterLeft = ReadScrollOffsetComponent(ReadScrollOffsets(), "H");
+                Log.Comment("Horizontal offset {0} -> {1}; focused {2}.", scrolled, afterLeft, DescribeFocused());
+                Verify.AreEqual(0, IndexOfFocusedCell(FindFocusedBodyElement(GetRowsHost(tableView))), "Left must keep the cell focused while the body can step back.");
+                Verify.IsTrue(afterLeft < scrolled && afterLeft > 0.5, "Left must step back one step, not jump to the offset before the drill-in.");
+            }
+        }
+        [TestMethod]
+        [TestProperty("Description", "In a read-only table whose only actionable column is not frozen, reading-order forward then back the same number of times returns to the row at the start of the scroll range (RTL).")]
+        public void ForwardThenBackUndoesHorizontalScroll()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
+
+                UIObject row = GetRowsHost(RtlTable).Children[1];
+                row.SetFocus();
+                Wait.ForIdle();
+                // Start at the beginning of the scroll range: under RTL, Right at row level is reading-order back.
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                int start = row.Children[0].BoundingRectangle.X;
+
+                KeyboardHelper.PressKey(Key.Left, numPresses: 6);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                int scrolled = row.Children[0].BoundingRectangle.X;
+                Verify.AreEqual(2, IndexOfFocusedCell(row), "Forward must enter RtlAge, the only actionable cell.");
+
+                KeyboardHelper.PressKey(Key.Right, numPresses: 12);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                Log.Comment("First cell X {0} -> {1} -> {2}.", start, scrolled, row.Children[0].BoundingRectangle.X);
+                Verify.AreNotEqual(start, scrolled, "Forward past the last actionable cell must scroll.");
+                // Focusing the row can leave a few pixels of bring-into-view padding.
+                Verify.IsTrue(Math.Abs(start - row.Children[0].BoundingRectangle.X) <= 8, "Back must undo the scroll.");
+                Verify.IsTrue(row.HasKeyboardFocus, "Back from the first actionable cell must end on the row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row, then forward into the only actionable cell beyond the viewport, then back returns to the row and the original scroll position in one step each (RTL).")]
+        public void ForwardThenBackIntoOffscreenCellRoundTrips()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(IsReadOnlyCheckBox, true) || !SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
+
+                UIObject row = GetRowsHost(RtlTable).Children[1];
+                row.SetFocus();
+                Wait.ForIdle();
+                int start = row.Children[0].BoundingRectangle.X;
+
+                // Under RTL, Left is reading-order forward and Right is back.
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                Verify.AreEqual(2, IndexOfFocusedCell(row), "Forward must enter RtlAge, the only actionable cell.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                row = GetRowsHost(RtlTable).Children[1];
+                Log.Comment("First cell X {0} -> {1}; focused {2}.", start, row.Children[0].BoundingRectangle.X, DescribeFocused());
+                Verify.IsTrue(row.HasKeyboardFocus, "One back press must return to the row.");
+                Verify.IsTrue(Math.Abs(start - row.Children[0].BoundingRectangle.X) <= 8, "The scroll the drill-in made must be undone.");
+            }
+        }
+        [TestMethod]
+        [TestProperty("Description", "In a wide read-only tree, Right then Left the same number of times returns the root row to the start of the scroll range.")]
+        public void TreeRightThenLeftUndoesHorizontalScroll()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (TableViewHierarchyInteractionTests.SelectHierarchyPivotAndGetTable() == null) { return; }
+                if (!SetPageCheckBox(ScrollFixturesCheckBox, true)) { return; }
+
+                UIObject row = GetRowsHost(HierarchyTable).Children[0];
+                row.SetFocus();
+                Wait.ForIdle();
+                // Start at the beginning of the scroll range: Left on a collapsed root scrolls back.
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                row = GetRowsHost(HierarchyTable).Children[0];
+                int start = row.Children[0].BoundingRectangle.X;
+
+                KeyboardHelper.PressKey(Key.Right, numPresses: 6);
+                Wait.ForIdle();
+                row = GetRowsHost(HierarchyTable).Children[0];
+                int scrolled = row.Children[0].BoundingRectangle.X;
+                KeyboardHelper.PressKey(Key.Left, numPresses: 6);
+                Wait.ForIdle();
+                row = GetRowsHost(HierarchyTable).Children[0];
+                Log.Comment("First cell X {0} -> {1} -> {2}; focused {3}.", start, scrolled, row.Children[0].BoundingRectangle.X, DescribeFocused());
+                Verify.AreNotEqual(start, scrolled, "Right on a row with no actionable cell must scroll.");
+                Verify.AreEqual(start, row.Children[0].BoundingRectangle.X, "Left must undo the scroll once there is nothing to collapse.");
+                Verify.IsTrue(row.HasKeyboardFocus, "Focus must stay on the root row.");
+            }
+        }
+        [TestMethod]
+        [TestProperty("Description", "Under RTL, header arrows skip a non-actionable header in reading order.")]
+        public void RightToLeftHeaderArrowsSkipNonActionableHeader()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
+                if (!SetPageCheckBox(CanUserResizeColumnsCheckBox, false)) { return; }
+
+                UIObject name = GetHeader(RtlTable, "RtlName");
+                if (name == null) { Verify.Fail("The RtlName header was not found."); return; }
+                name.SetFocus();
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyFocusedHeader(RtlTable, "RtlAge", "Under RTL, Left must skip the non-actionable RtlCity header.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedHeader(RtlTable, "RtlName", "Under RTL, Right must skip it on the way back.");
+
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Hiding the column headers while a header has focus moves focus into the body, and the body becomes the tab stop.")]
+        public void HidingHeadersWhileHeaderFocusedMovesTabStopToBody()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject age = GetHeader(BasicTable, "Age");
+                age.SetFocus();
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Precondition: the Age header takes focus.");
+
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
+                Log.Comment("After hiding headers: focused element {0}.", DescribeFocused());
+                // The hidden header row leaves the UIA tree, so the rows host is the table's only child.
+                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost(BasicTable)), "Focus must move into the body.");
+
+                FindElement.ById(AfterTableButton).SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost(BasicTable)), "With headers hidden, entry must land in the body.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "In a default (read-only, no tooltip) table, Right on a data row keeps row focus and no cell is keyboard-focusable.")]
+        public void DefaultReadOnlyTableKeepsRowFocus()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectGroupedPivotAndGetTable();
+                if (table == null) { return; }
+                UIObject rowsHost = GetRowsHost(table);
+                UIObject row = null;
+                foreach (UIObject candidate in rowsHost.Children)
+                {
+                    if (IsRow(candidate)) { row = candidate; break; }
+                }
+                if (row == null) { Verify.Fail("No data row was realized."); return; }
+
+                row.SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.IsTrue(row.HasKeyboardFocus, "Right must leave focus on the row: no cell is actionable.");
+                Verify.IsFalse(row.Children[0].IsKeyboardFocusable, "An inactive cell must report IsKeyboardFocusable=false.");
             }
         }
 
@@ -2031,6 +3020,149 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Row-level Up from the first row of a table whose cells host controls moves to the header band, not into a cell control (#12441).")]
+        public void UpFromFirstRowWithCellControlsMovesToHeaderNotIntoCellControl()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Precondition: row 1 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(table).Children[0].HasKeyboardFocus, "Precondition: Up from row 1 lands on row 0 at row level.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Row-level Up from the first row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                UIObject header = FindFocusedHeader(CellControlsTable);
+                Verify.IsNotNull(header, "Up from the first row must move focus to the header band, not into a cell control.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(table));
+                Verify.IsNotNull(bodyFocus, "Down from a header must return to the first row.");
+                if (bodyFocus != null)
+                {
+                    Verify.AreEqual(GetRowsHost(table).Children[0].RuntimeId, bodyFocus.RuntimeId, "Down from a header must land on the FIRST row.");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Down walks every row of a table whose cells host controls and stops on the last row, never focusing a cell control.")]
+        public void DownThroughRowsWithCellControlsStaysOnRowContainers()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                // One extra Down at the end: the last row is a boundary and must keep focus.
+                for (int step = 1; step <= CellControlsItemCount; step++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    int expectedRow = Math.Min(step, CellControlsItemCount - 1);
+                    UIObject focused = UIObject.Focused;
+                    string name = focused == null ? string.Empty : focused.Name;
+                    Log.Comment("Down #{0}: focus on {1} '{2}'.", step, focused == null ? "<none>" : focused.ControlType.ToString(), name);
+                    Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem,
+                        "Row-level Down must keep focus on a row container, not a cell control (step " + step + ").");
+                    Verify.IsTrue(global::System.Text.RegularExpressions.Regex.IsMatch(name, @"\b" + ScrollingName(expectedRow) + @"\b"),
+                        "Down #" + step + " must focus row " + expectedRow + ".");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With column headers hidden, row-level Up on the first row of a table whose cells host controls keeps focus on that row.")]
+        public void UpFromFirstRowWithCellControlsAndHiddenHeadersStaysOnRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                var toggleHeaders = FindElement.ById<Button>(ToggleCellControlsHeadersButton);
+                if (toggleHeaders == null) { Verify.Fail(ToggleCellControlsHeadersButton + " was not found."); return; }
+                toggleHeaders.InvokeAndWait();
+                Wait.ForIdle();
+
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Up from the first row with headers hidden landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus,
+                    "With no header band, Up from the first row must keep focus on that row, not move into a cell control.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Row-level Down and Up step over a disabled row of a table whose cells host controls to the next enabled row container.")]
+        public void DownAndUpSkipDisabledRowWithCellControls()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(CellControlsPivotItem)) { Verify.Fail(GoToButton(CellControlsPivotItem) + " was not found."); return; }
+                UIObject table = FindElement.ById(CellControlsTable);
+                if (table == null) { Verify.Fail(CellControlsTable + " was not found."); return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost == null) { return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                var disable = FindElement.ById<Button>(DisableFocusedRowButton);
+                if (disable == null) { Verify.Fail(DisableFocusedRowButton + " was not found."); return; }
+                disable.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsFalse(GetRowsHost(FindElement.ById(CellControlsTable)).Children[1].IsEnabled, "Precondition: row 1 should be disabled.");
+
+                GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(FindElement.ById(CellControlsTable)).Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject focused = UIObject.Focused;
+                Log.Comment("Down over the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem && focused.IsEnabled,
+                    "Row-level Down over a disabled row must focus an enabled row container, not a cell control.");
+                Verify.IsTrue(focused != null && global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\b" + ScrollingName(2) + @"\b"),
+                    "Row-level Down from row 0 must step over disabled row 1 to row 2.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                focused = UIObject.Focused;
+                Log.Comment("Up over the disabled row landed on: {0} '{1}'.", focused == null ? "<none>" : focused.ControlType.ToString(), focused == null ? string.Empty : focused.Name);
+                Verify.IsTrue(focused != null && focused.ControlType == ControlType.DataItem &&
+                    global::System.Text.RegularExpressions.Regex.IsMatch(focused.Name, @"\b" + ScrollingName(0) + @"\b"),
+                    "Row-level Up from row 2 must step over disabled row 1 to row 0.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
         public void BodyTabReentryReturnsToSameRecordAfterSort()
         {
@@ -2050,10 +3182,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(GetRowsHost(BasicTable).Children[bottomIndex].HasKeyboardFocus, "Precondition: the bottom row should take focus.");
 
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                Wait.ForIdle();
-                if (FindFocusedHeader(BasicTable) == null) { Verify.Fail("Precondition: Shift+Tab from the body should land on the header band."); return; }
-
                 UIObject age = GetHeader(BasicTable, "Age");
                 age.SetFocus();
                 Wait.ForIdle();
@@ -2066,12 +3194,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("After the sort the tracked record is at index {0} (was {1}).", recordIndex, bottomIndex);
                 Verify.IsTrue(recordIndex >= 0 && recordIndex != bottomIndex, "Precondition: the sort must have moved the tracked record.");
 
-                KeyboardHelper.PressKey(Key.Tab);
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                afterTable.SetFocus();
+                Wait.ForIdle();
+                // With the header row hidden the body is the table's tab stop.
+                if (!SetPageCheckBox(HideColumnHeadersCheckBox, true)) { return; }
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
                 rowsHost = GetRowsHost(BasicTable);
                 UIObject reentered = FindFocusedBodyElement(rowsHost);
-                if (reentered == null) { Verify.Fail("Tab from the header band must re-enter the body."); return; }
+                if (reentered == null) { Verify.Fail("Shift+Tab must re-enter the body."); return; }
 
                 Verify.AreEqual(rowsHost.Children[recordIndex].RuntimeId, reentered.RuntimeId,
                     "Tab re-entry must return to the row holding the same record (now at index " + recordIndex + "), not the old index.");
@@ -2136,6 +3271,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("The first group header took keyboard focus after {0} Tab press(es).", i + 1);
                     return true;
+                }
+
+                // The table's tab stop is the header row; Down enters the body at its first element.
+                foreach (UIObject columnHeader in GetHeaderHost(tableView).Children)
+                {
+                    if (columnHeader.HasKeyboardFocus)
+                    {
+                        KeyboardHelper.PressKey(Key.Down);
+                        Wait.ForIdle();
+                        if (groupHeader.HasKeyboardFocus)
+                        {
+                            Log.Comment("The first group header took keyboard focus after {0} Tab press(es) and Down.", i + 1);
+                            return true;
+                        }
+                        break;
+                    }
                 }
 
                 Log.Comment("Tab {0}: focus is on {1}.", i + 1, DescribeFocusInsideTable(tableView, rowsHost));

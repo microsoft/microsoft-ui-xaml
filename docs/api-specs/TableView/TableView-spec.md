@@ -143,13 +143,15 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls gridlines. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+
+> **Migrating from earlier previews:** `HeaderGridLinesVisibility` was removed. `GridLinesVisibility` affects only the body lines; to hide the header separators and the rule under the header, override `TabularSurfaceHeaderSeparatorBrush` with `Transparent`.
 
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
-    GridLinesVisibility="All"
+    GridLinesVisibility="Horizontal"
     Density="Compact"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
@@ -165,7 +167,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 using Microsoft.UI.Xaml.Controls.Tabular;
 
 PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.All;
+PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
@@ -175,12 +177,17 @@ In all themes, an application-set table or row `Foreground` supplies the normal-
 pointer-over, pressed, selected, and disabled states use the corresponding `TabularSurface*`
 foreground brush. Cell content inherits that foreground unless its template supplies an explicit brush.
 
-Override the named `TabularSurface*` brush keys to customize colors. Low-level Fluent color-token
+Override the named `TabularSurface*` brush keys to customize colors. To restyle column headers
+beyond their brushes (typography, padding, the template), set `ColumnHeaderStyle`. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
 
 Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
 independently to customize the disabled-selected indicator and disabled row text.
 By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
+
+The default group header's item count inherits the header `Foreground` and is dimmed by
+`TabularSurfaceGroupHeaderCountOpacity` (1.0 in High Contrast). A disabled header shows the count
+at full opacity, since the disabled brush already dims it.
 
 ### Frozen (pinned) leading columns
 
@@ -254,9 +261,11 @@ Orders.Clear();
 
 ### Keyboard navigation & accessibility
 
-TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row; Left and Right move the cell cursor within the focused row. Home and End move to the first or last cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last cell in the table. Enter and Space on a column header sort that column.
+TableView supports cell focus on actionable cells. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row (the nearest actionable cell, else the row); Left and Right move the cell cursor among the actionable cells of the focused row. Home and End move to the first or last actionable cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last row of the table. Enter and Space on a column header sort that column.
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
+
+The keyboard focus model is described in the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model).
 
 ```xaml
 <tabular:TableView
@@ -406,7 +415,15 @@ Editing starts only from user input in this release. There is no programmatic wa
 | `F2` | Begins editing the current cell |
 | `Enter` | Commits and closes the editor |
 | `Esc` | Cancels and discards the editor |
-| Moving focus off the cell | Commits |
+| Moving focus outside the editor and its owned flyouts/popups | Attempts to commit after focus settles; validation or an edit-ending handler can keep the edit open |
+| Moving focus within the editor or into an editor-owned flyout/popup | Keeps editing; focus-loss commit is re-evaluated after the flyout/popup closes |
+
+An editor-owned flyout includes a `ContextFlyout` on the editor or one of its descendants,
+a text editor's `SelectionFlyout`, and picker or button flyouts opened by controls inside
+the editor. These remain part of the editing interaction even though their popup content
+is outside the editor's visual tree. An unrelated popup is not part of the editor and
+does not postpone focus-loss commit. Escape consumed by the editor, or used to dismiss
+its own menu, does not also cancel the cell edit.
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
 
@@ -440,9 +457,11 @@ Template parts:
 | Part | Type | Description |
 |---|---|---|
 | `PART_HeaderRow` | FrameworkElement | Header row root. |
-| `PART_HeaderHost` | `Panel` | Host for column header elements. |
+| `PART_HeaderHost` | `TableViewCellsPanel` (typed `Panel`) | Host for column header elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
+
+Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
 ### Example Usage
 
@@ -469,12 +488,13 @@ Template parts:
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
-| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines. |
+| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
+| `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
 | `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
@@ -508,6 +528,8 @@ The current cell is the navigation position and is deliberately independent of e
 | `CellEditEnding` | `TableViewCellEditEndingEventArgs` | Raised before a cell edit closes. Vetoable via `Cancel`; the handler must decide before returning. |
 
 `CellEditEnding` is raised synchronously. The control reads `Cancel` immediately after the handler returns, so validation or save decisions must be complete before returning from the handler.
+
+When an open edit is forced closed because its item was removed, filtered out, or `ItemsSource` was replaced, `CellEditEnding` reports `Cancel` and the pending value is not written. If the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node), a valid pending value is committed.
 
 ## TableView selection methods
 
@@ -551,7 +573,7 @@ These are understood and deliberately not addressed by single selection:
 
 - **Pointer selection is not blocked during an open edit.** Keyboard navigation is suppressed while editing, but clicking another row moves `SelectedItem` and the highlight immediately. If the resulting commit is then vetoed by validation, the editor stays open on the previous row while the selection has already moved. Whether selection should be blocked, deferred, or allowed to diverge from the edit target is an open decision.
 - **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
-- **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
+- **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Hovered, pressed and selected cells also turn off High Contrast text backplates (`HighContrastAdjustment="None"` on `PART_CellForegroundPresenter`, which cell content inherits), because the control paints its own high-contrast highlight pair; such app-coloured text therefore gets no automatic backplate either. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
 
@@ -590,7 +612,7 @@ Contract notes:
 
 ## TableViewGroupInfo class
 
-The read-only projection a `GroupHeaderTemplate` binds against. It implements `INotifyPropertyChanged` and is updated **in place** when a header is recycled, so a recycled header does not re-evaluate every binding in the template.
+The read-only projection a `GroupHeaderTemplate` binds against. It implements `INotifyPropertyChanged` and is updated **in place** while the header represents the same group. Recycling the header to another group creates a new projection, so a reference retained by an open context menu never changes group identity.
 
 | Property | Type | Description |
 |---|---|---|
@@ -612,16 +634,53 @@ The realized group-header container: a templated `ContentControl` whose `Content
 | `IsExpandable` | `Boolean` DP | Whether this header can expand. |
 | `ToggleRequested` | event (`TableViewGroupHeaderToggleRequestedEventArgs`) | Raised when the band is activated. The args carry `GroupKey`, so a handler that re-enters and mutates the header still sees the key that was actually activated. |
 
-Template parts (all optional; omitting one degrades rather than fails):
+Template parts. Code looks up `PART_ContentPresenter` and `PART_GridLineBorder`, and degrades without either. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
 
 | Part | Type | Purpose |
 |---|---|---|
-| `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. |
-| `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code. |
+| `PART_Root` | `Border` | The band. `CommonStates` sets its `Background` for `PointerOver` and `Pressed`. |
+| `PART_ContentPresenter` | `ContentPresenter` | The app-customizable content region, showing `ContentTemplate` over the `TableViewGroupInfo`. `CommonStates` sets its `Foreground` and `HighContrastAdjustment`. |
+| `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. It keeps its width when the chevron hides. |
+| `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code; hidden by `NotExpandable`; recoloured by `CommonStates`. |
+| `PART_GridLineBorder` | `Border` | Optional. Renders the border chrome; on the last row the control clears its bottom edge so it does not double the table's own border. |
 
 Visual states: `CommonStates` (`Normal`/`PointerOver`/`Pressed`/`Disabled`), `ExpansionStates` (`Expanded`/`Collapsed`), `ExpandabilityStates` (`Expandable`/`NotExpandable`).
 
 The **whole band** is the toggle target, matching `ListView` and `TreeView`, rather than a nested button inside it — one interactive element, one automation story.
+
+## TableViewColumnHeader class
+
+The realized column header: a templated `ContentControl`, one per column in `PART_HeaderHost`. The `TableView` creates and owns the headers, so the class is sealed and has no public constructor; apps restyle them through `TableView.ColumnHeaderStyle` or `TableViewColumn.HeaderStyle`, and fill the content region through the column's `Header`, `HeaderTemplate` or `HeaderTemplateSelector`. Its only member of its own is the read-only `Column`, the `TableViewColumn` the header represents.
+
+```xml
+<tabular:TableView.ColumnHeaderStyle>
+    <Style TargetType="tabular:TableViewColumnHeader">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
+    </Style>
+</tabular:TableView.ColumnHeaderStyle>
+```
+
+The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them. A keyboard-focused header takes the `TableView`'s `CornerRadius` so its focus visual is rounded, unless the applied style sets `CornerRadius`. A style's `ContentTemplate`, or a `ContentTemplateSelector` that returns a template, also renders a string `Header`; the column's `HeaderTemplate`/`HeaderTemplateSelector` wins over it. A `ColumnHeaderStyle` or `HeaderStyle` whose `TargetType` is not `TableViewColumnHeader` or one of its base types is ignored.
+
+Template parts. All are optional; a missing part disables only its feature:
+
+| Part | Type | Purpose |
+|---|---|---|
+| `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
+| `PART_GridLine` | `Border` | Vertical separator. Always shown, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
+| `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
+
+Visual states:
+
+| Group | States | Notes |
+|---|---|---|
+| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort, and change only the fill (`TabularSurfaceHeaderBackgroundPointerOverBrush` / `...PressedBrush`). `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
+| `HighContrastStates` | `HighContrastNormal`, `HighContrastPointerOver`, `HighContrastPressed` | Entered alongside `PointerOver`/`Pressed` only under High Contrast: text and glyph switch to `TabularSurfaceHeaderForeground*Brush` and drop the text backplate. |
+| `SortStates` | `Unsorted`, `SortAscending`, `SortDescending` | Show or hide the sort glyph; the glyph is hidden until the column is sorted. |
+
+The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
 
 ## TableViewColumn class
 
@@ -629,14 +688,17 @@ Base class for TableView columns.
 
 `TableViewColumn` derives from `Microsoft.UI.Xaml.DependencyObject` and has `Header` as its content property.
 
-`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred.
+`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`). `Pixel` is exact; `Auto` sizes to the widest realized cell and the current header; the cell width grows within a data set (it does not shrink as rows scroll out of view), while the header width follows the header as it is now (hiding the headers drops it, and a shorter header or turning off sorting narrows it); `*` takes a proportional share of the body viewport left after the fixed columns. `MinWidth`/`MaxWidth` clamp every mode. Auto widths reset when `ItemsSource` is assigned a new value or the whole `Columns` collection is replaced or reset, and for a single column when that column is added or replaced or its `Header`, `HeaderTemplate`, `HeaderTemplateSelector` or `CellTemplate` changes; they do not reset on an in-place collection `Reset` or clear-and-refill, a `TableViewSource` filter or refilter, or a `Density` change; to re-fit, re-assign `ItemsSource` (or give the column a `Pixel` `Width`).
 
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `Header` | `Object` | `null` | Header content for the column. |
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
-| `Width` | `GridLength` | Default column width | Accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred. |
+| `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
+| `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
+| `HeaderContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Context flyout for this column's header. Opens at the header cell; it does not receive a row data item. |
+| `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanResize="False"`). |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
 | `ActualWidth` | `Double` | `120` | Read-only realized width. |
@@ -653,6 +715,23 @@ Methods:
 | `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
 | `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
 | `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
+
+### Resizing columns
+
+A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. A gesture that changes the width writes a `Pixel` `Width` and announces the new width, so an `Auto` or `*` column becomes `Pixel`, as in File Explorer; a double-click fit always does, even when the size is unchanged. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
+
+| Gesture | Behaviour |
+|---|---|
+| Drag the gripper on a header's trailing edge | Resizes the column; <kbd>Esc</kbd>, a lost capture or unloading the table cancels the drag and restores the previous `Width`. |
+| Double-click the gripper (mouse only) | Fits the column to its header and the widest **realized** row cell, measured unconstrained, within the same bounds as a drag, so a column that can only shrink is not widened to fit. Rows that are not realized are not measured. |
+| <kbd>Alt</kbd> + <kbd>Left</kbd> / <kbd>Right</kbd> on a focused header | Narrows or widens the column by 8 DIPs (32 with <kbd>Shift</kbd>). |
+| UI Automation `Transform.Resize` | Same path as a drag; see [Automation peers](#automation-peers-tableviewrowcellcolumnheader). |
+
+#### Locked Star columns
+
+While `CanUserResizeColumns` is true, a Star column with `CanResize="False"` keeps its **authored share**: the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops keeping the authored share when that no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the authored share, crossing between the two states can move it by the difference.
+
+Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it gets a **resize hold** at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. A resize hold overrides the authored share. It ends when something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns`, `ItemsSource` or the viewport width), or when an `Auto` column grows so that the held layout no longer fits. A canceled resize puts back the resize holds that were in place before it. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
 
 ### Cell tooltips
 
@@ -677,7 +756,9 @@ cell template is never touched; the control's tooltip covers the rest of the cel
 ### Column header tooltips
 
 `HeaderToolTip` is the header-side counterpart, and covers the whole header cell — content, padding
-and sort affordance:
+and sort affordance — except the resize gripper: while the pointer is on the gripper the tooltip is
+suppressed, so the resize cursor is not reset under a resting pointer. It returns when the pointer
+leaves the gripper or the gripper is withdrawn.
 
 ```xml
 <tabular:TableViewTextColumn Header="Notes"
@@ -695,6 +776,115 @@ header peer publishes the text itself rather than through
 `AutomationProperties.HelpText`, and it reads the value from the column rather than the
 tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
 mouse-only: pair it with `Header` text that carries the same information when it matters.
+
+### Context menus
+
+`CellContextFlyout` and `HeaderContextFlyout` are dependency properties on `TableViewColumn`.
+Both default to `null` and accept a `FlyoutBase`, including `MenuFlyout`. They are read
+for each request, so replacing or clearing one applies to the next request without
+rebuilding the cells.
+
+```xaml
+<tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}">
+    <tabular:TableViewTextColumn.CellContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="{Binding Name}" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.CellContextFlyout>
+    <tabular:TableViewTextColumn.HeaderContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="Column actions" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.HeaderContextFlyout>
+</tabular:TableViewTextColumn>
+```
+
+#### Resolution order
+
+The first applicable flyout wins; cell and header properties do not replace a flyout
+that application content already handles natively.
+
+| Request target | Resolution order |
+|---|---|
+| Data cell | Application `ContextFlyout` inside the cell content; column `CellContextFlyout`; application `ContextFlyout` on the ancestor path above the cell through the row (including row-template elements and the row's own `ContextFlyout`); inherited table `ContextFlyout`. |
+| Row outside a cell | Row/template menu reached by native routing or discovered on the ancestor path from the cells host through the template root and row; inherited table `ContextFlyout`. Column menus do not apply, and lookup never descends into arbitrary cells. |
+| Column header | Application `ContextFlyout` inside the header content; column `HeaderContextFlyout`; inherited table `ContextFlyout`. Cell and row menus do not apply. |
+| Group header | Its own application `ContextFlyout`, including one supplied by a group-header style; inherited table `ContextFlyout`. Column and data-row menus do not apply. |
+| Empty table area | Inherited table `ContextFlyout`. |
+
+When TableView searches cell/header content for a flyout, it searches visible elements
+depth-first in visual order, choosing an outer element before its descendants. A nested
+items host's own flyout is eligible, but its items are not searched; a nested TableView
+is excluded entirely. Text controls' built-in text menus are not candidates for this
+search. For a text control, only a `ContextFlyout` set locally on that element counts;
+a style-set text-control flyout is not discovered by this search. These search rules
+do not prevent a nested control from handling its own native context request.
+
+With no candidate, the request remains unhandled and can bubble to the table or another
+ancestor's `ContextFlyout`. `TableView.ContextFlyout` is inherited from `UIElement`;
+there is no separate TableView-specific row-menu property. Use `ContextFlyout` on
+`TableViewRow`, for example through a row style.
+
+#### Data context and targeting
+
+A column's `CellContextFlyout` instance is shared across its cells. Its menu items
+inherit the requested cell's row data item through the flyout target, not the column
+object or `SelectedItem`. Reopening that shared menu on another row supplies that row's
+item. Row and row-template menus likewise inherit the target element's data context.
+Application-set binding sources or local data contexts retain their normal XAML precedence.
+
+`HeaderContextFlyout` targets the column-header cell, not the `TableViewColumn` object,
+and does not automatically receive a row item or column object as its data context.
+A flyout owned by header-template content instead uses that content element as its
+target. A group-header menu inherits the header's `TableViewGroupInfo`; if the header is
+recycled for another group while that menu remains open, its retained projection keeps
+the original group's identity. The table-level fallback uses the table's data context
+rather than the requested row's item.
+
+Right-click and press-and-hold use the pointer location. Shift+F10, the Menu key, and
+UIA `ShowContextMenu` resolve against the focused element or the automation peer's
+target, without a pointer position. Column cell/header flyouts open at their cell/header
+wrapper. Content-owned flyouts keep their owning content element as `Target`. When
+TableView resolves a row-owned or table-fallback flyout for a cell request without a
+pointer position, it keeps the owner as `Target` but positions the menu using the
+requested cell's bounds, including a column-header cell. Pointer table fallback retains
+native bubbling and pointer placement.
+A row peer request targets the row rather than selecting an arbitrary cell.
+
+For requests handled by TableView, the requested body cell becomes current and receives
+cell-level focus; a row-only target receives row focus, and a header target receives
+header focus. This focus move is intentional even when no flyout resolves: the request
+is still interaction with that target. Normal focus-driven bring-into-view behavior
+applies, including for partially visible cells; absence of a menu does not preserve
+the previous focus or guarantee an unchanged scroll position. Selection is unchanged.
+For an unhandled right-button press reaching a data row, TableView establishes the
+target cell's focus and current-cell state before a native template-owned flyout can
+open. The press remains unhandled and does not arm row selection, so native menu
+ownership, targeting, and dismissal remain unchanged. This early focus path does not
+run while editing or for a press originating inside a nested TableView, and it does not
+override a child control that already handled the press. Focus already inside the target
+cell is preserved.
+
+This early path is specific to mouse/pen right-button presses. A template-owned flyout
+handled natively for other input can still bypass TableView's context-request focus
+move; this change does not redefine touch/hold, keyboard, or UIA behavior.
+
+While a cell is editing or awaiting an edit-ending deferral, TableView suppresses its
+cell/header menu routing, row/group-header-owned menus, and table-level fallback.
+This also covers native requests raised directly on a row or group header after a
+vetoed commit. Owner-flyout suppression cancels opening before the popup becomes visible;
+its `Opening` and `Closing` callbacks can still run, but cancelling `Closing` does not
+override editing suppression. Flyouts shared with unrelated controls are suppressed only
+when targeted at the editing table's row or group header.
+
+An editor's own text or application menu can still open; entering it is not a focus-loss
+commit, as described under [Editing cells](#editing-cells). Cancelling its `Closing` keeps
+the editor-flyout subscription active until actual closure, so a later menu-closing Escape
+does not also cancel the edit.
+
+An unavailable pooled group-header automation peer rejects `ShowContextMenu` with
+`ElementNotAvailable`, just as it rejects a row-coordinate query. It cannot open either
+its retained menu or the table fallback.
 
 ## TableViewTextColumn class
 
@@ -763,7 +953,7 @@ Template parts:
 | Part | Type | Description |
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
-| `PART_CellsHost` | `Panel` | Host for generated cell elements. |
+| `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
 Visual states:
@@ -779,6 +969,37 @@ Properties:
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `IsSelected` | `Boolean` | `false` | Whether the row is the selected row. Read-only: selection is owned by the `TableView`, so a row cannot select itself — apps go through `Select(Int32)` / `Deselect(Int32)` / `DeselectAll()`. Rows are recycled, so this is always re-derived. |
+
+## TableViewCellsPanel class
+
+The layout panel that lines cells up under their columns. The default templates use it as `TableView`'s `PART_HeaderHost` and as each row's `PART_CellsHost`; it is public so that a re-templated `TableView` or `TableViewRow` can declare it in XAML.
+
+`TableViewCellsPanel` derives from `Microsoft.UI.Xaml.Controls.Panel`.
+
+| Member | Kind | Description |
+|---|---|---|
+| `TableViewCellsPanel()` | constructor | Creates the panel. Needed for XAML activation in a control template. |
+
+It adds no properties, methods or events of its own; everything else is inherited from `Panel`.
+
+Behavior:
+
+- The **owning control populates `Children`**: one header cell (in `PART_HeaderHost`) or one cell wrapper (in `PART_CellsHost`) per column, in `Columns` order, each tagged with its `TableViewColumn`. Apps should not add, remove or reorder children; the control rebuilds them when the columns change.
+- **Measure:** a cell in an `Auto` column is measured unconstrained, and its width is reported to the `TableView`, which takes the widest header or realized cell when it resolves the column's `ActualWidth`. A cell in a `Pixel` or `*` column is measured at the column's resolved width. A cell in a collapsed column is measured at zero width.
+- **Arrange:** cells are placed left to right at each column's resolved `ActualWidth`, so the header band and every row stay aligned without a per-cell `Width` binding. Content wider than its column is clipped or ellipsized.
+- **Frozen columns:** the leading frozen prefix is pinned against the body's horizontal offset through `UIElement.Translation`, `Canvas.ZIndex` and a clip on the cells.
+
+Usage in a re-template:
+
+```xaml
+<!-- Inside a TableViewRow ControlTemplate. HorizontalAlignment="Left" matters: the panel reports
+     the summed column width, and a Stretch alignment would centre it in a wider presenter. -->
+<tabular:TableViewCellsPanel x:Name="PART_CellsHost" HorizontalAlignment="Left" />
+```
+
+`PART_HeaderHost` and `PART_CellsHost` are typed `Panel`, and any `Panel` is accepted, but only a `TableViewCellsPanel` reports measured widths and arranges at the column widths. With another panel, `Auto` columns ignore that host's content and its cells are not column-aligned.
+
+Outside a `TableView` the panel has no columns to read. Untagged children are measured unconstrained and arranged at their desired width, side by side; this is a defensive fallback, not a supported layout.
 
 ## Enums
 
@@ -801,7 +1022,7 @@ Flags enum mirroring the `None`/`Column` slots of WPF `DataGridHeadersVisibility
 
 ### TableViewGridLinesVisibility
 
-Mirrors WPF `DataGridGridLinesVisibility` values exactly.
+Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisibility`.
 
 | Value | Numeric value | Description |
 |---|---:|---|
@@ -822,6 +1043,8 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly.
 
 Only `None` and `Single` exist in this release: `Multiple`/`Extended` need an anchor, a range model and Ctrl/Shift gesture handling, none of which single selection implies. New members are appended, so these numeric values stay stable when they arrive.
 
+Why a TableView-specific enum rather than reusing `ItemsViewSelectionMode` or `ListViewSelectionMode`: both already define `Multiple` and `Extended`, which this release cannot honor. Reusing either would make `SelectionMode = Multiple` compile, bind and round-trip through markup, and then fail or silently behave as `Single` at run time; an enum that only names the supported values makes the limit visible in IntelliSense and the type system instead. The names and numeric values (`None = 0`, `Single = 1`) match the first two `ItemsViewSelectionMode` members, so code and persisted values transfer. The cost is a third selection-mode enum in the namespace; if API review prefers reuse, the alternative is `ItemsViewSelectionMode` with `Multiple`/`Extended` rejected by `E_INVALIDARG` until they are implemented.
+
 | Value | Numeric value | Description |
 |---|---:|---|
 | `None` | 0 | Selection is off; a display-only table. |
@@ -835,6 +1058,8 @@ How an edit is being closed.
 |---|---:|---|
 | `Commit` | 0 | The edited value is being written to the source. |
 | `Cancel` | 1 | The edit is being cancelled and the editor is discarded. |
+
+A forced close of an edit whose item was removed, filtered out, or whose `ItemsSource` was replaced reports `Cancel` and does not write the pending value. If the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node), a valid pending value is committed.
 
 ## Editing event args
 
@@ -869,7 +1094,7 @@ TableView provides UI Automation peers for grid/table accessibility, cell value 
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
 | `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
-| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort) |
+| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
@@ -880,6 +1105,7 @@ Migration notes:
 - Header `AutomationId` is no longer synthesized. `GetAutomationIdCore` returns empty unless the app sets `AutomationProperties.AutomationId`; the old pointer-derived value varied per process. Apps that need stable header IDs must set `AutomationProperties.AutomationId` on the header explicitly.
 - Programmatic row focus now resolves to a cell. Apps with `GotFocus` / `LostFocus` handlers on `TableViewRow`, row focus-visual styling, or `FocusManager` assertions can observe a cell as the focused element instead of the row.
 - Cell automation peers now report control type `Custom`, with localized control type `cell`.
+- A cell's automation `Name` no longer repeats its column header while column headers are shown: the name is the cell value (for example "Sales"), the header comes from `ITableItemProvider.GetColumnHeaderItems`, and an empty cell is named "blank". Only while `HeadersVisibility` hides the column headers is the name "{header}, {value}" (for example "Department, Sales"), with `GetColumnHeaderItems` and `ITableProvider.GetColumnHeaders` then empty. A cell whose content is an interactive control (for example a `Button` or `ToggleSwitch`) is still named after its column header, since the control names itself. UI tests and automation scripts that find a cell by a name such as "Department, Sales" must match the value instead, or read the column through `GetColumnHeaderItems`.
 
 Rows report `PositionInSet` / `SizeOfSet` and compose their name from their visible cells, so a virtualized row still announces "row *i* of *n*" and what it contains. When the source is grouped, both values are **relative to the containing group** and exclude the group-header bands, matching `ItemsControlAutomationPeer`. An app-set `AutomationProperties.PositionInSet` / `SizeOfSet` / `Level` always takes precedence over the computed value.
 
@@ -897,9 +1123,12 @@ Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.G
 
 Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
 
+The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
+A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanResize` are both true. `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
+
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
-`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's provider when that row is realized; a selected row scrolled out of the realization window is reached through `IItemContainerProvider.FindItemByProperty`, which realizes it.
+`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from its text columns' values, else from the item (a name the app gives the row, or template-column text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
 
 # API Details
 
@@ -1050,6 +1279,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Boolean IsReadOnly;
         Microsoft.UI.Xaml.DataTemplate CellEditingTemplate;
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout;
 
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
@@ -1063,6 +1294,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -1081,6 +1314,12 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.DataTemplate CellTemplate;
 
         static Microsoft.UI.Xaml.DependencyProperty CellTemplateProperty { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
+    {
+        TableViewCellsPanel();
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -1220,7 +1459,7 @@ Added here:
 - Vetoable events `BeginningEdit` and `CellEditEnding`. `CellEditEnding` is synchronous, so handlers must set `Cancel` before returning.
 - Rollback for a cancelled cell edit by using `UpdateSourceTrigger=Explicit`; the source is unchanged until commit, so cancelling discards the editor and re-displays the original value.
 - Validation via `INotifyDataErrorInfo`, scoped to the property the column edits. The edited property is derived from the column's `Binding` rather than authored separately, so it stays one concept with the base column's `SortMemberPath`.
-- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit on focus loss. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
+- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit when focus leaves the editor and its owned flyouts/popups. Focus-loss commit is re-evaluated after an editor-owned flyout/popup closes. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
 
 ### Editing is cell-scoped in this release
 
@@ -1270,7 +1509,6 @@ The display-only base delivered previously:
 These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Two-level hierarchy.
 - Column resize and reorder.
 
 ## Non-goals (out of scope for v1)

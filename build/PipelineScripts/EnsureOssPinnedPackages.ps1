@@ -161,6 +161,12 @@ function Get-RequiredPackages {
             SourceUrl = $InternalFeedSource
         }
         [pscustomobject]@{
+            Id = "Microsoft.Internal.WinUITestResources"
+            Version = Get-PackagesConfigVersion -PackageId "Microsoft.Internal.WinUITestResources"
+            SourceName = "WinUI.Dependencies"
+            SourceUrl = $InternalFeedSource
+        }
+        [pscustomobject]@{
             Id = "Microsoft.WindowsAppSDK.Foundation"
             Version = Get-OssVersionsPropsValue -PropertyName "FoundationPackageVersion"
             SourceName = "WinUI.Dependencies"

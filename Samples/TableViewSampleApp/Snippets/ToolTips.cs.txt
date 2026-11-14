@@ -1,14 +1,11 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
-
-// The control sorts the TableViewSource itself when a header is clicked; no app code is
-// needed for the Name, Department and Salary columns.
 AttachCellToolTips();
 ApplyHeaderToolTips("original");
 
-// …
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-// ---- Cell tooltips ----------------------------------------------------------------------
+public TableViewSource Source { get; }
 
 private void AttachCellToolTips()
 {
@@ -39,12 +36,6 @@ private void DetachCellToolTips()
 
 private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
 {
-    // Fires during InitializeComponent (IsOn="True"); the constructor attaches the bindings.
-    if (!IsLoaded)
-    {
-        return;
-    }
-
     if (CellToolTipsToggle.IsOn)
     {
         AttachCellToolTips();
@@ -55,16 +46,9 @@ private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
     }
 }
 
-// ---- Header tooltips --------------------------------------------------------------------
-
 private void OnHeaderToolTipsChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (!IsLoaded)
-    {
-        return;
-    }
-
-    ApplyHeaderToolTips(SampleShaping.SelectedTag(HeaderToolTipsSelector, "original"));
+    ApplyHeaderToolTips((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag);
 }
 
 private void ApplyHeaderToolTips(string mode)

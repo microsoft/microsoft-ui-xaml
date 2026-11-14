@@ -95,6 +95,95 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 #endif
         }
 
+        // Must run on the UI thread. Uses no Control, because every styled element adds to
+        // CCoreServices::m_appliedStyleTables, which isn't pruned.
+        void ResolveResourceTests::VerifyGenerationsDoNotAccumulate(const std::function<void()>& createGeneration)
+        {
+            constexpr unsigned int generationCount = 64;
+            const auto createGenerations = [&]
+            {
+                for (unsigned int generation = 0; generation < generationCount; ++generation)
+                {
+                    createGeneration();
+                }
+            };
+            const auto outstanding = []
+            {
+                return static_cast<int64_t>(TestServices::WindowHelper->GetAllocationCount()) -
+                    static_cast<int64_t>(TestServices::WindowHelper->GetDeallocationCount());
+            };
+
+            // Release builds count allocations only while the XAML profiler provider is enabled.
+            const auto allocationsBefore = TestServices::WindowHelper->GetAllocationCount();
+            createGenerations();
+            if (TestServices::WindowHelper->GetAllocationCount() == allocationsBefore)
+            {
+                WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"Allocation counting is off.");
+                return;
+            }
+
+            const auto outstandingBefore = outstanding();
+            createGenerations();
+            const auto growth = outstanding() - outstandingBefore;
+
+            LOG_OUTPUT(L"Outstanding allocation growth: %lld", growth);
+            VERIFY_IS_LESS_THAN(growth, static_cast<int64_t>(generationCount / 2));
+        }
+
+        // Each generation records a template that pre-resolves a resource, and instantiates it with markup extensions.
+        // The live template pre-resolves 6 resources, so it has more entries than one pruning pass inspects.
+        void ResolveResourceTests::ExpiredTemplateEntriesDoNotAccumulate()
+        {
+            Platform::String^ liveMarkup =
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"<Grid.Resources><SolidColorBrush x:Key='b1' Color='Red'/><SolidColorBrush x:Key='b2' Color='Red'/>"
+                L"<SolidColorBrush x:Key='b3' Color='Red'/><SolidColorBrush x:Key='b4' Color='Red'/>"
+                L"<SolidColorBrush x:Key='b5' Color='Red'/><SolidColorBrush x:Key='b6' Color='Red'/>"
+                L"<DataTemplate x:Key='template'><StackPanel>"
+                L"<Border Background='{StaticResource b1}'/><Border Background='{StaticResource b2}'/>"
+                L"<Border Background='{StaticResource b3}'/><Border Background='{StaticResource b4}'/>"
+                L"<Border Background='{StaticResource b5}'/><Border Background='{StaticResource b6}'/>"
+                L"</StackPanel></DataTemplate></Grid.Resources></Grid>";
+            Platform::String^ markup =
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"<Grid.Resources><SolidColorBrush x:Key='brush' Color='Red'/>"
+                L"<DataTemplate x:Key='template'><Border Background='{StaticResource brush}' BorderBrush='{ThemeResource brush}'>"
+                L"<TextBlock Text='{Binding}'/></Border></DataTemplate></Grid.Resources></Grid>";
+
+            RunOnUIThread([&]
+            {
+                auto liveRoot = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(liveMarkup));
+                safe_cast<xaml::DataTemplate^>(liveRoot->Resources->Lookup(L"template"))->LoadContent();
+
+                VerifyGenerationsDoNotAccumulate([&]
+                {
+                    auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(markup));
+                    safe_cast<xaml::DataTemplate^>(root->Resources->Lookup(L"template"))->LoadContent();
+                });
+            });
+        }
+
+        // Looking up a keyed style creates it and caches its runtime context. The style isn't applied to an element.
+        void ResolveResourceTests::ExpiredStyleContextsDoNotAccumulate()
+        {
+            Platform::String^ markup =
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"<Grid.Resources><Style x:Key='style' TargetType='TextBlock'><Setter Property='FontSize' Value='20'/></Style>"
+                L"</Grid.Resources></Grid>";
+
+            RunOnUIThread([&]
+            {
+                VerifyGenerationsDoNotAccumulate([&]
+                {
+                    auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(markup));
+                    root->Resources->Lookup(L"style");
+                });
+            });
+        }
+
         void ResolveResourceTests::ResolveThemeResource()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;

@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
@@ -39,16 +40,15 @@ public sealed partial class TextWrapPage : SamplePageBase
     private int _maxLines;
     private int _nextSentence;
     private bool _measureQueued;
+    private Action? _stopScrollToLast;
 
     public TextWrapPage()
     {
-        // <snippet>
         // The cell template binds this static state; reset it so a new visit starts from the
         // defaults the rail shows.
         WrapState.TextWrapping = TextWrapping.Wrap;
         WrapState.TextTrimming = TextTrimming.None;
         WrapState.MaxLines = 0;
-        // </snippet>
 
         foreach (var person in People)
         {
@@ -65,44 +65,52 @@ public sealed partial class TextWrapPage : SamplePageBase
     }
 
     // <snippet>
-    /// <summary>Wrapping, trimming and line limit shared by every Bio cell.</summary>
+    // Wrapping, trimming and line limit shared by every Bio cell.
     public static TextWrapState WrapState { get; } = new();
     // </snippet>
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
+    public TableViewSource Source { get; }
+    // </snippet>
+
     // ---- Wrapping, max lines and width --------------------------------------------------
 
+    // <snippet>
     private void OnWrapToggled(object sender, RoutedEventArgs e)
     {
-        // Toggled fires during InitializeComponent (IsOn="True"); the ctor already set WrapState.
-        if (!IsLoaded || WrapToggle is null || MaxLinesSelector is null)
-        {
-            return;
-        }
+        // Toggled fires during InitializeComponent (IsOn="True"); the ctor already set WrapState. // snippet:skip
+        if (!IsLoaded || WrapToggle is null || MaxLinesSelector is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         ApplyTextState();
         SetLastAction(WrapToggle.IsOn ? "TextWrapping -> Wrap" : "TextWrapping -> NoWrap");
     }
+    // </snippet>
 
+    // <snippet>
     private void OnMaxLinesChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0").
-        if (!IsLoaded || MaxLinesSelector is null || WrapToggle is null)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="0"). // snippet:skip
+        if (!IsLoaded || MaxLinesSelector is null || WrapToggle is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        _maxLines = int.TryParse(SampleShaping.SelectedTag(MaxLinesSelector, "0"), NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
+        _maxLines = int.TryParse((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag, NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
         ApplyTextState();
         SetLastAction(_maxLines == 0
             ? "MaxLines -> unlimited"
             : string.Format(CultureInfo.CurrentCulture, "MaxLines -> {0}", _maxLines));
     }
+    // </snippet>
 
+    // <snippet>
     // The one writer of WrapState, so the toggle and the max-lines picker never overwrite each
     // other. Every Bio cell binds WrapState, which is what makes the setting survive recycling.
     private void ApplyTextState()
@@ -114,23 +122,25 @@ public sealed partial class TextWrapPage : SamplePageBase
         // picker is disabled to say so.
         WrapState.MaxLines = wrapOn ? _maxLines : 0;
         WrapState.TextTrimming = !wrapOn || _maxLines > 0 ? TextTrimming.CharacterEllipsis : TextTrimming.None;
-        MaxLinesSelector.IsEnabled = wrapOn;
-        QueueRowMeasure();
+        MaxLinesSelector.IsEnabled = wrapOn; // snippet:skip
+        QueueRowMeasure(); // snippet:skip
     }
+    // </snippet>
 
+    // <snippet>
     private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         AutomationProperties.SetItemStatus((Slider)sender, string.Format(CultureInfo.CurrentCulture, "{0:N0} pixels", e.NewValue)); // snippet:skip
 
-        // Fires during InitializeComponent when Value is set; the XAML Width already matches.
-        if (!IsLoaded || BioColumn is null || BioWidthText is null)
-        {
-            return;
-        }
+        // Fires during InitializeComponent when Value is set; the XAML Width already matches. // snippet:skip
+        if (!IsLoaded || BioColumn is null || BioWidthText is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         BioColumn.Width = new GridLength(e.NewValue);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Bio column Width -> {0:N0} px", e.NewValue));
-        QueueRowMeasure();
+        QueueRowMeasure(); // snippet:skip
     }
     // </snippet>
 
@@ -193,18 +203,88 @@ public sealed partial class TextWrapPage : SamplePageBase
     private void OnScrollToLastClick(object sender, RoutedEventArgs e)
     {
         // TableView has no scroll-into-view API in this release, so scroll its body ScrollViewer.
-        if (FindDescendant<ScrollViewer>(PeopleTable, "PART_BodyScroller") is not { } scroller)
+        if (FindDescendant<ScrollViewer>(PeopleTable, "PART_BodyScroller") is not { } scroller ||
+            FindDescendant<ItemsRepeater>(PeopleTable, "PART_RowsRepeater") is not { } repeater)
         {
             SetLastAction("The table body is not realized yet.");
             return;
         }
 
-        scroller.ChangeView(null, scroller.ScrollableHeight, null, disableAnimation: true);
+        // Rows realized near the end change the extent once they are measured, so re-aim after
+        // each layout pass until the last row sits at the bottom of the viewport.
+        _stopScrollToLast?.Invoke();
 
-        // Rows realized near the end can change the extent once they are measured, so scroll a
-        // second time after that layout pass.
-        EnqueueIfLoaded(() => scroller.ChangeView(null, scroller.ScrollableHeight, null, disableAnimation: true), DispatcherQueuePriority.Low);
+        var target = scroller.ScrollableHeight;
+        var settled = false;
+        var retargets = 0;
+        var invocations = 0;
+        EventHandler<object> onLayout = null!;
+        EventHandler<ScrollViewerViewChangedEventArgs> onViewChanged = (_, args) => settled |= !args.IsIntermediate;
+        EventHandler<object> onManipulation = (_, _) => _stopScrollToLast?.Invoke();
+        // Any user scroll input ends the re-aim; layout-driven offset changes do not.
+        var onUserInput = new PointerEventHandler((_, _) => _stopScrollToLast?.Invoke());
+        var onUserKey = new KeyEventHandler((_, _) => _stopScrollToLast?.Invoke());
+        _stopScrollToLast = () =>
+        {
+            scroller.LayoutUpdated -= onLayout;
+            scroller.ViewChanged -= onViewChanged;
+            scroller.DirectManipulationStarted -= onManipulation;
+            scroller.RemoveHandler(PointerWheelChangedEvent, onUserInput);
+            scroller.RemoveHandler(PointerPressedEvent, onUserInput);
+            scroller.RemoveHandler(KeyDownEvent, onUserKey);
+            _stopScrollToLast = null;
+        };
+        onLayout = (_, _) =>
+        {
+            if (++invocations > 30 || retargets >= 8 || !IsLoaded ||
+                scroller.ScrollableHeight <= 0 || IsLastRowAtBottom(scroller, repeater))
+            {
+                _stopScrollToLast?.Invoke();
+            }
+            else if (Math.Abs(scroller.ScrollableHeight - target) >= 0.5 ||
+                (settled && scroller.ScrollableHeight - scroller.VerticalOffset >= 0.5))
+            {
+                target = scroller.ScrollableHeight;
+                settled = false;
+                retargets++;
+                scroller.ChangeView(null, target, null, disableAnimation: true);
+            }
+        };
+        scroller.LayoutUpdated += onLayout;
+        scroller.ViewChanged += onViewChanged;
+        scroller.DirectManipulationStarted += onManipulation;
+        scroller.AddHandler(PointerWheelChangedEvent, onUserInput, handledEventsToo: true);
+        scroller.AddHandler(PointerPressedEvent, onUserInput, handledEventsToo: true);
+        scroller.AddHandler(KeyDownEvent, onUserKey, handledEventsToo: true);
+        if (scroller.ScrollableHeight <= 0)
+        {
+            _stopScrollToLast();
+        }
+        else
+        {
+            scroller.ChangeView(null, target, null, disableAnimation: true);
+        }
         SetLastAction("Scrolled the table body to the last row");
+    }
+
+    private static bool IsLastRowAtBottom(ScrollViewer scroller, ItemsRepeater repeater)
+    {
+        var count = repeater.ItemsSourceView?.Count ?? 0;
+        if (count == 0 || repeater.TryGetElement(count - 1) is not FrameworkElement last || last.ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            var bottom = last.TransformToVisual(scroller).TransformPoint(default).Y + last.ActualHeight;
+            return Math.Abs(bottom - scroller.ViewportHeight) <= 0.5 &&
+                scroller.ScrollableHeight - scroller.VerticalOffset <= 0.5;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     private static string FirstSentence(string text)
@@ -226,7 +306,6 @@ public sealed partial class TextWrapPage : SamplePageBase
 
     private void OnBioSizeChanged(object sender, SizeChangedEventArgs e) => QueueRowMeasure();
 
-    // <snippet>
     // Coalesced: many cells change size in one layout pass, but the rows are measured once,
     // after layout, at low priority.
     private void QueueRowMeasure()
@@ -246,7 +325,6 @@ public sealed partial class TextWrapPage : SamplePageBase
             }
         });
     }
-    // </snippet>
 
     private static T? FindDescendant<T>(DependencyObject node, string name) where T : FrameworkElement
     {

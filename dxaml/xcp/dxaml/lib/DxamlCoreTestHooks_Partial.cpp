@@ -69,6 +69,7 @@
 #include "LoadLibraryAbs.h"
 #include "xcpwindow.h"
 #include "OptionalChangeState.h"
+#include "MaxTextureSizeProvider.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -216,6 +217,12 @@ void DxamlCoreTestHooks::SetDCompDeviceLeakDetectionEnabled(bool enableLeakDetec
 {
     CCoreServices* core = DXamlCore::GetCurrent()->GetHandle();
     core->SetDCompDeviceLeakDetectionEnabled(enableLeakDetection);
+}
+
+void DxamlCoreTestHooks::SetMaxTextureSizeOverride(int maxTextureSize)
+{
+    CCoreServices* core = DXamlCore::GetCurrent()->GetHandle();
+    core->GetMaxTextureSizeProvider().SetMaxTextureSizeOverride(maxTextureSize);
 }
 
 // Determine whether there is a drag/drop in progress

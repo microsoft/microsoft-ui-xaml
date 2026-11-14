@@ -18,6 +18,9 @@ public:
     void CanUserSortColumns(bool value);
     bool CanUserSortColumns();
 
+    void ColumnHeaderStyle(winrt::Style const& value);
+    winrt::Style ColumnHeaderStyle();
+
     void Columns(winrt::IVector<winrt::TableViewColumn> const& value);
     winrt::IVector<winrt::TableViewColumn> Columns();
 
@@ -57,6 +60,7 @@ public:
     static winrt::DependencyProperty AlternatingRowBackgroundProperty() { return s_AlternatingRowBackgroundProperty; }
     static winrt::DependencyProperty CanUserResizeColumnsProperty() { return s_CanUserResizeColumnsProperty; }
     static winrt::DependencyProperty CanUserSortColumnsProperty() { return s_CanUserSortColumnsProperty; }
+    static winrt::DependencyProperty ColumnHeaderStyleProperty() { return s_ColumnHeaderStyleProperty; }
     static winrt::DependencyProperty ColumnsProperty() { return s_ColumnsProperty; }
     static winrt::DependencyProperty DensityProperty() { return s_DensityProperty; }
     static winrt::DependencyProperty EmptyTemplateProperty() { return s_EmptyTemplateProperty; }
@@ -73,6 +77,7 @@ public:
     static GlobalDependencyProperty s_AlternatingRowBackgroundProperty;
     static GlobalDependencyProperty s_CanUserResizeColumnsProperty;
     static GlobalDependencyProperty s_CanUserSortColumnsProperty;
+    static GlobalDependencyProperty s_ColumnHeaderStyleProperty;
     static GlobalDependencyProperty s_ColumnsProperty;
     static GlobalDependencyProperty s_DensityProperty;
     static GlobalDependencyProperty s_EmptyTemplateProperty;
@@ -115,6 +120,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCanUserSortColumnsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnColumnHeaderStylePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

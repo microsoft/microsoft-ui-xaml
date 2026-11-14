@@ -14,7 +14,8 @@
 // provide additional information about the resource they represent.
 //
 //-----------------------------------------------------------------------------
-class CBasePALResource : public IPALResource, private CReferenceCount
+// Resource-backed memory can release its owner from a background consumer.
+class CBasePALResource : public IPALResource, private CInterlockedReferenceCount
 {
 public:
     static _Check_return_ HRESULT Create(_In_ IPALUri* pResourceUri, _Outptr_ CBasePALResource** ppResource);
@@ -22,7 +23,7 @@ public:
 
     static _Check_return_ HRESULT IsLocalResourceUri(_In_ IPALUri* pUri, _Out_ bool* pfLocal);
 
-    FORWARD_ADDREF_RELEASE(CReferenceCount);
+    FORWARD_ADDREF_RELEASE(CInterlockedReferenceCount);
 
     // IPALResource
     _Check_return_ HRESULT Load(_Outptr_ IPALMemory** ppMemory) override;
@@ -32,7 +33,6 @@ public:
     _Check_return_ HRESULT IsLocal(_Out_ bool* pfLocal) override;
     _Check_return_ HRESULT Exists(_Out_ bool* pfExists) override;
     _Check_return_ HRESULT TryGetFilePath(_Out_ xstring_ptr* pstrFilePath) override;
-    _Check_return_ HRESULT TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream) override;
     XUINT32 GetScalePercentage() override;
 
 protected:

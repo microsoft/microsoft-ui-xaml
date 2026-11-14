@@ -47,10 +47,12 @@
             <x:Double x:Key="SectionSpacing">22</x:Double>
             <x:Double x:Key="SectionInnerSpacing">6</x:Double>
             <!--
-                Column width tokens. Columns use these, never literals and never Auto (ColumnLayout is the
-                one exception, because Auto is its lesson). Each table has exactly one Width="*"
-                column with MinWidth="{StaticResource ColMinWidthStar}". Budget: the fixed widths
-                plus the star MinWidth fit 690 px, the usable table width at 1440x753 with the
+                Column width tokens, for columns built in code. Page XAML writes the same values as literals,
+                so the Source code snippets show real widths; never Auto (ColumnLayout is the one exception,
+                because Auto is its lesson). Each table has exactly one Width="*" column with
+                MinWidth="140" (ColMinWidthStar); ColumnLifecycle also star-sizes Name (2*, MinWidth 120)
+                so hiding either star column leaves no gap. Budget: the fixed widths
+                plus the star MinWidths fit 690 px, the usable table width at 1440x753 with the
                 nav pane expanded (exempt: CellTemplating, Sort, ColumnLayout, ColumnLifecycle after "Add").
             -->
             <x:Double x:Key="ColMinWidthStar">140</x:Double>
@@ -99,7 +101,8 @@
             <!--
                 Chromeless section pattern: section header in bold body
                 text + caption-sized description below + inline controls/content
-                directly on the page background. Tables get a thin TableHostBorder.
+                directly on the page background. Tables draw their own border;
+                non-table cards use CardBorderStyle.
 
                 Keep these flat (no BasedOn) so they resolve before the merged
                 theme resource dictionary in any code path.
@@ -116,10 +119,10 @@
                 <Setter Property="TextWrapping" Value="Wrap"/>
                 <Setter Property="Margin" Value="0,0,0,4"/>
             </Style>
-            <Style x:Key="TableHostBorderStyle" TargetType="Border">
+            <Style x:Key="CardBorderStyle" TargetType="Border">
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
             </Style>
             <Style x:Key="StatusReadoutLabelStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="12"/>
@@ -136,7 +139,7 @@
             <Style x:Key="RailCaptionTextStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
-                <Setter Property="Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}"/>
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
                 <Setter Property="Margin" Value="0,4,0,0"/>
             </Style>
             <Style x:Key="StatusGridStyle" TargetType="Grid">

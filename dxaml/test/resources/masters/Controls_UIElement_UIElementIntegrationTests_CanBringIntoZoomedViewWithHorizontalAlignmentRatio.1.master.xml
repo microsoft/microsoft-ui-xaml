@@ -111,7 +111,7 @@
                             </ExpressionAnimation>
                           </TransformMatrix>
                           <Visual Tag="ContentVisual">
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate Y="150" />
                               </TransformMatrix>
@@ -164,7 +164,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="200" Y="150" />
                               </TransformMatrix>
@@ -217,7 +217,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="400" Y="150" />
                               </TransformMatrix>
@@ -270,7 +270,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="600" Y="150" />
                               </TransformMatrix>
@@ -323,7 +323,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="800" Y="150" />
                               </TransformMatrix>
@@ -376,7 +376,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="1000" Y="150" />
                               </TransformMatrix>
@@ -429,7 +429,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="1200" Y="150" />
                               </TransformMatrix>
@@ -482,7 +482,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="1400" Y="150" />
                               </TransformMatrix>
@@ -535,7 +535,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="1600" Y="150" />
                               </TransformMatrix>
@@ -588,7 +588,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="200" SizeY="200">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate X="1800" Y="150" />
                               </TransformMatrix>

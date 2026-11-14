@@ -72,7 +72,7 @@
                             <ComboBoxItem AutomationProperties.Name="NavigateToLocalImageTest">NavigateToLocalImageTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigateToStringTest">NavigateToStringTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigateToVideoTest">NavigateToVideoTest</ComboBoxItem>
-                            <ComboBoxItem AutomationProperties.Name="NavigationErrorTest">NavigationErrorTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="NavigationHttpErrorTest">NavigationHttpErrorTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingInvalidTest">NavigationStartingInvalidTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingTest">NavigationStartingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NonAsciiUriTest">NonAsciiUriTest</ComboBoxItem>

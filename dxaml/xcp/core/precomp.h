@@ -151,3 +151,5 @@
 #include "HitTestHelper.h"
 
 #include "MUX-ETWEvents.h"
+
+#include "XamlProfilerTracing.h"

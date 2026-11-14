@@ -55,6 +55,14 @@
                     AutomationProperties.Name="RemoveColumnButton"
                     AutomationProperties.AutomationId="RemoveColumnButton"
                     Click="OnRemoveColumnClick" />
+            <Button Content="Toggle Score Pin"
+                    AutomationProperties.Name="ToggleScorePinButton"
+                    AutomationProperties.AutomationId="ToggleScorePinButton"
+                    Click="OnToggleScorePinClick" />
+            <Button Content="Toggle Flow Direction"
+                    AutomationProperties.Name="ToggleBasicFlowDirectionButton"
+                    AutomationProperties.AutomationId="ToggleBasicFlowDirectionButton"
+                    Click="OnToggleBasicFlowDirectionClick" />
             <Button Content="Filter Source"
                     AutomationProperties.Name="FilterSourceButton"
                     AutomationProperties.AutomationId="FilterSourceButton"
@@ -87,6 +95,18 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnFocusNeutralSortBasicByAgeClick" />
+            <Button Content="Filter to one grouped row"
+                    AutomationProperties.Name="SingleGroupedRowFilterButton"
+                    AutomationProperties.AutomationId="SingleGroupedRowFilterButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnSingleGroupedRowFilterClick" />
+            <Button Content="Select scrolling row 3 (focus-neutral)"
+                    AutomationProperties.Name="SelectScrollingRow3Button"
+                    AutomationProperties.AutomationId="SelectScrollingRow3Button"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnSelectScrollingRow3Click" />
             <Button Content="Filter Source (focus-neutral)"
                     AutomationProperties.Name="FocusNeutralFilterSourceButton"
                     AutomationProperties.AutomationId="FocusNeutralFilterSourceButton"
@@ -99,6 +119,34 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnDisableFocusedRowClick" />
+            <!-- Mid-gesture teardown triggers for the resize capture tests (UIA Invoke only): each acts 1.5s
+                 after the click, while the test holds a pointer drag open. -->
+            <Button Content="Delayed Gripper Capture Loss"
+                    AutomationProperties.Name="DelayedGripperCaptureLossButton"
+                    AutomationProperties.AutomationId="DelayedGripperCaptureLossButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDelayedGripperCaptureLossClick" />
+            <Button Content="Delayed Disable"
+                    AutomationProperties.Name="DelayedDisableButton"
+                    AutomationProperties.AutomationId="DelayedDisableButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDelayedDisableClick" />
+            <!-- Header tooltip reentrancy triggers (UIA Invoke only): app code on the Name header's ToolTip
+                 runs while TableView detaches or re-attaches it. -->
+            <Button Content="Pin Name On Header ToolTip Detach"
+                    AutomationProperties.Name="PinNameOnHeaderToolTipDetachButton"
+                    AutomationProperties.AutomationId="PinNameOnHeaderToolTipDetachButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnPinNameOnHeaderToolTipDetachClick" />
+            <Button Content="Pin Name, Rebuild On Header ToolTip Attach"
+                    AutomationProperties.Name="PinNameRebuildOnHeaderToolTipAttachButton"
+                    AutomationProperties.AutomationId="PinNameRebuildOnHeaderToolTipAttachButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnPinNameRebuildOnHeaderToolTipAttachClick" />
             <Button x:Name="navigateToTouch"
                     Content="Touch Page"
                     AutomationProperties.Name="navigateToTouch"
@@ -111,6 +159,66 @@
                     AutomationProperties.AutomationId="navigateToVirtualization"
                     IsTabStop="False"
                     AllowFocusOnInteraction="False" />
+            <CheckBox Content="CanUserResizeColumns"
+                      AutomationProperties.Name="CanUserResizeColumnsCheckBox"
+                      AutomationProperties.AutomationId="CanUserResizeColumnsCheckBox"
+                      IsChecked="True"
+                      IsTabStop="False"
+                      Checked="OnCanUserResizeColumnsToggled"
+                      Unchecked="OnCanUserResizeColumnsToggled" />
+            <CheckBox Content="Hide column headers"
+                      AutomationProperties.Name="HideColumnHeadersCheckBox"
+                      AutomationProperties.AutomationId="HideColumnHeadersCheckBox"
+                      IsTabStop="False"
+                      Checked="OnHideColumnHeadersToggled"
+                      Unchecked="OnHideColumnHeadersToggled" />
+            <CheckBox Content="Empty basic table"
+                      AutomationProperties.Name="EmptyBasicCheckBox"
+                      AutomationProperties.AutomationId="EmptyBasicCheckBox"
+                      IsTabStop="False"
+                      Checked="OnEmptyBasicToggled"
+                      Unchecked="OnEmptyBasicToggled" />
+            <CheckBox Content="Scroll fixtures"
+                      AutomationProperties.Name="ScrollFixturesCheckBox"
+                      AutomationProperties.AutomationId="ScrollFixturesCheckBox"
+                      IsTabStop="False"
+                      Checked="OnScrollFixturesToggled"
+                      Unchecked="OnScrollFixturesToggled" />
+            <CheckBox Content="ScrollCity menu"
+                      AutomationProperties.Name="ScrollCityMenuCheckBox"
+                      AutomationProperties.AutomationId="ScrollCityMenuCheckBox"
+                      IsTabStop="False"
+                      Checked="OnScrollCityMenuToggled"
+                      Unchecked="OnScrollCityMenuToggled" />
+            <Button Content="Scroll scrolling body right (focus-neutral)"
+                    AutomationProperties.Name="ScrollScrollingBodyButton"
+                    AutomationProperties.AutomationId="ScrollScrollingBodyButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnScrollScrollingBodyClick" />
+            <Button Content="Toggle Name CanResize"
+                    AutomationProperties.Name="ToggleNameCanResizeButton"
+                    AutomationProperties.AutomationId="ToggleNameCanResizeButton"
+                    Click="OnToggleNameCanResizeClick" />
+            <!-- Fit-on-double-click setups (UIA Invoke only). -->
+            <Button Content="Age Auto, Score and Template Star"
+                    AutomationProperties.Name="SetAgeAutoScoreStarButton"
+                    AutomationProperties.AutomationId="SetAgeAutoScoreStarButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnSetAgeAutoScoreStarClick" />
+            <Button Content="Report Basic Column Widths"
+                    AutomationProperties.Name="ReportBasicColumnWidthsButton"
+                    AutomationProperties.AutomationId="ReportBasicColumnWidthsButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnReportBasicColumnWidthsClick" />
+            <Button Content="Scale Basic Table Vertically"
+                    AutomationProperties.Name="ScaleBasicTableVerticallyButton"
+                    AutomationProperties.AutomationId="ScaleBasicTableVerticallyButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnScaleBasicTableVerticallyClick" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -127,7 +235,20 @@
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="Name"
+                    <controls:TableView.EmptyTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Add a person"
+                                        AutomationProperties.Name="EmptyStateButton"
+                                        AutomationProperties.AutomationId="EmptyStateButton" />
+                                <Button Content="Import"
+                                        AutomationProperties.Name="EmptyStateImportButton"
+                                        AutomationProperties.AutomationId="EmptyStateImportButton" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </controls:TableView.EmptyTemplate>
+                    <controls:TableViewTextColumn x:Name="NameColumn"
+                                                  Header="Name"
                                                   Width="160"
                                                   MinWidth="60"
                                                   CanSort="True"
@@ -135,7 +256,8 @@
                                                   Binding="{Binding Name}"
                                                   CellToolTipBinding="{Binding Name}"
                                                   HeaderToolTip="The person's name" />
-                    <controls:TableViewTextColumn Header="Age"
+                    <controls:TableViewTextColumn x:Name="AgeColumn"
+                                                  Header="Age"
                                                   Width="100"
                                                   CanSort="True"
                                                   SortMemberPath="Age"
@@ -151,7 +273,7 @@
                                                   CanSort="True"
                                                   SortMemberPath="Score"
                                                   Binding="{Binding Score}" />
-                    <controls:TableViewTemplateColumn Header="Template" Width="200">
+                    <controls:TableViewTemplateColumn x:Name="TemplateColumn" Header="Template" Width="200">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
                                 <TextBlock Text="{x:Bind Name, Mode=OneWay}"
@@ -181,6 +303,7 @@
 
             <Grid x:Name="RtlTableHost" Visibility="Collapsed">
                 <controls:TableView x:Name="RtlTableView"
+                                    IsReadOnly="False"
                                     AutomationProperties.Name="RtlTableView"
                                     AutomationProperties.AutomationId="RtlTableView"
                                     FlowDirection="RightToLeft"
@@ -194,7 +317,7 @@
                                                   Width="180"
                                                   MinWidth="60"
                                                   Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlCity" Width="220" Binding="{Binding City}" />
+                    <controls:TableViewTextColumn Header="RtlCity" Width="220" CanSort="False" Binding="{Binding City}" />
                     <controls:TableViewTextColumn Header="RtlAge" Width="220" Binding="{Binding Age}" />
                 </controls:TableView>
             </Grid>
@@ -209,9 +332,34 @@
                 </controls:TableView>
             </Grid>
 
+            <!-- Fixed container heights and a body 3.5 containers tall; see TableViewTestPageFacts.GroupedPagingContainerHeight.
+                 Height is 3.5 * 40 plus the table's 1px border. -->
+            <Grid x:Name="GroupedPagingTableHost" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Style TargetType="controls:TableViewRow">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                    <Style TargetType="controls:TableViewGroupHeader">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                </Grid.Resources>
+                <controls:TableView x:Name="GroupedPagingTableView"
+                                    AutomationProperties.Name="GroupedPagingTableView"
+                                    AutomationProperties.AutomationId="GroupedPagingTableView"
+                                    HeadersVisibility="None"
+                                    Height="142"
+                                    Width="320"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="PagerName" Width="200" Binding="{Binding Name}" />
+                </controls:TableView>
+            </Grid>
+
             <Grid x:Name="ScrollingTableHost" Visibility="Collapsed">
                 <StackPanel Orientation="Vertical" Spacing="4">
                 <controls:TableView x:Name="ScrollingTableView"
+                                    IsReadOnly="False"
                                     AutomationProperties.Name="ScrollingTableView"
                                     AutomationProperties.AutomationId="ScrollingTableView"
                                     Height="300"
@@ -288,6 +436,7 @@
                 </controls:TableView>
 
                 <controls:TableView x:Name="HierarchyRtlTable"
+                                    IsReadOnly="False"
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     AutomationProperties.Name="HierarchyRtlTable"
@@ -302,6 +451,154 @@
                     <controls:TableViewTextColumn Header="RtlDept" Width="100" Binding="{Binding Dept}" />
                     <controls:TableViewTextColumn Header="RtlScore" Width="100" Binding="{Binding Score}" />
                 </controls:TableView>
+            </Grid>
+
+            <!-- Context menus: one menu per resolution level, laid out as TableViewTestPageFacts describes. Each
+                 menu's Opening/Closed handlers write ContextMenuReadout. -->
+            <Grid x:Name="ContextMenuTableHost" Visibility="Collapsed" RowSpacing="4">
+                <Grid.Resources>
+                    <MenuFlyout x:Key="CellMenu">
+                        <MenuFlyoutItem Text="Cell menu" AutomationProperties.AutomationId="CellMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="HeaderMenu">
+                        <MenuFlyoutItem Text="Header menu" AutomationProperties.AutomationId="HeaderMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="TemplateMenu">
+                        <MenuFlyoutItem Text="Template menu" AutomationProperties.AutomationId="TemplateMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="RowMenu">
+                        <MenuFlyoutItem Text="Row menu" AutomationProperties.AutomationId="RowMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="RowTemplateMenu">
+                        <MenuFlyoutItem Text="Row template menu" AutomationProperties.AutomationId="RowTemplateMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="TableMenu">
+                        <MenuFlyoutItem Text="Table menu" AutomationProperties.AutomationId="TableMenuItem" />
+                    </MenuFlyout>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetContextMenu"
+                            AutomationProperties.AutomationId="ResetContextMenu"
+                            Click="OnResetContextMenuClick" />
+                    <Button Content="Grouped"
+                            AutomationProperties.Name="GroupContextMenuTable"
+                            AutomationProperties.AutomationId="GroupContextMenuTable"
+                            Click="OnGroupContextMenuTableClick" />
+                    <Button Content="Right to left"
+                            AutomationProperties.Name="MirrorContextMenuTable"
+                            AutomationProperties.AutomationId="MirrorContextMenuTable"
+                            Click="OnMirrorContextMenuTableClick" />
+                    <Button Content="Row template menu"
+                            AutomationProperties.Name="AttachRowTemplateMenu"
+                            AutomationProperties.AutomationId="AttachRowTemplateMenu"
+                            Click="OnAttachRowTemplateMenuClick" />
+                    <Button Content="Cancel first editor menu close"
+                            AutomationProperties.Name="CancelEditorMenuClose"
+                            AutomationProperties.AutomationId="CancelEditorMenuClose"
+                            Click="OnCancelEditorMenuCloseClick" />
+                </StackPanel>
+
+                <!-- Format documented on TableViewTestPageFacts.ContextMenuReadout. -->
+                <TextBox x:Name="ContextMenuReadout"
+                         Grid.Row="1"
+                         AutomationProperties.Name="ContextMenuReadout"
+                         AutomationProperties.AutomationId="ContextMenuReadout"
+                         HorizontalAlignment="Left"
+                         Width="840"
+                         IsReadOnly="True"
+                         IsTabStop="False"
+                         Text="" />
+
+                <controls:TableView x:Name="ContextMenuTable"
+                                    Grid.Row="2"
+                                    AutomationProperties.Name="ContextMenuTable"
+                                    AutomationProperties.AutomationId="ContextMenuTable"
+                                    Height="400"
+                                    Width="600"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    IsReadOnly="False"
+                                    SelectionMode="Single"
+                                    ContextFlyout="{StaticResource TableMenu}">
+                    <controls:TableView.Resources>
+                        <Style TargetType="controls:TableViewRow">
+                            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}" />
+                        </Style>
+                    </controls:TableView.Resources>
+                    <controls:TableViewTextColumn Header="Name"
+                                                  Width="160"
+                                                  Binding="{Binding Name, Mode=TwoWay}"
+                                                  CellContextFlyout="{StaticResource CellMenu}"
+                                                  HeaderContextFlyout="{StaticResource HeaderMenu}" />
+                    <controls:TableViewTemplateColumn Header="City" Width="160">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <Grid Background="Transparent" ContextFlyout="{StaticResource TemplateMenu}"
+                                      Loaded="OnContextMenuTemplateLoaded">
+                                    <TextBlock Text="{x:Bind City, Mode=OneWay}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTextColumn Header="Age" Width="100" Binding="{Binding Age}" />
+                </controls:TableView>
+            </Grid>
+
+            <!-- Body cells that host controls: row-level Up from the first row must reach the header band. -->
+            <Grid x:Name="CellControlsTableHost" Visibility="Collapsed">
+                <controls:TableView x:Name="CellControlsTableView"
+                                    AutomationProperties.Name="CellControlsTableView"
+                                    AutomationProperties.AutomationId="CellControlsTableView"
+                                    Height="300"
+                                    Width="640"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="ControlsName" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="ControlsActive" Width="84">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <CheckBox IsChecked="True" MinWidth="0" HorizontalAlignment="Center" AutomationProperties.Name="CellActiveCheckBox" AutomationProperties.AutomationId="CellActiveCheckBox" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTemplateColumn Header="ControlsCity" Width="150">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <ComboBox SelectedIndex="0"
+                                          MinWidth="0"
+                                          Margin="6,2"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Stretch"
+                                          AutomationProperties.Name="CellCityComboBox"
+                                          AutomationProperties.AutomationId="CellCityComboBox">
+                                    <x:String>Redmond</x:String>
+                                    <x:String>Seattle</x:String>
+                                </ComboBox>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTemplateColumn Header="ControlsDetails" Width="96">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <Button Content="Details" Margin="6,2" HorizontalAlignment="Stretch" AutomationProperties.Name="CellDetailsButton" AutomationProperties.AutomationId="CellDetailsButton" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                </controls:TableView>
+                <Button Content="Toggle headers"
+                        Margin="0,310,0,0"
+                        VerticalAlignment="Top"
+                        AutomationProperties.Name="ToggleCellControlsHeadersButton"
+                        AutomationProperties.AutomationId="ToggleCellControlsHeadersButton"
+                        Click="OnToggleCellControlsHeadersClick" />
             </Grid>
 
         </Grid>
@@ -331,6 +628,18 @@
                     AutomationProperties.Name="GoToHierarchyButton"
                     AutomationProperties.AutomationId="GoToHierarchyButton"
                     Click="OnGoToHierarchyClick" />
+            <Button Content="Grouped Paging"
+                    AutomationProperties.Name="GoToGroupedPagingButton"
+                    AutomationProperties.AutomationId="GoToGroupedPagingButton"
+                    Click="OnGoToGroupedPagingClick" />
+            <Button Content="ContextMenu"
+                    AutomationProperties.Name="GoToContextMenuButton"
+                    AutomationProperties.AutomationId="GoToContextMenuButton"
+                    Click="OnGoToContextMenuClick" />
+            <Button Content="CellControls"
+                    AutomationProperties.Name="GoToCellControlsButton"
+                    AutomationProperties.AutomationId="GoToCellControlsButton"
+                    Click="OnGoToCellControlsClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"
@@ -387,7 +696,7 @@
                      IsReadOnly="True"
                      IsTabStop="False"
                      Text="" />
-            <!-- One entry per opened edit, "<EditorType>|<EditorAutomationName>|<EditorText>|focus=<bool>;".
+            <!-- One entry per opened edit, "<EditorType>|<EditorAutomationName>|<EditorText>|focus=<bool>|align=<...>;".
                  Written by an IN-PROCESS visual-tree walk posted from BeginningEdit, so no out-of-process
                  client ever asks a row peer for its children (finding #13). The walk itself creates no
                  automation peers, exactly like the row/group-header state hooks above. It runs at Low

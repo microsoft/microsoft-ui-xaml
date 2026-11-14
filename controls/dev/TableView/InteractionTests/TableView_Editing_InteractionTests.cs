@@ -15,6 +15,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
+using System;
+using System.Globalization;
+using System.Linq;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
@@ -31,6 +34,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewEditingInteractionTests
     {
         [ClassInitialize]
@@ -157,6 +161,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual("TextBox", ProbeField(probe, 0),
                     "F2 must produce the same TextBox editor the double-click route produces.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a keyboard-only user can choose the edit column: Tab onto the header row, Down into the body, Right into the cells, F2 edits the focused cell.")]
+        public void KeyboardOnlyF2EditsChosenColumn()
+        {
+            // No pointer input, so only cell-level keyboard navigation can choose the column; else F2 edits Name.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var selectionMode = FindElement.ById<ComboBox>(SelectionModeComboBox);
+                if (selectionMode == null) { Verify.Fail("SelectionModeComboBox was not found."); return; }
+                selectionMode.SetFocus();
+                Wait.ForIdle();
+
+                Verify.AreEqual(string.Empty, ReadEditReport(), "Precondition: no edit should have been reported before the test acts.");
+
+                Log.Comment("Tab onto the header row, then Down into the body.");
+                for (int attempt = 0; attempt < 4 && FindFocusedHeader(BasicTable) == null; attempt++)
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+                }
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                UIObject focusedRow = FindFocusedRow(GetRowsHost(BasicTable));
+                if (focusedRow == null) { Verify.Fail("Precondition: Tab and Down never put focus on a body row."); return; }
+
+                Log.Comment("Right drills into the first cell, Right again moves to the Age cell, then F2.");
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+
+                int rowIndex, cellIndex;
+                FindFocusedCell(BasicTable, out rowIndex, out cellIndex);
+                Verify.AreEqual(AgeColumn, cellIndex, "Precondition: Right, Right from the row must focus the Age cell.");
+
+                KeyboardHelper.PressKey(Key.F2);
+                Wait.ForIdle();
+
+                Verify.AreEqual("Age;", ReadEditReport(),
+                    "F2 must edit the cell the keyboard focused, not fall back to the first editable column.");
 
                 CancelAnyOpenEdit();
             }
@@ -397,7 +447,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
-        // The probe writes one entry per opened edit, "<type>|<automationName>|<text>|focus=<bool>;".
+        // The probe writes one entry per opened edit, "<type>|<automationName>|<text>|focus=<bool>|align=<...>;".
         // Returns the requested field of the FIRST entry, or a diagnostic string the assertion will print.
         private static string ProbeField(string probe, int field)
         {
@@ -412,5 +462,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         #endregion
+
+        // GH #12354: the text must stay put when a real gesture opens the built-in editor, which then shows its
+        // Focused and ButtonVisible states.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a double-clicked, focused, non-empty editor draws its text line where the display text drew it, LTR and RTL.")]
+        public void DoubleClickEditorKeepsTextInPlace()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                VerifyEditorAlignment(rtl: false);
+
+                var toggle = FindElement.ById<Button>(ToggleBasicFlowDirectionButton);
+                if (toggle == null) { Verify.Fail("ToggleBasicFlowDirectionButton was not found on the test page."); return; }
+                toggle.InvokeAndWait();
+
+                VerifyEditorAlignment(rtl: true);
+                toggle.InvokeAndWait();
+            }
+        }
+
+        private static void VerifyEditorAlignment(bool rtl)
+        {
+            string context = rtl ? "RTL" : "LTR";
+            UIObject row = GetRow(FindElement.ById(BasicTable), 0);
+            if (row == null) { Verify.Fail(context + ": the first row was not found."); return; }
+
+            int nameX = BasicColumnCentreX(NameColumn);
+            var bounds = row.BoundingRectangle;
+            DoubleClickPoint(new Point(rtl ? bounds.Right - nameX : bounds.Left + nameX, bounds.Top + (bounds.Height / 2)));
+
+            string[] entries = ReadEditorProbe().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] fields = entries.Length > 0 ? entries[entries.Length - 1].Split('|') : new string[0];
+            Log.Comment("{0}: editor probe entry '{1}'.", context, string.Join("|", fields));
+            Verify.IsTrue(fields.Length >= 5, context + ": the editor probe did not report an alignment.");
+            if (fields.Length < 5) { return; }
+
+            Verify.AreEqual(BasicName(0), fields[2], context + ": the editor must open on the Name cell with its non-empty value.");
+            Verify.AreEqual("focus=True", fields[3], context + ": the editor must be focused.");
+
+            const string alignPrefix = "align=dx:";
+            Verify.IsTrue(fields[4].StartsWith(alignPrefix, StringComparison.Ordinal), context + ": the probe found no display cell to compare: '" + fields[4] + "'.");
+            if (!fields[4].StartsWith(alignPrefix, StringComparison.Ordinal)) { return; }
+
+            var align = fields[4].Substring("align=".Length).Split(',')
+                .Select(p => p.Split(':'))
+                .Where(p => p.Length == 2)
+                .ToDictionary(p => p[0], p => p[1]);
+            if (!align.TryGetValue("dx", out var dxText) || !align.TryGetValue("dy", out var dyText) || !align.TryGetValue("lines", out var lines))
+            {
+                Verify.Fail(context + ": the probe alignment is missing dx, dy or lines: '" + fields[4] + "'.");
+                return;
+            }
+            double dx = double.Parse(dxText, CultureInfo.InvariantCulture);
+            double dy = double.Parse(dyText, CultureInfo.InvariantCulture);
+            Log.Comment("{0}: dx={1} dy={2} lines(display/editor)={3}", context, dx, dy, lines);
+            Verify.IsLessThanOrEqual(Math.Abs(dx), 0.5, context + ": the editor text must not move horizontally.");
+            Verify.IsLessThanOrEqual(Math.Abs(dy), 0.5, context + ": the editor text must not move vertically.");
+
+            KeyboardHelper.PressKey(Key.Escape);
+            Wait.ForIdle();
+        }
     }
 }

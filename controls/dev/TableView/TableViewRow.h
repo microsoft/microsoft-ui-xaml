@@ -7,8 +7,10 @@
 #include "common.h"
 
 #include "TableViewRow.g.h"
+#include "TableViewContextMenu.h"
 #include "TableViewRow.properties.h"
 
+#include <optional>
 #include <vector>
 
 class TableViewRow :
@@ -38,18 +40,25 @@ public:
     // Keeps the body one tab stop, and expands a tree row's subtree; see the definition.
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
-    // Updates the weak owner ref, column subscription, and realized cells.
-    void SetOwningTableViewInternal(winrt::TableView const& owner);
-    void EnsureOwningTableViewInternal(winrt::TableView const& owner);
+    // Updates the weak owner ref, column subscription, and realized cells. Both return true when the
+    // cell rebuild also refreshed the row chrome (grid lines and row background).
+    // rebuildCells=false skips the rebuild (recycle-out keeps the realized cells for the restamp).
+    bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
+    // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
+    bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    // Row automation peer ShowContextMenu. False when TableView left it alone, so the peer falls
+    // back to the framework (TableView.ContextFlyout and ancestors).
+    bool ShowContextMenuFromPeer();
 
     void RefreshGridLines();
-    void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state);
+    void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh = true);
     void RefreshRowBackground();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
@@ -92,6 +101,11 @@ public:
     // Focuses a visible cell after drilling to cell level; falls back to the row if needed.
     bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
 
+    // Editable, hosting focusable content, or carrying a tooltip. Only these take keyboard focus.
+    bool IsCellActionableInternal(const winrt::UIElement& cell) const;
+    // First actionable cell from startVisibleIndex (inclusive) in step's direction; -1 when none.
+    int32_t FindActionableCellInternal(int32_t startVisibleIndex, int32_t step) const;
+
     // Switches the ARIA treegrid body between row level and cell level; see the definition for why
     // this has to move IsTabStop.
     void SetCellLevelInternal(bool isCellLevel);
@@ -108,6 +122,11 @@ public:
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
+    void RefreshCellToolTips();
+    // A live tooltip value change restamps the cell level when the cell's actionability flipped.
+    void OnCellToolTipChangedInternal(const winrt::UIElement& cell);
+    // Raises NameProperty changed on cell peers that already exist; creates none.
+    void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
     void RefreshColumnVisibility(const winrt::TableViewColumn& column, winrt::Visibility visibility);
     double MeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
@@ -117,7 +136,7 @@ public:
     bool BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem);
 
     // Restores the display visual. Safe to call when no cell edit is open.
-    void EndCellEdit(winrt::TableViewEditAction action);
+    void EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure = nullptr, bool* applicationFault = nullptr);
 
     winrt::FrameworkElement GetEditingElement() const { return m_editingElement.get(); }
 
@@ -139,10 +158,12 @@ public:
 
 private:
     void ResetCellAutomationNames();
+    void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
+    bool HasCellAutomationPeers() const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
-    void SetCellsTabStopInternal(bool isTabStop);
+    bool SetCellsTabStopInternal(bool isTabStop);
 
     bool IsGridLevelFocusInternal();
 
@@ -150,12 +171,7 @@ private:
     void SuppressCellContentTabStopsForTabWalkInternal();
     void RestoreCellContentTabStopsInternal();
 
-    // Resolves body Tab entry to the remembered row, or its remembered-column cell at cell level.
-    void OnRowGettingFocus(
-        const winrt::UIElement& sender,
-        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
-
-    void OnRowGotFocus();
+    void OnRowGotFocus(winrt::DependencyObject const& focusedElement);
     // Routes an expansion-state transition to this row's automation peer, if a client is listening.
     void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
@@ -174,6 +190,17 @@ private:
     winrt::TableViewColumn ResolvePressedColumn(
         const winrt::IInspectable& originalSource,
         const winrt::Point& hostPoint);
+    void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnRowContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void ProcessContextRequest(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> MakeRowContextMenuTarget();
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::DependencyObject const& source);
 
     void OnDataContextChanged(
         const winrt::FrameworkElement& sender,
@@ -198,23 +225,38 @@ private:
     void OnExpanderGutterPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerReleased(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerCanceled(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
     bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
     void UpdateExpanderGutterClip();
 
-    void RebuildCells(bool updateExistingCellPeerItems = true);
+    // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
+    bool RebuildCells(bool updateExistingCellPeerItems = true);
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N
     // full RebuildCells per row). Recycle / owner / DataContext paths still rebuild synchronously.
     void QueueRebuildCells();
+    void InvalidateCellsCurrent();
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    // Transparent cell wrapper fill, created on first use and shared by this row's cells.
+    winrt::Brush m_cellWrapperBackground{ nullptr };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_gutterPointerReleasedRevoker{};
+    winrt::UIElement::PointerExited_revoker m_gutterPointerExitedRevoker{};
+    winrt::UIElement::PointerCaptureLost_revoker m_gutterPointerCaptureLostRevoker{};
+    // Chevron toggles on release-inside, like TableViewGroupHeader.
+    bool m_isGutterPressed{ false };
     // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).
     double m_leadCellLeft{ 0.0 };
     double m_leadCellWidth{ -1.0 };
@@ -223,8 +265,11 @@ private:
     bool m_cellsArranged{ false };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_contextRequestedRevoker{};
+    winrt::FlyoutBase::Opening_revoker m_contextFlyoutOpeningRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
@@ -258,6 +303,13 @@ private:
 
     bool m_rebuildCellsQueued{ false };
 
+    // One-shot: set by the DataContext rebuild, consumed by the next ElementPrepared, cleared by any other rebuild.
+    bool m_cellsRebuiltForDataContext{ false };
+    // Cells were cleared or a rebuild was dropped/queued while the DataContext rebuild ran.
+    bool m_cellsInvalidated{ false };
+    // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
+    bool m_inRecyclePool{ false };
+
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
     winrt::weak_ref<winrt::UIElement> m_pendingEditingCell{ nullptr };
@@ -267,6 +319,8 @@ private:
     tracker_ref<winrt::IInspectable> m_editingAutomationItem{ this };
     winrt::hstring m_editingAutomationValue;
     winrt::hstring m_editingAutomationName;
+    // Row Name before the edit, so a commit that changes a derived value in other cells can publish it.
+    std::optional<winrt::hstring> m_editingRowAutomationName;
 
     // Begin-edit gesture state. Held per row rather than on the control: a double-click that starts
     // on one row and finishes on another is not a double-click, and per-row state makes that fall
