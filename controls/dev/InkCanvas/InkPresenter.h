@@ -20,6 +20,9 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Input.h>
+#include <winrt/Windows.Devices.Input.h>
+#include <winrt/Windows.System.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <functional>
 #include <vector>
@@ -166,6 +169,147 @@ private:
     bool m_isPrimaryBarrelButtonInputEnabled{ true };
     bool m_isEraserInputEnabled{ true };
 };
+
+// PointerPoint, PointerPointProperties and PointerDevice are marshaling_behavior(none), so the OS pointer args
+// raised on the ink thread can't be read from the UI thread (CurrentPoint() fails with 0x80004021). These agile
+// copies are taken on the ink thread while the OS args are live and handed to the app's StrokeInput /
+// UnprocessedInput handlers in their place, as the projected Windows.UI.Core.PointerEventArgs (UWP parity).
+struct InkPointerPointPropertiesSnapshot :
+    winrt::implements<InkPointerPointPropertiesSnapshot,
+        winrt::Windows::UI::Input::IPointerPointProperties,
+        winrt::Windows::UI::Input::IPointerPointProperties2>
+{
+    explicit InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties);
+
+    float Pressure() const noexcept { return m_pressure; }
+    bool IsInverted() const noexcept { return m_isInverted; }
+    bool IsEraser() const noexcept { return m_isEraser; }
+    float Orientation() const noexcept { return m_orientation; }
+    float XTilt() const noexcept { return m_xTilt; }
+    float YTilt() const noexcept { return m_yTilt; }
+    float Twist() const noexcept { return m_twist; }
+    winrt::Windows::Foundation::Rect ContactRect() const noexcept { return m_contactRect; }
+    winrt::Windows::Foundation::Rect ContactRectRaw() const noexcept { return m_contactRectRaw; }
+    bool TouchConfidence() const noexcept { return m_touchConfidence; }
+    bool IsLeftButtonPressed() const noexcept { return m_isLeftButtonPressed; }
+    bool IsRightButtonPressed() const noexcept { return m_isRightButtonPressed; }
+    bool IsMiddleButtonPressed() const noexcept { return m_isMiddleButtonPressed; }
+    int32_t MouseWheelDelta() const noexcept { return m_mouseWheelDelta; }
+    bool IsHorizontalMouseWheel() const noexcept { return m_isHorizontalMouseWheel; }
+    bool IsPrimary() const noexcept { return m_isPrimary; }
+    bool IsInRange() const noexcept { return m_isInRange; }
+    bool IsCanceled() const noexcept { return m_isCanceled; }
+    bool IsBarrelButtonPressed() const noexcept { return m_isBarrelButtonPressed; }
+    bool IsXButton1Pressed() const noexcept { return m_isXButton1Pressed; }
+    bool IsXButton2Pressed() const noexcept { return m_isXButton2Pressed; }
+    winrt::Windows::UI::Input::PointerUpdateKind PointerUpdateKind() const noexcept { return m_pointerUpdateKind; }
+    // Raw HID usages can't be enumerated up front, so they are not part of the snapshot.
+    bool HasUsage(uint32_t, uint32_t) const noexcept { return false; }
+    int32_t GetUsageValue(uint32_t, uint32_t) const noexcept { return 0; }
+    winrt::Windows::Foundation::IReference<float> ZDistance() const noexcept { return m_zDistance; }
+
+private:
+    float m_pressure{};
+    bool m_isInverted{};
+    bool m_isEraser{};
+    float m_orientation{};
+    float m_xTilt{};
+    float m_yTilt{};
+    float m_twist{};
+    winrt::Windows::Foundation::Rect m_contactRect{};
+    winrt::Windows::Foundation::Rect m_contactRectRaw{};
+    bool m_touchConfidence{};
+    bool m_isLeftButtonPressed{};
+    bool m_isRightButtonPressed{};
+    bool m_isMiddleButtonPressed{};
+    int32_t m_mouseWheelDelta{};
+    bool m_isHorizontalMouseWheel{};
+    bool m_isPrimary{};
+    bool m_isInRange{};
+    bool m_isCanceled{};
+    bool m_isBarrelButtonPressed{};
+    bool m_isXButton1Pressed{};
+    bool m_isXButton2Pressed{};
+    winrt::Windows::UI::Input::PointerUpdateKind m_pointerUpdateKind{};
+    winrt::Windows::Foundation::IReference<float> m_zDistance{ nullptr };
+};
+
+// Taken on the ink thread, so the device is still known when a queued event is handled after the pointer is gone.
+struct InkPointerDeviceSnapshot :
+    winrt::implements<InkPointerDeviceSnapshot,
+        winrt::Windows::Devices::Input::IPointerDevice,
+        winrt::Windows::Devices::Input::IPointerDevice2>
+{
+    explicit InkPointerDeviceSnapshot(winrt::Windows::Devices::Input::PointerDevice const& device);
+
+    winrt::Windows::Devices::Input::PointerDeviceType PointerDeviceType() const noexcept { return m_pointerDeviceType; }
+    bool IsIntegrated() const noexcept { return m_isIntegrated; }
+    uint32_t MaxContacts() const noexcept { return m_maxContacts; }
+    winrt::Windows::Foundation::Rect PhysicalDeviceRect() const noexcept { return m_physicalDeviceRect; }
+    winrt::Windows::Foundation::Rect ScreenRect() const noexcept { return m_screenRect; }
+    winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> SupportedUsages() const;
+    uint32_t MaxPointersWithZDistance() const noexcept { return m_maxPointersWithZDistance; }
+
+private:
+    winrt::Windows::Devices::Input::PointerDeviceType m_pointerDeviceType{};
+    bool m_isIntegrated{};
+    uint32_t m_maxContacts{};
+    winrt::Windows::Foundation::Rect m_physicalDeviceRect{};
+    winrt::Windows::Foundation::Rect m_screenRect{};
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> m_supportedUsages;
+    uint32_t m_maxPointersWithZDistance{};
+};
+
+struct InkPointerPointSnapshot :
+    winrt::implements<InkPointerPointSnapshot, winrt::Windows::UI::Input::IPointerPoint>
+{
+    InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
+        winrt::Windows::Devices::Input::PointerDevice const& device);
+
+    // The device snapshot taken with the event, or (if that failed) a lookup by id on the calling thread.
+    winrt::Windows::Devices::Input::PointerDevice PointerDevice() const;
+    winrt::Windows::Foundation::Point Position() const noexcept { return m_position; }
+    winrt::Windows::Foundation::Point RawPosition() const noexcept { return m_rawPosition; }
+    uint32_t PointerId() const noexcept { return m_pointerId; }
+    uint32_t FrameId() const noexcept { return m_frameId; }
+    uint64_t Timestamp() const noexcept { return m_timestamp; }
+    bool IsInContact() const noexcept { return m_isInContact; }
+    winrt::Windows::UI::Input::PointerPointProperties Properties() const noexcept { return m_properties; }
+
+private:
+    winrt::Windows::Foundation::Point m_position{};
+    winrt::Windows::Foundation::Point m_rawPosition{};
+    uint32_t m_pointerId{};
+    uint32_t m_frameId{};
+    uint64_t m_timestamp{};
+    bool m_isInContact{};
+    winrt::Windows::UI::Input::PointerPointProperties m_properties{ nullptr };
+    winrt::Windows::Devices::Input::PointerDevice m_device{ nullptr };
+};
+
+struct InkPointerEventArgsSnapshot :
+    winrt::implements<InkPointerEventArgsSnapshot,
+        winrt::Windows::UI::Core::IPointerEventArgs,
+        winrt::Windows::UI::Core::ICoreWindowEventArgs>
+{
+    explicit InkPointerEventArgsSnapshot(winrt::Windows::UI::Core::PointerEventArgs const& args);
+
+    winrt::Windows::UI::Input::PointerPoint CurrentPoint() const noexcept { return m_currentPoint; }
+    winrt::Windows::System::VirtualKeyModifiers KeyModifiers() const noexcept { return m_keyModifiers; }
+    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::UI::Input::PointerPoint> GetIntermediatePoints() const;
+    // Raised after the OS has already acted on the input, so Handled can't flow back to the OS presenter.
+    bool Handled() const noexcept { return m_handled; }
+    void Handled(bool value) noexcept { m_handled = value; }
+
+private:
+    winrt::Windows::UI::Input::PointerPoint m_currentPoint{ nullptr };
+    winrt::Windows::System::VirtualKeyModifiers m_keyModifiers{};
+    std::vector<winrt::Windows::UI::Input::PointerPoint> m_intermediatePoints;
+    bool m_handled{};
+};
+
+// Must be called on the ink thread, inside the OS event handler, while 'args' is still live.
+winrt::Windows::UI::Core::PointerEventArgs SnapshotPointerEventArgs(winrt::Windows::UI::Core::PointerEventArgs const& args);
 
 // Mirror of Windows.UI.Input.Inking.InkStrokeInput. Holds the app's handlers; the owning
 // InkPresenter proxy subscribes to the OS presenter's InkStrokeInput on the ink thread and calls
