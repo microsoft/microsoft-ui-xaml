@@ -65,6 +65,34 @@ class AssessmentRecoveryTests(unittest.TestCase):
                         self.assertNotIn(area, plan["add_labels"])
                     self.assertEqual(client.writes, [])
 
+    def test_medium_conditional_team_on_existing_area_requests_review(self):
+        reason = "Resizing DesktopWindowXamlSource content exposes a diagonal white region."
+        for confidence, review in (("MEDIUM", True), ("HIGH", False)):
+            with self.subTest(confidence=confidence):
+                client = FakeGitHub()
+                client.catalog = self.client.catalog.copy()
+                client.issue.update(title=reason, body=reason,
+                                    labels=[{"name": "bug"}, {"name": "area-Islands"}])
+                evidence = t.prepare(client, event(), self.mapping)
+                result = t.validate(agent_output(
+                    evidence, area="area-Islands", area_confidence=confidence,
+                    routing_rule="island-resize-presentation", routing_reason=reason,
+                ), evidence)
+                decision = t.routing_decision(result, evidence, self.mapping)
+                self.assertEqual(decision["team_to_add"], "team-CompInput")
+                self.assertEqual(decision["needs_triage"], review)
+                expected = ["needs-triage", "team-CompInput"] if review else ["team-CompInput"]
+                self.assertEqual(t.planned_labels(result, evidence, self.mapping), expected)
+
+    def test_existing_unconditional_area_default_team_needs_no_review_at_medium(self):
+        evidence = copy.deepcopy(self.evidence)
+        evidence["existing_labels"] = ["bug", "area-Expander"]
+        result = t.validate(agent_output(evidence, area="area-Expander", area_confidence="MEDIUM"),
+                            evidence)
+        decision = t.routing_decision(result, evidence, self.mapping)
+        self.assertEqual(decision["team_to_add"], "team-Controls")
+        self.assertFalse(decision["needs_triage"])
+
     def test_learned_lifetime_override_does_not_change_default_or_existing_area(self):
         result, evidence = self.validate(
             area="area-Lifetime", routing_rule="default",

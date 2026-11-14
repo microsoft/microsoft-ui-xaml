@@ -710,6 +710,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     teams = {label for label in existing if label.startswith("team-")}
     area_to_add = None
     team_to_add = None
+    medium_team = False
     if not areas and result["area"] != "None" and result["area_confidence"] in ("HIGH", "MEDIUM"):
         area = result["area"]
         mapped_team = route_team(mapping, area, result["routing_rule"])
@@ -729,6 +730,11 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         # A conditional owner cannot be inferred from a different/uncertain area.
         if not teams or teams <= team_ancestors(candidate_team, parents):
             team_to_add = candidate_team
+            # An existing area's unconditional default is confidence-independent.
+            medium_team = (
+                bool(team_to_add) and result["area_confidence"] == "MEDIUM"
+                and not (areas and not entry.get("overrides"))
+            )
     elif (
         not areas and result["area"] == "None"
         and result["area_confidence"] == "HIGH"
@@ -743,6 +749,8 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         team_labels.update(team_ancestors(team, parents))
     needs_triage = (
         not effective_areas
+        or (bool(area_to_add) and result["area_confidence"] == "MEDIUM")
+        or medium_team
         or (not teams and not team_to_add)
         or (bool(area_to_add or team_to_add) and entry.get("confidence") == "low")
     )

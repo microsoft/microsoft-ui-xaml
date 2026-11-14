@@ -46,7 +46,7 @@ still rebuilds live evidence independently.
 | Existing area with a configured owner, no existing team label | An unconditional default can supply the team independently of model confidence. Areas with conditional rules require a matching MEDIUM- or HIGH-confidence area assessment. |
 | Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
 | Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
-| MEDIUM- or HIGH-confidence area assessment meets an area's conditional rule with supporting evidence | Use that rule's configured owner rather than the default; the model cannot invent a team. |
+| MEDIUM- or HIGH-confidence area assessment meets an area's conditional rule with supporting evidence | Use that rule's configured owner rather than the default; the model cannot invent a team. At MEDIUM, keep or add `needs-triage`, including when the area already existed. |
 | No area fits, but evidence clearly meets a configured team-only rule | Add its configured team at HIGH routing confidence without an area; retain `needs-triage`. |
 | LOW-confidence area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
 | Newly selected MEDIUM-confidence area | Apply the area and its configured team, and keep or add `needs-triage` for maintainer confirmation. |
