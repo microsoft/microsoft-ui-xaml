@@ -88,6 +88,11 @@ jobs:
       artifactName: $(testPayloadArtifactFullName)
       itemPattern: '**/@(helixworkitems|TestPayload)/**'
       targetPath: '$(Build.ArtifactStagingDirectory)\$(testPayloadArtifactFullName)'
+      # The payload normally downloads in under 2 minutes. Bound it so a hung download fails this
+      # step instead of running into the 300-minute job timeout. The retries cover ordinary download
+      # failures; a step that times out is not retried.
+      timeoutInMinutes: 20
+      retryCountOnTaskFailure: 2
 
   # Keeping this commented out for reference
   # - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
