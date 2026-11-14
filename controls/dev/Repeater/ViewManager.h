@@ -29,6 +29,12 @@ public:
     void OnLayoutChanging();
     void OnOwnerArranged();
 
+    // Clears the pinned elements whose items are affected by the collection change being processed
+    // (all of them by default). Must be called while the owner processes a collection change.
+    void ClearPinnedElementsForCollectionChange(int startIndex = 0, int count = std::numeric_limits<int>::max());
+    void OnOwnerLayoutUpdated();
+    void OnOwnerUnloaded();
+
 private:
 #pragma region GetElement providers
 
@@ -49,8 +55,10 @@ private:
 
     void UpdateFocusedElement();
     void OnFocusChanged(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void MoveFocusFromClearedIndex(int clearedIndex);
-    winrt::Control FindFocusCandidate(int clearedIndex, winrt::UIElement& focusedChild);
+    void OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex);
+    winrt::UIElement GetFocusedChild();
+    bool TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState);
+    bool TryMoveFocusOutOfOwner(winrt::FocusState focusState);
 
     void EnsureEventSubscriptions();
 
@@ -86,6 +94,13 @@ private:
     // _lastFocusedElement is listed in _pinnedPool.
     // It has to be an element we own (i.e. a direct child).
     tracker_ref<winrt::UIElement> m_lastFocusedElement;
+
+    // A focused element that was cleared. Focus is moved away from it after the next layout pass,
+    // once the layout has realized the current items. Null when no focus move is pending.
+    tracker_ref<winrt::UIElement> m_pendingFocusMoveElement;
+    int m_pendingFocusMoveIndex{ -1 };
+    winrt::FocusState m_pendingFocusMoveState{ winrt::FocusState::Programmatic };
+
     bool m_isDataSourceStableResetPending{};
     bool m_recycleWithoutOwner{ false };
 
