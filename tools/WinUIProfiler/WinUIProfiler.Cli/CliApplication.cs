@@ -29,6 +29,7 @@ internal static class CliApplication
           WinUIProfiler.Cli frames <session.sqlite> [--frame <id> [--bucket Xaml|Composition|Other] [--filter <text>]]
                                                     [--list [--show interesting|slow]] [--json]
           WinUIProfiler.Cli interesting <session.sqlite> [--region <id>] [--json]
+          WinUIProfiler.Cli composition <session.sqlite> [--view summary|lifetimes|links] [--json]
 
           processes  Counts the events of each process with XAML events, to find the target PID.
                      A session file shows its process.
@@ -52,12 +53,18 @@ internal static class CliApplication
                      one, and the ticks, layout passes, operations, navigations and focus changes in them (the
                      InterestingRows view). --region keeps one region (an ID from 'frames --list') and its rows.
 
-          --json prints the rows of frames and interesting as JSON, with the views' values.
+          composition  Reports retained native Composition lifetime GUIDs, independently of WinUI factory counters.
+                     The default is summary with capture health; --view lifetimes lists GUID endpoints and
+                     --view links lists WinUI public-interface observations and their correlation status.
+                     Outstanding observed creations are not total live objects or proof of leaks.
+
+          --json prints the rows of frames, interesting and composition as JSON, with the views' values.
           The views are in the session file: any SQLite reader gets the same rows (see the README).
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
           and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), the kernel's
-          GPU memory usage and budget events (DxgKrnl) and its window focus events (Win32k), the
+          GPU memory usage and budget events (DxgKrnl), its window focus events (Win32k),
+          CompositionObjectCreated/Destroyed (DComp) when the runtime emits them, the
           marker providers' events of the process, and the launcher providers' events of the
           process that launched it that are part of its launch, which the commands mark as the
           launcher's. A trace needs --pid; a session file holds one process.
@@ -72,7 +79,7 @@ internal static class CliApplication
     private sealed record Options(string Command, string InputPath, int? ProcessId, string? NameFilter, int Max,
         string? OutputPath, long LimitBytes, string? TypeFilter, long? ObjectId, long? Address, long? FrameId, string? Bucket,
         string? EventFilter, ObjectKind? Kind, long? RegionId, bool Json, bool List, string? Show, string? MarkersPath,
-        MarkerConfig? Markers = null)
+        MarkerConfig? Markers = null, string? CompositionView = null)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
     }
@@ -112,6 +119,7 @@ internal static class CliApplication
                 "timeline" => Timeline(options, output, cancellationToken),
                 "frames" => Frames(options, output, cancellationToken),
                 "interesting" => Interesting(options, output),
+                "composition" => Composition(options, output),
                 _ => Dump(options, output, cancellationToken)
             };
         }
@@ -135,7 +143,7 @@ internal static class CliApplication
     private static Options Parse(string[] args)
     {
         if (args.Length < 2 || args[0] is not ("processes" or "summary" or "dump" or "record" or "launch" or "objects" or "timeline" or
-            "frames" or "interesting"))
+            "frames" or "interesting" or "composition"))
         {
             throw new ArgumentException("Expected a command and a trace or session file path.");
         }
@@ -155,12 +163,13 @@ internal static class CliApplication
         var list = false;
         string? show = null;
         string? markersPath = null;
+        string? compositionView = null;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
         for (var i = 2; i < args.Length; i++)
         {
             // Flags, without a value.
-            if (args[i] == "--json" && args[0] is "frames" or "interesting")
+            if (args[i] == "--json" && args[0] is "frames" or "interesting" or "composition")
             {
                 json = true;
                 continue;
@@ -229,6 +238,11 @@ internal static class CliApplication
                 case "--markers" when args[0] is "processes" or "summary" or "dump" or "record" or "launch":
                     markersPath = Path.GetFullPath(value);
                     break;
+                case "--view" when args[0] == "composition":
+                    compositionView = Array.Find(["summary", "lifetimes", "links"],
+                        name => name.Equals(value, StringComparison.OrdinalIgnoreCase))
+                        ?? throw new ArgumentException("--view must be summary, lifetimes or links.");
+                    break;
                 default:
                     throw new ArgumentException($"Unknown option {args[i]}.");
             }
@@ -237,8 +251,9 @@ internal static class CliApplication
         }
 
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
-            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath);
-        if (options.Command is "objects" or "timeline" or "frames" or "interesting" && !options.IsSessionFile)
+            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath,
+            CompositionView: compositionView);
+        if (options.Command is "objects" or "timeline" or "frames" or "interesting" or "composition" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
         }
@@ -333,7 +348,7 @@ internal static class CliApplication
         output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
         foreach (var (processId, perProvider) in counts
             .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] +
-                entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
+                entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.DComp] + entry.Value[(int)XamlProvider.Marker])
             .OrderByDescending(entry => entry.Value.Sum()))
         {
             output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
@@ -628,6 +643,60 @@ internal static class CliApplication
     private static string MilestoneEvent(MilestoneDefinition definition) =>
         (definition.EventDescription ?? "built in") + (definition.From == MilestoneSource.Launcher ? " (launcher)" : "");
 
+    private static int Composition(Options options, TextWriter output)
+    {
+        object report = options.CompositionView switch
+        {
+            "lifetimes" => SessionFile.ReadCompositionLifetimes(options.InputPath),
+            "links" => SessionFile.ReadCompositionReferences(options.InputPath),
+            _ => SessionFile.ReadCompositionSummary(options.InputPath)
+        };
+        if (options.Json)
+        {
+            output.WriteLine(JsonSerializer.Serialize(report, JsonOptions));
+            return 0;
+        }
+
+        switch (report)
+        {
+            case CompositionLifetimeSummary summary:
+                WriteSessionInfo(summary.Session, output);
+                output.WriteLine($"Capture loss: ETW {summary.Session.LostByEtw?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}; " +
+                    $"profiler drops {summary.Session.DroppedByProfiler?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
+                output.WriteLine($"Created GUIDs: {summary.CreatedObjects}; destroyed GUIDs: {summary.DestroyedObjects}; " +
+                    $"matched destructions: {summary.MatchedDestroyed}; outstanding observed: {summary.OutstandingObserved}.");
+                output.WriteLine($"Unmatched destructions: {summary.UnmatchedDestructions}; ambiguous lifetimes: {summary.AmbiguousLifetimes}; " +
+                    $"invalid timestamp order: {summary.InvalidOrderLifetimes}; malformed events: {summary.MalformedEvents}.");
+                output.WriteLine($"WinUI-linked GUIDs: {summary.WinUILinkedObjects}; unmatched references: {summary.UnmatchedReferences}; " +
+                    $"ambiguous references: {summary.AmbiguousReferences}.");
+                if (summary.CreatedObjects + summary.DestroyedObjects == 0)
+                {
+                    output.WriteLine("No native lifetime events observed; provider support and total live objects are unknown.");
+                }
+                break;
+            case IReadOnlyList<CompositionLifetime> lifetimes:
+                output.WriteLine($"{"Lifetime GUID",-36} {"Status",-25} {"Created ms",12} {"Destroyed ms",12} {"Public pointer",-18} Type");
+                foreach (var lifetime in lifetimes)
+                {
+                    output.WriteLine($"{lifetime.ObjectId} {lifetime.Status,-25} {Milliseconds(lifetime.CreatedMilliseconds),12} " +
+                        $"{Milliseconds(lifetime.DestroyedMilliseconds),12} {lifetime.PublicInterfacePointer ?? "-",-18} {lifetime.TypeName}");
+                }
+                break;
+            case IReadOnlyList<CompositionWinUIReference> references:
+                output.WriteLine($"{"Seq",8} {"Field",-18} {"Public pointer",-18} {"Status",-10} {"Candidates",10} Lifetime GUID");
+                foreach (var reference in references)
+                {
+                    output.WriteLine($"{reference.Sequence,8} {reference.Field,-18} {reference.Address,-18} " +
+                        $"{reference.Status,-10} {reference.Candidates,10} {reference.ObjectId}");
+                }
+                break;
+        }
+
+        output.WriteLine("Retained observations only, not a rundown, ownership, GPU retirement or proof of leaks. " +
+            "Missing events, trimming and process exit can leave incomplete lifetimes.");
+        return 0;
+    }
+
     private static int Objects(Options options, TextWriter output)
     {
         var all = SessionFile.ReadObjects(options.InputPath, options.Kind);
@@ -799,6 +868,7 @@ internal static class CliApplication
         XamlProvider.MicrosoftUIXaml => "MUX",
         XamlProvider.MicrosoftUIXamlControls => "MUXC",
         XamlProvider.Win32k => "Win32k",
+        XamlProvider.DComp => "DComp",
         XamlProvider.Marker => "Marker",
         _ => "DxgKrnl"
     };

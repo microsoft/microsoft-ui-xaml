@@ -107,6 +107,9 @@ also matching legacy manifest events. Snapshot checks cover allocator deltas,
 named graphics resources, untracked versus observed lifetimes, four-group
 classification, missing captures and full-range 64-bit graphics comparisons.
 They also run the Copilot plugin server's checks (see Copilot plugin below).
+Native Composition checks cover GUID pairing, public-interface correlation,
+reordered events, pointer reuse, missing or malformed endpoints, rolling
+retention, process isolation and older recordings.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, check the trust box, then connect. Connection status shows the actual
@@ -216,6 +219,10 @@ are included even when the trees are unchanged. Deltas preserve the full 64-bit
 counter range, including decreases. All five allocator/GC metrics use signed 64-bit
 values: `-1` means unavailable, while zero is a measured value. Unavailable metrics
 and resources absent from either capture have no delta, not an assumed zero.
+
+These are snapshot counters. The separate [native Composition ETW
+report](#native-composition-lifetimes) does not change them or subtract native
+destructions from WinUI's factory creation totals.
 
 The private interface requires a target runtime containing resource diagnostics.
 Its IID changed with the signed allocator-counter contract so older runtimes fail
@@ -479,6 +486,8 @@ recorded-ETL replay remains supported as before.
 | `Events` | One row per event: `Seq` (arrival order), `Qpc`, thread, `TypeId` (its row in `EventTypes`), and the field values as a JSON array in field order |
 | `Objects` | One row per UI element or composition visual the events mention: `Kind` (`Element` or `Visual`), address, type, and an element's `x:Name` or a visual's owner element label (see below) |
 | `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
+| `CompositionObjectEvents` | Retained native creation/destruction endpoints, keyed by event `Seq`, with a lifetime GUID and optional creation-time implementation and public-interface identities |
+| `CompositionReferences` | WinUI public-interface observations: `Seq`, field, exact IID/address and, when supplied, the WinUI surface wrapper's `SurfaceId` |
 | `Frames` | One row per tick on a UI thread: thread, frame number, start and end (see below) |
 | `FrameEvents` | One row per UI-thread event: `Seq`, the `FrameId` of its tick, and its bucket: `Xaml`, `Composition` or `Other` |
 
@@ -521,6 +530,9 @@ Times are in ms from the start of the recording.
 | `InterestingRowEvents` | The events of each interesting row | Agents |
 | `FrameList` | The Frames tab's list in order, with what each Show choice keeps (`InInteresting`, `InSlow`) | The Frames tab, `frames --list` |
 | `LaunchSummary` | When the first 10 ticks that drew ended, from process start or recording start | The Frames tab |
+| `CompositionObjectLifetimes` | One native lifetime GUID, retained endpoints and explicit pairing status per row | `composition --view lifetimes` |
+| `CompositionWinUILinks` | WinUI public-interface observations, candidate counts and unique lifetime links or uncertainty | `composition --view links` |
+| `CompositionLifetimeSummary` | Retained native GUID counts and correlation health, independently of snapshot counters | `composition` |
 | `QueryCatalog` | The views and an example query each | Agents |
 
 ```sql
@@ -545,6 +557,116 @@ with its parameters' values written in, so that it runs as is in the `sqlite3`
 shell, and how many rows it read. The statements that check a file's version,
 views and columns, and statements that fail, aren't shown. The plugin uses it
 to show the SQL behind each answer (see Copilot plugin below).
+
+### Native Composition lifetimes
+
+This is an optional diagnostic stream. It needs a runtime that emits the
+following **TraceLogging** contract; installing this profiler alone does not
+add events to an older runtime. The live session enables
+`Microsoft.Windows.Dwm.DComp` (`93112de2-0aa3-4ed7-91e3-4264555220c1`)
+at Verbose (5), diagnostic keyword `0x1`, with the same executable/PID filters
+as XAML, including launch narrowing and startup process groups. Replay reads
+the same events from ETL. Only these two DComp event names are consumed.
+The diagnostic keyword may enable other producer-side diagnostics too, so it
+can add collection overhead even though those other events are not stored.
+
+| Event | Fields |
+| --- | --- |
+| `CompositionObjectCreated` | `ObjectId` (nonempty lifetime GUID), `ObjectPointer`, `TypeName`, `PublicInterfaceId` (IID), `PublicInterfacePointer` |
+| `CompositionObjectDestroyed` | `ObjectId` (the same lifetime GUID) |
+
+The header supplies process, thread and time. GUIDs, not implementation
+addresses, pair endpoints; different lifetimes at a reused address remain
+separate. Creation events without public-interface metadata can still be
+counted. Missing/invalid GUIDs remain raw events and increase
+`MalformedEvents`, rather than creating fake lifetimes.
+
+These reports are available from the CLI, not a new UI panel:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Cli -- composition C:\Traces\app.sqlite
+dotnet run --project .\WinUIProfiler.Cli -- composition C:\Traces\app.sqlite --view lifetimes --json
+dotnet run --project .\WinUIProfiler.Cli -- composition C:\Traces\app.sqlite --view links --json
+```
+
+`CreatedObjects` and `DestroyedObjects` count distinct GUIDs with each
+endpoint in retained events. `MatchedDestroyed` counts one creation and one
+destruction in valid timestamp order. `OutstandingObserved` counts one
+creation without a retained destruction. Destruction without creation,
+duplicate endpoints and invalid timestamp order are reported separately.
+The default summary includes coverage, trimming and ETW/profiler loss.
+No observed native events means support and actual live counts are unknown,
+not zero live objects.
+
+The join is entirely in the profiler; neither runtime calls the other or
+shares a private lifetime GUID:
+
+| WinUI observation | Exact public interface in the creation event |
+| --- | --- |
+| `VisualId`, `ParentVisualId`, `ChildVisualId` in XAML/XAML-Profiler TraceLogging | `Microsoft.UI.Composition.IVisual`, IID `c0eeab6c-c897-5ac6-a1c9-63abd5055b9b` |
+| `DCompSurfaceInit.NativeSurfaceId` in XAML-Profiler TraceLogging | `IDCompositionSurface`, IID `bb8a4953-2c99-4f5a-96f5-4819027fa3ac` |
+
+`ObjectPointer`, canonical `IUnknown`, `ICompositionObject` and `IVisual`
+need not have the same address. Matching uses the **exact IID and public
+interface pointer**, in one process recording, strictly inside its observed
+lifetime. Equal-time boundaries, duplicates, invalid intervals and multiple
+candidates remain `Ambiguous`. A missing destruction can therefore make
+later pointer reuse ambiguous instead of attributing it arbitrarily.
+`Linked` means **WinUI-observed**, not proof WinUI created or owns the object.
+Only types with existing WinUI identity observations can be linked.
+
+`DCompSurfaceInit.SurfaceId` is the WinUI wrapper, not the native surface.
+It is retained alongside the native reference; `VisualSurfaceChanged` also
+supplies that wrapper ID alongside a visual reference. Do not equate the
+wrapper to the native pointer or join wrapper addresses across arbitrary
+time ranges: wrappers and native surfaces can be replaced or reused.
+Pointers are signed SQLite integers preserving their original bits; CLI
+JSON formats them as hexadecimal strings, avoiding unsigned-64 JSON/SQLite
+numeric precision loss.
+
+There is **no rundown** of objects alive before collection, no GPU retirement
+measurement, and no implication that every compositor type emits this
+contract. Tracing gaps, capture boundaries, event loss, process exit and
+retention can leave incomplete endpoints. Index evidence is trimmed in the
+same transaction as raw events; counts describe the retained cohort, not
+historical process totals or leaks. Never subtract these broad native
+destructions from the narrower WinUI factory counters. Older otherwise
+readable session files remain readable, but the new report asks for a new
+recording when their lifetime views are absent.
+
+#### Validating with a modified runtime
+
+Parser/storage tests above can run on the development machine without
+installing or replacing any runtime DLL. For end-to-end testing of a modified
+compositor, use a **disposable Windows VM with a checkpoint**:
+
+1. Deploy the target app with a **complete matching, architecture-correct
+   runtime** containing the producer events, preferably app-local and
+   self-contained. Do not replace an installed system/framework DLL or swap
+   only the compositor DLL. `Profile-App.ps1` redirects MUX/MUXC only and
+   links the rest of the original runtime; it is not a full modified-compositor
+   deployment mechanism.
+2. Use a matching WinUI build that emits the existing visual/surface identity
+   events if you want to test the joins. Start collection before app launch
+   with the profiler's Launch mode, or record an ETL with the provider,
+   keyword and level above plus the existing XAML providers. Attach tests
+   intentionally have no creation rundown.
+3. Exercise visual creation, insertion/removal and surface creation.
+   Release all application references and remove retained tree/brush
+   references while the process remains alive; allow final release and
+   buffered events to arrive. `Close`, a WinUI wrapper release or stopping
+   the process is not evidence of final native destruction.
+4. Disconnect normally to drain ETW, then run all three `composition` reports
+   on the target process's SQLite recording. Check loss/drop counts and
+   trimming before interpreting unmatched endpoints. For an ETL, first run
+   `record <trace.etl> --pid <pid> --out <new-session.sqlite>`.
+5. Verify GUID pairing and exact public-pointer equality for known references,
+   independently of aggregate snapshot totals. Include attach and address-reuse
+   scenarios; these must not fabricate ownership or fill missing endpoints.
+   Revert the VM checkpoint after testing.
+
+A passing synthetic/parser test is not proof that the deployed runtime emits
+the intended events or that its public pointers match real WinUI observations.
 
 ### UI elements
 
