@@ -194,7 +194,7 @@ On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **
 
 ## Scrolling: sticky headers and frozen leading columns
 
-**Sticky headers.** `PART_HeaderScroller` has user scrolling disabled. `TableView` calls `ChangeView` on it from `PART_BodyScroller.ViewChanged`. The sync is one-way and skips differences under 0.5 px.
+**Sticky headers.** `PART_HeaderScroller` has user scrolling disabled. `TableView` calls `ChangeView` on it from `PART_BodyScroller.ViewChanged`. The sync is one-way and skips differences under 0.5 px. That offset is what hit-testing, UIA and `TransformToVisual` see. Touch and precision-touchpad pans move the body on the compositor before `ViewChanged` reaches the UI thread, so an `ExpressionAnimation` on `PART_HeaderHost.Translation` adds the difference in the same frame: the body manipulation property set's `Translation.X` plus the header offset last applied (fed from the UI thread). It is 0 at rest. The animation restarts when the scrollers are resolved again (template re-apply, reload). Frozen cells keep the UI-thread pin below in header and rows alike, so the two frozen bands stay aligned with each other.
 
 **Frozen leading columns.** Frozen cells are counter-translated against the horizontal offset through `UIElement.Translation` (enabled with `ElementCompositionPreview.SetIsTranslationEnabled`), and non-frozen cells are clipped out of the pinned band. Only the contiguous prefix from column 0 freezes. Column reorder, when implemented, must not assume this approach.
 
