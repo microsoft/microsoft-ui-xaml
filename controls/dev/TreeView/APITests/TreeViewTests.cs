@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using MUXControlsTestApp;
 using Common;
 
@@ -2569,6 +2570,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("DropEffects threw " + thrown.GetType().FullName + " HResult=0x" + thrown.HResult.ToString("X8"));
                 Verify.AreEqual(unchecked((int)0x80004001), thrown.HResult);
             });
+        }
+
+        // Edits nodes after the TreeView and its list control are collected, while the test keeps the ViewModel
+        // (the list's ItemsSource) alive. Keeping the ViewModel makes the crash deterministic.
+        [TestMethod]
+        public void TreeViewNodeEditsAfterTheTreeViewIsCollectedDoNotCrash()
+        {
+            TreeViewNode p = null, q = null;
+            IObservableVector<object> flatList = null;
+            IList<TreeViewNode> selectedNodes = null;
+            IList<object> selectedItems = null;
+            WeakReference treeViewReference = null, listControlReference = null;
+            var unloaded = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                p = new TreeViewNode() { Content = "P", IsExpanded = true };
+                var a = new TreeViewNode() { Content = "A", IsExpanded = true };
+                q = new TreeViewNode() { Content = "Q" };
+                a.Children.Add(new TreeViewNode() { Content = "A0" });
+                p.Children.Add(a);
+                ShowAndRemoveTreeView(unloaded, new[] { p, q }, out treeViewReference, out listControlReference, out flatList, out selectedNodes, out selectedItems);
+            });
+            Verify.IsTrue(unloaded.WaitOne(TimeSpan.FromSeconds(10)), "The TreeView is unloaded");
+
+            for (int attempt = 0; attempt < 10 && (treeViewReference.IsAlive || listControlReference.IsAlive); attempt++)
+            {
+                IdleSynchronizer.Wait();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            Verify.IsFalse(treeViewReference.IsAlive, "The TreeView is collected");
+            Verify.IsFalse(listControlReference.IsAlive, "The list control is collected");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Func<string> describeRows = () => String.Join(",", flatList.Select(row => (row as TreeViewNode)?.Content as string));
+                Verify.AreEqual("P,A,A0,Q", describeRows());
+
+                var p1 = new TreeViewNode() { Content = "P1" };
+                var p2 = new TreeViewNode() { Content = "P2" };
+                p.Children.Add(p1);
+                Verify.IsTrue(selectedNodes.Contains(p1), "A new child of a selected node is selected");
+                p.Children.Add(p2);
+                q.Children.Add(new TreeViewNode() { Content = "Q0" });
+                p.IsExpanded = false;
+                p.IsExpanded = true;
+                Verify.AreEqual("P,A,A0,P1,P2,Q", describeRows());
+                Verify.AreEqual(5, selectedNodes.Count);
+                Verify.AreEqual(5, selectedItems.Count);
+
+                selectedNodes.Remove(p2);
+                Verify.IsFalse(selectedNodes.Contains(p2));
+                Verify.AreEqual(selectedNodes.Count, selectedItems.Count);
+
+                selectedNodes.Add(p);
+                selectedNodes.Remove(p);
+                Verify.AreEqual(0, selectedNodes.Count);
+                Verify.AreEqual(0, selectedItems.Count);
+
+                p.Children.Clear();
+                Verify.AreEqual("P,Q", describeRows());
+            });
+            GC.KeepAlive(flatList);
+        }
+
+        // NoInlining, so no local here keeps the TreeView alive.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ShowAndRemoveTreeView(AutoResetEvent unloaded, TreeViewNode[] rootNodes, out WeakReference treeViewReference,
+            out WeakReference listControlReference, out IObservableVector<object> flatList, out IList<TreeViewNode> selectedNodes, out IList<object> selectedItems)
+        {
+            var treeView = new TreeView() { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Multiple };
+            foreach (var node in rootNodes)
+            {
+                treeView.RootNodes.Add(node);
+            }
+            treeView.Unloaded += (sender, args) => unloaded.Set();
+            Content = treeView;
+            Content.UpdateLayout();
+            treeView.SelectedNodes.Add(rootNodes[0]);
+
+            var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+            flatList = (IObservableVector<object>)listControl.ItemsSource;
+            selectedNodes = treeView.SelectedNodes;
+            selectedItems = treeView.SelectedItems;
+            treeViewReference = new WeakReference(treeView);
+            listControlReference = new WeakReference(listControl);
+            Content = null;
         }
 
         // Reads the glyph text, font size and foreground from a TreeViewItem chevron glyph template part, which is a

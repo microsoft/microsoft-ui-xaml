@@ -105,13 +105,10 @@ void SelectedTreeNodeVector::InsertAtCore_NoContainsCheck(unsigned int index, wi
         auto selectedItems = viewModel->GetSelectedItems();
         if (selectedItems.Size() != Size())
         {
-            if (auto listControl = viewModel->ListControl())
+            if (auto item = viewModel->ItemFromNode(node))
             {
-                if (auto item = winrt::get_self<TreeViewList>(listControl)->ItemFromNode(node))
-                {
-                    winrt::get_self<SelectedItemsVector>(selectedItems)->InsertAt_NoContainsCheck(index, item);
-                    viewModel->TrackItemSelected(item);
-                }
+                winrt::get_self<SelectedItemsVector>(selectedItems)->InsertAt_NoContainsCheck(index, item);
+                viewModel->TrackItemSelected(item);
             }
         }
     }
@@ -174,12 +171,9 @@ void SelectedItemsVector::InsertAt_NoContainsCheck(unsigned int index, winrt::II
         auto selectedNodes = viewModel->GetSelectedNodes();
         if (selectedNodes.Size() != Size())
         {
-            if (auto listControl = viewModel->ListControl())
+            if (auto node = viewModel->NodeFromItem(item))
             {
-                if (auto node = winrt::get_self<TreeViewList>(listControl)->NodeFromItem(item))
-                {
-                    selectedNodes.InsertAt(index, node);
-                }
+                selectedNodes.InsertAt(index, node);
             }
         }
     }
@@ -366,7 +360,11 @@ void ViewModel::EndSelectionChanges()
     {
         m_selectionTrackingCounter--;
         if (m_selectionTrackingCounter == 0 && (m_addedSelectedItems.size() > 0 || m_removedSelectedItems.size() > 0)) {
-            auto treeView = winrt::get_self<TreeView>(m_TreeView.get());
+            const auto treeView = m_TreeView.get();
+            if (!treeView)
+            {
+                return;
+            }
 
             auto added = winrt::make<Vector<winrt::IInspectable>>();
             for (unsigned int i = 0; i < m_addedSelectedItems.size(); i++)
@@ -378,7 +376,7 @@ void ViewModel::EndSelectionChanges()
             {
                 removed.Append(m_removedSelectedItems.at(i));
             }
-            treeView->RaiseSelectionChanged(added, removed);
+            winrt::get_self<TreeView>(treeView)->RaiseSelectionChanged(added, removed);
         }
     }
 }
@@ -562,14 +560,13 @@ void ViewModel::SetOwners(winrt::TreeViewList const& owningList, winrt::TreeView
     m_TreeView = winrt::make_weak(owningTreeView);
 }
 
-winrt::TreeViewList ViewModel::ListControl()
-{
-    return m_TreeViewList.get();
-}
-
 bool ViewModel::IsInSingleSelectionMode()
 {
-    return m_TreeViewList.get().SelectionMode() == winrt::ListViewSelectionMode::Single;
+    if (const auto listControl = m_TreeViewList.get())
+    {
+        m_isInSingleSelectionMode = listControl.SelectionMode() == winrt::ListViewSelectionMode::Single;
+    }
+    return m_isInSingleSelectionMode;
 }
 
 // Private helpers
@@ -862,9 +859,9 @@ TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewN
 
 void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState)
 {
-    if (m_TreeViewList)
+    if (const auto listControl = m_TreeViewList.get())
     {
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
+        auto container = winrt::get_self<TreeViewList>(listControl)->ContainerFromNode(targetNode);
         if (container)
         {
             winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
@@ -910,6 +907,16 @@ winrt::TreeViewNode ViewModel::GetAssociatedNode(winrt::IInspectable item)
     }
 
     return nullptr;
+}
+
+winrt::IInspectable ViewModel::ItemFromNode(winrt::TreeViewNode const& node)
+{
+    return (m_isContentMode && node) ? node.Content() : static_cast<winrt::IInspectable>(node);
+}
+
+winrt::TreeViewNode ViewModel::NodeFromItem(winrt::IInspectable const& item)
+{
+    return m_isContentMode ? GetAssociatedNode(item) : item.try_as<winrt::TreeViewNode>();
 }
 
 bool ViewModel::IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& index)
@@ -1155,10 +1162,10 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
 
 void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const& sender, winrt::IDependencyPropertyChangedEventArgs const& args)
 {
-    if (m_TreeViewList)
+    if (const auto listControl = m_TreeViewList.get())
     {
         auto targetNode = sender.as<winrt::TreeViewNode>();
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
+        auto container = winrt::get_self<TreeViewList>(listControl)->ContainerFromNode(targetNode);
         if (container)
         {
             winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
