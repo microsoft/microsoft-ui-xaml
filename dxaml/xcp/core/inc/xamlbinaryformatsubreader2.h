@@ -56,6 +56,10 @@ public:
     // catching block.
     _Check_return_ HRESULT TryReadHRESULT(ObjectWriterNode& currentXamlNode, _Out_ bool* endOfStream);
 
+    _Check_return_ HRESULT HasConnectionId(
+        _In_ unsigned int nodeIndex,
+        _Out_ bool* hasConnectionId) const;
+
 
     // Pulling smaller chunks of data out in the case of CustomRuntimeData and using
     // that data to deserialize a CustomRuntimeData instance from the nodestream. In this

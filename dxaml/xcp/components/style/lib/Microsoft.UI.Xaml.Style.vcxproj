@@ -25,6 +25,7 @@
             $(XcpPath)\components\style\inc;
             $(XcpPath)\components\resources\inc;
             $(XcpPath)\components\objectWriter\inc;
+            $(XcpPath)\components\parser\inc;
             $(XcpPath)\components\theming\inc;
             $(XcpPath)\core\inc;
             $(XcpPath)\core\parser;

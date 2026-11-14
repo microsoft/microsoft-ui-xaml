@@ -540,4 +540,195 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
+    void StyleWithXBindTests::NestedSetterValueConnectionIdRealizedBeforeLoading()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='ContextFlyout'>"
+                L"          <Setter.Value>"
+                L"            <MenuFlyout x:Name='flyout'>"
+                L"              <MenuFlyoutItem x:Name='flyoutItem' x:ConnectionId='1' Text='Remove' />"
+                L"            </MenuFlyout>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            // Leave the control unhosted: no Loading event or item-container style application has occurred.
+            VERIFY_IS_NOT_NULL(root->FindName(Platform::StringReference(L"flyoutItem")),
+                L"The nested binding target should be created during style initialization");
+        });
+    }
+
+    void StyleWithXBindTests::SetterValueRootConnectionIdRealizedBeforeLoading()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='ContextFlyout'>"
+                L"          <Setter.Value>"
+                L"            <MenuFlyout x:Name='flyout' x:ConnectionId='1'>"
+                L"              <MenuFlyoutItem Text='Remove' />"
+                L"            </MenuFlyout>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            VERIFY_IS_NOT_NULL(root->FindName(Platform::StringReference(L"flyout")),
+                L"The binding target at the setter value's root should be created during style initialization");
+        });
+    }
+
+    void StyleWithXBindTests::SetterValueWithoutConnectionIdRemainsDeferred()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='Tag'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:Name='deferredBrush' Color='Blue' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='ContextFlyout'>"
+                L"          <Setter.Value>"
+                L"            <MenuFlyout>"
+                L"              <MenuFlyoutItem x:Name='flyoutItem' x:ConnectionId='1' Text='Remove' />"
+                L"            </MenuFlyout>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='Background'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:Name='sandwichedBrush' Color='Red' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='Foreground'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:ConnectionId='2' Color='Green' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"deferredBrush")),
+                L"A connection ID in a following setter value must not realize this brush");
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"sandwichedBrush")),
+                L"Connection IDs in preceding and following setter values must not realize this brush");
+
+            auto listView = safe_cast<ListView^>(root->Content);
+            auto setters = listView->ItemContainerStyle->Setters;
+            auto setter = safe_cast<Setter^>(setters->GetAt(0));
+            auto brush = safe_cast<SolidColorBrush^>(setter->Value);
+            VERIFY_IS_NOT_NULL(brush);
+            VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+
+            auto sandwichedSetter = safe_cast<Setter^>(setters->GetAt(2));
+            auto sandwichedBrush = safe_cast<SolidColorBrush^>(sandwichedSetter->Value);
+            VERIFY_IS_NOT_NULL(sandwichedBrush);
+            VERIFY_ARE_EQUAL(Colors::Red, sandwichedBrush->Color);
+        });
+    }
+
+    void StyleWithXBindTests::SetterValueWithConnectionIdInTemplateRemainsDeferred()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
+
+        RunOnUIThread([]()
+        {
+            auto root = safe_cast<UserControl^>(XamlReader::Load(
+                L"<UserControl"
+                L"  xmlns='http://schemas.microsoft.com/client/2007'"
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <ListView>"
+                L"    <ListView.ItemContainerStyle>"
+                L"      <Style TargetType='ListViewItem'>"
+                L"        <Setter Property='Tag'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:Name='precedingBrush' Color='Blue' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='Template'>"
+                L"          <Setter.Value>"
+                L"            <ControlTemplate x:Name='deferredTemplate' TargetType='ListViewItem'>"
+                L"              <Border x:Name='templateRoot' x:ConnectionId='1' />"
+                L"            </ControlTemplate>"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"        <Setter Property='Background'>"
+                L"          <Setter.Value>"
+                L"            <SolidColorBrush x:Name='followingBrush' Color='Red' />"
+                L"          </Setter.Value>"
+                L"        </Setter>"
+                L"      </Style>"
+                L"    </ListView.ItemContainerStyle>"
+                L"  </ListView>"
+                L"</UserControl>"));
+
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"deferredTemplate")),
+                L"A connection ID inside the template body must not realize the template setter value");
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"precedingBrush")),
+                L"A connection ID inside a following template must not realize this brush");
+            VERIFY_IS_NULL(root->FindName(Platform::StringReference(L"followingBrush")),
+                L"A connection ID inside a preceding template must not realize this brush");
+
+            auto listView = safe_cast<ListView^>(root->Content);
+            auto setters = listView->ItemContainerStyle->Setters;
+            auto precedingBrush = safe_cast<SolidColorBrush^>(safe_cast<Setter^>(setters->GetAt(0))->Value);
+            VERIFY_IS_NOT_NULL(precedingBrush);
+            VERIFY_ARE_EQUAL(Colors::Blue, precedingBrush->Color);
+            auto controlTemplate = safe_cast<ControlTemplate^>(safe_cast<Setter^>(setters->GetAt(1))->Value);
+            VERIFY_IS_NOT_NULL(controlTemplate);
+            auto followingBrush = safe_cast<SolidColorBrush^>(safe_cast<Setter^>(setters->GetAt(2))->Value);
+            VERIFY_IS_NOT_NULL(followingBrush);
+            VERIFY_ARE_EQUAL(Colors::Red, followingBrush->Color);
+
+            auto item = ref new ListViewItem();
+            item->Style = listView->ItemContainerStyle;
+            VERIFY_ARE_EQUAL(0, VisualTreeHelper::GetChildrenCount(item));
+            item->ApplyTemplate();
+            auto templateRoot = safe_cast<Border^>(VisualTreeHelper::GetChild(item, 0));
+            VERIFY_IS_NOT_NULL(templateRoot);
+            VERIFY_ARE_EQUAL(Platform::StringReference(L"templateRoot"), templateRoot->Name);
+        });
+    }
+
 } } } } } }
