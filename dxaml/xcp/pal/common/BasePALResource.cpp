@@ -165,21 +165,6 @@ _Check_return_ HRESULT CBasePALResource::TryGetFilePath(_Out_ xstring_ptr* pstrF
 
 //-----------------------------------------------------------------------------
 //
-// See IPALResource::TryGetRawStream().
-//
-// CBasePALResource always returns NULL from TryGetRawStream(). Subclasses may
-// override and provide an implementation if they represent a resource that
-// has an available stream.
-//
-//-----------------------------------------------------------------------------
-_Check_return_ HRESULT CBasePALResource::TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream)
-{
-    *ppStream = NULL;
-    return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-//
 // See IPALResource::GetScalePercentage().
 //
 // CBasePALResource always returns 0 from GetScalePercentage() - meaning the
