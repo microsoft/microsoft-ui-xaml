@@ -1264,7 +1264,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                 {
                     foreach (ObservableVector<object> grp in m_groups)
                     {
-                        if (index > grp.Count())
+                        if (index >= grp.Count())
                         {
                             index -= grp.Count();
                         }
@@ -2031,6 +2031,379 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                     Verify.AreEqual(groupContainer, list.GroupHeaderContainerFromItemContainer(list.ContainerFromIndex(i)));
                 }
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetWithoutGroupIndexRemovesStaleContainers()
+        {
+            // GitHub issue #11085: a custom ICollectionView raises a Reset whose Index is not
+            // a group index. The panel must treat it as a full reset instead of a group reset.
+            foreach (uint resetIndex in new uint[] { 3 /* one past the last group */, uint.MaxValue })
+            {
+                VerifyCustomGroupedReset(resetIndex, false /* hidesIfEmpty */, true /* expectFullReset */);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetWithGroupIndexResetsOnlyThatGroup()
+        {
+            // A valid group index keeps the targeted group reset, leaving other groups' containers alone.
+            VerifyCustomGroupedReset(1, false /* hidesIfEmpty */, false /* expectFullReset */);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetWithoutGroupIndexHidesEmptyGroup()
+        {
+            VerifyCustomGroupedReset(uint.MaxValue, true /* hidesIfEmpty */, true /* expectFullReset */);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetAfterGroupInsertionRebuildsContainers()
+        {
+            VerifyCustomGroupedReset(uint.MaxValue, false, true, CustomGroupedResetMutation.InsertGroup);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetAfterGroupReplacementRebuildsContainers()
+        {
+            VerifyCustomGroupedReset(uint.MaxValue, false, true, CustomGroupedResetMutation.ReplaceGroup);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetAfterGroupCollectionResetRebuildsContainers()
+        {
+            VerifyCustomGroupedReset(0, false, true, CustomGroupedResetMutation.InsertGroup, true /* resetGroupsBeforeItems */);
+            VerifyCustomGroupedReset(0, false, true, CustomGroupedResetMutation.ReplaceGroup, true /* resetGroupsBeforeItems */);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetHidesAllEmptyGroupsAndCanRepopulate()
+        {
+            VerifyCustomGroupedReset(uint.MaxValue, true, true, CustomGroupedResetMutation.ClearAllGroups);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetWithPendingHeaderScrollHidesAllEmptyGroups()
+        {
+            VerifyCustomGroupedReset(uint.MaxValue, true, true, CustomGroupedResetMutation.ClearAllGroups, false, true /* scrollHeaderBeforeReset */);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetAfterRemovingAllGroupsCanRepopulate()
+        {
+            VerifyCustomGroupedReset(uint.MaxValue, true, true, CustomGroupedResetMutation.RemoveAllGroups);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetAfterLastGroupRemovedWithoutNotificationRebuildsContainers()
+        {
+            // The removed group's index still looks valid against the group information cached before the
+            // removal, but the view no longer has that group.
+            VerifyCustomGroupedReset(2, false, true, CustomGroupedResetMutation.RemoveLastGroupWithoutNotification);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetAfterGroupAddedWithoutNotificationRebuildsContainers()
+        {
+            VerifyCustomGroupedReset(0, false, true, CustomGroupedResetMutation.AddGroupWithoutNotification);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetWhenRecycleEnablesHidesIfEmptyDoesNotRealizeHiddenHeader()
+        {
+            // HidesIfEmpty is still false when the first visible header is saved, and a recycle callback
+            // enables it before the header is scrolled to, so no group is displayable anymore.
+            VerifyCustomGroupedReset(uint.MaxValue, false, true, CustomGroupedResetMutation.ClearAllGroups,
+                false /* resetGroupsBeforeItems */, false /* scrollHeaderBeforeReset */, true /* enableHidesIfEmptyOnRecycle */);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void CustomGroupedResetWithPendingHeaderScrollRecyclesItsHeader()
+        {
+            // A header scroll queued before every group is emptied pins its header. Once the scroll
+            // is cancelled, that header must go back to the recycle queue instead of being retained
+            // for every reset and repopulation cycle.
+            ListView list = null;
+            GroupedICollectionViewImplementation groups = null;
+            var originalItems = new[] { 0, 1, 2, 10, 11, 12, 20, 21, 22 };
+            var headerCounts = new List<int>();
+
+            UIExecutor.Execute(() =>
+            {
+                list = new ListView { Height = 800 };
+                groups = new GroupedICollectionViewImplementation();
+                for (int groupIndex = 0; groupIndex < 3; ++groupIndex)
+                {
+                    groups.Add(new InnerObservableVector(
+                        "group " + groupIndex,
+                        Enumerable.Range(groupIndex * 10, 3).Cast<object>()));
+                }
+
+                list.GroupStyle.Add((GroupStyle)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                   " <GroupStyle HidesIfEmpty='True' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                   "     <GroupStyle.HeaderTemplate>" +
+                   "         <DataTemplate>" +
+                   "             <TextBlock Text='{Binding}' />" +
+                   "         </DataTemplate>" +
+                   "     </GroupStyle.HeaderTemplate>" +
+                   " </GroupStyle>"));
+                list.ItemsSource = groups;
+                TestServices.WindowHelper.WindowContent = list;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            for (int cycle = 0; cycle < 6; ++cycle)
+            {
+                Log.Comment("Cycle {0}: empty every group with a header scroll pending.", cycle);
+                UIExecutor.Execute(() =>
+                {
+                    list.ScrollIntoView(groups.CollectionGroups[1]);
+                    foreach (InnerObservableVector group in groups.CollectionGroups)
+                    {
+                        group.ChangeUnderlying(Enumerable.Empty<object>());
+                    }
+                    groups.RaiseReset(uint.MaxValue);
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() =>
+                {
+                    VerifyRealizedGroupedItems(list, Array.Empty<int>());
+                    VerifyVisibleGroupHeaders(list, groups, Array.Empty<int>());
+
+                    for (int groupIndex = 0; groupIndex < 3; ++groupIndex)
+                    {
+                        ((InnerObservableVector)groups.CollectionGroups[groupIndex]).ChangeUnderlying(
+                            Enumerable.Range(groupIndex * 10, 3).Cast<object>());
+                    }
+                    groups.RaiseReset(uint.MaxValue);
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() =>
+                {
+                    VerifyRealizedGroupedItems(list, originalItems);
+                    VerifyVisibleGroupHeaders(list, groups, new[] { 0, 1, 2 });
+                    headerCounts.Add(((ItemsStackPanel)list.ItemsPanelRoot).Children.OfType<ListViewHeaderItem>().Count());
+                });
+            }
+
+            Log.Comment("Header elements per cycle: {0}", string.Join(",", headerCounts));
+            Verify.IsTrue(headerCounts.Last() <= headerCounts.First(),
+                "Headers must be recycled and reused instead of accumulating across reset cycles.");
+
+            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+        }
+
+        private enum CustomGroupedResetMutation
+        {
+            ClearGroup,
+            InsertGroup,
+            ReplaceGroup,
+            ClearAllGroups,
+            RemoveAllGroups,
+            RemoveLastGroupWithoutNotification,
+            AddGroupWithoutNotification
+        }
+
+        private static void VerifyCustomGroupedReset(
+            uint resetIndex,
+            bool hidesIfEmpty,
+            bool expectFullReset,
+            CustomGroupedResetMutation mutation = CustomGroupedResetMutation.ClearGroup,
+            bool resetGroupsBeforeItems = false,
+            bool scrollHeaderBeforeReset = false,
+            bool enableHidesIfEmptyOnRecycle = false)
+        {
+            Log.Comment("Reset index {0}, HidesIfEmpty={1}, mutation={2}, resetGroupsBeforeItems={3}",
+                resetIndex, hidesIfEmpty, mutation, resetGroupsBeforeItems);
+            ListView list = null;
+            GroupedICollectionViewImplementation groups = null;
+            var recycledItems = new List<int>();
+            var originalItems = new[] { 0, 1, 2, 10, 11, 12, 20, 21, 22 };
+            int[] expectedItems = null;
+            int[] expectedHeaders = null;
+
+            UIExecutor.Execute(() =>
+            {
+                list = new ListView { Height = 800 };
+                groups = new GroupedICollectionViewImplementation();
+                for (int groupIndex = 0; groupIndex < 3; ++groupIndex)
+                {
+                    groups.Add(new InnerObservableVector(
+                        "group " + groupIndex,
+                        Enumerable.Range(groupIndex * 10, 3).Cast<object>()));
+                }
+
+                list.GroupStyle.Add((GroupStyle)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                   " <GroupStyle HidesIfEmpty='" + hidesIfEmpty + "' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                   "     <GroupStyle.HeaderTemplate>" +
+                   "         <DataTemplate>" +
+                   "             <TextBlock Text='{Binding}' />" +
+                   "         </DataTemplate>" +
+                   "     </GroupStyle.HeaderTemplate>" +
+                   " </GroupStyle>"));
+                list.ContainerContentChanging += (sender, args) =>
+                {
+                    if (args.InRecycleQueue && args.Item is int item)
+                    {
+                        recycledItems.Add(item);
+                        if (enableHidesIfEmptyOnRecycle)
+                        {
+                            list.GroupStyle[0].HidesIfEmpty = true;
+                        }
+                    }
+                };
+                list.ItemsSource = groups;
+                TestServices.WindowHelper.WindowContent = list;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                VerifyRealizedGroupedItems(list, originalItems);
+                VerifyVisibleGroupHeaders(list, groups, new[] { 0, 1, 2 });
+
+                recycledItems.Clear();
+                if (scrollHeaderBeforeReset)
+                {
+                    list.ScrollIntoView(groups.CollectionGroups[1]);
+                }
+                switch (mutation)
+                {
+                    case CustomGroupedResetMutation.ClearGroup:
+                        ((InnerObservableVector)groups.CollectionGroups[1]).ChangeUnderlying(Enumerable.Empty<object>());
+                        expectedItems = new[] { 0, 1, 2, 20, 21, 22 };
+                        expectedHeaders = hidesIfEmpty ? new[] { 0, 2 } : new[] { 0, 1, 2 };
+                        break;
+                    case CustomGroupedResetMutation.InsertGroup:
+                        groups.CollectionGroups.Insert(1, new InnerObservableVector("inserted group", Enumerable.Range(30, 3).Cast<object>()));
+                        expectedItems = new[] { 0, 1, 2, 30, 31, 32, 10, 11, 12, 20, 21, 22 };
+                        expectedHeaders = new[] { 0, 1, 2, 3 };
+                        break;
+                    case CustomGroupedResetMutation.ReplaceGroup:
+                        groups.CollectionGroups[1] = new InnerObservableVector("replacement group", Enumerable.Range(30, 3).Cast<object>());
+                        expectedItems = new[] { 0, 1, 2, 30, 31, 32, 20, 21, 22 };
+                        expectedHeaders = new[] { 0, 1, 2 };
+                        break;
+                    case CustomGroupedResetMutation.ClearAllGroups:
+                        foreach (InnerObservableVector group in groups.CollectionGroups)
+                        {
+                            group.ChangeUnderlying(Enumerable.Empty<object>());
+                        }
+                        expectedItems = Array.Empty<int>();
+                        expectedHeaders = Array.Empty<int>();
+                        break;
+                    case CustomGroupedResetMutation.RemoveAllGroups:
+                        ((ObservableVector<object>)groups.CollectionGroups).ChangeUnderlying(Enumerable.Empty<object>());
+                        expectedItems = Array.Empty<int>();
+                        expectedHeaders = Array.Empty<int>();
+                        break;
+                    case CustomGroupedResetMutation.RemoveLastGroupWithoutNotification:
+                        ((ObservableVector<object>)groups.CollectionGroups).ChangeUnderlying(groups.CollectionGroups.Take(2).ToList());
+                        expectedItems = new[] { 0, 1, 2, 10, 11, 12 };
+                        expectedHeaders = new[] { 0, 1 };
+                        break;
+                    case CustomGroupedResetMutation.AddGroupWithoutNotification:
+                        ((ObservableVector<object>)groups.CollectionGroups).ChangeUnderlying(
+                            groups.CollectionGroups.Concat(new object[] { new InnerObservableVector("added group", Enumerable.Range(30, 3).Cast<object>()) }).ToList());
+                        expectedItems = new[] { 0, 1, 2, 10, 11, 12, 20, 21, 22, 30, 31, 32 };
+                        expectedHeaders = new[] { 0, 1, 2, 3 };
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(mutation));
+                }
+                if (resetGroupsBeforeItems)
+                {
+                    ((ObservableVector<object>)groups.CollectionGroups).RaiseVectorChanged(CollectionChange.Reset, 0);
+                }
+                Log.Comment("Raise the item Reset after completing the group mutation.");
+                groups.RaiseReset(resetIndex);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                VerifyRealizedGroupedItems(list, expectedItems);
+                VerifyVisibleGroupHeaders(list, groups, expectedHeaders);
+
+                // A full reset recycles every container; a group reset only recycles the reset group's.
+                var expectedRecycledItems = expectFullReset ? originalItems : new[] { 10, 11, 12 };
+                Verify.AreEqual(string.Join(",", expectedRecycledItems),
+                    string.Join(",", recycledItems.Distinct().OrderBy(item => item)),
+                    expectFullReset ? "A Reset without a valid group index must reset every group." : "A group reset must not recycle other groups' containers.");
+            });
+
+            if (mutation == CustomGroupedResetMutation.ClearAllGroups || mutation == CustomGroupedResetMutation.RemoveAllGroups)
+            {
+                UIExecutor.Execute(() =>
+                {
+                    if (groups.CollectionGroups.Count == 0)
+                    {
+                        groups.CollectionGroups.Add(new InnerObservableVector("repopulated group", Enumerable.Range(30, 3).Cast<object>()));
+                    }
+                    else
+                    {
+                        ((InnerObservableVector)groups.CollectionGroups[0]).ChangeUnderlying(Enumerable.Range(30, 3).Cast<object>());
+                    }
+                    groups.RaiseReset(resetIndex);
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                UIExecutor.Execute(() =>
+                {
+                    VerifyRealizedGroupedItems(list, new[] { 30, 31, 32 });
+                    VerifyVisibleGroupHeaders(list, groups, new[] { 0 });
+                });
+            }
+
+            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+        }
+
+        private static void VerifyVisibleGroupHeaders(ListView list, GroupedICollectionViewImplementation groups, int[] expectedGroups)
+        {
+            var panel = (ItemsStackPanel)list.ItemsPanelRoot;
+            var visibleGroups = panel.Children
+                .OfType<ListViewHeaderItem>()
+                .Where(header => header.Visibility == Visibility.Visible &&
+                    header.TransformToVisual(panel).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y > -10000.0)
+                .Select(header => groups.CollectionGroups.IndexOf(header.Content))
+                .OrderBy(groupIndex => groupIndex)
+                .ToArray();
+            Verify.AreEqual(string.Join(",", expectedGroups), string.Join(",", visibleGroups), "Unexpected visible group headers.");
+        }
+
+        private static void VerifyRealizedGroupedItems(ListView list, int[] expectedItems)
+        {
+            for (int i = 0; i < expectedItems.Length; ++i)
+            {
+                var container = list.ContainerFromIndex(i) as ListViewItem;
+                Verify.IsNotNull(container, "Every item must be realized at " + i);
+                Verify.AreEqual(expectedItems[i], (int)container.Content, "Unexpected container content at " + i);
+            }
+            Verify.IsNull(list.ContainerFromIndex(expectedItems.Length), "No container may exist beyond the last item.");
+
+            var panel = (ItemsStackPanel)list.ItemsPanelRoot;
+            var visibleItems = panel.Children
+                .OfType<ListViewItem>()
+                .Where(container => container.TransformToVisual(panel).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y > -10000.0)
+                .Select(container => (int)container.Content)
+                .OrderBy(item => item)
+                .ToArray();
+            Verify.AreEqual(string.Join(",", expectedItems.OrderBy(item => item)), string.Join(",", visibleItems), "Stale containers must not remain on screen.");
         }
 
         public class ResetCollectionGroup

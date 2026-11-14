@@ -305,6 +305,10 @@ namespace DirectUI
         // If we have a stored focused container, release it back into the recycle queue.
         _Check_return_ HRESULT ReleaseStoredFocusedContainer();
 
+        // Releases the pin that a group header scroll holds on its header. If nothing else keeps the
+        // header (realized, pinned, focused or queued for recycling), it is recycled.
+        _Check_return_ HRESULT ReleaseStoredFocusedHeader();
+
         // Ensure that any pinned containers still have a reason to be pinned. If not, unpin them.
         _Check_return_ HRESULT PrunePinnedContainers();
 
@@ -390,6 +394,11 @@ namespace DirectUI
 
             // Check if the group count in the cache is the same as in the CVS. If different, then reset the cache
             _Check_return_ HRESULT ResetGroupCacheIfGroupCountsMismatch();
+
+            // Does the number of groups the collection view reports now match the cached group information?
+            // A collection view can change its groups without a group notification, which leaves the cache stale.
+            // If the live count cannot be determined, the cache is not considered to be in sync.
+            _Check_return_ HRESULT IsGroupCountInSyncWithCollectionView(_Out_ bool* pIsInSync);
 
             // Trying to limit the amount of api that we expose by collapsing all indices. You can only pass one actual index, the rest should be -1
             _Check_return_ HRESULT RenewCacheAfterMutation(_In_ INT itemIndexAdded, _In_ INT itemIndexRemoved, _In_ INT groupIndexAdded, _In_ INT groupIndexRemoved);
