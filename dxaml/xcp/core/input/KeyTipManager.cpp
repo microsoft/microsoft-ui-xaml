@@ -429,6 +429,10 @@ void KeyTipManager::ShowAutoKeyTipForElement(
     {
         GoToState(obj->GetContext(), State::WaitingToUpdateKeyTips);
     }
+    else if (IsUpdatingKeyTips())
+    {
+        m_keyTipsChangedDuringUpdate = true;
+    }
 }
 
 // Remove all the stale keytips from m_keyTips
@@ -462,16 +466,39 @@ _Check_return_ HRESULT KeyTipManager::Execute()
         return S_OK;
     }
 
-    // Loop through the entries and hide or show whatever popups need to be hidden/shown
+    const bool forced = (m_state == State::ForciblyUpdatingKeyTips) || m_forceNextUpdate;
+    m_forceNextUpdate = false;
+    m_keyTipsChangedDuringUpdate = false;
+
+    // App code that runs during this update can change m_keyTips.  Those changes are processed in another
+    // pass, which runs after a short timer so the message loop runs in between.
+    const auto scheduleAnotherPass = [this, forced](_In_ CCoreServices* core)
+    {
+        KEYTIPTRACE(L"KeyTips changed during update, scheduling another pass");
+        GoToState(core, State::Idle);
+        GoToState(core, State::WaitingToUpdateKeyTips);
+        m_forceNextUpdate = forced;
+    };
+
+    // Closing and releasing a KeyTip popup can synchronously run app code (e.g. when the popup's window is
+    // destroyed) that adds or removes KeyTips, so move them out of m_keyTips before releasing them.
+    std::vector<KeyTip> keyTipsToHide;
     for (auto& it : m_keyTips)
     {
         if (it.State == KeyTip::NeedsHidePopup)
         {
             KEYTIPTRACE(L"Hiding KeyTip %x", it.Object);
-            it.Reset(); // Just null out for now, we'll remove this next
+            keyTipsToHide.push_back(std::move(it)); // Leaves a null entry, we'll remove this next
         }
     }
     RemoveNullKeyTips();
+    keyTipsToHide.clear();
+
+    if (!IsUpdatingKeyTips())
+    {
+        // A reentrant call (e.g. Reset) took over the state machine while the popups were being released.
+        return S_OK;
+    }
 
     if (m_keyTips.empty())
     {
@@ -480,12 +507,21 @@ _Check_return_ HRESULT KeyTipManager::Execute()
         return S_OK;
     }
 
-    CDependencyObject* const root = VisualTree::GetRootOrIslandForElement(m_keyTips[0].Object);
+    if (m_keyTipsChangedDuringUpdate)
+    {
+        // App code changed m_keyTips while the popups were being released, so some entries may belong to elements
+        // that just left the tree.  Start over in another pass, after any entries hidden by that code are removed.
+        scheduleAnotherPass(m_keyTips[0].Object->GetContext());
+        return S_OK;
+    }
+
+    // Held across the app callouts below, which can remove the element that owns this root.
+    const xref_ptr<CDependencyObject> root(VisualTree::GetRootOrIslandForElement(m_keyTips[0].Object));
     CCoreServices* const core = root->GetContext();
 
     // If we're suppressing KeyTips due to animations, we can't show them yet.  Instead
     // we'll wait for animations to finish and kick off a timer to wait for a timeout.
-    if (m_finiteAnimationIsRunning && m_state != State::ForciblyUpdatingKeyTips)
+    if (m_finiteAnimationIsRunning && !forced)
     {
         GoToState(core, State::WaitingForAnimationsToComplete);
         return S_OK;
@@ -496,20 +532,72 @@ _Check_return_ HRESULT KeyTipManager::Execute()
     // Create popups for KeyTips that need them.  This must be done before the autopositioning
     // algorithm runs, since the algorithm depends on the size of the UI elements created for
     // the KeyTip popup.
-    for (auto& keyTip : m_keyTips)
+    // Opening a popup's window can also run app code that changes m_keyTips, so each popup is created on a
+    // local KeyTip and only stored if its entry is still waiting for it.
+    size_t i = 0;
+    // A fixed budget, so app code that changes m_keyTips every time a popup is created can't keep this loop going.
+    size_t restartsLeft = m_keyTips.size();
+    bool popupCreationDeferred = false;
+    while (i < m_keyTips.size() && IsUpdatingKeyTips())
     {
-        if (keyTip.State == KeyTip::NeedsPopup)
+        if (m_keyTips[i].State != KeyTip::NeedsPopup)
         {
-            KEYTIPTRACE(L"Create Popup for KeyTip %x", keyTip.Object);
-            IFC_RETURN(CreatePopup(keyTip, visualProperties, m_keysPressed));
+            ++i;
+            continue;
+        }
+
+        KEYTIPTRACE(L"Create Popup for KeyTip %x", m_keyTips[i].Object);
+        KeyTip newKeyTip(m_keyTips[i].Object.get(), m_keyTips[i].PlacementMode, m_keyTips[i].PlacementModeInitialized);
+        IFC_RETURN(CreatePopup(newKeyTip, visualProperties, m_keysPressed));
+
+        if (IsUpdatingKeyTips() &&
+            i < m_keyTips.size() &&
+            m_keyTips[i].State == KeyTip::NeedsPopup &&
+            m_keyTips[i].Object.get() == newKeyTip.Object.get())
+        {
+            if (newKeyTip.Popup)
+            {
+                m_keyTips[i] = std::move(newKeyTip);
+            }
+            else
+            {
+                m_keyTips[i].PlacementMode = newKeyTip.PlacementMode;
+            }
+            ++i;
+        }
+        else if (restartsLeft > 0)
+        {
+            // App code removed entries, so this index may now point past an entry that still needs a popup.
+            // Start over; entries that already have popups are skipped.
+            --restartsLeft;
+            i = 0;
+        }
+        else
+        {
+            // App code keeps changing m_keyTips.  Its changes already scheduled another pass, so leave the
+            // remaining popups to that pass rather than restarting again.
+            popupCreationDeferred = true;
+            break;
         }
     }
 
+    if (!IsUpdatingKeyTips())
+    {
+        return S_OK;
+    }
+
+    if (popupCreationDeferred)
+    {
+        ASSERT(m_keyTipsChangedDuringUpdate);
+        scheduleAnotherPass(core);
+        return S_OK;
+    }
+
     XRECTF_RB visibleBounds;
-    IFC_RETURN(GetVisibleContentBounds(root, visibleBounds));
+    IFC_RETURN(GetVisibleContentBounds(root.get(), visibleBounds));
 
     std::vector<XRECTF_RB> focusableElementBounds;
-    IFC_RETURN(GetFocusableElementBounds(root, focusableElementBounds, visibleBounds));
+    IFC_RETURN(GetFocusableElementBounds(root.get(), focusableElementBounds, visibleBounds));
 
     // For screenBounds, when we're using windowed popups use infiniteBounds so that the KeyTips can display anywhere.
     // Previously, we constrained the KeyTip bounds to visibleBounds in all cases, which is the bounds of the Window or
@@ -526,37 +614,67 @@ _Check_return_ HRESULT KeyTipManager::Execute()
         m_keyTips,
         screenBounds,
         focusableElementBounds,
-        do_pointer_cast<CXamlIslandRoot>(root),
+        do_pointer_cast<CXamlIslandRoot>(root.get()),
         enableMonitorDetection);
 
+    // Here, we subtract visibleBounds offsets as Popup Horizontal and Vertical Offsets are in app coordinates.
+    // If screenBound offsets are minimal in the top left, we could not get visual bounds. In this situation,
+    // scale by 0
+    const float xOffset = (visibleBounds.left == (-FLT_MAX)) ? 0 : visibleBounds.left;
+    const float yOffset = (visibleBounds.top == (-FLT_MAX)) ? 0 : visibleBounds.top;
+
+    struct PopupPosition
+    {
+        xref_ptr<CPopup> Popup;
+        float X;
+        float Y;
+    };
+
+    // Closing or moving a popup can run app code that changes m_keyTips, so collect the work first and
+    // apply it after m_keyTips is no longer being iterated.
+    std::vector<KeyTip> hiddenKeyTips;
+    std::vector<PopupPosition> popupPositions;
     for (auto& keyTip : m_keyTips)
     {
         if (keyTip.PlacementMode == DirectUI::KeyTipPlacementMode::Hidden)
         {
-           keyTip.Reset();
+            hiddenKeyTips.push_back(std::move(keyTip));
         }
         else if (keyTip.Popup)
         {
-            //Here, we subtract visibleBounds offsets as Popup Horizontal anmd Vertical Offsets are in app coordinates.
-            //If screenBound offsets are minimal in the top left, we could not get visual bounds. In this situation,
-            // scale by 0
-            const float xOffset = (visibleBounds.left == (-FLT_MAX)) ? 0 : visibleBounds.left;
-            const float yOffset = (visibleBounds.top == (-FLT_MAX)) ? 0 : visibleBounds.top;
-
-            const float xPosition = keyTip.KeytipBounds.left - xOffset;
-            const float yPosition = keyTip.KeytipBounds.top - yOffset;
-
-            //Update keytip popup positions
-            IFC_RETURN(keyTip.Popup->SetValueByKnownIndex(KnownPropertyIndex::Popup_HorizontalOffset, xPosition));
-            IFC_RETURN(keyTip.Popup->SetValueByKnownIndex(KnownPropertyIndex::Popup_VerticalOffset, yPosition));
+            popupPositions.push_back({ keyTip.Popup, keyTip.KeytipBounds.left - xOffset, keyTip.KeytipBounds.top - yOffset });
         }
     }
 
-    // Remove all the null elements,
-    // since new ones may have been introduced by
-    // autopositioning
+    // Remove the null entries left by the KeyTips that autopositioning hid
     RemoveNullKeyTips();
-    GoToState(core, State::Idle);
+
+    // Update keytip popup positions
+    for (const auto& position : popupPositions)
+    {
+        if (!IsUpdatingKeyTips())
+        {
+            break;
+        }
+        IFC_RETURN(position.Popup->SetValueByKnownIndex(KnownPropertyIndex::Popup_HorizontalOffset, position.X));
+        IFC_RETURN(position.Popup->SetValueByKnownIndex(KnownPropertyIndex::Popup_VerticalOffset, position.Y));
+    }
+    popupPositions.clear();
+    hiddenKeyTips.clear();
+
+    if (!IsUpdatingKeyTips())
+    {
+        return S_OK;
+    }
+
+    if (m_keyTipsChangedDuringUpdate)
+    {
+        scheduleAnotherPass(core);
+    }
+    else
+    {
+        GoToState(core, State::Idle);
+    }
 
     TraceKeyTipsVisualChangingInfo();
 
@@ -620,6 +738,11 @@ void KeyTipManager::HideAutoKeyTipForElement(_In_ const CDependencyObject* const
     {
         if (it.Object.get() == obj)
         {
+            if (IsUpdatingKeyTips())
+            {
+                m_keyTipsChangedDuringUpdate = true;
+            }
+
             if (it.Popup)
             {
                 it.State = KeyTip::NeedsHidePopup;
@@ -678,17 +801,24 @@ void KeyTipManager::AccessKeyModeChanged()
 // Remove all the keytips from the live tree and forget about them
 void KeyTipManager::Reset()
 {
+    // Closing a popup can run app code that changes m_keyTips, so take ownership of the KeyTips first.
+    // KeyTips shown by that app code are dropped on purpose, since Reset clears all KeyTips.
+    std::vector<KeyTip> keyTips;
+    keyTips.swap(m_keyTips);
+
     // Remove all the active popups and clear out the popup map
-    for (auto& it : m_keyTips)
+    for (auto& it : keyTips)
     {
         if (it.Popup)
         {
             IFCFAILFAST(it.Popup->SetValueByKnownIndex(KnownPropertyIndex::Popup_IsOpen, false));
         }
     }
+    keyTips.clear();
     m_keyTips.clear();
     m_keyTips.shrink_to_fit();
     m_keysPressed = 0;
+    m_keyTipsChangedDuringUpdate = false;
 
     GoToState(nullptr /*core*/, State::Idle);
 }
@@ -721,6 +851,7 @@ void KeyTipManager::GoToState(_In_opt_ CCoreServices* core, State newState)
     {
         case State::Idle:
             KEYTIPTRACE(L"GoToState Idle");
+            m_forceNextUpdate = false;
             break;
 
         case State::WaitingToUpdateKeyTips:

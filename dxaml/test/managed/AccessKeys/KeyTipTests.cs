@@ -939,56 +939,59 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
                 IntPtr hook = IntPtr.Zero;
                 bool accessKeysAdded = false;
                 Exception hookException = null;
-                var accessKeysAddedEvent = new ManualResetEvent(false);
-
-                // Stands in for app or system code that runs while a KeyTip popup window is being destroyed and
-                // adds more elements with access keys. KeyTipManager must handle the new KeyTips at that point.
-                NativeMethods.HookProc hookProc = (code, wParam, lParam) =>
+                using (var accessKeysAddedEvent = new ManualResetEvent(false))
                 {
-                    if (code >= 0 && !accessKeysAdded)
+                    // Stands in for app or system code that runs while a KeyTip popup window is being destroyed and
+                    // adds more elements with access keys. KeyTipManager must handle the new KeyTips at that point.
+                    NativeMethods.HookProc hookProc = (code, wParam, lParam) =>
                     {
-                        var message = Marshal.PtrToStructure<NativeMethods.CWPSTRUCT>(lParam);
-                        if (message.Message == NativeMethods.WM_NCDESTROY &&
-                            GetWindowClassName(message.Hwnd).Contains("Popup"))
+                        if (code >= 0 && !accessKeysAdded)
                         {
-                            accessKeysAdded = true;
-                            try
+                            var message = Marshal.PtrToStructure<NativeMethods.CWPSTRUCT>(lParam);
+                            // Windowed KeyTip popups are hosted in a window whose class name contains "Popup".
+                            if (message.Message == NativeMethods.WM_NCDESTROY &&
+                                GetWindowClassName(message.Hwnd).Contains("Popup"))
                             {
-                                foreach (char c in "GHIJKLMNOPQRSTUV")
+                                accessKeysAdded = true;
+                                try
                                 {
-                                    root.Children.Add(CreateAccessKeyButton("A" + c));
+                                    // Add enough access keys that KeyTipManager's list of KeyTips has to grow.
+                                    foreach (char c in "GHIJKLMNOPQRSTUV")
+                                    {
+                                        root.Children.Add(CreateAccessKeyButton("A" + c));
+                                    }
                                 }
+                                catch (Exception e)
+                                {
+                                    hookException = e;
+                                }
+                                accessKeysAddedEvent.Set();
                             }
-                            catch (Exception e)
-                            {
-                                hookException = e;
-                            }
-                            accessKeysAddedEvent.Set();
                         }
-                    }
-                    return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
-                };
+                        return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
+                    };
 
-                UIExecutor.Execute(() =>
-                {
-                    hook = NativeMethods.SetWindowsHookEx(NativeMethods.WH_CALLWNDPROC, hookProc, IntPtr.Zero, NativeMethods.GetCurrentThreadId());
-                });
-                Verify.AreNotEqual(IntPtr.Zero, hook, "Failed to install the window message hook");
-
-                try
-                {
-                    Log.Comment("Pressing 'A' to replace the KeyTips with filtered KeyTips");
-                    TestServices.KeyboardHelper.PressKeySequence("a");
-                    Verify.IsTrue(accessKeysAddedEvent.WaitOne(TimeSpan.FromSeconds(5)), "Access keys should be added while an old KeyTip popup window is destroyed");
-                    TestServices.WindowHelper.WaitForIdle();
-                }
-                finally
-                {
                     UIExecutor.Execute(() =>
                     {
-                        NativeMethods.UnhookWindowsHookEx(hook);
+                        hook = NativeMethods.SetWindowsHookEx(NativeMethods.WH_CALLWNDPROC, hookProc, IntPtr.Zero, NativeMethods.GetCurrentThreadId());
                     });
-                    GC.KeepAlive(hookProc);
+                    Verify.AreNotEqual(IntPtr.Zero, hook, "Failed to install the window message hook");
+
+                    try
+                    {
+                        Log.Comment("Pressing 'A' to replace the KeyTips with filtered KeyTips");
+                        TestServices.KeyboardHelper.PressKeySequence("a");
+                        Verify.IsTrue(accessKeysAddedEvent.WaitOne(TimeSpan.FromSeconds(5)), "Access keys should be added while an old KeyTip popup window is destroyed");
+                        TestServices.WindowHelper.WaitForIdle();
+                    }
+                    finally
+                    {
+                        UIExecutor.Execute(() =>
+                        {
+                            NativeMethods.UnhookWindowsHookEx(hook);
+                        });
+                        GC.KeepAlive(hookProc);
+                    }
                 }
 
                 if (hookException != null)
@@ -998,7 +1001,9 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
 
                 Log.Comment("The old KeyTips should be hidden, and the filtered KeyTips should be shown");
                 string[] oldKeyTips = { "AA", "AB", "AC", "AD", "AE", "AF" };
-                string[] filteredKeyTips = { "A", "B", "C", "D", "E", "F" };
+                // "G" is the filtered KeyTip of "AG", the first access key added while the old popup window was destroyed.
+                // KeyTips for the later ones may be clipped by the window size, so only "G" is checked.
+                string[] filteredKeyTips = { "A", "B", "C", "D", "E", "F", "G" };
                 string keyTips = string.Empty;
                 bool keyTipsUpdated = WaitUntil(() =>
                 {
