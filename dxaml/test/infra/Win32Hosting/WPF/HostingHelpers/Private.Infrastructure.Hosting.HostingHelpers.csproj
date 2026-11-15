@@ -44,14 +44,14 @@
        which does not flow transitively from the WinUI project. -->
   <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
-      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(WindowsAppSdkTargetFrameworkMoniker_v3)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseCsWinRT3)'=='true'">
     <!-- Native activation also needs the WebView2 runtime forwarder. -->
-    <BinplaceItem Include="$(NuGetPackageRoot)\microsoft.web.webview2\$(WebView2PackageVersion)\lib\net10.0-windows$(WindowsAppSdkTargetPlatformVersion_v3)\Microsoft.Web.WebView2.Core.Projection.dll">
+    <BinplaceItem Include="$(NuGetPackageRoot)\microsoft.web.webview2\$(WebView2PackageVersion)\lib\$(WindowsAppSdkTargetFrameworkMoniker_v3)\Microsoft.Web.WebView2.Core.Projection.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
     <!-- Deploy Foundation's runtime projections from lib, not its compile-time references from ref. -->

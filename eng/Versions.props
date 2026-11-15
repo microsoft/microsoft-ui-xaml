@@ -99,8 +99,9 @@
     <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
     <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
     <!-- The .1 Windows TFM revision selects the CsWinRT 3.0 projection. -->
-    <WindowsAppSdkTargetPlatformVersion_v3>10.0.26100.1</WindowsAppSdkTargetPlatformVersion_v3>
+    <WindowsAppSdkTargetPlatformVersion_v3>10.0.17763.1</WindowsAppSdkTargetPlatformVersion_v3>
     <WindowsAppSdkTargetFrameworkMoniker_v3>net11.0-windows$(WindowsAppSdkTargetPlatformVersion_v3)</WindowsAppSdkTargetFrameworkMoniker_v3>
+    <CsWinRT3TestTargetFramework>net11.0-windows$([System.Version]::Parse('$(WindowsTargetPlatformVersion)').ToString(3)).1</CsWinRT3TestTargetFramework>
     <_IsCsWinRTv3>$(TargetFramework.StartsWith('net11.0'))</_IsCsWinRTv3>
     <!-- Deliberately decoupled from the moniker above: .NET 6 is out of support, and samples need a
          newer runtime to use recent C# features (eg. 'required' members and 'init'-only setters). -->
@@ -108,9 +109,10 @@
     <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
     <MicrosoftCsWinRTv3PackageVersion>3.0.0-preview.261104.1</MicrosoftCsWinRTv3PackageVersion>
     <TaefCsWinRT3NugetPackageVersion>11.0.261015001-cswinrt3Attributes</TaefCsWinRT3NugetPackageVersion>
-    <WindowsAppSdkWindowsSdkPackageVersion_v3>10.0.26100.88-preview</WindowsAppSdkWindowsSdkPackageVersion_v3>
+    <WindowsAppSdkWindowsSdkPackageVersionSuffix_v3>88-preview</WindowsAppSdkWindowsSdkPackageVersionSuffix_v3>
+    <WindowsAppSdkWindowsSdkPackageVersion_v3>10.0.17763.$(WindowsAppSdkWindowsSdkPackageVersionSuffix_v3)</WindowsAppSdkWindowsSdkPackageVersion_v3>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>38</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
-    <WebView2PackageVersion>1.0.3719.77-experimental-cswinrt3</WebView2PackageVersion>
+    <WebView2PackageVersion>1.0.3719.77-experimental-cswinrt3-3</WebView2PackageVersion>
     <dotNetSdkChannel>11.0.1xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>11.0.1xx</dotNetSdkVNextChannel>
     <!--
@@ -143,7 +145,7 @@
     <TaefNugetPackageVersion Condition="'$(UseCsWinRT3)' == 'true' or $(_IsCsWinRTv3)">$(TaefCsWinRT3NugetPackageVersion)</TaefNugetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseCsWinRT3)' == 'true'">
-    <DotNetCoreTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker_v3)</DotNetCoreTargetFrameworkMoniker>
+    <DotNetCoreTargetFrameworkMoniker>$(CsWinRT3TestTargetFramework)</DotNetCoreTargetFrameworkMoniker>
     <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker_v3)</SamplesTargetFrameworkMoniker>
     <Win2DWinUIVersion>1.4.0-experimental-cswinrt3</Win2DWinUIVersion>
     <GraphicsWin2DVersion>1.4.0-experimental-cswinrt3</GraphicsWin2DVersion>

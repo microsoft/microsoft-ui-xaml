@@ -1,8 +1,7 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(WindowsAppSdkTargetFrameworkMoniker_v3)</TargetFramework>
-    <WindowsSdkPackageVersion>$(WindowsAppSdkWindowsSdkPackageVersion_v3)</WindowsSdkPackageVersion>
+    <TargetFramework>$(CsWinRT3TestTargetFramework)</TargetFramework>
     <Platforms>x86;x64;ARM64;ARM64EC</Platforms>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
@@ -40,7 +39,7 @@
     <ProjectReference Include="$(ProjectRoot)dxaml\test\infra\Win32Hosting\WPF\HostingHelpers\Private.Infrastructure.Hosting.HostingHelpers.csproj" />
     <ProjectReference Include="$(ProjectRoot)src\projection\private\Microsoft.WinUI.csproj" SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection">
-      <HintPath>$(LiftedMRTPackagePath)\ref\$(TargetFramework)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTPackagePath)\ref\$(WindowsAppSdkTargetFrameworkMoniker_v3)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <CsWinRTInputs>$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd</CsWinRTInputs>
     </Reference>
   </ItemGroup>

@@ -3,7 +3,7 @@
   <PropertyGroup Condition="$(TargetFramework.StartsWith('net11.0'))">
     <DefineConstants>$(DefineConstants);CSWINRT3_0</DefineConstants>
     <UsingCSWinRT3>true</UsingCSWinRT3>
-    <WindowsSdkPackageVersion>$(WindowsAppSdkWindowsSdkPackageVersion_v3)</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>$([System.Version]::Parse('$(TargetPlatformVersion)').ToString(3)).$(WindowsAppSdkWindowsSdkPackageVersionSuffix_v3)</WindowsSdkPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride></MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <XeWin10TargetVersion>$(TargetPlatformVersion)</XeWin10TargetVersion>
   </PropertyGroup>
