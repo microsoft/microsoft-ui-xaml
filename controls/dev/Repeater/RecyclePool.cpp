@@ -104,13 +104,13 @@ winrt::UIElement RecyclePool::TryGetElementCore(
                 if (panel)
                 {
                     unsigned int childIndex = 0;
-                    bool found = panel.Children().IndexOf(elementInfo.Element(), childIndex);
-                    if (!found)
+                    // The owner may have already removed the element from its children (for example, an
+                    // ItemsRepeater with a NonVirtualizingLayout clears its children after recycling them
+                    // when its ItemsSource changes). There is nothing to detach in that case.
+                    if (panel.Children().IndexOf(elementInfo.Element(), childIndex))
                     {
-                        throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+                        panel.Children().RemoveAt(childIndex);
                     }
-
-                    panel.Children().RemoveAt(childIndex);
                 }
             }
 

@@ -136,11 +136,6 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
     }
 }
 
-void ViewManager::RecycleWithoutOwner(bool recycleWithoutOwner)
-{
-    m_recycleWithoutOwner = recycleWithoutOwner;
-}
-
 // We need to clear the datacontext to prevent crashes from happening,
 //  however we only do that if we were the ones setting it.
 // That is when one of the following is the case (numbering taken from line ~642):
@@ -176,16 +171,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 
         auto context = m_ElementFactoryRecycleArgs.get();
         context.Element(element);
-        // If we are recycling without owner, avoid setting Parent as the parent would be used
-        // to set as owner during RecycleElement call.
-        if (m_recycleWithoutOwner)
-        {
-            context.Parent(nullptr);
-        }
-        else
-        {
-            context.Parent(*m_owner);
-        }
+        context.Parent(*m_owner);
 
         m_owner->ItemTemplateShim().RecycleElement(context);
 

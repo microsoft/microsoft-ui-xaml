@@ -951,6 +951,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons whose ItemTemplate is a custom element factory that creates RadioButtons; its ItemsSource
+        //           is replaced with a new list.
+        // Expected: every old container is returned to the custom factory once, with the inner ItemsRepeater as
+        //           args.Parent, and the new items get new containers.
+        // A failure means: custom element factories used by RadioButtons get a null Parent when ItemsSource changes
+        //           (task.ms/62261645).
+        [TestMethod]
+        [TestProperty("Description", "Verifies a custom RadioButtons item factory gets the inner ItemsRepeater as Parent when ItemsSource is replaced.")]
+        public void VerifyCustomElementFactoryGetsParentWhenItemsSourceIsReplaced()
+        {
+            RadioButtons radioButtons = null;
+            ItemsRepeater repeater = null;
+            RecordingRadioButtonFactory factory = null;
+            List<UIElement> oldContainers = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                factory = new RecordingRadioButtonFactory();
+                radioButtons = new RadioButtons() { ItemsSource = new List<string>() { "a", "b", "c" }, ItemTemplate = factory };
+                Content = radioButtons;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                Verify.IsNotNull(repeater);
+                Verify.AreEqual(3, factory.Created.Count);
+                oldContainers = Enumerable.Range(0, 3).Select(i => radioButtons.ContainerFromIndex(i)).ToList();
+                radioButtons.SelectedIndex = 1;
+
+                radioButtons.ItemsSource = new List<string>() { "d", "e" };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, factory.Recycled.Count, "Every old container should be returned to the custom factory.");
+                for (int i = 0; i < oldContainers.Count; i++)
+                {
+                    Verify.AreEqual(1, factory.Recycled.Count(recycled => ReferenceEquals(recycled.Element, oldContainers[i])),
+                        "Container " + i + " should be recycled once.");
+                }
+
+                foreach (var recycled in factory.Recycled)
+                {
+                    Verify.IsTrue(ReferenceEquals(repeater, recycled.Parent), "RecycleElement should get the inner ItemsRepeater as Parent.");
+                }
+
+                Verify.AreEqual(5, factory.Created.Count);
+                Verify.AreEqual("d", ((RadioButton)radioButtons.ContainerFromIndex(0)).Tag);
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+            });
+        }
+
         private static void VerifyDependencyPropertyIdentifiers(params DependencyProperty[] properties)
         {
             for (int i = 0; i < properties.Length; i++)
