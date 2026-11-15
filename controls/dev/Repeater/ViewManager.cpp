@@ -532,6 +532,72 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         break;
     }
 
+    case winrt::NotifyCollectionChangedAction::Move:
+    {
+        // The moved items still exist, so realized elements are re-indexed rather than cleared.
+        // The layout updates its own bookkeeping afterwards (for example ElementManager handles Move as Remove + Add).
+        const int oldStartIndex = args.OldStartingIndex();
+        const int newStartIndex = args.NewStartingIndex();
+        // Same fallback as ElementManager::DataSourceChanged when the source does not provide the moved items.
+        const int count = args.OldItems() ? static_cast<int>(args.OldItems().Size()) : 1;
+
+        if (oldStartIndex != newStartIndex && count > 0)
+        {
+            struct IndexChange
+            {
+                winrt::UIElement element;
+                int oldIndex;
+                int newIndex;
+            };
+            std::vector<IndexChange> indexChanges;
+
+            // Update every index before raising ElementIndexChanged, so that handlers see a consistent
+            // index mapping and elements they realize are not re-indexed. Pinned elements are children
+            // too, so each realized element is visited exactly once.
+            const auto children = m_owner->Children();
+            const auto childCount = children.Size();
+            for (unsigned i = 0u; i < childCount; ++i)
+            {
+                const auto element = children.GetAt(i);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                if (virtInfo->IsRealized())
+                {
+                    const int oldIndex = virtInfo->Index();
+                    int newIndex = oldIndex;
+                    if (oldIndex >= oldStartIndex && oldIndex < oldStartIndex + count)
+                    {
+                        // One of the moved items.
+                        newIndex = newStartIndex + (oldIndex - oldStartIndex);
+                    }
+                    else if (oldStartIndex < newStartIndex && oldIndex >= oldStartIndex + count && oldIndex < newStartIndex + count)
+                    {
+                        // Items between the old and new positions shift back.
+                        newIndex = oldIndex - count;
+                    }
+                    else if (oldStartIndex > newStartIndex && oldIndex >= newStartIndex && oldIndex < oldStartIndex)
+                    {
+                        // Items between the new and old positions shift forward.
+                        newIndex = oldIndex + count;
+                    }
+
+                    if (newIndex != oldIndex)
+                    {
+                        virtInfo->UpdateIndex(newIndex);
+                        indexChanges.push_back({ element, oldIndex, newIndex });
+                    }
+                }
+            }
+
+            InvalidateRealizedIndicesHeldByLayout();
+
+            for (const auto& indexChange : indexChanges)
+            {
+                m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
+            }
+        }
+        break;
+    }
+
     case winrt::NotifyCollectionChangedAction::Reset:
         // If we get multiple resets back to back before
         // running layout, we dont have to clear all the elements again.         

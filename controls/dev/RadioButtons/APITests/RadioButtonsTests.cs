@@ -531,6 +531,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons over ObservableCollection {A, B, C, D, E} with B selected; Move the selected item (1 -> 3),
+        //     then Move unselected items across it (0 -> 4, then 4 -> 0). An app SelectionChanged handler reads
+        //     ContainerFromIndex(SelectedIndex) (GitHub issue #11570).
+        // Expected: after each Move SelectedIndex is B's new index, SelectedItem stays B, only B's RadioButton is checked
+        //     and it is ContainerFromIndex(SelectedIndex); one SelectionChanged per Move, and inside it
+        //     ContainerFromIndex(SelectedIndex) is already B's RadioButton.
+        // Failure means: ItemsRepeater does not report index changes for a Move (RadioButtons::OnRepeaterElementIndexChanged
+        //     is not called), or reports them before all indices are updated.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that RadioButtons selection follows the selected item when an ObservableCollection.Move changes its index.")]
+        public void VerifySelectionFollowsMovedItem()
+        {
+            RadioButtons radioButtons = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
+            int selectionChangedCount = 0;
+            var containersInSelectionChanged = new List<object>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                radioButtons.SelectedIndex = 1;
+                Content = radioButtons;
+                Content.UpdateLayout();
+                radioButtons.SelectionChanged += (s, e) =>
+                {
+                    selectionChangedCount++;
+                    var container = radioButtons.ContainerFromIndex(radioButtons.SelectedIndex) as RadioButton;
+                    Log.Comment($"SelectionChanged: SelectedIndex={radioButtons.SelectedIndex}, container '{container?.Content}'");
+                    containersInSelectionChanged.Add(container?.Content);
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            void MoveAndVerify(int oldIndex, int newIndex, int expectedSelectedIndex)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"Move({oldIndex}, {newIndex})");
+                    selectionChangedCount = 0;
+                    containersInSelectionChanged.Clear();
+                    items.Move(oldIndex, newIndex);
+                    Content.UpdateLayout();
+
+                    Verify.AreEqual(expectedSelectedIndex, radioButtons.SelectedIndex);
+                    Verify.AreEqual("B", radioButtons.SelectedItem);
+                    Verify.AreEqual(1, selectionChangedCount, "One SelectionChanged per Move that changes the selected index.");
+                    Verify.AreEqual("B", containersInSelectionChanged.FirstOrDefault(), "Inside SelectionChanged, ContainerFromIndex(SelectedIndex) is B's RadioButton.");
+
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                        Verify.IsNotNull(container, $"ContainerFromIndex({i})");
+                        Log.Comment($"Index {i}: '{container.Content}' IsChecked={container.IsChecked}");
+                        Verify.AreEqual(items[i], container.Content, $"ContainerFromIndex({i}) shows item {i}.");
+                        Verify.AreEqual(i == expectedSelectedIndex, container.IsChecked == true, $"Only the selected item is checked (index {i}).");
+                    }
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            MoveAndVerify(1, 3, expectedSelectedIndex: 3); // Move the selected item: {A, C, D, B, E}
+            MoveAndVerify(0, 4, expectedSelectedIndex: 2); // Move an item from before to after it: {C, D, B, E, A}
+            MoveAndVerify(4, 0, expectedSelectedIndex: 3); // And back: {A, C, D, B, E}
+        }
+
         // Scenario: a loaded RadioButtons with a string header, then a header template and an element header; its automation
         //           peer with and without AutomationProperties.Name; MaxColumns; removing a SelectionChanged handler; and the
         //           dependency property identifiers of RadioButtons and ColumnMajorUniformToLargestGridLayout.

@@ -1355,7 +1355,609 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     newStartingIndex: index,
                     newItemsCount: newCount));
             }
+
+            // Moves one item and raises a Move notification whose OldItems and NewItems are null,
+            // as a custom INotifyCollectionChanged implementation is allowed to do.
+            public void MoveWithoutItems(int oldIndex, int newIndex)
+            {
+                var item = Inner[oldIndex];
+                Inner.RemoveAt(oldIndex);
+                Inner.Insert(newIndex, item);
+                OnItemsSourceChanged(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                    global::System.Collections.Specialized.NotifyCollectionChangedAction.Move,
+                    (global::System.Collections.IList)null,
+                    newIndex,
+                    oldIndex));
+            }
         }
+
+        #region Move (GitHub issue #11570)
+
+        private const string MoveItemTemplate = @"<Button Content='{Binding}' Height='30'/>";
+
+        // Scenario: a fully realized StackLayout repeater (no ScrollViewer) over an ObservableCollection; Move one item
+        //           forward, backward, to an adjacent index, and between the first and last positions (GitHub issue #11570).
+        // Expected: right after the Move every realized element reports the post-move index of the item it shows, and after
+        //           layout TryGetElement(i) returns the element showing item i for every i (no null, no duplicate index).
+        // A failure means: TryGetElement/GetElementIndex return null or the wrong element after ObservableCollection.Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that TryGetElement and GetElementIndex follow the data after ObservableCollection.Move in a StackLayout repeater, both right after the Move and after layout.")]
+        public void VerifyRealizedIndicesAfterMove()
+        {
+            var cases = new[]
+            {
+                new { Count = 2, OldIndex = 0, NewIndex = 1 }, // The reported scenario.
+                new { Count = 2, OldIndex = 1, NewIndex = 0 },
+                new { Count = 5, OldIndex = 0, NewIndex = 3 }, // Forward: the items in between shift down.
+                new { Count = 5, OldIndex = 4, NewIndex = 1 }, // Backward: the items in between shift up.
+                new { Count = 5, OldIndex = 2, NewIndex = 3 }, // Adjacent.
+                new { Count = 5, OldIndex = 3, NewIndex = 2 }, // Adjacent, backward.
+                new { Count = 5, OldIndex = 0, NewIndex = 4 }, // First to last.
+                new { Count = 5, OldIndex = 4, NewIndex = 0 }, // Last to first.
+                new { Count = 10, OldIndex = 2, NewIndex = 7 },
+            };
+
+            foreach (var c in cases)
+            {
+                Log.Comment($"Count={c.Count}: Move({c.OldIndex}, {c.NewIndex})");
+                var data = new ObservableCollection<string>(Enumerable.Range(0, c.Count).Select(i => "Item #" + i));
+                var repeater = CreateLoadedRepeater(data);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "Before Move");
+
+                    data.Move(c.OldIndex, c.NewIndex);
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Right after Move");
+
+                    repeater.UpdateLayout();
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+                });
+            }
+        }
+
+        // Scenario: a virtualizing repeater (50 items of 30px in a 200px ScrollViewer); Move a realized item out of the
+        //           realized range and an unrealized item into it; then scroll down and Move an item from before the viewport
+        //           to after it, which shifts every realized element.
+        // Expected: after each Move and layout every realized element reports the post-move index of the item it shows,
+        //           and the element that was first in view keeps showing its item at its post-move index and stays first
+        //           in view (scroll anchoring adjusts the offset).
+        // A failure means: index lookups or scroll anchoring use stale indices after a Move in a virtualized list.
+        [TestMethod]
+        [TestProperty("Description", "Verifies realized indices after moving items into, out of and across the realized range of a virtualizing repeater.")]
+        public void VerifyRealizedIndicesAfterMoveInScrolledRepeater()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 50).Select(i => "Item #" + i));
+            ScrollViewer scrollViewer = null;
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            var repeater = SetupRepeater(data, layout, MoveItemTemplate, out scrollViewer);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Initial");
+                Verify.IsNotNull(repeater.TryGetElement(1));
+                Verify.IsNull(repeater.TryGetElement(30));
+
+                Log.Comment("Move(1, 30): realized to unrealized.");
+                data.Move(1, 30);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Right after Move(1, 30)");
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After layout, Move(1, 30)");
+                Verify.AreEqual("Item #2", GetElementContent(repeater.TryGetElement(1)));
+
+                Log.Comment("Move(30, 1): unrealized to realized.");
+                data.Move(30, 1);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Right after Move(30, 1)");
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After layout, Move(30, 1)");
+                Verify.AreEqual("Item #1", GetElementContent(repeater.TryGetElement(1)));
+            });
+
+            ScrollTo(scrollViewer, 300);
+
+            UIElement firstInView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                firstInView = repeater.TryGetElement(10);
+                Verify.IsNotNull(firstInView);
+                Verify.AreEqual("Item #10", GetElementContent(firstInView));
+                Log.Comment($"VerticalOffset before Move(1, 30): {scrollViewer.VerticalOffset}");
+
+                Log.Comment("Move(1, 30): the index of every realized element decreases by one.");
+                data.Move(1, 30);
+                Verify.AreEqual(9, repeater.GetElementIndex(firstInView), "Right after Move: the first element in view reports its post-move index.");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Right after Move(1, 30), scrolled");
+                repeater.UpdateLayout();
+                Log.Comment($"VerticalOffset after Move(1, 30) and layout: {scrollViewer.VerticalOffset}");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After layout, Move(1, 30), scrolled");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"VerticalOffset after idle: {scrollViewer.VerticalOffset}, first element in view at {firstInView.ActualOffset.Y}");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After idle, scrolled");
+                Verify.IsGreaterThan(CountRealizedChildren(repeater), 0);
+                Verify.AreSame(firstInView, repeater.TryGetElement(9), "The element that was first in view is realized at its post-move index.");
+                Verify.AreEqual("Item #10", GetElementContent(firstInView));
+                Verify.IsLessThan(Math.Abs(firstInView.ActualOffset.Y - scrollViewer.VerticalOffset), 1.0, "Scroll anchoring keeps the same element first in view (no viewport jump).");
+            });
+        }
+
+        // Scenario: a fully realized repeater; two Moves in the same tick that cancel out; Move, layout, Move, layout; and
+        //           a Move followed by an Insert and a RemoveAt in the same tick.
+        // Expected: the realized elements match the data after every operation and after every layout pass.
+        // A failure means: a later collection change shifts indices from a stale post-Move state.
+        [TestMethod]
+        [TestProperty("Description", "Verifies realized indices for operation sequences that include Move: Move+Move in one tick, Move/layout/Move/layout, and Move followed by Insert and RemoveAt.")]
+        public void VerifyRealizedIndicesAfterMoveSequences()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => "Item #" + i));
+            var repeater = CreateLoadedRepeater(data);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Move(0, 2) then Move(2, 0) in the same tick.");
+                data.Move(0, 2);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After Move(0, 2)");
+                data.Move(2, 0);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After Move(2, 0)");
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Move(0, 1), layout, Move(1, 2), layout.");
+                data.Move(0, 1);
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After Move(0, 1) and layout");
+                data.Move(1, 2);
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After Move(1, 2) and layout");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Move(2, 0), Insert(1), RemoveAt(3) in the same tick.");
+                data.Move(2, 0);
+                data.Insert(1, "Inserted");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After Move and Insert");
+                data.RemoveAt(3);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After Move, Insert and RemoveAt");
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+            });
+        }
+
+        // Scenario: Move(0, 3) in a fully realized 5-item repeater with an ElementIndexChanged handler that calls
+        //           TryGetElement, GetElementIndex and GetOrCreateElement.
+        // Expected: ElementIndexChanged is raised once for each realized element whose index changed (0->3, 1->0, 2->1,
+        //           3->2), and inside every handler the repeater already reports the complete post-move mapping:
+        //           TryGetElement(NewIndex) and GetOrCreateElement(NewIndex) return args.Element and no child is added.
+        // A failure means: handlers see a half-updated mapping (for example two elements with the same index) or the
+        //                  repeater does not tell listeners that indices changed.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ElementIndexChanged is raised for every element whose index a Move changes, after all indices are updated, so handlers can call TryGetElement/GetOrCreateElement safely.")]
+        public void VerifyElementIndexChangedOnMove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var repeater = CreateLoadedRepeater(data);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var elements = Enumerable.Range(0, 5).Select(i => repeater.TryGetElement(i)).ToList();
+                int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+                var changes = new List<Tuple<UIElement, int, int>>();
+
+                TypedEventHandler<ItemsRepeater, ItemsRepeaterElementIndexChangedEventArgs> handler = (sender, args) =>
+                {
+                    Log.Comment($"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}'");
+                    changes.Add(Tuple.Create(args.Element, args.OldIndex, args.NewIndex));
+                    Verify.AreEqual(args.NewIndex, repeater.GetElementIndex(args.Element), "GetElementIndex(args.Element) inside the handler.");
+                    Verify.AreSame(args.Element, repeater.TryGetElement(args.NewIndex), "TryGetElement(args.NewIndex) inside the handler.");
+                    Verify.AreEqual(data[args.NewIndex], GetElementContent(args.Element));
+                    Verify.AreSame(args.Element, repeater.GetOrCreateElement(args.NewIndex), "GetOrCreateElement(args.NewIndex) inside the handler.");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var element = repeater.TryGetElement(i);
+                        if (element != null)
+                        {
+                            Verify.AreEqual(i, repeater.GetElementIndex(element), $"Inside the handler: TryGetElement({i}) reports index {i}.");
+                        }
+                    }
+                };
+
+                repeater.ElementIndexChanged += handler;
+                data.Move(0, 3);
+                repeater.ElementIndexChanged -= handler;
+
+                Verify.AreEqual(childCount, VisualTreeHelper.GetChildrenCount(repeater), "The handlers did not add children.");
+                var expected = new[]
+                {
+                    Tuple.Create(elements[0], 0, 3),
+                    Tuple.Create(elements[1], 1, 0),
+                    Tuple.Create(elements[2], 2, 1),
+                    Tuple.Create(elements[3], 3, 2),
+                };
+                Verify.AreEqual(expected.Length, changes.Count, "One ElementIndexChanged per realized element whose index changed.");
+                foreach (var e in expected)
+                {
+                    Verify.IsTrue(changes.Any(c => c.Item1 == e.Item1 && c.Item2 == e.Item2 && c.Item3 == e.Item3),
+                        $"ElementIndexChanged {e.Item2} -> {e.Item3} for '{GetElementContent(e.Item1)}'.");
+                }
+
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+            });
+        }
+
+        // Scenario: an app CollectionChanged handler, subscribed after the repeater, reads TryGetElement for every index
+        //           when Move(0, 3) is raised.
+        // Expected: every element it gets shows the item at that index; the elements of the items that shifted are found.
+        // A failure means: apps that react to CollectionChanged get the wrong elements after a Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a CollectionChanged handler running after the repeater sees post-move elements from TryGetElement.")]
+        public void VerifyTryGetElementFromCollectionChangedHandlerAfterMove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var repeater = CreateLoadedRepeater(data);
+
+            RunOnUIThread.Execute(() =>
+            {
+                bool handlerRan = false;
+                data.CollectionChanged += (sender, args) =>
+                {
+                    handlerRan = true;
+                    Verify.AreEqual(global::System.Collections.Specialized.NotifyCollectionChangedAction.Move, args.Action);
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Inside CollectionChanged");
+                    for (int i = 0; i <= 2; i++)
+                    {
+                        Verify.IsNotNull(repeater.TryGetElement(i), $"The element of shifted item '{data[i]}' is found at index {i}.");
+                    }
+                };
+
+                data.Move(0, 3);
+                Verify.IsTrue(handlerRan);
+            });
+        }
+
+        // Scenario: the focused (and therefore pinned) element is the item that moves: Move(0, 3) in a 5-item repeater,
+        //           then layout (Move variant of GitHub issue #12659).
+        // Expected: the same element instance is reused at index 3, still shows its item and keeps focus; no element is
+        //           left behind at index 0 with the moved item.
+        // A failure means: a focused item that is moved leaves a stale pinned element at its old index.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element that is moved keeps focus and is reused at its new index.")]
+        public void VerifyFocusedElementIsReusedAtNewIndexAfterMove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var repeater = CreateLoadedRepeater(data);
+            FocusItem(repeater, 0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = repeater.TryGetElement(0);
+                Verify.AreSame(focused, FocusManager.GetFocusedElement(repeater.XamlRoot));
+
+                data.Move(0, 3);
+                Verify.AreEqual(3, repeater.GetElementIndex(focused), "Right after Move the focused element reports its new index.");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Right after Move");
+
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+                Verify.AreSame(focused, repeater.TryGetElement(3), "The focused element is reused at its new index.");
+                Verify.AreEqual("Item #0", GetElementContent(focused));
+                Verify.AreSame(focused, FocusManager.GetFocusedElement(repeater.XamlRoot), "Focus stays on the moved element.");
+            });
+        }
+
+        // Scenario: the focused (pinned) element is between the old and new positions of a moved item: focus 'Item #2',
+        //           Move(0, 4), layout, then ask for the next (Tab) focus candidate inside the repeater.
+        // Expected: the focused element is re-indexed once (2 -> 1), keeps focus, and the next focus candidate is the
+        //           element at index 2 ('Item #3').
+        // A failure means: a pinned element is re-indexed twice or not at all, or focus navigation uses stale indices.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element in the range shifted by a Move is re-indexed once, keeps focus, and that focus navigation follows the post-move order.")]
+        public void VerifyFocusedElementInShiftedRangeAfterMove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var repeater = CreateLoadedRepeater(data);
+            RunOnUIThread.Execute(() => repeater.TabFocusNavigation = KeyboardNavigationMode.Local);
+            FocusItem(repeater, 2);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = repeater.TryGetElement(2);
+                var changes = new List<Tuple<int, int>>();
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    if (args.Element == focused)
+                    {
+                        changes.Add(Tuple.Create(args.OldIndex, args.NewIndex));
+                    }
+                };
+
+                data.Move(0, 4);
+                repeater.UpdateLayout();
+
+                Verify.AreEqual(1, changes.Count, "The focused element is re-indexed exactly once.");
+                Verify.AreEqual(2, changes[0].Item1);
+                Verify.AreEqual(1, changes[0].Item2);
+                Verify.AreEqual(1, repeater.GetElementIndex(focused));
+                Verify.AreSame(focused, repeater.TryGetElement(1));
+                Verify.AreSame(focused, FocusManager.GetFocusedElement(repeater.XamlRoot), "Focus stays on the element.");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as UIElement;
+                Log.Comment($"Focused after idle: '{GetElementContent(focused)}'");
+                Verify.AreSame(repeater.TryGetElement(1), focused, "Focus is still on the element at index 1 after idle.");
+
+                var next = FocusManager.FindNextElement(FocusNavigationDirection.Next, new FindNextElementOptions() { SearchRoot = repeater.XamlRoot.Content }) as UIElement;
+                Log.Comment($"Next focus candidate: '{GetElementContent(next)}'");
+                Verify.AreSame(repeater.TryGetElement(2), next, "The next focus candidate is the element at the next index.");
+                Verify.AreEqual("Item #3", GetElementContent(next));
+            });
+        }
+
+        // Scenario: the items are UIElements (Buttons, no ItemTemplate); Move(0, 2) in a fully realized 4-item repeater.
+        // Expected: for every index, TryGetElement(i) is data[i] itself and GetElementIndex(data[i]) is i.
+        // A failure means: repeaters that host UIElement items report stale indices after a Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies TryGetElement/GetElementIndex after a Move when the items are UIElements.")]
+        public void VerifyUIElementItemsAfterMove()
+        {
+            ObservableCollection<UIElement> data = null;
+            ItemsRepeater repeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                data = new ObservableCollection<UIElement>(Enumerable.Range(0, 4).Select(i => new Button() { Content = "Item #" + i, Height = 30 }));
+                repeater = new ItemsRepeater() { ItemsSource = data, VerticalAlignment = VerticalAlignment.Top };
+                Content = repeater;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                data.Move(0, 2);
+                repeater.UpdateLayout();
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Log.Comment($"Index {i}: data '{GetElementContent(data[i])}', TryGetElement '{GetElementContent(repeater.TryGetElement(i))}', GetElementIndex(data[i]) {repeater.GetElementIndex(data[i])}");
+                }
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreSame(data[i], repeater.TryGetElement(i), $"TryGetElement({i}) is the item at index {i}.");
+                    Verify.AreEqual(i, repeater.GetElementIndex(data[i]));
+                }
+            });
+        }
+
+        // Scenario: a keyed data source (IKeyIndexMapping) raises a Reset (stable reset pending, elements in the unique id
+        //           reset pool) and then a Move before the next layout pass.
+        // Expected: after layout every realized element shows the item at its index.
+        // A failure means: the Move remap disturbs elements waiting in the unique id reset pool.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Move raised while a stable (keyed) Reset is pending leaves the repeater consistent after layout.")]
+        public void VerifyMoveDuringPendingStableReset()
+        {
+            CustomItemsSourceWithUniqueId dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSourceWithUniqueId(Enumerable.Range(0, 10).ToList()));
+            var repeater = CreateLoadedRepeater(dataSource);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: true, context: "Initial");
+                dataSource.Reset();
+                dataSource.Move(oldIndex: 0, newIndex: 4, count: 1, reset: false);
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: true, context: "After Reset, Move and layout");
+            });
+        }
+
+        // Scenario: a NonVirtualizingLayout (no ElementManager) shows 5 items; Move(0, 3), then layout.
+        // Expected: the layout gets the element of item i for index i, so the visual order and the index lookups both
+        //           follow the data.
+        // A failure means: non-virtualizing layouts show pre-move content at the old positions after a Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NonVirtualizingLayout shows and reports post-move items after a Move.")]
+        public void VerifyNonVirtualizingLayoutAfterMove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var repeater = CreateLoadedRepeater(data, () => new NonVirtualStackLayout());
+
+            RunOnUIThread.Execute(() =>
+            {
+                data.Move(0, 3);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "Right after Move");
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, data);
+            });
+        }
+
+        // Scenario: a custom VirtualizingLayout that does not override OnItemsChangedCore (so nothing but ItemsRepeater
+        //           tracks indices) realizes every index with GetOrCreateElementAt; Move(4, 1), then layout.
+        // Expected: GetOrCreateElementAt(i) returns the element of item i, and the index lookups follow the data.
+        // A failure means: custom virtualizing layouts get pre-move elements for an index after a Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a custom VirtualizingLayout on the default OnItemsChangedCore gets post-move elements after a Move.")]
+        public void VerifyCustomVirtualizingLayoutAfterMove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var elementsFromLayout = new List<UIElement>();
+            Func<Layout> createLayout = () => new MockVirtualizingLayout()
+            {
+                MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    elementsFromLayout.Clear();
+                    double height = 0;
+                    for (int i = 0; i < context.ItemCount; i++)
+                    {
+                        var element = context.GetOrCreateElementAt(i);
+                        element.Measure(availableSize);
+                        elementsFromLayout.Add(element);
+                        height += element.DesiredSize.Height;
+                    }
+                    return new Size(100, height);
+                },
+                ArrangeLayoutFunc = (finalSize, context) =>
+                {
+                    double offset = 0;
+                    foreach (var element in elementsFromLayout)
+                    {
+                        element.Arrange(new Rect(0, offset, element.DesiredSize.Width, element.DesiredSize.Height));
+                        offset += element.DesiredSize.Height;
+                    }
+                    return finalSize;
+                }
+            };
+            var repeater = CreateLoadedRepeater(data, createLayout);
+
+            RunOnUIThread.Execute(() =>
+            {
+                data.Move(4, 1);
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "Right after Move");
+                repeater.UpdateLayout();
+                Verify.AreEqual(data.Count, elementsFromLayout.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreEqual(data[i], GetElementContent(elementsFromLayout[i]), $"GetOrCreateElementAt({i}) returns the element of item {i}.");
+                }
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, data);
+            });
+        }
+
+        // Scenario: a custom INotifyCollectionChanged source raises Move with null OldItems/NewItems.
+        // Expected: the repeater treats it as a move of one item (like the layouts do), so it stays consistent.
+        // A failure means: a Move without item lists crashes or corrupts the index mapping.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Move notification without OldItems is handled as a single-item move.")]
+        public void VerifyMoveWithoutOldItems()
+        {
+            RawNotificationItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new RawNotificationItemsSource(Enumerable.Range(0, 5).ToList()));
+            var repeater = CreateLoadedRepeater(dataSource);
+
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource.MoveWithoutItems(oldIndex: 0, newIndex: 3);
+                VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: false, context: "Right after Move");
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: true, context: "After layout");
+            });
+        }
+
+        private ItemsRepeater CreateLoadedRepeater(object itemsSource, Func<Layout> createLayout = null, string itemContent = MoveItemTemplate)
+        {
+            ItemsRepeater repeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater()
+                {
+                    ItemsSource = itemsSource,
+                    ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" + itemContent + @"</DataTemplate>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                if (createLayout != null)
+                {
+                    repeater.Layout = createLayout();
+                }
+                Content = repeater;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return repeater;
+        }
+
+        private static string GetElementContent(UIElement element)
+        {
+            if (element is ContentControl contentControl)
+            {
+                return contentControl.Content?.ToString();
+            }
+            if (element is TextBlock textBlock)
+            {
+                return textBlock.Text;
+            }
+            return element == null ? "{null}" : element.GetType().Name;
+        }
+
+        private static int CountRealizedChildren(ItemsRepeater repeater)
+        {
+            int count = 0;
+            for (int c = 0; c < VisualTreeHelper.GetChildrenCount(repeater); c++)
+            {
+                if (repeater.GetElementIndex((UIElement)VisualTreeHelper.GetChild(repeater, c)) >= 0)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        // Verifies that for every realized child, GetElementIndex(child) = k implies that the child shows data[k] and that
+        // TryGetElement(k) is the child, and that for every index i, TryGetElement(i) (when not null) shows data[i].
+        private static void VerifyRealizedElementsMatchData(ItemsRepeater repeater, IList<string> data, bool expectAllRealized, string context)
+        {
+            var children = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater)).Select(c => (UIElement)VisualTreeHelper.GetChild(repeater, c)).ToList();
+            Log.Comment($"{context}: data [{string.Join(", ", data)}]");
+            Log.Comment($"{context}: children [{string.Join(", ", children.Select(child => GetElementContent(child) + "@" + repeater.GetElementIndex(child)))}]");
+
+            var seen = new HashSet<int>();
+            foreach (var child in children)
+            {
+                int index = repeater.GetElementIndex(child);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                Verify.IsLessThan(index, data.Count, $"{context}: child '{GetElementContent(child)}' reports an index inside the data.");
+                Verify.IsTrue(seen.Add(index), $"{context}: only one realized child reports index {index}.");
+                Verify.AreEqual(data[index], GetElementContent(child), $"{context}: the child that reports index {index} shows item {index}.");
+                Verify.AreSame(child, repeater.TryGetElement(index), $"{context}: TryGetElement({index}) is the child that reports index {index}.");
+            }
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                var element = repeater.TryGetElement(i);
+                if (element == null)
+                {
+                    if (expectAllRealized)
+                    {
+                        Verify.Fail($"{context}: TryGetElement({i}) is null although every item is realized.");
+                    }
+                    continue;
+                }
+
+                Verify.AreEqual(data[i], GetElementContent(element), $"{context}: TryGetElement({i}) shows item {i}.");
+                Verify.AreEqual(i, repeater.GetElementIndex(element), $"{context}: GetElementIndex(TryGetElement({i})).");
+            }
+        }
+
+        private static void VerifyVisualOrderMatchesData(ItemsRepeater repeater, IList<string> data)
+        {
+            var realized = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                .Select(c => (UIElement)VisualTreeHelper.GetChild(repeater, c))
+                .Where(child => repeater.GetElementIndex(child) >= 0)
+                .OrderBy(child => child.ActualOffset.Y)
+                .Select(child => GetElementContent(child))
+                .ToList();
+            Log.Comment($"Visual order: [{string.Join(", ", realized)}]");
+            Verify.AreEqual(string.Join(", ", data), string.Join(", ", realized), "The items are shown in data order.");
+        }
+
+        #endregion
 
         private int DefaultWaitTime = 2000;
     }

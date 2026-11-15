@@ -344,6 +344,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: the CanMoveItem moves (count 2, before, inside and after the realized range of a scrolled repeater),
+        //           checked in both directions: index -> element and element -> index (GitHub issue #11570).
+        // Expected: the realized indices form one contiguous range with no null in it, every realized child shows the
+        //           item at the index it reports, and TryGetElement/GetElementIndex round-trip.
+        // A failure means: after a Move some realized element reports a stale index (CanMoveItem skips null results).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that multi-item Moves before, inside and after the realized range keep TryGetElement and GetElementIndex consistent for every realized element.")]
+        public void CanMoveItemKeepsRealizedIndicesConsistent()
+        {
+            CustomItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList()));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            var viewChangedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = SetupRepeater(dataSource, ref scrollViewer);
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChangedEvent.Set();
+                    }
+                };
+                scrollViewer.ChangeView(null, 400, null, true);
+            });
+
+            Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTime), "Waiting for ViewChanged.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(4, VerifyRealizedIndicesConsistent(repeater, dataSource, "Before Move"));
+
+                Log.Comment("Move before realized range.");
+                dataSource.Move(oldIndex: 0, newIndex: 1, count: 2, reset: false);
+                VerifyRealizedIndicesConsistent(repeater, dataSource, "Right after Move before realized range", expectContiguous: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual(4, VerifyRealizedIndicesConsistent(repeater, dataSource, "Move before realized range"));
+
+                Log.Comment("Move in realized range.");
+                dataSource.Move(oldIndex: 3, newIndex: 5, count: 2, reset: false);
+                VerifyRealizedIndicesConsistent(repeater, dataSource, "Right after Move in realized range", expectContiguous: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual(4, VerifyRealizedIndicesConsistent(repeater, dataSource, "Move in realized range"));
+
+                Log.Comment("Move in realized range, backward.");
+                dataSource.Move(oldIndex: 6, newIndex: 4, count: 2, reset: false);
+                VerifyRealizedIndicesConsistent(repeater, dataSource, "Right after backward Move in realized range", expectContiguous: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual(4, VerifyRealizedIndicesConsistent(repeater, dataSource, "Backward Move in realized range"));
+
+                Log.Comment("Move after realized range");
+                dataSource.Move(oldIndex: 7, newIndex: 8, count: 2, reset: false);
+                VerifyRealizedIndicesConsistent(repeater, dataSource, "Right after Move after realized range", expectContiguous: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual(4, VerifyRealizedIndicesConsistent(repeater, dataSource, "Move after realized range"));
+            });
+        }
+
         [TestMethod]
         public void VerifyElement0OwnershipInUniformGridLayout()
         {
@@ -741,6 +802,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
 
             return numRealized;
+        }
+
+        // Returns the number of realized elements after checking that the realized indices are contiguous, that every
+        // realized child shows the item at the index it reports, and that TryGetElement/GetElementIndex round-trip.
+        private int VerifyRealizedIndicesConsistent(ItemsRepeater repeater, CustomItemsSource dataSource, string context, bool expectContiguous = true)
+        {
+            var realizedIndices = new List<int>();
+            var childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(repeater);
+            var description = new List<string>();
+            for (int c = 0; c < childCount; c++)
+            {
+                var child = (TextBlock)Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(repeater, c);
+                int index = repeater.GetElementIndex(child);
+                description.Add(child.Text + "@" + index);
+                if (index >= 0)
+                {
+                    realizedIndices.Add(index);
+                }
+            }
+            Log.Comment($"{context}: data [{string.Join(", ", dataSource.Inner)}]");
+            Log.Comment($"{context}: children [{string.Join(", ", description)}]");
+
+            for (int c = 0; c < childCount; c++)
+            {
+                var child = (TextBlock)Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(repeater, c);
+                int index = repeater.GetElementIndex(child);
+                if (index >= 0)
+                {
+                    Verify.AreEqual(1, realizedIndices.Count(i => i == index), $"{context}: only one realized child reports index {index}.");
+                    Verify.AreEqual(dataSource.GetAt(index).ToString(), child.Text, $"{context}: the child that reports index {index} shows item {index}.");
+                    Verify.AreSame(child, repeater.TryGetElement(index), $"{context}: TryGetElement({index}).");
+                }
+            }
+
+            if (expectContiguous && realizedIndices.Count > 0)
+            {
+                for (int i = realizedIndices.Min(); i <= realizedIndices.Max(); i++)
+                {
+                    Verify.IsNotNull(repeater.TryGetElement(i), $"{context}: TryGetElement({i}) inside the realized range is not null.");
+                }
+            }
+
+            return realizedIndices.Count;
         }
 
         private int DefaultWaitTime = 2000; 
