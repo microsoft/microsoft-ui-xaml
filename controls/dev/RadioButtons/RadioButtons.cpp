@@ -382,6 +382,8 @@ void RadioButtons::Select(int index, bool selectedItemMoved)
         // removed or replaced by the collection change that triggered this selection change.
         auto const previousSelectedItem = m_selectedItem.get();
         m_selectedItem.set(newSelectedItem);
+        // A null item at a valid index is still a selected item.
+        m_hasSelectedItem = IsIndexInItemsRange(m_selectedIndex);
 
         SelectedIndex(m_selectedIndex);
         SelectedItem(newSelectedItem);
@@ -420,11 +422,12 @@ void RadioButtons::Select(int index, bool selectedItemMoved)
     if (selectedContainerCleared)
     {
         // Select the item that the handler selected, if any (SelectedIndex and SelectedItem are not applied while
-        // selecting), otherwise clear the selection. The selected index has no container anymore, so it is cleared
-        // first when the handler selected the item now at that index.
+        // selecting), otherwise clear the selection. When the handler selected the item now at the selected index,
+        // reset the index without raising SelectionChanged: Select then raises a single SelectionChanged for it, and
+        // no handler can change the items between computing that index and selecting it.
         if (indexToSelectAfterwards == m_selectedIndex)
         {
-            Select(-1);
+            m_selectedIndex = -1;
         }
         Select(indexToSelectAfterwards);
     }
@@ -454,7 +457,7 @@ int RadioButtons::GetIndexSetBySelectionChangedHandler()
 // collection changes while Select raises SelectionChanged, so it can point to another item.
 bool RadioButtons::IsSelectedItemAt(int index)
 {
-    if (auto const selectedItem = m_selectedItem.get())
+    if (m_hasSelectedItem)
     {
         if (auto const repeater = m_repeater.get())
         {
@@ -462,12 +465,31 @@ bool RadioButtons::IsSelectedItemAt(int index)
             {
                 if (index >= 0 && index < itemsSourceView.Count())
                 {
+                    auto const item = itemsSourceView.GetAt(index);
+                    auto const selectedItem = m_selectedItem.get();
+                    if (!selectedItem)
+                    {
+                        // The selected item is a null item.
+                        return !item;
+                    }
                     // A source of value-type items can return a new boxed value on each read, so compare
                     // with the source's equality when the references differ.
-                    return itemsSourceView.GetAt(index) == selectedItem ||
+                    return item == selectedItem ||
                         itemsSourceView.IndexOf(selectedItem) == index;
                 }
             }
+        }
+    }
+    return false;
+}
+
+bool RadioButtons::IsIndexInItemsRange(int index)
+{
+    if (auto const repeater = m_repeater.get())
+    {
+        if (auto const itemsSourceView = repeater.ItemsSourceView())
+        {
+            return index >= 0 && index < itemsSourceView.Count();
         }
     }
     return false;

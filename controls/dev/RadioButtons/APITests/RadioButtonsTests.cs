@@ -968,6 +968,169 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: items {A, B, C, D, E}; a SelectionChanged handler, raised for selecting C, replaces C with Z and selects
+        //     Z (by SelectedItem = "Z", or by SelectedIndex = -1 then SelectedIndex = 2). The same handler removes A if it
+        //     is ever raised with SelectedIndex -1.
+        // Expected: exactly one more SelectionChanged follows, which reports C as removed and Z as added; the handler is
+        //     never raised with SelectedIndex -1; Z ends up selected (SelectedIndex 2) and only its container is checked.
+        // Failure means: RadioButtons cleared the selection with its own SelectionChanged before it applied the handler's
+        //     selection; a handler of that event could change the items, and RadioButtons then selected the saved index,
+        //     which now holds another item (D here).
+        [TestMethod]
+        public void VerifySelectionSetBySelectionChangedHandlerAfterReplacingSelectedItemRaisesOneSelectionChanged()
+        {
+            foreach (bool selectByItem in new[] { true, false })
+            {
+                Log.Comment($"Select by {(selectByItem ? "SelectedItem" : "SelectedIndex")}");
+                RadioButtons radioButtons = null;
+                var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
+                var selectionChanges = new List<SelectionChangedEventArgs>();
+                bool handled = false;
+                bool raisedWithoutSelection = false;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons = new RadioButtons();
+                    radioButtons.ItemsSource = items;
+                    Content = radioButtons;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons.SelectionChanged += (sender, args) =>
+                    {
+                        selectionChanges.Add(args);
+                        if (!handled && radioButtons.SelectedIndex == 2)
+                        {
+                            handled = true;
+                            items[2] = "Z";
+                            if (selectByItem)
+                            {
+                                radioButtons.SelectedItem = "Z";
+                            }
+                            else
+                            {
+                                radioButtons.SelectedIndex = -1;
+                                radioButtons.SelectedIndex = 2;
+                            }
+                        }
+                        else if (handled && !raisedWithoutSelection && radioButtons.SelectedIndex == -1)
+                        {
+                            raisedWithoutSelection = true;
+                            items.RemoveAt(0);
+                        }
+                    };
+                    radioButtons.SelectedIndex = 2;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(handled, "The SelectionChanged handler ran.");
+                    Verify.IsFalse(raisedWithoutSelection, "SelectionChanged is not raised with SelectedIndex -1 before Z is selected.");
+                    Verify.AreEqual(2, radioButtons.SelectedIndex);
+                    Verify.AreEqual("Z", radioButtons.SelectedItem);
+                    VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: 2);
+                    Verify.AreEqual(2, selectionChanges.Count, "Selecting C, then one SelectionChanged for Z.");
+                    var last = selectionChanges[selectionChanges.Count - 1];
+                    Verify.AreEqual("C", string.Join(", ", last.RemovedItems), "The last SelectionChanged reports C as removed.");
+                    Verify.AreEqual("Z", string.Join(", ", last.AddedItems), "The last SelectionChanged reports Z as added.");
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        // Scenario: items {A, B, C, D, E} (ObservableCollection<object>) with A selected; a null item is put at index 2
+        //     (items[2] = null, or Insert(2, null)), then SelectedIndex is set to 2 before the next layout pass, so the
+        //     container for the null item does not exist yet. A guard case selects the out-of-range index 5 of {A, B, C}
+        //     and then adds D, E and a null item at 5.
+        // Expected: after layout the container of the null item at 2 is the only checked one (SelectedItem null), and
+        //     the SelectionChanged reports A as removed and nothing as added (no null entry). In the guard case no
+        //     container is checked: an out-of-range index does not select the item added there later.
+        // Failure means: a null selected item was treated as no selection, so the container created for it was left
+        //     unchecked (SelectedIndex 2 with no checked RadioButton); or an out-of-range SelectedIndex checked the null
+        //     item added at that index later.
+        [TestMethod]
+        public void VerifySelectingNullItemBeforeLayoutChecksItsContainer()
+        {
+            foreach (string variant in new[] { "Replace", "Insert", "Out-of-range index, then Add" })
+            {
+                Log.Comment(variant);
+                bool outOfRange = variant.StartsWith("Out-of-range");
+                RadioButtons radioButtons = null;
+                var items = new global::System.Collections.ObjectModel.ObservableCollection<object>(
+                    outOfRange ? new object[] { "A", "B", "C" } : new object[] { "A", "B", "C", "D", "E" });
+                var selectionChanges = new List<SelectionChangedEventArgs>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons = new RadioButtons();
+                    radioButtons.ItemsSource = items;
+                    Content = radioButtons;
+                    Content.UpdateLayout();
+                });
+                // RadioButtons applies SelectedIndex once its repeater is loaded.
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    if (outOfRange)
+                    {
+                        radioButtons.SelectedIndex = 5;
+                        Content.UpdateLayout();
+                        items.Add("D");
+                        items.Add("E");
+                        items.Add(null);
+                    }
+                    else
+                    {
+                        radioButtons.SelectedIndex = 0;
+                        Content.UpdateLayout();
+                        radioButtons.SelectionChanged += (sender, args) => selectionChanges.Add(args);
+                        if (variant == "Replace")
+                        {
+                            items[2] = null;
+                        }
+                        else
+                        {
+                            items.Insert(2, null);
+                        }
+                        radioButtons.SelectedIndex = 2;
+                    }
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    int expectedCheckedIndex = outOfRange ? -1 : 2;
+                    Verify.AreEqual(outOfRange ? 5 : 2, radioButtons.SelectedIndex);
+                    Verify.IsNull(radioButtons.SelectedItem);
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                        Verify.IsNotNull(container, $"Container {i} is realized.");
+                        Verify.AreEqual(items[i], container.Content, $"Content of container {i}.");
+                        Verify.AreEqual(i == expectedCheckedIndex, container.IsChecked == true, $"IsChecked of container {i}.");
+                    }
+                    if (!outOfRange)
+                    {
+                        Verify.AreEqual(1, selectionChanges.Count, "One SelectionChanged for selecting the null item.");
+                        Verify.AreEqual("A", string.Join(", ", selectionChanges.SelectMany(args => args.RemovedItems).Select(item => item ?? "null")),
+                            "SelectionChanged reports A as removed.");
+                        Verify.AreEqual("", string.Join(", ", selectionChanges.SelectMany(args => args.AddedItems).Select(item => item ?? "null")),
+                            "SelectionChanged reports nothing as added (no null entry).");
+                    }
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         // Scenario: C is selected and replaced by Z, then Z is selected with SelectedItem = Z before the next layout pass.
         //     Runs with string items and the default containers, string items and an ItemTemplate whose root is a
         //     RadioButton, int items (boxed values), and RadioButton items.

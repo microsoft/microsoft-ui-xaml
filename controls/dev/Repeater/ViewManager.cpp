@@ -106,7 +106,11 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 
     if (!cleared)
     {
-        ClearElementToElementFactory(element);
+        if (!ClearElementToElementFactory(element))
+        {
+            // An ElementClearing handler cleared this element first, which already updated the realized range.
+            return;
+        }
     }
 
     // Both First and Last indices need to be valid or default.
@@ -150,11 +154,22 @@ void ViewManager::RecycleWithoutOwner(bool recycleWithoutOwner)
 //
 // In all of those three cases, we the ItemTemplateShim is NOT null.
 // Luckily when we create the items, we store whether we were the once setting the DataContext.
-void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
+// Returns false when an ElementClearing handler already cleared the element (for example by changing ItemTemplate).
+bool ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
+    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    const auto ownerBeforeClearing = virtInfo->Owner();
+
     m_owner->OnElementClearing(element);
 
-    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    if (virtInfo->Owner() != ownerBeforeClearing)
+    {
+        // A handler cleared this element again (changing ItemTemplate, ItemsSource or Layout clears every realized
+        // element), and that nested clear already recycled it. Recycling it again would put it in a second pool, or
+        // in the pool of the new ItemTemplate.
+        return false;
+    }
+
     // MoveOwnershipToElementFactory resets the index, which focus recovery below still needs.
     const int clearedIndex = virtInfo->Index();
     virtInfo->MoveOwnershipToElementFactory();
@@ -218,6 +233,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     }
 
     ITEMSREPEATER_TRACE_PERF_DBG(L"ElementCleared");
+    return true;
 }
 
 void ViewManager::MoveFocusFromClearedIndex(int clearedIndex)

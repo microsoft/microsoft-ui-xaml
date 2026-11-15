@@ -25,7 +25,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.H
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ViewManagerTests : ApiTestBase
+    public partial class ViewManagerTests : ApiTestBase
     {
         [TestMethod]
         public void CanQueryElementFactory()
@@ -2177,6 +2177,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a non-virtualizing layout over "Item #0".."Item #4" whose ItemTemplate is element factory A; item 2 is
+        //           replaced (or removed), and while its element is being cleared, an ElementClearing handler sets
+        //           ItemTemplate to element factory B. Changing ItemTemplate clears every realized element, including the
+        //           element whose ElementClearing event is in progress.
+        // Expected: no exception; every element created by A is recycled exactly once, into A; nothing is recycled into B;
+        //           after layout every item has an element created by B.
+        // A failure means: the clear in progress went on after the handler had already cleared its element, so the element
+        //                  was recycled a second time, into B's pool (an ownership assert on checked builds).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an element cleared again by an ElementClearing handler that changes ItemTemplate is recycled only once.")]
+        public void VerifyElementClearingHandlerThatChangesItemTemplateRecyclesElementOnce()
+        {
+            foreach (string operation in new[] { "Replace", "Remove" })
+            {
+                Log.Comment(operation);
+                RunOnUIThread.Execute(() =>
+                {
+                    var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+                    var factoryA = new RecordingElementFactory("A");
+                    var factoryB = new RecordingElementFactory("B");
+                    var repeater = new ItemsRepeater() {
+                        ItemsSource = data,
+                        Layout = new NonVirtualStackLayout(),
+                        ItemTemplate = factoryA,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    Content = repeater;
+                    Content.UpdateLayout();
+                    Verify.AreEqual(5, factoryA.Created.Count, "A created the 5 elements.");
+
+                    int handlerCalls = 0;
+                    repeater.ElementClearing += (sender, args) =>
+                    {
+                        if (handlerCalls++ == 0)
+                        {
+                            repeater.ItemTemplate = factoryB;
+                        }
+                    };
+
+                    int hresult = CaptureHResult(() =>
+                    {
+                        if (operation == "Replace")
+                        {
+                            data[2] = "X";
+                        }
+                        else
+                        {
+                            data.RemoveAt(2);
+                        }
+                    });
+                    Verify.AreEqual(0, hresult, $"The {operation} does not throw.");
+                    Verify.IsTrue(handlerCalls > 0, "The ElementClearing handler ran.");
+                    Log.Comment($"Recycled into A: {factoryA.Recycled.Count}, into B: {factoryB.Recycled.Count}");
+                    Verify.AreEqual(factoryA.Created.Count, factoryA.Recycled.Count, "Each element of A is recycled once.");
+                    Verify.AreEqual(factoryA.Recycled.Count, factoryA.Recycled.Distinct().Count(), "No element is recycled into A twice.");
+                    Verify.IsTrue(factoryA.Created.All(element => factoryA.Recycled.Contains(element)), "Every element of A is recycled into A.");
+                    Verify.AreEqual(0, factoryB.Recycled.Count, "No element is recycled into B.");
+
+                    Content.UpdateLayout();
+                    VerifyElementMapping(repeater, data, $"after the {operation}");
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        Verify.AreEqual("B", (string)((FrameworkElement)repeater.TryGetElement(i)).Tag, $"Element {i} was created by B.");
+                    }
+                    Content = null;
+                });
+            }
+        }
+
         // Scenario: a non-virtualizing layout with a Button template; item 2 has focus; items 1..3 are replaced by one
         //           item X in one notification.
         // Expected: focus moves straight to the element of the item that followed the range ("Item #4", now at index 2),
@@ -2339,6 +2408,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     (global::System.Collections.IList)newItems.ToList(),
                     (global::System.Collections.IList)oldItems,
                     index));
+            }
+        }
+
+        // Creates a TextBlock showing the item (Tag = the factory name) and records the elements it creates and recycles.
+        private partial class RecordingElementFactory : ElementFactory
+        {
+            private readonly string _name;
+
+            public RecordingElementFactory(string name)
+            {
+                _name = name;
+            }
+
+            public List<UIElement> Created { get; } = new List<UIElement>();
+            public List<UIElement> Recycled { get; } = new List<UIElement>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                var element = new TextBlock() { Text = args.Data as string, Tag = _name, Width = 60, Height = 10 };
+                Created.Add(element);
+                return element;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                Recycled.Add(args.Element);
             }
         }
 

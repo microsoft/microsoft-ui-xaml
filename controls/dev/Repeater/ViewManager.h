@@ -18,7 +18,7 @@ public:
 
     winrt::UIElement GetElement(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
-    void ClearElementToElementFactory(const winrt::UIElement& element);
+    bool ClearElementToElementFactory(const winrt::UIElement& element);
     void RecycleWithoutOwner(bool recycleWithoutOwner);
     int GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo);
 

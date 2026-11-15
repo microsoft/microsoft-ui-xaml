@@ -74,6 +74,7 @@ private:
     void Select(int index, bool selectedItemMoved = false);
     int GetIndexSetBySelectionChangedHandler();
     bool IsSelectedItemAt(int index);
+    bool IsIndexInItemsRange(int index);
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
 
     void UpdateItemTemplate();
@@ -87,6 +88,9 @@ private:
     int m_selectedIndex{ -1 };
     // The item selected by the last Select call, reported as removed by the next one.
     tracker_ref<winrt::IInspectable> m_selectedItem{ this };
+    // Whether the last Select call selected an item. m_selectedItem alone cannot tell a selected null item from no
+    // selection (index -1 or out of range).
+    bool m_hasSelectedItem{ false };
     // This is used to guard against reentrency when calling select, since select changes
     // the Selected Index/Item which in turn calls select.
     bool m_currentlySelecting{ false };
