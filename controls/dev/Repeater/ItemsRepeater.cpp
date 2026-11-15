@@ -578,7 +578,10 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             children.GetMany(0, elements);
             for (const auto& element : elements)
             {
-                if (GetVirtualizationInfo(element)->IsRealized())
+                // Skip elements that already left this repeater during the walk: another repeater sharing the
+                // element pool may have taken and realized them after a nested change cleared them here.
+                if (GetVirtualizationInfo(element)->IsRealized() &&
+                    CachedVisualTreeHelpers::GetParent(element) == static_cast<winrt::DependencyObject>(*this))
                 {
                     ClearElementImpl(element);
                 }

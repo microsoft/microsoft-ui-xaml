@@ -1006,6 +1006,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons with the first item selected and a SelectionChanged handler that replaces ItemsSource again
+        //           the first time the selection is removed; ItemsSource is then replaced.
+        // Expected: no exception; RadioButtons shows the source set by the handler and nothing is selected.
+        // A failure means: a selection change raised while RadioButtons replaces its items re-enters the inner
+        //           ItemsRepeater's ItemsSource change and crashes or shows the wrong items.
+        [TestMethod]
+        [TestProperty("Description", "Verifies RadioButtons handles an ItemsSource replacement made from SelectionChanged while ItemsSource is being replaced.")]
+        public void VerifyItemsSourceReplacementFromSelectionChangedDuringItemsSourceReplacement()
+        {
+            RadioButtons radioButtons = null;
+            var nestedSource = new List<string>() { "x", "y" };
+            bool nestedReplacementDone = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons() { ItemsSource = new List<string>() { "a", "b", "c" } };
+                Content = radioButtons;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 0;
+                radioButtons.SelectionChanged += (sender, args) =>
+                {
+                    if (!nestedReplacementDone && args.RemovedItems.Count > 0)
+                    {
+                        nestedReplacementDone = true;
+                        Log.Comment("Replacing ItemsSource from SelectionChanged");
+                        radioButtons.ItemsSource = nestedSource;
+                    }
+                };
+
+                radioButtons.ItemsSource = new List<string>() { "d", "e", "f" };
+                Verify.IsTrue(nestedReplacementDone);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                Verify.IsNotNull(repeater);
+                Verify.AreSame(nestedSource, radioButtons.ItemsSource);
+                Verify.AreEqual(nestedSource.Count, repeater.ItemsSourceView.Count);
+                Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                Verify.AreEqual("x", ((RadioButton)radioButtons.ContainerFromIndex(0)).Content);
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+            });
+        }
+
         private static void VerifyDependencyPropertyIdentifiers(params DependencyProperty[] properties)
         {
             for (int i = 0; i < properties.Length; i++)

@@ -150,6 +150,13 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     m_owner->OnElementClearing(element);
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    if (virtInfo->Owner() == ElementOwner::ElementFactory)
+    {
+        // An ElementClearing handler changed the repeater (for example, it replaced ItemsSource) and that change
+        // already returned this element to the element factory. Do not recycle it a second time.
+        return;
+    }
+
     virtInfo->MoveOwnershipToElementFactory();
 
     // During creation of this object, we were the one setting the DataContext, so clear it now.
