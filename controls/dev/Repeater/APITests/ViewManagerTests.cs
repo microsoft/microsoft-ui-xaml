@@ -1560,14 +1560,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.AreSame(args.Element, repeater.TryGetElement(args.NewIndex), "TryGetElement(args.NewIndex) inside the handler.");
                     Verify.AreEqual(data[args.NewIndex], GetElementContent(args.Element));
                     Verify.AreSame(args.Element, repeater.GetOrCreateElement(args.NewIndex), "GetOrCreateElement(args.NewIndex) inside the handler.");
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var element = repeater.TryGetElement(i);
-                        if (element != null)
-                        {
-                            Verify.AreEqual(i, repeater.GetElementIndex(element), $"Inside the handler: TryGetElement({i}) reports index {i}.");
-                        }
-                    }
+                    // Every item is realized, so already in the first handler each index must map to the element that
+                    // shows the item at that index (no index held by two elements, none missing).
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: $"Inside the handler for {args.OldIndex} -> {args.NewIndex}");
                 };
 
                 repeater.ElementIndexChanged += handler;
@@ -1835,6 +1830,93 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
                 VerifyVisualOrderMatchesData(repeater, data);
             });
+        }
+
+        // Scenario: a custom VirtualizingLayout realizes a window [first, last] of 20 items with GetOrCreateElementAt (no
+        //           ForceCreate). A Move from outside the window shifts a realized element just past an edge of the window,
+        //           and the window grows by one at that edge before the next layout:
+        //           (a) window [0, 4], Move(10, 1): items 1..4 shift to 2..5 and the window becomes [0, 5];
+        //           (b) window [5, 9], Move(2, 15): items 5..9 shift to 4..8 and the window becomes [4, 9].
+        // Expected: GetOrCreateElementAt(i) returns the element of item i for every i in the window; the element that was
+        //           shifted past the edge is reused (same instance) instead of a second element being created for its index;
+        //           ElementPrepared fires only for the one index whose item was not realized before the Move.
+        // A failure means: the realized-range cache of the ViewManager is stale after a Move, so a realized element whose
+        //                  index moved outside the cached range is not found and a duplicate element is created.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after a Move a custom VirtualizingLayout reuses a realized element whose index moved outside the previously realized range.")]
+        public void VerifyCustomVirtualizingLayoutReusesShiftedElementAfterMove()
+        {
+            var cases = new[]
+            {
+                new { First = 0, Last = 4, OldIndex = 10, NewIndex = 1, NewFirst = 0, NewLast = 5, ShiftedIndex = 5, PreparedIndex = 1 },
+                new { First = 5, Last = 9, OldIndex = 2, NewIndex = 15, NewFirst = 4, NewLast = 9, ShiftedIndex = 4, PreparedIndex = 9 },
+            };
+
+            foreach (var c in cases)
+            {
+                Log.Comment($"Window [{c.First}, {c.Last}], Move({c.OldIndex}, {c.NewIndex}), new window [{c.NewFirst}, {c.NewLast}]");
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 20).Select(i => "Item #" + i));
+                int first = c.First;
+                int last = c.Last;
+                var elementsFromLayout = new List<UIElement>();
+                Func<Layout> createLayout = () => new MockVirtualizingLayout()
+                {
+                    MeasureLayoutFunc = (availableSize, context) =>
+                    {
+                        elementsFromLayout.Clear();
+                        for (int i = first; i <= last; i++)
+                        {
+                            var element = context.GetOrCreateElementAt(i);
+                            element.Measure(availableSize);
+                            elementsFromLayout.Add(element);
+                        }
+                        return new Size(100, 30 * (last - first + 1));
+                    },
+                    ArrangeLayoutFunc = (finalSize, context) =>
+                    {
+                        double offset = 0;
+                        foreach (var element in elementsFromLayout)
+                        {
+                            element.Arrange(new Rect(0, offset, element.DesiredSize.Width, element.DesiredSize.Height));
+                            offset += element.DesiredSize.Height;
+                        }
+                        return finalSize;
+                    }
+                };
+                var repeater = CreateLoadedRepeater(data, createLayout);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Before Move");
+                    // The item that the Move shifts past the edge of the window.
+                    string shiftedItem = data[c.ShiftedIndex + (c.OldIndex > c.NewIndex ? -1 : 1)];
+                    var shiftedElement = Enumerable.Range(c.First, c.Last - c.First + 1)
+                        .Select(i => repeater.TryGetElement(i))
+                        .Single(element => GetElementContent(element) == shiftedItem);
+
+                    var preparedIndices = new List<int>();
+                    repeater.ElementPrepared += (sender, args) => preparedIndices.Add(args.Index);
+
+                    data.Move(c.OldIndex, c.NewIndex);
+                    Verify.AreEqual(c.ShiftedIndex, repeater.GetElementIndex(shiftedElement), $"Right after Move: '{shiftedItem}' reports index {c.ShiftedIndex}.");
+
+                    first = c.NewFirst;
+                    last = c.NewLast;
+                    repeater.InvalidateMeasure();
+                    repeater.UpdateLayout();
+
+                    Log.Comment($"ElementPrepared indices: [{string.Join(", ", preparedIndices)}]");
+                    Verify.AreEqual(last - first + 1, elementsFromLayout.Count);
+                    for (int i = first; i <= last; i++)
+                    {
+                        Verify.AreEqual(data[i], GetElementContent(elementsFromLayout[i - first]), $"GetOrCreateElementAt({i}) returns the element of item {i}.");
+                    }
+                    Verify.AreSame(shiftedElement, elementsFromLayout[c.ShiftedIndex - first], $"The realized element of '{shiftedItem}' is reused at index {c.ShiftedIndex}.");
+                    Verify.AreEqual(1, preparedIndices.Count, "Only the item that was not realized before the Move gets a new element.");
+                    Verify.AreEqual(c.PreparedIndex, preparedIndices[0]);
+                    VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After layout");
+                });
+            }
         }
 
         // Scenario: a custom INotifyCollectionChanged source raises Move with null OldItems/NewItems.
