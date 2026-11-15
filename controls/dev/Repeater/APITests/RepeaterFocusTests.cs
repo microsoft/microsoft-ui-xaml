@@ -1057,6 +1057,219 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: the repeater is inside a StackPanel with TabFocusNavigation=Cycle, after a Button ("InsideBefore"); a Button
+        //           ("AfterGroup") follows the group outside it; focus on an item; Clear().
+        // Expected: focus moves to "InsideBefore". Tab wraps inside a Cycle group, so the move does not leave the group.
+        // A failure means: focus leaves a Cycle group, for example a NavigationView pane open in overlay mode, which traps focus.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of a repeater inside a TabFocusNavigation=Cycle group keeps focus inside the group.")]
+        public void VerifyClearInsideCycleGroupKeepsFocusInGroup()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button insideBefore = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                insideBefore = new Button { Content = "InsideBefore" };
+                var group = new StackPanel { TabFocusNavigation = KeyboardNavigationMode.Cycle };
+                group.Children.Add(insideBefore);
+                group.Children.Add(new ScrollViewer { Content = repeater, Height = 200, Width = 200 });
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Top" });
+                root.Children.Add(group);
+                root.Children.Add(new Button { Content = "AfterGroup" });
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() => data.Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                Log.Comment("Focused: " + DescribeElement(repeater, focused));
+                Verify.AreSame(insideBefore, focused, "Focus stays inside the Cycle group, on the element before the repeater.");
+            });
+        }
+
+        // Scenario: the repeater is the content of a focusable ContentControl (IsTabStop=True), with a Button ("Before")
+        //           before the ContentControl and nothing focusable after it; focus on an item; Clear().
+        // Expected: focus moves to the ContentControl, the element that Shift+Tab reaches first from the repeater.
+        // A failure means: the move skips the focusable parent Control and goes to "Before", or stays on a cleared element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of a repeater hosted in a focusable Control, with nothing focusable after it, moves focus to that Control.")]
+        public void VerifyClearOfRepeaterInFocusableControlMovesFocusToControl()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            ContentControl host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                host = new ContentControl { IsTabStop = true, Content = repeater };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(host);
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() => data.Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                Log.Comment("Focused: " + DescribeElement(repeater, focused));
+                Verify.AreSame(host, focused, "Focus moves to the focusable Control that hosts the repeater.");
+            });
+        }
+
+        // Scenario: nested repeaters (the outer ItemTemplate root is an inner ItemsRepeater); a group is inserted at index 0,
+        //           so its outer element is the last outer child in visual order but the first by index; focus on an inner
+        //           item of that group; the group is emptied (Clear()).
+        // Expected: focus moves to the first inner item of the group at outer index 1, the next group in index (and Tab) order.
+        // A failure means: the outer level is searched in visual child order, so the move skips the following groups and
+        //                  goes to the element after the outer repeater ("After").
+        [TestMethod]
+        [TestProperty("Description", "Verifies that emptying an inner repeater with focus on its item moves focus to the first item of the next group in index order, not in visual child order.")]
+        public void VerifyEmptyingInnerRepeaterMovesFocusToNextGroupInIndexOrder()
+        {
+            var groups = new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, 3).Select(g =>
+                new ObservableCollection<string>(Enumerable.Range(0, 2).Select(i => $"Item #{g}.{i}"))));
+            var outer = CreateNestedRepeaters(groups, out _);
+
+            RunOnUIThread.Execute(() =>
+            {
+                groups.Insert(0, new ObservableCollection<string>(Enumerable.Range(0, 2).Select(i => $"New #{i}")));
+                outer.UpdateLayout();
+
+                var first = outer.TryGetElement(0);
+                var second = outer.TryGetElement(1);
+                int firstChildIndex = IndexOfVisualChild(outer, first);
+                int secondChildIndex = IndexOfVisualChild(outer, second);
+                Log.Comment($"Visual child index of outer index 0: {firstChildIndex}, of outer index 1: {secondChildIndex}");
+                Verify.IsTrue(firstChildIndex > secondChildIndex, "Precondition: the visual child order differs from the index order.");
+            });
+            IdleSynchronizer.Wait();
+            FocusInnerItemAndWait(outer, 0, 1);
+
+            RunOnUIThread.Execute(() => groups[0].Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                Log.Comment($"Focused: {focused?.GetType().Name} '{focused?.Content}'");
+                Verify.IsNotNull(focused, "A Button is focused.");
+                Verify.AreEqual("Item #0.0", focused.Content, "Focus is on the first item of the next group.");
+                Verify.AreSame(outer.TryGetElement(1), VisualTreeHelper.GetParent(focused), "The focused item belongs to the group at outer index 1.");
+            });
+        }
+
+        // Scenario: nested repeaters of string groups (the outer repeater sets the DataContext of each inner repeater and
+        //           clears it when the element is cleared, which empties the inner repeater); an "After" Button follows the
+        //           outer repeater; focus on an inner item of group k; groups.RemoveAt(k). Both repeaters then have a focus
+        //           move pending, and the order of their LayoutUpdated handlers is not defined, so the scenario is repeated
+        //           on six fresh trees (k = 1, 0, 2, twice).
+        // Expected: focus moves to the nearest group (the next one, or the previous one when the last group was removed),
+        //           whatever the handler order; it does not leave the outer repeater.
+        // A failure means: the inner repeater moves focus out of the outer repeater ("After") because its own container
+        //                  was cleared, although the outer repeater still has groups.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing a group with focus on one of its inner items moves focus to an item of the nearest group, not out of the outer repeater.")]
+        public void VerifyRemovingGroupWithFocusedInnerItemMovesFocusToNearestGroup()
+        {
+            foreach (int k in new[] { 1, 0, 2, 1, 0, 2 })
+            {
+                Log.Comment($"Removing group {k}");
+                var groups = new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, 3).Select(g =>
+                    new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"Item #{g}.{i}"))));
+                var outer = CreateNestedRepeaters(groups, out var after);
+                FocusInnerItemAndWait(outer, k, 1);
+
+                RunOnUIThread.Execute(() => groups.RemoveAt(k));
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                    Log.Comment($"Focused: {focused?.GetType().Name} '{focused?.Content}'");
+                    Verify.IsNotNull(focused, "A Button is focused.");
+                    Verify.AreNotSame(after, focused, "Focus does not leave the outer repeater.");
+
+                    int expectedGroup = k < groups.Count ? k : k - 1;
+                    string expectedContent = k < groups.Count ? groups[expectedGroup][0] : groups[expectedGroup][2];
+                    Verify.AreEqual(expectedContent, focused.Content, "Focus is on the nearest item of the nearest group.");
+                    var inner = VisualTreeHelper.GetParent(focused) as ItemsRepeater;
+                    Verify.AreSame(outer.TryGetElement(expectedGroup), inner, "The focused item belongs to the live outer element of that group.");
+                    Verify.IsTrue(inner.GetElementIndex(focused) >= 0, "The inner item is realized.");
+                });
+            }
+        }
+
+        // Creates an outer repeater whose ItemTemplate root is an inner repeater bound to the group, between a "Before" and
+        // an "After" Button, without a ScrollViewer (every group is realized).
+        private ItemsRepeater CreateNestedRepeaters(ObservableCollection<ObservableCollection<string>> groups, out Button after)
+        {
+            ItemsRepeater outer = null;
+            Button afterButton = null;
+            RunOnUIThread.Execute(() =>
+            {
+                outer = new ItemsRepeater
+                {
+                    ItemsSource = groups,
+                    ItemTemplate = SharedHelpers.GetDataTemplate(
+                        @"<ItemsRepeater ItemsSource='{Binding}'>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate><Button Content='{Binding}' Height='30'/></DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                          </ItemsRepeater>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                afterButton = new Button { Content = "After" };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(outer);
+                root.Children.Add(afterButton);
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+            after = afterButton;
+            return outer;
+        }
+
+        private void FocusInnerItemAndWait(ItemsRepeater outer, int group, int item)
+        {
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var inner = (ItemsRepeater)outer.TryGetElement(group);
+                var target = (Button)inner.TryGetElement(item);
+                target.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(target.Focus(FocusState.Keyboard));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), $"Waiting for inner item {item} of group {group} to get focus.");
+            IdleSynchronizer.Wait();
+        }
+
+        private static int IndexOfVisualChild(DependencyObject parent, DependencyObject child)
+        {
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                if (VisualTreeHelper.GetChild(parent, i) == child)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         // Scenario: every item except the focused one is disabled; the focused item is removed.
         // Expected: no live item can take focus, so focus moves out of the repeater to the element after it.
         // A failure means: focus stays on the removed, cleared element.

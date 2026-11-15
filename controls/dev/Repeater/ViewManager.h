@@ -34,6 +34,8 @@ public:
     void ClearPinnedElementsForCollectionChange(int startIndex = 0, int count = std::numeric_limits<int>::max());
     void OnOwnerLayoutUpdated();
     void OnOwnerUnloaded();
+    // True if focus is to be moved away from the element (a cleared element) after the next layout pass.
+    bool IsFocusMovePendingFor(const winrt::UIElement& element) const;
 
 private:
 #pragma region GetElement providers
@@ -56,6 +58,7 @@ private:
     void UpdateFocusedElement();
     void OnFocusChanged(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex);
+    bool ContainsNestedFocus(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo);
     winrt::UIElement GetFocusedChild();
     bool TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState);
     bool TryFocus(const winrt::UIElement& element, winrt::FocusState focusState);

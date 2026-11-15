@@ -180,6 +180,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     // Read the index before the ownership move resets it.
     const int clearedIndex = virtInfo->Index();
     const bool isFocusedElement = m_lastFocusedElement == element;
+    const bool containsNestedFocus = ContainsNestedFocus(element, virtInfo);
     if (isFocusedElement)
     {
         // Remove the focus pin while the element is still realized and parented, so that the pins added
@@ -239,7 +240,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     }
 
     m_phaser.StopPhasing(element, virtInfo);
-    if (isFocusedElement)
+    if (isFocusedElement || containsNestedFocus)
     {
         OnFocusedElementCleared(element, clearedIndex);
     }
@@ -250,6 +251,20 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     }
 
     ITEMSREPEATER_TRACE_PERF_DBG(L"ElementCleared");
+}
+
+// UpdateFocusedElement tracks only the elements of the repeater nearest to the focused element. When focus is on an item
+// of a nested repeater inside the element, the element is not tracked, but it is pinned (UpdatePin pins the elements of
+// the ancestor repeaters). Clearing it must move focus like clearing a tracked element: the nested repeater cannot move
+// focus to one of this repeater's items.
+bool ViewManager::ContainsNestedFocus(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo)
+{
+    return !m_lastFocusedElement && !m_pendingFocusMoveElement && virtInfo->IsPinned() && GetFocusedChild() == element;
+}
+
+bool ViewManager::IsFocusMovePendingFor(const winrt::UIElement& element) const
+{
+    return m_pendingFocusMoveElement && m_pendingFocusMoveElement.get() == element;
 }
 
 // The tracked focused element is going away. Stop tracking it, and move focus after the next layout pass:
@@ -454,7 +469,8 @@ bool ViewManager::TryFocus(const winrt::UIElement& element, winrt::FocusState fo
 // Moves focus to the nearest focusable element outside the owner: the first one that follows the owner in tree order,
 // or else the last one that precedes it. The search starts at the owner, not at the focused element: a Tab step from a
 // focused element inside a cleared container can stay inside that container. It does not cycle to the start of the
-// window, and it stays inside the XamlRoot content or inside the open popup that contains the owner.
+// window, and it stays inside the XamlRoot content, inside the open popup that contains the owner, and inside the nearest
+// ancestor whose TabFocusNavigation is Cycle.
 bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
 {
     const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
@@ -484,7 +500,24 @@ bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
             break;
         }
 
+        if (const auto parentRepeater = parent.try_as<winrt::ItemsRepeater>())
+        {
+            if (winrt::get_self<ItemsRepeater>(parentRepeater)->ViewManager().IsFocusMovePendingFor(current))
+            {
+                // An ancestor repeater cleared the element that contains the owner, and moves focus to one of its own
+                // items after its layout pass. Moving focus from here could leave that repeater although it has items.
+                return false;
+            }
+        }
+
         path.emplace_back(parent, current);
+
+        // Tab wraps around inside an ancestor whose TabFocusNavigation is Cycle, so focus does not leave it.
+        if (const auto parentAsElement = parent.try_as<winrt::UIElement>(); parentAsElement && parentAsElement.TabFocusNavigation() == winrt::KeyboardNavigationMode::Cycle)
+        {
+            break;
+        }
+
         current = parent.try_as<winrt::UIElement>();
     }
 
@@ -1188,6 +1221,7 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
     {
         const int clearedIndex = virtInfo->Index();
         const bool isFocusedElement = m_lastFocusedElement == element;
+        const bool containsNestedFocus = ContainsNestedFocus(element, virtInfo);
         if (isFocusedElement)
         {
             // Remove the focus pin while the element is still realized (see ClearElementToElementFactory).
@@ -1195,7 +1229,7 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
         }
 
         virtInfo->MoveOwnershipToAnimator();
-        if (isFocusedElement)
+        if (isFocusedElement || containsNestedFocus)
         {
             OnFocusedElementCleared(element, clearedIndex);
         }
