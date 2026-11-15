@@ -1320,6 +1320,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 createItemTemplate: () => new PoolingGroupFactory());
         }
 
+        // Scenario: the trees of VerifyReplacingGroupInReusedElementFocusesInnerItemAtSameIndex (focus on a recycled inner Button
+        //           inside the reused element after group k is replaced by three new items). A GettingFocus handler replaces,
+        //           once, the inner item that the focus move targets, so the inner repeater clears the target while focus moves
+        //           to it. Repeated on fresh trees until both LayoutUpdated handler orders have run.
+        // Expected: focus ends on a live inner item of the new group k, not on the target that the handler's change cleared.
+        // A failure means: when the outer repeater makes the inner repeater move focus, a handler's change that clears the
+        //                  target is not followed by another move, so focus stays on a recycled Button.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a GettingFocus handler clears the inner item that a nested focus move targets, focus still ends on a live inner item, whatever the LayoutUpdated handler order.")]
+        public void VerifyGettingFocusHandlerClearingNestedTargetLeavesFocusOnLiveInnerItem()
+        {
+            int changes = 0;
+            int handlerChanges = 0;
+            RunNestedGroupChangeInBothHandlerOrders(
+                (groups, outer, k) =>
+                {
+                    changes++;
+                    bool changed = false;
+                    outer.GettingFocus += (s, e) =>
+                    {
+                        if (changed || !(e.NewFocusedElement is Button target) || !(target.Content as string ?? "").StartsWith("New #"))
+                        {
+                            return;
+                        }
+
+                        var targetRepeater = VisualTreeHelper.GetParent(target) as ItemsRepeater;
+                        int index = targetRepeater?.GetElementIndex(target) ?? -1;
+                        if (index < 0)
+                        {
+                            return;
+                        }
+
+                        changed = true;
+                        handlerChanges++;
+                        Log.Comment($"GettingFocus target: '{target.Content}' (inner index {index}); replacing that inner item from the handler.");
+                        ((ObservableCollection<string>)targetRepeater.ItemsSource)[index] = $"Changed #{k}.{index}";
+                    };
+                    groups[k] = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"New #{k}.{i}"));
+                    return groups;
+                },
+                (groups, k) => (k, (string)null),
+                focusedItem: 2,
+                createItemTemplate: () => new PoolingGroupFactory());
+
+            Verify.AreEqual(changes, handlerChanges, "Precondition: in every tree the GettingFocus handler replaced the targeted inner item.");
+        }
+
         // Outer ItemTemplate: an inner ItemsRepeater per group, pooled on recycle (its ItemsSource is cleared) and reused
         // first in, first out.
         private partial class PoolingGroupFactory : ElementFactory
@@ -1563,6 +1610,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Log.Comment("Focused: " + DescribeElement(repeater, focused) + "; pane open: " + splitView.IsPaneOpen);
                 Verify.AreSame(paneTop, focused, "Focus stays inside the open pane, on the element before the repeater.");
                 Verify.IsTrue(splitView.IsPaneOpen, "The pane stays open.");
+            });
+        }
+
+        // Scenario: a SplitView with DisplayMode=Overlay and the pane open; the pane holds only the repeater; the SplitView
+        //           content is a Button ("ContentButton"); focus on an item; Clear().
+        // Expected: the pane has nothing left to focus, so focus leaves it, as Tab does (the SplitView keeps Tab inside the
+        //           pane only when the pane has a focusable element): focus moves to "ContentButton".
+        // A failure means: focus stays on the cleared item (Tab and Narrator then reach an element that is not shown).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of the only focusable content of an open overlay SplitView pane moves focus out of the pane, not leaving it on the cleared item.")]
+        public void VerifyClearOfOnlyRepeaterInOpenOverlaySplitViewPaneMovesFocusOutOfPane()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button contentButton = null;
+            SplitView splitView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                var pane = new StackPanel();
+                pane.Children.Add(repeater);
+                contentButton = new Button { Content = "ContentButton" };
+                splitView = new SplitView
+                {
+                    DisplayMode = SplitViewDisplayMode.Overlay,
+                    IsPaneOpen = true,
+                    OpenPaneLength = 200,
+                    Pane = pane,
+                    Content = contentButton,
+                    Width = 400,
+                    Height = 400
+                };
+                Content = splitView;
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(splitView.IsPaneOpen, "Precondition: the pane is open.");
+                data.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                Log.Comment("Focused: " + DescribeElement(repeater, focused) + "; pane open: " + splitView.IsPaneOpen);
+                Verify.AreSame(contentButton, focused, "Focus leaves the pane, which has nothing else to focus, to the SplitView content.");
             });
         }
 

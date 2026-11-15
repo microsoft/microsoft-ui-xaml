@@ -472,7 +472,21 @@ bool ViewManager::TryMovePendingFocusToRealizedChild()
     const auto focusState = m_pendingFocusMoveState;
     m_pendingFocusMoveElement.set(nullptr);
 
+    const auto focusedChild = GetFocusedChild();
     const bool focusMoved = TryFocusRealizedChild(clearedIndex, focusState, nullptr /* focusedChild */);
+
+    // As in OnOwnerLayoutUpdated: a GettingFocus handler may have changed the source and cleared the new target. Keep the
+    // move pending, so that this repeater moves focus again in its next LayoutUpdated handler, and stop the ancestor.
+    const auto newFocusedChild = GetFocusedChild();
+    const auto newFocusedChildVirtInfo = newFocusedChild ? ItemsRepeater::TryGetVirtualizationInfo(newFocusedChild) : nullptr;
+    if (newFocusedChildVirtInfo && newFocusedChild != focusedChild && !newFocusedChildVirtInfo->IsHeldByLayout())
+    {
+        m_pendingFocusMoveElement.set(newFocusedChild);
+        m_pendingFocusMoveIndex = clearedIndex;
+        m_pendingFocusMoveState = focusState;
+        return true;
+    }
+
     UpdateFocusedElement();
     return focusMoved;
 }
@@ -517,7 +531,8 @@ bool ViewManager::TryFocus(const winrt::UIElement& element, winrt::FocusState fo
 // or else the last one that precedes it. The search starts at the owner, not at the focused element: a Tab step from a
 // focused element inside a cleared container can stay inside that container. It does not cycle to the start of the
 // window, and it stays inside the XamlRoot content, inside the open popup that contains the owner, inside the nearest
-// ancestor whose TabFocusNavigation is Cycle, and inside an open SplitView pane that can be light dismissed.
+// ancestor whose TabFocusNavigation is Cycle, and inside an open SplitView pane that can be light dismissed and has a
+// focusable element.
 bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
 {
     const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
@@ -547,14 +562,14 @@ bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
             break;
         }
 
-        // An open SplitView pane that can be light dismissed keeps Tab focus inside it (CSplitView::ProcessTabStop),
-        // so focus does not leave the pane.
+        // An open SplitView pane that can be light dismissed keeps Tab focus inside it when it has a focusable element
+        // (CSplitView::ProcessTabStop), so focus does not leave the pane then.
         if (const auto splitView = parent.try_as<winrt::SplitView>(); splitView && splitView.IsPaneOpen() &&
             (splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay))
         {
             const auto pane = splitView.Pane();
             const auto paneLevel = std::find_if(path.begin(), path.end(), [&pane](const auto& level) { return pane && level.second == pane; });
-            if (paneLevel != path.end())
+            if (paneLevel != path.end() && winrt::FocusManager::FindFirstFocusableElement(paneLevel->first))
             {
                 path.erase(paneLevel + 1, path.end());
                 break;
