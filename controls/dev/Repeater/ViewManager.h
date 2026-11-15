@@ -36,6 +36,8 @@ public:
     void OnOwnerUnloaded();
     // True if focus is to be moved away from the element (a cleared element) after the next layout pass.
     bool IsFocusMovePendingFor(const winrt::UIElement& element) const;
+    // Runs the pending focus move now, to a realized element only. Returns true if focus moved.
+    bool TryMovePendingFocusToRealizedChild();
 
 private:
 #pragma region GetElement providers
@@ -60,6 +62,8 @@ private:
     void OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex);
     bool ContainsNestedFocus(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo);
     winrt::UIElement GetFocusedChild();
+    bool TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild);
+    bool TryKeepFocusInReusedElement(const winrt::UIElement& element);
     bool TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState);
     bool TryFocus(const winrt::UIElement& element, winrt::FocusState focusState);
     bool TryMoveFocusOutOfOwner(winrt::FocusState focusState);

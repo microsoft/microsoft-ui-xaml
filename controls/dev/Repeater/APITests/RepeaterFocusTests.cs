@@ -26,7 +26,7 @@ using WEX.Logging.Interop;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RepeaterFocusTests : ApiTestBase
+    public partial class RepeaterFocusTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO 33633693: RepeaterFocusTests.ValidateTabNavigation fails on pipeline
@@ -1212,9 +1212,364 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: nested repeaters of string groups; focus on inner item 1 of group k; group k is replaced by an empty group
+        //           (groups[k] = new ObservableCollection). The outer repeater reuses the cleared element for the new group at
+        //           index k, so the focused inner item is now a recycled child of that element's (empty) inner repeater.
+        //           Repeated on fresh trees until both LayoutUpdated handler orders (inner first, outer first) have run.
+        // Expected: focus moves to the first item of the next group (the last item of the previous group when the last group
+        //           was replaced), whatever the handler order.
+        // A failure means: focus stays on the recycled inner item inside the reused element (Tab and Narrator then reach an
+        //                  element that is not shown), or leaves the outer repeater.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing a group by an empty group, with focus on one of its inner items, moves focus to the nearest item of the nearest group, whatever the LayoutUpdated handler order.")]
+        public void VerifyReplacingGroupWithEmptyGroupMovesFocusToNearestGroup()
+        {
+            RunNestedGroupChangeInBothHandlerOrders(
+                (groups, outer, k) =>
+                {
+                    groups[k] = new ObservableCollection<string>();
+                    return groups;
+                },
+                (groups, k) => k + 1 < groups.Count ? (k + 1, groups[k + 1][0]) : (k - 1, groups[k - 1][groups[k - 1].Count - 1]));
+        }
+
+        // Scenario: nested repeaters of string groups; focus on inner item 1 of group k; the outer ItemsSource is replaced by a
+        //           new list that holds the same groups, except that group k is a new empty group (Reset). The outer repeater
+        //           reuses its cleared elements for the new list in another order (observed: new index i gets the element of
+        //           old index i + 1, wrapping), so the element that held focus gets a non-empty group. Repeated on fresh trees
+        //           until both LayoutUpdated handler orders have run.
+        // Expected: focus moves to a live item of the next group (of the previous group when the last group was emptied).
+        // A failure means: focus stays on the recycled inner item inside a reused element, or leaves the outer repeater.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that reassigning the outer ItemsSource with the focused group emptied moves focus to a live item of the nearest group, whatever the LayoutUpdated handler order.")]
+        public void VerifyResetWithFocusedGroupEmptiedMovesFocusToNearestGroup()
+        {
+            RunNestedGroupChangeInBothHandlerOrders(
+                (groups, outer, k) =>
+                {
+                    var newGroups = new ObservableCollection<ObservableCollection<string>>(
+                        groups.Select((group, i) => i == k ? new ObservableCollection<string>() : group));
+                    outer.ItemsSource = newGroups;
+                    return newGroups;
+                },
+                (groups, k) => k + 1 < groups.Count ? (k + 1, (string)null) : (k - 1, (string)null));
+        }
+
+        // Scenario: nested repeaters of string groups; focus on inner item 1 of group k; the outer ItemsSource is replaced by a
+        //           list of three new empty groups (Reset). The outer repeater reuses its cleared elements, so the element
+        //           that held focus is realized again with an empty inner repeater, whatever the reuse order. Repeated on
+        //           fresh trees until both LayoutUpdated handler orders have run.
+        // Expected: no group has an item, so focus moves to the element after the outer repeater ("After").
+        // A failure means: focus stays on the recycled inner item inside a reused element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that reassigning the outer ItemsSource to empty groups, with focus on an inner item, moves focus out of the outer repeater, whatever the LayoutUpdated handler order.")]
+        public void VerifyResetToEmptyGroupsMovesFocusOutOfOuterRepeater()
+        {
+            RunNestedGroupChangeInBothHandlerOrders(
+                (groups, outer, k) =>
+                {
+                    var newGroups = new ObservableCollection<ObservableCollection<string>>(
+                        groups.Select(group => new ObservableCollection<string>()));
+                    outer.ItemsSource = newGroups;
+                    return newGroups;
+                },
+                (groups, k) => (-1, (string)null));
+        }
+
+        // Scenario: nested repeaters of string groups; focus on inner item 1 of group k; group k is replaced by a new group of
+        //           three items. The outer repeater reuses the cleared element for the new group, and its inner repeater
+        //           reuses the focused inner element for the new item 1. Repeated on fresh trees until both LayoutUpdated
+        //           handler orders have run.
+        // Expected: focus stays on item 1 of the new group (the live item at the focused item's index).
+        // A failure means: the outer repeater moves focus to another item or group although the reused element has a live
+        //                  item at the focused index.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing a group by a non-empty group, with focus on one of its inner items, moves focus to the new group's item at the same index, whatever the LayoutUpdated handler order.")]
+        public void VerifyReplacingGroupWithNonEmptyGroupFocusesItemAtSameIndex()
+        {
+            RunNestedGroupChangeInBothHandlerOrders(
+                (groups, outer, k) =>
+                {
+                    groups[k] = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"New #{k}.{i}"));
+                    return groups;
+                },
+                (groups, k) => (k, groups[k][1]));
+        }
+
+        // Scenario: nested repeaters built with element factories: the outer factory pools the inner repeaters it recycles
+        //           and reuses them first in, first out; the inner factory never reuses a Button, so a cleared inner Button
+        //           stays a recycled child of its repeater. Focus on inner item 2 (the last) of group k; group k is replaced
+        //           by a new group of three items, so the outer repeater reuses the cleared element for the new group while
+        //           focus is on a recycled inner Button. Repeated on fresh trees until both LayoutUpdated handler orders
+        //           have run.
+        // Expected: focus moves to item 2 of the new group, the live inner item at the focused item's index.
+        // A failure means: focus moves to the first item of the new group (the outer repeater chose the target instead of
+        //                  the inner repeater, so the result depends on the handler order), or stays on the recycled Button.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the outer repeater reuses the cleared element for a replaced group while focus is on a recycled inner element, focus moves to the new group's item at the focused index, whatever the LayoutUpdated handler order.")]
+        public void VerifyReplacingGroupInReusedElementFocusesInnerItemAtSameIndex()
+        {
+            RunNestedGroupChangeInBothHandlerOrders(
+                (groups, outer, k) =>
+                {
+                    groups[k] = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"New #{k}.{i}"));
+                    return groups;
+                },
+                (groups, k) => (k, groups[k][2]),
+                focusedItem: 2,
+                createItemTemplate: () => new PoolingGroupFactory());
+        }
+
+        // Outer ItemTemplate: an inner ItemsRepeater per group, pooled on recycle (its ItemsSource is cleared) and reused
+        // first in, first out.
+        private partial class PoolingGroupFactory : ElementFactory
+        {
+            private readonly Queue<ItemsRepeater> _pool = new Queue<ItemsRepeater>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                var repeater = _pool.Count > 0 ? _pool.Dequeue() : new ItemsRepeater { ItemTemplate = new NonRecyclingButtonFactory() };
+                repeater.ItemsSource = args.Data;
+                return repeater;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                var repeater = (ItemsRepeater)args.Element;
+                repeater.ItemsSource = null;
+                _pool.Enqueue(repeater);
+            }
+        }
+
+        // Inner ItemTemplate: a new Button for every item; recycled Buttons are never reused.
+        private partial class NonRecyclingButtonFactory : ElementFactory
+        {
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                return new Button { Content = args.Data, Height = 30 };
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+            }
+        }
+
+        // Runs a change of the nested trees' outer source, with focus on inner item focusedItem of group k (k = 1, 0, 2, ...),
+        // on fresh trees (at least 6, so that each k runs twice) until the LayoutUpdated handler of the focused group's inner
+        // repeater has run before the outer repeater's handler at least twice and after it at least once (the order follows
+        // the element addresses), or 12 trees.
+        // `expected` returns the group index of the expected focused item and its content (null: any live item of that group).
+        // `createItemTemplate` (optional) creates the outer ItemTemplate; by default it is CreateNestedRepeaters' DataTemplate.
+        private void RunNestedGroupChangeInBothHandlerOrders(
+            Func<ObservableCollection<ObservableCollection<string>>, ItemsRepeater, int, ObservableCollection<ObservableCollection<string>>> change,
+            Func<ObservableCollection<ObservableCollection<string>>, int, (int group, string content)> expected,
+            int focusedItem = 1,
+            Func<object> createItemTemplate = null)
+        {
+            int[] groupIndices = { 1, 0, 2 };
+            int innerFirst = 0;
+            int outerFirst = 0;
+            int trees = 0;
+            while (trees < 12 && (trees < 6 || innerFirst < 2 || outerFirst < 1))
+            {
+                int k = groupIndices[trees % groupIndices.Length];
+                trees++;
+                var groups = new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, 3).Select(g =>
+                    new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"Item #{g}.{i}"))));
+                var outer = CreateNestedRepeaters(groups, out var after, createItemTemplate);
+                FocusInnerItemAndWait(outer, k, focusedItem);
+
+                string firstHandler = null;
+                Button focusedBefore = null;
+                UIElement[] elementsBefore = null;
+                ObservableCollection<ObservableCollection<string>> source = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    focusedBefore = (Button)FocusManager.GetFocusedElement(outer.XamlRoot);
+                    elementsBefore = Enumerable.Range(0, groups.Count).Select(i => outer.TryGetElement(i)).ToArray();
+                    var inner = (ItemsRepeater)outer.TryGetElement(k);
+                    inner.LayoutUpdated += delegate { firstHandler = firstHandler ?? "inner"; };
+                    outer.LayoutUpdated += delegate { firstHandler = firstHandler ?? "outer"; };
+                    source = change(groups, outer, k);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    if (firstHandler == "inner") { innerFirst++; } else if (firstHandler == "outer") { outerFirst++; }
+                    var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                    Log.Comment($"Tree {trees}, group {k}: first LayoutUpdated handler '{firstHandler}'; focused {focused?.GetType().Name} '{focused?.Content}'" +
+                        (focused == focusedBefore ? " (the item focused before the change)" : ""));
+                    Log.Comment("Outer element reuse (new index <- old index): " + string.Join(", ", Enumerable.Range(0, source.Count).Select(i =>
+                        $"{i} <- {Array.IndexOf(elementsBefore, outer.TryGetElement(i))}")));
+                    Verify.IsNotNull(focused, "A Button is focused.");
+                    var (expectedGroup, expectedContent) = expected(source, k);
+                    if (expectedGroup < 0)
+                    {
+                        Verify.AreSame(after, focused, "Focus moves to the element after the outer repeater.");
+                        return;
+                    }
+
+                    Verify.AreNotSame(after, focused, "Focus does not leave the outer repeater.");
+                    var inner = VisualTreeHelper.GetParent(focused) as ItemsRepeater;
+                    Verify.IsNotNull(inner, "The focused Button is an inner item.");
+                    Verify.IsTrue(inner.GetElementIndex(focused) >= 0, "The focused inner item is realized (not a recycled element).");
+
+                    Verify.AreSame(outer.TryGetElement(expectedGroup), inner, $"The focused item belongs to the live outer element of group {expectedGroup}.");
+                    if (expectedContent != null)
+                    {
+                        Verify.AreEqual(expectedContent, focused.Content, "Focus is on the expected item.");
+                    }
+                });
+            }
+
+            Log.Comment($"Trees: {trees}; inner handler first: {innerFirst}; outer handler first: {outerFirst}");
+            Verify.IsTrue(innerFirst > 0, "Precondition: at least one tree ran the inner repeater's LayoutUpdated handler first.");
+        }
+
+        // Scenario: nested repeaters of string groups; the outer repeater has an ItemTransitionProvider that animates removals
+        //           (the transitions are kept running); focus on inner item 1 of group k; groups.RemoveAt(k). The removed
+        //           element fades out with its inner items still realized. Run for k = 1 and k = 2 (last group).
+        // Expected: after the layout pass, focus is on the nearest item of the nearest live group; completing the transitions
+        //           does not move focus again.
+        // A failure means: focus stays inside the fading element until its transition completes, or moves twice.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing a group whose removal is animated, with focus on one of its inner items, moves focus once to the nearest live group, not inside the fading element.")]
+        public void VerifyAnimatedGroupRemovalWithFocusedInnerItemMovesFocusToNearestGroup()
+        {
+            foreach (int k in new[] { 1, 2 })
+            {
+                Log.Comment($"Removing group {k}");
+                var groups = new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, 3).Select(g =>
+                    new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"Item #{g}.{i}"))));
+                var outer = CreateNestedRepeaters(groups, out var after);
+                var pendingRemoves = new List<ItemCollectionTransitionProgress>();
+                RunOnUIThread.Execute(() =>
+                {
+                    outer.ItemTransitionProvider = new ItemCollectionTransitionProviderDerived
+                    {
+                        ShouldAnimateFunc = transition => transition.Operation == ItemCollectionTransitionOperation.Remove,
+                        StartTransitionsFunc = transitions =>
+                        {
+                            foreach (var transition in transitions)
+                            {
+                                var progress = transition.Start();
+                                if (transition.Operation == ItemCollectionTransitionOperation.Remove)
+                                {
+                                    pendingRemoves.Add(progress);
+                                }
+                                else
+                                {
+                                    progress.Complete();
+                                }
+                            }
+                        }
+                    };
+                });
+                IdleSynchronizer.Wait();
+                FocusInnerItemAndWait(outer, k, 1);
+
+                UIElement removedElement = null;
+                Button focusedAfterLayout = null;
+                int gettingFocusCount = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    removedElement = outer.TryGetElement(k);
+                    outer.GettingFocus += (s, e) =>
+                    {
+                        gettingFocusCount++;
+                        Log.Comment($"GettingFocus: {(e.NewFocusedElement as Button)?.Content}");
+                    };
+                    groups.RemoveAt(k);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"Remove transitions in progress: {pendingRemoves.Count}");
+                    Verify.IsTrue(pendingRemoves.Count > 0, "Precondition: the removal is animated.");
+                    focusedAfterLayout = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                    Log.Comment($"Focused: {focusedAfterLayout?.GetType().Name} '{focusedAfterLayout?.Content}'");
+                    Verify.IsNotNull(focusedAfterLayout, "A Button is focused.");
+                    Verify.AreNotSame(after, focusedAfterLayout, "Focus does not leave the outer repeater.");
+                    Verify.AreNotSame(removedElement, VisualTreeHelper.GetParent(focusedAfterLayout), "Focus is not inside the fading element.");
+
+                    int expectedGroup = k < groups.Count ? k : k - 1;
+                    string expectedContent = k < groups.Count ? groups[expectedGroup][0] : groups[expectedGroup][2];
+                    Verify.AreEqual(expectedContent, focusedAfterLayout.Content, "Focus is on the nearest item of the nearest group.");
+                    Verify.AreSame(outer.TryGetElement(expectedGroup), VisualTreeHelper.GetParent(focusedAfterLayout), "The focused item belongs to the live outer element of that group.");
+                    Verify.AreEqual(1, gettingFocusCount, "Focus is moved once.");
+
+                    foreach (var progress in pendingRemoves)
+                    {
+                        progress.Complete();
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreSame(focusedAfterLayout, FocusManager.GetFocusedElement(outer.XamlRoot), "Completing the transition does not move focus.");
+                    Verify.AreEqual(1, gettingFocusCount, "Focus is still moved once.");
+                });
+            }
+        }
+
+        // Scenario: a SplitView with DisplayMode=Overlay and the pane open; the pane holds a Button ("PaneTop") and the repeater;
+        //           the SplitView content is a Button ("ContentButton"); focus on an item; Clear().
+        // Expected: focus moves to "PaneTop" and the pane stays open. Tab keeps focus inside an open pane that can be light
+        //           dismissed, so the move does not leave the pane.
+        // A failure means: focus moves to the SplitView content behind the open pane.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of a repeater in the open pane of an overlay SplitView keeps focus inside the pane.")]
+        public void VerifyClearInsideOpenOverlaySplitViewPaneKeepsFocusInPane()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button paneTop = null;
+            SplitView splitView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                paneTop = new Button { Content = "PaneTop" };
+                var pane = new StackPanel();
+                pane.Children.Add(paneTop);
+                pane.Children.Add(repeater);
+                splitView = new SplitView
+                {
+                    DisplayMode = SplitViewDisplayMode.Overlay,
+                    IsPaneOpen = true,
+                    OpenPaneLength = 200,
+                    Pane = pane,
+                    Content = new Button { Content = "ContentButton" },
+                    Width = 400,
+                    Height = 400
+                };
+                Content = splitView;
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(splitView.IsPaneOpen, "Precondition: the pane is open.");
+                data.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                Log.Comment("Focused: " + DescribeElement(repeater, focused) + "; pane open: " + splitView.IsPaneOpen);
+                Verify.AreSame(paneTop, focused, "Focus stays inside the open pane, on the element before the repeater.");
+                Verify.IsTrue(splitView.IsPaneOpen, "The pane stays open.");
+            });
+        }
+
         // Creates an outer repeater whose ItemTemplate root is an inner repeater bound to the group, between a "Before" and
-        // an "After" Button, without a ScrollViewer (every group is realized).
-        private ItemsRepeater CreateNestedRepeaters(ObservableCollection<ObservableCollection<string>> groups, out Button after)
+        // an "After" Button, without a ScrollViewer (every group is realized). createItemTemplate (optional) replaces the
+        // ItemTemplate.
+        private ItemsRepeater CreateNestedRepeaters(ObservableCollection<ObservableCollection<string>> groups, out Button after, Func<object> createItemTemplate = null)
         {
             ItemsRepeater outer = null;
             Button afterButton = null;
@@ -1223,7 +1578,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 outer = new ItemsRepeater
                 {
                     ItemsSource = groups,
-                    ItemTemplate = SharedHelpers.GetDataTemplate(
+                    ItemTemplate = createItemTemplate?.Invoke() ?? SharedHelpers.GetDataTemplate(
                         @"<ItemsRepeater ItemsSource='{Binding}'>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate><Button Content='{Binding}' Height='30'/></DataTemplate>

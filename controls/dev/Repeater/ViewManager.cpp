@@ -337,50 +337,7 @@ void ViewManager::OnOwnerLayoutUpdated()
         return;
     }
 
-    // Try the realized elements nearest to the cleared index first. On a tie, the element that now has the
-    // cleared index or follows it wins, because after a removal the next item takes the removed item's index.
-    std::vector<std::pair<int, winrt::UIElement>> candidates;
-    const auto children = m_owner->Children();
-    for (unsigned i = 0u; i < children.Size(); ++i)
-    {
-        const auto child = children.GetAt(i);
-        const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(child);
-        if (virtInfo && virtInfo->IsHeldByLayout())
-        {
-            candidates.emplace_back(virtInfo->Index(), child);
-        }
-    }
-
-    std::stable_sort(candidates.begin(), candidates.end(),
-        [clearedIndex](const auto& left, const auto& right)
-        {
-            const int64_t leftDistance = std::abs(static_cast<int64_t>(left.first) - clearedIndex);
-            const int64_t rightDistance = std::abs(static_cast<int64_t>(right.first) - clearedIndex);
-            if (leftDistance != rightDistance)
-            {
-                return leftDistance < rightDistance;
-            }
-            return left.first > right.first;
-        });
-
-    bool focusMoved = false;
-    for (const auto& candidate : candidates)
-    {
-        if (candidate.second == focusedChild)
-        {
-            // The layout reused the focused element for this item. Keep focus on it.
-            focusMoved = true;
-            break;
-        }
-
-        if (TryFocusChild(candidate.second, candidate.first < clearedIndex /* focusLastDescendant */, focusState))
-        {
-            focusMoved = true;
-            break;
-        }
-    }
-
-    if (!focusMoved)
+    if (!TryFocusRealizedChild(clearedIndex, focusState, focusedChild))
     {
         // There is no realized item to move focus to, for example because the source is empty.
         TryMoveFocusOutOfOwner(focusState);
@@ -430,6 +387,96 @@ winrt::UIElement ViewManager::GetFocusedChild()
     return nullptr;
 }
 
+// Moves focus to the realized element nearest to the cleared index (a descendant of it if the element is not focusable).
+// On a tie, the element that now has the cleared index or follows it wins, because after a removal the next item takes
+// the removed item's index. focusedChild (optional) is the child that contains focus; if the layout reused it, focus is
+// kept in it. Returns true if focus moved or was kept.
+bool ViewManager::TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild)
+{
+    std::vector<std::pair<int, winrt::UIElement>> candidates;
+    const auto children = m_owner->Children();
+    for (unsigned i = 0u; i < children.Size(); ++i)
+    {
+        const auto child = children.GetAt(i);
+        const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(child);
+        if (virtInfo && virtInfo->IsHeldByLayout())
+        {
+            candidates.emplace_back(virtInfo->Index(), child);
+        }
+    }
+
+    std::stable_sort(candidates.begin(), candidates.end(),
+        [clearedIndex](const auto& left, const auto& right)
+        {
+            const int64_t leftDistance = std::abs(static_cast<int64_t>(left.first) - clearedIndex);
+            const int64_t rightDistance = std::abs(static_cast<int64_t>(right.first) - clearedIndex);
+            if (leftDistance != rightDistance)
+            {
+                return leftDistance < rightDistance;
+            }
+            return left.first > right.first;
+        });
+
+    for (const auto& candidate : candidates)
+    {
+        // The layout reused the focused element for this item. Keep focus in it.
+        if (focusedChild && candidate.second == focusedChild && TryKeepFocusInReusedElement(focusedChild))
+        {
+            return true;
+        }
+
+        if (TryFocusChild(candidate.second, candidate.first < clearedIndex /* focusLastDescendant */, focusState))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// The layout reused the element that contains focus for another item. Focus can be on an element that a nested repeater
+// inside it cleared when the element got its new item (the element holds a new nested source). Returns true if focus is
+// on a realized element of every nested repeater, or if the nested repeater moved focus to one of its realized elements.
+bool ViewManager::TryKeepFocusInReusedElement(const winrt::UIElement& element)
+{
+    const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+    auto current = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+    while (current && current != static_cast<winrt::DependencyObject>(element))
+    {
+        const auto parent = CachedVisualTreeHelpers::GetParent(current);
+        if (const auto nestedRepeater = parent.try_as<winrt::ItemsRepeater>())
+        {
+            const auto currentAsElement = current.try_as<winrt::UIElement>();
+            const auto virtInfo = currentAsElement ? ItemsRepeater::TryGetVirtualizationInfo(currentAsElement) : nullptr;
+            if (virtInfo && !virtInfo->IsRealized())
+            {
+                return winrt::get_self<ItemsRepeater>(nestedRepeater)->ViewManager().TryMovePendingFocusToRealizedChild();
+            }
+        }
+        current = parent;
+    }
+
+    return true;
+}
+
+// Called by an ancestor repeater that reused the element containing this repeater while focus is still on an element
+// that this repeater cleared. Moving focus out of this repeater is left to the ancestor, which tries its other items.
+bool ViewManager::TryMovePendingFocusToRealizedChild()
+{
+    if (!m_pendingFocusMoveElement)
+    {
+        return false;
+    }
+
+    const int clearedIndex = m_pendingFocusMoveIndex;
+    const auto focusState = m_pendingFocusMoveState;
+    m_pendingFocusMoveElement.set(nullptr);
+
+    const bool focusMoved = TryFocusRealizedChild(clearedIndex, focusState, nullptr /* focusedChild */);
+    UpdateFocusedElement();
+    return focusMoved;
+}
+
 bool ViewManager::TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState)
 {
     if (child.try_as<winrt::Control>() && TryFocus(child, focusState))
@@ -469,8 +516,8 @@ bool ViewManager::TryFocus(const winrt::UIElement& element, winrt::FocusState fo
 // Moves focus to the nearest focusable element outside the owner: the first one that follows the owner in tree order,
 // or else the last one that precedes it. The search starts at the owner, not at the focused element: a Tab step from a
 // focused element inside a cleared container can stay inside that container. It does not cycle to the start of the
-// window, and it stays inside the XamlRoot content, inside the open popup that contains the owner, and inside the nearest
-// ancestor whose TabFocusNavigation is Cycle.
+// window, and it stays inside the XamlRoot content, inside the open popup that contains the owner, inside the nearest
+// ancestor whose TabFocusNavigation is Cycle, and inside an open SplitView pane that can be light dismissed.
 bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
 {
     const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
@@ -498,6 +545,20 @@ bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
         if (!parent)
         {
             break;
+        }
+
+        // An open SplitView pane that can be light dismissed keeps Tab focus inside it (CSplitView::ProcessTabStop),
+        // so focus does not leave the pane.
+        if (const auto splitView = parent.try_as<winrt::SplitView>(); splitView && splitView.IsPaneOpen() &&
+            (splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay))
+        {
+            const auto pane = splitView.Pane();
+            const auto paneLevel = std::find_if(path.begin(), path.end(), [&pane](const auto& level) { return pane && level.second == pane; });
+            if (paneLevel != path.end())
+            {
+                path.erase(paneLevel + 1, path.end());
+                break;
+            }
         }
 
         if (const auto parentRepeater = parent.try_as<winrt::ItemsRepeater>())
