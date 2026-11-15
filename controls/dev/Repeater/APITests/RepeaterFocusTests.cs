@@ -824,6 +824,841 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => dataSource.Inner[i].ToString(), expectedIndex: 2));
         }
 
+        // Scenario: item 3 is the tracked focused item; focus moves programmatically to item 2 and, in the same tick
+        //           (before GotFocus is raised), items 2 and 3 are removed by one notification. Item 2 is cleared before
+        //           the tracked item 3.
+        // Expected: after layout focus is on the first survivor at index 2.
+        // A failure means: the move is keyed to the tracked element only, so focus stays on the cleared item 2.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that focusing the item before the tracked focused item and removing both in the same tick moves focus, after layout, to the first survivor.")]
+        public void VerifyFocusChangeToPreviousItemAndRemoveInSameTickMovesFocusToSurvivor()
+        {
+            CustomItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList()));
+            var fixture = CreateFocusFixture(dataSource);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(((Control)fixture.Repeater.TryGetElement(2)).Focus(FocusState.Keyboard));
+                dataSource.Remove(2 /* index */, 2 /* count */, false /* reset */);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => dataSource.Inner[i].ToString(), expectedIndex: 2));
+        }
+
+        // Scenario: keyed source with an item transition provider that animates removals; a Reset removes the focused
+        //           item's key, so its element is a keyed leftover that is handed to the transition (it fades out).
+        // Expected: focus moves once, after layout, to the live item at the removed index; never onto the fading element;
+        //           completing the transition does not move focus again.
+        // A failure means: focus stays on, or moves onto, the fading element, or moves more than once.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a keyed Reset removes the focused item and its removal is animated, focus moves once to the live item at the removed index and never onto the fading element.")]
+        public void VerifyKeyedResetWithRemoveTransitionMovesFocusToLiveItem()
+        {
+            CustomItemsSource dataSource = null;
+            ItemCollectionTransitionProviderDerived provider = null;
+            var pendingRemoves = new List<ItemCollectionTransitionProgress>();
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource = new CustomItemsSourceWithUniqueId(Enumerable.Range(0, 10).ToList());
+                provider = new ItemCollectionTransitionProviderDerived
+                {
+                    ShouldAnimateFunc = transition => transition.Operation == ItemCollectionTransitionOperation.Remove,
+                    StartTransitionsFunc = transitions =>
+                    {
+                        foreach (var transition in transitions)
+                        {
+                            var progress = transition.Start();
+                            if (transition.Operation == ItemCollectionTransitionOperation.Remove)
+                            {
+                                pendingRemoves.Add(progress);
+                            }
+                            else
+                            {
+                                progress.Complete();
+                            }
+                        }
+                    }
+                };
+            });
+            var fixture = CreateFocusFixture(dataSource);
+            RunOnUIThread.Execute(() => fixture.Repeater.ItemTransitionProvider = provider);
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            UIElement removedElement = null;
+            int gettingFocusCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                removedElement = fixture.Repeater.TryGetElement(3);
+                fixture.Repeater.GettingFocus += (s, e) =>
+                {
+                    gettingFocusCount++;
+                    Log.Comment("GettingFocus: " + DescribeElement(fixture.Repeater, e.NewFocusedElement));
+                };
+                dataSource.Remove(3 /* index */, 1 /* count */, true /* reset */);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"Remove transitions in progress: {pendingRemoves.Count}");
+                Verify.AreNotSame(removedElement, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus is not on the removed item's element.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => dataSource.Inner[i].ToString(), expectedIndex: 3);
+                Verify.AreEqual(1, gettingFocusCount, "Focus is moved once.");
+
+                foreach (var progress in pendingRemoves)
+                {
+                    progress.Complete();
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => dataSource.Inner[i].ToString(), expectedIndex: 3);
+                Verify.AreEqual(1, gettingFocusCount, "Completing the transition does not move focus again.");
+            });
+        }
+
+        // Scenario: item containers are StackPanels with three Buttons; focus is on the middle Button of an item; Clear().
+        // Expected: focus moves to the element after the repeater ("After").
+        // A failure means: focus stays on a Button inside a cleared container.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource with focus on a middle descendant of a Panel container moves focus to the element after the repeater.")]
+        public void VerifyClearWithFocusInsidePanelContainerMovesFocusOutOfRepeater()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data, itemTemplate:
+                "<StackPanel Orientation='Horizontal' Height='30'><Button Content='{Binding}'/><Button Content='Middle'/><Button Content='Last'/></StackPanel>");
+            FocusDescendantAndWait(fixture.Repeater, 1, "Middle");
+
+            RunOnUIThread.Execute(() => data.Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOutsideRepeater(fixture);
+                Verify.AreSame(fixture.After, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus moves to the element after the repeater.");
+            });
+        }
+
+        // Scenario: item containers are focusable ContentControls that contain two Buttons; focus is on the first inner
+        //           Button of an item; Clear(). A Tab step from that Button stays inside the container (the second Button,
+        //           or the ContentControl itself for Shift+Tab).
+        // Expected: focus moves to the element after the repeater ("After").
+        // A failure means: the move out of the repeater stops at elements inside the cleared container, so focus stays on it.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource with focus inside a focusable Control container moves focus to the element after the repeater, not to elements of the cleared container.")]
+        public void VerifyClearWithFocusInsideControlContainerMovesFocusOutOfRepeater()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data, itemTemplate:
+                "<ContentControl IsTabStop='True' Height='30'><StackPanel Orientation='Horizontal'><Button Content='First'/><Button Content='Second'/></StackPanel></ContentControl>");
+            FocusDescendantAndWait(fixture.Repeater, 1, "First");
+
+            RunOnUIThread.Execute(() => data.Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOutsideRepeater(fixture);
+                Verify.AreSame(fixture.After, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus moves to the element after the repeater.");
+            });
+        }
+
+        // Scenario: the repeater is the last focusable content (no element after it); focus inside; Clear().
+        // Expected: focus moves to the element just before the repeater ("Middle"); it does not cycle to the first
+        //           focusable element of the window.
+        // A failure means: focus jumps to the top of the window (Tab cycle) or stays on a cleared element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of the last focusable repeater moves focus to the element just before it instead of cycling to the start of the window.")]
+        public void VerifyClearOfLastRepeaterMovesFocusToPreviousElement()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button middle = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                middle = new Button { Content = "Middle" };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Top" });
+                root.Children.Add(middle);
+                root.Children.Add(new ScrollViewer { Content = repeater, Height = 200, Width = 200 });
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() => data.Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                Log.Comment("Focused: " + DescribeElement(repeater, focused));
+                Verify.AreSame(middle, focused, "Focus moves to the element just before the repeater.");
+            });
+        }
+
+        // Scenario: the repeater is inside an open Flyout, between two Buttons; focus inside; Clear().
+        // Expected: focus moves to the Button after the repeater inside the flyout, and the flyout stays open.
+        // A failure means: focus leaves the flyout (which light-dismisses it) or stays on a cleared element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of a repeater inside an open Flyout keeps focus inside the flyout and the flyout open.")]
+        public void VerifyClearInsideFlyoutKeepsFocusInFlyout()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button bottom = null;
+            Button anchor = null;
+            Flyout flyout = null;
+            var opened = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                bottom = new Button { Content = "Bottom" };
+                var panel = new StackPanel();
+                panel.Children.Add(new Button { Content = "Top" });
+                panel.Children.Add(repeater);
+                panel.Children.Add(bottom);
+                flyout = new Flyout { Content = panel };
+                flyout.Opened += delegate { opened.Set(); };
+                anchor = new Button { Content = "Anchor" };
+                Content = anchor;
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() => flyout.ShowAt(anchor));
+                Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to open.");
+                IdleSynchronizer.Wait();
+                FocusItemAndWait(repeater, 1, FocusState.Keyboard);
+
+                RunOnUIThread.Execute(() => data.Clear());
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                    Log.Comment("Focused: " + DescribeElement(repeater, focused));
+                    Verify.IsTrue(flyout.IsOpen, "The flyout stays open.");
+                    Verify.AreSame(bottom, focused, "Focus moves to the Button after the repeater inside the flyout.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => flyout.Hide());
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        // Scenario: every item except the focused one is disabled; the focused item is removed.
+        // Expected: no live item can take focus, so focus moves out of the repeater to the element after it.
+        // A failure means: focus stays on the removed, cleared element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the focused item is removed and no remaining item can take focus, focus moves to the element after the repeater.")]
+        public void VerifyRemovingFocusedItemWithAllOthersDisabledMovesFocusOutOfRepeater()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    if (i != 2)
+                    {
+                        ((Control)fixture.Repeater.TryGetElement(i)).IsEnabled = false;
+                    }
+                }
+                data.RemoveAt(2);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOutsideRepeater(fixture);
+                Verify.AreSame(fixture.After, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot));
+            });
+        }
+
+        // Scenario: 5 items (all visible, so no element is reused by the next layout pass); a GettingFocus handler on the
+        //           repeater cancels every focus move into the repeater; the focused item is removed.
+        // Expected: each live item is tried once, then focus moves to the element after the repeater.
+        // A failure means: a cancelled move is taken as done, so focus is left on the cleared element; or the repeater
+        //                  tries an item more than once.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a GettingFocus handler cancels every focus move into the items, each item is tried once and focus moves to the element after the repeater.")]
+        public void VerifyCancelledFocusMovesIntoItemsMoveFocusOutOfRepeater()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            var attempts = new Dictionary<DependencyObject, int>();
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.GettingFocus += (s, e) =>
+                {
+                    var target = e.NewFocusedElement;
+                    attempts[target] = attempts.TryGetValue(target, out int count) ? count + 1 : 1;
+                    Log.Comment("Cancelling GettingFocus: " + DescribeElement(fixture.Repeater, target));
+                    e.Cancel = true;
+                };
+                data.RemoveAt(3);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOutsideRepeater(fixture);
+                Verify.AreSame(fixture.After, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot));
+                Verify.AreEqual(4, attempts.Count, "Every live item was tried.");
+                foreach (var pair in attempts)
+                {
+                    Verify.AreEqual(1, pair.Value, "Each item is tried once.");
+                }
+            });
+        }
+
+        // Scenario: a GettingFocus handler redirects the repeater's focus move to item 5; the focused item 3 is removed.
+        // Expected: focus is on item 5, and item 5 (the element that actually got focus) is the one the repeater tracks: it
+        //           stays realized and focused when it is scrolled out of view.
+        // A failure means: the repeater tracks or pins the element it tried instead of the one that got focus.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a GettingFocus handler redirects the repeater's focus move, the repeater tracks and pins the element that actually got focus.")]
+        public void VerifyRedirectedFocusMoveIsTrackedByRepeater()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 50).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            UIElement redirectTarget = null;
+            RunOnUIThread.Execute(() =>
+            {
+                bool redirected = false;
+                fixture.Repeater.GettingFocus += (s, e) =>
+                {
+                    if (!redirected)
+                    {
+                        redirected = true;
+                        redirectTarget = fixture.Repeater.TryGetElement(5);
+                        Log.Comment("Redirecting GettingFocus from " + DescribeElement(fixture.Repeater, e.NewFocusedElement) + " to " + DescribeElement(fixture.Repeater, redirectTarget));
+                        Verify.IsTrue(e.TrySetNewFocusedElement(redirectTarget));
+                    }
+                };
+                data.RemoveAt(3);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(redirectTarget, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus is where the handler redirected it.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 5);
+            });
+
+            ScrollToOffset(fixture.ScrollViewer, 900);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(5, fixture.Repeater.GetElementIndex(redirectTarget), "The focused element is pinned and keeps its index out of view.");
+                Verify.AreSame(redirectTarget, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "The focused element keeps focus out of view.");
+            });
+        }
+
+        // Scenario: Reset (Clear + Add) with focus on item 3; the recycle pool gives the cleared, still-focused container
+        //           back to the layout for some index before the focus move runs.
+        // Expected: after layout focus is on the live item at index 3; if the old container was reused for another index,
+        //           it is not kept realized (pinned) when that index is scrolled out of view.
+        // A failure means: focus stays on the reused container at the wrong index, or the reused container stays pinned.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the recycle pool reuses the cleared focused container during the next layout, focus ends on the live item at the old index and the reused container is not left pinned.")]
+        public void VerifyResetWithReusedFocusedContainerMovesFocusToItemAtOldIndex()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 50).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+            VerifyResetWithReusedFocusedContainer(fixture, data);
+        }
+
+        // Scenario: as above, with an app IElementFactory that returns the cleared, still-focused container for the first item
+        //           that the layout realizes after the change (not item 3).
+        // Expected: focus moves to the live item at index 3 (the nearest to the cleared index), and the reused container is
+        //           not left pinned at its new index.
+        // A failure means: focus stays on the reused container, or it stays pinned out of view.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when an app element factory reuses the cleared focused container for another index, focus moves to the live item at the old index and the reused container is not left pinned.")]
+        public void VerifyFactoryReusingFocusedContainerForAnotherIndexMovesFocusToItemAtOldIndex()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 50).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            UIElement focusedContainer = null;
+            bool reuseFocusedContainer = false;
+            var pool = new List<UIElement>();
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.ItemTemplate = new MockElementFactory
+                {
+                    GetElementFunc = (index, owner) =>
+                    {
+                        UIElement element;
+                        if (reuseFocusedContainer && pool.Contains(focusedContainer))
+                        {
+                            reuseFocusedContainer = false;
+                            element = focusedContainer;
+                            Log.Comment($"The factory returns the cleared focused container for index {index}");
+                        }
+                        else if (pool.Count > 0)
+                        {
+                            element = pool[pool.Count - 1];
+                        }
+                        else
+                        {
+                            element = new Button { Height = 30 };
+                        }
+                        pool.Remove(element);
+                        ((Button)element).Content = data[index];
+                        return element;
+                    },
+                    ClearElementFunc = (element, owner) => pool.Add(element)
+                };
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                focusedContainer = fixture.Repeater.TryGetElement(3);
+                reuseFocusedContainer = true;
+                data.Clear();
+                for (int i = 0; i < 50; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                int reusedIndex = fixture.Repeater.GetElementIndex(focusedContainer);
+                Log.Comment($"The cleared focused container now has index {reusedIndex}");
+                Verify.IsTrue(reusedIndex >= 0 && reusedIndex != 3, "Precondition: the cleared focused container was reused for another index.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+            });
+
+            ScrollToOffset(fixture.ScrollViewer, 900);
+            RunOnUIThread.Execute(() =>
+            {
+                int index = fixture.Repeater.GetElementIndex(focusedContainer);
+                Log.Comment($"Reused container index after scrolling: {index}");
+                Verify.IsTrue(index < 0 || index >= 25, "The reused container is not kept realized out of view.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+            });
+        }
+
+        // Scenario: two repeaters share one RecyclingElementFactory (one RecyclePool); in the same tick repeater A is cleared
+        //           with focus on its item 3, and repeater B gets items, so B can take A's cleared elements.
+        // Expected: no exception; focus is not on an element of A (A has no items); if focus is in B, it is on a live item.
+        // A failure means: A moves focus into an element that now belongs to B, or focus stays on a stale element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing a repeater with focus while another repeater that shares its RecyclePool takes the cleared elements does not throw and leaves focus on no stale element.")]
+        public void VerifyClearWithSharedRecyclePoolDoesNotLeaveFocusOnStaleElement()
+        {
+            var dataA = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "A #" + i));
+            var dataB = new ObservableCollection<string>();
+            ItemsRepeater repeaterA = null;
+            ItemsRepeater repeaterB = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var factory = CreateElementFactory(ButtonItemTemplate);
+                repeaterA = new ItemsRepeater { ItemsSource = dataA, ItemTemplate = factory, VerticalCacheLength = 0 };
+                repeaterB = new ItemsRepeater { ItemsSource = dataB, ItemTemplate = factory, VerticalCacheLength = 0 };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(new ScrollViewer { Content = repeaterA, Height = 150, Width = 200 });
+                root.Children.Add(new ScrollViewer { Content = repeaterB, Height = 150, Width = 200 });
+                root.Children.Add(new Button { Content = "After" });
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(repeaterA, 3, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                dataA.Clear();
+                for (int i = 0; i < 10; i++)
+                {
+                    dataB.Add("B #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var containerA = GetFocusedContainer(repeaterA, out var focused);
+                Log.Comment("Focused (A): " + DescribeElement(repeaterA, focused));
+                Log.Comment("Focused (B): " + DescribeElement(repeaterB, focused));
+                Verify.IsNull(containerA, "Focus is not on an element of the empty repeater A.");
+                if (GetFocusedContainer(repeaterB, out _) != null)
+                {
+                    VerifyFocusOnLiveItem(repeaterB, i => dataB[i]);
+                }
+            });
+        }
+
+        // Scenario: the ScrollViewer is scrolled to item 50; focus is on visible item 52; Reset with the same count.
+        // Expected: focus moves to the live item 52; the scroll offset stays where it was (the target is already in view);
+        //           no layout cycle.
+        // A failure means: the focus move scrolls the list away (for example back to the top) or does not settle.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Reset with focus on a visible item of a scrolled list moves focus to the live item at the same index without changing the scroll offset.")]
+        public void VerifyResetInScrolledListKeepsScrollOffset()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            ScrollToOffset(fixture.ScrollViewer, 1500);
+            FocusItemAndWait(fixture.Repeater, 52, FocusState.Keyboard);
+
+            double offsetBefore = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                offsetBefore = fixture.ScrollViewer.VerticalOffset;
+                data.Clear();
+                for (int i = 0; i < 100; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"VerticalOffset before {offsetBefore}, after {fixture.ScrollViewer.VerticalOffset}");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 52);
+                Verify.IsTrue(Math.Abs(fixture.ScrollViewer.VerticalOffset - offsetBefore) <= 30, "The scroll offset stays where it was.");
+            });
+        }
+
+        // Scenario: auto-recycling custom layout; an ElementClearing handler calls UpdateLayout() (with another element
+        //           dirty, so LayoutUpdated is raised) while a Reset is processed with focus on item 2.
+        // Expected: no focus move while the change is processed (also not from that LayoutUpdated); after layout focus is on
+        //           the live item at index 2.
+        // A failure means: the focus move runs inside the collection change and moves focus through cleared elements.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a LayoutUpdated raised by an UpdateLayout call from an ElementClearing handler during a Reset does not move focus inside the change, and focus ends on the live item.")]
+        public void VerifyUpdateLayoutFromElementClearingDuringResetDoesNotMoveFocusInsideChange()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            VirtualizingLayout layout = null;
+            RunOnUIThread.Execute(() => layout = CreateAutoRecyclingLayout(() => 0, int.MaxValue));
+            var fixture = CreateFocusFixture(data, layout);
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                bool updated = false;
+                fixture.Repeater.ElementClearing += (s, e) =>
+                {
+                    if (!updated)
+                    {
+                        updated = true;
+                        fixture.After.Width = 120;
+                        fixture.Root.UpdateLayout();
+                    }
+                };
+            });
+
+            int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () =>
+            {
+                data.Clear();
+                for (int i = 0; i < 5; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2));
+        }
+
+        // Scenario: focus item 0, scroll it away (pinned), remove it; then Tab from the element before the repeater
+        //           through the items.
+        // Expected: every item that Tab reaches is a realized item that shows the current data; the removed item's element
+        //           is never reached.
+        // A failure means: the stale pinned element is still a tab stop.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after removing a focused, scrolled-out item, Tab navigation into the repeater reaches only live items.")]
+        public void VerifyTabAfterRemovingPinnedFocusedItemReachesOnlyLiveItems()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data, itemTemplate: TallButtonItemTemplate);
+            var element0 = FocusItemAndScrollAway(fixture);
+
+            RunOnUIThread.Execute(() => data.RemoveAt(0));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(fixture.Before.Focus(FocusState.Keyboard)));
+            IdleSynchronizer.Wait();
+
+            for (int step = 0; step < 5; step++)
+            {
+                bool reachedAfter = false;
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next, new FindNextElementOptions { SearchRoot = fixture.Repeater.XamlRoot.Content }));
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var focused = FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot);
+                    Log.Comment($"Tab {step}: " + DescribeElement(fixture.Repeater, focused as DependencyObject));
+                    Verify.AreNotSame(element0, focused, "The removed item's element is not a tab stop.");
+                    reachedAfter = focused == fixture.After;
+                    if (!reachedAfter)
+                    {
+                        VerifyFocusOnLiveItem(fixture.Repeater, i => data[i]);
+                    }
+                });
+                if (reachedAfter)
+                {
+                    break;
+                }
+            }
+        }
+
+        // Scenario: nested repeaters in a ScrollViewer; focus is on item 1 of the inner repeater of group 1; the inner source
+        //           is reset and refilled. Then focus moves out and group 1 is scrolled out of view.
+        // Expected: focus moves to the live inner item at index 1; after focus leaves, the outer element of group 1 is not
+        //           kept realized out of view (the ancestor pins added for focus are released).
+        // A failure means: focus ends on a cleared inner element, or the outer element stays pinned.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that resetting an inner repeater's source with focus on its item moves focus to the live inner item and leaves no pin on the outer element.")]
+        public void VerifyInnerRepeaterResetMovesFocusToLiveItemAndReleasesOuterPin()
+        {
+            var groups = new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, 20).Select(g =>
+                new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => $"Item #{g}.{i}"))));
+            ItemsRepeater outer = null;
+            ScrollViewer scrollViewer = null;
+            Button after = null;
+            Button focusTarget = null;
+            var gotFocus = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                outer = new ItemsRepeater
+                {
+                    ItemsSource = groups,
+                    VerticalCacheLength = 0,
+                    ItemTemplate = SharedHelpers.GetDataTemplate(
+                        @"<ItemsRepeater ItemsSource='{Binding}'>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate><Button Content='{Binding}' Height='30'/></DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                          </ItemsRepeater>")
+                };
+                scrollViewer = new ScrollViewer { Content = outer, Height = 200, Width = 200 };
+                after = new Button { Content = "After" };
+                var root = new StackPanel();
+                root.Children.Add(scrollViewer);
+                root.Children.Add(after);
+                Content = root;
+                Content.UpdateLayout();
+
+                var inner = (ItemsRepeater)outer.TryGetElement(1);
+                focusTarget = (Button)inner.TryGetElement(1);
+                focusTarget.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(focusTarget.Focus(FocusState.Keyboard));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for the inner item to get focus.");
+            IdleSynchronizer.Wait();
+
+            ItemsRepeater innerOfGroup1 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                innerOfGroup1 = (ItemsRepeater)outer.TryGetElement(1);
+                groups[1].Clear();
+                for (int i = 0; i < 3; i++)
+                {
+                    groups[1].Add($"New #1.{i}");
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                Log.Comment($"Focused: {focused?.Content}");
+                Verify.IsNotNull(focused, "A Button is focused.");
+                Verify.AreEqual("New #1.1", focused.Content, "Focus is on the new inner item at the same index.");
+                Verify.AreSame(innerOfGroup1, VisualTreeHelper.GetParent(focused), "The focused item belongs to the inner repeater of group 1.");
+                Verify.AreEqual(1, innerOfGroup1.GetElementIndex(focused), "The inner item is realized.");
+                Verify.IsTrue(after.Focus(FocusState.Programmatic));
+            });
+            IdleSynchronizer.Wait();
+
+            ScrollToOffset(scrollViewer, 1000);
+            RunOnUIThread.Execute(() =>
+            {
+                int index = outer.GetElementIndex(innerOfGroup1);
+                Log.Comment($"Outer index of the group 1 element after scrolling: {index}");
+                Verify.IsTrue(index != 1, "The outer element of group 1 is not kept realized (pinned) out of view.");
+            });
+        }
+
+        // Scenario: NonVirtualizingLayout; in one tick the Layout is replaced (the focused element goes to the pinned pool)
+        //           and a new ItemsSource is assigned; later another ItemsSource is assigned (elements come back from the
+        //           recycle pool).
+        // Expected: no crash; the old focused element is cleared; focus is not left on it (the reassignment removes it
+        //           from Children, so the core moves focus, as in VerifyNonVirtualizingReassignmentDoesNotLeaveFocusOnClearedElement);
+        //           the later reassignment shows its items.
+        // A failure means: the pinned element survives Children().Clear() of the reassignment or breaks the recycle pool.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that with a NonVirtualizingLayout, a layout change followed by an ItemsSource reassignment in the same tick clears the pinned focused element and does not leave focus on it.")]
+        public void VerifyNonVirtualizingLayoutChangeAndReassignmentClearsPinnedFocusedElement()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var newData = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Filtered #" + i));
+            var lastData = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Last #" + i));
+            Layout layout = null;
+            RunOnUIThread.Execute(() => layout = new NonVirtualStackLayout());
+            var fixture = CreateFocusFixture(data, layout);
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            UIElement focusedElement = null;
+            RunOnUIThread.Execute(() =>
+            {
+                focusedElement = fixture.Repeater.TryGetElement(2);
+                fixture.Repeater.Layout = new NonVirtualStackLayout();
+                fixture.Repeater.ItemsSource = newData;
+                Verify.AreEqual(-1, fixture.Repeater.GetElementIndex(focusedElement), "The pinned focused element is cleared by the reassignment.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotSame(focusedElement, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus is not left on the cleared element.");
+                VerifyFocusNotOnClearedElement(fixture.Repeater, i => newData[i]);
+                Verify.AreEqual(newData[0], ((Button)fixture.Repeater.TryGetElement(0)).Content);
+                fixture.Repeater.ItemsSource = lastData;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(lastData[0], ((Button)fixture.Repeater.TryGetElement(0)).Content);
+                VerifyFocusNotOnClearedElement(fixture.Repeater, i => lastData[i]);
+            });
+        }
+
+        // Scenario: NonVirtualizingLayout; in one tick the Layout is replaced (the focused element goes to the pinned pool)
+        //           and the ItemTemplate is changed.
+        // Expected: the old focused element is cleared exactly once (one ElementClearing); after layout focus is on the
+        //           new-template element at the same index.
+        // A failure means: the old-template element is kept, cleared twice, or keeps focus.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that with a NonVirtualizingLayout, a layout change followed by an ItemTemplate change in the same tick clears the pinned focused element once and moves focus to the new-template element.")]
+        public void VerifyNonVirtualizingLayoutChangeAndTemplateChangeClearsPinnedFocusedElementOnce()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            Layout layout = null;
+            RunOnUIThread.Execute(() => layout = new NonVirtualStackLayout());
+            var fixture = CreateFocusFixture(data, layout);
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            UIElement focusedElement = null;
+            int clearing = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                focusedElement = fixture.Repeater.TryGetElement(2);
+                fixture.Repeater.ElementClearing += (s, e) => { if (e.Element == focusedElement) { clearing++; } };
+                fixture.Repeater.Layout = new NonVirtualStackLayout();
+                fixture.Repeater.ItemTemplate = CreateElementFactory("<Button Content='{Binding}' Height='30' Tag='NewTemplate'/>");
+                Verify.AreEqual(-1, fixture.Repeater.GetElementIndex(focusedElement), "The pinned focused element is cleared by the template change.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, clearing, "ElementClearing is raised once for the old focused element.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2);
+                Verify.AreEqual("NewTemplate", ((Button)FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot)).Tag);
+            });
+        }
+
+        private void VerifyResetWithReusedFocusedContainer(FocusFixture fixture, ObservableCollection<string> data)
+        {
+            UIElement focusedContainer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                focusedContainer = fixture.Repeater.TryGetElement(3);
+                data.Clear();
+                for (int i = 0; i < 50; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            int reusedIndex = -1;
+            RunOnUIThread.Execute(() =>
+            {
+                reusedIndex = fixture.Repeater.GetElementIndex(focusedContainer);
+                Log.Comment($"The cleared focused container now has index {reusedIndex}");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+            });
+
+            ScrollToOffset(fixture.ScrollViewer, 900);
+            RunOnUIThread.Execute(() =>
+            {
+                int index = fixture.Repeater.GetElementIndex(focusedContainer);
+                Log.Comment($"Old focused container index after scrolling: {index}");
+                if (reusedIndex != 3)
+                {
+                    Verify.IsTrue(index < 0 || index >= 25, "The reused container is not kept realized out of view.");
+                }
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+            });
+        }
+
+        private void FocusDescendantAndWait(ItemsRepeater repeater, int index, string content)
+        {
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var target = FindDescendant<Button>(repeater.TryGetElement(index), b => (b.Content as string) == content);
+                Verify.IsNotNull(target, $"Item {index} has a Button '{content}'.");
+                target.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(target.Focus(FocusState.Keyboard));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), $"Waiting for '{content}' of item {index} to get focus.");
+            IdleSynchronizer.Wait();
+        }
+
+        private static T FindDescendant<T>(DependencyObject root, Func<T, bool> predicate) where T : DependencyObject
+        {
+            if (root is T match && predicate(match))
+            {
+                return match;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var found = FindDescendant(VisualTreeHelper.GetChild(root, i), predicate);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+            return null;
+        }
+
         private enum PinnedChange { Remove, Replace, Reset, Reassign, TemplateChange }
 
         private void VerifyPinnedFocusedElementIsCleared(PinnedChange change)

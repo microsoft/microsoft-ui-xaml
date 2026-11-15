@@ -2717,6 +2717,306 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        #region Focus after ItemsSource changes (task.ms/56189664)
+
+        // ItemsView hosts an ItemsRepeater of ItemContainers. When the repeater clears the focused ItemContainer, it moves
+        // focus once, after the next layout pass, to the live ItemContainer nearest the cleared index, and never onto an
+        // ItemContainer that is fading out in a removal transition.
+
+        // Scenario: StackLayout, keyboard focus on item 3; RemoveAt(3).
+        // Expected: after layout focus is on the live ItemContainer at index 3 (the next item), with keyboard FocusState.
+        // A failure means: focus moves to the first item or stays on the removed ItemContainer.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the focused item of an ItemsView moves focus, after layout, to the live ItemContainer at the same index.")]
+        public void VerifyRemovingFocusedItemMovesFocusToNextItemContainer()
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 20));
+            var itemsView = CreateItemsViewForFocusTests(items);
+            FocusItemContainerAndWait(itemsView, 3);
+
+            RunOnUIThread.Execute(() => items.RemoveAt(3));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var container = VerifyFocusOnLiveItemContainer(itemsView, items, expectedIndex: 3);
+                Verify.AreEqual(FocusState.Keyboard, container.FocusState);
+            });
+        }
+
+        // Scenario: LinedFlowLayout with its removal-animating transition provider, keyboard focus on item 3; the source is
+        //           cleared and refilled in the same tick.
+        // Expected: no GettingFocus on the ItemsView while the change is processed; after layout focus is on a live
+        //           ItemContainer that shows current data, not on an ItemContainer that is fading out.
+        // A failure means: focus hops through ItemContainers that the change clears, or stays on a fading one.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Reset with focus on an item of an ItemsView with item transitions moves focus once, after layout, to a live ItemContainer.")]
+        public void VerifyResetWithTransitionsMovesFocusToLiveItemContainer()
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 20));
+            ItemsView itemsView = null;
+            RunOnUIThread.Execute(() => itemsView = new ItemsView
+            {
+                ItemsSource = items,
+                Layout = new LinedFlowLayout(),
+                ItemTransitionProvider = new LinedFlowLayoutItemCollectionTransitionProvider()
+            });
+            SetupItemsViewForFocusTests(itemsView);
+            FocusItemContainerAndWait(itemsView, 3);
+
+            int gettingFocusDuringChange = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                bool inChange = true;
+                itemsView.GettingFocus += (s, e) =>
+                {
+                    if (inChange)
+                    {
+                        gettingFocusDuringChange++;
+                        Log.Comment($"GettingFocus during the change: {e.NewFocusedElement?.GetType().Name}");
+                    }
+                };
+                items.Clear();
+                for (int i = 100; i < 120; i++)
+                {
+                    items.Add(i);
+                }
+                inChange = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+                VerifyFocusOnLiveItemContainer(itemsView, items);
+            });
+        }
+
+        // Scenario: LinedFlowLayout with its removal-animating transition provider, keyboard focus on item 3; RemoveAt(3);
+        //           then the removal transition completes.
+        // Expected: after layout focus is on the live ItemContainer at index 3; when the transition completes, focus does
+        //           not move again.
+        // A failure means: focus stays on the fading ItemContainer, or the transition completion moves focus a second time.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the focused item of an ItemsView with item transitions moves focus once to the live ItemContainer at the same index, and the transition completion does not move it again.")]
+        public void VerifyRemovingFocusedItemWithTransitionsMovesFocusOnce()
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 20));
+            ItemsView itemsView = null;
+            RunOnUIThread.Execute(() => itemsView = new ItemsView
+            {
+                ItemsSource = items,
+                Layout = new LinedFlowLayout(),
+                ItemTransitionProvider = new LinedFlowLayoutItemCollectionTransitionProvider()
+            });
+            SetupItemsViewForFocusTests(itemsView);
+            FocusItemContainerAndWait(itemsView, 3);
+
+            int gettingFocusCount = 0;
+            UIElement removedContainer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                removedContainer = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView).TryGetElement(3);
+                itemsView.GettingFocus += (s, e) =>
+                {
+                    gettingFocusCount++;
+                    Log.Comment($"GettingFocus: {e.NewFocusedElement?.GetType().Name}");
+                };
+                items.RemoveAt(3);
+            });
+            IdleSynchronizer.Wait();
+
+            int countAfterLayout = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                countAfterLayout = gettingFocusCount;
+                Verify.AreNotSame(removedContainer, FocusManager.GetFocusedElement(itemsView.XamlRoot), "Focus is not on the removed ItemContainer.");
+                VerifyFocusOnLiveItemContainer(itemsView, items, expectedIndex: 3);
+            });
+
+            // Let the removal transition finish.
+            Thread.Sleep(1000);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(countAfterLayout, gettingFocusCount, "The transition completion does not move focus again.");
+                VerifyFocusOnLiveItemContainer(itemsView, items, expectedIndex: 3);
+            });
+        }
+
+        // Scenario: a transition provider that animates removals and completes every transition synchronously inside
+        //           StartTransitions; keyboard focus on item 3; RemoveAt(3).
+        // Expected: no exception; after layout focus is on the live ItemContainer at index 3.
+        // A failure means: a transition completed during the change moves focus a second time or onto a cleared element.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that with a transition provider that completes removals synchronously, removing the focused item moves focus to the live ItemContainer at the same index.")]
+        public void VerifyRemovingFocusedItemWithSynchronousTransitionMovesFocusToLiveItemContainer()
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 20));
+            ItemsView itemsView = null;
+            RunOnUIThread.Execute(() => itemsView = new ItemsView
+            {
+                ItemsSource = items,
+                ItemTransitionProvider = new RepeaterTests.Common.ItemCollectionTransitionProviderDerived
+                {
+                    ShouldAnimateFunc = transition => transition.Operation == ItemCollectionTransitionOperation.Remove,
+                    StartTransitionsFunc = transitions =>
+                    {
+                        foreach (var transition in transitions)
+                        {
+                            transition.Start().Complete();
+                        }
+                    }
+                }
+            });
+            SetupItemsViewForFocusTests(itemsView);
+            FocusItemContainerAndWait(itemsView, 3);
+
+            RunOnUIThread.Execute(() => items.RemoveAt(3));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyFocusOnLiveItemContainer(itemsView, items, expectedIndex: 3));
+        }
+
+        // Scenario: keyboard focus on item 0, the ItemsView is scrolled so item 0 is out of view (its ItemContainer is kept
+        //           because it has focus); then item 0 is removed (and, in a second round, the source is reset).
+        // Expected: the kept ItemContainer is cleared by the change and not focused afterwards; focus is on a live
+        //           ItemContainer; scrolling back shows the current item 0.
+        // A failure means: the stale ItemContainer keeps focus and is shown again for index 0 with old data.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing or resetting a focused item that is scrolled out of view clears its ItemContainer and does not show it again for index 0.")]
+        public void VerifyRemovingScrolledOutFocusedItemClearsItsItemContainer()
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 200));
+            var itemsView = CreateItemsViewForFocusTests(items);
+
+            foreach (bool reset in new[] { false, true })
+            {
+                Log.Comment(reset ? "Round 2: Reset" : "Round 1: Remove");
+                ScrollItemsViewTo(itemsView, 0);
+                FocusItemContainerAndWait(itemsView, 0);
+                UIElement container0 = null;
+                RunOnUIThread.Execute(() => container0 = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView).TryGetElement(0));
+                ScrollItemsViewTo(itemsView, 3000);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+                    Verify.AreEqual(0, repeater.GetElementIndex(container0), "Precondition: the focused ItemContainer is kept with index 0.");
+                    if (reset)
+                    {
+                        var newItems = items.Select(i => i + 1000).ToList();
+                        items.Clear();
+                        foreach (var item in newItems)
+                        {
+                            items.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        items.RemoveAt(0);
+                    }
+                    Verify.AreEqual(-1, repeater.GetElementIndex(container0), "The kept ItemContainer is cleared by the change.");
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreNotSame(container0, FocusManager.GetFocusedElement(itemsView.XamlRoot), "Focus is not left on the cleared ItemContainer.");
+                    VerifyFocusOnLiveItemContainer(itemsView, items);
+                });
+
+                ScrollItemsViewTo(itemsView, 0);
+                RunOnUIThread.Execute(() =>
+                {
+                    var first = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView).TryGetElement(0) as FrameworkElement;
+                    Verify.IsNotNull(first);
+                    Log.Comment($"Index 0 shows {first.DataContext}");
+                    Verify.AreEqual<object>(items[0], first.DataContext, "Index 0 shows the current item 0.");
+                });
+            }
+        }
+
+        private ItemsView CreateItemsViewForFocusTests(ObservableCollection<int> items)
+        {
+            ItemsView itemsView = null;
+            RunOnUIThread.Execute(() => itemsView = new ItemsView { ItemsSource = items });
+            SetupItemsViewForFocusTests(itemsView);
+            return itemsView;
+        }
+
+        private void SetupItemsViewForFocusTests(ItemsView itemsView)
+        {
+            var loaded = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() => SetupDefaultUI(itemsView, loaded));
+            WaitForEvent("Waiting for Loaded event", loaded);
+            IdleSynchronizer.Wait();
+        }
+
+        private void FocusItemContainerAndWait(ItemsView itemsView, int index)
+        {
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var container = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView).TryGetElement(index) as ItemContainer;
+                Verify.IsNotNull(container, $"Precondition: item {index} is realized.");
+                container.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(container.Focus(FocusState.Keyboard));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(c_MaxWaitDuration), $"Waiting for item {index} to get focus.");
+            IdleSynchronizer.Wait();
+        }
+
+        private void ScrollItemsViewTo(ItemsView itemsView, double verticalOffset)
+        {
+            var scrollCompleted = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var scrollView = itemsView.ScrollView;
+                if (Math.Abs(scrollView.VerticalOffset - verticalOffset) < 0.5)
+                {
+                    scrollCompleted.Set();
+                    return;
+                }
+                scrollView.ScrollCompleted += (s, e) => scrollCompleted.Set();
+                scrollView.ScrollTo(0, verticalOffset, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
+            });
+            Verify.IsTrue(scrollCompleted.WaitOne(c_MaxWaitDuration), $"Waiting for the scroll to {verticalOffset}.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Log.Comment($"ScrollView.VerticalOffset={itemsView.ScrollView.VerticalOffset}"));
+        }
+
+        // Focus is on a realized ItemContainer that shows the current item for its index.
+        private static ItemContainer VerifyFocusOnLiveItemContainer(ItemsView itemsView, IList<int> items, int expectedIndex = -1)
+        {
+            var repeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+            var focused = FocusManager.GetFocusedElement(itemsView.XamlRoot) as DependencyObject;
+            ItemContainer container = null;
+            for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (VisualTreeHelper.GetParent(node) == repeater)
+                {
+                    container = node as ItemContainer;
+                    break;
+                }
+            }
+
+            int index = container == null ? -1 : repeater.GetElementIndex(container);
+            Log.Comment($"Focused: {focused?.GetType().Name}; ItemContainer index {index}; DataContext {container?.DataContext}");
+            Verify.IsNotNull(container, "Focus is on an ItemContainer of the ItemsView.");
+            Verify.IsTrue(index >= 0, "The focused ItemContainer is realized (not a cleared one).");
+            Verify.AreSame(container, repeater.TryGetElement(index));
+            Verify.AreEqual<object>(items[index], container.DataContext, "The focused ItemContainer shows the current item for its index.");
+            if (expectedIndex >= 0)
+            {
+                Verify.AreEqual(expectedIndex, index);
+            }
+            return container;
+        }
+
+        #endregion
+
         private void SetupDefaultUI(
             ItemsView itemsView,
             AutoResetEvent itemsViewLoadedEvent = null,

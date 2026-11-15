@@ -58,7 +58,9 @@ private:
     void OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex);
     winrt::UIElement GetFocusedChild();
     bool TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState);
+    bool TryFocus(const winrt::UIElement& element, winrt::FocusState focusState);
     bool TryMoveFocusOutOfOwner(winrt::FocusState focusState);
+    static std::vector<winrt::UIElement> GetChildrenInTabOrder(const winrt::DependencyObject& parent);
 
     void EnsureEventSubscriptions();
 

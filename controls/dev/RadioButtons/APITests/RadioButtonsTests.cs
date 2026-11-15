@@ -10,6 +10,8 @@ using Common;
 using Microsoft.UI.Xaml.Markup;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Input;
+using System;
 using System.Linq;
 
 using WEX.TestExecution;
@@ -950,6 +952,201 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(-1, factoryRadioButtons.SelectedIndex, "Removing the selected item clears the selection.");
             });
         }
+
+        #region Focus after ItemsSource changes (task.ms/56189664)
+
+        // RadioButtons hosts an ItemsRepeater. When the repeater clears the focused RadioButton, it moves focus once, after
+        // the next layout pass, to the live RadioButton nearest the cleared index. Before, it moved focus synchronously
+        // through RadioButtons that the same change was clearing, and selection could follow each hop.
+        // Note: selection follows focus only for keyboard input (RadioButtons::OnGettingFocus checks the last input device,
+        // which an API test does not control), so these tests check the outcome, not the selection-follows-focus path.
+
+        // Scenario: 5 items, item 2 selected and keyboard-focused; RemoveAt(2).
+        // Expected: at most one SelectionChanged while the change is processed (the clear of the checked RadioButton);
+        //           after layout focus is on a live RadioButton that shows its current item, and the selection state is
+        //           consistent with the checked RadioButton.
+        // A failure means: focus hops through cleared RadioButtons during the change, or ends on a cleared one.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the focused, selected item moves focus to a live RadioButton and keeps the selection consistent.")]
+        public void VerifyRemovingFocusedItemMovesFocusToLiveRadioButton()
+        {
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Option " + i));
+            var radioButtons = CreateRadioButtonsWithFocusedItem(items, 2);
+
+            int selectionChangedDuringChange = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionChangedEventHandler handler = (s, e) => selectionChangedDuringChange++;
+                radioButtons.SelectionChanged += handler;
+                items.RemoveAt(2);
+                radioButtons.SelectionChanged -= handler;
+                Log.Comment($"SelectionChanged during the change: {selectionChangedDuringChange}");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsLessThanOrEqual(selectionChangedDuringChange, 1, "Selection does not follow focus through cleared RadioButtons.");
+                VerifyFocusOnLiveRadioButton(radioButtons, items);
+                VerifySelectionConsistent(radioButtons, items);
+            });
+        }
+
+        // Scenario: item 2 selected and keyboard-focused; a new ItemsSource is assigned.
+        // Expected: at most one SelectionChanged while the assignment runs (the selection is cleared once); afterwards focus
+        //           is not on a RadioButton that shows an item of the old source.
+        // A failure means: focus hops through cleared RadioButtons during the reassignment, or is left on a stale one.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that assigning a new ItemsSource with a focused RadioButton does not leave focus on a RadioButton of the old source.")]
+        public void VerifyItemsSourceReassignmentDoesNotLeaveFocusOnStaleRadioButton()
+        {
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Option " + i));
+            var newItems = new global::System.Collections.ObjectModel.ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "New " + i));
+            var radioButtons = CreateRadioButtonsWithFocusedItem(items, 2);
+
+            int selectionChangedDuringChange = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                SelectionChangedEventHandler handler = (s, e) => selectionChangedDuringChange++;
+                radioButtons.SelectionChanged += handler;
+                radioButtons.ItemsSource = newItems;
+                radioButtons.SelectionChanged -= handler;
+                Log.Comment($"SelectionChanged during the reassignment: {selectionChangedDuringChange}");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsLessThanOrEqual(selectionChangedDuringChange, 1, "Selection is cleared once, not once per cleared RadioButton.");
+                var focused = FocusManager.GetFocusedElement(radioButtons.XamlRoot);
+                Log.Comment($"Focused: {DescribeFocusedElement(focused)}");
+                if (focused is RadioButton focusedRadioButton && IsInside(focusedRadioButton, radioButtons))
+                {
+                    VerifyFocusOnLiveRadioButton(radioButtons, newItems);
+                }
+            });
+        }
+
+        // Scenario: a SelectionChanged handler changes the ItemsSource whenever an item gets selected; the focused, selected
+        //           item is removed.
+        // Expected: no exception from the handler's change (a selection that follows the repeater's focus move happens after
+        //           layout, outside the collection change); focus ends on a live RadioButton or outside the control.
+        // A failure means: the focus move runs inside the collection change, so the handler's change throws.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a SelectionChanged handler can change the ItemsSource when selection follows the focus move after removing the focused item.")]
+        public void VerifySelectionChangedHandlerCanChangeItemsSourceAfterFocusedItemRemoved()
+        {
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>(Enumerable.Range(0, 6).Select(i => "Option " + i));
+            var radioButtons = CreateRadioButtonsWithFocusedItem(items, 2);
+
+            Exception handlerException = null;
+            int handlerChanges = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectionChanged += (s, e) =>
+                {
+                    if (e.AddedItems.Count > 0 && handlerChanges == 0)
+                    {
+                        handlerChanges++;
+                        try
+                        {
+                            items.RemoveAt(items.Count - 1);
+                        }
+                        catch (Exception ex)
+                        {
+                            handlerException = ex;
+                        }
+                    }
+                };
+                items.RemoveAt(2);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"Handler changes: {handlerChanges}; items: {string.Join(",", items)}");
+                Verify.IsNull(handlerException, "The SelectionChanged handler can change the ItemsSource: " + handlerException?.Message);
+                var focused = FocusManager.GetFocusedElement(radioButtons.XamlRoot);
+                Log.Comment($"Focused: {DescribeFocusedElement(focused)}");
+                if (focused is RadioButton focusedRadioButton && IsInside(focusedRadioButton, radioButtons))
+                {
+                    VerifyFocusOnLiveRadioButton(radioButtons, items);
+                }
+            });
+        }
+
+        private RadioButtons CreateRadioButtonsWithFocusedItem(global::System.Collections.ObjectModel.ObservableCollection<string> items, int index)
+        {
+            RadioButtons radioButtons = null;
+            var gotFocus = new global::System.Threading.ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons { ItemsSource = items, SelectedIndex = index };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(radioButtons);
+                root.Children.Add(new Button { Content = "After" });
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = (RadioButton)radioButtons.ContainerFromIndex(index);
+                target.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(target.Focus(FocusState.Keyboard));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), $"Waiting for RadioButton {index} to get focus.");
+            IdleSynchronizer.Wait();
+            return radioButtons;
+        }
+
+        // Focus is on a RadioButton of the control that is realized for its index and shows the current item.
+        private static void VerifyFocusOnLiveRadioButton(RadioButtons radioButtons, IList<string> items)
+        {
+            var focused = FocusManager.GetFocusedElement(radioButtons.XamlRoot);
+            Log.Comment($"Focused: {DescribeFocusedElement(focused)}");
+            var focusedRadioButton = focused as RadioButton;
+            Verify.IsNotNull(focusedRadioButton, "A RadioButton is focused.");
+
+            int index = items.IndexOf(focusedRadioButton.Content as string);
+            Verify.IsTrue(index >= 0, "The focused RadioButton shows an item of the current source.");
+            Verify.AreSame(focusedRadioButton, radioButtons.ContainerFromIndex(index), "The focused RadioButton is the live container of its item.");
+        }
+
+        private static void VerifySelectionConsistent(RadioButtons radioButtons, IList<string> items)
+        {
+            Log.Comment($"SelectedIndex={radioButtons.SelectedIndex} SelectedItem={radioButtons.SelectedItem}");
+            for (int i = 0; i < items.Count; i++)
+            {
+                var container = (RadioButton)radioButtons.ContainerFromIndex(i);
+                Verify.AreEqual(i == radioButtons.SelectedIndex, container.IsChecked == true, $"RadioButton {i} is checked only if it is the selected item.");
+            }
+            if (radioButtons.SelectedIndex >= 0)
+            {
+                Verify.AreEqual(items[radioButtons.SelectedIndex], radioButtons.SelectedItem);
+            }
+        }
+
+        private static bool IsInside(DependencyObject element, DependencyObject ancestor)
+        {
+            for (var node = element; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node == ancestor)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static string DescribeFocusedElement(object focused)
+        {
+            return focused == null ? "<null>" : $"{focused.GetType().Name} '{(focused as ContentControl)?.Content}'";
+        }
+
+        #endregion
 
         private static void VerifyDependencyPropertyIdentifiers(params DependencyProperty[] properties)
         {

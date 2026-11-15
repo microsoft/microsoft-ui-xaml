@@ -5593,6 +5593,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
         }
+
+        #region Focus after ItemsSource changes (task.ms/56189664)
+
+        // Scenario: Left pane, MenuItemsSource of 5 strings, keyboard focus on menu item 2; (1) the item is removed;
+        //           (2) focus on menu item 1 and MenuItemsSource is replaced.
+        // Expected: no exception; after layout focus is on a live NavigationViewItem that shows a current menu item (or
+        //           outside the menu items), never on the removed item's NavigationViewItem.
+        // A failure means: the menu ItemsRepeater leaves focus on a cleared NavigationViewItem.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the focused menu item or replacing MenuItemsSource leaves focus on a live NavigationViewItem, not on a cleared one.")]
+        public void VerifyMenuItemsSourceChangesWithFocusedItemLeaveFocusOnLiveItem()
+        {
+            var items = new ObservableCollection<string> { "Menu 0", "Menu 1", "Menu 2", "Menu 3", "Menu 4" };
+            NavigationView navView = null;
+            ManualResetEvent loadedEvent = new(false);
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsPaneOpen = true,
+                    IsSettingsVisible = false,
+                    MenuItemsSource = items,
+                    Width = 800,
+                    Height = 600
+                };
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+            Verify.IsTrue(loadedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for the NavigationView to load.");
+            IdleSynchronizer.Wait();
+
+            var removedContainer = FocusMenuItemAndWait(navView, "Menu 2");
+            RunOnUIThread.Execute(() => items.RemoveAt(2));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot);
+                if (removedContainer.Content as string == "Menu 2")
+                {
+                    Verify.AreNotSame(removedContainer, focused, "Focus is not on the removed item's NavigationViewItem.");
+                }
+                VerifyFocusNotOnStaleMenuItem(navView, items);
+            });
+
+            var newItems = new ObservableCollection<string> { "New 0", "New 1", "New 2" };
+            FocusMenuItemAndWait(navView, "Menu 1");
+            RunOnUIThread.Execute(() => navView.MenuItemsSource = newItems);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifyFocusNotOnStaleMenuItem(navView, newItems));
+        }
+
+        private NavigationViewItem FocusMenuItemAndWait(NavigationView navView, string menuItem)
+        {
+            NavigationViewItem container = null;
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                container = (NavigationViewItem)navView.ContainerFromMenuItem(menuItem);
+                Verify.IsNotNull(container, $"Precondition: '{menuItem}' is realized.");
+                container.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(container.Focus(FocusState.Keyboard));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), $"Waiting for '{menuItem}' to get focus.");
+            IdleSynchronizer.Wait();
+            return container;
+        }
+
+        // If focus is on a NavigationViewItem, it shows a current menu item and is that item's live container.
+        private static void VerifyFocusNotOnStaleMenuItem(NavigationView navView, IList<string> items)
+        {
+            var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot);
+            Log.Comment($"Focused: {focused?.GetType().Name} '{(focused as ContentControl)?.Content}'");
+            if (focused is NavigationViewItem focusedItem)
+            {
+                var content = focusedItem.Content as string;
+                Verify.IsTrue(items.Contains(content), "The focused NavigationViewItem shows a current menu item.");
+                Verify.AreSame(focusedItem, navView.ContainerFromMenuItem(content), "The focused NavigationViewItem is the live container of its item.");
+            }
+        }
+
+        #endregion
     }
 
     // An app-style custom VisualStateManager: the first time NavigationView goes to a ClosedCompactGroup state on the

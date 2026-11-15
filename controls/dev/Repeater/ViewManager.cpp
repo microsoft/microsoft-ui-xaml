@@ -417,8 +417,7 @@ winrt::UIElement ViewManager::GetFocusedChild()
 
 bool ViewManager::TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState)
 {
-    // Since this focus change is due to the focused element getting recycled, don't activate the window.
-    if (child.try_as<winrt::Control>() && child.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState))
+    if (child.try_as<winrt::Control>() && TryFocus(child, focusState))
     {
         return true;
     }
@@ -429,50 +428,141 @@ bool ViewManager::TryFocusChild(const winrt::UIElement& child, bool focusLastDes
         winrt::FocusManager::FindFirstFocusableElement(child);
     if (const auto descendantAsElement = descendant.try_as<winrt::UIElement>())
     {
-        return descendantAsElement.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState);
+        return TryFocus(descendantAsElement, focusState);
     }
 
     return false;
 }
 
-bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
+// Returns true if focus moved: to the element, or to another element chosen by a GettingFocus handler.
+bool ViewManager::TryFocus(const winrt::UIElement& element, winrt::FocusState focusState)
 {
     const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
-    if (!xamlRoot || !xamlRoot.Content())
+    const auto focusedBefore = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+
+    // Since this focus change is due to the focused element getting recycled, don't activate the window.
+    if (!element.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState))
     {
         return false;
     }
 
-    winrt::FindNextElementOptions options;
-    options.SearchRoot(xamlRoot.Content());
-    const auto owner = static_cast<winrt::DependencyObject>(*m_owner);
+    // FocusNoActivate also returns true when a GettingFocus or LosingFocus handler cancels the move.
+    const auto focusedAfter = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+    return focusedAfter != focusedBefore || focusedAfter == static_cast<winrt::DependencyObject>(element);
+}
 
-    for (const auto direction : { winrt::FocusNavigationDirection::Next, winrt::FocusNavigationDirection::Previous })
+// Moves focus to the nearest focusable element outside the owner: the first one that follows the owner in tree order,
+// or else the last one that precedes it. The search starts at the owner, not at the focused element: a Tab step from a
+// focused element inside a cleared container can stay inside that container. It does not cycle to the start of the
+// window, and it stays inside the XamlRoot content or inside the open popup that contains the owner.
+bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
+{
+    const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+    if (!xamlRoot)
     {
-        const auto candidate = winrt::FocusManager::FindNextElement(direction, options).try_as<winrt::UIElement>();
-        if (!candidate)
+        return false;
+    }
+
+    const auto content = xamlRoot.Content();
+    std::vector<winrt::UIElement> popupChildren;
+    for (const auto& popup : winrt::VisualTreeHelper::GetOpenPopupsForXamlRoot(xamlRoot))
+    {
+        if (const auto popupChild = popup.Child())
         {
-            continue;
+            popupChildren.push_back(popupChild);
+        }
+    }
+
+    // The ancestors of the owner up to the search scope, each with its child on the path to the owner.
+    std::vector<std::pair<winrt::DependencyObject, winrt::UIElement>> path;
+    winrt::UIElement current = *m_owner;
+    while (current && current != content && std::find(popupChildren.begin(), popupChildren.end(), current) == popupChildren.end())
+    {
+        const auto parent = CachedVisualTreeHelpers::GetParent(current);
+        if (!parent)
+        {
+            break;
         }
 
-        bool isInsideOwner = false;
-        for (auto ancestor = static_cast<winrt::DependencyObject>(candidate); ancestor; ancestor = CachedVisualTreeHelpers::GetParent(ancestor))
+        path.emplace_back(parent, current);
+        current = parent.try_as<winrt::UIElement>();
+    }
+
+    for (const bool forward : { true, false })
+    {
+        for (const auto& [parent, child] : path)
         {
-            if (ancestor == owner)
+            const auto siblings = GetChildrenInTabOrder(parent);
+            const auto position = std::find(siblings.begin(), siblings.end(), child);
+            if (position == siblings.end())
             {
-                isInsideOwner = true;
-                break;
+                continue;
             }
-        }
 
-        if (!isInsideOwner && candidate.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState))
-        {
-            return true;
+            if (forward)
+            {
+                for (auto sibling = position + 1; sibling != siblings.end(); ++sibling)
+                {
+                    if (TryFocusChild(*sibling, false /* focusLastDescendant */, focusState))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                for (auto sibling = std::make_reverse_iterator(position); sibling != siblings.rend(); ++sibling)
+                {
+                    if (TryFocusChild(*sibling, true /* focusLastDescendant */, focusState))
+                    {
+                        return true;
+                    }
+                }
+
+                // A focusable parent comes before its children in tab order.
+                if (const auto parentAsControl = parent.try_as<winrt::Control>(); parentAsControl && TryFocus(parentAsControl, focusState))
+                {
+                    return true;
+                }
+            }
         }
     }
 
     return false;
 }
+
+// The children of the parent in tab order. An ItemsRepeater lists only its realized children, sorted by index.
+std::vector<winrt::UIElement> ViewManager::GetChildrenInTabOrder(const winrt::DependencyObject& parent)
+{
+    std::vector<winrt::UIElement> children;
+    if (const auto repeater = parent.try_as<winrt::ItemsRepeater>())
+    {
+        if (const auto realizedChildren = winrt::get_self<ItemsRepeater>(repeater)->GetChildrenInTabFocusOrder())
+        {
+            for (const auto& child : realizedChildren)
+            {
+                if (const auto childAsElement = child.try_as<winrt::UIElement>())
+                {
+                    children.push_back(childAsElement);
+                }
+            }
+        }
+    }
+    else
+    {
+        const int count = winrt::VisualTreeHelper::GetChildrenCount(parent);
+        for (int i = 0; i < count; ++i)
+        {
+            if (const auto childAsElement = winrt::VisualTreeHelper::GetChild(parent, i).try_as<winrt::UIElement>())
+            {
+                children.push_back(childAsElement);
+            }
+        }
+    }
+
+    return children;
+}
+
 int ViewManager::GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo)
 {
     if (!virtInfo)
