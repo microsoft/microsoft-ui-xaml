@@ -709,10 +709,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         // Scenario: two changes before the next layout pass: RemoveAt(focused) then Insert(0); and RemoveAt(focused) then
         //           RemoveAt(0).
-        // Expected: one focus move after layout, to the live item at the focused item's index.
-        // A failure means: the target is chosen during the first change, before the second change shifts the items.
+        // Expected: one focus move after layout, to the item that followed the removed item (the second change shifts it:
+        //           index 4 after the Insert, index 2 after the second RemoveAt).
+        // A failure means: the target is chosen during the first change, before the second change shifts the items, or the
+        //           index recorded for the move is not shifted by the second change.
         [TestMethod]
-        [TestProperty("Description", "Verifies that when the focused item is removed and another change follows before layout, focus moves after layout to the live item at the removed index.")]
+        [TestProperty("Description", "Verifies that when the focused item is removed and another change follows before layout, focus moves after layout to the item that followed the removed item.")]
         public void VerifyRemoveFollowedByAnotherChangeBeforeLayoutMovesFocusToLiveItem()
         {
             var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
@@ -725,7 +727,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 data.Insert(0, "Inserted");
             });
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3));
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 4);
+                Verify.AreEqual("Item #4", data[4]);
+            });
 
             FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
             RunOnUIThread.Execute(() =>
@@ -734,7 +740,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 data.RemoveAt(0);
             });
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3));
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2);
+                Verify.AreEqual("Item #4", data[2]);
+            });
         }
 
         // Scenario: two Resets (Clear + Add twice) in the same tick with focus on an item.
@@ -2738,6 +2748,271 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 });
                 IdleSynchronizer.Wait();
             }
+        }
+
+        // Scenario: ItemsSource of 8 Buttons (no ItemTemplate, so a cleared element is removed from Children and the core
+        //           moves focus to the next tab stop, the "After" Button); keyboard focus on item 2; (1) RemoveAt(2);
+        //           (2) the item at index 2 is replaced; (3) the last item is removed with focus on it.
+        // Expected: after layout focus is on the item that took the cleared item's place: (1) "Item #3" at index 2,
+        //           (2) the replacement at index 2, (3) the new last item.
+        // A failure means: the repeater treats the core's focus move out of the repeater as a user move and leaves focus
+        //           outside the list (or on another item).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing or replacing the focused item of a UIElement ItemsSource moves focus to the item that takes its place, not out of the repeater.")]
+        public void VerifyRemovingOrReplacingFocusedUIElementItemMovesFocusToItemAtSameIndex()
+        {
+            ObservableCollection<UIElement> data = null;
+            RunOnUIThread.Execute(() =>
+            {
+                data = new ObservableCollection<UIElement>(Enumerable.Range(0, 8).Select(i => (UIElement)new Button { Content = "Item #" + i, Height = 30 }));
+            });
+            var fixture = CreateFocusFixture(data, itemTemplate: null);
+            Func<int, string> contentAt = i => (string)((Button)data[i]).Content;
+
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+            RunOnUIThread.Execute(() =>
+            {
+                data.RemoveAt(2);
+                Log.Comment("Focused right after RemoveAt: " + DescribeFocus(fixture.Repeater));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: 2, expectedFocusState: FocusState.Keyboard);
+                Verify.AreEqual("Item #3", contentAt(2));
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                data[2] = new Button { Content = "Replacement", Height = 30 };
+                Log.Comment("Focused right after Replace: " + DescribeFocus(fixture.Repeater));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: 2, expectedFocusState: FocusState.Keyboard);
+                Verify.AreEqual("Replacement", contentAt(2));
+            });
+
+            int last = -1;
+            RunOnUIThread.Execute(() => last = data.Count - 1);
+            FocusItemAndWait(fixture.Repeater, last, FocusState.Keyboard);
+            RunOnUIThread.Execute(() => data.RemoveAt(last));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: last - 1));
+        }
+
+        // Scenario: keyboard focus on item 3; a Flyout opened from the item has the focus (on its "Remove" Button) when
+        //           the item is removed, and the flyout is closed in the same tick (as a Remove button's Click handler
+        //           does). The popup returns focus to the element that had focus when it opened, which was cleared.
+        //           Then the same with a MenuFlyout whose "Delete" item is invoked through UI Automation.
+        // Expected: after layout focus is on the item that took the removed item's place, at index 3.
+        // A failure means: focus is left on the cleared, recycled element (index -1), the bug's symptom through a context
+        //           menu or flyout.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a Flyout or MenuFlyout opened from the focused item removes the item and closes, focus moves to the item that takes its place.")]
+        public void VerifyRemovingItemFromFlyoutOpenedFromItMovesFocusToItemAtSameIndex()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+
+            // Flyout: the removal and Hide run in the same tick.
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+            Flyout flyout = null;
+            Button remove = null;
+            var opened = new ManualResetEvent(false);
+            var closed = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                remove = new Button { Content = "Remove" };
+                flyout = new Flyout { Content = remove };
+                flyout.Opened += delegate { opened.Set(); };
+                flyout.Closed += delegate { closed.Set(); };
+                flyout.ShowAt((FrameworkElement)fixture.Repeater.TryGetElement(3));
+            });
+            Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to open.");
+            IdleSynchronizer.Wait();
+            FocusAndWait(remove, FocusState.Keyboard);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetFocusedContainer(fixture.Repeater, out _), "Precondition: focus is in the flyout.");
+                data.RemoveAt(3);
+                flyout.Hide();
+                Log.Comment("Focused right after RemoveAt and Hide: " + DescribeFocus(fixture.Repeater));
+            });
+            Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to close.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+                Verify.AreEqual("Item #4", data[3]);
+            });
+
+            // MenuFlyout: the Delete item's Click handler removes the item; the menu closes itself.
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+            MenuFlyout menu = null;
+            MenuFlyoutItem delete = null;
+            opened.Reset();
+            closed.Reset();
+            RunOnUIThread.Execute(() =>
+            {
+                delete = new MenuFlyoutItem { Text = "Delete" };
+                delete.Click += delegate
+                {
+                    data.RemoveAt(3);
+                    Log.Comment("Focused right after RemoveAt in Click: " + DescribeFocus(fixture.Repeater));
+                };
+                menu = new MenuFlyout();
+                menu.Items.Add(delete);
+                menu.Opened += delegate { opened.Set(); };
+                menu.Closed += delegate { closed.Set(); };
+                menu.ShowAt((FrameworkElement)fixture.Repeater.TryGetElement(3));
+            });
+            Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "Waiting for the menu to open.");
+            IdleSynchronizer.Wait();
+            FocusAndWait(delete, FocusState.Keyboard);
+            RunOnUIThread.Execute(() =>
+            {
+                var invoke = (Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider)FrameworkElementAutomationPeer.CreatePeerForElement(delete)
+                    .GetPattern(PatternInterface.Invoke);
+                invoke.Invoke();
+            });
+            Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "Waiting for the menu to close.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+                Verify.AreEqual("Item #5", data[3]);
+            });
+        }
+
+        // Scenario: nested repeaters in a ScrollViewer (20 groups of 3); keyboard focus on item 1 of group 1; the view is
+        //           scrolled so that group 1 is out of view (its outer element stays realized because it is pinned for
+        //           focus); then the focused inner item is removed.
+        // Expected: focus moves to a live inner item of group 1 (the inner repeater of a group out of view realizes only
+        //           some of its items), whose outer element is still realized.
+        // A failure means: the inner repeater released the outer pin when it cleared its focused element, the outer
+        //           repeater cleared the group's element before the move, and focus left the list.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the focused inner item of a group scrolled out of view moves focus to a live inner item of that group.")]
+        public void VerifyRemovingFocusedInnerItemOfScrolledOutGroupKeepsFocusInGroup()
+        {
+            var groups = CreateGroups(20, 3);
+            var outer = CreateScrolledOutFocusedGroup(groups, out var innerOfGroup1);
+
+            RunOnUIThread.Execute(() => groups[1].RemoveAt(1));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                Log.Comment($"Focused: {focused?.Content}; outer index of group 1: {outer.GetElementIndex(innerOfGroup1)}");
+                Verify.IsNotNull(focused, "A Button is focused.");
+                Verify.AreSame(innerOfGroup1, VisualTreeHelper.GetParent(focused), "The focused item belongs to group 1.");
+                int item = innerOfGroup1.GetElementIndex(focused);
+                Log.Comment($"Focused inner index: {item}");
+                Verify.IsTrue(item >= 0, "The inner item is realized.");
+                if (item >= 0)
+                {
+                    Verify.AreEqual(groups[1][item], focused.Content, "The focused item shows the current data.");
+                }
+                Verify.AreEqual(1, outer.GetElementIndex(innerOfGroup1), "The outer element of group 1 is realized.");
+            });
+        }
+
+        // Scenario: as above, but the inner repeater of the scrolled-out group is emptied (Clear).
+        // Expected: focus moves to a live inner item of a realized group, not out of the list.
+        // A failure means: the outer repeater cleared the group's element before the inner repeater moved focus, so the
+        //           move skipped the outer repeater and focus left the list although it has live groups.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that emptying the inner repeater of a focused group scrolled out of view keeps focus in the outer repeater.")]
+        public void VerifyClearingInnerRepeaterOfScrolledOutGroupKeepsFocusInOuterRepeater()
+        {
+            var groups = CreateGroups(20, 3);
+            var outer = CreateScrolledOutFocusedGroup(groups, out var innerOfGroup1);
+
+            RunOnUIThread.Execute(() => groups[1].Clear());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                Log.Comment($"Focused: {focused?.Content}");
+                Verify.IsNotNull(focused, "A Button is focused.");
+                var inner = VisualTreeHelper.GetParent(focused) as ItemsRepeater;
+                Verify.IsNotNull(inner, "The focused Button is an inner item.");
+                if (inner != null)
+                {
+                    int group = outer.GetElementIndex(inner);
+                    int item = inner.GetElementIndex(focused);
+                    Log.Comment($"Focused group {group}, item {item}");
+                    Verify.IsTrue(group >= 0 && item >= 0, "The focused inner item and its group are realized.");
+                    if (group >= 0 && item >= 0)
+                    {
+                        Verify.AreEqual(groups[group][item], focused.Content, "The focused item shows the current data.");
+                    }
+                }
+            });
+        }
+
+        private static ObservableCollection<ObservableCollection<string>> CreateGroups(int groupCount, int itemCount)
+        {
+            return new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, groupCount).Select(g =>
+                new ObservableCollection<string>(Enumerable.Range(0, itemCount).Select(i => $"Item #{g}.{i}"))));
+        }
+
+        // Creates nested repeaters in a 200px ScrollViewer, focuses item 1 of group 1 and scrolls group 1 out of view.
+        private ItemsRepeater CreateScrolledOutFocusedGroup(ObservableCollection<ObservableCollection<string>> groups, out ItemsRepeater innerOfGroup1)
+        {
+            ItemsRepeater outer = null;
+            ScrollViewer scrollViewer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                outer = new ItemsRepeater
+                {
+                    ItemsSource = groups,
+                    VerticalCacheLength = 0,
+                    ItemTemplate = SharedHelpers.GetDataTemplate(
+                        @"<ItemsRepeater ItemsSource='{Binding}'>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate><Button Content='{Binding}' Height='30'/></DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                          </ItemsRepeater>")
+                };
+                scrollViewer = new ScrollViewer { Content = outer, Height = 200, Width = 200 };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(scrollViewer);
+                root.Children.Add(new Button { Content = "After" });
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+
+            FocusInnerItemAndWait(outer, 1, 1);
+            ItemsRepeater inner = null;
+            RunOnUIThread.Execute(() => inner = (ItemsRepeater)outer.TryGetElement(1));
+            ScrollToOffset(scrollViewer, 1000);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, outer.GetElementIndex(inner), "Precondition: the outer element of group 1 is pinned out of view.");
+                Verify.IsTrue(outer.TryGetElement(2) == null, "Precondition: group 2 is not realized.");
+                var focused = FocusManager.GetFocusedElement(outer.XamlRoot) as Button;
+                Verify.AreEqual("Item #1.1", focused?.Content, "Precondition: focus stays on the inner item.");
+            });
+            innerOfGroup1 = inner;
+            return outer;
+        }
+
+        private void FocusAndWait(Control target, FocusState focusState)
+        {
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                target.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(target.Focus(focusState));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for the element to get focus.");
+            IdleSynchronizer.Wait();
         }
 
         private void VerifyResetWithReusedFocusedContainer(FocusFixture fixture, ObservableCollection<string> data)

@@ -60,7 +60,13 @@ private:
     void UpdateFocusedElement();
     void OnFocusChanged(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex);
+    static int ShiftIndexForCollectionChange(int index, const winrt::NotifyCollectionChangedEventArgs& args);
+    bool TryRecordFocusReturnedToClearedElement(const winrt::UIElement& element);
+    bool ClearedIndexTracksItem();
+    void ReleaseAncestorPinsOfClearedFocusedElement();
     bool ContainsNestedFocus(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo);
+    int AdjustClearedIndexForCollectionChange(int clearedIndex);
+    winrt::FocusState GetFocusStateForMove();
     winrt::UIElement GetFocusedChild();
     bool TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild);
     bool TryKeepFocusInReusedElement(const winrt::UIElement& element);
@@ -108,7 +114,24 @@ private:
     // once the layout has realized the current items. Null when no focus move is pending.
     tracker_ref<winrt::UIElement> m_pendingFocusMoveElement;
     int m_pendingFocusMoveIndex{ -1 };
+    // True if m_pendingFocusMoveIndex is the position of an item that later collection changes shift (ClearedIndexTracksItem).
+    bool m_pendingFocusMoveIndexTracksItem{ false };
     winrt::FocusState m_pendingFocusMoveState{ winrt::FocusState::Programmatic };
+    // The cleared element left the tree with focus, so the core moved focus out of the owner. The move after the layout
+    // pass still runs if focus is still on that element (m_pendingFocusMoveFocusAfterClear).
+    bool m_pendingFocusMoveFocusLeftOwner{ false };
+    winrt::weak_ref<winrt::DependencyObject> m_pendingFocusMoveFocusAfterClear;
+    // Pins that the cleared focused element added to the ancestor repeaters' elements. They are released when the
+    // pending focus move runs, so that an ancestor repeater does not clear the element that contains the owner first.
+    unsigned m_pendingAncestorUnpinCount{ 0u };
+
+    // The element that had focus last, while focus is outside the owner (for example in a flyout opened from it).
+    winrt::weak_ref<winrt::UIElement> m_lastFocusedElementBeforeFocusLeft;
+    // The last cleared element that had or last had focus, and its index. If focus returns to it (for example when a
+    // flyout closes), focus is moved to the item at that index after the next layout pass.
+    winrt::weak_ref<winrt::UIElement> m_clearedFocusedElement;
+    int m_clearedFocusedElementIndex{ -1 };
+    bool m_clearedFocusedElementIndexTracksItem{ false };
 
     bool m_isDataSourceStableResetPending{};
     bool m_recycleWithoutOwner{ false };
