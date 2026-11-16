@@ -95,7 +95,6 @@
     <WindowsTargetPlatformMinVersion Condition="'$(WindowsTargetPlatformMinVersion)'==''">$(WindowsAppSdkTargetPlatformVersion)</WindowsTargetPlatformMinVersion>
     <!-- XeWin10TargetVersion is needed by the Microsoft.Windows.SDK.cpp.targets -->
     <XeWin10TargetVersion>$(WindowsTargetPlatformVersion)</XeWin10TargetVersion>
-    <_DotNetMoniker Condition="'$(_DotNetMoniker)' == ''">net10.0</_DotNetMoniker>
     <DotNetCoreTargetFrameworkMoniker>$(_DotNetMoniker)-windows$(WindowsTargetPlatformVersion)</DotNetCoreTargetFrameworkMoniker>
     <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
     <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
