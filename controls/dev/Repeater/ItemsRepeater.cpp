@@ -275,8 +275,10 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
             m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
             m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
 
-    m_viewManager.ClearElement(element, isClearedDueToCollectionChange);
-    m_viewportManager.OnElementCleared(element);
+    if (m_viewManager.ClearElement(element, isClearedDueToCollectionChange))
+    {
+        m_viewportManager.OnElementCleared(element);
+    }
 }
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
@@ -433,7 +435,7 @@ void ItemsRepeater::OnElementPrepared(const winrt::UIElement& element, int index
     }
 }
 
-void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
+bool ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
 {
     if (m_elementClearingEventSource)
     {
@@ -457,7 +459,10 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
             auto const raise = *raisingElement;
             CallElementClearingHandlers(*raise);
             removeRaise(raise);
-            return;
+            // This clear clears the element now. Tell the outer clear, which must not continue on the element: the handler
+            // may realize the element again (here or in another repeater sharing the element pool) before it returns.
+            raise->clearedByNestedClear = true;
+            return false;
         }
 
         ElementClearingRaise raise{ element, nullptr, m_elementClearingEventSource.handlers() };
@@ -474,7 +479,7 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
             // outer handler's args keep its element.
             raise.args = winrt::make<ItemsRepeaterElementClearingEventArgs>(element);
             CallElementClearingHandlers(raise);
-            return;
+            return raise.clearedByNestedClear;
         }
 
         if (!m_elementClearingArgs)
@@ -493,7 +498,10 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
             });
         raise.args = m_elementClearingArgs.get();
         CallElementClearingHandlers(raise);
+        return raise.clearedByNestedClear;
     }
+
+    return false;
 }
 
 // Calls the ElementClearing handlers of 'raise' that have not been called yet, in the order the event calls them.

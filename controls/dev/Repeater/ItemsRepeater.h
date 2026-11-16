@@ -103,7 +103,8 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnElementPrepared(const winrt::UIElement& element, int index);
-    void OnElementClearing(const winrt::UIElement& element);
+    // Returns true when an ElementClearing handler re-entered the repeater and that change already cleared the element.
+    bool OnElementClearing(const winrt::UIElement& element);
     void OnElementIndexChanged(const winrt::UIElement& element, int oldIndex, int newIndex);
 
     static winrt::DependencyProperty GetVirtualizationInfoProperty()
@@ -186,6 +187,8 @@ private:
         winrt::ItemsRepeaterElementClearingEventArgs args{ nullptr };
         std::shared_ptr<const EventSource::handler_map> handlers;
         EventSource::handler_map::const_iterator next;
+        // True when a handler re-entered the repeater and that change cleared the element (see OnElementClearing).
+        bool clearedByNestedClear{ false };
     };
     void CallElementClearingHandlers(ElementClearingRaise& raise);
     // ElementClearing events being raised (more than one when a handler re-enters the repeater).

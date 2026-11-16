@@ -17,8 +17,9 @@ public:
     ViewManager(ItemsRepeater* owner);
 
     winrt::UIElement GetElement(int index, bool forceCreate, bool suppressAutoRecycle);
-    void ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
-    void ClearElementToElementFactory(const winrt::UIElement& element);
+    // Both return false when an ElementClearing handler re-entered the repeater and that change already cleared the element.
+    bool ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
+    bool ClearElementToElementFactory(const winrt::UIElement& element);
     int GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo);
 
     void PrunePinnedElements();

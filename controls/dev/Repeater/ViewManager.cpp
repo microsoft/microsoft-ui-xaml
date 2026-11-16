@@ -95,7 +95,7 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
     return element;
 }
 
-void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange)
+bool ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange)
 {
     const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
     const int index = virtInfo->Index();
@@ -106,7 +106,12 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 
     if (!cleared)
     {
-        ClearElementToElementFactory(element);
+        if (!ClearElementToElementFactory(element))
+        {
+            // A nested clear started by an ElementClearing handler already cleared the element and updated the realized
+            // range; the element may even be realized again at another index.
+            return false;
+        }
     }
 
     // Both First and Last indices need to be valid or default.
@@ -134,6 +139,8 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
         // In both these cases, we just keep the range we have. If this clear was due to 
         // a collection change, then in the CollectionChanged event, we will invalidate these guys.
     }
+
+    return true;
 }
 
 // We need to clear the datacontext to prevent crashes from happening,
@@ -145,16 +152,17 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 //
 // In all of those three cases, we the ItemTemplateShim is NOT null.
 // Luckily when we create the items, we store whether we were the once setting the DataContext.
-void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
+bool ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
-    m_owner->OnElementClearing(element);
+    const bool clearedByNestedClear = m_owner->OnElementClearing(element);
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-    if (virtInfo->Owner() == ElementOwner::ElementFactory)
+    if (clearedByNestedClear || virtInfo->Owner() == ElementOwner::ElementFactory)
     {
         // An ElementClearing handler changed the repeater (for example, it replaced ItemsSource) and that change
-        // already returned this element to the element factory. Do not recycle it a second time.
-        return;
+        // already returned this element to the element factory. The handler may have realized the element again since
+        // (here or in another repeater sharing the element pool). Do not clear or recycle it a second time.
+        return false;
     }
 
     virtInfo->MoveOwnershipToElementFactory();
@@ -222,6 +230,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     }
 
     ITEMSREPEATER_TRACE_PERF_DBG(L"ElementCleared");
+    return true;
 }
 
 void ViewManager::MoveFocusFromClearedIndex(int clearedIndex)
