@@ -66,7 +66,7 @@ set fre=
 set chk=
 set _BuildArch=
 set _BuildType=
-set _DotNetMoniker=net8.0
+set _DotNetMoniker=net10.0
 set _archIsSet=
 set _noPgo=
 
@@ -131,6 +131,8 @@ if /i "%1"=="" (
     set _DotNetMoniker=net7.0
 ) else if /i "%1"=="net8" (
     set _DotNetMoniker=net8.0
+) else if /i "%1"=="net10" (
+    set _DotNetMoniker=net10.0
 ) else if /i "%1"=="/nopgo" (
     set _noPgo=1
 )  else (
