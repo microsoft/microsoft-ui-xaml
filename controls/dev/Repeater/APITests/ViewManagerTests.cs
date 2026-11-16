@@ -2008,6 +2008,117 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a fully realized 5-item StackLayout repeater over an ObservableCollection. The first ElementIndexChanged
+        //           handler call replaces ItemsSource with a new collection (or sets a new ItemTemplate) and then calls
+        //           UpdateLayout(), which runs because the replacement ended the repeater's collection change. Done for
+        //           Move(0, 4), Insert(0) and RemoveAt(0).
+        // Expected: no crash and no further ElementIndexChanged (the layout in the handler realized the elements for the
+        //           current state, so the rest of the old change does not apply to them). After the change returns and one
+        //           more layout, every realized element matches the current collection (TryGetElement(i) shows item i,
+        //           GetElementIndex round-trips, visual order = data order) and uses the current ItemTemplate.
+        // A failure means: the repeater applies the stale Move/Insert/Remove to the elements it realized for the new state
+        //                  (wrong element for an index, wrong content or order on screen), the same class of bug as
+        //                  GitHub #11570.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementIndexChanged handler during a Move leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementIndexChangedDuringMove()
+        {
+            VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged("Move(0, 4)", data => data.Move(0, 4), replaceItemTemplate: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementIndexChanged handler during an Insert leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementIndexChangedDuringInsert()
+        {
+            VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged("Insert(0)", data => data.Insert(0, "Inserted"), replaceItemTemplate: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementIndexChanged handler during a Remove leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementIndexChangedDuringRemove()
+        {
+            VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged("RemoveAt(0)", data => data.RemoveAt(0), replaceItemTemplate: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that setting ItemTemplate and updating layout from an ElementIndexChanged handler during a Move leaves the repeater consistent with the collection.")]
+        public void VerifyItemTemplateReplacedAndLayoutUpdatedInElementIndexChangedDuringMove()
+        {
+            VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged("Move(0, 4)", data => data.Move(0, 4), replaceItemTemplate: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that setting ItemTemplate and updating layout from an ElementIndexChanged handler during an Insert leaves the repeater consistent with the collection.")]
+        public void VerifyItemTemplateReplacedAndLayoutUpdatedInElementIndexChangedDuringInsert()
+        {
+            VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged("Insert(0)", data => data.Insert(0, "Inserted"), replaceItemTemplate: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that setting ItemTemplate and updating layout from an ElementIndexChanged handler during a Remove leaves the repeater consistent with the collection.")]
+        public void VerifyItemTemplateReplacedAndLayoutUpdatedInElementIndexChangedDuringRemove()
+        {
+            VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged("RemoveAt(0)", data => data.RemoveAt(0), replaceItemTemplate: true);
+        }
+
+        private void VerifyStateReplacedAndLayoutUpdatedInElementIndexChanged(string operation, Action<ObservableCollection<string>> change, bool replaceItemTemplate)
+        {
+            const string newTemplateTag = "NewTemplate";
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var newData = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "New #" + i));
+            var repeater = CreateLoadedRepeater(data);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var events = new List<string>();
+                bool replaced = false;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    string description = $"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}', GetElementIndex = {sender.GetElementIndex(args.Element)}";
+                    Log.Comment(description);
+                    events.Add(description);
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        if (replaceItemTemplate)
+                        {
+                            Log.Comment("Handler: ItemTemplate = new template");
+                            sender.ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='30' Tag='" + newTemplateTag + @"'/></DataTemplate>");
+                        }
+                        else
+                        {
+                            Log.Comment("Handler: ItemsSource = new collection");
+                            sender.ItemsSource = newData;
+                        }
+
+                        Log.Comment("Handler: UpdateLayout()");
+                        sender.UpdateLayout();
+                        Log.Comment($"Handler: UpdateLayout() returned, {CountRealizedChildren(sender)} realized children");
+                    }
+                };
+
+                Log.Comment(operation);
+                change(data);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} raised ElementIndexChanged, so the handler replaced the state.");
+                Verify.AreEqual(1, events.Count, "No ElementIndexChanged after the handler replaced the state and updated layout: " + string.Join(" | ", events));
+
+                repeater.UpdateLayout();
+                var currentData = replaceItemTemplate ? data : newData;
+                Verify.AreSame(currentData, repeater.ItemsSource);
+                VerifyRealizedElementsMatchData(repeater, currentData, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, currentData);
+                if (replaceItemTemplate)
+                {
+                    for (int i = 0; i < currentData.Count; i++)
+                    {
+                        Verify.AreEqual(newTemplateTag, (repeater.TryGetElement(i) as FrameworkElement)?.Tag as string, $"TryGetElement({i}) uses the new ItemTemplate.");
+                    }
+                }
+            });
+        }
+
         private ItemsRepeater CreateLoadedRepeater(object itemsSource, Func<Layout> createLayout = null, string itemContent = MoveItemTemplate)
         {
             ItemsRepeater repeater = null;

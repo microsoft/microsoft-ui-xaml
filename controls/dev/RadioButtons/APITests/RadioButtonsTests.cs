@@ -617,6 +617,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies that replacing ItemsSource from a SelectionChanged handler raised by a Move of the selected item does not crash.")]
         public void VerifyItemsSourceReplacedInSelectionChangedDuringMove()
         {
+            VerifyItemsSourceReplacedInSelectionChanged("Move(1, 3)", items => items.Move(1, 3));
+        }
+
+        // Scenario: same as VerifyItemsSourceReplacedInSelectionChangedDuringMove, with Insert(0) before the selected item.
+        //     RadioButtons uses a non-virtualizing layout, so replacing ItemsSource removes every child of the inner
+        //     ItemsRepeater while the repeater is still re-indexing its children for the Insert.
+        // Expected: no crash; Insert returns, and after layout the RadioButtons shows P, Q, R.
+        // Failure means: the repeater keeps walking its children after the handler removed them (crash of the test process).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from a SelectionChanged handler raised by an Insert before the selected item does not crash.")]
+        public void VerifyItemsSourceReplacedInSelectionChangedDuringInsert()
+        {
+            VerifyItemsSourceReplacedInSelectionChanged("Insert(0)", items => items.Insert(0, "Inserted"));
+        }
+
+        private void VerifyItemsSourceReplacedInSelectionChanged(string operation, global::System.Action<global::System.Collections.ObjectModel.ObservableCollection<string>> change)
+        {
             RadioButtons radioButtons = null;
             var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
             var newItems = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "P", "Q", "R" };
@@ -645,10 +662,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                Log.Comment("Move(1, 3)");
-                items.Move(1, 3);
-                Log.Comment("Move returned");
-                Verify.IsTrue(replaced, "Moving the selected item raised SelectionChanged, so the handler replaced ItemsSource.");
+                Log.Comment(operation);
+                change(items);
+                Log.Comment($"{operation} returned");
+                Verify.IsTrue(replaced, $"{operation} moved the selected item, so SelectionChanged was raised and the handler replaced ItemsSource.");
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();

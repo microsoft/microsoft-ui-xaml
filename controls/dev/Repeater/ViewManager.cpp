@@ -402,6 +402,18 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
 
 void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
 {
+    // A handler of an event raised below (for example ElementIndexChanged) can replace ItemsSource or ItemTemplate.
+    // That resets the repeater and ends this change, so the rest of these args no longer applies to the realized elements.
+    const auto hasChangeEnded = [this]()
+    {
+        if (m_owner->IsProcessingCollectionChange())
+        {
+            return false;
+        }
+        InvalidateRealizedIndicesHeldByLayout();
+        return true;
+    };
+
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.
     switch (args.Action())
@@ -418,6 +430,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             const auto childCount = children.Size();
             for (unsigned i = 0u; i < childCount; ++i)
             {
+                if (hasChangeEnded())
+                {
+                    return;
+                }
+
                 const auto element = children.GetAt(i);
                 const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 const auto dataIndex = virtInfo->Index();
@@ -510,6 +527,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         const auto children = m_owner->Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
         {
+            if (hasChangeEnded())
+            {
+                return;
+            }
+
             const auto element = children.GetAt(i);
             const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
             const auto dataIndex = virtInfo->Index();
@@ -593,6 +615,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
             for (const auto& indexChange : indexChanges)
             {
+                if (hasChangeEnded())
+                {
+                    return;
+                }
+
                 // An earlier handler can clear elements (for example by replacing ItemsSource). Only report
                 // elements that are still realized at their new index.
                 if (indexChange.virtInfo->IsRealized() && indexChange.virtInfo->Index() == indexChange.newIndex)
