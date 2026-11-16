@@ -1568,6 +1568,211 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: the setup of VerifyInsertShiftsRealizedElementsAfterCollectionChangeAndScroll (StackLayout) with the first
+        //           realized element f focused. A change that touches no realized item (Move(150, 160), Remove(150),
+        //           Replace(150, 2 -> 1); no change as the control), a scroll down by one item so f leaves the realized range
+        //           (the focused element goes to the pinned pool) while f+1 stays realized, a scroll back so the layout takes f
+        //           back from the pinned pool first, then an Insert at f+1.
+        // Expected: right after the Insert and after layout, every realized element reports the index of the item it shows (the
+        //           kept elements after f are shifted by one), and the focused element keeps index f and focus.
+        // A failure means: the pinned-pool hand-back rebuilt the realized range from the focused element alone, so the Insert
+        //                  did not shift the other realized elements.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an Insert after a Move/Remove/Replace, a scroll and the hand-back of a focused element from the pinned pool shifts every realized element.")]
+        public void VerifyInsertShiftsRealizedElementsAfterFocusedElementReturnsFromPinnedPool()
+        {
+            VerifyInsertShiftsRealizedElementsAfterPinnedHandBack("no change (control)", s => { });
+            VerifyInsertShiftsRealizedElementsAfterPinnedHandBack("Move(150, 160)", s => s.Move(oldIndex: 150, newIndex: 160, count: 1, reset: false));
+            VerifyInsertShiftsRealizedElementsAfterPinnedHandBack("Remove(150)", s => s.Remove(index: 150, count: 1, reset: false));
+            VerifyInsertShiftsRealizedElementsAfterPinnedHandBack("Replace(150, 2 -> 1)", s => s.Replace(index: 150, oldCount: 2, newCount: 1, reset: false));
+        }
+
+        private void VerifyInsertShiftsRealizedElementsAfterPinnedHandBack(string operation, Action<CustomItemsSource> change)
+        {
+            string context = $"Focused element, {operation}";
+            Log.Comment(context);
+            CustomItemsSource dataSource = null;
+            VirtualizingLayout layout = null;
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource = new CustomItemsSource(Enumerable.Range(0, 200).ToList());
+                layout = new StackLayout();
+            });
+            ScrollViewer scrollViewer = null;
+            var repeater = SetupRepeater(dataSource, layout, MoveItemTemplate, out scrollViewer);
+            Func<List<string>> currentData = () => dataSource.Inner.Select(i => i.ToString()).ToList();
+            Func<List<int>> realizedIndices = () => Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                .Select(c => repeater.GetElementIndex((UIElement)VisualTreeHelper.GetChild(repeater, c)))
+                .Where(i => i >= 0)
+                .OrderBy(i => i)
+                .ToList();
+
+            ScrollTo(scrollViewer, 1200);
+
+            int focusedIndex = -1;
+            Button focusedElement = null;
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var realized = realizedIndices();
+                Log.Comment($"{context}: realized before the change [{string.Join(", ", realized)}]");
+                Verify.IsLessThan(realized.Last(), 150, $"{context}: the change does not touch a realized item.");
+                focusedIndex = realized.First();
+                focusedElement = (Button)repeater.TryGetElement(focusedIndex);
+                focusedElement.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(focusedElement.Focus(FocusState.Programmatic), $"{context}: focus the element at index {focusedIndex}.");
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), $"{context}: waiting for the element at index {focusedIndex} to get focus.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                change(dataSource);
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: right after the change");
+            });
+
+            // One item down: the focused element leaves the realized range and is pinned; the next one stays realized.
+            ScrollTo(scrollViewer, 1230);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"{context}: realized after scrolling down to {scrollViewer.VerticalOffset} [{string.Join(", ", realizedIndices())}]");
+                Verify.AreEqual(focusedIndex, repeater.GetElementIndex(focusedElement), $"{context}: the pinned focused element keeps index {focusedIndex}.");
+                Verify.IsNotNull(repeater.TryGetElement(focusedIndex + 1), $"{context}: the element at index {focusedIndex + 1} is still realized.");
+                Verify.AreSame(focusedElement, FocusManager.GetFocusedElement(repeater.XamlRoot), $"{context}: focus stays on the pinned element.");
+            });
+
+            // Back up: the layout takes the focused element back from the pinned pool before it realizes anything else.
+            ScrollTo(scrollViewer, 1200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"{context}: realized after scrolling back to {scrollViewer.VerticalOffset} [{string.Join(", ", realizedIndices())}]");
+                Verify.AreSame(focusedElement, repeater.TryGetElement(focusedIndex), $"{context}: the focused element is reused for index {focusedIndex}.");
+
+                int insertIndex = focusedIndex + 1;
+                Log.Comment($"{context}: Insert({insertIndex})");
+                dataSource.Insert(index: insertIndex, count: 1, reset: false, valueStart: 5000);
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: right after Insert({insertIndex})");
+                Verify.AreEqual(dataSource.Inner[insertIndex + 1].ToString(), GetElementContent(repeater.TryGetElement(insertIndex + 1)), $"{context}: the element of the item after the inserted one is at its shifted index.");
+                Verify.AreEqual(focusedIndex, repeater.GetElementIndex(focusedElement), $"{context}: the focused element keeps index {focusedIndex}.");
+
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: after Insert({insertIndex}) and layout");
+                Verify.AreSame(focusedElement, FocusManager.GetFocusedElement(repeater.XamlRoot), $"{context}: focus stays on the element at index {focusedIndex}.");
+            });
+        }
+
+        // Scenario: a virtualizing repeater (200 items of 30px in a 200px ScrollViewer; StackLayout, and UniformGridLayout with
+        //           2 columns) scrolled to 1200px, with L the last realized index. An ElementIndexChanged handler calls
+        //           GetOrCreateElement once for an index that is not realized (the one just before the realized items, or 0) while
+        //           Remove(L - 1) or Replace(L - 2, 2 -> 1) is processed; then, in the same tick, an Insert at the index of the first
+        //           removed item. The same without the handler is the control.
+        // Expected: right after the Insert and after layout, every realized element reports the index of the item it shows, and
+        //           the element of item L (moved back by the change and forward by the Insert) is at index L.
+        // A failure means: the repeater kept a realized range that the handler computed while the removed elements still had
+        //                  their old index; the layout's clear of a removed element then shrank it past a shifted element, and the
+        //                  Insert did not shift that element (TryGetElement returns the previous item's element).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an Insert after a Remove/Replace whose ElementIndexChanged handler called GetOrCreateElement for an index that is not realized shifts every realized element.")]
+        public void VerifyInsertAfterGetOrCreateElementInElementIndexChangedDuringRemoveOrReplace()
+        {
+            foreach (bool useGrid in new[] { false, true })
+            {
+                foreach (bool isReplace in new[] { false, true })
+                {
+                    VerifyInsertAfterGetOrCreateElementInElementIndexChanged(useGrid, isReplace, handlerTarget: null);
+                    VerifyInsertAfterGetOrCreateElementInElementIndexChanged(useGrid, isReplace, handlerTarget: "before the realized items");
+                    VerifyInsertAfterGetOrCreateElementInElementIndexChanged(useGrid, isReplace, handlerTarget: "0");
+                }
+            }
+        }
+
+        private void VerifyInsertAfterGetOrCreateElementInElementIndexChanged(bool useGrid, bool isReplace, string handlerTarget)
+        {
+            string context = $"{(useGrid ? "UniformGridLayout" : "StackLayout")}, {(isReplace ? "Replace(L - 2, 2 -> 1)" : "Remove(L - 1)")}, " +
+                (handlerTarget == null ? "no handler (control)" : $"handler GetOrCreateElement({handlerTarget})");
+            Log.Comment(context);
+            CustomItemsSource dataSource = null;
+            VirtualizingLayout layout = null;
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource = new CustomItemsSource(Enumerable.Range(0, 200).ToList());
+                layout = useGrid ? (VirtualizingLayout)new UniformGridLayout() { MinItemWidth = 100, MinItemHeight = 30 } : new StackLayout();
+            });
+            ScrollViewer scrollViewer = null;
+            var repeater = SetupRepeater(dataSource, layout, MoveItemTemplate, out scrollViewer);
+            Func<List<string>> currentData = () => dataSource.Inner.Select(i => i.ToString()).ToList();
+            Func<List<int>> realizedIndices = () => Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                .Select(c => repeater.GetElementIndex((UIElement)VisualTreeHelper.GetChild(repeater, c)))
+                .Where(i => i >= 0)
+                .OrderBy(i => i)
+                .ToList();
+
+            ScrollTo(scrollViewer, 1200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var realized = realizedIndices();
+                Log.Comment($"{context}: realized before the change [{string.Join(", ", realized)}]");
+                int last = realized.Last();
+                int changeIndex = isReplace ? last - 2 : last - 1;
+                int target = 0;
+                if (handlerTarget != null && handlerTarget != "0")
+                {
+                    target = last;
+                    while (realized.Contains(target - 1))
+                    {
+                        target--;
+                    }
+                    target--;
+                }
+                Verify.IsFalse(realized.Contains(target), $"{context}: index {target} is not realized.");
+
+                int handlerCalls = 0;
+                TypedEventHandler<ItemsRepeater, ItemsRepeaterElementIndexChangedEventArgs> handler = (sender, args) =>
+                {
+                    Log.Comment($"{context}: ElementIndexChanged {args.OldIndex} -> {args.NewIndex}");
+                    if (handlerCalls++ == 0)
+                    {
+                        Log.Comment($"{context}: GetOrCreateElement({target}) -> '{GetElementContent(repeater.GetOrCreateElement(target))}'");
+                    }
+                };
+
+                if (handlerTarget != null)
+                {
+                    repeater.ElementIndexChanged += handler;
+                }
+
+                if (isReplace)
+                {
+                    dataSource.Replace(index: changeIndex, oldCount: 2, newCount: 1, reset: false);
+                }
+                else
+                {
+                    dataSource.Remove(index: changeIndex, count: 1, reset: false);
+                }
+
+                if (handlerTarget != null)
+                {
+                    repeater.ElementIndexChanged -= handler;
+                    Verify.IsGreaterThan(handlerCalls, 0, $"{context}: the change raised ElementIndexChanged.");
+                }
+
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: right after the change");
+
+                Log.Comment($"{context}: Insert({changeIndex})");
+                dataSource.Insert(index: changeIndex, count: 1, reset: false, valueStart: 5000);
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: right after Insert({changeIndex})");
+                // The element that showed item L before the change is at index L again: the change moved it back by one and
+                // the Insert moves it forward by one.
+                Verify.AreEqual(dataSource.Inner[last].ToString(), GetElementContent(repeater.TryGetElement(last)), $"{context}: the element of the last item realized before the change is at index {last}.");
+
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: after Insert({changeIndex}) and layout");
+            });
+        }
+
         // Scenario: a fully realized repeater; two Moves in the same tick that cancel out; Move, layout, Move, layout; and
         //           a Move followed by an Insert and a RemoveAt in the same tick.
         // Expected: the realized elements match the data after every operation and after every layout pass.

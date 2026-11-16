@@ -415,8 +415,9 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     };
 
     // The realized elements are re-indexed (and the realized range updated) before any event is raised, and
-    // ElementIndexChanged is raised at the end. So handlers see the index mapping of the new data, elements they realize
-    // are not re-indexed, and the change is fully applied to the realized elements even if a handler ends it.
+    // ElementIndexChanged is raised at the end. So handlers see the new index of every re-indexed element, elements they
+    // realize are not re-indexed, and the change is fully applied to the realized elements even if a handler ends it.
+    // Removed or replaced elements that the layout clears itself keep their old index until it clears them.
     struct IndexChange
     {
         winrt::UIElement element;
@@ -425,6 +426,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         int newIndex;
     };
     std::vector<IndexChange> indexChanges;
+    bool removedElementsKeepOldIndex = false;
     const auto updateIndex = [&indexChanges](const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int newIndex)
     {
         const int oldIndex = virtInfo->Index();
@@ -532,6 +534,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
             // The realized range is computed again from the new indices when it is next needed.
             InvalidateRealizedIndicesHeldByLayout();
+            removedElementsKeepOldIndex = true;
         }
         break;
     }
@@ -581,6 +584,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         // A handler of ElementClearing can compute the realized range again (for example GetOrCreateElement for an index that
         // is not realized) while a removed element still counts, and clearing it then shrinks that range. Compute it again later.
         InvalidateRealizedIndicesHeldByLayout();
+        removedElementsKeepOldIndex = true;
         break;
     }
 
@@ -681,6 +685,14 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         {
             m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
         }
+    }
+
+    if (removedElementsKeepOldIndex)
+    {
+        // A handler above can compute the realized range again (for example GetOrCreateElement for an index that is not
+        // realized) while a removed or replaced element still has its old index. When the layout clears that element after
+        // this change, the range would shrink past a shifted element. Compute it again when it is next needed.
+        InvalidateRealizedIndicesHeldByLayout();
     }
 }
 
