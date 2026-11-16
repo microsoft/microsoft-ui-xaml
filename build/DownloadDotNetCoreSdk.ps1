@@ -90,11 +90,18 @@ else
 
     . $dotnetInstallScript -channel $backupChannel -InstallDir $x86InstallDir -Architecture x86
     Write-Host ".NET SDK (x86), channel $backupChannel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
+}
 
-    # The XAML compiler targets .NET 10 (published with Native AOT), which needs the .NET 10 SDK next to the main one
-    . $dotnetInstallScript -channel $dotNetSdkNet10Channel -InstallDir $x64InstallDir -Architecture x64
-    Write-Host ".NET SDK (x64), channel $dotNetSdkNet10Channel from eng\Versions.props, is available at $x64InstallDir." -ForegroundColor green
+# The XAML compiler targets .NET 10 (published with Native AOT), which needs the .NET 10 SDK next to the main one
+. $dotnetInstallScript -channel $dotNetSdkNet10Channel -InstallDir $x64InstallDir -Architecture x64
+Write-Host ".NET SDK (x64), channel $dotNetSdkNet10Channel from eng\Versions.props, is available at $x64InstallDir." -ForegroundColor green
 
-    . $dotnetInstallScript -channel $dotNetSdkNet10Channel -InstallDir $x86InstallDir -Architecture x86
-    Write-Host ".NET SDK (x86), channel $dotNetSdkNet10Channel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
+. $dotnetInstallScript -channel $dotNetSdkNet10Channel -InstallDir $x86InstallDir -Architecture x86
+Write-Host ".NET SDK (x86), channel $dotNetSdkNet10Channel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
+
+if ($env:TF_BUILD -eq 'True')
+{
+    # init.cmd's PATH changes do not persist across pipeline tasks; VS MSBuild also needs the SDK resolver override.
+    Write-Host "##vso[task.prependpath]$x64InstallDir"
+    Write-Host "##vso[task.setvariable variable=DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR]$x64InstallDir"
 }
