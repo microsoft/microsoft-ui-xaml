@@ -705,9 +705,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     groups.Insert(0, group);
                 }
 
-                // By default, ListViews with grouping will automatically select the first
-                // item if selection mode is set to Single.  Set it to None so that we
-                // can disable that code-path.
+                // Disable user selection while testing focus navigation.
                 lv = (ListView)XamlReader.Load(@"
                         <ListView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                             Height='600' Width='200'
@@ -741,6 +739,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
             UIExecutor.Execute(() =>
             {
+                Log.Comment($"Clear selection after collection-view initialization (SelectedIndex={lv.SelectedIndex}).");
                 lv.SelectedIndex = -1;
                 button.Focus(FocusState.Keyboard);
             });
