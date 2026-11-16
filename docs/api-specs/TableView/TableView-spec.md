@@ -1,5 +1,10 @@
 # Background
 
+The source-backed visual requirements and unresolved design decisions are tracked in
+[TableView Figma requirements (draft)](./TableView-figma-requirements.md).
+That draft records partial Figma review coverage; it does not change the API or
+feature scope described here or establish implementation conformance.
+
 TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource` as rows and a developer-defined `Columns` collection as cells, with optional column headers, gridlines, density, alternating row backgrounds, leading-prefix frozen columns, and an empty-state template. It is display-only by default; **opt-in cell editing** is enabled by clearing `IsReadOnly`.
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
@@ -144,6 +149,21 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
 `GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+
+`GridLinesVisibility` defaults to `All`, matching WPF `DataGrid`, whose enum this mirrors. Row
+banding is opt-in: set `AlternatingRowBackground` to switch it on.
+
+<!-- TODO reconcile with main: this PR proposed that GridLinesVisibility also drive the rule under the column-header row, and that column headers get their own TableViewHeaderMinHeight (32 / 26 / 40 for Standard / Compact / Comfortable, against rows at 40 / 30 / 48). Main has since made the header lines always drawn (#12307) and its tests pin header MinHeight to the row height, so neither is applied here. -->
+
+For a banded treatment like the design's, set `GridLinesVisibility="None"` and set
+`AlternatingRowBackground` to `{ThemeResource SubtleFillColorTertiaryBrush}`, which stays quieter
+than the hover state. Set a local `RowBackground` as well to provide a uniform custom fill. Custom
+cell templates continue to control their own content alignment.
+
+Banding shades odd rows, so the first row keeps `RowBackground` — the same convention as WPF
+`DataGrid` (`AlternationIndex` 0 is the base) and `ItemsControl.AlternationIndex`. With grouping
+enabled, group-header rows occupy positions in the row sequence, so banding parity does not
+restart at each group.
 
 > **Migrating from earlier previews:** `HeaderGridLinesVisibility` was removed. `GridLinesVisibility` affects only the body lines; to hide the header separators and the rule under the header, override `TabularSurfaceHeaderSeparatorBrush` with `Transparent`.
 
@@ -491,7 +511,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
-| `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
+| `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. Banding is off until this is set; when set it shades odd rows, matching WPF `DataGrid`. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
 | `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |

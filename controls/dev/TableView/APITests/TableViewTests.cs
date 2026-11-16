@@ -138,6 +138,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the default style leaves GridLinesVisibility, RowBackground and AlternatingRowBackground at their defaults, so banding stays opt-in and ClearValue resolves to null.")]
+        public void VerifyDefaultStyleLeavesBandingOptIn()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = new TableView { Width = 300, Height = 200 };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.GridLinesVisibility,
+                    "The default style must not set GridLinesVisibility.");
+                Verify.IsNull(tableView.AlternatingRowBackground,
+                    "The default style must not set AlternatingRowBackground; banding is opt-in.");
+                Verify.IsNull(tableView.RowBackground,
+                    "The default style must not set RowBackground.");
+
+                tableView.AlternatingRowBackground = new SolidColorBrush(Microsoft.UI.Colors.Blue);
+                tableView.ClearValue(TableView.AlternatingRowBackgroundProperty);
+                Verify.IsNull(tableView.AlternatingRowBackground,
+                    "ClearValue must resolve to null, not to a default-style brush.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies TableViewColumn base class default property values.")]
         public void VerifyColumnDefaultPropertyValues()
         {
