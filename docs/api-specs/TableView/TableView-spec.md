@@ -179,6 +179,10 @@ and Comfortable uses `Large`. Metric resources use these explicit suffixes, for 
 `TableViewRowMinHeightMedium` and `TableViewCellTextPaddingSmall`. Theme-independent
 metrics are defined once outside the theme dictionaries.
 
+Padding metrics require finite, non-negative edges. Invalid padding resource
+overrides emit a diagnostic and use the matching density's defaults. App-set
+header padding takes precedence even when it equals the density's default value.
+
 #### Migrating density metric overrides
 
 The former unsuffixed sizing keys are no longer read. Apps overriding them must

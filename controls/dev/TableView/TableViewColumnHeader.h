@@ -17,6 +17,7 @@ public:
     TableViewColumnHeader();
 
     void OnApplyTemplate();
+    winrt::Size MeasureOverride(winrt::Size const& availableSize);
     winrt::AutomationPeer OnCreateAutomationPeer();
     winrt::AutomationPeer GetExistingAutomationPeerInternal() const { return m_automationPeer.get(); }
 
@@ -41,6 +42,8 @@ public:
 
     winrt::ContentPresenter GetContentPresenterInternal() const { return m_contentPresenter.get(); }
     winrt::Border GetGridLineInternal() const { return m_gridLine.get(); }
+
+    void SetDensityPaddingInternal(winrt::Thickness const& padding);
 
     // True while Content is the TextBlock the TableView made for a string Header.
     void SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding);
@@ -86,7 +89,7 @@ private:
     bool m_isPressed{ false };
     winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
     winrt::Thickness m_textPadding{};
-    winrt::Thickness m_initialControlPadding{};
+    tracker_ref<winrt::Binding> m_densityPaddingBinding{ this };
     bool m_hasTextPadding{ false };
     bool m_ownsTabStopStamp{ false };
 };

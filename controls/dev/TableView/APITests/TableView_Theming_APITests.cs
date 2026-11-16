@@ -3142,6 +3142,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyGroupHeaderDensityPreservesSameValuedAppMetrics()
+        {
+            foreach (var useBinding in new[] { false, true })
+            {
+                TableView table = null;
+                TableViewGroupHeader header = null;
+                ContentControl source = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateGroupedThemingTable();
+                    table.Resources["TableViewCellFontSizeSmall"] = 18.0;
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    header = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                    source = new ContentControl
+                    {
+                        MinHeight = header.MinHeight,
+                        Padding = header.Padding,
+                        FontSize = header.FontSize
+                    };
+                    if (useBinding)
+                    {
+                        foreach (var property in new[]
+                        {
+                            new { Property = FrameworkElement.MinHeightProperty, Path = "MinHeight" },
+                            new { Property = Control.PaddingProperty, Path = "Padding" },
+                            new { Property = Control.FontSizeProperty, Path = "FontSize" }
+                        })
+                        {
+                            header.SetBinding(property.Property, new Binding
+                            {
+                                Source = source,
+                                Path = new PropertyPath(property.Path),
+                                Mode = BindingMode.OneWay
+                            });
+                        }
+                    }
+                    else
+                    {
+                        header.MinHeight = source.MinHeight;
+                        header.Padding = source.Padding;
+                        header.FontSize = source.FontSize;
+                    }
+                });
+                foreach (var density in new[] { TableViewDensity.Compact, TableViewDensity.Comfortable })
+                {
+                    RunOnUIThread.Execute(() => table.Density = density);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(source.MinHeight, header.MinHeight,
+                            "An app value equal to the old density minimum must still win.");
+                        Verify.AreEqual(source.Padding, header.Padding,
+                            "An app value equal to the old density padding must still win.");
+                        Verify.AreEqual(source.FontSize, header.FontSize);
+                        var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                        Verify.AreEqual(GetAlignedContentPadding(header,
+                            new Thickness(0, source.Padding.Top, 0, source.Padding.Bottom)), presenter.Padding,
+                            "App-owned padding must not receive the default text-padding adjustment.");
+                    });
+                }
+                RunOnUIThread.Execute(() =>
+                {
+                    header.ClearValue(FrameworkElement.MinHeightProperty);
+                    header.ClearValue(Control.PaddingProperty);
+                    header.ClearValue(Control.FontSizeProperty);
+                    table.Density = TableViewDensity.Compact;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(24.0, header.MinHeight, "Clearing an app override restores density metrics.");
+                    Verify.AreEqual(new Thickness(4, 2, 12, 2), header.Padding);
+                    Verify.AreEqual(18.0, header.FontSize);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyGroupHeaderDensityGrowsForLargerText()
         {
             foreach (var testCase in DensityCases)
@@ -3383,6 +3465,114 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(header.Padding, GetHeaderPresenter(table, 0).Padding,
                         "App-owned content must continue following live control-padding changes.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHeaderPreservesSameValuedAppPadding()
+        {
+            foreach (var useBinding in new[] { false, true })
+            {
+                TableView table = null;
+                TableViewColumnHeader header = null;
+                ContentControl source = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateThemingTable();
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    header = RequireColumnHeader(table, 0);
+                    source = new ContentControl { Padding = header.Padding };
+                    Verify.AreNotEqual(source.Padding, GetHeaderPresenter(table, 0).Padding,
+                        "Generated text initially uses its separate optical padding.");
+                    if (useBinding)
+                    {
+                        header.SetBinding(Control.PaddingProperty, new Binding
+                        {
+                            Source = source,
+                            Path = new PropertyPath("Padding"),
+                            Mode = BindingMode.OneWay
+                        });
+                    }
+                    else
+                    {
+                        header.Padding = source.Padding;
+                    }
+                    // Same-valued writes do not invalidate layout; verify ownership on the next measure.
+                    header.InvalidateMeasure();
+                    table.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(source.Padding, GetHeaderPresenter(table, 0).Padding,
+                        "An explicit app padding equal to the density value must not be replaced by optical padding.");
+                    if (useBinding)
+                    {
+                        source.Padding = new Thickness(20, 4, 28, 8);
+                    }
+                    else
+                    {
+                        header.Padding = new Thickness(20, 4, 28, 8);
+                    }
+                    table.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(new Thickness(20, 4, 28, 8), GetHeaderPresenter(table, 0).Padding,
+                        "Subsequent app padding changes must continue reaching generated content.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyInvalidDensityPaddingResourcesUseDefaults()
+        {
+            foreach (var density in DensityCases)
+            foreach (var padding in new[]
+            {
+                new Thickness(12, -10, 12, 0),
+                new Thickness(12, -10, 12, 12),
+                new Thickness(12, 0, 12, -10),
+                new Thickness(12, double.NaN, 12, 0),
+                new Thickness(double.PositiveInfinity, 0, 12, 0)
+            })
+            {
+                TableView table = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    table = CreateGroupedThemingTable();
+                    table.Density = density.Density;
+                    foreach (var key in new[]
+                    {
+                        "TableViewCellPadding", "TableViewCellTextPadding",
+                        "TableViewHeaderCellPadding", "TableViewHeaderTextPadding",
+                        "TableViewGroupHeaderPadding", "TableViewGroupHeaderTextPadding"
+                    })
+                    {
+                        table.Resources[key + density.ResourceSuffix] = padding;
+                    }
+                    LoadContent(table);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = GetRealizedRows(table).First();
+                    Verify.AreEqual(GetAlignedContentPadding(row, density.TextPadding),
+                        RequireFirstCellTextBlock(table).Padding);
+                    Verify.AreEqual(density.CellPadding, RequireColumnHeader(table, 0).Padding);
+                    Verify.AreEqual(density.TextPadding, GetHeaderPresenter(table, 0).Padding);
+                    var section = FindVisualChildrenByType<TableViewGroupHeader>(table).First();
+                    Verify.AreEqual(new Thickness(4, density.CellPadding.Top, 12, density.CellPadding.Bottom),
+                        section.Padding);
+                    Verify.AreEqual(GetAlignedContentPadding(section,
+                        new Thickness(0, density.TextPadding.Top, 0, density.TextPadding.Bottom)),
+                        ((ContentPresenter)section.FindVisualChildByName("PART_ContentPresenter")).Padding);
                 });
             }
         }

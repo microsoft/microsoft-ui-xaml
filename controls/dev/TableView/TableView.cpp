@@ -2442,6 +2442,16 @@ static T GetDensityResource(
         std::wstring key{ baseKey };
         key += DensitySuffix(owner.Density());
         value = winrt::unbox_value_or<T>(LookupElementResource(owner, key), fallback);
+        if constexpr (std::is_same_v<T, winrt::Thickness>)
+        {
+            if (!std::isfinite(value.Left) || !std::isfinite(value.Top) ||
+                !std::isfinite(value.Right) || !std::isfinite(value.Bottom) ||
+                value.Left < 0.0 || value.Top < 0.0 || value.Right < 0.0 || value.Bottom < 0.0)
+            {
+                TVDiag::LogRetailF(L"[TableView] Invalid padding resource '%s'; using density defaults.", key.c_str());
+                value = fallback;
+            }
+        }
         hasValue = true;
     }
     return value;
@@ -3541,7 +3551,7 @@ void TableView::RebuildHeadersCore()
             }
             if (!styleSetsPadding)
             {
-                header.Padding(cachedHeaderCellPadding);
+                headerImpl->SetDensityPaddingInternal(cachedHeaderCellPadding);
             }
             if (isSmall && !styleSetsFontSize)
             {

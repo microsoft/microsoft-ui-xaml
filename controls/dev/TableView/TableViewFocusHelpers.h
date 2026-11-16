@@ -7,7 +7,7 @@ namespace TableViewDetails
 {
     inline winrt::Thickness OffsetContentPadding(winrt::Thickness padding, double offset)
     {
-        offset = std::clamp(offset, -padding.Top, padding.Bottom);
+        offset = std::clamp(offset, -std::max(0.0, padding.Top), std::max(0.0, padding.Bottom));
         padding.Top += offset;
         padding.Bottom -= offset;
         return padding;

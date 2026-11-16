@@ -127,38 +127,41 @@ void TableViewGroupHeader::RefreshDensity()
             m_densityStyle.set(style);
             m_densityStyleInspected = true;
         }
-        const auto update = [this](winrt::DependencyProperty const& property, auto value, auto& appliedValue, bool styleSetsProperty)
+        const auto update = [this](winrt::DependencyProperty const& property, auto value, auto& appliedBinding, bool styleSetsProperty)
         {
             using Value = std::decay_t<decltype(value)>;
             auto const local = ReadLocalValue(property);
-            auto const boxedLocal = local.try_as<winrt::IReference<Value>>();
-            const bool ownsLocal = appliedValue && boxedLocal && boxedLocal.Value() == *appliedValue;
+            auto const expression = GetBindingExpression(property);
+            const bool ownsLocal = expression && expression.ParentBinding() == appliedBinding.get();
 
-            // Density owns only values it assigned, never app local values, bindings or Style setters.
+            // Binding identity distinguishes app overrides even when the effective value is unchanged.
             if (styleSetsProperty)
             {
                 if (ownsLocal)
                 {
                     ClearValue(property);
                 }
-                appliedValue.reset();
+                appliedBinding.set(nullptr);
             }
             else if (local == winrt::DependencyProperty::UnsetValue() || ownsLocal)
             {
-                if (!ownsLocal || *appliedValue != value)
+                if (!ownsLocal || winrt::unbox_value<Value>(appliedBinding.get().Source()) != value)
                 {
-                    SetValue(property, box_value(value));
+                    winrt::Binding binding;
+                    binding.Source(box_value(value));
+                    binding.Mode(winrt::BindingMode::OneWay);
+                    appliedBinding.set(binding);
+                    SetBinding(property, binding);
                 }
-                appliedValue = value;
             }
             else
             {
-                appliedValue.reset();
+                appliedBinding.set(nullptr);
             }
         };
-        update(winrt::FrameworkElement::MinHeightProperty(), ownerImpl->GetDensityGroupHeaderMinHeight(), m_densityMinHeight, m_styleSetsMinHeight);
-        update(winrt::Control::PaddingProperty(), ownerImpl->GetDensityGroupHeaderPadding(), m_densityPadding, m_styleSetsPadding);
-        update(winrt::Control::FontSizeProperty(), ownerImpl->GetCellFontSize(), m_densityFontSize, m_styleSetsFontSize);
+        update(winrt::FrameworkElement::MinHeightProperty(), ownerImpl->GetDensityGroupHeaderMinHeight(), m_densityMinHeightBinding, m_styleSetsMinHeight);
+        update(winrt::Control::PaddingProperty(), ownerImpl->GetDensityGroupHeaderPadding(), m_densityPaddingBinding, m_styleSetsPadding);
+        update(winrt::Control::FontSizeProperty(), ownerImpl->GetCellFontSize(), m_densityFontSizeBinding, m_styleSetsFontSize);
     }
     RefreshContentAlignment();
 }
@@ -311,9 +314,10 @@ void TableViewGroupHeader::RefreshContentAlignment()
         if (auto const presenter = m_contentPresenter.get())
         {
             winrt::Thickness textPadding{ 0, controlPadding.Top, 0, controlPadding.Bottom };
+            auto const paddingBinding = GetBindingExpression(winrt::Control::PaddingProperty());
             if (auto const owner = GetOwningTableView();
                 owner && m_defaultCount.get() && !m_styleSetsPadding &&
-                m_densityPadding && controlPadding == *m_densityPadding)
+                paddingBinding && paddingBinding.ParentBinding() == m_densityPaddingBinding.get())
             {
                 textPadding = winrt::get_self<TableView>(owner)->GetDensityGroupHeaderTextPadding();
             }

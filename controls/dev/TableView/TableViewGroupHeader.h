@@ -134,9 +134,9 @@ private:
     winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
-    std::optional<double> m_densityMinHeight;
-    std::optional<double> m_densityFontSize;
-    std::optional<winrt::Thickness> m_densityPadding;
+    tracker_ref<winrt::Binding> m_densityMinHeightBinding{ this };
+    tracker_ref<winrt::Binding> m_densityFontSizeBinding{ this };
+    tracker_ref<winrt::Binding> m_densityPaddingBinding{ this };
     tracker_ref<winrt::Style> m_densityStyle{ this };
     bool m_densityStyleInspected{ false };
     bool m_styleSetsMinHeight{ false };

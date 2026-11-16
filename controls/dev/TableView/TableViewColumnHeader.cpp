@@ -172,11 +172,26 @@ winrt::ResizeGripper TableViewColumnHeader::GetResizeGripperInternal() const
     return nullptr;
 }
 
+void TableViewColumnHeader::SetDensityPaddingInternal(winrt::Thickness const& padding)
+{
+    // A scalar source has no back-reference; replacing this binding transfers ownership to the app.
+    winrt::Binding binding;
+    binding.Source(box_value(padding));
+    binding.Mode(winrt::BindingMode::OneWay);
+    m_densityPaddingBinding.set(binding);
+    SetBinding(winrt::Control::PaddingProperty(), binding);
+}
+
+winrt::Size TableViewColumnHeader::MeasureOverride(winrt::Size const& availableSize)
+{
+    UpdateContentPadding();
+    return __super::MeasureOverride(availableSize);
+}
+
 void TableViewColumnHeader::SetOwnsContentInternal(bool ownsContent, winrt::Thickness const& textPadding)
 {
     m_ownedText = ownsContent ? winrt::make_weak(Content().as<winrt::TextBlock>()) : nullptr;
     m_textPadding = textPadding;
-    m_initialControlPadding = Padding();
     UpdateContentPadding();
 }
 
@@ -186,7 +201,9 @@ void TableViewColumnHeader::UpdateContentPadding()
     {
         if (OwnsContentInternal())
         {
-            const auto padding = Padding() == m_initialControlPadding ? m_textPadding : Padding();
+            auto const binding = GetBindingExpression(winrt::Control::PaddingProperty());
+            const auto padding = binding && binding.ParentBinding() == m_densityPaddingBinding.get()
+                ? m_textPadding : Padding();
             if (presenter.Padding() != padding)
             {
                 presenter.Padding(padding);
