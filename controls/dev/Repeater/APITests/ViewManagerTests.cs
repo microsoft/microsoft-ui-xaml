@@ -2119,6 +2119,272 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a fully realized 10-item StackLayout repeater over a CustomItemsSource. A Replace notification changes the
+        //           item count (Replace(0, 1 -> 2) and Replace(0, 2 -> 1)), so the repeater re-indexes the realized elements after
+        //           the replaced range and raises ElementIndexChanged for them. The first handler call replaces ItemsSource with a
+        //           new collection (or sets a new ItemTemplate) and calls UpdateLayout(), or only replaces ItemsSource (then the test
+        //           inserts an item into the new collection before the next layout).
+        // Expected: no crash or assertion, exactly one ElementIndexChanged (the rest of the old Replace does not apply to the
+        //           elements realized for the current state). After the change returns and one more layout, every realized
+        //           element matches the current source (TryGetElement(i) shows item i, GetElementIndex round-trips, visual
+        //           order = data order).
+        // A failure means: the repeater keeps shifting the indices of elements it realized for the new state (wrong element for
+        //                  an index, more ElementIndexChanged) or leaves its realized-range cache invalid (assertion in a
+        //                  checked build), the same class of bug as GitHub #11570.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementIndexChanged handler during a Replace that adds items leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementIndexChangedDuringReplaceWithMoreItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 1, newCount: 2, replaceItemTemplate: false, updateLayout: true, removeLastItemFirst: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementIndexChanged handler during a Replace that removes items leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementIndexChangedDuringReplaceWithFewerItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 2, newCount: 1, replaceItemTemplate: false, updateLayout: true, removeLastItemFirst: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that setting ItemTemplate and updating layout from an ElementIndexChanged handler during a Replace that adds items leaves the repeater consistent with the source.")]
+        public void VerifyItemTemplateReplacedAndLayoutUpdatedInElementIndexChangedDuringReplaceWithMoreItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 1, newCount: 2, replaceItemTemplate: true, updateLayout: true, removeLastItemFirst: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that setting ItemTemplate and updating layout from an ElementIndexChanged handler during a Replace that removes items leaves the repeater consistent with the source.")]
+        public void VerifyItemTemplateReplacedAndLayoutUpdatedInElementIndexChangedDuringReplaceWithFewerItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 2, newCount: 1, replaceItemTemplate: true, updateLayout: true, removeLastItemFirst: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource (without updating layout) from an ElementIndexChanged handler during a Replace that adds items leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringReplaceWithMoreItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 1, newCount: 2, replaceItemTemplate: false, updateLayout: false, removeLastItemFirst: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource (without updating layout) from an ElementIndexChanged handler during a Replace that removes items leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringReplaceWithFewerItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 2, newCount: 1, replaceItemTemplate: false, updateLayout: false, removeLastItemFirst: false);
+        }
+
+        // Same as above, but the Replace directly follows a Remove of the last item (no layout in between), so the repeater's
+        // cached realized range is not computed when the Replace starts. The handler only replaces ItemsSource; then an item
+        // is inserted into the new collection before layout.
+        // A failure means: the Replace adds its count change to a realized range computed while no element is held by the
+        // layout, which leaves an invalid range that the Insert reads (assertion in a checked build).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from an ElementIndexChanged handler during a Replace (adding items) that follows a Remove leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringReplaceAfterRemoveWithMoreItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 1, newCount: 2, replaceItemTemplate: false, updateLayout: false, removeLastItemFirst: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from an ElementIndexChanged handler during a Replace (removing items) that follows a Remove leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringReplaceAfterRemoveWithFewerItems()
+        {
+            VerifyStateReplacedInElementIndexChangedDuringReplace(oldCount: 2, newCount: 1, replaceItemTemplate: false, updateLayout: false, removeLastItemFirst: true);
+        }
+
+        private void VerifyStateReplacedInElementIndexChangedDuringReplace(int oldCount, int newCount, bool replaceItemTemplate, bool updateLayout, bool removeLastItemFirst)
+        {
+            const string newTemplateTag = "NewTemplate";
+            string operation = $"Replace(0, {oldCount} -> {newCount})";
+            CustomItemsSource dataSource = null;
+            ObservableCollection<string> newData = null;
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList());
+                newData = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "New #" + i));
+            });
+            var repeater = CreateLoadedRepeater(dataSource);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: true, context: "Before " + operation);
+
+                var events = new List<string>();
+                bool replaced = false;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    string description = $"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}', GetElementIndex = {sender.GetElementIndex(args.Element)}";
+                    Log.Comment(description);
+                    events.Add(description);
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        if (replaceItemTemplate)
+                        {
+                            Log.Comment("Handler: ItemTemplate = new template");
+                            sender.ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='30' Tag='" + newTemplateTag + @"'/></DataTemplate>");
+                        }
+                        else
+                        {
+                            Log.Comment("Handler: ItemsSource = new collection");
+                            sender.ItemsSource = newData;
+                        }
+
+                        if (updateLayout)
+                        {
+                            Log.Comment("Handler: UpdateLayout()");
+                            sender.UpdateLayout();
+                            Log.Comment($"Handler: UpdateLayout() returned, {CountRealizedChildren(sender)} realized children");
+                        }
+                    }
+                };
+
+                if (removeLastItemFirst)
+                {
+                    Log.Comment("Remove(9)");
+                    dataSource.Remove(index: 9, count: 1, reset: false);
+                }
+
+                Log.Comment(operation);
+                dataSource.Replace(index: 0, oldCount: oldCount, newCount: newCount, reset: false);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} raised ElementIndexChanged, so the handler replaced the state.");
+                Verify.AreEqual(1, events.Count, "No ElementIndexChanged after the handler replaced the state: " + string.Join(" | ", events));
+
+                if (!updateLayout && !replaceItemTemplate)
+                {
+                    // Another change before the next layout reads the repeater's cached realized range.
+                    Log.Comment("Insert(0) into the new collection before layout");
+                    newData.Insert(0, "Inserted");
+                    Log.Comment("Insert(0) returned");
+                }
+
+                repeater.UpdateLayout();
+                IList<string> currentData = replaceItemTemplate ? dataSource.Inner.Select(i => i.ToString()).ToList() : newData;
+                Verify.AreSame(replaceItemTemplate ? (object)dataSource : newData, repeater.ItemsSource);
+                VerifyRealizedElementsMatchData(repeater, currentData, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, currentData);
+                if (replaceItemTemplate)
+                {
+                    for (int i = 0; i < currentData.Count; i++)
+                    {
+                        Verify.AreEqual(newTemplateTag, (repeater.TryGetElement(i) as FrameworkElement)?.Tag as string, $"TryGetElement({i}) uses the new ItemTemplate.");
+                    }
+                }
+            });
+        }
+
+        // Scenario: a fully realized 10-item StackLayout repeater over a CustomItemsSource; Replace(0, 1 -> 2) and
+        //           Replace(0, 2 -> 1) with an ElementIndexChanged handler that only records the events.
+        // Expected: one ElementIndexChanged per realized element after the replaced range, each to its index shifted by the
+        //           count change, and the repeater is consistent with the source after layout.
+        // A failure means: the Replace re-indexing stopped early or skipped elements although no handler replaced the state
+        //                  (guard against stopping an uninterrupted change).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Replace that changes the item count re-indexes every realized element after the replaced range when no handler replaces the state.")]
+        public void VerifyElementIndexChangedDuringReplaceWithCountChange()
+        {
+            foreach (var counts in new[] { Tuple.Create(1, 2), Tuple.Create(2, 1) })
+            {
+                int oldCount = counts.Item1;
+                int newCount = counts.Item2;
+                string operation = $"Replace(0, {oldCount} -> {newCount})";
+                CustomItemsSource dataSource = null;
+                RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList()));
+                var repeater = CreateLoadedRepeater(dataSource);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var events = new List<Tuple<int, int>>();
+                    repeater.ElementIndexChanged += (sender, args) =>
+                    {
+                        Log.Comment($"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}'");
+                        events.Add(Tuple.Create(args.OldIndex, args.NewIndex));
+                    };
+
+                    Log.Comment(operation);
+                    dataSource.Replace(index: 0, oldCount: oldCount, newCount: newCount, reset: false);
+
+                    var expected = Enumerable.Range(oldCount, 10 - oldCount).Select(i => Tuple.Create(i, i + newCount - oldCount)).ToList();
+                    Verify.AreEqual(
+                        string.Join(", ", expected.Select(e => $"{e.Item1}->{e.Item2}")),
+                        string.Join(", ", events.OrderBy(e => e.Item1).Select(e => $"{e.Item1}->{e.Item2}")),
+                        $"{operation}: one ElementIndexChanged per realized element after the replaced range.");
+
+                    repeater.UpdateLayout();
+                    var currentData = dataSource.Inner.Select(i => i.ToString()).ToList();
+                    VerifyRealizedElementsMatchData(repeater, currentData, expectAllRealized: true, context: $"After {operation} and layout");
+                    VerifyVisualOrderMatchesData(repeater, currentData);
+                });
+            }
+        }
+
+        // Scenario: a fully realized 5-item repeater with a NonVirtualizingLayout over an ObservableCollection. Clear() (Reset) and
+        //           RemoveAt(0) make the repeater clear its realized elements, which raises ElementClearing. The first handler
+        //           call replaces ItemsSource with a new collection and calls UpdateLayout(), which realizes the new elements.
+        // Expected: no ElementClearing after the handler returned (the rest of the old change does not apply to the elements
+        //           realized for the new collection) and, after one more layout, every realized element matches the new
+        //           collection (TryGetElement(i) shows item i, GetElementIndex round-trips, visual order = data order).
+        // A failure means: the repeater keeps clearing or re-indexing the elements it realized for the new collection, the
+        //                  same class of bug as GitHub #11570.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementClearing handler during a Reset does not clear the elements realized for the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementClearingDuringReset()
+        {
+            VerifyItemsSourceReplacedAndLayoutUpdatedInElementClearing("Clear()", data => data.Clear());
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from an ElementClearing handler during a Remove leaves the repeater consistent with the new collection.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInElementClearingDuringRemove()
+        {
+            VerifyItemsSourceReplacedAndLayoutUpdatedInElementClearing("RemoveAt(0)", data => data.RemoveAt(0));
+        }
+
+        private void VerifyItemsSourceReplacedAndLayoutUpdatedInElementClearing(string operation, Action<ObservableCollection<string>> change)
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var newData = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "New #" + i));
+            var repeater = CreateLoadedRepeater(data, () => new NonVirtualStackLayout());
+
+            RunOnUIThread.Execute(() =>
+            {
+                var afterHandler = new List<string>();
+                int clearing = 0;
+                bool replaced = false;
+                bool handlerReturned = false;
+                repeater.ElementClearing += (sender, args) =>
+                {
+                    clearing++;
+                    string description = $"ElementClearing #{clearing} '{GetElementContent(args.Element)}' index {sender.GetElementIndex(args.Element)}";
+                    Log.Comment(description);
+                    if (handlerReturned)
+                    {
+                        afterHandler.Add(description);
+                    }
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: ItemsSource = new collection");
+                        sender.ItemsSource = newData;
+                        Log.Comment("Handler: UpdateLayout()");
+                        sender.UpdateLayout();
+                        Log.Comment($"Handler: UpdateLayout() returned, {CountRealizedChildren(sender)} realized children");
+                        handlerReturned = true;
+                    }
+                };
+
+                Log.Comment(operation);
+                change(data);
+                Log.Comment($"{operation} returned, {clearing} ElementClearing");
+                Verify.AreEqual(0, afterHandler.Count, "No ElementClearing after the handler replaced the state: " + string.Join(" | ", afterHandler));
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, newData, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, newData);
+            });
+        }
+
         private ItemsRepeater CreateLoadedRepeater(object itemsSource, Func<Layout> createLayout = null, string itemContent = MoveItemTemplate)
         {
             ItemsRepeater repeater = null;

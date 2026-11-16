@@ -501,6 +501,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             const auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
+                if (hasChangeEnded())
+                {
+                    return;
+                }
+
                 const auto element = children.GetAt(i);
                 const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 const auto dataIndex = virtInfo->Index();
@@ -649,6 +654,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
+                if (hasChangeEnded())
+                {
+                    return;
+                }
+
                 auto element = children.GetAt(i);
                 auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 if (virtInfo->IsRealized() && virtInfo->AutoRecycleCandidate())
