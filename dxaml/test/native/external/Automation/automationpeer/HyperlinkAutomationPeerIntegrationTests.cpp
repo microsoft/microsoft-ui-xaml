@@ -438,7 +438,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         // A hyperlink that starts mid-line shares its leading edge with the preceding Run, and a point on that
         // edge hit-tests to the Run. The ClickablePoint must hit-test back to the hyperlink for wrapping and RTL
-        // links that start mid-line, as well as for a link that starts its line.
+        // links that start mid-line, as well as for a link that starts its line and one clipped to a 1px strip
+        // starting at a fractional pixel (UIA truncates the point to whole pixels).
         RunOnUIThread([&]()
         {
             auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
@@ -449,6 +450,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 L"          <TextBlock Width='260' TextWrapping='Wrap' HorizontalAlignment='Left'>Say what can I say to see the full list, or open the <Hyperlink AutomationProperties.Name='wrappingHyperlink'>voice access help article with all commands</Hyperlink> for more.</TextBlock> \r\n"
                 L"          <TextBlock Width='260' TextWrapping='Wrap' HorizontalAlignment='Left' FlowDirection='RightToLeft'>Say what can I say to see the full list, or open the <Hyperlink AutomationProperties.Name='rtlHyperlink'>voice access help article with all commands</Hyperlink> for more.</TextBlock> \r\n"
                 L"          <TextBlock Width='260' TextWrapping='Wrap' HorizontalAlignment='Left'><Hyperlink AutomationProperties.Name='lineStartHyperlink'>Learn more about voice access</Hyperlink></TextBlock> \r\n"
+                L"          <Grid Height='20' UseLayoutRounding='False'><Grid.Clip><RectangleGeometry Rect='0,0,260,1.25'/></Grid.Clip><TextBlock Margin='0,0.25,0,0' UseLayoutRounding='False'><Hyperlink AutomationProperties.Name='clippedHyperlink'>Learn more about voice access</Hyperlink></TextBlock></Grid> \r\n"
                 L"      </StackPanel> \r\n"
                 L"</Grid>"));
             TestServices::WindowHelper->WindowContent = root;
@@ -457,7 +459,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // Wait for all async activities to be done
         TestServices::WindowHelper->WaitForIdle();
 
-        for (auto name : { L"wrappingHyperlink", L"rtlHyperlink", L"lineStartHyperlink" })
+        for (auto name : { L"wrappingHyperlink", L"rtlHyperlink", L"lineStartHyperlink", L"clippedHyperlink" })
         {
             Automation::AutomationClient::UIAElementInfo uiaInfo;
             uiaInfo.m_Name = name;

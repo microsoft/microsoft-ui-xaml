@@ -342,9 +342,10 @@ IFACEMETHODIMP HyperlinkAutomationPeer::GetClickablePointCore(_Out_ wf::Point* p
 
             // Use the center of the first rectangle. It stays on the link's first line (the center of the union can be
             // whitespace for a wrapped link), and it is away from the leading edge, which hit-tests to the preceding
-            // text when the link starts mid-line.
-            pReturnValue->X = pRectBound.X + (pRectBound.Width / 2);
-            pReturnValue->Y = pRectBound.Y + (pRectBound.Height / 2);
+            // text when the link starts mid-line. UIAWrapper truncates the point to whole pixels, so keep it at or
+            // past the rectangle's first whole pixel.
+            pReturnValue->X = std::max(std::ceil(pRectBound.X), pRectBound.X + (pRectBound.Width / 2));
+            pReturnValue->Y = std::max(std::ceil(pRectBound.Y), pRectBound.Y + (pRectBound.Height / 2));
         }
     }
 

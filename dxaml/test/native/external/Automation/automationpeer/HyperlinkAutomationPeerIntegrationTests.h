@@ -48,7 +48,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyClickablePointHitTestsToHyperlink)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that ElementFromPoint(ClickablePoint) returns the hyperlink for wrapping and RTL hyperlinks that start mid-line, and for a hyperlink that starts its line.")
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that ElementFromPoint(ClickablePoint) returns the hyperlink for wrapping and RTL hyperlinks that start mid-line, a hyperlink that starts its line, and one clipped to a 1px strip at a fractional pixel.")
         END_TEST_METHOD()
 
     private:
