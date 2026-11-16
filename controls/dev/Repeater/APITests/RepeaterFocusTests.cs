@@ -2955,6 +2955,138 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: 5 items (all realized); the repeater has an ItemTransitionProvider that animates the removal of the item
+        //           focused last, and the test completes the transition. Keyboard focus on item 2; a Flyout opened from the
+        //           item has the focus (on its "Remove" Button) when the item is removed. (1) The flyout closes in the same
+        //           tick, before the transition completes. (2) The transition completes first (its completion clears the
+        //           element a second time, with no index) and the flyout closes after it.
+        // Expected: in both parts, after layout focus is on the item that took the removed item's place, at index 2.
+        // A failure means: (2) the transition's completion overwrote the index remembered for the element, so focus stays
+        //           on the recycled element when the flyout returns focus to it (the bug's symptom in an animated list).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a Flyout opened from the focused item removes the item with a remove transition, focus moves to the item that takes its place whether the flyout closes before or after the transition completes.")]
+        public void VerifyRemovingItemFromFlyoutWithRemoveTransitionMovesFocusToItemAtSameIndex()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            // Returns null for the index of a cleared element, so that a failed check does not throw on the UI thread.
+            Func<int, string> contentAt = i => i >= 0 && i < data.Count ? data[i] : null;
+            UIElement animated = null;
+            var pendingRemoves = new List<ItemCollectionTransitionProgress>();
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.ItemTransitionProvider = new ItemCollectionTransitionProviderDerived
+                {
+                    // A started transition is not completed automatically, so the removal stays pending until the test
+                    // completes it. A transition for which this returns false is not queued.
+                    ShouldAnimateFunc = transition =>
+                    {
+                        if (transition.Operation == ItemCollectionTransitionOperation.Remove && animated != null)
+                        {
+                            var progress = transition.Start();
+                            if (progress.Element == animated)
+                            {
+                                // ShouldAnimate can be called more than once for the same transition; keep the first.
+                                if (pendingRemoves.Count == 0)
+                                {
+                                    pendingRemoves.Add(progress);
+                                }
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    StartTransitionsFunc = transitions =>
+                    {
+                        foreach (var transition in transitions)
+                        {
+                            if (transition.Operation != ItemCollectionTransitionOperation.Remove)
+                            {
+                                transition.Start().Complete();
+                            }
+                        }
+                    }
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (bool completeBeforeClose in new[] { false, true })
+            {
+                Log.Comment(completeBeforeClose ?
+                    "Part 2: the remove transition completes before the flyout closes." :
+                    "Part 1: the flyout closes before the remove transition completes.");
+                FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+                Flyout flyout = null;
+                Button remove = null;
+                var opened = new ManualResetEvent(false);
+                var closed = new ManualResetEvent(false);
+                RunOnUIThread.Execute(() =>
+                {
+                    animated = fixture.Repeater.TryGetElement(2);
+                    pendingRemoves.Clear();
+                    remove = new Button { Content = "Remove" };
+                    flyout = new Flyout { Content = remove };
+                    flyout.Opened += delegate { opened.Set(); };
+                    flyout.Closed += delegate { closed.Set(); };
+                    flyout.ShowAt((FrameworkElement)animated);
+                });
+                Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to open.");
+                IdleSynchronizer.Wait();
+                FocusAndWait(remove, FocusState.Keyboard);
+
+                string expectedContent = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(GetFocusedContainer(fixture.Repeater, out _), "Precondition: focus is in the flyout.");
+                    data.RemoveAt(2);
+                    expectedContent = data[2];
+                    Verify.AreEqual(1, pendingRemoves.Count, "Precondition: the removal of the item is animated.");
+                    if (!completeBeforeClose)
+                    {
+                        flyout.Hide();
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                if (completeBeforeClose)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsTrue(flyout.IsOpen, "Precondition: the flyout is still open.");
+                        foreach (var progress in pendingRemoves)
+                        {
+                            progress.Complete();
+                        }
+                        pendingRemoves.Clear();
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment("Index of the removed item's element after the transition completed: " + fixture.Repeater.GetElementIndex(animated));
+                        flyout.Hide();
+                    });
+                }
+                Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to close.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Focused after the flyout closed: " + DescribeFocus(fixture.Repeater));
+                    Verify.AreNotSame(animated, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus is not on the removed item's element.");
+                    VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: 2);
+                    Verify.AreEqual(expectedContent, data[2]);
+                    foreach (var progress in pendingRemoves)
+                    {
+                        progress.Complete();
+                    }
+                    pendingRemoves.Clear();
+                    animated = null;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: 2));
+            }
+        }
+
         private static ObservableCollection<ObservableCollection<string>> CreateGroups(int groupCount, int itemCount)
         {
             return new ObservableCollection<ObservableCollection<string>>(Enumerable.Range(0, groupCount).Select(g =>

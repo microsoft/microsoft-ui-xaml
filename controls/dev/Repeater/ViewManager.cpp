@@ -273,7 +273,10 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         }
     }
 
-    if (isLastFocusedElement)
+    // When a remove transition completes, the element that was handed to it is cleared again, with no index (it is owned
+    // by the animator). Keep the index remembered when it was handed to the transition.
+    const bool isRememberedElementWithoutIndex = clearedIndex < 0 && m_clearedFocusedElement.get() == element;
+    if (isLastFocusedElement && !isRememberedElementWithoutIndex)
     {
         m_clearedFocusedElement = winrt::make_weak(element);
         m_clearedFocusedElementIndex = AdjustClearedIndexForCollectionChange(clearedIndex);
