@@ -169,15 +169,15 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     // Applies thousands of random edits to a list with blocks of 4 and to a std::vector, and compares them after each
     // edit. The list grows and shrinks in turns, so that blocks split and merge everywhere, and it is sometimes empty.
     // With 10 keys for up to about 250 items, a block often holds the same key more than once.
-    void IndexedListUnitTests::RandomEditsMatchStdVector()
+    template <typename List, bool HasKey>
+    static void RunRandomEdits()
     {
-        SetVerifyOutput verifySettings(VerifyOutputSettings::LogOnlyFailures);
         constexpr std::uint32_t keyCount = 10;
 
         for (std::uint32_t seed = 1; seed <= 5; ++seed)
         {
             std::mt19937 random(seed);
-            SmallList list;
+            List list;
             std::vector<Item> expected;
             int nextId = 0;
 
@@ -224,13 +224,25 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
                 }
 
                 VerifyMatches(list, expected);
-                VerifyFindFirst(list, expected, changedKey);
-                if (item.key != changedKey)
+                if constexpr (HasKey)
                 {
-                    VerifyFindFirst(list, expected, item.key);
+                    VerifyFindFirst(list, expected, changedKey);
+                    if (item.key != changedKey)
+                    {
+                        VerifyFindFirst(list, expected, item.key);
+                    }
                 }
             }
         }
+    }
+
+    void IndexedListUnitTests::RandomEditsMatchStdVector()
+    {
+        SetVerifyOutput verifySettings(VerifyOutputSettings::LogOnlyFailures);
+        RunRandomEdits<SmallList, true>();
+
+        // A list without a key, like TreeView's token lists, is compiled without the key index.
+        RunRandomEdits<containers::indexed_list<Item, void, 4>, false>();
     }
 
     // The same comparison with the default block size, at sizes that TreeView reaches: grow to 50,000 items at random
