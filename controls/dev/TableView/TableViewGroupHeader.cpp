@@ -53,14 +53,11 @@ TableViewGroupHeader::TableViewGroupHeader()
 
 namespace
 {
-    template <typename D, typename... I>
-    using ComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
-
     // The UIA element of one binding of a header to a group (the header peer's EventsSource). Not a
     // FrameworkElementAutomationPeer, and only a weak reference to the header, so no core pointer
     // outlives it. Once the header is cleared or rebound, every member throws ElementNotAvailable.
     class TableViewGroupBindingAutomationPeer :
-        public ReferenceTracker<TableViewGroupBindingAutomationPeer, ComposableAutomationPeerT, winrt::IExpandCollapseProvider, winrt::IGridItemProvider, winrt::IScrollItemProvider>
+        public TableViewBindingAutomationPeerT<TableViewGroupBindingAutomationPeer, winrt::IExpandCollapseProvider, winrt::IGridItemProvider, winrt::IScrollItemProvider>
     {
     public:
         explicit TableViewGroupBindingAutomationPeer(winrt::TableViewGroupHeader const& header) : m_header(winrt::make_weak(header)) {}
@@ -80,16 +77,7 @@ namespace
         winrt::hstring GetClassNameCore() { return HeaderPeer().GetClassName(); }
         winrt::AutomationControlType GetAutomationControlTypeCore() { return HeaderPeer().GetAutomationControlType(); }
         winrt::hstring GetLocalizedControlTypeCore() { return HeaderPeer().GetLocalizedControlType(); }
-        winrt::hstring GetAutomationIdCore() { return HeaderPeer().GetAutomationId(); }
-        int32_t GetLevelCore() { return HeaderPeer().GetLevel(); }
-        winrt::Rect GetBoundingRectangleCore() { return HeaderPeer().GetBoundingRectangle(); }
-        winrt::Point GetClickablePointCore() { return HeaderPeer().GetClickablePoint(); }
-        bool IsOffscreenCore() { return HeaderPeer().IsOffscreen(); }
         bool IsEnabledCore() { return HeaderPeer().IsEnabled(); }
-        bool IsControlElementCore() { return HeaderPeer().IsControlElement(); }
-        bool IsContentElementCore() { return HeaderPeer().IsContentElement(); }
-        bool HasKeyboardFocusCore() { return HeaderPeer().HasKeyboardFocus(); }
-        bool IsKeyboardFocusableCore() { return HeaderPeer().IsKeyboardFocusable(); }
         void SetFocusCore() { HeaderPeer().SetFocus(); }
         void ShowContextMenuCore() { HeaderPeer().ShowContextMenu(); }
         winrt::IVector<winrt::AutomationPeer> GetChildrenCore() { return HeaderPeer().GetChildren(); }
@@ -117,32 +105,15 @@ namespace
             m_header.get().StartBringIntoView(options);
         }
 
-        // UIA reads these from this element, not the header's peer: forward them so the header's
-        // AutomationProperties and set position still reach clients.
-        int32_t GetPositionInSetCore() { return HeaderPeer().GetPositionInSet(); }
-        int32_t GetSizeOfSetCore() { return HeaderPeer().GetSizeOfSet(); }
-        winrt::hstring GetHelpTextCore() { return HeaderPeer().GetHelpText(); }
-        winrt::hstring GetAcceleratorKeyCore() { return HeaderPeer().GetAcceleratorKey(); }
-        winrt::hstring GetAccessKeyCore() { return HeaderPeer().GetAccessKey(); }
-        winrt::hstring GetItemStatusCore() { return HeaderPeer().GetItemStatus(); }
-        winrt::hstring GetItemTypeCore() { return HeaderPeer().GetItemType(); }
-        winrt::hstring GetFullDescriptionCore() { return HeaderPeer().GetFullDescription(); }
-        winrt::hstring GetLocalizedLandmarkTypeCore() { return HeaderPeer().GetLocalizedLandmarkType(); }
-        winrt::AutomationPeer GetLabeledByCore() { return HeaderPeer().GetLabeledBy(); }
-        winrt::IVectorView<winrt::AutomationPeer> GetControlledPeersCore() { return HeaderPeer().GetControlledPeers(); }
-        winrt::IVector<winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation> GetAnnotationsCore() { return HeaderPeer().GetAnnotations(); }
-        winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationOrientation GetOrientationCore() { return HeaderPeer().GetOrientation(); }
-        winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting GetLiveSettingCore() { return HeaderPeer().GetLiveSetting(); }
-        winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLandmarkType GetLandmarkTypeCore() { return HeaderPeer().GetLandmarkType(); }
-        winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationHeadingLevel GetHeadingLevelCore() { return HeaderPeer().GetHeadingLevel(); }
-        bool IsPasswordCore() { return HeaderPeer().IsPassword(); }
-        bool IsRequiredForFormCore() { return HeaderPeer().IsRequiredForForm(); }
-        bool IsPeripheralCore() { return HeaderPeer().IsPeripheral(); }
-        bool IsDataValidForFormCore() { return HeaderPeer().IsDataValidForForm(); }
-        bool IsDialogCore() { return HeaderPeer().IsDialog(); }
-
         // The group moved to another container: this element now speaks for that one.
         void Retarget(winrt::TableViewGroupHeader const& header) { m_header = winrt::make_weak(header); }
+
+        // TableViewBindingAutomationPeerT's hook. A stale binding throws rather than degrading.
+        template <typename Forward, typename T>
+        T ForwardToContainerPeer(Forward&& forward, T const&)
+        {
+            return static_cast<T>(forward(HeaderPeer()));
+        }
 
     private:
         // The header's own peer while it still routes UIA to this binding.
@@ -150,7 +121,7 @@ namespace
         {
             auto const header = m_header.get();
             auto const peer = header ? winrt::FrameworkElementAutomationPeer::FromElement(header) : nullptr;
-            if (!peer || peer.EventsSource() != get_strong().as<winrt::AutomationPeer>())
+            if (!IsEventsSourceOf(peer))
             {
                 ThrowElementNotAvailable();
             }

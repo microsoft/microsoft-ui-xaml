@@ -906,6 +906,13 @@ void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
     }
 }
 
+void TableViewRowAutomationPeer::ResetReportedHierarchyState()
+{
+    m_lastReportedLevel = -1;
+    m_lastReportedPositionInSet = -1;
+    m_lastReportedSizeOfSet = -1;
+}
+
 // ----- IAutomationPeerOverrides3 -----
 
 int32_t TableViewRowAutomationPeer::GetLevelCore()

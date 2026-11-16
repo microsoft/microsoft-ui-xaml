@@ -101,6 +101,72 @@ inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
     }
 }
 
+// Marked composable like the IDL-generated peer bases, which ReferenceTracker relies on.
+template <typename D, typename... I>
+using TableViewComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
+
+// Base of the UIA element for one binding of a container (row, group header) to its data: the
+// container peer's EventsSource. UIA reads these from this element, not the container's peer, so
+// forward them and the container's AutomationProperties and set position still reach clients.
+// D supplies ForwardToContainerPeer(forward, fallback): forward applied to the container's peer.
+template <typename D, typename... I>
+struct TableViewBindingAutomationPeerT : ReferenceTracker<D, TableViewComposableAutomationPeerT, I...>
+{
+    using AutomationPeerAnnotation = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation;
+    using AutomationOrientation = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationOrientation;
+    using AutomationLiveSetting = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting;
+    using AutomationLandmarkType = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLandmarkType;
+    using AutomationHeadingLevel = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationHeadingLevel;
+
+    winrt::hstring GetAutomationIdCore() { return Forward([](auto const& p) { return p.GetAutomationId(); }, winrt::hstring{}); }
+    winrt::hstring GetHelpTextCore() { return Forward([](auto const& p) { return p.GetHelpText(); }, winrt::hstring{}); }
+    // Forwarded so the container's AutomationProperties.AccessibilityView still applies.
+    bool IsContentElementCore() { return Forward([](auto const& p) { return p.IsContentElement(); }, true); }
+    bool IsControlElementCore() { return Forward([](auto const& p) { return p.IsControlElement(); }, true); }
+    bool IsOffscreenCore() { return Forward([](auto const& p) { return p.IsOffscreen(); }, true); }
+    winrt::Rect GetBoundingRectangleCore() { return Forward([](auto const& p) { return p.GetBoundingRectangle(); }, winrt::Rect{}); }
+    winrt::Point GetClickablePointCore() { return Forward([](auto const& p) { return p.GetClickablePoint(); }, winrt::Point{}); }
+    bool HasKeyboardFocusCore() { return Forward([](auto const& p) { return p.HasKeyboardFocus(); }, false); }
+    bool IsKeyboardFocusableCore() { return Forward([](auto const& p) { return p.IsKeyboardFocusable(); }, false); }
+    int32_t GetPositionInSetCore() { return Forward([](auto const& p) { return p.GetPositionInSet(); }, -1); }
+    int32_t GetSizeOfSetCore() { return Forward([](auto const& p) { return p.GetSizeOfSet(); }, -1); }
+    int32_t GetLevelCore() { return Forward([](auto const& p) { return p.GetLevel(); }, -1); }
+    winrt::hstring GetAcceleratorKeyCore() { return Forward([](auto const& p) { return p.GetAcceleratorKey(); }, winrt::hstring{}); }
+    winrt::hstring GetAccessKeyCore() { return Forward([](auto const& p) { return p.GetAccessKey(); }, winrt::hstring{}); }
+    winrt::hstring GetItemStatusCore() { return Forward([](auto const& p) { return p.GetItemStatus(); }, winrt::hstring{}); }
+    winrt::hstring GetItemTypeCore() { return Forward([](auto const& p) { return p.GetItemType(); }, winrt::hstring{}); }
+    winrt::hstring GetFullDescriptionCore() { return Forward([](auto const& p) { return p.GetFullDescription(); }, winrt::hstring{}); }
+    winrt::hstring GetLocalizedLandmarkTypeCore() { return Forward([](auto const& p) { return p.GetLocalizedLandmarkType(); }, winrt::hstring{}); }
+    winrt::AutomationPeer GetLabeledByCore() { return Forward([](auto const& p) { return p.GetLabeledBy(); }, winrt::AutomationPeer{ nullptr }); }
+    winrt::IVectorView<winrt::AutomationPeer> GetControlledPeersCore() { return Forward([](auto const& p) { return p.GetControlledPeers(); }, winrt::IVectorView<winrt::AutomationPeer>{ nullptr }); }
+    winrt::IVector<AutomationPeerAnnotation> GetAnnotationsCore() { return Forward([](auto const& p) { return p.GetAnnotations(); }, winrt::IVector<AutomationPeerAnnotation>{ nullptr }); }
+    AutomationOrientation GetOrientationCore() { return Forward([](auto const& p) { return p.GetOrientation(); }, AutomationOrientation::None); }
+    AutomationLiveSetting GetLiveSettingCore() { return Forward([](auto const& p) { return p.GetLiveSetting(); }, AutomationLiveSetting::Off); }
+    AutomationLandmarkType GetLandmarkTypeCore() { return Forward([](auto const& p) { return p.GetLandmarkType(); }, AutomationLandmarkType::None); }
+    AutomationHeadingLevel GetHeadingLevelCore() { return Forward([](auto const& p) { return p.GetHeadingLevel(); }, AutomationHeadingLevel::None); }
+    bool IsPasswordCore() { return Forward([](auto const& p) { return p.IsPassword(); }, false); }
+    bool IsRequiredForFormCore() { return Forward([](auto const& p) { return p.IsRequiredForForm(); }, false); }
+    bool IsPeripheralCore() { return Forward([](auto const& p) { return p.IsPeripheral(); }, false); }
+    bool IsDataValidForFormCore() { return Forward([](auto const& p) { return p.IsDataValidForForm(); }, true); }
+    bool IsDialogCore() { return Forward([](auto const& p) { return p.IsDialog(); }, false); }
+
+protected:
+    // The binding is current while the container's own peer still routes UIA to it. Compared by COM
+    // identity: the source can be any object an app installed.
+    bool IsEventsSourceOf(winrt::AutomationPeer const& containerPeer)
+    {
+        auto const source = containerPeer ? containerPeer.EventsSource() : nullptr;
+        return source && source == this->get_strong().template as<winrt::AutomationPeer>();
+    }
+
+private:
+    template <typename Fn, typename T>
+    T Forward(Fn&& forward, T fallback)
+    {
+        return static_cast<D*>(this)->ForwardToContainerPeer(std::forward<Fn>(forward), std::move(fallback));
+    }
+};
+
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.
 inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
