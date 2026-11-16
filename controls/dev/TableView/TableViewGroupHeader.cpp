@@ -12,6 +12,7 @@
 #include "TableViewAutomationHelpers.h"
 
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
+static constexpr std::wstring_view s_ExpanderGutterPartName{ L"PART_ExpanderGutter"sv };
 
 TableViewGroupHeader::TableViewGroupHeader()
 {
@@ -149,6 +150,12 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
     winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity)
 {
+    // An EventsSource the app installed wins; only replace or clear the binding this header installed.
+    if (auto const current = headerPeer.EventsSource(); current && current != m_groupBinding.get())
+    {
+        return;
+    }
+
     auto const owner = GetOwningTableView();
     if (!m_groupEntry.get())
     {
@@ -193,6 +200,44 @@ void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
         }
         headerPeer.EventsSource(binding);
     }
+}
+
+bool TableViewGroupHeader::HasContentAutomationPeersInternal()
+{
+    std::vector<winrt::DependencyObject> pending;
+    if (auto const root = ContentTemplateRoot())
+    {
+        pending.push_back(root);
+    }
+    while (!pending.empty())
+    {
+        auto const element = std::move(pending.back());
+        pending.pop_back();
+        if (auto const uie = element.try_as<winrt::UIElement>(); uie && winrt::FrameworkElementAutomationPeer::FromElement(uie))
+        {
+            return true;
+        }
+        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(element);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            pending.push_back(winrt::VisualTreeHelper::GetChild(element, i));
+        }
+    }
+    return false;
+}
+
+bool TableViewGroupHeader::IsExpanderPartInternal(winrt::DependencyObject element)
+{
+    auto const gutter = m_expanderGutter.get();
+    winrt::DependencyObject const self = *this;
+    for (; gutter && element && element != self; element = winrt::VisualTreeHelper::GetParent(element))
+    {
+        if (element == gutter)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
@@ -316,7 +361,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_rowChrome.set(GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>());
     m_contentHost.set(GetTemplateChild(L"PART_ContentHost").try_as<winrt::Border>());
     m_contentPresenter.set(GetTemplateChild(L"PART_ContentPresenter").try_as<winrt::ContentPresenter>());
-    m_expanderGutter.set(GetTemplateChild(L"PART_ExpanderGutter").try_as<winrt::Border>());
+    m_expanderGutter.set(GetTemplateChild(hstring{ s_ExpanderGutterPartName }).try_as<winrt::Border>());
 
     // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
     // a cell is editing.

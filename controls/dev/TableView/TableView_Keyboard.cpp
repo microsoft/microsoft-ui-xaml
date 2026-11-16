@@ -1339,9 +1339,12 @@ void TableView::OnPreviewKeyDownForNavigation(
         break;
     }
 
-    // PART_BodyScroller would otherwise page on its own before our handledEventsToo KeyDown runs.
+    // PART_BodyScroller would otherwise page or scroll to an edge on its own before our
+    // handledEventsToo KeyDown runs; its animated Home/End scroll also raced the table's reveal.
     if ((args.Key() == winrt::Windows::System::VirtualKey::PageUp ||
-            args.Key() == winrt::Windows::System::VirtualKey::PageDown) &&
+            args.Key() == winrt::Windows::System::VirtualKey::PageDown ||
+            args.Key() == winrt::Windows::System::VirtualKey::Home ||
+            args.Key() == winrt::Windows::System::VirtualKey::End) &&
         !args.Handled() &&
         !IsFocusInsideEditingElement() &&
         IsFocusExactlyOnBodyItem())
@@ -2675,7 +2678,10 @@ void TableView::RevealFocusedBodyElement(winrt::UIElement const& element)
         const auto inBody = target.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f });
         const double width = target.ActualWidth();
         const double viewportWidth = scroller.ViewportWidth();
-        if (target != element && viewportWidth > 0.0 && width <= viewportWidth)
+        // A frozen cell is pinned in the viewport; its position can describe a pending offset.
+        auto const column = target.Tag().try_as<winrt::TableViewColumn>();
+        const bool frozen = column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None;
+        if (target != element && !frozen && viewportWidth > 0.0 && width <= viewportWidth)
         {
             double delta = 0.0;
             if (inBody.X < 0.0)
@@ -2847,6 +2853,19 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
             args.Handled(true);
             return;
         }
+
+        // A frozen cell is pinned in the viewport, so it never needs a horizontal reveal. Its focus
+        // request, computed at the old offset, would override a pending horizontal ChangeView (Home
+        // from the far end then landed short of the start); only outer scrollers still need it.
+        if (auto const column = target.Tag().try_as<winrt::TableViewColumn>();
+            column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None &&
+            winrt::VisualTreeHelper::GetParent(target).try_as<winrt::TableViewCellsPanel>() &&
+            IsRowElementInViewport(bodyItem))
+        {
+            args.Handled(true);
+            RevealFocusedBodyElement(bodyItem);
+            return;
+        }
     }
 
     if (!std::isnan(args.VerticalAlignmentRatio()) || args.VerticalOffset() != 0.0)
@@ -2918,6 +2937,45 @@ bool TableView::IsInUnrealizedBodyContainer(winrt::DependencyObject const& eleme
         node = parent;
     }
     return false;
+}
+
+// ItemsRepeater can clear the focused row without moving focus off it: after a sort, a restore can
+// land on a container still parked for the Reset, which the repeater clears for real only on its
+// next arrange. Focus is then stranded in a recycled row whose UIA item binding is gone. Checked a
+// turn later so the repeater's own focus rescue wins whenever it finds a candidate.
+void TableView::QueueOrphanedBodyFocusRescue()
+{
+    auto const queue = DispatcherQueue();
+    if (m_orphanedBodyFocusRescueQueued || !queue)
+    {
+        return;
+    }
+
+    m_orphanedBodyFocusRescueQueued = true;
+    auto weakThis = get_weak();
+    if (!queue.TryEnqueue([weakThis]()
+        {
+            auto strongThis = weakThis.get();
+            if (!strongThis)
+            {
+                return;
+            }
+            strongThis->m_orphanedBodyFocusRescueQueued = false;
+            auto const root = strongThis->XamlRoot();
+            if (!root || strongThis->m_pendingReshapeFocusRow >= 0)
+            {
+                return;
+            }
+            auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+            if (focused && strongThis->IsInUnrealizedBodyContainer(focused))
+            {
+                strongThis->CaptureBodyFocusForReshape();
+                strongThis->RestoreBodyFocusAfterReshape();
+            }
+        }))
+    {
+        m_orphanedBodyFocusRescueQueued = false;
+    }
 }
 
 bool TableView::IsBodyFocusInContainer(winrt::UIElement const& container) const

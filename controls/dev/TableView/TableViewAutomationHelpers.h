@@ -161,6 +161,9 @@ struct TableViewBindingAutomationPeerT :
     winrt::hstring GetLocalizedLandmarkTypeCore() { return Forward([](auto const& p) { return p.GetLocalizedLandmarkType(); }, winrt::hstring{}); }
     winrt::AutomationPeer GetLabeledByCore() { return Forward([](auto const& p) { return p.GetLabeledBy(); }, winrt::AutomationPeer{ nullptr }); }
     winrt::IVectorView<winrt::AutomationPeer> GetControlledPeersCore() { return Forward([](auto const& p) { return p.GetControlledPeers(); }, winrt::IVectorView<winrt::AutomationPeer>{ nullptr }); }
+    winrt::IIterable<winrt::AutomationPeer> GetDescribedByCore() { return ForwardPeerCollection(&winrt::AutomationProperties::GetDescribedBy); }
+    winrt::IIterable<winrt::AutomationPeer> GetFlowsToCore() { return ForwardPeerCollection(&winrt::AutomationProperties::GetFlowsTo); }
+    winrt::IIterable<winrt::AutomationPeer> GetFlowsFromCore() { return ForwardPeerCollection(&winrt::AutomationProperties::GetFlowsFrom); }
     winrt::IVector<AutomationPeerAnnotation> GetAnnotationsCore() { return Forward([](auto const& p) { return p.GetAnnotations(); }, winrt::IVector<AutomationPeerAnnotation>{ nullptr }); }
     AutomationOrientation GetOrientationCore() { return Forward([](auto const& p) { return p.GetOrientation(); }, AutomationOrientation::None); }
     AutomationLiveSetting GetLiveSettingCore() { return Forward([](auto const& p) { return p.GetLiveSetting(); }, AutomationLiveSetting::Off); }
@@ -203,6 +206,34 @@ private:
     T Forward(Fn&& forward, T fallback)
     {
         return static_cast<D*>(this)->ForwardToContainerPeer(std::forward<Fn>(forward), std::move(fallback));
+    }
+
+    // The peer API exposes no getter for these, so read the container's AutomationProperties as a
+    // FrameworkElementAutomationPeer does.
+    using ElementsGetter = winrt::IVector<winrt::DependencyObject>(*)(winrt::DependencyObject const&);
+    winrt::IIterable<winrt::AutomationPeer> ForwardPeerCollection(ElementsGetter getElements)
+    {
+        return Forward([getElements](auto const& p) -> winrt::IIterable<winrt::AutomationPeer>
+        {
+            auto const owner = p.template try_as<winrt::FrameworkElementAutomationPeer>();
+            auto const elements = owner ? getElements(owner.Owner()) : nullptr;
+            if (!elements || elements.Size() == 0)
+            {
+                return nullptr;
+            }
+            auto peers = winrt::single_threaded_vector<winrt::AutomationPeer>();
+            for (auto const& element : elements)
+            {
+                if (auto const uiElement = element.try_as<winrt::UIElement>())
+                {
+                    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(uiElement))
+                    {
+                        peers.Append(peer);
+                    }
+                }
+            }
+            return peers;
+        }, winrt::IIterable<winrt::AutomationPeer>{ nullptr });
     }
 };
 

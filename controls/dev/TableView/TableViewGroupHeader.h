@@ -103,6 +103,10 @@ public:
     // EventsSource), so a held element never moves to another group. With a group identity the
     // element is the group's, shared through the owner; a cleared header exposes none.
     void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity);
+    // Whether any element of the rendered content has an automation peer a client could hold.
+    bool HasContentAutomationPeersInternal();
+    // Whether the element is part of the chevron, a pure visual the header's peer does not expose.
+    bool IsExpanderPartInternal(winrt::DependencyObject element);
 
 private:
     void UpdateVisualStates(bool useTransitions);

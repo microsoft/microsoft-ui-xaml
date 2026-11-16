@@ -56,6 +56,17 @@ namespace
 // otherwise have pushed during cell rebuild is pushed from PrepareGroupHeaderElement instead.
 // ---------------------------------------------------------------------------------------------
 
+void TableView::SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element)
+{
+    if (m_groupAutomationElements.size() >= 256)
+    {
+        // Clearing everything would hand a group still shown by a header a new element on its next
+        // container change, staling what clients hold for it.
+        std::erase_if(m_groupAutomationElements, [](auto const& entry) { return !TryGetBoundContainer(entry.second); });
+    }
+    m_groupAutomationElements.insert_or_assign(identity, element);
+}
+
 // Single mapping from a row-source item to its kind. Deliberately item-based rather than
 // index-based: ElementFactoryGetArgs carries no index, and keeping one lookup here means a future
 // source kind adds its entry type in this function instead of adding a parallel path in the
@@ -1216,6 +1227,18 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         }
     }
 
+    // Keep bindings live within a group, but never retarget an object held by an open menu to a
+    // different group when its header is recycled.
+    auto const keyText = StringifyGroupKey(groupKey);
+    auto const existing = header.Content().try_as<winrt::TableViewGroupInfo>();
+
+    // A UIA client may hold elements of the content the previous group rendered. Drop that content
+    // so they go stale instead of reading this group, as a row replaces cells that have peers.
+    if (existing && !SameGroupKey(existing.Key(), groupKey) && headerImpl->HasContentAutomationPeersInternal())
+    {
+        header.ContentTemplate(nullptr);
+    }
+
     // Forward an app-supplied template, else fall back to the control's own. ClearValue removes
     // only the local value, so the default Style's ContentTemplate setter re-applies through DP
     // precedence -- a recycled header can never keep a previous render's template.
@@ -1227,11 +1250,6 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     {
         header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
     }
-
-    // Keep bindings live within a group, but never retarget an object held by an open menu to a
-    // different group when its header is recycled.
-    auto const keyText = StringifyGroupKey(groupKey);
-    auto const existing = header.Content().try_as<winrt::TableViewGroupInfo>();
 
     // Announce only when THIS group's reported state changed. Two things make the naive "did the
     // boolean flip" test wrong:
@@ -1387,7 +1405,8 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     winrt::get_self<TableViewGroupHeader>(header)->SetGroupEntryInternal(nullptr);
     if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(header))
     {
-        headerPeer.EventsSource(nullptr);
+        // With no entry this clears only the element the header installed, not an app's EventsSource.
+        winrt::get_self<TableViewGroupHeader>(header)->SyncGroupAutomationPeerInternal(headerPeer, false, {});
     }
 }
 

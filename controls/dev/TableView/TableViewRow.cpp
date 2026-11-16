@@ -3291,8 +3291,10 @@ void TableViewRow::OnTemplateRootContextRequested(winrt::ContextRequestedEventAr
 
 // Row requests raised on the row itself: Shift+F10 / Menu key while the row (not a cell) has
 // focus. They start above the template root, so neither handler above sees them; without this
-// the row-template menu is skipped and the table fallback opens. Requests that bubbled up from
-// inside the row were already offered to the handlers above and keep bubbling.
+// the row-template menu is skipped and the table fallback opens. A ContextFlyout on the row itself
+// is shown by the framework before this handler runs, so it wins over a template-root menu here.
+// Requests that bubbled up from inside the row were already offered to the handlers above and
+// keep bubbling.
 void TableViewRow::OnRowContextRequested(winrt::ContextRequestedEventArgs const& args)
 {
     auto const source = args.OriginalSource().try_as<winrt::TableViewRow>();

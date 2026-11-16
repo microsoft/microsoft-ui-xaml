@@ -439,20 +439,13 @@ public:
     // A group's UIA element (its header peer's EventsSource), kept by group identity so it follows the
     // group when a reshape or scroll hands the group a different pooled container. Strong: a UIA
     // client's hold does not keep the element alive while no header exposes it. Bounded by dropping
-    // the whole map; elements a header still exposes survive through that header's peer.
+    // the elements no header currently exposes; those a header exposes are kept.
     winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
     {
         auto const it = m_groupAutomationElements.find(identity);
         return it != m_groupAutomationElements.end() ? it->second : nullptr;
     }
-    void SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element)
-    {
-        if (m_groupAutomationElements.size() >= 256)
-        {
-            m_groupAutomationElements.clear();
-        }
-        m_groupAutomationElements.insert_or_assign(identity, element);
-    }
+    void SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element);
 
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
@@ -1415,6 +1408,8 @@ private:
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
     bool IsBodyFocusInContainer(winrt::UIElement const& container) const;
     bool IsInUnrealizedBodyContainer(winrt::DependencyObject const& element) const;
+    void QueueOrphanedBodyFocusRescue();
+    bool m_orphanedBodyFocusRescueQueued{ false };
     // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
     void BeginPendingBodyFocus(
         int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio, winrt::IInspectable const& item = nullptr);

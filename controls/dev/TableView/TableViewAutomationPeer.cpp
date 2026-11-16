@@ -202,6 +202,16 @@ namespace
         hstring GetClassNameCore() { return winrt::hstring_name_of<winrt::TableViewRow>(); }
         winrt::AutomationControlType GetAutomationControlTypeCore() { return winrt::AutomationControlType::DataItem; }
 
+        // Forwarded so the row's AutomationProperties.LocalizedControlType still applies.
+        hstring GetLocalizedControlTypeCore()
+        {
+            if (auto const p = ContainerPeer())
+            {
+                return p.GetLocalizedControlType();
+            }
+            return __super::GetLocalizedControlTypeCore();
+        }
+
         hstring GetNameCore()
         {
             if (m_bound)
@@ -332,6 +342,9 @@ namespace
         // TableViewBindingAutomationPeerT's hook: the row while this bound peer is current. Never a
         // selected-item peer's row, which is not routing UIA to it.
         winrt::UIElement TryBoundContainer() { return TryBoundRow().first; }
+
+        // The item's source index, or -1 once this peer no longer describes a row.
+        int32_t SourceIndex() { return ItemIndex(); }
 
     private:
         void ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction action)
@@ -1306,6 +1319,20 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             // it, so a stale one is refused.
             startIndex = repeater.GetElementIndex(container);
             resolved = startIndex >= 0;
+        }
+        else
+        {
+            // GetSelection's peer for an unrealized selected row: resolved by its item, not a container.
+            for (auto const& cached : m_selectedItemPeerCache)
+            {
+                if (cached.get() == startPeer)
+                {
+                    startIndex = winrt::get_self<TableViewRowItemAutomationPeer>(
+                        startPeer.as<winrt::IVirtualizedItemProvider>())->SourceIndex();
+                    resolved = startIndex >= 0;
+                    break;
+                }
+            }
         }
 
         // An unresolvable startAfter - virtualized away, or not one of ours - must not degrade to

@@ -1280,6 +1280,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies FindItemByProperty accepts GetSelection's element for an unrealized selected row as its start and returns the next row.")]
+        public void VerifyFindItemByPropertyStartsAfterUnrealizedSelectedRow()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                const int target = 150;
+                tableView.Select(target);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(target), "Precondition: the selected row must not be realized.");
+
+                var probe = new ProviderPeerProbe();
+                var selected = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(1, selected.Length, "Precondition: GetSelection reports the unrealized selected row.");
+
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                var next = probe.ToPeer(container.FindItemByProperty(selected[0], null, null));
+                Verify.IsNotNull(next, "FindItemByProperty must resolve the unrealized selected row's element as its start.");
+                Verify.IsTrue(next.GetName().Contains($"Person {target + 1}"), $"FindItemByProperty must return the row after the selection, saw '{next.GetName()}'.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a group header keeps an EventsSource the app installed on its peer when it re-syncs its group's element, as a row does.")]
+        public void VerifyGroupHeaderKeepsAppInstalledEventsSource()
+        {
+            TableView tableView = null;
+            TableViewGroupHeader header = null;
+            AutomationPeer headerPeer = null;
+            AutomationPeer appSource = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                header = (TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0);
+                headerPeer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                appSource = FrameworkElementAutomationPeer.CreatePeerForElement(new Button());
+                headerPeer.EventsSource = appSource;
+                // The toggle replaces G0's entry, so the header is re-prepared for the same group.
+                ((IExpandCollapseProvider)headerPeer.GetPattern(PatternInterface.ExpandCollapse)).Collapse();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(header, GetRowsRepeater(tableView).TryGetElement(0), "Precondition: the same header still shows G0.");
+                Verify.AreSame(appSource, headerPeer.EventsSource, "The app's EventsSource must survive the header re-syncing its group's element.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row's UIA element forwards the row's AutomationProperties.LocalizedControlType.")]
+        public void VerifyRowElementForwardsLocalizedControlType()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(10));
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(0);
+                AutomationProperties.SetLocalizedControlType(row, "record");
+                var element = RowPeerOf(row);
+                Verify.AreNotSame(FrameworkElementAutomationPeer.FromElement(row), element, "Precondition: UIA is handed the row's binding element.");
+                Verify.AreEqual("record", element.GetLocalizedControlType(), "The row's element must report the row's LocalizedControlType.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a held group header element cannot act on the group its recycled header shows next, and the group's current element works (#12443).")]
         public void VerifyHeldGroupHeaderElementCannotActOnAnotherGroup()
         {

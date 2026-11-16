@@ -50,6 +50,29 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetClassNameCore()
     return winrt::hstring{ L"TableViewGroupHeader" };
 }
 
+winrt::IVector<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetChildrenCore()
+{
+    auto const children = __super::GetChildrenCore();
+    auto const header = GetHeader();
+    if (!children || !header)
+    {
+        return children;
+    }
+    // The chevron is a pure visual whose state ExpandCollapse already reports. It belongs to the
+    // container rather than the group, so exposing it would let a held element read another group.
+    auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
+    auto filtered = winrt::single_threaded_vector<winrt::AutomationPeer>();
+    for (auto const& child : children)
+    {
+        auto const peer = child.try_as<winrt::FrameworkElementAutomationPeer>();
+        if (!peer || !headerImpl->IsExpanderPartInternal(peer.Owner()))
+        {
+            filtered.Append(child);
+        }
+    }
+    return filtered;
+}
+
 winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
 {
     // Read from the live projection rather than the visual tree, so the name reflects current

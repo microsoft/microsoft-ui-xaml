@@ -2890,6 +2890,11 @@ void TableView::OnRowElementClearing(
 {
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
+        if (IsBodyFocusInContainer(row))
+        {
+            QueueOrphanedBodyFocusRescue();
+        }
+
         // A recycled row is about to be re-bound to a different item; an edit left open would keep
         // an editor over the new item, and the next commit would write into the wrong data object.
         // ElementClearing runs inside the repeater's measure pass, so this must not restore the
