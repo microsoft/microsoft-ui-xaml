@@ -177,6 +177,13 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         }
 
         auto context = m_ElementFactoryRecycleArgs.get();
+        if (context.Element())
+        {
+            // The cached args are still in use by an outer RecycleElement call that re-entered the repeater (for example,
+            // it replaced ItemsSource). Use new args so that this call does not reset the outer call's Element and Parent.
+            context = winrt::ElementFactoryRecycleArgs();
+        }
+
         context.Element(element);
         context.Parent(*m_owner);
 

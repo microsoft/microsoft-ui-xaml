@@ -382,6 +382,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: same as VerifyNestedItemsSourceReplacementFromRecycleElementWithNonVirtualizingLayout, but the element
+        //           factory reads args.Element and args.Parent again after the nested replacement returns (for example to
+        //           pool the element with args.Parent as owner).
+        // Expected: args.Element and args.Parent stay the element being recycled and the ItemsRepeater for the whole
+        //           RecycleElement call, in the outer call and in the nested calls.
+        // A failure means: a nested recycle reset the args the outer RecycleElement call is still using, so the factory
+        //           sees a null Element and a null Parent (task.ms/62261645).
+        [TestMethod]
+        [TestProperty("Description", "Verifies RecycleElement args keep Element and Parent after a nested ItemsSource replacement from RecycleElement on a NonVirtualizingLayout repeater.")]
+        public void VerifyRecycleElementArgsAreUnchangedAfterNestedItemsSourceReplacementWithNonVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var nestedSource = new List<string> { "Nested item #0", "Nested item #1" };
+                var elementFactory = new ArgsRereadingElementFactory();
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = elementFactory,
+                    Layout = new MyCustomNonVirtualizingStackLayout(),
+                };
+                elementFactory.ReentrantAction = () =>
+                {
+                    Log.Comment("Replacing ItemsSource from RecycleElement");
+                    repeater.ItemsSource = nestedSource;
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var oldElements = elementFactory.Created.ToList();
+                elementFactory.Created.Clear();
+                Verify.AreEqual(3, oldElements.Count);
+
+                repeater.ItemsSource = Enumerable.Range(0, 3).Select(i => "New item #" + i).ToList();
+
+                Verify.IsNull(elementFactory.ReentrantAction, "The nested replacement should have run.");
+                Verify.AreEqual(oldElements.Count, elementFactory.Calls.Count, "Each old element is recycled once.");
+                foreach (var call in elementFactory.Calls)
+                {
+                    Log.Comment(string.Format("RecycleElement for element #{0}: before (Element set: {1}, Parent is repeater: {2}), after (same Element: {3}, Parent is repeater: {4})",
+                        oldElements.IndexOf(call.ElementBefore), call.ElementBefore != null, call.ParentBefore == repeater,
+                        call.ElementAfter == call.ElementBefore, call.ParentAfter == repeater));
+                    Verify.IsTrue(oldElements.Contains(call.ElementBefore), "args.Element is one of the old elements.");
+                    Verify.AreEqual(repeater, call.ParentBefore, "args.Parent is the repeater when RecycleElement starts.");
+                    Verify.AreEqual(call.ElementBefore, call.ElementAfter, "args.Element is unchanged when RecycleElement ends.");
+                    Verify.AreEqual(repeater, call.ParentAfter, "args.Parent is unchanged when RecycleElement ends.");
+                }
+                Verify.AreEqual(oldElements.Count, elementFactory.Calls.Select(call => call.ElementBefore).Distinct().Count());
+
+                Content.UpdateLayout();
+                Verify.AreEqual(nestedSource.Count, elementFactory.Created.Count);
+                Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+            });
+        }
+
         // Scenario: an ItemsRepeater with a NonVirtualizingLayout uses an element factory that, in RecycleElement, puts the
         //           element in a RecyclePool with args.Parent as owner and hands it to another owner right away (so the
         //           pool removes it from the repeater's children); ItemsSource is replaced.
@@ -2323,6 +2378,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 ItemsChangedFunc?.Invoke(args);
                 base.OnItemsChangedCore(context, source, args);
+            }
+        }
+
+        // Element factory that runs ReentrantAction once from RecycleElement and records args.Element and args.Parent
+        // before and after it.
+        private partial class ArgsRereadingElementFactory : ElementFactory
+        {
+            public class RecycleCall
+            {
+                public UIElement ElementBefore;
+                public UIElement ParentBefore;
+                public UIElement ElementAfter;
+                public UIElement ParentAfter;
+            }
+
+            public Action ReentrantAction { get; set; }
+            public List<UIElement> Created { get; } = new List<UIElement>();
+            public List<RecycleCall> Calls { get; } = new List<RecycleCall>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                var element = new ContentControl { Width = 40, Height = 40 };
+                Created.Add(element);
+                return element;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                var call = new RecycleCall { ElementBefore = args.Element, ParentBefore = args.Parent };
+                var reentrantAction = ReentrantAction;
+                ReentrantAction = null;
+                reentrantAction?.Invoke();
+                call.ElementAfter = args.Element;
+                call.ParentAfter = args.Parent;
+                Calls.Add(call);
             }
         }
 
