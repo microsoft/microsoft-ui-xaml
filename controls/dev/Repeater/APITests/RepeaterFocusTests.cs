@@ -2255,6 +2255,338 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: NonVirtualizingLayout without an ItemTemplate; the items are Buttons, so a cleared item is removed from
+        //           Children. Focus is on item 0. In one tick the Layout is replaced (item 0 goes to the pinned pool and
+        //           stays in Children, with item 2, which the layout-change walk skips after removing item 1) and a new
+        //           ItemsSource is assigned.
+        // Expected: no exception; only the new items are children and they are shown at their indices.
+        // A failure means: the reassignment walks Children while it removes the pinned element from them (the walk runs
+        //                  past the end), or an old item stays realized.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that with a NonVirtualizingLayout and UIElement items, a layout change followed by an ItemsSource reassignment in the same tick clears the pinned focused item and shows only the new items.")]
+        public void VerifyNonVirtualizingLayoutChangeAndReassignmentWithElementItemsShowsNewItems()
+        {
+            List<Button> oldItems = null;
+            List<Button> newItems = null;
+            ObservableCollection<Button> data = null;
+            Layout layout = null;
+            RunOnUIThread.Execute(() =>
+            {
+                oldItems = Enumerable.Range(0, 3).Select(i => new Button { Content = "Item #" + i, Height = 30 }).ToList();
+                newItems = Enumerable.Range(0, 3).Select(i => new Button { Content = "New #" + i, Height = 30 }).ToList();
+                data = new ObservableCollection<Button>(oldItems);
+                layout = new NonVirtualStackLayout();
+            });
+            var fixture = CreateFocusFixture(data, layout, itemTemplate: null);
+            FocusItemAndWait(fixture.Repeater, 0, FocusState.Keyboard);
+
+            Exception exception = null;
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.Layout = new NonVirtualStackLayout();
+                Log.Comment($"Children after the layout change: {VisualTreeHelper.GetChildrenCount(fixture.Repeater)}; item 0 index {fixture.Repeater.GetElementIndex(oldItems[0])}");
+                try
+                {
+                    fixture.Repeater.ItemsSource = new ObservableCollection<Button>(newItems);
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(exception, "Assigning ItemsSource does not throw: " + exception?.Message);
+                Log.Comment("Focused: " + DescribeFocus(fixture.Repeater));
+                Verify.AreEqual(newItems.Count, VisualTreeHelper.GetChildrenCount(fixture.Repeater), "Only the new items are children.");
+                for (int i = 0; i < newItems.Count; i++)
+                {
+                    Verify.AreSame(newItems[i], fixture.Repeater.TryGetElement(i), $"Item {i} is the new item.");
+                    Verify.IsNull(VisualTreeHelper.GetParent(oldItems[i]), $"Old item {i} is not in the tree.");
+                }
+            });
+        }
+
+        // Scenario: the focused item 3 is removed, and in the same tick (before the repeater's LayoutUpdated) the app moves
+        //           focus to another live item (index 5).
+        // Expected: focus stays on the item the app focused.
+        // A failure means: the pending focus move of the removal overrides the app's focus change and moves focus to index 3.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the app moves focus to another live item after removing the focused item and before layout, the repeater does not move focus again.")]
+        public void VerifyFocusMovedToAnotherLiveItemAfterRemoveIsKept()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 20).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                data.RemoveAt(3);
+                target = (Button)fixture.Repeater.TryGetElement(5);
+                Verify.AreEqual("Item #6", target.Content, "Precondition: index 5 shows item 6 after the removal.");
+                Verify.IsTrue(target.Focus(FocusState.Keyboard));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 5);
+                Verify.AreSame(target, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus stays on the item the app focused.");
+            });
+        }
+
+        // Scenario: as VerifyGettingFocusHandlerCanChangeItemsSourceDuringFocusMove: after a Reset the repeater moves focus to
+        //           the new item 3, and a GettingFocus handler removes that item, which clears the element focus is moving to.
+        // Expected: the repeater moves focus again after the next layout pass, to the live item at index 3; focus is not on
+        //           the element the handler's change cleared, even if the layout reused it for another item.
+        // A failure means: focus is left on the cleared element (or on whatever item the layout reused it for).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when a GettingFocus handler removes the item the repeater moves focus to, the repeater moves focus again to the live item at the cleared index.")]
+        public void VerifyGettingFocusHandlerRemovingTargetMovesFocusToItemAtClearedIndex()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            DependencyObject handlerTarget = null;
+            RunOnUIThread.Execute(() =>
+            {
+                bool armed = false;
+                fixture.Repeater.GettingFocus += (s, e) =>
+                {
+                    if (armed && handlerTarget == null)
+                    {
+                        handlerTarget = e.NewFocusedElement;
+                        Log.Comment("GettingFocus target: " + DescribeElement(fixture.Repeater, e.NewFocusedElement) + "; removing item 3 from the handler.");
+                        data.RemoveAt(3);
+                    }
+                };
+
+                armed = true;
+                data.Clear();
+                for (int i = 0; i < 10; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(handlerTarget, "Precondition: the handler ran.");
+                Log.Comment("Element cleared by the handler's change now: " + DescribeElement(fixture.Repeater, handlerTarget));
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 3);
+                Verify.AreNotSame(handlerTarget, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus is not on the element the handler's change cleared.");
+            });
+        }
+
+        // Scenario: auto-recycling custom layout; a Reset is processed with focus on item 2; an ElementClearing handler calls
+        //           UpdateLayout() (with another element dirty, so LayoutUpdated is raised) on the first clear AFTER the
+        //           focused element's clear, so a focus move is pending while the change is still processed. The items have
+        //           a fixed size: a cleared item whose desired size changes (its DataContext is cleared) invalidates the
+        //           repeater's measure, and the UpdateLayout call would then run the repeater's layout inside the change,
+        //           which throws (also without the fix).
+        // Expected: no exception; no focus move while the change is processed; after layout focus is on the live item at
+        //           index 2.
+        // A failure means: the pending focus move runs inside the collection change and moves focus to an element that the
+        //                  same change clears next, or the repeater's measure is invalidated inside the change.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a LayoutUpdated raised by an UpdateLayout call from an ElementClearing handler after the focused element is cleared during a Reset does not move focus inside the change.")]
+        public void VerifyUpdateLayoutAfterFocusedElementClearedDuringResetDoesNotMoveFocusInsideChange()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            VirtualizingLayout layout = null;
+            RunOnUIThread.Execute(() => layout = CreateAutoRecyclingLayout(() => 0, int.MaxValue));
+            var fixture = CreateFocusFixture(data, layout, itemTemplate: "<Button Content='{Binding}' Width='150' Height='30'/>");
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            bool updated = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var focusedElement = fixture.Repeater.TryGetElement(2);
+                bool focusedCleared = false;
+                fixture.Repeater.ElementClearing += (s, e) =>
+                {
+                    if (e.Element == focusedElement)
+                    {
+                        focusedCleared = true;
+                    }
+                    else if (focusedCleared && !updated)
+                    {
+                        updated = true;
+                        Log.Comment("UpdateLayout from the ElementClearing of index " + fixture.Repeater.GetElementIndex(e.Element));
+                        fixture.After.Width = 120;
+                        fixture.Root.UpdateLayout();
+                    }
+                };
+            });
+
+            int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () =>
+            {
+                data.Clear();
+                for (int i = 0; i < 5; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            Verify.IsTrue(updated, "Precondition: UpdateLayout was called after the focused element was cleared.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2));
+        }
+
+        // Scenario: the focused item 3 is removed and an item is appended, and the repeater leaves the tree in the same tick.
+        //           When it is added back, the layout reuses the cleared element for the item that it realizes at index 6,
+        //           and the app focuses that element from ElementPrepared.
+        // Expected: focus stays on the element the app focused (index 6); the repeater raises no GettingFocus after it.
+        // A failure means: a focus move recorded before the repeater left the tree runs after it is added back and moves
+        //                  focus away from the element the app focused.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focus move pending when the repeater leaves the tree does not run after it is added back and override focus set by the app.")]
+        public void VerifyPendingFocusMoveDoesNotRunAfterUnloadAndReload()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
+
+            UIElement cleared = null;
+            RunOnUIThread.Execute(() =>
+            {
+                cleared = fixture.Repeater.TryGetElement(3);
+                data.RemoveAt(3);
+                data.Add("Appended");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            bool appFocused = false;
+            int gettingFocusAfterAppFocus = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Focused while unloaded: " + DescribeFocus(fixture.Repeater));
+                fixture.Repeater.ElementPrepared += (s, e) =>
+                {
+                    if (!appFocused && e.Element == cleared)
+                    {
+                        Log.Comment($"The cleared element is prepared for index {e.Index}; the app focuses it.");
+                        Verify.IsTrue(((Control)e.Element).Focus(FocusState.Programmatic));
+                        appFocused = true;
+                    }
+                };
+                fixture.Repeater.GettingFocus += (s, e) =>
+                {
+                    if (appFocused)
+                    {
+                        gettingFocusAfterAppFocus++;
+                        Log.Comment("GettingFocus after the app's focus: " + DescribeElement(fixture.Repeater, e.NewFocusedElement));
+                    }
+                };
+                Content = fixture.Root;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(appFocused, "Precondition: the layout reused the cleared element and the app focused it.");
+                int reusedIndex = fixture.Repeater.GetElementIndex(cleared);
+                Log.Comment($"The cleared element now has index {reusedIndex}");
+                Verify.AreNotEqual(3, reusedIndex, "Precondition: the cleared element is reused for another index.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: reusedIndex);
+                Verify.AreSame(cleared, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus stays on the element the app focused.");
+                Verify.AreEqual(0, gettingFocusAfterAppFocus, "The repeater does not move focus after the app's focus.");
+            });
+        }
+
+        // Scenario: the repeater is the last element inside an open Flyout, after a Button ("Top"); another open Popup with
+        //           a Button is opened before the flyout and one after it; focus on an item; Clear().
+        // Expected: focus moves to "Top" inside the flyout (the search does not leave the popup that contains the repeater,
+        //           so it does not reach the other popups) and the flyout stays open.
+        // A failure means: focus moves to an element of another popup (or of the window), which light-dismisses the flyout.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that clearing the ItemsSource of the last repeater inside an open Flyout moves focus to the element before it in the flyout, not to another open popup.")]
+        public void VerifyClearOfLastRepeaterInFlyoutMovesFocusToPrecedingElementInFlyout()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+            Button top = null;
+            Button anchor = null;
+            Flyout flyout = null;
+            Popup popupBefore = null;
+            Popup popupAfter = null;
+            var opened = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater { ItemsSource = data, ItemTemplate = CreateElementFactory(ButtonItemTemplate) };
+                top = new Button { Content = "Top" };
+                var panel = new StackPanel();
+                panel.Children.Add(top);
+                panel.Children.Add(repeater);
+                flyout = new Flyout { Content = panel };
+                flyout.Opened += delegate { opened.Set(); };
+                anchor = new Button { Content = "Anchor" };
+                var root = new StackPanel();
+                root.Children.Add(anchor);
+                root.Children.Add(new Button { Content = "WindowAfter" });
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    popupBefore = new Popup { Child = new Button { Content = "PopupBefore" }, XamlRoot = anchor.XamlRoot, VerticalOffset = 300 };
+                    popupBefore.IsOpen = true;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => flyout.ShowAt(anchor));
+                Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "Waiting for the flyout to open.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    popupAfter = new Popup { Child = new Button { Content = "PopupAfter" }, XamlRoot = anchor.XamlRoot, VerticalOffset = 350 };
+                    popupAfter.IsOpen = true;
+                });
+                IdleSynchronizer.Wait();
+                FocusItemAndWait(repeater, 1, FocusState.Keyboard);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(flyout.IsOpen, "Precondition: the flyout is open.");
+                    var chain = new List<string>();
+                    for (var current = VisualTreeHelper.GetParent(repeater); current != null; current = VisualTreeHelper.GetParent(current))
+                    {
+                        chain.Add(current.GetType().Name);
+                    }
+                    Log.Comment("Ancestors of the repeater: " + string.Join(" > ", chain));
+                    data.Clear();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                    Log.Comment("Focused: " + DescribeElement(repeater, focused));
+                    Verify.IsTrue(flyout.IsOpen, "The flyout stays open.");
+                    Verify.AreSame(top, focused, "Focus moves to the Button before the repeater inside the flyout.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    flyout.Hide();
+                    if (popupBefore != null) { popupBefore.IsOpen = false; }
+                    if (popupAfter != null) { popupAfter.IsOpen = false; }
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         private void VerifyResetWithReusedFocusedContainer(FocusFixture fixture, ObservableCollection<string> data)
         {
             UIElement focusedContainer = null;

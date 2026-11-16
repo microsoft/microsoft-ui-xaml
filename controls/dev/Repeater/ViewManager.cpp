@@ -183,9 +183,11 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     const bool containsNestedFocus = ContainsNestedFocus(element, virtInfo);
     if (isFocusedElement)
     {
-        // Remove the focus pin while the element is still realized and parented, so that the pins added
-        // to the ancestor repeaters' elements are removed too.
-        UpdatePin(element, false /* addPin */);
+        // Remove the focus pins added to the ancestor repeaters' elements while the owner is still parented. The
+        // element's own pin is reset by MoveOwnershipToElementFactory; removing it here would invalidate the owner's
+        // measure during the collection change, and an UpdateLayout call from an ElementClearing handler would then
+        // run the owner's layout inside the change, which throws.
+        UpdatePin(static_cast<winrt::UIElement>(*m_owner), false /* addPin */);
     }
 
     virtInfo->MoveOwnershipToElementFactory();
