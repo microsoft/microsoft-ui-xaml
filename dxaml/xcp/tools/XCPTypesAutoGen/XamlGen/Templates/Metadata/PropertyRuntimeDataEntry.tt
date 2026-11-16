@@ -8,8 +8,13 @@
 {
 <# if (Model.HasPropertyMethod) { #>
     <#= GetPropertyMethodString(Model) #>, // Property method
-<# } else { #>
-    (METHODPFN)<#= GetOffsetString(Model) #>, // Offset. Cast to METHODPFN to force it into the union.
+<# } else {
+    var offset = GetOffsetString(Model);
+    if (offset == "0") { #>
+    (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+<#  } else { #>
+    reinterpret_cast<METHODPFN>(static_cast<std::uintptr_t>(<#= offset #>)), // Offset. Cast to METHODPFN to force it into the union.
+<#  }
 <# } #>
     <#= AsMethodPointer(Model.RenderDirtyFlagCallbackPointer) #>, // Render changed callback
     <#= GetStorageEnsureString(Model) #>, // Storage ensure method
