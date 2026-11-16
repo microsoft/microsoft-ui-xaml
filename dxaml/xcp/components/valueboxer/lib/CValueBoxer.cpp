@@ -2233,6 +2233,10 @@ _Check_return_ HRESULT CValueBoxer::UnboxValue(
                     value->Length = textRange->m_range.length;
                 }
                 break;
+
+            default:
+                IFC_RETURN(E_UNEXPECTED);
+                break;
         }
     }
     else
