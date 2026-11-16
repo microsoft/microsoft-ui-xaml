@@ -550,8 +550,9 @@ public:
     void OnLosingFocusForEditing(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
-    void QueueFocusLossCommit();
+    void QueueFocusLossCommit(winrt::FocusNavigationDirection direction = winrt::FocusNavigationDirection::None);
     void CompleteFocusLossCommit();
+    void ResetEditFocusTracking();
     // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
     void MarkEditorFlyoutClosing();
 
@@ -1578,6 +1579,10 @@ private:
     winrt::UIElement::LosingFocus_revoker m_editingLosingFocusRevoker{};
 
     bool m_focusLossCommitQueued{ false };
+    // Keep an explicit Tab departure when focus-loss events coalesce; it is not opening recovery.
+    winrt::FocusNavigationDirection m_focusLossCommitDirection{ winrt::FocusNavigationDirection::None };
+    // Invalidates deferred focus work when the edit closes or an attempted begin is abandoned.
+    uint64_t m_editFocusGeneration{ 0 };
     // Set while a focus-loss commit waits for the editor's own flyout to close.
     winrt::FlyoutBase::Closed_revoker m_editorFlyoutClosedRevoker{};
     winrt::FlyoutBase::Closing_revoker m_editorFlyoutClosingRevoker{};
