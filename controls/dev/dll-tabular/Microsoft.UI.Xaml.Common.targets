@@ -466,7 +466,7 @@
       assemblies loaded by Pass1 for Pass2, which hid that Pass2 didn't get Microsoft.UI.winmd).
     -->
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
-        XamlCompilerPath="$(XamlCompilerNativeExePath)"
+        XamlCompilerPath="$(XamlCompilerExePath)"
         EnableServerGC="$(XamlCompilerEnableServerGC)"
         YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
         InputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass1.input.json"
@@ -513,7 +513,7 @@
       <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
     </CompileXaml>
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
-        XamlCompilerPath="$(XamlCompilerNativeExePath)"
+        XamlCompilerPath="$(XamlCompilerExePath)"
         EnableServerGC="$(XamlCompilerEnableServerGC)"
         YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
         InputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass2.input.json"

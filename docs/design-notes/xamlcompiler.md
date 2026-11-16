@@ -70,7 +70,7 @@ the MSBuild that runs the build: Visual Studio and msbuild.exe (.NET Framework M
 (the x64 binary also runs on ARM64). It accepts two arguments via the command line, the
 path to the compiler inputs in a JSON file, and the path to an output JSON file where the
 compiler writes its outputs (generated files, errors and warnings with their location).
-XamlCompilerNativeExePath can be set to use a specific build of the compiler.
+XamlCompilerExePath can be set to use a specific build of the compiler.
 
 ### MSBuild Task
 
@@ -207,7 +207,7 @@ under the debugger from the project directory, with that input file and an outpu
 `dotnet XamlCompiler.dll <input.json> <output.json>` (e.g. with a Visual Studio debug
 profile). To debug XamlCompiler.exe itself (e.g. a failure in GenXbf.dll, with
 a breakpoint on genxbf!OnFailureEncountered), attach a native debugger to it, or set
-`XamlCompilerNativeExePath` to a build with symbols. The unit tests (see
+`XamlCompilerExePath` to a build with symbols. The unit tests (see
 `src\XamlCompiler\Tests\UnitTests\README.md`) run the same compiler code in-process.
 ### Regression and Unit Tests
 

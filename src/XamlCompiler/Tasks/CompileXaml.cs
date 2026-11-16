@@ -155,7 +155,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
         /// <summary>
         /// The path of the XAML compiler (XamlCompiler.exe) to run. Defaults to the one next to the task assembly in the package
         /// (tools\win-&lt;architecture of Windows&gt;\XamlCompiler.exe, or tools\win-x64\XamlCompiler.exe on ARM64 without the
-        /// ARM64 one), like the default XamlCompilerNativeExePath of the targets, for the build logic that calls the task directly.
+        /// ARM64 one), like the default XamlCompilerExePath of the targets, for the build logic that calls the task directly.
         /// </summary>
         public string XamlCompilerPath { get; set; }
 
@@ -272,14 +272,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
             if (!File.Exists(_compilerPath))
             {
                 Log.LogError("The XAML compiler was not found at '{0}'.{1}", _compilerPath,
-                    string.IsNullOrEmpty(XamlCompilerPath) ? " Set the XamlCompilerPath parameter of the CompileXaml task (e.g. to $(XamlCompilerNativeExePath))." : string.Empty);
+                    string.IsNullOrEmpty(XamlCompilerPath) ? " Set the XamlCompilerPath parameter of the CompileXaml task (e.g. to $(XamlCompilerExePath))." : string.Empty);
                 return false;
             }
 
             return base.ValidateParameters();
         }
 
-        // The compiler of the package the task assembly is in (see XamlCompilerNativeExePath in the targets)
+        // The compiler of the package the task assembly is in (see XamlCompilerExePath in the targets)
         internal static string GetDefaultCompilerPath(Architecture osArchitecture)
         {
             string toolsDirectory = Path.GetDirectoryName(typeof(CompileXaml).Assembly.Location);
@@ -541,7 +541,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
             if (outputs.ContractVersion < CompilerContract.Version)
             {
                 string message = $"The XAML compiler '{_compilerPath}' is older than the CompileXaml task (contract version {outputs.ContractVersion} instead of {CompilerContract.Version}): " +
-                    "use the XamlCompiler.exe of the same Windows App SDK version (see XamlCompilerNativeExePath).";
+                    "use the XamlCompiler.exe of the same Windows App SDK version (see XamlCompilerExePath).";
                 if (_isDesignTimeBuild)
                 {
                     // An older compiler doesn't know about design-time builds, and would change the outputs of the last real build

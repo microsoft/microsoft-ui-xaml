@@ -78,7 +78,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
                 CompilerInputs ci = DeserializeCompilerInputs(parsedOptions.JsonInputFile);
                 if (ci.ContractVersion > CompilerContract.Version)
                 {
-                    LogError($"The XAML compiler task (contract version {ci.ContractVersion}) is newer than the XAML compiler (contract version {CompilerContract.Version}): use the XamlCompiler.exe of the same Windows App SDK version as the task (see XamlCompilerNativeExePath).");
+                    LogError($"The XAML compiler task (contract version {ci.ContractVersion}) is newer than the XAML compiler (contract version {CompilerContract.Version}): use the XamlCompiler.exe of the same Windows App SDK version as the task (see XamlCompilerExePath).");
                 }
                 else if (ci.ForceSharedStateShutdown)
                 {

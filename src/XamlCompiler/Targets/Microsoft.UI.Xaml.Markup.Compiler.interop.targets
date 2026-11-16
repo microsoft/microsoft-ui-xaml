@@ -185,7 +185,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         runtime), which the CompileXaml task (Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll, a thin .NET Standard task that both .NET
         Framework MSBuild and .NET MSBuild load) runs for every build, including design-time builds. The package has one binary per
         architecture under tools\win-<rid>: a package built from a single flavor only has win-x64, which also runs on ARM64 (emulated),
-        like GenXbf. XamlCompilerNativeExePath can be set to use a specific build of the compiler: the x64 fallback only applies to the
+        like GenXbf. XamlCompilerExePath can be set to use a specific build of the compiler: the x64 fallback only applies to the
         default path.
     -->
     <PropertyGroup>
@@ -199,24 +199,30 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
         <_XamlCompilerNativeRid Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">win-arm64</_XamlCompilerNativeRid>
         <_XamlCompilerNativeRid Condition="'$(_XamlCompilerNativeRid)' == ''">win-x64</_XamlCompilerNativeRid>
-        <_XamlCompilerNativeExePathIsDefault Condition="'$(XamlCompilerNativeExePath)' == ''">true</_XamlCompilerNativeExePathIsDefault>
-        <XamlCompilerNativeExePath Condition="'$(XamlCompilerNativeExePath)' == ''">$(_MuxPackageToolsFolder)$(_XamlCompilerNativeRid)\XamlCompiler.exe</XamlCompilerNativeExePath>
-        <XamlCompilerNativeExePath Condition="'$(_XamlCompilerNativeExePathIsDefault)' == 'true' and '$(_XamlCompilerNativeRid)' == 'win-arm64' and !Exists('$(XamlCompilerNativeExePath)')">$(_MuxPackageToolsFolder)win-x64\XamlCompiler.exe</XamlCompilerNativeExePath>
+        <!-- XamlCompilerExePath used to point at the .NET Framework executable (tools\net472\XamlCompiler.exe), which doesn't exist anymore. Any other path is used as is. -->
+        <_XamlCompilerDefaultExePath>$(_MuxPackageToolsFolder)$(_XamlCompilerNativeRid)\XamlCompiler.exe</_XamlCompilerDefaultExePath>
+        <_XamlCompilerDefaultExePath Condition="'$(_XamlCompilerNativeRid)' == 'win-arm64' and !Exists('$(_XamlCompilerDefaultExePath)')">$(_MuxPackageToolsFolder)win-x64\XamlCompiler.exe</_XamlCompilerDefaultExePath>
+        <_XamlCompilerExePathIgnored Condition="'$(XamlCompilerExePath)' != '' and '$(XamlCompilerExePath.ToLowerInvariant().Contains(`\net472\`))' == 'true'">$(XamlCompilerExePath)</_XamlCompilerExePathIgnored>
+        <XamlCompilerExePath Condition="'$(_XamlCompilerExePathIgnored)' != ''"></XamlCompilerExePath>
+        <XamlCompilerExePath Condition="'$(XamlCompilerExePath)' == ''">$(_XamlCompilerDefaultExePath)</XamlCompilerExePath>
+        <!-- What the compiler is run from: XamlCompilerExePath can't be reset when it is a global property -->
+        <_XamlCompilerExe>$(XamlCompilerExePath)</_XamlCompilerExe>
+        <_XamlCompilerExe Condition="'$(_XamlCompilerExePathIgnored)' != ''">$(_XamlCompilerDefaultExePath)</_XamlCompilerExe>
 
         <!-- Lets the MSBuild node build other projects while the compiler runs (the task reads the IDE's unsaved files before yielding) -->
         <XamlCompilerYieldDuringToolExecution Condition="'$(XamlCompilerYieldDuringToolExecution)' == ''">true</XamlCompilerYieldDuringToolExecution>
     </PropertyGroup>
 
     <Target Name="_ValidateXamlCompiler" BeforeTargets="MarkupCompilePass1;MarkupCompilePass2;DesignTimeMarkupCompilationCT" Condition="'@(Page)' != '' or '@(ApplicationDefinition)' != ''">
+        <Warning Condition="'$(_XamlCompilerTaskPathIgnored)' != ''"
+                 Text="XamlCompilerTaskPath is ignored: '$(_XamlCompilerTaskPathIgnored)' is not the XAML compiler task assembly (Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll). The .NET Framework XAML compiler doesn't exist anymore: the XAML compiler is always the native XamlCompiler.exe. Remove the property, or use XamlCompilerExePath to select a specific XAML compiler." />
+        <Warning Condition="'$(_XamlCompilerExePathIgnored)' != ''"
+                 Text="XamlCompilerExePath is ignored: '$(_XamlCompilerExePathIgnored)' is the .NET Framework XAML compiler, which doesn't exist anymore: the XAML compiler is always the native XamlCompiler.exe. Remove the property, or set it to the native XamlCompiler.exe to use." />
+        <Message Importance="low" Condition="'$(UseXamlCompilerExecutable)' != '' or '$(XamlCompilerJsonTaskPath)' != ''"
+                 Text="UseXamlCompilerExecutable and XamlCompilerJsonTaskPath are obsolete and ignored: the XAML compiler is always the native XamlCompiler.exe." />
         <Error Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86' or '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm'"
                Text="The XAML compiler requires a 64-bit version of Windows." />
-        <Error Condition="!Exists('$(XamlCompilerNativeExePath)')" Text="The XAML compiler was not found at '$(XamlCompilerNativeExePath)'." />
-        <Warning Condition="'$(_XamlCompilerTaskPathIgnored)' != ''"
-                 Text="XamlCompilerTaskPath is ignored: '$(_XamlCompilerTaskPathIgnored)' is not the XAML compiler task assembly (Microsoft.UI.Xaml.Markup.Compiler.Tasks.dll). The .NET Framework XAML compiler doesn't exist anymore: the XAML compiler is always the native XamlCompiler.exe. Remove the property, or use XamlCompilerNativeExePath to select a specific XAML compiler." />
-        <Warning Condition="'$(XamlCompilerExePath)' != ''"
-                 Text="XamlCompilerExePath is no longer supported and is ignored (the .NET Framework XAML compiler executable doesn't exist anymore). Use XamlCompilerNativeExePath to select a specific native XAML compiler." />
-        <Message Importance="low" Condition="'$(UseXamlCompilerExecutable)' != '' or '$(UseNativeXamlCompiler)' != '' or '$(XamlCompilerJsonTaskPath)' != ''"
-                 Text="UseXamlCompilerExecutable, UseNativeXamlCompiler and XamlCompilerJsonTaskPath are obsolete and ignored: the XAML compiler is always the native XamlCompiler.exe." />
+        <Error Condition="!Exists('$(_XamlCompilerExe)')" Text="The XAML compiler was not found at '$(_XamlCompilerExe)'." />
     </Target>
 
     <!--
@@ -262,7 +268,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     -->
     <ItemGroup Label="AppxManifestMetadata">
         <AppxManifestMetadata Include="$(_XamlCompilerTaskAssembly)" />
-        <AppxManifestMetadata Include="$(XamlCompilerNativeExePath)" />
+        <AppxManifestMetadata Include="$(_XamlCompilerExe)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -319,12 +325,12 @@ Licensed under the MIT License. See LICENSE in the project root for license info
       </PropertyGroup>
       <!--
         vcmeta.dll is loaded by XamlCompiler.exe (only with UseVCMetaManaged=false), whatever the architecture of MSBuild: use the one
-        native to the compiler. XamlCompilerNativeArchitecture (x64 or arm64) is the architecture of XamlCompilerNativeExePath: arm64
+        native to the compiler. XamlCompilerNativeArchitecture (x64 or arm64) is the architecture of XamlCompilerExePath: arm64
         if it is in a win-arm64 directory (like in the package), x64 otherwise; set it for an ARM64 compiler somewhere else.
       -->
       <PropertyGroup Condition="'$(VCToolsInstallDir)' != ''">
         <_VCInstallPathArchitecture>$(XamlCompilerNativeArchitecture)</_VCInstallPathArchitecture>
-        <_VCInstallPathArchitecture Condition="'$(_VCInstallPathArchitecture)' == '' and '$(XamlCompilerNativeExePath.ToLowerInvariant().Contains(`\win-arm64\`))' == 'true'">arm64</_VCInstallPathArchitecture>
+        <_VCInstallPathArchitecture Condition="'$(_VCInstallPathArchitecture)' == '' and '$(_XamlCompilerExe.ToLowerInvariant().Contains(`\win-arm64\`))' == 'true'">arm64</_VCInstallPathArchitecture>
         <_VCInstallPathArchitecture Condition="'$(_VCInstallPathArchitecture)' == ''">x64</_VCInstallPathArchitecture>
         <VCInstallPath32>$(VCToolsInstallDir)bin\HostX86\x86\vcmeta.dll</VCInstallPath32>
         <VCInstallPath64>$(VCToolsInstallDir)bin\Host$(_VCInstallPathArchitecture)\$(_VCInstallPathArchitecture)\vcmeta.dll</VCInstallPath64>
@@ -406,7 +412,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
         <CompileXaml
-                XamlCompilerPath="$(XamlCompilerNativeExePath)"
+                XamlCompilerPath="$(_XamlCompilerExe)"
                 EnableServerGC="$(XamlCompilerEnableServerGC)"
                 YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
@@ -482,7 +488,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <ReferencePath Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
         </ItemGroup>
         <CompileXaml
-                XamlCompilerPath="$(XamlCompilerNativeExePath)"
+                XamlCompilerPath="$(_XamlCompilerExe)"
                 EnableServerGC="$(XamlCompilerEnableServerGC)"
                 YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
@@ -602,7 +608,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </ItemGroup>
 
         <CompileXaml
-                XamlCompilerPath="$(XamlCompilerNativeExePath)"
+                XamlCompilerPath="$(_XamlCompilerExe)"
                 EnableServerGC="$(XamlCompilerEnableServerGC)"
                 YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
                 LanguageSourceExtension="$(DefaultLanguageSourceExtension)"

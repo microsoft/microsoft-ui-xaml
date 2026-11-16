@@ -125,7 +125,7 @@ if (-not (Test-Path $ExePath)) {
     throw "The XAML compiler was not found at '$ExePath'. Build src\XamlCompiler\XamlCompiler.sln first, or pass -ExePath."
 }
 $ExePath = (Resolve-Path $ExePath).Path
-$compilerArguments = @("/p:XamlCompilerNativeExePath=$ExePath")
+$compilerArguments = @("/p:XamlCompilerExePath=$ExePath")
 
 # The global properties that make a build use the XAML compiler of the reference package instead of the in-repo one
 function Get-ReferenceArguments {
@@ -135,7 +135,7 @@ function Get-ReferenceArguments {
     $legacyTask = Join-Path $package 'tools\net472\Microsoft.UI.Xaml.Markup.Compiler.dll'
     if (Test-Path $tasks) {
         $exe = Join-Path $package 'tools\win-x64\XamlCompiler.exe'
-        $arguments += "/p:XamlCompilerTaskPath=$tasks", "/p:XamlCompilerNativeExePath=$exe"
+        $arguments += "/p:XamlCompilerTaskPath=$tasks", "/p:XamlCompilerExePath=$exe"
     }
     elseif (Test-Path $legacyTask) {
         $arguments += "/p:XamlCompilerTaskPath=$legacyTask", "/p:XamlCompilerJsonTaskPath=$package\tools\net472\Microsoft.UI.Xaml.Markup.Compiler.IO.dll"

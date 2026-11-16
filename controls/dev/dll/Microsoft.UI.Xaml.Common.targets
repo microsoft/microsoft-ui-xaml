@@ -429,7 +429,7 @@
     <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
     <!-- We need to do both Pass1 and Pass2 to properly plug into incremental building, even though we only need the output of Pass2. -->
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
-        XamlCompilerPath="$(XamlCompilerNativeExePath)"
+        XamlCompilerPath="$(XamlCompilerExePath)"
         EnableServerGC="$(XamlCompilerEnableServerGC)"
         YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
         InputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass1.input.json"
@@ -476,7 +476,7 @@
       <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
     </CompileXaml>
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
-        XamlCompilerPath="$(XamlCompilerNativeExePath)"
+        XamlCompilerPath="$(XamlCompilerExePath)"
         EnableServerGC="$(XamlCompilerEnableServerGC)"
         YieldDuringToolExecution="$(XamlCompilerYieldDuringToolExecution)"
         InputJsonFile="$(XamlGeneratedOutputPath)XamlCompiler.CustomCompilePass2.input.json"
