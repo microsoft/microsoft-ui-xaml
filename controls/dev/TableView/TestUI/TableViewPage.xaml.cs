@@ -180,6 +180,7 @@ namespace MUXControlsTestApp
             // second F2 that did nothing from one that re-reported the same column.
             BasicTableView.BeginningEdit += OnBasicTableViewBeginningEdit;
             BasicTableView.CellEditEnding += OnBasicTableViewCellEditEnding;
+            BasicTableView.GettingFocus += OnBasicTableViewGettingFocus;
 
             _basicItems[0].PropertyChanged += OnFirstItemPropertyChanged;
             FirstItemNameTextBlock.Text = _basicItems[0].Name;
@@ -375,6 +376,27 @@ namespace MUXControlsTestApp
                     _disabledRowItem = row.DataContext;
                     row.DataContextChanged += OnDisabledRowDataContextChanged;
                     row.IsEnabled = false;
+                }
+            }
+        }
+
+        private void OnBasicTableViewGettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            if (RedirectSecondRowFocusCheckBox.IsChecked != true)
+            {
+                return;
+            }
+
+            for (DependencyObject node = args.NewFocusedElement; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    if (object.Equals(row.DataContext, _basicItems[1]) &&
+                        FindDescendant<TableViewColumnHeader>(BasicTableView) is TableViewColumnHeader header)
+                    {
+                        args.TrySetNewFocusedElement(header);
+                    }
+                    return;
                 }
             }
         }

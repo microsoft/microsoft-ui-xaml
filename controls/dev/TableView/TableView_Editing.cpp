@@ -564,7 +564,30 @@ winrt::TableViewRow TableView::FindRealizedRowForItem(winrt::IInspectable const&
 
 bool TableView::TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
-    if (auto row = FindRealizedRowForItem(item))
+    // The same object can appear more than once in an unshaped source. Prefer the row that has
+    // focus (Tab, F2 and double-click all edit there) over the first realized occurrence.
+    winrt::TableViewRow row{ nullptr };
+    if (auto repeater = m_rowsRepeater.get(); repeater && item)
+    {
+        if (const int32_t focusedRow = GetFocusedRowIndex(); focusedRow >= 0)
+        {
+            if (auto focusedElement = repeater.TryGetElement(focusedRow).try_as<winrt::TableViewRow>())
+            {
+                if (auto dataItem = UnwrapEditingDataItem(focusedElement.DataContext());
+                    dataItem && SameInspectableIdentity(dataItem, item))
+                {
+                    row = focusedElement;
+                }
+            }
+        }
+    }
+
+    if (!row)
+    {
+        row = FindRealizedRowForItem(item);
+    }
+
+    if (row)
     {
         if (winrt::get_self<TableViewRow>(row)->BeginCellEdit(column, item))
         {
@@ -1340,9 +1363,9 @@ bool TableView::BeginEdit()
 
 bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
-    // Any newer edit request retires a Tab move still waiting for its row.
-    m_beginEditAfterBodyFocusItem.set(nullptr);
-    m_beginEditAfterBodyFocusColumn.set(nullptr);
+    // Any newer edit request (an automation SetValue included) retires a Tab move still waiting
+    // for its row or for its posted open; the posted live-shaping resume re-checks the hold.
+    EndPendingTabEditMove();
 
     if (IsReadOnly() || !item || !column || column.IsReadOnly() || !IsColumnInColumns(*this, column))
     {

@@ -78,6 +78,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string FocusHeaderInCommitCheckBox = "FocusHeaderInCommitCheckBox";
         internal const string HideAgeInCommitCheckBox = "HideAgeInCommitCheckBox";
         internal const string DisableSecondRowInCommitCheckBox = "DisableSecondRowInCommitCheckBox";
+        internal const string RedirectSecondRowFocusCheckBox = "RedirectSecondRowFocusCheckBox";
         internal const string ToggleScrollingFlowDirectionButton = "ToggleScrollingFlowDirectionButton";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";

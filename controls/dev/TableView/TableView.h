@@ -587,6 +587,7 @@ public:
         winrt::TableViewColumn& wrap);
     int32_t StepToAdjacentDataRow(int32_t row, bool forward);
     bool IsBodyFocusOnItem(winrt::IInspectable const& item);
+    bool IsBodyFocusOnCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
     bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
 
     // ----- Selection (TableView_Selection.cpp) -----

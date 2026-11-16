@@ -1045,6 +1045,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Tab wrapping to a row whose focus a GettingFocus handler redirects neither selects nor edits that row.")]
+        public void TabWhileEditingDoesNotSelectRowWhenFocusRedirected()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var redirect = FindElement.ById<CheckBox>(RedirectSecondRowFocusCheckBox);
+                if (redirect == null) { Verify.Fail(RedirectSecondRowFocusCheckBox + " was not found."); return; }
+
+                try
+                {
+                    DoubleClickRowAtColumnOffset(GetFirstRow(), TemplateCellRelativeX);
+                    Verify.AreEqual("Template;", ReadEditReport(), "Precondition: the edit opened on row 0's Template.");
+                    redirect.Check();
+                    Wait.ForIdle();
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string focus;
+                    bool inEditor = IsFocusInBasicTableEditor(out focus);
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", ReadEditReport(), ReadEditEndReport(), focus);
+                    Verify.AreEqual("Commit;", ReadEditEndReport(), "Tab must commit the open edit.");
+                    Verify.AreEqual("Template;", ReadEditReport(), "Focus never reached row 1, so no edit may open on it.");
+                    Verify.IsFalse(inEditor, "No editor may be open.");
+                    Verify.AreEqual("TableViewColumnHeader", UIObject.Focused?.ClassName, "Focus must stay where the handler redirected it.");
+
+                    ElementCache.Clear();
+                    UIObject table = FindElement.ById(BasicTable);
+                    bool rowSelected;
+                    Verify.IsTrue(TryGetIsSelected(table != null ? GetRow(table, 1) : null, out rowSelected), "Precondition: row 1's selection must be observable.");
+                    Verify.IsFalse(rowSelected, "Selection must not follow a row focus never reached.");
+                }
+                finally
+                {
+                    redirect.Uncheck();
+                    Wait.ForIdle();
+                    CancelAnyOpenEdit();
+                }
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies F2 then Escape pressed while a Tab move waits for an off-screen row leave no editor open, in the table.")]
         public void F2ThenEscapeDuringOffscreenTabMoveLeavesNoEditor()
         {

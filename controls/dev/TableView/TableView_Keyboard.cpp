@@ -2191,7 +2191,10 @@ void TableView::OnReshapeFocusAttempt()
                 }
                 try
                 {
-                    if (!strongThis->IsEditing() && strongThis->IsBodyFocusOnItem(editItem))
+                    // The column can be hidden or locked, and focus can move to another cell of
+                    // the row, while the row realizes.
+                    if (!strongThis->IsEditing() && strongThis->IsColumnCellEditableInternal(editColumn) &&
+                        strongThis->IsBodyFocusOnCell(editItem, editColumn))
                     {
                         strongThis->BeginEdit(editItem, editColumn);
                     }

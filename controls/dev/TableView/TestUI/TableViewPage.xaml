@@ -294,6 +294,15 @@
                       IsTabStop="False"
                       AllowFocusOnInteraction="False"
                       Unchecked="OnDisableSecondRowInCommitUnchecked" />
+            <!-- UIA Toggle only. When checked, BasicTableView's GettingFocus redirects any focus bound for the
+                 second item's row to the first column header. -->
+            <CheckBox x:Name="RedirectSecondRowFocusCheckBox"
+                      Content="Redirect second row focus to header"
+                      AutomationProperties.Name="RedirectSecondRowFocusCheckBox"
+                      AutomationProperties.AutomationId="RedirectSecondRowFocusCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
             <!-- UIA Invoke only. Mirrors ScrollingTableView, which has a frozen leading column. -->
             <Button Content="Toggle Scrolling Flow Direction"
                     AutomationProperties.Name="ToggleScrollingFlowDirectionButton"

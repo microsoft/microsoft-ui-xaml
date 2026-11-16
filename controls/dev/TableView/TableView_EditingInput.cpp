@@ -381,18 +381,30 @@ bool TableView::TryMoveEditToAdjacentCell(bool forward)
     {
         return true;
     }
+
+    const bool pending = IsKeyboardBodyFocusPending();
+    if (!pending)
+    {
+        // FocusCell cannot see a GettingFocus redirect, and a focus handler can re-index the row,
+        // so selection follows where focus actually landed.
+        if (!IsBodyFocusOnItem(item))
+        {
+            return true;
+        }
+        row = GetFocusedRowIndex();
+    }
     if (!inRow)
     {
         SelectRowIndexFromKeyboardFocus(row);
     }
 
-    if (IsKeyboardBodyFocusPending())
+    if (pending)
     {
         m_beginEditAfterBodyFocusItem.set(item);
         m_beginEditAfterBodyFocusColumn.set(column);
         m_tabEditMovePending = true;
     }
-    else if (IsBodyFocusOnItem(item))
+    else if (IsBodyFocusOnCell(item, column))
     {
         BeginEdit(item, column);
     }
@@ -465,6 +477,17 @@ bool TableView::IsBodyFocusOnItem(winrt::IInspectable const& item)
 {
     const int32_t focusedRow = GetFocusedRowIndex();
     return item && focusedRow >= 0 && SameInspectableIdentity(UnwrapEditingDataItem(GetRowsSourceItemAt(focusedRow)), item);
+}
+
+// False for a column that is collapsed or no longer in Columns, since no focused cell can match it.
+bool TableView::IsBodyFocusOnCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
+{
+    int32_t focusedRow = -1;
+    int32_t focusedColumn = -1;
+    auto const columns = Columns();
+    return item && column && columns && TryGetFocusedCell(focusedRow, focusedColumn, false /* requireExactCell */) &&
+        focusedColumn == VisibleColumnIndexOf(columns, column) &&
+        SameInspectableIdentity(UnwrapEditingDataItem(GetRowsSourceItemAt(focusedRow)), item);
 }
 
 bool TableView::HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward)
