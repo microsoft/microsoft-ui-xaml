@@ -7,6 +7,8 @@ parameters:
   pipelineKind: '' # can be: Nightly, CI, PR, BuildAndTest, TestLocalBuild, ValidateWindowsAppSDK
   testPayloadArtifactName: 'TestPayload'
   includeWinUIGallery: true
+  # DevTestSuite only: when set (e.g. 'Win11-23H2'), create the payload for just that OS.
+  devTestOnlyOS: ''
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -19,22 +21,25 @@ jobs:
     maxParallel: 10
     matrix:
       ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
-        25H2_x86chk:
-          testOS: Win11-25H2
-          buildPlatform: 'x86'
-          buildOutput: 'x86'
-          normalizedConfiguration: 'chk'
-        ${{ if in( parameters.pipelineKind, 'GitHubPR', 'Nightly', 'PR', 'Official' ) }}:
-          RS5_x86chk:
-            testOS: Win10-RS5
+        ${{ if in(parameters.devTestOnlyOS, '', 'Win11-25H2') }}:
+          25H2_x86chk:
+            testOS: Win11-25H2
             buildPlatform: 'x86'
             buildOutput: 'x86'
             normalizedConfiguration: 'chk'
-          23H2_x86chk:
-            testOS: Win11-23H2
-            buildPlatform: 'x86'
-            buildOutput: 'x86'
-            normalizedConfiguration: 'chk'
+        ${{ if or(in( parameters.pipelineKind, 'GitHubPR', 'Nightly', 'PR', 'Official' ), ne(parameters.devTestOnlyOS, '')) }}:
+          ${{ if in(parameters.devTestOnlyOS, '', 'Win10-RS5') }}:
+            RS5_x86chk:
+              testOS: Win10-RS5
+              buildPlatform: 'x86'
+              buildOutput: 'x86'
+              normalizedConfiguration: 'chk'
+          ${{ if in(parameters.devTestOnlyOS, '', 'Win11-23H2') }}:
+            23H2_x86chk:
+              testOS: Win11-23H2
+              buildPlatform: 'x86'
+              buildOutput: 'x86'
+              normalizedConfiguration: 'chk'
       ${{ if eq(parameters.testSuite, 'ScenarioTestSuite') }}:
         RS5_x86chk:
           testOS: Win10-RS5

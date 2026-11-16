@@ -76,11 +76,16 @@ Here's how the pipelines and scripts are organized to do this work:
          * Call **pipeline/GenerateHelixWorkItems.ps1**
            * Writes out a .proj file for each test group (You can see these in the pipeline artifacts at /helixworkitems).
   * **WinUI-RunTestPassOnPipeline-Job.yml**
-    * Runs 20 agents in parallel.  On each agent, we:
+    * Runs 20 agents in parallel (`devTestSliceCount`).  On each agent, we:
       * Download artifacts
       * Call **RunTestPassSliceOnBuildAgent.ps1**
         * Executes **testmachine-prerun.cmd**
-        * Read proj file that describes test command to run for this agent (created earlier by **pipeline/GenerateHelixWorkItems.ps1**)
+        * Read proj file that describes test command to run for this agent (created earlier by **pipeline/GenerateHelixWorkItems.ps1**).
+          Work items are dealt to agents round-robin, or, when `-WorkItemDurationsFile` is passed, by measured duration
+          (**Get-BalancedWorkItemSlices.ps1**, longest work item first onto the least-loaded agent) so all agents finish at about the same time.
+          The WinUI-PR pipeline's `devTests23H2Only` queue-time option uses this to run DevTestSuite only on Win11-23H2 across
+          `devTests23H2SliceCount` agents (default 46 in WinUI-PR, 50 in WinUI-GitHub-PR) with
+          **WorkItemDurations/DevTestSuite-Win11-23H2.json** (regenerate with **Update-WorkItemDurations.ps1**).
         * Each test command calls **RunHelixWorkItem.ps1**
           * Run the test command (a TAEF query that runs multiple tests)
           * For each failed test, re-run once.  If the re-run failed, run the test 9x in a loop.          

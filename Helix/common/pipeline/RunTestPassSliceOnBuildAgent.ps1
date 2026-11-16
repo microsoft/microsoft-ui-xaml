@@ -20,6 +20,10 @@ param(
 
     [int]$RerunPassesRequiredToAvoidFailure = 5,
 
+    # Optional JSON of measured work-item durations (absolute, or relative to the repo root). When set,
+    # work items are assigned to slices by duration (see Get-BalancedWorkItemSlices.ps1) instead of round-robin.
+    [String]$WorkItemDurationsFile,
+
     [switch]$SkipCopyTestResultsXml
 )
 
@@ -35,6 +39,7 @@ Write-Host "TestPayloadDir = $TestPayloadDir"
 Write-Host "UploadRoot = $UploadRoot"
 Write-Host "JobPositionInPhase = $JobPositionInPhase"
 Write-Host "TotalJobsInPhase = $TotalJobsInPhase"
+Write-Host "WorkItemDurationsFile = $WorkItemDurationsFile"
 
 if(!(Test-Path $UploadRoot))
 {
@@ -72,11 +77,40 @@ foreach($projFile in $projFiles)
 
 # We choose a 'slice' of work items to run based on JobPositionInPhase/TotalJobsInPhase
 $workItemsToRun = @()
-$i = $JobPositionInPhase - 1; # JobPositionInPhase starts at 1.
-while($i -lt $workItems.Count)
+if ($WorkItemDurationsFile)
 {
-    $workItemsToRun += $workItems[$i]
-    $i += $TotalJobsInPhase
+    if (-not [System.IO.Path]::IsPathRooted($WorkItemDurationsFile))
+    {
+        # This script lives in <repo>\Helix\common\pipeline.
+        $WorkItemDurationsFile = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')) $WorkItemDurationsFile
+    }
+    if (-not (Test-Path $WorkItemDurationsFile -PathType Leaf))
+    {
+        Throw "Work item durations file '$WorkItemDurationsFile' does not exist."
+    }
+
+    # Every slice computes the same duration-balanced plan and keeps its own items.
+    $plan = @(& (Join-Path $PSScriptRoot 'Get-BalancedWorkItemSlices.ps1') -WorkItems $workItems -TotalSlices $TotalJobsInPhase -DurationsFile $WorkItemDurationsFile)
+    $mine = @($plan | Where-Object { $_.Slice -eq $JobPositionInPhase })
+    $workItemsToRun = @($mine | ForEach-Object { $_.WorkItem })
+
+    $sliceTotals = @($plan | Group-Object Slice | ForEach-Object { ($_.Group | Measure-Object Seconds -Sum).Sum })
+    $estimated = @($plan | Where-Object Estimated)
+    Write-Host ("Duration-balanced slicing: {0} work items over {1} slices. Planned minutes for this slice: {2:N1} (all slices: min {3:N1}, max {4:N1})." -f `
+        $plan.Count, $TotalJobsInPhase, (($mine | Measure-Object Seconds -Sum).Sum / 60), (($sliceTotals | Measure-Object -Minimum).Minimum / 60), (($sliceTotals | Measure-Object -Maximum).Maximum / 60))
+    if ($estimated.Count)
+    {
+        Write-Host "$($estimated.Count) work item(s) have no measured duration and use the median estimate: $(($estimated.Name | Sort-Object) -join ', ')"
+    }
+}
+else
+{
+    $i = $JobPositionInPhase - 1; # JobPositionInPhase starts at 1.
+    while($i -lt $workItems.Count)
+    {
+        $workItemsToRun += $workItems[$i]
+        $i += $TotalJobsInPhase
+    }
 }
 
 Write-Host "Work items to run:"

@@ -19,6 +19,14 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   displayName: "Quick build: x86chk only, skip scenario tests"
   type: boolean
   default: false
+- name: devTests23H2Only
+  displayName: "DevTestSuite: run only Win11-23H2, split into duration-balanced slices"
+  type: boolean
+  default: false
+- name: devTests23H2SliceCount
+  displayName: "DevTestSuite Win11-23H2-only: number of slices (parallel agents)"
+  type: number
+  default: 46
 
 variables:
 - template: AzurePipelinesTemplates\WinUI-Versions.yml
@@ -112,6 +120,8 @@ extends:
           pipelineKind: QuickPR
         ${{ else }}:
           pipelineKind: PR
+        devTests23H2Only: ${{ parameters.devTests23H2Only }}
+        devTests23H2SliceCount: ${{ parameters.devTests23H2SliceCount }}
 
     - ${{ if eq(parameters.QuickBuild, false) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml

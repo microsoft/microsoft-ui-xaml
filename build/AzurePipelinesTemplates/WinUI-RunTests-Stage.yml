@@ -2,6 +2,13 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
+  # Run DevTestSuite only on Win11-23H2, spread over devTests23H2SliceCount agent jobs whose work
+  # items are assigned by measured duration (Helix/common/pipeline/WorkItemDurations) instead of
+  # round-robin. Callers pick the count (WinUI-PR: 46, WinUI-GitHub-PR: 50) to reach the duration
+  # floor (the longest work item) while staying under the ~55 Win11-23H2 agents the pool could
+  # supply at once (WinUI-Xaml-PR build 164079845).
+  devTests23H2Only: false
+  devTests23H2SliceCount: 46
 
 stages:
 - stage: RunTests
@@ -15,25 +22,38 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'DevTestSuite'
       testPayloadArtifactName: 'TestPayload'
+      ${{ if eq(parameters.devTests23H2Only, true) }}:
+        devTestOnlyOS: 'Win11-23H2'
 
-  - template: WinUI-RunTestPassOnPipeline-Job.yml
-    parameters:
-      runTestJobName: RunTests25H2
-      dependsOn: CreateTestPayload
-      testOS: 'Win11-25H2'
-      testPayloadArtifactName: 'TestPayload'
-
-  - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
+  - ${{ if eq(parameters.devTests23H2Only, true) }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTests23H2
         dependsOn: CreateTestPayload
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
+        devTestSliceCount: ${{ parameters.devTests23H2SliceCount }}
+        workItemDurationsFile: 'Helix\common\pipeline\WorkItemDurations\DevTestSuite-Win11-23H2.json'
 
+  - ${{ else }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
-        runTestJobName: RunTestsRS5
+        runTestJobName: RunTests25H2
         dependsOn: CreateTestPayload
-        testOS: 'Win10-RS5'
+        testOS: 'Win11-25H2'
         testPayloadArtifactName: 'TestPayload'
+
+    - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
+      - template: WinUI-RunTestPassOnPipeline-Job.yml
+        parameters:
+          runTestJobName: RunTests23H2
+          dependsOn: CreateTestPayload
+          testOS: 'Win11-23H2'
+          testPayloadArtifactName: 'TestPayload'
+
+      - template: WinUI-RunTestPassOnPipeline-Job.yml
+        parameters:
+          runTestJobName: RunTestsRS5
+          dependsOn: CreateTestPayload
+          testOS: 'Win10-RS5'
+          testPayloadArtifactName: 'TestPayload'

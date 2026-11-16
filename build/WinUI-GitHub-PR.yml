@@ -35,6 +35,14 @@ parameters:
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
+- name: devTests23H2Only
+  displayName: "DevTestSuite: run only Win11-23H2, split into duration-balanced slices"
+  type: boolean
+  default: false
+- name: devTests23H2SliceCount
+  displayName: "DevTestSuite Win11-23H2-only: number of slices (parallel agents)"
+  type: number
+  default: 50
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
@@ -172,6 +180,8 @@ extends:
       - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
           pipelineKind: PR
+          devTests23H2Only: ${{ parameters.devTests23H2Only }}
+          devTests23H2SliceCount: ${{ parameters.devTests23H2SliceCount }}
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml

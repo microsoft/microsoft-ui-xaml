@@ -10,6 +10,11 @@ parameters:
   testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
+  # DevTestSuite only: number of parallel agent jobs (slices).
+  devTestSliceCount: 20
+  # Optional repo-relative path to a work-item durations JSON. When set, work items are assigned to
+  # slices by measured duration instead of round-robin (see RunTestPassSliceOnBuildAgent.ps1).
+  workItemDurationsFile: ''
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -38,7 +43,7 @@ jobs:
   timeoutInMinutes: 300
   strategy:
     ${{ if eq( parameters.testSuite, 'DevTestSuite') }}:
-      parallel: 20
+      parallel: ${{ parameters.devTestSliceCount }}
     ${{ if eq( parameters.testSuite, 'ScenarioTestSuite') }}:
       parallel: 5
 
@@ -106,7 +111,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
-      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }} -WorkItemDurationsFile "${{ parameters.workItemDurationsFile }}"
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
 
