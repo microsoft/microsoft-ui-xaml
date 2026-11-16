@@ -176,6 +176,8 @@ private:
     // Cached Event args to avoid creation cost every time
     tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{ this };
     tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs> m_elementClearingArgs{ this };
+    // True while m_elementClearingArgs is passed to ElementClearing handlers.
+    bool m_isRaisingElementClearing{ false };
     tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs> m_elementIndexChangedArgs{ this };
 
     // Loaded events fire on the first tick after an element is put into the tree 

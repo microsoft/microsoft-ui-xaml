@@ -437,6 +437,14 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
 {
     if (m_elementClearingEventSource)
     {
+        if (m_isRaisingElementClearing)
+        {
+            // A handler re-entered the repeater (for example it changed ItemsSource): use new args so that the
+            // outer handler's args keep its element.
+            m_elementClearingEventSource(*this, winrt::make<ItemsRepeaterElementClearingEventArgs>(element));
+            return;
+        }
+
         if (!m_elementClearingArgs)
         {
             m_elementClearingArgs = tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs>(this, winrt::make<ItemsRepeaterElementClearingEventArgs>(element));
@@ -446,6 +454,11 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
             winrt::get_self<ItemsRepeaterElementClearingEventArgs>(m_elementClearingArgs.get())->Update(element);
         }
 
+        m_isRaisingElementClearing = true;
+        auto const raising = gsl::finally([this]()
+            {
+                m_isRaisingElementClearing = false;
+            });
         m_elementClearingEventSource(*this, m_elementClearingArgs.get());
     }
 }
@@ -574,14 +587,26 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             // Iterate over a copy: code that runs while an element is recycled (the element factory, which gets
             // this repeater as args.Parent, or a nested ItemsSource change) may change Children.
             auto const children = Children();
-            std::vector<winrt::UIElement> elements(children.Size(), nullptr);
+            auto const count = children.Size();
+            std::vector<winrt::UIElement> elements(count, nullptr);
             children.GetMany(0, elements);
-            for (const auto& element : elements)
+            auto const isChild = [&children](const winrt::UIElement& element, uint32_t originalIndex)
             {
+                // Fast path: Children did not change before this element.
+                if (originalIndex < children.Size() && children.GetAt(originalIndex) == element)
+                {
+                    return true;
+                }
+                uint32_t index = 0;
+                return children.IndexOf(element, index);
+            };
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                auto const& element = elements[i];
                 // Skip elements that already left this repeater during the walk: another repeater sharing the
                 // element pool may have taken and realized them after a nested change cleared them here.
-                if (GetVirtualizationInfo(element)->IsRealized() &&
-                    CachedVisualTreeHelpers::GetParent(element) == static_cast<winrt::DependencyObject>(*this))
+                // Check Children rather than the visual parent, which is null while the repeater is not in the live tree.
+                if (GetVirtualizationInfo(element)->IsRealized() && isChild(element, i))
                 {
                     ClearElementImpl(element);
                 }

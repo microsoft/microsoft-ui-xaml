@@ -437,6 +437,164 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: an ItemsRepeater with a NonVirtualizingLayout handles ElementClearing. On the first call the handler
+        //           replaces ItemsSource (a nested replacement that raises ElementClearing again) and then reads args.Element.
+        //           A later, non-nested replacement raises ElementClearing again.
+        // Expected: args.Element stays the element being cleared for the whole outer handler call; the nested calls get
+        //           their own args with their own element; the later calls use the repeater's cached args again.
+        // A failure means: the nested ElementClearing calls overwrote the args the outer handler is still using, so the
+        //           outer handler acts on another element (task.ms/62261645).
+        [TestMethod]
+        [TestProperty("Description", "Verifies ElementClearing args keep Element after a nested ItemsSource replacement from ElementClearing on a NonVirtualizingLayout repeater.")]
+        public void VerifyElementClearingArgsAreUnchangedAfterNestedItemsSourceReplacementWithNonVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var factory = new MockElementFactory()
+                {
+                    GetElementFunc = (index, owner) => new ContentControl { Width = 40, Height = 40 },
+                };
+                var nestedSource = new List<string> { "Nested item #0", "Nested item #1" };
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = factory,
+                    Layout = new MyCustomNonVirtualizingStackLayout(),
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+                var oldElements = Enumerable.Range(0, 3).Select(i => repeater.TryGetElement(i)).ToList();
+                Verify.IsTrue(oldElements.All(e => e != null), "3 elements realized.");
+
+                bool replaceFromHandler = true;
+                int depth = 0;
+                var calls = new List<(ItemsRepeaterElementClearingEventArgs Args, UIElement ElementBefore, UIElement ElementAfter, int Depth)>();
+                repeater.ElementClearing += (s, args) =>
+                {
+                    var before = args.Element;
+                    var index = calls.Count;
+                    calls.Add((args, before, null, depth));
+                    if (replaceFromHandler)
+                    {
+                        replaceFromHandler = false;
+                        Log.Comment("Replacing ItemsSource from ElementClearing");
+                        depth++;
+                        repeater.ItemsSource = nestedSource;
+                        depth--;
+                    }
+                    calls[index] = (args, before, args.Element, calls[index].Depth);
+                };
+
+                repeater.ItemsSource = Enumerable.Range(0, 3).Select(i => "New item #" + i).ToList();
+
+                Verify.IsFalse(replaceFromHandler, "The nested replacement should have run.");
+                foreach (var call in calls)
+                {
+                    Log.Comment(string.Format("ElementClearing depth {0}: element before #{1}, after #{2}, same args as the outer call: {3}",
+                        call.Depth, oldElements.IndexOf(call.ElementBefore), oldElements.IndexOf(call.ElementAfter), ReferenceEquals(call.Args, calls[0].Args)));
+                    Verify.IsTrue(oldElements.Contains(call.ElementBefore), "args.Element is one of the old elements.");
+                    Verify.AreSame(call.ElementBefore, call.ElementAfter, "args.Element is unchanged when the handler returns.");
+                }
+                var outerCall = calls[0];
+                Verify.AreEqual(0, outerCall.Depth);
+                var nestedCalls = calls.Where(call => call.Depth == 1).ToList();
+                Verify.IsTrue(nestedCalls.Count > 0, "The nested replacement raised ElementClearing.");
+                Verify.IsTrue(nestedCalls.All(call => !ReferenceEquals(call.Args, outerCall.Args)), "Nested calls get their own args.");
+                Verify.IsTrue(oldElements.All(e => calls.Any(call => call.ElementBefore == e)), "Every old element is cleared.");
+
+                Content.UpdateLayout();
+                Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+
+                var nestedElements = Enumerable.Range(0, nestedSource.Count).Select(i => repeater.TryGetElement(i)).ToList();
+                calls.Clear();
+                repeater.ItemsSource = new List<string> { "Last item #0" };
+
+                Verify.AreEqual(nestedElements.Count, calls.Count, "The later replacement clears each element once.");
+                foreach (var call in calls)
+                {
+                    Verify.IsTrue(nestedElements.Contains(call.ElementBefore));
+                    Verify.AreSame(call.ElementBefore, call.ElementAfter);
+                    Verify.IsTrue(ReferenceEquals(call.Args, outerCall.Args), "Later, non-nested calls use the repeater's cached args again.");
+                }
+            });
+        }
+
+        // Scenario: an ItemsRepeater with a NonVirtualizingLayout is taken out of the live tree (as for a cached Page, a
+        //           closed Popup or Flyout, or an unselected tab) and ItemsSource is replaced; it is then put back.
+        //           Variants: a custom element factory, and a DataTemplate (which pools its elements).
+        // Expected: as in the live tree, ElementClearing is raised and RecycleElement is called (with the repeater as
+        //           Parent) for each realized element; with a DataTemplate the pooled elements are reused.
+        // A failure means: the repeater dropped its elements without clearing or recycling them because it checked the
+        //           visual parent, which is null out of the live tree (task.ms/62261645).
+        [TestMethod]
+        [TestProperty("Description", "Verifies elements are cleared and recycled when ItemsSource is replaced on a NonVirtualizingLayout repeater that is not in the live tree.")]
+        public void VerifyItemsSourceReplacementRecyclesElementsWhenRepeaterIsNotInLiveTreeWithNonVirtualizingLayout()
+        {
+            foreach (bool useDataTemplate in new[] { false, true })
+            {
+                ItemsRepeater repeater = null;
+                var recycled = new List<(UIElement Element, UIElement Parent)>();
+                var clearing = new List<UIElement>();
+                List<UIElement> oldElements = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Variant: " + (useDataTemplate ? "DataTemplate" : "custom element factory"));
+                    var factory = new MockElementFactory()
+                    {
+                        GetElementFunc = (index, owner) => new ContentControl { Width = 40, Height = 40 },
+                        ClearElementFunc = (element, parent) => recycled.Add((element, parent))
+                    };
+                    repeater = new ItemsRepeater()
+                    {
+                        ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                        ItemTemplate = useDataTemplate ? (object)CreateDataTemplateWithContent(@"<TextBlock Text='{Binding}' Height='40' />") : factory,
+                        Layout = new MyCustomNonVirtualizingStackLayout(),
+                    };
+                    repeater.ElementClearing += (s, a) => clearing.Add(a.Element);
+                    Content = repeater;
+                    Content.UpdateLayout();
+                    oldElements = Enumerable.Range(0, 3).Select(i => repeater.TryGetElement(i)).ToList();
+                    Verify.IsTrue(oldElements.All(e => e != null), "3 elements realized.");
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Visual parent of the first element out of the live tree is null: " + (VisualTreeHelper.GetParent(oldElements[0]) == null));
+                    repeater.ItemsSource = Enumerable.Range(0, 2).Select(i => "New item #" + i).ToList();
+                    Log.Comment(string.Format("ElementClearing: {0}, RecycleElement: {1} (Parent is repeater: {2})",
+                        clearing.Count, recycled.Count, recycled.Count(r => r.Parent == repeater)));
+
+                    Verify.AreEqual(oldElements.Count, clearing.Count, "ElementClearing is raised for each old element.");
+                    Verify.IsTrue(oldElements.All(e => clearing.Contains(e)));
+                    if (!useDataTemplate)
+                    {
+                        Verify.AreEqual(oldElements.Count, recycled.Count, "Each old element is returned to the element factory.");
+                        Verify.IsTrue(recycled.All(r => r.Parent == repeater), "RecycleElement gets the repeater as Parent.");
+                    }
+
+                    Content = repeater;
+                    Content.UpdateLayout();
+                    Verify.AreEqual(2, VisualTreeHelper.GetChildrenCount(repeater));
+                    if (useDataTemplate)
+                    {
+                        int reused = Enumerable.Range(0, 2).Select(i => repeater.TryGetElement(i)).Count(e => oldElements.Contains(e));
+                        Log.Comment("New elements reused from the DataTemplate pool: " + reused);
+                        Verify.AreEqual(2, reused, "The DataTemplate's pool supplies the new elements.");
+                    }
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         // Scenario: an ItemsRepeater with a NonVirtualizingLayout uses an element factory whose RecycleElement throws for the
         //           first element recycled by an ItemsSource replacement (the test catches the exception from the setter).
         //           ItemsSource is then replaced again, which recycles the remaining elements normally.
