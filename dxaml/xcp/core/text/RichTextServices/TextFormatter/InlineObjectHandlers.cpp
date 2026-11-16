@@ -14,6 +14,27 @@ using namespace Ptls6;
 using namespace RichTextServices;
 using namespace RichTextServices::Internal;
 
+namespace
+{
+    struct LineServicesEmbeddedObjectDeleter
+    {
+        void operator()(LineServicesEmbeddedObject* object) const noexcept
+        {
+            object->Destroy();
+        }
+    };
+
+    struct SimpleLsObjectDeleter
+    {
+        using pointer = PDOBJ;
+
+        void operator()(PDOBJ object) const noexcept
+        {
+            LsHelpers::DestroySimpleLsObject(object);
+        }
+    };
+}
+
 //---------------------------------------------------------------------------
 //
 //  Member:
@@ -121,9 +142,9 @@ LSERR LSAPI LineServicesEmbeddedObjectLineContext::FormatSimple(
 {
     Result::Enum txhr = Result::Success;
     ObjectRunMetrics metrics;
-    PDOBJ pSimpleObject = NULL;
-    LineServicesEmbeddedObject *pObject = NULL; 
-    bool free_pObject = true;
+    std::unique_ptr<LineServicesEmbeddedObject, LineServicesEmbeddedObjectDeleter> objectOwner;
+    std::unique_ptr<void, SimpleLsObjectDeleter> simpleObjectOwner;
+    LineServicesEmbeddedObject *pObject = NULL;
     XFLOAT rightMargin = 0;
     XFLOAT remainingWidth = 0;
     LsRun *pLsRun = NULL;
@@ -147,6 +168,7 @@ LSERR LSAPI LineServicesEmbeddedObjectLineContext::FormatSimple(
 
     IFCTEXT(ResultFromLSErr(LsAllocMemory(pObjectContext->plsc, sizeof(*(pObject)), reinterpret_cast<void **>(&pObject))));
     pObject = new (pObject) LineServicesEmbeddedObject();
+    objectOwner.reset(pObject);
     pObject->pObjectContext = pObjectContext;
     pObject->penPositionX = fmtinput.lsfgi.urPen;
     pObject->penPositionY = fmtinput.lsfgi.vrPen;
@@ -194,9 +216,9 @@ LSERR LSAPI LineServicesEmbeddedObjectLineContext::FormatSimple(
         pObject->objdim.dur += TextDpi::ToTextDpi(extraSpace);
     }
 
-    pSimpleObject = CreateSimpleLsObject(pObjectContext->plsc, pObject);
-    IFC_EXPECT_RTS(pSimpleObject);
-    free_pObject = false; // pSimpleObject owns pObject now
+    simpleObjectOwner.reset(CreateSimpleLsObject(pObjectContext->plsc, pObject));
+    IFC_EXPECT_RTS(simpleObjectOwner.get());
+    objectOwner.release();
 
     // Call LsdnFinishRegular to create dnode.
     // NOTE: ls will assume that an object run has length 1.
@@ -204,26 +226,16 @@ LSERR LSAPI LineServicesEmbeddedObjectLineContext::FormatSimple(
                                             pObjectRun->GetLength(),
                                             fmtinput.lsfrun.plsrun,
                                             fmtinput.lsfrun.plschp,
-                                            pSimpleObject,
+                                            simpleObjectOwner.get(),
                                             &pObject->objdim,
                                             FALSE, // fStopped
                                             FALSE, // fFillLine
                                             pObject->isPenPositionUsed ? 1 : 0
                                             )));
 
-    pSimpleObject = NULL;
+    simpleObjectOwner.release();
 
 Cleanup:
-    if (pSimpleObject != NULL)
-    {
-        LsHelpers::DestroySimpleLsObject(pSimpleObject);
-        pSimpleObject = NULL;
-    }
-    if (pObject != NULL && free_pObject)
-    {
-        LsDestroyMemory(pObject->pObjectContext->plsc, pObject);
-        delete pObject;
-    }
     return LSErrFromResult(txhr);
 }
 
