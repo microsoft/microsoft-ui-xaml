@@ -1321,6 +1321,94 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: an ItemsRepeater with a NonVirtualizingLayout shows 3 items E0, E1 and X (index 2). Its Layout is replaced,
+        //           which clears every realized element. The ElementClearing handler for E0 replaces ItemTemplate, a nested
+        //           change that clears every element again, so the ElementClearing event of X is raised from inside another
+        //           ElementClearing handler (with its own event args). The handler for X replaces ItemsSource (a nested
+        //           replacement that clears and recycles X while its ElementClearing is still running), then realizes item 0
+        //           with GetOrCreateElement while the element factory hands X back, and returns.
+        // Expected: when the handler for X returns, the clear of X that raised the event does not continue on X: X is
+        //           recycled once for its one ElementClearing event, it stays realized for item 0, and the next layout keeps it.
+        // A failure means: the nested raise did not report that the handler cleared X, so the clear that raised it recycled
+        //           X a second time although the handler had realized it again for item 0.
+        [TestMethod]
+        [TestProperty("Description", "Verifies the clear that raised ElementClearing from inside another ElementClearing handler does not continue on an element that its handler cleared through a nested ItemsSource replacement and realized again, on a NonVirtualizingLayout repeater.")]
+        public void VerifyElementRealizedAgainFromNestedElementClearingIsNotRecycledAgainWithNonVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var recycled = new List<UIElement>();
+                UIElement elementToHandBack = null;
+                Func<MockElementFactory> createFactory = () => new MockElementFactory()
+                {
+                    GetElementFunc = (index, owner) =>
+                    {
+                        var element = elementToHandBack ?? new ContentControl { Width = 40, Height = 40 };
+                        elementToHandBack = null;
+                        return element;
+                    },
+                    ClearElementFunc = (element, parent) => recycled.Add(element)
+                };
+
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = data,
+                    ItemTemplate = createFactory(),
+                    Layout = new MyCustomNonVirtualizingStackLayout(),
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var firstElement = repeater.TryGetElement(0);
+                var lastElement = repeater.TryGetElement(2);
+                Verify.IsNotNull(firstElement);
+                Verify.IsNotNull(lastElement);
+
+                var clearing = new List<UIElement>();
+                bool itemTemplateReplaced = false;
+                bool itemsSourceReplaced = false;
+                UIElement realizedAgain = null;
+                var nestedSource = new List<string> { "Nested #0", "Nested #1", "Nested #2" };
+                repeater.ElementClearing += (sender, args) =>
+                {
+                    clearing.Add(args.Element);
+                    if (args.Element == firstElement && !itemTemplateReplaced)
+                    {
+                        itemTemplateReplaced = true;
+                        Log.Comment("Replacing ItemTemplate from ElementClearing of the element at index 0");
+                        repeater.ItemTemplate = createFactory();
+                    }
+                    else if (args.Element == lastElement && itemTemplateReplaced && !itemsSourceReplaced)
+                    {
+                        itemsSourceReplaced = true;
+                        Log.Comment("Replacing ItemsSource from the nested ElementClearing of the element at index 2, then realizing item 0 with that element");
+                        repeater.ItemsSource = nestedSource;
+                        elementToHandBack = lastElement;
+                        realizedAgain = repeater.GetOrCreateElement(0);
+                    }
+                };
+
+                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+
+                Log.Comment(string.Format("After the Layout change: ElementClearing(X) {0}, RecycleElement(X) {1}, X realized again {2}, index of X {3}",
+                    clearing.Count(e => e == lastElement), recycled.Count(e => e == lastElement), realizedAgain == lastElement, repeater.GetElementIndex(lastElement)));
+                Verify.IsTrue(itemTemplateReplaced);
+                Verify.IsTrue(itemsSourceReplaced);
+                Verify.AreSame(lastElement, realizedAgain, "The factory handed X back for item 0.");
+                Verify.AreEqual(1, clearing.Count(e => e == lastElement), "ElementClearing is raised once for X.");
+                Verify.AreEqual(1, recycled.Count(e => e == lastElement), "X is recycled once, for its one ElementClearing event.");
+                Verify.AreEqual(0, repeater.GetElementIndex(lastElement), "X stays realized for item 0.");
+
+                Content.UpdateLayout();
+                Log.Comment(string.Format("After layout: children {0}, element at 0 is X {1}, RecycleElement(X) {2}",
+                    VisualTreeHelper.GetChildrenCount(repeater), repeater.TryGetElement(0) == lastElement, recycled.Count(e => e == lastElement)));
+                Verify.AreSame(lastElement, repeater.TryGetElement(0), "Layout keeps X for item 0.");
+                Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater), "The repeater holds one element per item.");
+                Verify.AreEqual(1, recycled.Count(e => e == lastElement), "Layout does not recycle X.");
+            });
+        }
+
         // Scenario: two ItemsRepeaters with NonVirtualizingLayouts share a RecyclePool through their element factories.
         //           Repeater A shows 3 items; its ItemsSource is replaced, and the ElementClearing handler for A's element X
         //           at position 0, 1 or 2 replaces A's ItemsSource again (a nested replacement that clears X and puts it in
