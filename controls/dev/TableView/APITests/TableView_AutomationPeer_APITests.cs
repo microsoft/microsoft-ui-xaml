@@ -1277,6 +1277,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var current = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0));
                 Verify.IsTrue(current.GetName().StartsWith("G0 "), $"The first header must show G0 again, saw '{current.GetName()}'.");
+                Verify.AreSame(held, current, "G0's element must follow G0 back to the header that shows it again.");
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), "The held element must answer again once G0 is shown.");
                 ((IExpandCollapseProvider)current.GetPattern(PatternInterface.ExpandCollapse)).Collapse();
             });
             IdleSynchronizer.Wait();
@@ -1290,7 +1292,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a held group header element reports ElementNotAvailable, and still opens a provider, after its header was torn down and collected (#12443).")]
+        [TestProperty("Description", "Verifies a held group header element outlives its torn-down, collected header and follows its group to the header that shows it next (#12443).")]
         public void VerifyHeldGroupHeaderElementOutlivesItsHeader()
         {
             TableView tableView = null;
@@ -1322,8 +1324,297 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsNotNull(new ProviderPeerProbe().ToProvider(held), "The held element must still open a provider.");
-                VerifyElementNotAvailable(() => held.GetName(), "Name after the header was torn down");
-                VerifyElementNotAvailable(() => held.GetPattern(PatternInterface.ExpandCollapse), "GetPattern after the header was torn down");
+                var current = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0));
+                Verify.IsTrue(current.GetName().StartsWith("G0 "), $"The rebuilt table's first header must show G0, saw '{current.GetName()}'.");
+                Verify.AreSame(held, current, "G0's element must follow G0 to the header the rebuilt table shows it on.");
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), "The held element must answer for G0 again.");
+                Verify.IsNotNull(held.GetPattern(PatternInterface.ExpandCollapse), "The held element must serve ExpandCollapse again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held group header element survives toggling its own group and keeps describing it (#12443).")]
+        public void VerifyHeldGroupHeaderElementSurvivesItsOwnToggle()
+        {
+            TableView tableView = null;
+            AutomationPeer held = null;
+            IExpandCollapseProvider heldProvider = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                held = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0));
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), $"Precondition: the held element is G0's header, saw '{held.GetName()}'.");
+                heldProvider = (IExpandCollapseProvider)held.GetPattern(PatternInterface.ExpandCollapse);
+                heldProvider.Collapse();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(70, GetProjectedItems(tableView).OfType<Person>().Count(), "Collapse through the held element must collapse G0.");
+                Verify.IsTrue(held.GetName().StartsWith("G0 "), $"The held element must still describe G0, saw '{held.GetName()}'.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, heldProvider.ExpandCollapseState, "The held pattern must report G0 collapsed.");
+                Verify.AreSame(held, RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0)), "G0's header must still expose the held element.");
+                heldProvider.Expand();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(80, GetProjectedItems(tableView).OfType<Person>().Count(), "Expand through the held element must expand G0.");
+                Verify.AreEqual(ExpandCollapseState.Expanded, heldProvider.ExpandCollapseState, "The held pattern must report G0 expanded.");
+                Verify.AreSame(held, RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0)), "G0's header must still expose the held element.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a group header element forwards the header's AutomationProperties and culture, and its ScrollItem brings the header into view (#12443).")]
+        public void VerifyGroupHeaderElementForwardsMetadataCultureAndScrollItem()
+        {
+            TableView tableView = null;
+            AutomationPeer element = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (TableViewGroupHeader)GetRowsRepeater(tableView).TryGetElement(0);
+                AutomationProperties.SetItemStatus(header, "Pinned");
+                AutomationProperties.SetFullDescription(header, "First group");
+                AutomationProperties.SetHelpText(header, "Group help");
+                AutomationProperties.SetCulture(header, 1036);
+                element = RowPeerOf(header);
+                Verify.AreNotSame(FrameworkElementAutomationPeer.FromElement(header), element, "Precondition: UIA sees the group's element.");
+
+                Verify.AreEqual("Pinned", element.GetItemStatus(), "ItemStatus must come from the header.");
+                Verify.AreEqual("First group", element.GetFullDescription(), "FullDescription must come from the header.");
+                Verify.AreEqual("Group help", element.GetHelpText(), "HelpText must come from the header.");
+                Verify.AreEqual(1036, element.GetCulture(), "Culture must come from the header.");
+                Verify.IsNotNull(element.GetPattern(PatternInterface.ScrollItem), "The group's element must offer ScrollItem.");
+
+                GetBodyScroller(tableView).ChangeView(null, 60.0, null, true);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                Verify.IsTrue(scroller.VerticalOffset > 30.0, $"Precondition: the table must have scrolled, offset {scroller.VerticalOffset}.");
+                Verify.IsTrue(element.GetName().StartsWith("G0 "), "Precondition: G0's header must still be realized.");
+                ((IScrollItemProvider)element.GetPattern(PatternInterface.ScrollItem)).ScrollIntoView();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var offset = GetBodyScroller(tableView).VerticalOffset;
+                Verify.IsTrue(offset < 1.0, $"ScrollIntoView must bring G0's header back into view, offset {offset}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row element forwards set position, the row's AutomationProperties and keyboard focus (#12444).")]
+        public void VerifyRowElementForwardsSetPositionMetadataAndFocus()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(5));
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                for (var i = 0; i < 5; ++i)
+                {
+                    var element = RowPeerOf(repeater.TryGetElement(i));
+                    Verify.AreEqual(i + 1, element.GetPositionInSet(), $"Row {i} must report its position.");
+                    Verify.AreEqual(5, element.GetSizeOfSet(), $"Row {i} must report the set size.");
+                }
+
+                var row = (TableViewRow)repeater.TryGetElement(2);
+                AutomationProperties.SetItemStatus(row, "Busy");
+                AutomationProperties.SetFullDescription(row, "Third person");
+                AutomationProperties.SetPositionInSet(row, 42);
+                var held = RowPeerOf(row);
+                Verify.AreEqual("Busy", held.GetItemStatus(), "ItemStatus must come from the row.");
+                Verify.AreEqual("Third person", held.GetFullDescription(), "FullDescription must come from the row.");
+                Verify.AreEqual(42, held.GetPositionInSet(), "An app-set PositionInSet must win through the row's element.");
+
+                row.Focus(FocusState.Keyboard);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = (TableViewRow)GetRowsRepeater(tableView).TryGetElement(2);
+                Verify.IsTrue(GetRowPeer(row).HasKeyboardFocus(), "Precondition: the row's peer reports keyboard focus.");
+                Verify.IsTrue(RowPeerOf(row).HasKeyboardFocus(), "The row's element must report the row's keyboard focus.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies grouped row elements report set positions relative to their group (#12444).")]
+        public void VerifyGroupedRowElementReportsGroupRelativePosition()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewAutomationTestHelpers.CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var labels = string.Join(" ", GetProjectedElements(tableView).OfType<TableViewRow>()
+                    .Select(r => RowPeerOf(r))
+                    .Select(e => $"{e.GetPositionInSet()}/{e.GetSizeOfSet()}"));
+                Verify.AreEqual("1/2 2/2 1/3 2/3 3/3", labels, "Row elements must report positions relative to their group.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held tree row element expands and collapses its own item and stays the row's element across the toggle (#12444).")]
+        public void VerifyTreeRowElementExpandsItsOwnItemAndSurvivesTheToggle()
+        {
+            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
+                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+            AutomationPeer held = null;
+            IExpandCollapseProvider heldProvider = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                held = RowPeerOf(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada"));
+                Verify.AreEqual(1, held.GetLevel(), "Ada's element must report Level 1.");
+                heldProvider = (IExpandCollapseProvider)held.GetPattern(PatternInterface.ExpandCollapse);
+                Verify.IsNotNull(heldProvider, "Ada's element must offer ExpandCollapse.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, heldProvider.ExpandCollapseState, "Ada starts collapsed.");
+                heldProvider.Expand();
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(5, GetProjectedCount(tableView), "Expanding Ada must project Ben and Cy.");
+                Verify.AreSame(held, RowPeerOf(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")), "Ada's row must keep the held element.");
+                Verify.AreEqual(ExpandCollapseState.Expanded, heldProvider.ExpandCollapseState, "The held pattern must report Ada expanded.");
+                var ben = RowPeerOf(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ben"));
+                Verify.AreEqual(2, ben.GetLevel(), "Ben's element must report Level 2.");
+                Verify.AreEqual("1/2", $"{ben.GetPositionInSet()}/{ben.GetSizeOfSet()}", "Ben's element must count Ada's children.");
+                heldProvider.Collapse();
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, GetProjectedCount(tableView), "Collapse through the held element must collapse Ada.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies held row elements never describe another item after a sort, and every row's current element names its own item (#12444).")]
+        public void VerifyHeldRowElementsNeverRetargetAfterSort()
+        {
+            TableViewSource source = null;
+            TableView tableView = null;
+            var held = new List<(NamedPerson item, AutomationPeer element)>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeNamedPeople(40));
+                tableView = CreateNamedPeopleTable(source);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))
+                {
+                    held.Add(((NamedPerson)row.DataContext, RowPeerOf(row)));
+                }
+                Verify.IsTrue(held.Count > 1, "Precondition: several rows must be realized.");
+                source.Sort("Name", SortDirection.Descending);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var (item, element) in held)
+                {
+                    string name = null;
+                    try
+                    {
+                        name = element.GetName();
+                    }
+                    catch (Exception e)
+                    {
+                        Verify.AreEqual(unchecked((int)0x80040201), e.HResult, $"{item.Name}'s stale element must fail with ElementNotAvailable.");
+                    }
+                    Verify.IsTrue(name == null || name.StartsWith(item.Name + ","), $"{item.Name}'s held element must not describe another item, saw '{name}'.");
+                }
+
+                var repeater = GetRowsRepeater(tableView);
+                foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))
+                {
+                    var item = (NamedPerson)row.DataContext;
+                    var name = RowPeerOf(row).GetName();
+                    Verify.IsTrue(name.StartsWith(item.Name + ","), $"{item.Name}'s row element must name it, saw '{name}'.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies rows showing the same item twice expose distinct elements that navigate and select their own row (#12444).")]
+        public void VerifyDuplicateItemRowsExposeDistinctElements()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(6));
+
+            RunOnUIThread.Execute(() =>
+            {
+                items[3] = items[1];
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                var first = RowPeerOf(repeater.TryGetElement(1));
+                var second = RowPeerOf(repeater.TryGetElement(3));
+                Verify.AreNotSame(first, second, "Each row must expose its own element.");
+                Verify.IsTrue(first.GetName().StartsWith(items[1].Name + ",") && second.GetName().StartsWith(items[1].Name + ","),
+                    "Both elements must name the shared item.");
+
+                var probe = new ProviderPeerProbe();
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                Verify.AreSame(RowPeerOf(repeater.TryGetElement(2)), probe.ToPeer(container.FindItemByProperty(probe.ToProvider(first), null, null)),
+                    "FindItemByProperty after row 1 must return row 2.");
+                Verify.AreSame(RowPeerOf(repeater.TryGetElement(4)), probe.ToPeer(container.FindItemByProperty(probe.ToProvider(second), null, null)),
+                    "FindItemByProperty after row 3 must return row 4.");
+
+                ((ISelectionItemProvider)second.GetPattern(PatternInterface.SelectionItem)).Select();
+                Verify.AreEqual(3, tableView.SelectedIndex, "Select through row 3's element must select row 3.");
             });
         }
 
