@@ -500,7 +500,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var nestedCalls = calls.Where(call => call.Depth == 1).ToList();
                 Verify.IsTrue(nestedCalls.Count > 0, "The nested replacement raised ElementClearing.");
                 Verify.IsTrue(nestedCalls.All(call => !ReferenceEquals(call.Args, outerCall.Args)), "Nested calls get their own args.");
-                Verify.IsTrue(oldElements.All(e => calls.Any(call => call.ElementBefore == e)), "Every old element is cleared.");
+                Verify.IsTrue(oldElements.All(e => calls.Count(call => call.ElementBefore == e) == 1), "Every old element is cleared once.");
 
                 Content.UpdateLayout();
                 Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
@@ -926,10 +926,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         //           ItemsSource is replaced, and the ElementClearing handler for the element at position 0, 1 or 2 replaces
         //           ItemsSource again (a nested replacement that clears the same element while its ElementClearing is
         //           still running).
-        // Expected: no exception or assert; each old element is returned to the element factory exactly once; the
-        //           repeater shows the nested source after layout.
+        // Expected: no exception or assert; ElementClearing is raised once for each old element and each old element is
+        //           returned to the element factory exactly once; the repeater shows the nested source after layout.
         // A failure means: the element whose ElementClearing started the nested replacement is recycled twice (for
-        //           example, a duplicate RecyclePool entry), or the repeater crashes.
+        //           example, a duplicate RecyclePool entry), gets a second ElementClearing from the nested replacement,
+        //           or the repeater crashes.
         [TestMethod]
         [TestProperty("Description", "Verifies a nested ItemsSource replacement from ElementClearing on a NonVirtualizingLayout repeater recycles each element once.")]
         public void VerifyNestedItemsSourceReplacementFromElementClearingWithNonVirtualizingLayout()
@@ -967,8 +968,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     bool nestedReplacementDone = false;
                     var nestedSource = new List<string> { "Nested #0", "Nested #1" };
+                    var clearing = new List<UIElement>();
                     repeater.ElementClearing += (sender, args) =>
                     {
+                        clearing.Add(args.Element);
                         if (!nestedReplacementDone && args.Element == oldElements[position])
                         {
                             nestedReplacementDone = true;
@@ -983,9 +986,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.AreEqual(oldElements.Count, recycled.Count, "Each old element should be recycled once.");
                     for (int i = 0; i < oldElements.Count; i++)
                     {
+                        Log.Comment(string.Format("Element {0}: ElementClearing {1}, RecycleElement {2}", i,
+                            clearing.Count(element => element == oldElements[i]), recycled.Count(element => element == oldElements[i])));
                         Verify.AreEqual(1, recycled.Count(element => element == oldElements[i]), "Element " + i + " should be recycled once.");
+                        Verify.AreEqual(1, clearing.Count(element => element == oldElements[i]), "ElementClearing should be raised once for element " + i + ".");
                         Verify.IsNull(VisualTreeHelper.GetParent(oldElements[i]));
                     }
+                    Verify.AreEqual(oldElements.Count, clearing.Count, "ElementClearing should be raised once per old element.");
                     Verify.AreEqual(0, VisualTreeHelper.GetChildrenCount(repeater));
 
                     Content.UpdateLayout();
@@ -1001,10 +1008,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         //           ObservableCollection; the first, middle or last item is removed, or the collection is cleared, and the
         //           ElementClearing handler for the element that the collection change clears replaces ItemsSource (a
         //           nested replacement that clears the same element while the collection change is still clearing it).
-        // Expected: no exception or assert; each old element is returned to the element factory exactly once, with the
-        //           repeater as Parent; after layout the repeater shows the new source with the right element indices.
+        // Expected: no exception or assert; ElementClearing is raised once for each old element and each old element is
+        //           returned to the element factory exactly once, with the repeater as Parent; after layout the repeater
+        //           shows the new source with the right element indices.
         // A failure means: the collection change recycles the element a second time after the nested replacement already
-        //           recycled it (for example, a duplicate RecyclePool entry), or the repeater crashes.
+        //           recycled it (for example, a duplicate RecyclePool entry), the nested replacement raises a second
+        //           ElementClearing for it, or the repeater crashes.
         [TestMethod]
         [TestProperty("Description", "Verifies an ItemsSource replacement from ElementClearing during a collection Remove or Reset on a NonVirtualizingLayout repeater recycles each element once.")]
         public void VerifyItemsSourceReplacementFromElementClearingDuringCollectionChangeWithNonVirtualizingLayout()
@@ -1051,8 +1060,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     bool nestedReplacementDone = false;
                     var nestedSource = new List<string> { "Nested #0", "Nested #1" };
+                    var clearing = new List<UIElement>();
                     repeater.ElementClearing += (sender, args) =>
                     {
+                        clearing.Add(args.Element);
                         if (!nestedReplacementDone)
                         {
                             nestedReplacementDone = true;
@@ -1067,9 +1078,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.AreEqual(oldElements.Count, recycled.Count, "Each old element should be recycled once.");
                     for (int i = 0; i < oldElements.Count; i++)
                     {
+                        Log.Comment(string.Format("Element {0}: ElementClearing {1}, RecycleElement {2}", i,
+                            clearing.Count(element => element == oldElements[i]), recycled.Count(r => r.Element == oldElements[i])));
                         Verify.AreEqual(1, recycled.Count(r => r.Element == oldElements[i]), "Element " + i + " should be recycled once.");
+                        Verify.AreEqual(1, clearing.Count(element => element == oldElements[i]), "ElementClearing should be raised once for element " + i + ".");
                         Verify.IsNull(VisualTreeHelper.GetParent(oldElements[i]));
                     }
+                    Verify.AreEqual(oldElements.Count, clearing.Count, "ElementClearing should be raised once per old element.");
                     foreach (var r in recycled)
                     {
                         Verify.AreSame(repeater, r.Parent, "RecycleElement should get the repeater as Parent.");
@@ -1096,11 +1111,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         //           ElementClearing handler call sets ItemTemplate to another factory B, or sets Layout to another
         //           NonVirtualizingLayout (a nested walk that clears every realized element, including the one whose
         //           ElementClearing is still running).
-        // Expected: no exception or assert; every old element is returned exactly once, to factory A, with the repeater as
-        //           Parent; nothing is returned to B; after layout the new elements come from B (ItemTemplate) or A (Layout)
-        //           and have the right indices.
+        // Expected: no exception or assert; ElementClearing is raised once for each old element; every old element is
+        //           returned exactly once, to factory A, with the repeater as Parent; nothing is returned to B; after layout
+        //           the new elements come from B (ItemTemplate) or A (Layout) and have the right indices.
         // A failure means: the outer change recycles the element a second time after the nested walk already recycled it
-        //           (into B after an ItemTemplate change, or into A twice), or the repeater crashes.
+        //           (into B after an ItemTemplate change, or into A twice), the nested walk raises a second ElementClearing
+        //           for it, or the repeater crashes.
         [TestMethod]
         [TestProperty("Description", "Verifies an ItemTemplate or Layout change from ElementClearing during an ItemsSource replacement or a Remove on a NonVirtualizingLayout repeater recycles each element once, to the old factory.")]
         public void VerifyItemTemplateOrLayoutChangeFromElementClearingRecyclesEachElementOnceWithNonVirtualizingLayout()
@@ -1152,8 +1168,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Verify.AreEqual(3, oldElements.Count);
 
                         bool nestedChangeDone = false;
+                        var clearing = new List<UIElement>();
                         repeater.ElementClearing += (sender, args) =>
                         {
+                            clearing.Add(args.Element);
                             if (!nestedChangeDone)
                             {
                                 nestedChangeDone = true;
@@ -1186,8 +1204,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Verify.AreEqual(oldElements.Count, recycledByA.Count, "Each old element should be recycled once, to the old factory.");
                         for (int i = 0; i < oldElements.Count; i++)
                         {
+                            Log.Comment(string.Format("Element {0}: ElementClearing {1}, RecycleElement {2}", i,
+                                clearing.Count(element => element == oldElements[i]), recycledByA.Count(r => r.Element == oldElements[i])));
                             Verify.AreEqual(1, recycledByA.Count(r => r.Element == oldElements[i]), "Element " + i + " should be recycled once.");
+                            Verify.AreEqual(1, clearing.Count(element => element == oldElements[i]), "ElementClearing should be raised once for element " + i + ".");
                         }
+                        Verify.AreEqual(oldElements.Count, clearing.Count, "ElementClearing should be raised once per old element.");
                         foreach (var r in recycledByA)
                         {
                             Verify.AreSame(repeater, r.Parent, "RecycleElement should get the repeater as Parent.");

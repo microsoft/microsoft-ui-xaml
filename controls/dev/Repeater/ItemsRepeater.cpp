@@ -437,6 +437,26 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
 {
     if (m_elementClearingEventSource)
     {
+        auto const raisingElement = std::find(m_elementsRaisingElementClearing.begin(), m_elementsRaisingElementClearing.end(), element);
+        if (raisingElement != m_elementsRaisingElementClearing.end())
+        {
+            // A handler of this element's ElementClearing event re-entered the repeater (for example it replaced ItemsSource)
+            // and that change clears the element before the outer clear recycles it. ElementClearing was already raised
+            // for this clear: do not raise it a second time. A later clear of the element raises it again.
+            m_elementsRaisingElementClearing.erase(raisingElement);
+            return;
+        }
+
+        m_elementsRaisingElementClearing.push_back(element);
+        auto const raisingElementScope = gsl::finally([this, element]()
+            {
+                auto const it = std::find(m_elementsRaisingElementClearing.begin(), m_elementsRaisingElementClearing.end(), element);
+                if (it != m_elementsRaisingElementClearing.end())
+                {
+                    m_elementsRaisingElementClearing.erase(it);
+                }
+            });
+
         if (m_isRaisingElementClearing)
         {
             // A handler re-entered the repeater (for example it changed ItemsSource): use new args so that the
