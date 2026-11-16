@@ -379,7 +379,7 @@ void TableView::CompleteFocusLossCommit()
             });
 
         m_editorFlyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
-            [weakThis = get_weak(), generation](auto&&, auto&&)
+            [weakThis = get_weak(), generation, direction](auto&&, auto&&)
             {
                 if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
@@ -387,7 +387,7 @@ void TableView::CompleteFocusLossCommit()
                     strongThis->m_editorFlyoutClosedRevoker.revoke();
                     if (!strongThis->m_focusLossCommitQueued)
                     {
-                        strongThis->QueueFocusLossCommit();
+                        strongThis->QueueFocusLossCommit(direction);
                     }
                 }
             });
@@ -400,7 +400,7 @@ void TableView::CompleteFocusLossCommit()
     {
         const auto generation = m_editFocusGeneration;
         m_editorPopupClosedRevoker = popup.Closed(winrt::auto_revoke,
-            [weakThis = get_weak(), generation](auto&&, auto&&)
+            [weakThis = get_weak(), generation, direction](auto&&, auto&&)
             {
                 if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
@@ -408,7 +408,7 @@ void TableView::CompleteFocusLossCommit()
                     strongThis->MarkEditorFlyoutClosing();
                     if (!strongThis->m_focusLossCommitQueued)
                     {
-                        strongThis->QueueFocusLossCommit();
+                        strongThis->QueueFocusLossCommit(direction);
                     }
                 }
             });
