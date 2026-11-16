@@ -452,6 +452,8 @@ public:
     virtual XINT32 GetPixelWidth() const;
     virtual XINT32 GetPixelHeight() const;
 
+    bool HasIntrinsicSize() const;
+
     // uriChanged means we need to drop the existing image operation because the URI may have changed
     // and we need to start a fresh image operation.
     // retainPlaybackState means we need to transfer the IsPlaying state from the old operation to the new one.
