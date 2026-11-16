@@ -1,3 +1,0 @@
-# The test fixture's binaries are checked in; build.cmd rebuilds them.
-!NativeSymbols.dll
-!NativeSymbols.pdb

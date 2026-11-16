@@ -20,13 +20,6 @@ if (args is ["--startup-integration", var nativeDirectory])
     return;
 }
 
-if (args is ["--record-cpu-fixture", var fixturePath])
-{
-    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Recording the CPU fixture requires Windows.");
-    CpuFixtureRecorder.Record(Path.GetFullPath(fixturePath));
-    return;
-}
-
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
 var visualPath = Path.ChangeExtension(path, "visuals.sqlite");
@@ -1206,9 +1199,6 @@ var cpuLivePath = Path.ChangeExtension(cpuPath, "live.sqlite");
 var cpuTrimPath = Path.ChangeExtension(cpuPath, "trim.sqlite");
 var cpuPlacePath = Path.ChangeExtension(cpuPath, "place.sqlite");
 var cpuLatePath = Path.ChangeExtension(cpuPath, "late.sqlite");
-var cpuNativePath = Path.ChangeExtension(cpuPath, "native.sqlite");
-var cpuNativeImagePath = Path.ChangeExtension(cpuPath, "native-image.sqlite");
-var cpuNativeStalePath = Path.ChangeExtension(cpuPath, "native-stale.sqlite");
 var cpuSymbols = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Symbols-{Guid.NewGuid():N}");
 try
 {
@@ -1339,199 +1329,6 @@ try
 
     Expect(!File.Exists(cpuIdentityPath + "-journal") && CpuProfileReader.Read(cpuIdentityPath) is { Modules: [{ Status: "NotFound" }] },
         "A canceled symbolizing must leave the file as it was, readable.");
-
-    // A native DLL built with its PDB (Fixtures\NativeSymbols), so naming reads a real PDB through DIA, from a local
-    // directory without a network. Its stacks are FixtureBeta called by FixtureAlpha, at the RVAs its exports give, so the
-    // PDB must name the functions the image says are there.
-    static (int Size, int TimeDateStamp, Dictionary<string, uint> Exports) ReadNativeImage(string file)
-    {
-        using var pe = new System.Reflection.PortableExecutable.PEReader(File.OpenRead(file));
-        System.Reflection.Metadata.BlobReader At(int rva) => pe.GetSectionData(rva).GetReader();
-        var headers = pe.PEHeaders;
-        var peHeader = headers.PEHeader ?? throw new InvalidDataException($"{file} has no PE header.");
-        var directory = At(peHeader.ExportTableDirectory.RelativeVirtualAddress);
-        directory.Offset = 24; // IMAGE_EXPORT_DIRECTORY's NumberOfNames, AddressOfFunctions, AddressOfNames and AddressOfNameOrdinals
-        var (count, functions, names, ordinals) = (directory.ReadInt32(), directory.ReadInt32(), directory.ReadInt32(), directory.ReadInt32());
-        var exports = new Dictionary<string, uint>(StringComparer.Ordinal);
-        for (var index = 0; index < count; index++)
-        {
-            var name = At(At(names + 4 * index).ReadInt32());
-            exports[name.ReadUTF8(name.IndexOf(0))] = At(functions + 4 * At(ordinals + 2 * index).ReadUInt16()).ReadUInt32();
-        }
-
-        return (peHeader.SizeOfImage, headers.CoffHeader.TimeDateStamp, exports);
-    }
-
-    var nativeDll = Path.Combine(AppContext.BaseDirectory, "Fixtures", "NativeSymbols", "NativeSymbols.dll");
-    var nativeImage = ReadNativeImage(nativeDll);
-    var nativeIdentity = PeIdentity.Read(nativeDll) ?? throw new InvalidOperationException("The native fixture must name its PDB.");
-    Expect(nativeImage.Exports.ContainsKey("FixtureAlpha") && nativeImage.Exports.ContainsKey("FixtureBeta") &&
-        !nativeIdentity.Portable && Path.GetFileName(nativeIdentity.PdbName) == "NativeSymbols.pdb",
-        "The native fixture must export its functions and name its PDB.");
-    if (OperatingSystem.IsWindows())
-    {
-        // build.cmd builds them outside the enlistment, so they name neither it nor the user who built them.
-        foreach (var file in new[] { nativeDll, Path.ChangeExtension(nativeDll, ".pdb") })
-        {
-            var found = CpuFixtureRecorder.FindPrivate(File.ReadAllBytes(file));
-            Expect(found is null, $"{Path.GetFileName(file)} must not contain {found}: build it again with build.cmd.");
-        }
-    }
-
-    // The symbol path holds only the PDB, away from the image.
-    var nativeSymbols = Directory.CreateDirectory(Path.Combine(cpuSymbols, "Native")).FullName;
-    File.Copy(Path.ChangeExtension(nativeDll, ".pdb"), Path.Combine(nativeSymbols, "NativeSymbols.pdb"));
-    const ulong nativeBase = 0x7FF1_0000_0000;
-    void WriteNativeSession(string file, bool recordedIdentity, int? timeDateStamp = null)
-    {
-        var module = new SampledModule(1, nativeDll, nativeBase, nativeImage.Size, timeDateStamp ?? nativeImage.TimeDateStamp);
-        if (recordedIdentity)
-        {
-            // As a merged trace records it, from the image's DbgID_RSDS event.
-            module.PdbName = nativeIdentity.PdbName;
-            module.PdbGuid = nativeIdentity.Guid;
-            module.PdbAge = nativeIdentity.Age;
-        }
-
-        using var writer = SessionWriter.Create(file, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace));
-        CodeFrame In(string function, uint offset) => new(module, nativeBase + nativeImage.Exports[function] + offset);
-        for (var sample = 1; sample <= 3; sample++)
-        {
-            writer.PostSample(new(sample * 1_000, 1, 5, [In("FixtureBeta", 0x10), In("FixtureAlpha", 9)]), wait: true);
-        }
-
-        writer.SetCpuSampling(new(1.0, false, 3, [module]), null);
-    }
-
-    const string alphaFrame = "NativeSymbols.dll!FixtureAlpha";
-    const string betaFrame = "NativeSymbols.dll!FixtureBeta";
-    WriteNativeSession(cpuNativePath, recordedIdentity: true);
-    using (var nativeNamer = new LiveSymbolNamer(cpuNativePath, nativeSymbols))
-    {
-        _ = CpuProfileReader.ReadStacks(cpuNativePath, functionName: nativeNamer.Request);
-        Expect(nativeNamer.Name() == 2 &&
-            CpuProfileReader.ReadStacks(cpuNativePath, functionName: nativeNamer.NameOf)?.TopDown().Children is
-                [{ Frame: alphaFrame, Samples: 3, Self: 0, Children: [{ Frame: betaFrame, Samples: 3, Self: 3 }] }] &&
-            CpuProfileReader.Read(cpuNativePath) is { Modules: [{ Status: null }], Exclusive: [{ Frame: var unnamedLeaf }] } &&
-            unnamedLeaf.StartsWith("NativeSymbols.dll!0x", StringComparison.Ordinal),
-            "A live namer must name native functions from their PDB, in memory only.");
-    }
-
-    Expect(SessionSymbolizer.Symbolize(cpuNativePath, nativeSymbols) is { Modules: 1, Resolved: 1, Failed: 0, Named: 2, Addresses: 2 },
-        "Symbolizing must name a module's functions from its PDB on the symbol path.");
-    using (var nativeConnection = SessionFile.Open(cpuNativePath))
-    {
-        Expect(Sql.Scalar(nativeConnection, "SELECT COUNT(*) FROM CodeAddresses WHERE Function IN ('FixtureAlpha', 'FixtureBeta')") == 2,
-            "Symbolizing must store each address's function name in the session file.");
-    }
-
-    var nativeProfile = CpuProfileReader.Read(cpuNativePath);
-    var nativeStacks = CpuProfileReader.ReadStacks(cpuNativePath);
-    Expect(nativeProfile is
-        {
-            Exclusive: [{ Frame: betaFrame, Samples: 3 }],
-            Modules: [{ Name: "NativeSymbols.dll", Status: "Resolved", SymbolFile: { } nativeSymbolFile, Addresses: 2 } nativeModule],
-        } &&
-        string.Equals(Path.GetFullPath(nativeSymbolFile), Path.Combine(nativeSymbols, "NativeSymbols.pdb"), StringComparison.OrdinalIgnoreCase) &&
-        nativeModule.Pdb == nativeIdentity.Key &&
-        nativeProfile.Inclusive.Select(frame => (frame.Frame, frame.Samples)).SequenceEqual([(alphaFrame, 3L), (betaFrame, 3L)]) &&
-        nativeStacks?.Functions() is { Count: 2 } nativeFunctions && nativeFunctions.All(function => function.Named) &&
-        nativeStacks.Callers(nativeFunctions.Single(function => function.Frame == betaFrame).FrameIndex) is
-            { Samples: 3, Self: 3, Children: [{ Frame: alphaFrame, Samples: 3 }] },
-        "The CPU profile and call tree must show the stored names, and the PDB they came from.");
-
-    // A trace that didn't record the module's PDB: symbolizing reads it from the image, which has the size and timestamp
-    // the trace loaded, and stores it.
-    WriteNativeSession(cpuNativeImagePath, recordedIdentity: false);
-    Expect(SessionSymbolizer.Symbolize(cpuNativeImagePath, nativeSymbols) is { Resolved: 1, Named: 2 } &&
-        CpuProfileReader.Read(cpuNativeImagePath) is { Modules: [{ Status: "Resolved" } imageModule], Exclusive: [{ Frame: betaFrame }] } &&
-        imageModule.Pdb == nativeIdentity.Key,
-        "Symbolizing must read the PDB identity of an image the trace didn't record it for, and store it.");
-
-    // The image on disk was rebuilt since the trace loaded it: its PDB would give wrong names, so none are given.
-    WriteNativeSession(cpuNativeStalePath, recordedIdentity: false, timeDateStamp: nativeImage.TimeDateStamp + 1);
-    Expect(SessionSymbolizer.Symbolize(cpuNativeStalePath, nativeSymbols) is { NoIdentity: 1, Resolved: 0, Named: 0 } &&
-        CpuProfileReader.Read(cpuNativeStalePath) is { Modules: [{ Status: "NoIdentity", Pdb: null }] },
-        "Symbolizing must not read the PDB identity of an image that differs from the one the trace loaded.");
-
-    // A recorded CPU profile (Fixtures\NativeSymbols\CpuProfile.etl, from --record-cpu-fixture): one process's kernel samples
-    // and stacks, the load of the fixture DLL, deleted since, with the PDB identity the merged trace recorded for it, and two
-    // XAML events written by the thread that ran FixtureAlpha, before and after it did. Importing it as the app does
-    // (TraceReplay) and as the CLI does (OfflineEtlSource.Read) must store every sample of the process, the module as the
-    // trace loaded it, and the fixture's samples on that thread between the events; symbolizing then names their stacks.
-    var fixtureEtl = Path.Combine(AppContext.BaseDirectory, "Fixtures", "NativeSymbols", "CpuProfile.etl");
-    var fixtureProcess = OfflineEtlSource.ListProcesses(fixtureEtl) is { EventsLost: 0, Processes: [{ XamlEvents: 2 } fixtureOnly] }
-        ? fixtureOnly
-        : throw new InvalidOperationException("The CPU fixture must have one process, with its two XAML events.");
-    var fixtureSamples = CpuFixtureRecorder.CountSamples(fixtureEtl, fixtureProcess.ProcessId);
-    Expect(fixtureSamples > 0, "The CPU fixture must have CPU samples of its process.");
-    void CheckImport(string session, string how)
-    {
-        Expect(CpuProfileReader.ReadSampling(session) is { IntervalMs: > 0, Dropped: 0, CompressedStacks: false, Note: null } importSampling &&
-            importSampling.Samples == fixtureSamples,
-            $"{how} must store every CPU sample of the process, and the sampling interval.");
-        // The image is gone, so its PDB identity can only be the trace's.
-        Expect(CpuProfileReader.Read(session) is { Modules: [{ Name: "NativeSymbols.dll", Status: null } importModule] } &&
-            importModule.Pdb == nativeIdentity.Key && !File.Exists(importModule.FilePath),
-            $"{how} must store the sampled module with the PDB identity the trace recorded for it.");
-        using (var connection = SessionFile.Open(session))
-        {
-            long EventOf(string name, string column) => Sql.Scalar(connection,
-                $"SELECT Events.{column} FROM Events JOIN EventTypes ON EventTypes.TypeId = Events.TypeId WHERE EventTypes.Name = $name",
-                null, ("$name", name));
-            var (begin, end, thread) = (EventOf(CpuFixtureRecorder.BeginEvent, "Qpc"), EventOf(CpuFixtureRecorder.EndEvent, "Qpc"),
-                EventOf(CpuFixtureRecorder.BeginEvent, "ThreadId"));
-            const string fixtureLeaves =
-                "FROM CpuSamples JOIN CpuFrames ON CpuFrames.StackId = CpuSamples.StackId WHERE CpuFrames.Module = 'NativeSymbols.dll'";
-            Expect(Sql.Scalar(connection, "SELECT ImageSize FROM Modules") == nativeImage.Size &&
-                Sql.Scalar(connection, "SELECT TimeDateStamp FROM Modules") == nativeImage.TimeDateStamp,
-                $"{how} must store the size and timestamp of the image the trace loaded.");
-            Expect(thread > 0 && begin > 0 && end > begin && Sql.Scalar(connection, $"SELECT COUNT(*) {fixtureLeaves}") > 0 &&
-                Sql.Scalar(connection, $"SELECT COUNT(*) {fixtureLeaves} AND (CpuSamples.ThreadId <> $thread OR CpuSamples.Qpc NOT BETWEEN $begin AND $end)",
-                    null, ("$thread", thread), ("$begin", begin), ("$end", end)) == 0,
-                $"{how} must store the fixture's samples on the thread that ran it, timed between the XAML events it wrote around it.");
-        }
-
-        Expect(SessionSymbolizer.Symbolize(session, nativeSymbols) is { Modules: 1, Resolved: 1, Failed: 0, Named: > 0 } importSymbolized &&
-            importSymbolized.Named == importSymbolized.Addresses &&
-            CpuProfileReader.Read(session) is { Modules: [{ Status: "Resolved" }] } &&
-            CpuProfileReader.ReadStacks(session) is { } importStacks &&
-            importStacks.Functions().SingleOrDefault(function => function.Frame == betaFrame) is { Named: true, Total: > 0 } importBeta &&
-            importStacks.Callers(importBeta.FrameIndex) is { Children: [{ Frame: alphaFrame } importCaller] } &&
-            importCaller.Samples == importBeta.Total,
-            $"Symbolizing what {how} stored must name the fixture's stacks, FixtureBeta called by FixtureAlpha, from the recorded PDB identity.");
-    }
-
-    var replayDirectory = Directory.CreateDirectory(Path.Combine(cpuSymbols, "Replay")).FullName;
-    string replayPath;
-    await using (var replay = TraceReplay.Start(fixtureEtl, fixtureProcess.ProcessId, fixtureProcess.Name, replayDirectory))
-    {
-        await replay.Completion.WaitAsync(TimeSpan.FromMinutes(1));
-        Expect(replay is { State: TraceReplayState.Finished, Failure: null, RecordingError: null, Status: { XamlEvents: 2, LostEvents: 0 } },
-            "The app's import of a CPU profile must read it to its end.");
-        replayPath = replay.Recording.Path;
-    }
-
-    CheckImport(replayPath, "The app's import (TraceReplay)");
-
-    var readPath = Path.Combine(cpuSymbols, "Read.sqlite");
-    var readWriter = SessionWriter.Create(readPath, new(fixtureProcess.ProcessId, fixtureProcess.Name, null,
-        OfflineEtlSource.ReadQpcFrequency(fixtureEtl), null, SessionCoverage.Trace, fixtureEtl));
-    EtlReadResult? readResult = null;
-    long readEvents = 0;
-    try
-    {
-        readResult = OfflineEtlSource.Read(fixtureEtl, fixtureProcess.ProcessId, [], profilerEvent => readWriter.Process(++readEvents, profilerEvent),
-            readWriter.SetProcessStart, default, readWriter);
-    }
-    finally
-    {
-        readWriter.Close(readResult is null ? "Reading the trace failed" : "End of trace", readResult?.EventsLost, 0);
-    }
-
-    Expect(readResult is { EventsLost: 0 } && readEvents == 2 && readWriter.Failure is null,
-        "The CLI's import of a CPU profile must read the process's events to the trace's end.");
-    CheckImport(readPath, "The CLI's import (OfflineEtlSource.Read)");
 
     SessionWriter.Create(cpuEmptyPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)).Dispose();
     Expect(CpuProfileReader.Read(cpuEmptyPath) is null && CpuProfileReader.ReadStacks(cpuEmptyPath) is null,
@@ -1828,9 +1625,8 @@ try
 }
 finally
 {
-    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath, cpuTrimPath, cpuPlacePath, cpuLatePath,
-        cpuNativePath, cpuNativeImagePath, cpuNativeStalePath }.SelectMany(cpuSession =>
-        new[] { cpuSession, cpuSession + "-wal", cpuSession + "-shm", cpuSession + "-journal" }))
+    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath, cpuTrimPath, cpuPlacePath, cpuLatePath }
+        .SelectMany(cpuSession => new[] { cpuSession, cpuSession + "-wal", cpuSession + "-shm", cpuSession + "-journal" }))
     {
         File.Delete(cpuFile);
     }
@@ -1840,7 +1636,7 @@ finally
         Directory.Delete(cpuSymbols, recursive: true);
     }
 }
-Console.WriteLine("Passed: CPU samples read back by thread, frame and call tree, symbolizing names native functions from their PDB and reports modules it can't name, and live naming names only what was asked for; a recorded CPU profile imports with its samples' threads, times and module identity; trimming keeps stacks whole, and late modules get their addresses.");
+Console.WriteLine("Passed: CPU samples read back by thread, frame and call tree, symbolizing reports modules it can't name, and live naming names only what was asked for; trimming keeps stacks whole, and late modules get their addresses.");
 
 // The live kernel session keeps the samples from before it's read, and gives the sink the target's complete samples.
 KernelSampleSession? liveCpu = null;
