@@ -25,6 +25,12 @@ CImageBase::~CImageBase()
     {
         ReleaseInterface(m_pImageSource);
     }
+    ReleaseInterface(m_pFallbackBrush);
+}
+
+void CImageBase::ReleaseFallbackBrush()
+{
+    ReleaseInterface(m_pFallbackBrush);
 }
 
 //------------------------------------------------------------------------
@@ -50,6 +56,7 @@ CImageBase::CloseMedia()
     {
         ReleaseInterface(m_pBackgroundBrush);
     }
+    ReleaseFallbackBrush();
 }
 
 //------------------------------------------------------------------------
@@ -146,6 +153,25 @@ CImageBase::EnsureBrush()
 
     if (fSourceChanged)
     {
+        // Keep drawing the current picture while a new URI source loads; see BaseContentRenderer::ImageRenderContent.
+        // The fallback is per Image, so the new source and anything else sharing it are not affected.
+        if (m_pImageSource && !m_pImageSource->m_strSource.IsNull() && IsActive() &&
+            m_pBackgroundBrush->GetHardwareSurface() != nullptr)
+        {
+            CREATEPARAMETERS cp(GetContext());
+            ReleaseFallbackBrush();
+            IFC_RETURN(CImageBrush::Create(reinterpret_cast<CDependencyObject**>(&m_pFallbackBrush), &cp));
+            SetInterface(m_pFallbackBrush->m_pImageSource, m_pBackgroundBrush->m_pImageSource);
+            m_pFallbackBrush->m_isRenderOnly = true;
+            m_pFallbackBrush->m_Stretch = m_pBackgroundBrush->m_Stretch;
+            m_pFallbackBrush->m_AlignmentX = m_pBackgroundBrush->m_AlignmentX;
+            m_pFallbackBrush->m_AlignmentY = m_pBackgroundBrush->m_AlignmentY;
+        }
+        else if (!m_pImageSource || m_pImageSource->m_strSource.IsNull() || !IsActive())
+        {
+            ReleaseFallbackBrush();
+        }
+
         // Since we are detaching ImageSource from ImageBrush, in addition to releasing the source, we
         // have to tell our internal ImageBrush to take care of releasing the callback between the
         // ImageBrush and ImageSource before releasing the source.
@@ -161,23 +187,6 @@ CImageBase::EnsureBrush()
         m_pBackgroundBrush->m_pImageSource = m_pImageSource;
 
         m_pBackgroundBrush->UpdateDecodeToRenderSizeStatusOnSourceChange(tempImage);
-
-        // Re-setting the same URI (for example through a string binding) creates a new BitmapImage.
-        // Keep showing the current picture until it decodes, as a UriSource change does. Only do this
-        // when the decode yields the same picture: same decode settings, and both loaded through the
-        // image cache (IgnoreImageCache re-reads the file, whose content and size may have changed).
-        if (tempImage && m_pImageSource && m_pImageSource->m_fReloadNeeded && IsActive() &&
-            tempImage->OfTypeByIndex<KnownTypeIndex::BitmapImage>() &&
-            m_pImageSource->OfTypeByIndex<KnownTypeIndex::BitmapImage>() &&
-            m_pImageSource->IsSourceSetAndEqualTo(tempImage) &&
-            m_pImageSource->m_decodePixelWidth == tempImage->m_decodePixelWidth &&
-            m_pImageSource->m_decodePixelHeight == tempImage->m_decodePixelHeight &&
-            m_pImageSource->m_decodePixelType == tempImage->m_decodePixelType &&
-            ((m_pImageSource->m_nCreateOptions | tempImage->m_nCreateOptions) &
-                DirectUI::BitmapCreateOptions::IgnoreImageCache) == DirectUI::BitmapCreateOptions::None)
-        {
-            m_pImageSource->UsePreviousHardwareSurface(tempImage);
-        }
     }
 
     if (fSourceChanged || fReloadNeeded)
@@ -228,6 +237,13 @@ _Check_return_ HRESULT CImageBase::FireImageFailed(_In_ XUINT32 iErrorCode)
     CErrorEventArgs  *pErrArgs = NULL;
     CEventManager *pEventManager = GetContext()->GetEventManager();
     EventHandle hFailedEvent(KnownEventIndex::Image_ImageFailed);
+
+    // A failed source draws nothing, so stop drawing the previous picture.
+    if (m_pFallbackBrush)
+    {
+        ReleaseFallbackBrush();
+        CUIElement::NWSetContentDirty(this, DirtyFlags::Render);
+    }
 
     // If the eventhandler is not registered, it will fall back to OnError handler
     // so there is no need to do the m_eventList check here.
@@ -321,6 +337,15 @@ bool CImageBase::HasValidMediaSource( )
 
 _Check_return_ HRESULT CImageBase::GetNaturalBounds(_Inout_ XRECTF& pNaturalBounds)
 {
+    // While the new source has no size yet, keep the size of the picture still being drawn
+    // (as a UriSource change does), so a naturally sized Image doesn't collapse to 0x0.
+    if (m_pFallbackBrush && m_pBackgroundBrush && m_pImageSource &&
+        !m_pBackgroundBrush->HasDimensions() && !m_pBackgroundBrush->HasRetainedSize())
+    {
+        m_pFallbackBrush->GetNaturalBounds(&pNaturalBounds);
+        return S_OK;
+    }
+
     // m_pBackgroundBrush->HasDimensions() is checked rather than
     // m_pBackgroundBrush->HasEitherSurface() because DX interop image sources (SurfaceImageSource, VirtualSurfaceImageSource)
     // can be in a state where they don't have surfaces, but do have dimensions for layout purposes

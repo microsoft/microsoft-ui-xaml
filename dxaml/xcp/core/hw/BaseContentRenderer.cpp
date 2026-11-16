@@ -1345,11 +1345,34 @@ _Check_return_ HRESULT BaseContentRenderer::ImageRenderContent(
             pNinegrid = &ninegrid;
         }
 
+        CImageBrush* brush = pImage->GetBackgroundBrush();
+
+        // Until the new source has a surface, draw the picture the Image showed before, but keep the
+        // new source's decode request and upload going as GetBrushParameters would.
+        if (CImageBrush* fallbackBrush = pImage->GetFallbackBrush())
+        {
+            const HWRenderParamsBase& myRP = *m_pRenderParams;
+            IFC_RETURN(HWWalk::RequestImageDecode(&bounds, myRP, brush, pImage, pNinegrid));
+            IFC_RETURN(brush->EnsureAndUpdateHardwareResources(
+                myRP.pHWWalk->GetTextureManager(),
+                myRP.pRenderTarget,
+                myRP.pHWWalk->GetSurfaceCache()));
+
+            if (brush->GetHardwareSurface() == nullptr && fallbackBrush->GetHardwareSurface() != nullptr)
+            {
+                brush = fallbackBrush;
+            }
+            else
+            {
+                pImage->ReleaseFallbackBrush();
+            }
+        }
+
         BrushParams brushParams;
         IFC_RETURN(GeneralImageRenderContent(
             bounds,
             bounds,
-            pImage->GetBackgroundBrush(),
+            brush,
             brushParams,
             pImage,
             pNinegrid,

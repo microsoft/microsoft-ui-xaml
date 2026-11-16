@@ -175,7 +175,7 @@ CImageBrush::ShouldRequestDecode()
 {
     bool result = false;
 
-    if (m_pImageSource)
+    if (m_pImageSource && !m_isRenderOnly)
     {
         result = m_pImageSource->ShouldRequestDecode();
     }

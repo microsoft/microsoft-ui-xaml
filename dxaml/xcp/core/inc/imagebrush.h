@@ -192,6 +192,9 @@ public:
     // CImageBrush fields
     CImageSource *m_pImageSource;
 
+    // Set on an Image's fallback brush (see CImageBase::EnsureBrush): it only draws, it doesn't request decodes.
+    bool m_isRenderOnly = false;
+
 private:
     XUINT32 m_cLockCount;
 // The following are loaded lazily.  Always access them through the methods

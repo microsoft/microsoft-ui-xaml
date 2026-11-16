@@ -77,8 +77,15 @@ protected:
     CImageBrushReportCallback *m_pImageReportCallback;
 
 public:
+    // Brush on the source this Image last drew, rendered until the new source has a surface.
+    _Ret_maybenull_ CImageBrush* GetFallbackBrush() { return m_pFallbackBrush; }
+    void ReleaseFallbackBrush();
+
     CImageSource *m_pImageSource;
     XTHICKNESS m_ninegridPrivate;
+
+private:
+    CImageBrush *m_pFallbackBrush = nullptr;
 };
 
 class CImageBrushReportCallback final : public IImageReportCallback
