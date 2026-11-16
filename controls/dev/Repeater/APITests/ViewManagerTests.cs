@@ -3193,8 +3193,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         //           Insert(1), Remove(1), and Remove(5) after Move(0, 9) plus layout (so a shifted element precedes the removed one
         //           in Children); with a StackLayout also Replace(1, 1 -> 2) and Replace(1, 2 -> 1). ElementIndexChanged and
         //           ElementClearing handlers record the events, and each ElementIndexChanged handler call asks the repeater about
-        //           the element.
-        // Expected: in every ElementIndexChanged, GetElementIndex(args.Element) is args.NewIndex, and TryGetElement(args.NewIndex)
+        //           the element and about every other realized child.
+        // Expected: in every ElementIndexChanged, GetElementIndex(args.Element) is args.NewIndex, every realized child other than
+        //           an uncleared removed/replaced element reports the index of the item it shows in the new data (no two share an
+        //           index), and TryGetElement(args.NewIndex)
         //           is args.Element or a removed/replaced element that is not cleared yet (StackLayout creates its elements with
         //           SuppressAutoRecycle and clears removed and replaced elements itself, after the repeater raised
         //           ElementIndexChanged); one ElementIndexChanged per shifted element; with the NonVirtualizingLayout
@@ -3269,6 +3271,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     if (elementAtNewIndex != args.Element && !isUnclearedAffectedElement)
                     {
                         mismatches.Add($"TryGetElement({args.NewIndex}) is '{GetElementContent(elementAtNewIndex)}', not '{GetElementContent(args.Element)}'");
+                    }
+
+                    // The whole mapping, not only args.Element: TryGetElement returns the first realized child with the index, which
+                    // is args.Element even when the elements that are still to be shifted keep their old index. Every other realized
+                    // child must already report the index of the item it shows (in the new data), and no two of them share an index.
+                    var seenIndices = new HashSet<int>();
+                    for (int c = 0; c < VisualTreeHelper.GetChildrenCount(sender); c++)
+                    {
+                        var child = (UIElement)VisualTreeHelper.GetChild(sender, c);
+                        int childIndex = sender.GetElementIndex(child);
+                        if (childIndex < 0 || (affectedElements.Contains(child) && !(isRemove && nonVirtualizing)))
+                        {
+                            continue;
+                        }
+
+                        string shown = GetElementContent(child);
+                        if (childIndex >= dataSource.Inner.Count || dataSource.Inner[childIndex].ToString() != shown)
+                        {
+                            mismatches.Add($"In ElementIndexChanged {args.OldIndex} -> {args.NewIndex}: '{shown}' reports index {childIndex}, which shows '{(childIndex < dataSource.Inner.Count ? dataSource.Inner[childIndex].ToString() : "out of range")}'");
+                        }
+                        if (!seenIndices.Add(childIndex))
+                        {
+                            mismatches.Add($"In ElementIndexChanged {args.OldIndex} -> {args.NewIndex}: more than one realized child reports index {childIndex}");
+                        }
                     }
                 };
 
