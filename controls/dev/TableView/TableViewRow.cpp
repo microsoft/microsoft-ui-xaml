@@ -1086,7 +1086,11 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
         .try_as<winrt::TableViewRowAutomationPeer>();
     auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
-    if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
+    // Without a row peer, cell peers still tracking the previous item mean this row changed items.
+    auto const rowItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(DataContext());
+    if (peerImpl
+        ? !peerImpl->CanReuseForRowItem(*this, owner)
+        : (rowItem && HasCellAutomationPeers(rowItem)))
     {
         // Cell providers are bound to their element, so replace the cells only if a cell peer exists;
         // otherwise keep them and let them restamp from the inherited DataContext.
@@ -1098,16 +1102,25 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
                 ResetCellAutomationNames();
                 host.Children().Clear();
             }
-            peerImpl->DropCellPeerCache();
+            if (peerImpl)
+            {
+                peerImpl->DropCellPeerCache();
+            }
             chromeRefreshed = RebuildCells(false /* updateExistingCellPeerItems */);
         }
         else
         {
-            peerImpl->DropCellPeerCache();
+            if (peerImpl)
+            {
+                peerImpl->DropCellPeerCache();
+            }
             chromeRefreshed = skipRebuild ? false : RebuildCells();
         }
-        peerImpl->TrackCurrentRowItem(*this, owner);
-        SyncItemAutomationPeer(rowPeer, true);
+        if (peerImpl)
+        {
+            peerImpl->TrackCurrentRowItem(*this, owner);
+            SyncItemAutomationPeer(rowPeer, true);
+        }
         return chromeRefreshed;
     }
 
@@ -1165,7 +1178,9 @@ void TableViewRow::OnDataContextChanged(
         return;
     }
     m_cellsInvalidated = false;
-    const bool rebuilt = RebuildCells();
+    // A pooled row taking a new item must not retarget held cell peers to it; the following prepare
+    // replaces those cells when the row's peer cannot be reused for the new item.
+    const bool rebuilt = RebuildCells(!m_inRecyclePool /* updateExistingCellPeerItems */);
     m_cellsRebuiltForDataContext = rebuilt && !m_cellsInvalidated && dataItem && DataContext() == dataItem;
 }
 
@@ -1933,7 +1948,7 @@ void TableViewRow::UpdateCellPeerItems(winrt::IInspectable const& dataItem)
     }
 }
 
-bool TableViewRow::HasCellAutomationPeers() const
+bool TableViewRow::HasCellAutomationPeers(winrt::IInspectable const& otherThanItem) const
 {
     if (auto const host = m_cellsHost.get())
     {
@@ -1941,9 +1956,17 @@ bool TableViewRow::HasCellAutomationPeers() const
         {
             try
             {
-                if (TableViewCell::TryGetExistingPeer(cell))
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell))
                 {
-                    return true;
+                    if (!otherThanItem)
+                    {
+                        return true;
+                    }
+                    if (auto const cellPeer = peer.try_as<winrt::TableViewCellAutomationPeer>();
+                        cellPeer && winrt::get_self<TableViewCellAutomationPeer>(cellPeer)->IsTrackingOtherItem(otherThanItem))
+                    {
+                        return true;
+                    }
                 }
             }
             catch (...)

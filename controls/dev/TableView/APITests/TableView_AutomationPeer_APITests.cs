@@ -1235,6 +1235,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a held cell element reports ElementNotAvailable once its row's item is replaced, with or without a row peer, instead of describing the replacement (#12444).")]
+        public void VerifyHeldCellPeerIsGoneAfterReplace()
+        {
+            TableView tableView = null;
+            AutomationPeer viaRowPeer = null;
+            AutomationPeer withoutRowPeer = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(50));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                viaRowPeer = GetCellPeer((TableViewRow)repeater.TryGetElement(2), 0);
+                // Row 3 never gets a peer: its cell's peer comes straight from the cell element.
+                withoutRowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(GetRowCell((TableViewRow)repeater.TryGetElement(3), 0));
+                Verify.IsTrue(viaRowPeer.GetName().Contains("Person 2"), $"Precondition: the held cell describes Person 2, saw '{viaRowPeer.GetName()}'.");
+                Verify.IsTrue(withoutRowPeer.GetName().Contains("Person 3"), $"Precondition: the held cell describes Person 3, saw '{withoutRowPeer.GetName()}'.");
+                items[2] = new NamedPerson { Name = "Replacement 2", Role = "Role" };
+                items[3] = new NamedPerson { Name = "Replacement 3", Role = "Role" };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyElementNotAvailable(() => viaRowPeer.GetName(), "Name of the cell held through its row peer");
+                VerifyElementNotAvailable(() => withoutRowPeer.GetName(), "Name of the cell held without a row peer");
+
+                var repeater = GetRowsRepeater(tableView);
+                foreach (var index in new[] { 2, 3 })
+                {
+                    var live = FrameworkElementAutomationPeer.CreatePeerForElement(GetRowCell((TableViewRow)repeater.TryGetElement(index), 0));
+                    Verify.IsTrue(live.GetName().Contains($"Replacement {index}"), $"The live cell at row {index} must describe its replacement, saw '{live.GetName()}'.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a held group header element cannot act on the group its recycled header shows next, and the group's current element works (#12443).")]
         public void VerifyHeldGroupHeaderElementCannotActOnAnotherGroup()
         {

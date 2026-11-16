@@ -164,7 +164,8 @@ public:
 private:
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
-    bool HasCellAutomationPeers() const;
+    // With otherThanItem, counts only cell peers that speak for a different item.
+    bool HasCellAutomationPeers(winrt::IInspectable const& otherThanItem = nullptr) const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
