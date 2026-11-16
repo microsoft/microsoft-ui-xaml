@@ -18,6 +18,7 @@
     "Microsoft.Component.NetFX.Native",
     "Microsoft.VisualStudio.Component.TextTemplating",
     "Microsoft.VisualStudio.Component.UWP.VC.ARM64",
+    "Microsoft.VisualStudio.ComponentGroup.UWP.VC.v143",
     "Microsoft.VisualStudio.Component.NuGet.BuildTools",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",

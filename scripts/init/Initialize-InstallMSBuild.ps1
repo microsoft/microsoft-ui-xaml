@@ -74,12 +74,13 @@ else {
 # Microsoft.VisualStudio.Component.VC.ATL.ARM64 is not installed by default, 
 # so use it as a rough signal that "vs_installer .vsconfig_buildtools ..." needs to be run.
 $hasAtl = Test-Path (Join-Path $vsInstallDir "VC\Tools\MSVC\*\atlmfc\lib\arm64")
+$hasV143Uwp = Test-Path (Join-Path $vsInstallDir "MSBuild\Microsoft\VC\v170\Application Type\Windows Store\10.0\Platforms\x64\PlatformToolsets\v143\Toolset.props")
 $needsDownload = -not $msbuildUpToDate 
 
 if (-not $msbuildUpToDate) {
     Write-Host "VS build tools need to be installed."
 }
-elseif (-not $hasAtl) {
+elseif (-not $hasAtl -or -not $hasV143Uwp) {
     Write-Host "VS build tools need to be updated."
 }
 
@@ -90,7 +91,7 @@ if ($needsDownload) {
 if (-not $msbuildUpToDate) {
     Install-MSBuild $vsInstallDir $vsInstaller $logsDir $useVsBuildTools
 }
-elseif (-not $hasAtl) {
+elseif (-not $hasAtl -or -not $hasV143Uwp) {
     Modify-MSBuild $vsInstallDir $vsInstaller $logsDir $useVsBuildTools
 }
 
