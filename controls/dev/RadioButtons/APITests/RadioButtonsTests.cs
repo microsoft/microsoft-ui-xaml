@@ -1235,6 +1235,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: RadioButtons bound to an ObservableCollection with a custom item factory that can hand a recycled container
+        //           back, the first or middle item selected, a SelectionChanged handler that sets a new Layout on the inner
+        //           ItemsRepeater the first time the selection is removed, and an app ElementClearing handler on the inner
+        //           repeater (registered after the RadioButtons handler). The selected container X is removed: the RadioButtons
+        //           ElementClearing handler clears the selection, so SelectionChanged sets a Layout (a nested clear of X, which
+        //           calls the app handler for X). The app handler sets a Layout again (a second, deeper nested clear that
+        //           recycles X) and then realizes X again with GetOrCreateElement(0).
+        // Expected: when the handlers return, neither the first nested clear nor the clear that raised the event continues on
+        //           X's new lifetime: X stays realized at index 0 with the DataContext of its new item, is a child of the
+        //           repeater, is recycled once, and stays realized after layout.
+        // A failure means: a clear that was itself the outer clear of a deeper nested clear recycled X again although the app
+        //           handler realized it again (X loses its index and DataContext, and is recycled twice).
+        [TestMethod]
+        [TestProperty("Description", "Verifies a container realized again after two nested Layout changes from the RadioButtons and app ElementClearing handlers is not recycled by an outer clear.")]
+        public void VerifyContainerRealizedAgainAfterTwoNestedClearsFromElementClearingIsNotRecycledAgain()
+        {
+            foreach (int selectedIndex in new[] { 0, 1 })
+            {
+                    RadioButtons radioButtons = null;
+                    ReusingRadioButtonFactory factory = null;
+                    var oldItems = new List<string>() { "a", "b", "c" };
+                    global::System.Collections.ObjectModel.ObservableCollection<string> data = null;
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment("Selected (and removed) index: " + selectedIndex);
+                        factory = new ReusingRadioButtonFactory();
+                        data = new global::System.Collections.ObjectModel.ObservableCollection<string>(oldItems);
+                        radioButtons = new RadioButtons() { ItemsSource = data, ItemTemplate = factory };
+                        Content = radioButtons;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                        Verify.IsNotNull(repeater);
+                        var removedContainer = radioButtons.ContainerFromIndex(selectedIndex);
+                        Verify.IsNotNull(removedContainer);
+                        radioButtons.SelectedIndex = selectedIndex;
+
+                        bool firstLayoutChangeDone = false;
+                        radioButtons.SelectionChanged += (sender, args) =>
+                        {
+                            if (!firstLayoutChangeDone && args.RemovedItems.Count > 0)
+                            {
+                                firstLayoutChangeDone = true;
+                                Log.Comment("Setting a Layout from SelectionChanged");
+                                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+                            }
+                        };
+
+                        int appCallsForRemovedContainer = 0;
+                        bool secondLayoutChangeDone = false;
+                        UIElement realizedAgain = null;
+                        int indexInHandler = int.MinValue;
+                        repeater.ElementClearing += (sender, args) =>
+                        {
+                            if (args.Element != removedContainer)
+                            {
+                                return;
+                            }
+                            appCallsForRemovedContainer++;
+                            if (firstLayoutChangeDone && !secondLayoutChangeDone)
+                            {
+                                secondLayoutChangeDone = true;
+                                Log.Comment("Setting a Layout again from the app ElementClearing handler");
+                                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+                                Log.Comment("Realizing item 0 again from the app ElementClearing handler");
+                                factory.ReuseElement = removedContainer;
+                                try
+                                {
+                                    realizedAgain = repeater.GetOrCreateElement(0);
+                                }
+                                finally
+                                {
+                                    factory.ReuseElement = null;
+                                }
+                                indexInHandler = repeater.GetElementIndex(removedContainer);
+                            }
+                        };
+
+                        Log.Comment("Removing the selected item");
+                        data.RemoveAt(selectedIndex);
+
+                        var dataContext = ((FrameworkElement)removedContainer).DataContext;
+                        Log.Comment(string.Format("After the clear: index in handler {0}, GetElementIndex {1}, parent is repeater {2}, DataContext '{3}', app ElementClearing {4}, RecycleElement {5}",
+                            indexInHandler, repeater.GetElementIndex(removedContainer), VisualTreeHelper.GetParent(removedContainer) == repeater,
+                            dataContext ?? "<null>", appCallsForRemovedContainer, factory.Recycled.Count(e => e == removedContainer)));
+                        Verify.IsTrue(firstLayoutChangeDone, "SelectionChanged set a Layout.");
+                        Verify.IsTrue(secondLayoutChangeDone, "The app ElementClearing handler set a Layout again.");
+                        Verify.AreSame(removedContainer, realizedAgain, "GetOrCreateElement(0) realized the removed container again.");
+                        Verify.AreEqual(0, indexInHandler, "The container is realized at index 0 in the handler.");
+                        Verify.AreEqual(1, appCallsForRemovedContainer, "The app handler gets ElementClearing once for the container.");
+                        Verify.AreEqual(1, factory.Recycled.Count(e => e == removedContainer), "The container is recycled once.");
+                        Verify.AreEqual(0, repeater.GetElementIndex(removedContainer), "The container is still realized at index 0 after the clears return.");
+                        Verify.AreEqual(data[0], dataContext, "The container keeps the DataContext of its new item.");
+                        Verify.AreEqual(repeater, VisualTreeHelper.GetParent(removedContainer), "The container is a child of the repeater.");
+
+                        Content.UpdateLayout();
+                        Log.Comment(string.Format("After layout: GetElementIndex {0}, RecycleElement {1}, item 0 is the container {2}",
+                            repeater.GetElementIndex(removedContainer), factory.Recycled.Count(e => e == removedContainer),
+                            ReferenceEquals(repeater.TryGetElement(0), removedContainer)));
+                        Verify.AreSame(removedContainer, repeater.TryGetElement(0), "Layout keeps the container realized again at index 0.");
+                        Verify.AreEqual(1, factory.Recycled.Count(e => e == removedContainer), "Layout does not recycle the container.");
+                        Verify.AreEqual(data[0], ((FrameworkElement)removedContainer).DataContext);
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Content = null;
+                    });
+                    IdleSynchronizer.Wait();
+            }
+        }
+
         private static void VerifyDependencyPropertyIdentifiers(params DependencyProperty[] properties)
         {
             for (int i = 0; i < properties.Length; i++)
@@ -1279,6 +1396,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return NotARadioButton;
                 }
                 return value % 2 == 0 ? Even : Odd;
+            }
+        }
+
+        // Creates RadioButtons and records the recycled ones. While ReuseElement is set and has been recycled since it was
+        // last handed out, GetElement hands it back instead of creating a new RadioButton.
+        private partial class ReusingRadioButtonFactory : ElementFactory
+        {
+            private readonly List<UIElement> m_available = new List<UIElement>();
+
+            public UIElement ReuseElement { get; set; }
+            public List<UIElement> Recycled { get; } = new List<UIElement>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                if (ReuseElement != null && m_available.Remove(ReuseElement))
+                {
+                    ((RadioButton)ReuseElement).Content = "Custom " + args.Data;
+                    return ReuseElement;
+                }
+                return new RadioButton() { Content = "Custom " + args.Data };
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                Recycled.Add(args.Element);
+                m_available.Add(args.Element);
             }
         }
 

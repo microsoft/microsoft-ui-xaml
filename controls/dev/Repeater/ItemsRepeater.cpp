@@ -461,8 +461,11 @@ bool ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
             removeRaise(raise);
             // This clear clears the element now. Tell the outer clear, which must not continue on the element: the handler
             // may realize the element again (here or in another repeater sharing the element pool) before it returns.
+            // A handler called above may itself have re-entered and cleared the element in a deeper nested clear; then
+            // this clear must not continue on the element either.
+            auto const clearedByDeeperNestedClear = raise->clearedByNestedClear;
             raise->clearedByNestedClear = true;
-            return false;
+            return clearedByDeeperNestedClear;
         }
 
         ElementClearingRaise raise{ element, nullptr, m_elementClearingEventSource.handlers() };
