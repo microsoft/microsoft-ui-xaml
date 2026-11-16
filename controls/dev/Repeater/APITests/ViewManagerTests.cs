@@ -1259,7 +1259,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return (Control)FocusManager.FindFirstFocusableElement(element);
         }
 
-        private void ScrollTo(ScrollViewer scrollViewer, double verticalOffset)
+        private void ScrollTo(ScrollViewer scrollViewer, double verticalOffset, bool verifyOffset = true)
         {
             var viewChanged = new ManualResetEvent(false);
             RunOnUIThread.Execute(() =>
@@ -1284,7 +1284,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
             Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), $"Waiting for ViewChanged to offset {verticalOffset}.");
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => Verify.AreEqual(verticalOffset, scrollViewer.VerticalOffset));
+            if (verifyOffset)
+            {
+                RunOnUIThread.Execute(() => Verify.AreEqual(verticalOffset, scrollViewer.VerticalOffset));
+            }
         }
 
         // Scenario: raise Replace notifications with an empty old-items or new-items list from a custom data source.
@@ -1483,6 +1486,85 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreSame(firstInView, repeater.TryGetElement(9), "The element that was first in view is realized at its post-move index.");
                 Verify.AreEqual("Item #10", GetElementContent(firstInView));
                 Verify.IsLessThan(Math.Abs(firstInView.ActualOffset.Y - scrollViewer.VerticalOffset), 1.0, "Scroll anchoring keeps the same element first in view (no viewport jump).");
+            });
+        }
+
+        // Scenario: a virtualizing repeater (200 items of 30px in a 200px ScrollViewer; StackLayout, and UniformGridLayout with
+        //           2 columns) scrolled to 1200px. A collection change that touches no realized item (Move(150, 160),
+        //           Remove(150), Replace(150, 2 -> 1); no change as the control), then a scroll up by 3 rows, so the layout
+        //           keeps some elements and realizes new ones before them, then an Insert at the first index that was realized
+        //           before that scroll (still realized after it).
+        // Expected: right after the Insert and after layout, every realized element reports the index of the item it shows (the
+        //           kept elements at and after the Insert index are shifted by one), and no two children report the same index.
+        // A failure means: the Insert trusted a realized range rebuilt only from the elements realized after the earlier change
+        //                  and did not shift the other realized elements, so TryGetElement returns the previous item's element.
+        //                  (The UniformGridLayout half is a guard: the element 0 it creates to measure the item size kept that
+        //                  range wide before the fix too.)
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an Insert after a Move/Remove/Replace and a scroll shifts every realized element, not only the ones realized after the scroll.")]
+        public void VerifyInsertShiftsRealizedElementsAfterCollectionChangeAndScroll()
+        {
+            foreach (bool useGrid in new[] { false, true })
+            {
+                VerifyInsertShiftsRealizedElementsAfterChangeAndScroll("no change (control)", useGrid, s => { });
+                VerifyInsertShiftsRealizedElementsAfterChangeAndScroll("Move(150, 160)", useGrid, s => s.Move(oldIndex: 150, newIndex: 160, count: 1, reset: false));
+                VerifyInsertShiftsRealizedElementsAfterChangeAndScroll("Remove(150)", useGrid, s => s.Remove(index: 150, count: 1, reset: false));
+                VerifyInsertShiftsRealizedElementsAfterChangeAndScroll("Replace(150, 2 -> 1)", useGrid, s => s.Replace(index: 150, oldCount: 2, newCount: 1, reset: false));
+            }
+        }
+
+        private void VerifyInsertShiftsRealizedElementsAfterChangeAndScroll(string operation, bool useGrid, Action<CustomItemsSource> change)
+        {
+            string context = $"{(useGrid ? "UniformGridLayout" : "StackLayout")}, {operation}";
+            Log.Comment(context);
+            CustomItemsSource dataSource = null;
+            VirtualizingLayout layout = null;
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource = new CustomItemsSource(Enumerable.Range(0, 200).ToList());
+                layout = useGrid ? (VirtualizingLayout)new UniformGridLayout() { MinItemWidth = 100, MinItemHeight = 30 } : new StackLayout();
+            });
+            ScrollViewer scrollViewer = null;
+            var repeater = SetupRepeater(dataSource, layout, MoveItemTemplate, out scrollViewer);
+            Func<List<string>> currentData = () => dataSource.Inner.Select(i => i.ToString()).ToList();
+            Func<List<int>> realizedIndices = () => Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                .Select(c => repeater.GetElementIndex((UIElement)VisualTreeHelper.GetChild(repeater, c)))
+                .Where(i => i >= 0)
+                .OrderBy(i => i)
+                .ToList();
+
+            ScrollTo(scrollViewer, 1200);
+
+            int insertIndex = -1;
+            RunOnUIThread.Execute(() =>
+            {
+                var realized = realizedIndices();
+                Log.Comment($"{context}: realized before the change [{string.Join(", ", realized)}]");
+                Verify.IsLessThan(realized.Last(), 150, $"{context}: the change does not touch a realized item.");
+                insertIndex = realized.First();
+
+                change(dataSource);
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: right after the change");
+            });
+
+            // With the UniformGridLayout the offset can end one row lower after the change (also without this fix); the
+            // checks below only need some kept elements and some new elements before them.
+            ScrollTo(scrollViewer, 1110, verifyOffset: !useGrid);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var realized = realizedIndices();
+                Log.Comment($"{context}: realized after scrolling up to {scrollViewer.VerticalOffset} [{string.Join(", ", realized)}]");
+                Verify.IsLessThan(realized.First(), insertIndex, $"{context}: the scroll realized elements before index {insertIndex}.");
+                Verify.IsNotNull(repeater.TryGetElement(insertIndex), $"{context}: the element at index {insertIndex} is still realized.");
+
+                Log.Comment($"{context}: Insert({insertIndex})");
+                dataSource.Insert(index: insertIndex, count: 1, reset: false, valueStart: 5000);
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: right after Insert({insertIndex})");
+                Verify.AreEqual(dataSource.Inner[insertIndex + 1].ToString(), GetElementContent(repeater.TryGetElement(insertIndex + 1)), $"{context}: the element of the item after the inserted one is at its shifted index.");
+
+                repeater.UpdateLayout();
+                VerifyRealizedElementsMatchData(repeater, currentData(), expectAllRealized: false, context: $"{context}: after Insert({insertIndex}) and layout");
             });
         }
 

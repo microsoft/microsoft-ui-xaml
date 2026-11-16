@@ -789,8 +789,7 @@ winrt::UIElement ViewManager::GetElementFromUniqueIdResetPool(int index)
             UpdateElementIndex(element, virtInfo, index);
 
             // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            ExtendRealizedIndicesHeldByLayout(index);
         }
     }
 
@@ -828,8 +827,7 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
             elementInfo.VirtualizationInfo()->MoveOwnershipToLayoutFromPinnedPool();
 
             // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            ExtendRealizedIndicesHeldByLayout(index);
             break;
         }
     }
@@ -997,8 +995,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     }
 
     // Update realized indices
-    m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-    m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    ExtendRealizedIndicesHeldByLayout(index);
 
 #ifdef DBG
     if (VirtualizationInfo::GetLogItemIndex() == index)
@@ -1159,6 +1156,18 @@ void ViewManager::InvalidateRealizedIndicesHeldByLayout()
 {
     m_firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
     m_lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
+}
+
+void ViewManager::ExtendRealizedIndicesHeldByLayout(int index)
+{
+    // Only a valid range is extended. An invalid range is computed again from all the children when it is next needed
+    // (GetElementIfAlreadyHeldByLayout). Starting it from this index would leave out the other realized elements, and
+    // a later Add (EnsureFirstLastRealizedIndices) would then not shift them.
+    if (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault)
+    {
+        m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
+        m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    }
 }
 
 ViewManager::PinnedElementInfo::PinnedElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element) :
