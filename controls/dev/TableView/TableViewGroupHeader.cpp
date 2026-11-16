@@ -115,6 +115,13 @@ namespace
             return static_cast<T>(forward(HeaderPeer()));
         }
 
+        // TableViewBindingAutomationPeerT's hook: the header while it still routes UIA to this binding.
+        winrt::UIElement TryBoundContainer()
+        {
+            auto const header = m_header.get();
+            return header && IsEventsSourceOf(winrt::FrameworkElementAutomationPeer::FromElement(header)) ? header : nullptr;
+        }
+
     private:
         // The header's own peer while it still routes UIA to this binding.
         winrt::AutomationPeer HeaderPeer()

@@ -105,12 +105,34 @@ inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
 template <typename D, typename... I>
 using TableViewComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
 
+// Real IID for TableViewBindingAutomationPeerT, so code given an arbitrary peer (a FindItemByProperty
+// startAfter) can type-test it, as IGroupedEntryTag does for GroupedEntry, and reach its container.
+struct __declspec(uuid("6B1E52C4-3D7A-4F0B-9E21-8C5A0D47F3B6")) __declspec(novtable)
+    ITableViewBindingAutomationPeerAccess : ::IUnknown
+{
+    // The container (row, group header) still routing UIA to this binding; null once it is stale.
+    virtual HRESULT __stdcall GetBoundContainer(_Outptr_result_maybenull_ ::IInspectable** container) noexcept = 0;
+};
+
+// The container a binding peer currently speaks for, or null for any other peer or a stale binding.
+inline winrt::UIElement TryGetBoundContainer(winrt::AutomationPeer const& peer)
+{
+    winrt::com_ptr<::IInspectable> container;
+    if (auto const access = peer ? peer.try_as<ITableViewBindingAutomationPeerAccess>() : nullptr)
+    {
+        access->GetBoundContainer(container.put());
+    }
+    return container ? container.as<winrt::UIElement>() : nullptr;
+}
+
 // Base of the UIA element for one binding of a container (row, group header) to its data: the
 // container peer's EventsSource. UIA reads these from this element, not the container's peer, so
 // forward them and the container's AutomationProperties and set position still reach clients.
-// D supplies ForwardToContainerPeer(forward, fallback): forward applied to the container's peer.
+// D supplies ForwardToContainerPeer(forward, fallback): forward applied to the container's peer;
+// and a non-throwing TryBoundContainer(): the container while this binding is current, else null.
 template <typename D, typename... I>
-struct TableViewBindingAutomationPeerT : ReferenceTracker<D, TableViewComposableAutomationPeerT, I...>
+struct TableViewBindingAutomationPeerT :
+    ReferenceTracker<D, TableViewComposableAutomationPeerT, I..., ITableViewBindingAutomationPeerAccess>
 {
     using AutomationPeerAnnotation = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation;
     using AutomationOrientation = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationOrientation;
@@ -149,6 +171,23 @@ struct TableViewBindingAutomationPeerT : ReferenceTracker<D, TableViewComposable
     bool IsPeripheralCore() { return Forward([](auto const& p) { return p.IsPeripheral(); }, false); }
     bool IsDataValidForFormCore() { return Forward([](auto const& p) { return p.IsDataValidForForm(); }, true); }
     bool IsDialogCore() { return Forward([](auto const& p) { return p.IsDialog(); }, false); }
+
+    HRESULT __stdcall GetBoundContainer(::IInspectable** container) noexcept override
+    {
+        *container = nullptr;
+        try
+        {
+            if (auto const element = static_cast<D*>(this)->TryBoundContainer())
+            {
+                winrt::copy_to_abi(element, *reinterpret_cast<void**>(container));
+            }
+            return S_OK;
+        }
+        catch (...)
+        {
+            return winrt::to_hresult();
+        }
+    }
 
 protected:
     // The binding is current while the container's own peer still routes UIA to it. Compared by COM

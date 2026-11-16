@@ -368,17 +368,9 @@ void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, 
     }
     else if (newBinding || !rowPeer.EventsSource())
     {
-        auto const previous = m_itemAutomationPeer.get();
         auto const binding = TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this);
         m_itemAutomationPeer = winrt::make_weak(binding);
         rowPeer.EventsSource(binding);
-
-        // A client tracking focus holds the previous binding's element, which no longer describes this row.
-        if (previous && FocusState() != winrt::FocusState::Unfocused &&
-            winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::AutomationFocusChanged))
-        {
-            rowPeer.RaiseAutomationEvent(winrt::AutomationEvents::AutomationFocusChanged);
-        }
     }
     else
     {

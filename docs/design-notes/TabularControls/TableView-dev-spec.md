@@ -280,7 +280,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Peer | Control type | Patterns |
 |---|---|---|
 | Table | `DataGrid` | `Grid`, `Table`, `ItemContainer`; `Selection` unless `SelectionMode` is `None`; `Scroll` from the body scroller. Bounds exclude cache rows. |
-| Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `VirtualizedItem` while virtualized. |
+| Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `ScrollItem`; `VirtualizedItem` while virtualized. |
 | Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `Value` only when editable with a text editor; `VirtualizedItem`. |
 | Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with `CanResize` false while pinned. |
 | Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`. |
@@ -292,6 +292,9 @@ The column-header peer implements `ITransformProvider`, though the IDL lists onl
 - **Header names** come from a string `Header` or the realized content, never the gridline, glyph or gripper.
 - **Unknown values.** `PositionInSet`, `SizeOfSet` and `Level` report `0` when unknown, and app-set `AutomationProperties` win. The group-header peer computes no `Level`.
 - **Stale items.** A `GridItem` whose row, item or column is gone throws `UIA_E_ELEMENTNOTAVAILABLE` rather than reporting a wrong coordinate.
+- **Row element per binding.** UIA sees a realized row through `TableViewRowItemAutomationPeer`, not `TableViewRowAutomationPeer`. `TableViewRow::SyncItemAutomationPeer` creates one each time the row is bound to an item (`OnCreateAutomationPeer`, owner change, recycle to another item) and installs it as the row peer's `EventsSource`; it clears it when the row goes to the recycle pool and never replaces a source the app installed. The binding holds only weak references. Every member first checks that the row's peer still has this binding as its `EventsSource` and the row is still in the repeater (`BoundRow()`), and throws `UIA_E_ELEMENTNOTAVAILABLE` otherwise, so a held element and its pattern objects go stale instead of retargeting to the row's next item. The shared members forward to the row's peer through `TableViewBindingAutomationPeerT` (`TableViewAutomationHelpers.h`); `SelectionItem`, `ExpandCollapse` and `ScrollItem` are served by the binding itself.
+- **Selected-item peer.** When the selected row is not realized, `GetSelection` returns the same class in its unbound mode: it tracks the item (or, for a boxed value, the row index) and degrades instead of throwing while its row is unrealized. It offers `VirtualizedItem` until the row is realized.
+- **Resolving a binding.** `ITableViewBindingAutomationPeerAccess` is a private COM tag on the binding base. `TryGetBoundContainer` uses it to type-test an arbitrary peer and read the row or group header it currently speaks for, so `FindItemByProperty` resolves a `startAfter` binding without scanning the repeater or creating peers.
 
 Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree; a missing resource falls back safely.
 
