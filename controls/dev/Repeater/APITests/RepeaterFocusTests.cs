@@ -2439,6 +2439,159 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2));
         }
 
+        // Scenario: auto-recycling custom layout with fixed-size items and an item transition provider that animates only the
+        //           removal of the focused item 2; a Reset hands the focused element to the transition and the items after it
+        //           to the element factory. The ElementClearing handler of the first item cleared after the focused one calls
+        //           UpdateLayout() (with another element dirty, so LayoutUpdated is raised).
+        // Expected: no exception; no focus move while the change is processed; after layout focus is on the live item at
+        //           index 2 and not on the fading element; completing the transition does not move focus again.
+        // A failure means: handing the focused element to the transition invalidated the repeater's measure inside the change,
+        //                  so the UpdateLayout call ran the repeater's layout inside the change, which throws; or the pending
+        //                  focus move ran inside the change.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an UpdateLayout call from an ElementClearing handler after the focused element was handed to a remove transition during a Reset does not throw or move focus inside the change.")]
+        public void VerifyUpdateLayoutAfterAnimatedFocusedElementClearedDuringResetDoesNotMoveFocusInsideChange()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            var fixture = CreateAnimatedFocusedRemoveFixture(data, out var state);
+
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.ElementClearing += (s, e) =>
+                {
+                    if (state.FocusedAnimated && !state.Updated && e.Element != state.FocusedElement)
+                    {
+                        state.Updated = true;
+                        Log.Comment("UpdateLayout from the ElementClearing of index " + fixture.Repeater.GetElementIndex(e.Element));
+                        fixture.After.Width = 120;
+                        fixture.Root.UpdateLayout();
+                    }
+                };
+            });
+
+            int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () =>
+            {
+                data.Clear();
+                for (int i = 0; i < 5; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            VerifyAnimatedFocusedRemoveOutcome(fixture, state, gettingFocusDuringChange, i => data[i]);
+        }
+
+        // Scenario: as above, but the focused item 2 is removed (Remove) and an ElementIndexChanged handler of the first item
+        //           whose index the Remove shifts calls UpdateLayout().
+        // Expected: no exception; no focus move while the change is processed; after layout focus is on the live item at
+        //           index 2 (the former item 3) and not on the fading element.
+        // A failure means: handing the focused element to the transition invalidated the repeater's measure inside the change,
+        //                  so the UpdateLayout call ran the repeater's layout inside the change, which throws.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that an UpdateLayout call from an ElementIndexChanged handler after the focused element was handed to a remove transition during a Remove does not throw or move focus inside the change.")]
+        public void VerifyUpdateLayoutFromElementIndexChangedAfterAnimatedFocusedElementRemovedDoesNotMoveFocusInsideChange()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "Item #" + i));
+            var fixture = CreateAnimatedFocusedRemoveFixture(data, out var state);
+
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.ElementIndexChanged += (s, e) =>
+                {
+                    if (state.FocusedAnimated && !state.Updated)
+                    {
+                        state.Updated = true;
+                        Log.Comment($"UpdateLayout from the ElementIndexChanged {e.OldIndex} -> {e.NewIndex}");
+                        fixture.After.Width = 120;
+                        fixture.Root.UpdateLayout();
+                    }
+                };
+            });
+
+            int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () => data.RemoveAt(2));
+            VerifyAnimatedFocusedRemoveOutcome(fixture, state, gettingFocusDuringChange, i => data[i]);
+        }
+
+        private class AnimatedFocusedRemoveState
+        {
+            public UIElement FocusedElement;
+            public bool FocusedAnimated;
+            public bool Updated;
+            public List<ItemCollectionTransitionProgress> PendingRemoves = new List<ItemCollectionTransitionProgress>();
+        }
+
+        // Fixed-size items in an auto-recycling layout, with focus on item 2 and a transition provider that animates only the
+        // removal of the element focused now.
+        private FocusFixture CreateAnimatedFocusedRemoveFixture(ObservableCollection<string> data, out AnimatedFocusedRemoveState state)
+        {
+            var localState = new AnimatedFocusedRemoveState();
+            VirtualizingLayout layout = null;
+            RunOnUIThread.Execute(() => layout = CreateAutoRecyclingLayout(() => 0, int.MaxValue));
+            var fixture = CreateFocusFixture(data, layout, itemTemplate: "<Button Content='{Binding}' Width='150' Height='30'/>");
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.ItemTransitionProvider = new ItemCollectionTransitionProviderDerived
+                {
+                    // Start() is the only way to read the transition's element. A started transition is not completed
+                    // automatically, so the focused element's removal stays pending until the test completes it, whether
+                    // or not system animations are enabled. A transition for which this returns false is not queued.
+                    ShouldAnimateFunc = transition =>
+                    {
+                        if (transition.Operation == ItemCollectionTransitionOperation.Remove && localState.FocusedElement != null)
+                        {
+                            var progress = transition.Start();
+                            if (progress.Element == localState.FocusedElement)
+                            {
+                                if (!localState.FocusedAnimated)
+                                {
+                                    localState.FocusedAnimated = true;
+                                    localState.PendingRemoves.Add(progress);
+                                }
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    StartTransitionsFunc = transitions =>
+                    {
+                        foreach (var transition in transitions)
+                        {
+                            if (transition.Operation != ItemCollectionTransitionOperation.Remove)
+                            {
+                                transition.Start().Complete();
+                            }
+                        }
+                    }
+                };
+            });
+            IdleSynchronizer.Wait();
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+            RunOnUIThread.Execute(() => localState.FocusedElement = fixture.Repeater.TryGetElement(2));
+            state = localState;
+            return fixture;
+        }
+
+        private static void VerifyAnimatedFocusedRemoveOutcome(FocusFixture fixture, AnimatedFocusedRemoveState state, int gettingFocusDuringChange, Func<int, string> contentAt)
+        {
+            Verify.IsTrue(state.FocusedAnimated, "Precondition: the focused element was handed to a remove transition.");
+            Verify.IsTrue(state.Updated, "Precondition: UpdateLayout was called after the focused element was handed to the transition.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"Remove transitions in progress: {state.PendingRemoves.Count}");
+                Verify.AreNotSame(state.FocusedElement, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus is not on the fading element.");
+                VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: 2);
+                foreach (var progress in state.PendingRemoves)
+                {
+                    progress.Complete();
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, contentAt, expectedIndex: 2));
+        }
+
         // Scenario: the focused item 3 is removed and an item is appended, and the repeater leaves the tree in the same tick.
         //           When it is added back, the layout reuses the cleared element for the item that it realizes at index 6,
         //           and the app focuses that element from ElementPrepared.

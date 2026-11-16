@@ -1302,8 +1302,10 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
         const bool containsNestedFocus = ContainsNestedFocus(element, virtInfo);
         if (isFocusedElement)
         {
-            // Remove the focus pin while the element is still realized (see ClearElementToElementFactory).
-            UpdatePin(element, false /* addPin */);
+            // Remove the focus pins of the ancestor repeaters' elements only. MoveOwnershipToAnimator resets the element's
+            // own pin; removing it here would invalidate the owner's measure during the collection change (see
+            // ClearElementToElementFactory).
+            UpdatePin(static_cast<winrt::UIElement>(*m_owner), false /* addPin */);
         }
 
         virtInfo->MoveOwnershipToAnimator();
