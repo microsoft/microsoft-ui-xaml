@@ -577,6 +577,10 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 m_owner->ClearElementImpl(element);
             }
         }
+
+        // A handler of ElementClearing can compute the realized range again (for example GetOrCreateElement for an index that
+        // is not realized) while a removed element still counts, and clearing it then shrinks that range. Compute it again later.
+        InvalidateRealizedIndicesHeldByLayout();
         break;
     }
 

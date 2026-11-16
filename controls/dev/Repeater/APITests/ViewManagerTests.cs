@@ -1736,6 +1736,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: the items are UIElements (Buttons, no ItemTemplate) in a fully realized 4-item repeater, with the default
+        //           StackLayout and with a NonVirtualizingLayout; RemoveAt(0), then RemoveAt(1). Without an ItemTemplate, clearing
+        //           a removed element also removes it from Children (with the NonVirtualizingLayout the repeater clears it during
+        //           the Remove; StackLayout clears its own elements afterwards).
+        // Expected: right after each Remove and after layout, TryGetElement(i) is data[i] and GetElementIndex(data[i]) is i,
+        //           and the removed item is no longer a realized child.
+        // A failure means: the Remove skipped the child that followed the removed one in Children (Children changed while it
+        //                  was walked), so that child kept its old index and TryGetElement returns null or the wrong item.
+        [TestMethod]
+        [TestProperty("Description", "Verifies TryGetElement/GetElementIndex after a Remove when the items are UIElements.")]
+        public void VerifyUIElementItemsAfterRemove()
+        {
+            foreach (bool nonVirtualizing in new[] { false, true })
+            {
+                Log.Comment(nonVirtualizing ? "NonVirtualizingLayout" : "StackLayout");
+                ObservableCollection<UIElement> data = null;
+                ItemsRepeater repeater = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    data = new ObservableCollection<UIElement>(Enumerable.Range(0, 4).Select(i => new Button() { Content = "Item #" + i, Height = 30 }));
+                    repeater = new ItemsRepeater() { ItemsSource = data, VerticalAlignment = VerticalAlignment.Top };
+                    if (nonVirtualizing)
+                    {
+                        repeater.Layout = new NonVirtualStackLayout();
+                    }
+                    Content = repeater;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (int index in new[] { 0, 1 })
+                    {
+                        var removed = data[index];
+                        string operation = $"RemoveAt({index}) of '{GetElementContent(removed)}'";
+                        data.RemoveAt(index);
+                        VerifyUIElementItemsMatchData(repeater, data, removed, $"Right after {operation}");
+                        repeater.UpdateLayout();
+                        VerifyUIElementItemsMatchData(repeater, data, removed, $"After {operation} and layout");
+                    }
+                });
+            }
+        }
+
+        private static void VerifyUIElementItemsMatchData(ItemsRepeater repeater, IList<UIElement> data, UIElement removed, string context)
+        {
+            for (int i = 0; i < data.Count; i++)
+            {
+                    Log.Comment($"{context}: index {i}: data '{GetElementContent(data[i])}', TryGetElement '{GetElementContent(repeater.TryGetElement(i))}', GetElementIndex(data[i]) {repeater.GetElementIndex(data[i])}");
+            }
+            for (int i = 0; i < data.Count; i++)
+            {
+                    Verify.AreSame(data[i], repeater.TryGetElement(i), $"{context}: TryGetElement({i}) is the item at index {i}.");
+                    Verify.AreEqual(i, repeater.GetElementIndex(data[i]), $"{context}: GetElementIndex of the item at index {i}.");
+            }
+            Verify.AreEqual(-1, repeater.GetElementIndex(removed), $"{context}: the removed item is not a realized child.");
+        }
+
         // Scenario: a keyed data source (IKeyIndexMapping) raises a Reset (stable reset pending, elements in the unique id
         //           reset pool) and then a Move before the next layout pass.
         // Expected: after layout every realized element shows the item at its index.
@@ -1917,6 +1976,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After layout");
                 });
             }
+        }
+
+        // Scenario: a custom VirtualizingLayout realizes items 0..4 of 20 with GetOrCreateElementAt (no ForceCreate). During
+        //           RemoveAt(0), the ElementClearing handler of the removed element calls GetOrCreateElement(10), an index that
+        //           is not realized; then layout runs for the same window [0, 4].
+        // Expected: the element of 'Item #1' (now at index 0) is reused for index 0 (same instance as before the Remove), and
+        //           ElementPrepared fires for no index the layout had realized before the Remove (0..3 after the shift).
+        // A failure means: the realized-range cache of the ViewManager was computed by the handler call while the removed
+        //                  element still counted at index 0, the clear of that element then moved the start of the cached range
+        //                  past index 0, and the layout got a second element for index 0 instead of the realized one.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a custom VirtualizingLayout reuses the shifted element after a Remove whose ElementClearing handler calls GetOrCreateElement.")]
+        public void VerifyCustomVirtualizingLayoutReusesShiftedElementAfterGetOrCreateElementInElementClearingDuringRemove()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 20).Select(i => "Item #" + i));
+            const int first = 0;
+            const int last = 4;
+            var elementsFromLayout = new List<UIElement>();
+            Func<Layout> createLayout = () => new MockVirtualizingLayout()
+            {
+                MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    elementsFromLayout.Clear();
+                    for (int i = first; i <= last; i++)
+                    {
+                        var element = context.GetOrCreateElementAt(i);
+                        element.Measure(availableSize);
+                        elementsFromLayout.Add(element);
+                    }
+                    return new Size(100, 30 * (last - first + 1));
+                },
+                ArrangeLayoutFunc = (finalSize, context) =>
+                {
+                    double offset = 0;
+                    foreach (var element in elementsFromLayout)
+                    {
+                        element.Arrange(new Rect(0, offset, element.DesiredSize.Width, element.DesiredSize.Height));
+                        offset += element.DesiredSize.Height;
+                    }
+                    return finalSize;
+                }
+            };
+            var repeater = CreateLoadedRepeater(data, createLayout);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Before Remove");
+                var shiftedElement = repeater.TryGetElement(1);
+                Verify.AreEqual("Item #1", GetElementContent(shiftedElement));
+
+                int clearing = 0;
+                UIElement createdInHandler = null;
+                repeater.ElementClearing += (sender, args) =>
+                {
+                    clearing++;
+                    Log.Comment($"ElementClearing #{clearing} '{GetElementContent(args.Element)}'");
+                    if (clearing == 1)
+                    {
+                        createdInHandler = sender.GetOrCreateElement(10);
+                        Log.Comment($"GetOrCreateElement(10) in the handler returned '{GetElementContent(createdInHandler)}'");
+                    }
+                };
+
+                data.RemoveAt(0);
+                Verify.IsTrue(clearing >= 1, "The removed element was cleared.");
+                Verify.AreEqual(data[10], GetElementContent(createdInHandler), "GetOrCreateElement(10) in the handler returns the element of item 10.");
+                Verify.AreSame(shiftedElement, repeater.TryGetElement(0), "Right after Remove: TryGetElement(0) is the element of 'Item #1'.");
+
+                var preparedIndices = new List<int>();
+                repeater.ElementPrepared += (sender, args) => preparedIndices.Add(args.Index);
+                repeater.InvalidateMeasure();
+                repeater.UpdateLayout();
+
+                Log.Comment($"ElementPrepared indices during layout: [{string.Join(", ", preparedIndices)}]");
+                Verify.AreEqual(last - first + 1, elementsFromLayout.Count);
+                for (int i = first; i <= last; i++)
+                {
+                    Verify.AreEqual(data[i], GetElementContent(elementsFromLayout[i - first]), $"GetOrCreateElementAt({i}) returns the element of item {i}.");
+                }
+                Verify.AreSame(shiftedElement, elementsFromLayout[0], "The realized element of 'Item #1' is reused at index 0.");
+                Verify.AreSame(shiftedElement, repeater.TryGetElement(0), "After layout: TryGetElement(0) is the element of 'Item #1'.");
+                Verify.IsFalse(preparedIndices.Any(index => index < last), "No new element for the indices that were realized before the Remove.");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "After layout");
+            });
         }
 
         // Scenario: a custom INotifyCollectionChanged source raises Move with null OldItems/NewItems.
@@ -2757,6 +2900,126 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerifyVisualOrderMatchesData(repeater, currentData);
                 });
             }
+        }
+
+        // Scenario: a fully realized 10-item repeater over a CustomItemsSource. With a StackLayout and with a NonVirtualizingLayout:
+        //           Insert(1), Remove(1), and Remove(5) after Move(0, 9) plus layout (so a shifted element precedes the removed one
+        //           in Children); with a StackLayout also Replace(1, 1 -> 2) and Replace(1, 2 -> 1). ElementIndexChanged and
+        //           ElementClearing handlers record the events, and each ElementIndexChanged handler call asks the repeater about
+        //           the element.
+        // Expected: in every ElementIndexChanged, GetElementIndex(args.Element) is args.NewIndex, and TryGetElement(args.NewIndex)
+        //           is args.Element or a removed/replaced element that is not cleared yet (StackLayout creates its elements with
+        //           SuppressAutoRecycle and clears removed and replaced elements itself, after the repeater raised
+        //           ElementIndexChanged); one ElementIndexChanged per shifted element; with the NonVirtualizingLayout
+        //           (auto-recycled elements, cleared by the repeater) a Remove raises ElementClearing for the removed element
+        //           before the first ElementIndexChanged; consistent after layout.
+        // A failure means: ElementIndexChanged handlers see a partly re-indexed repeater, or the order of the events of a
+        //                  change differs from the documented one.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that ElementIndexChanged handlers see the post-change index mapping on Insert/Remove/Replace and that a Remove clears auto-recycled elements before ElementIndexChanged.")]
+        public void VerifyElementIndexChangedHandlersSeePostChangeMapping()
+        {
+            foreach (bool nonVirtualizing in new[] { false, true })
+            {
+                VerifyElementIndexChangedHandlerSeesPostChangeMapping("Insert(1, 1)", s => s.Insert(index: 1, count: 1, reset: false), firstShiftedOldIndex: 1, shift: 1, affectedStart: -1, affectedCount: 0, isRemove: false, moveFirst: false, nonVirtualizing: nonVirtualizing);
+                VerifyElementIndexChangedHandlerSeesPostChangeMapping("Remove(1, 1)", s => s.Remove(index: 1, count: 1, reset: false), firstShiftedOldIndex: 2, shift: -1, affectedStart: 1, affectedCount: 1, isRemove: true, moveFirst: false, nonVirtualizing: nonVirtualizing);
+                VerifyElementIndexChangedHandlerSeesPostChangeMapping("Remove(5, 1) after Move(0, 9)", s => s.Remove(index: 5, count: 1, reset: false), firstShiftedOldIndex: 6, shift: -1, affectedStart: 5, affectedCount: 1, isRemove: true, moveFirst: true, nonVirtualizing: nonVirtualizing);
+            }
+
+            // StackLayout only: with a NonVirtualizingLayout the next layout pass reuses a replaced element that is still realized
+            // at its index, which is a separate issue that this change does not address.
+            VerifyElementIndexChangedHandlerSeesPostChangeMapping("Replace(1, 1 -> 2)", s => s.Replace(index: 1, oldCount: 1, newCount: 2, reset: false), firstShiftedOldIndex: 2, shift: 1, affectedStart: 1, affectedCount: 1, isRemove: false, moveFirst: false, nonVirtualizing: false);
+            VerifyElementIndexChangedHandlerSeesPostChangeMapping("Replace(1, 2 -> 1)", s => s.Replace(index: 1, oldCount: 2, newCount: 1, reset: false), firstShiftedOldIndex: 3, shift: -1, affectedStart: 1, affectedCount: 2, isRemove: false, moveFirst: false, nonVirtualizing: false);
+        }
+
+        // affectedStart/affectedCount: the removed (isRemove) or replaced items, by their index before the change.
+        private void VerifyElementIndexChangedHandlerSeesPostChangeMapping(string operation, Action<CustomItemsSource> change, int firstShiftedOldIndex, int shift, int affectedStart, int affectedCount, bool isRemove, bool moveFirst, bool nonVirtualizing)
+        {
+            operation += nonVirtualizing ? " (NonVirtualizingLayout)" : " (StackLayout)";
+            Log.Comment(operation);
+            const int itemCount = 10;
+            CustomItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, itemCount).ToList()));
+            var repeater = CreateLoadedRepeater(dataSource, nonVirtualizing ? () => new NonVirtualStackLayout() : (Func<Layout>)null);
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (moveFirst)
+                {
+                    dataSource.Move(oldIndex: 0, newIndex: 9, count: 1, reset: false);
+                    repeater.UpdateLayout();
+                    VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: true, context: "After Move(0, 9) and layout");
+                }
+
+                var affectedElements = Enumerable.Range(affectedStart, affectedCount).Select(i => repeater.TryGetElement(i)).ToList();
+                Log.Comment($"Removed or replaced elements: [{string.Join(", ", affectedElements.Select(GetElementContent))}]");
+                Verify.IsFalse(affectedElements.Contains(null), "The removed or replaced items are realized before the change.");
+
+                var events = new List<string>();
+                var pairs = new List<Tuple<int, int>>();
+                var mismatches = new List<string>();
+                var clearingPositions = new Dictionary<UIElement, int>();
+                repeater.ElementClearing += (sender, args) =>
+                {
+                    if (!clearingPositions.ContainsKey(args.Element))
+                    {
+                        clearingPositions[args.Element] = events.Count;
+                    }
+                    events.Add($"ElementClearing '{GetElementContent(args.Element)}'");
+                };
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    var elementAtNewIndex = sender.TryGetElement(args.NewIndex);
+                    int reportedIndex = sender.GetElementIndex(args.Element);
+                    events.Add($"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}'");
+                    pairs.Add(Tuple.Create(args.OldIndex, args.NewIndex));
+                    if (reportedIndex != args.NewIndex)
+                    {
+                        mismatches.Add($"GetElementIndex('{GetElementContent(args.Element)}') is {reportedIndex}, not {args.NewIndex}");
+                    }
+                    // A removed or replaced element that is not cleared yet (see above) keeps its old index, so it can share the new index.
+                    bool isUnclearedAffectedElement = affectedElements.Contains(elementAtNewIndex) && !(isRemove && nonVirtualizing);
+                    if (elementAtNewIndex != args.Element && !isUnclearedAffectedElement)
+                    {
+                        mismatches.Add($"TryGetElement({args.NewIndex}) is '{GetElementContent(elementAtNewIndex)}', not '{GetElementContent(args.Element)}'");
+                    }
+                };
+
+                change(dataSource);
+                foreach (var e in events)
+                {
+                    Log.Comment(e);
+                }
+
+                Verify.AreEqual(0, mismatches.Count, $"{operation}: the ElementIndexChanged handler sees the post-change mapping: " + string.Join(" | ", mismatches));
+
+                var expected = Enumerable.Range(firstShiftedOldIndex, itemCount - firstShiftedOldIndex).Select(i => Tuple.Create(i, i + shift)).ToList();
+                Verify.AreEqual(
+                    string.Join(", ", expected.Select(e => $"{e.Item1}->{e.Item2}")),
+                    string.Join(", ", pairs.OrderBy(e => e.Item1).Select(e => $"{e.Item1}->{e.Item2}")),
+                    $"{operation}: one ElementIndexChanged per realized element after the changed range.");
+
+                if (isRemove)
+                {
+                    int firstIndexChanged = events.FindIndex(e => e.StartsWith("ElementIndexChanged"));
+                    foreach (var removed in affectedElements)
+                    {
+                        Verify.IsTrue(clearingPositions.ContainsKey(removed), $"{operation}: ElementClearing is raised for the removed element.");
+                        if (nonVirtualizing)
+                        {
+                            // Auto-recycled removed elements are cleared by the repeater before ElementIndexChanged. StackLayout
+                            // clears its own (SuppressAutoRecycle) elements afterwards, in OnItemsChangedCore.
+                            Verify.IsTrue(firstIndexChanged < 0 || clearingPositions[removed] < firstIndexChanged,
+                                $"{operation}: the removed element is cleared before the first ElementIndexChanged.");
+                        }
+                    }
+                }
+
+                repeater.UpdateLayout();
+                var currentData = dataSource.Inner.Select(i => i.ToString()).ToList();
+                VerifyRealizedElementsMatchData(repeater, currentData, expectAllRealized: true, context: $"After {operation} and layout");
+                VerifyVisualOrderMatchesData(repeater, currentData);
+            });
         }
 
         // Scenario: a fully realized 5-item repeater with a NonVirtualizingLayout over an ObservableCollection. Clear() (Reset) and
