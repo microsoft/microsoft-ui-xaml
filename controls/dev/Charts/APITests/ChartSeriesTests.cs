@@ -1318,7 +1318,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(series.IsVisible, "Default IsVisible should be true.");
             Verify.IsNull(series.XValues, "Default XValues should be null.");
             Verify.IsNull(series.YValues, "Default YValues should be null.");
-            Verify.AreEqual(1.0, series.StrokeThickness, "Default StrokeThickness should be 1.");
+            Verify.AreEqual(2.0, series.StrokeThickness, "Default StrokeThickness should be 2.");
             Verify.AreEqual(StrokeDashStyle.Solid, series.StrokeDashStyle, "Default StrokeDashStyle should be Solid.");
             Verify.IsFalse(series.ShowDataLabels, "Default ShowDataLabels should be false.");
             Verify.IsFalse(series.ShowDataMarkers, "Default ShowDataMarkers should be false.");
