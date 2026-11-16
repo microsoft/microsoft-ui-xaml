@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using System;
+using System.Runtime.InteropServices;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -188,7 +189,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     data.Add("New #" + i);
                 }
             });
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the collection change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2, expectedFocusState: FocusState.Keyboard));
@@ -299,7 +300,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
 
             int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () => dataSource.Remove(2 /* index */, 3 /* count */, false /* reset */));
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the collection change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => dataSource.Inner[i].ToString(), expectedIndex: 2));
@@ -318,7 +319,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
 
             int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () => data[2] = "Replaced #2");
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the collection change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2, expectedFocusState: FocusState.Keyboard));
@@ -678,7 +679,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () =>
                 fixture.Repeater.ItemTemplate = CreateElementFactory("<Button Content='{Binding}' Height='30' Tag='NewTemplate'/>"));
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the template change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the template change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
@@ -701,7 +702,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             FocusItemAndWait(fixture.Repeater, 3, FocusState.Keyboard);
 
             int gettingFocusDuringChange = CountGettingFocusDuring(fixture.Repeater, () => fixture.Repeater.ItemsSource = newData);
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the ItemsSource change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the ItemsSource change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => newData[i], expectedIndex: 3));
@@ -2055,7 +2056,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     data.Add("New #" + i);
                 }
             });
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the collection change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2));
@@ -2443,7 +2444,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
             });
             Verify.IsTrue(updated, "Precondition: UpdateLayout was called after the focused element was cleared.");
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the collection change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() => VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2));
@@ -2584,7 +2585,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             Verify.IsTrue(state.FocusedAnimated, "Precondition: the focused element was handed to a remove transition.");
             Verify.IsTrue(state.Updated, "Precondition: UpdateLayout was called after the focused element was handed to the transition.");
-            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved while the collection change is processed.");
+            Verify.AreEqual(0, gettingFocusDuringChange, "Focus is not moved to a cleared element while the collection change is processed.");
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
@@ -3140,6 +3141,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var gotFocus = new ManualResetEvent(false);
             RunOnUIThread.Execute(() =>
             {
+                // A Flyout focuses its content when it opens after keyboard input, so the target can already have focus.
+                if (FocusManager.GetFocusedElement(target.XamlRoot) == target)
+                {
+                    gotFocus.Set();
+                    return;
+                }
+
                 target.GotFocus += delegate { gotFocus.Set(); };
                 Verify.IsTrue(target.Focus(focusState));
             });
@@ -3344,6 +3352,207 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: StackLayout, 8 items, keyboard focus on item 2. The item of the focused element is removed three times in
+        //           the same tick, as an app's KeyDown handler does for Delete keys that are queued before the next layout
+        //           pass (each key goes to the element that has focus when the key is delivered).
+        // Expected: right after each removal focus is already on a live item, the one that took the removed index, so the
+        //           removals remove items 2, 3 and 4; after layout focus is on "Item #5" at index 2 with the keyboard FocusState.
+        // A failure means: focus stays on the cleared, recycled element (index -1, no DataContext) until the layout pass, so
+        //           keys delivered before it reach an element that no longer shows an item.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the focused item moves focus to a live item before the next layout pass, so that input delivered before it does not reach the cleared element.")]
+        public void VerifyRemovingFocusedItemMovesFocusToLiveItemBeforeLayout()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 8).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                for (int step = 0; step < 3; step++)
+                {
+                    var container = GetFocusedContainer(fixture.Repeater, out var focused);
+                    Log.Comment($"Removal {step}: focused " + DescribeElement(fixture.Repeater, focused));
+                    Verify.IsNotNull(container, $"Removal {step}: focus is inside the repeater.");
+                    int index = fixture.Repeater.GetElementIndex(container);
+                    Verify.IsTrue(index >= 0, $"Removal {step}: focus is on a live item, not on a cleared element.");
+                    Verify.AreEqual(2, index, $"Removal {step}: focus is on the item that took the removed index.");
+                    Verify.AreEqual(data[index], (focused as ContentControl)?.Content?.ToString(), $"Removal {step}: the focused item shows its data.");
+                    data.RemoveAt(index);
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Item #0, Item #1, Item #5, Item #6, Item #7", string.Join(", ", data));
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2, expectedFocusState: FocusState.Keyboard);
+            });
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct KeyboardInputData { public ushort wVk; public ushort wScan; public uint dwFlags; public uint time; public IntPtr dwExtraInfo; }
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MouseInputData { public int dx; public int dy; public uint mouseData; public uint dwFlags; public uint time; public IntPtr dwExtraInfo; }
+        [StructLayout(LayoutKind.Explicit)]
+        private struct InputUnion { [FieldOffset(0)] public MouseInputData mi; [FieldOffset(0)] public KeyboardInputData ki; }
+        [StructLayout(LayoutKind.Sequential)]
+        private struct InputData { public uint type; public InputUnion u; }
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint count, InputData[] inputs, int size);
+
+        // Scenario: StackLayout, 8 items, keyboard focus on item 2; the repeater's KeyDown handler removes the item of the
+        //           element that got a Delete key. Three Delete presses are sent at once (one SendInput call), so the second
+        //           and third keys are queued before the layout pass that follows the first removal. Run with a handler that
+        //           returns at once and with one that takes 40 ms.
+        // Expected: every key is delivered to a live item: items 2, 3 and 4 are removed, focus ends on "Item #5".
+        // A failure means: a key is delivered to the cleared, recycled element (index -1, null DataContext), so it is lost,
+        //           and an app handler that uses the element's DataContext runs with no item.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that Delete keys queued right after the focused item is removed are delivered to live items, not to the cleared element.")]
+        public void VerifyQueuedKeysAfterRemovingFocusedItemReachLiveItems()
+        {
+            foreach (int handlerDelayMs in new[] { 0, 40 })
+            {
+                Log.Comment($"Handler delay {handlerDelayMs} ms");
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 8).Select(i => "Item #" + i));
+                var fixture = CreateFocusFixture(data);
+                var keyLog = new List<string>();
+                int keysOnClearedElement = 0;
+                var allKeysHandled = new ManualResetEvent(false);
+                RunOnUIThread.Execute(() =>
+                {
+                    fixture.Repeater.KeyDown += (s, e) =>
+                    {
+                        if (e.Key != global::Windows.System.VirtualKey.Delete)
+                        {
+                            return;
+                        }
+
+                        var current = e.OriginalSource as DependencyObject;
+                        while (current != null && VisualTreeHelper.GetParent(current) != fixture.Repeater)
+                        {
+                            current = VisualTreeHelper.GetParent(current);
+                        }
+
+                        int index = current is UIElement element ? fixture.Repeater.GetElementIndex(element) : -2;
+                        keyLog.Add($"Delete on element index {index}, content '{(current as ContentControl)?.Content}', DataContext '{(current as FrameworkElement)?.DataContext}'");
+                        if (index >= 0)
+                        {
+                            data.RemoveAt(index);
+                        }
+                        else
+                        {
+                            keysOnClearedElement++;
+                        }
+
+                        if (handlerDelayMs > 0)
+                        {
+                            Thread.Sleep(handlerDelayMs);
+                        }
+
+                        e.Handled = true;
+                        if (keyLog.Count == 3)
+                        {
+                            allKeysHandled.Set();
+                        }
+                    };
+                });
+                FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+                var inputs = new List<InputData>();
+                for (int k = 0; k < 3; k++)
+                {
+                    inputs.Add(new InputData { type = 1 /* INPUT_KEYBOARD */, u = new InputUnion { ki = new KeyboardInputData { wVk = 0x2E /* VK_DELETE */ } } });
+                    inputs.Add(new InputData { type = 1 /* INPUT_KEYBOARD */, u = new InputUnion { ki = new KeyboardInputData { wVk = 0x2E, dwFlags = 2 /* KEYEVENTF_KEYUP */ } } });
+                }
+                Verify.AreEqual((uint)inputs.Count, SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<InputData>()), "Precondition: the keys are sent.");
+                Verify.IsTrue(allKeysHandled.WaitOne(DefaultWaitTimeInMS), "Precondition: the three Delete keys reached the repeater.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var line in keyLog)
+                    {
+                        Log.Comment(line);
+                    }
+                    Verify.AreEqual(0, keysOnClearedElement, "No key is delivered to a cleared element.");
+                    Verify.AreEqual("Item #0, Item #1, Item #5, Item #6, Item #7", string.Join(", ", data));
+                    VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2);
+                });
+            }
+        }
+
+        // Scenario: no ItemTemplate, 8 UIElement items, keyboard focus on the last item. In the same handler the app removes
+        //           the item and focuses the "After" Button. When the element leaves the tree the core already moves focus to
+        //           the next tab stop, "After", so the app's Focus call does not change focus.
+        // Expected: after layout focus is still on "After", where the app put it.
+        // A failure means: the repeater takes focus back into the list after layout, overriding the app's focus move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that when the app focuses another element right after removing the focused UIElement item, the repeater does not take focus back after layout.")]
+        public void VerifyAppFocusAfterRemovingFocusedUIElementItemIsKept()
+        {
+            ObservableCollection<UIElement> data = null;
+            RunOnUIThread.Execute(() =>
+            {
+                data = new ObservableCollection<UIElement>(Enumerable.Range(0, 8).Select(i => (UIElement)new Button { Content = "Item #" + i, Height = 30 }));
+            });
+            var fixture = CreateFocusFixture(data, itemTemplate: null);
+            FocusItemAndWait(fixture.Repeater, 7, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                data.RemoveAt(7);
+                Log.Comment("Focused right after RemoveAt: " + DescribeFocus(fixture.Repeater));
+                fixture.After.Focus(FocusState.Programmatic);
+                Log.Comment("Focused after the app's Focus call: " + DescribeFocus(fixture.Repeater));
+                Verify.AreSame(fixture.After, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Precondition: the app focused \"After\".");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Focused after layout: " + DescribeFocus(fixture.Repeater));
+                Verify.AreSame(fixture.After, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus stays where the app put it.");
+            });
+        }
+
+        // Scenario: no ItemTemplate; the items are 40 Buttons followed by 100 strings. Focus on Button 0, then scroll so that
+        //           only string items are in view: Button 0 is kept (pinned) out of view, and the first string item realized
+        //           makes the repeater set its default ItemTemplate during measure.
+        // Expected: Button 0 stays the realized element of item 0 and keeps focus.
+        // A failure means: setting the default template clears the pinned focused element and moves focus while the user
+        //           scrolls.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the default ItemTemplate set during layout (first non-UIElement item realized) does not clear a pinned focused UIElement item.")]
+        public void VerifyDefaultItemTemplateSetDuringScrollKeepsPinnedFocusedElement()
+        {
+            ObservableCollection<object> data = null;
+            RunOnUIThread.Execute(() =>
+            {
+                data = new ObservableCollection<object>(
+                    Enumerable.Range(0, 40).Select(i => (object)new Button { Content = "Button #" + i, Height = 30 })
+                    .Concat(Enumerable.Range(0, 100).Select(i => (object)("Text #" + i))));
+            });
+            var fixture = CreateFocusFixture(data, itemTemplate: null);
+            FocusItemAndWait(fixture.Repeater, 0, FocusState.Programmatic);
+            Button element0 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                element0 = (Button)fixture.Repeater.TryGetElement(0);
+                Verify.IsNull(fixture.Repeater.ItemTemplate, "Precondition: no ItemTemplate before a string item is realized.");
+            });
+
+            ScrollToOffset(fixture.ScrollViewer, 1500);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(fixture.Repeater.ItemTemplate, "Precondition: the repeater set its default ItemTemplate.");
+                Log.Comment("Focused: " + DescribeFocus(fixture.Repeater));
+                Verify.AreEqual(0, fixture.Repeater.GetElementIndex(element0), "The focused element is still the realized element of item 0.");
+                Verify.AreSame(element0, FocusManager.GetFocusedElement(fixture.Repeater.XamlRoot), "Focus stays on the focused element.");
+            });
+        }
+
         private Button FocusItemAndScrollAway(FocusFixture fixture)
         {
             FocusItemAndWait(fixture.Repeater, 0, FocusState.Programmatic);
@@ -3429,17 +3638,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             };
         }
 
+        // Counts the GettingFocus events raised while the change runs whose target is not a live item when the change returns:
+        // a cleared element, or an element that the same change cleared after focus moved to it. A move to a live item when
+        // the change is processed (the repeater moves focus off a cleared element before the next layout pass) is not counted.
         private static int CountGettingFocusDuring(ItemsRepeater repeater, Action change)
         {
             int count = 0;
             RunOnUIThread.Execute(() =>
             {
                 bool inChange = true;
+                var targets = new List<DependencyObject>();
                 TypedEventHandler<UIElement, GettingFocusEventArgs> handler = (s, e) =>
                 {
                     if (inChange)
                     {
-                        count++;
+                        targets.Add(e.NewFocusedElement);
                         Log.Comment("GettingFocus during the change: " + DescribeElement(repeater, e.NewFocusedElement));
                     }
                 };
@@ -3454,6 +3667,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     repeater.GettingFocus -= handler;
                 }
                 Log.Comment("Focused right after the change: " + DescribeFocus(repeater));
+
+                foreach (var target in targets)
+                {
+                    var current = target;
+                    while (current != null && VisualTreeHelper.GetParent(current) != repeater)
+                    {
+                        current = VisualTreeHelper.GetParent(current);
+                    }
+
+                    if (current is UIElement container && repeater.GetElementIndex(container) < 0)
+                    {
+                        count++;
+                        Log.Comment("Focus moved during the change to an element that is not a live item: " + DescribeElement(repeater, target));
+                    }
+                }
             });
             return count;
         }

@@ -33,6 +33,8 @@ public:
     // (all of them by default). Must be called while the owner processes a collection change.
     void ClearPinnedElementsForCollectionChange(int startIndex = 0, int count = std::numeric_limits<int>::max());
     void OnOwnerLayoutUpdated();
+    // Called after the owner processed a change of its items source, outside of the change.
+    void OnOwnerCollectionChangeProcessed();
     void OnOwnerUnloaded();
     // True if focus is to be moved away from the element (a cleared element) after the next layout pass.
     bool IsFocusMovePendingFor(const winrt::UIElement& element) const;
@@ -63,12 +65,13 @@ private:
     static int ShiftIndexForCollectionChange(int index, const winrt::NotifyCollectionChangedEventArgs& args);
     bool TryRecordFocusReturnedToClearedElement(const winrt::UIElement& element);
     bool ClearedIndexTracksItem();
+    bool IsProcessingRemove();
     void ReleaseAncestorPinsOfClearedFocusedElement();
     bool ContainsNestedFocus(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo);
     int AdjustClearedIndexForCollectionChange(int clearedIndex);
     winrt::FocusState GetFocusStateForMove();
     winrt::UIElement GetFocusedChild();
-    bool TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild);
+    bool TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild, winrt::UIElement* focusedCandidate = nullptr);
     bool TryKeepFocusInReusedElement(const winrt::UIElement& element);
     bool TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState);
     bool TryFocus(const winrt::UIElement& element, winrt::FocusState focusState);
@@ -121,6 +124,11 @@ private:
     // pass still runs if focus is still on that element (m_pendingFocusMoveFocusAfterClear).
     bool m_pendingFocusMoveFocusLeftOwner{ false };
     winrt::weak_ref<winrt::DependencyObject> m_pendingFocusMoveFocusAfterClear;
+    // The realized element that focus moved to right after the collection change (OnOwnerCollectionChangeProcessed).
+    // The move after the layout pass still runs if focus is still on it.
+    winrt::weak_ref<winrt::UIElement> m_pendingFocusMoveInterimElement;
+    // True if the element was cleared by a Remove (OnOwnerCollectionChangeProcessed).
+    bool m_pendingFocusMoveClearedByRemove{ false };
     // Pins that the cleared focused element added to the ancestor repeaters' elements. They are released when the
     // pending focus move runs, so that an ancestor repeater does not clear the element that contains the owner first.
     unsigned m_pendingAncestorUnpinCount{ 0u };

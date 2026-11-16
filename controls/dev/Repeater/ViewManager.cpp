@@ -258,6 +258,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     else if (isFocusedAfterPendingMove)
     {
         m_pendingFocusMoveElement.set(element);
+        m_pendingFocusMoveClearedByRemove = IsProcessingRemove();
     }
 
     if (hasFocus && m_pendingFocusMoveElement)
@@ -328,6 +329,14 @@ void ViewManager::OnFocusedElementCleared(const winrt::UIElement& element, int c
     m_pendingFocusMoveState = focusState;
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+    m_pendingFocusMoveClearedByRemove = IsProcessingRemove();
+}
+
+bool ViewManager::IsProcessingRemove()
+{
+    const auto change = m_owner->ProcessingCollectionChange();
+    return change && change.Action() == winrt::NotifyCollectionChangedAction::Remove;
 }
 
 // True if the cleared index is the position of an item that later changes can shift: the element was cleared by a
@@ -449,6 +458,8 @@ bool ViewManager::TryRecordFocusReturnedToClearedElement(const winrt::UIElement&
     m_pendingFocusMoveState = GetFocusStateForMove();
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+    m_pendingFocusMoveClearedByRemove = false;
     return true;
 }
 
@@ -474,13 +485,16 @@ void ViewManager::OnOwnerLayoutUpdated()
     const auto focusState = m_pendingFocusMoveState;
     const bool focusLeftOwner = m_pendingFocusMoveFocusLeftOwner;
     const auto focusAfterClear = m_pendingFocusMoveFocusAfterClear.get();
+    const auto interimElement = m_pendingFocusMoveInterimElement.get();
     m_pendingFocusMoveElement.set(nullptr);
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
 
     // Only move focus if it is still on a child that is not held by the layout (the cleared element, or another
-    // cleared element focused in the meantime), or still where the core moved it when the cleared element left the
-    // tree. If the app or user moved focus elsewhere, leave it there.
+    // cleared element focused in the meantime), still on the element that focus moved to when the change was processed,
+    // or still where the core moved it when the cleared element left the tree. If the app or user moved focus elsewhere,
+    // leave it there.
     const auto focusedChild = GetFocusedChild();
     if (!focusedChild)
     {
@@ -493,7 +507,7 @@ void ViewManager::OnOwnerLayoutUpdated()
     }
 
     const auto focusedChildVirtInfo = focusedChild ? ItemsRepeater::TryGetVirtualizationInfo(focusedChild) : nullptr;
-    if (focusedChildVirtInfo && focusedChildVirtInfo->IsHeldByLayout() && focusedChild != clearedElement)
+    if (focusedChildVirtInfo && focusedChildVirtInfo->IsHeldByLayout() && focusedChild != clearedElement && focusedChild != interimElement)
     {
         UpdateFocusedElement();
         return;
@@ -514,9 +528,75 @@ void ViewManager::OnOwnerLayoutUpdated()
         m_pendingFocusMoveElement.set(newFocusedChild);
         m_pendingFocusMoveIndex = clearedIndex;
         m_pendingFocusMoveState = focusState;
+        m_pendingFocusMoveClearedByRemove = false;
         return;
     }
 
+    UpdateFocusedElement();
+}
+
+// The owner processed a change of its items source; this runs outside of the change and of layout. Input that is already
+// queued (keys pressed in a row) is delivered before the next layout pass, so focus must not stay on an element that a
+// Remove cleared until then: move it now to the realized element nearest to the cleared index, among the elements that
+// the change kept (after a Remove, the item that follows the removed one has its index). Not done for a Replace or a
+// Reset: the layout realizes the new item at the cleared index, possibly in the cleared element, which keeps focus then.
+void ViewManager::OnOwnerCollectionChangeProcessed()
+{
+    if (!m_pendingFocusMoveElement || !m_pendingFocusMoveClearedByRemove)
+    {
+        return;
+    }
+
+    // As in OnOwnerLayoutUpdated: only if focus is still on the cleared element, or where the core moved it when the
+    // cleared element left the tree.
+    if (const auto focusedChild = GetFocusedChild())
+    {
+        if (focusedChild != m_pendingFocusMoveElement.get())
+        {
+            return;
+        }
+    }
+    else
+    {
+        const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+        if (!m_pendingFocusMoveFocusLeftOwner || !xamlRoot ||
+            winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() != m_pendingFocusMoveFocusAfterClear.get())
+        {
+            return;
+        }
+    }
+
+    bool hasRealizedChild = false;
+    const auto children = m_owner->Children();
+    for (unsigned i = 0u; i < children.Size() && !hasRealizedChild; ++i)
+    {
+        const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(children.GetAt(i));
+        hasRealizedChild = virtInfo && virtInfo->IsHeldByLayout();
+    }
+    if (!hasRealizedChild)
+    {
+        // The move after the layout pass runs, once the layout has realized the current items.
+        return;
+    }
+
+    winrt::UIElement focusedCandidate{ nullptr };
+    if (TryFocusRealizedChild(m_pendingFocusMoveIndex, m_pendingFocusMoveState, nullptr /* focusedChild */, &focusedCandidate))
+    {
+        // The move after the layout pass checks that focus is still on this element. If a GettingFocus handler moved
+        // focus to another element, that element is the app's choice.
+        const auto newFocusedChild = GetFocusedChild();
+        m_pendingFocusMoveInterimElement = newFocusedChild && newFocusedChild == focusedCandidate ? winrt::make_weak(newFocusedChild) : nullptr;
+    }
+    else
+    {
+        // Every item refused focus. Move focus out of the owner now, as the move after the layout pass would, instead of
+        // trying the same items again then.
+        m_pendingFocusMoveElement.set(nullptr);
+        TryMoveFocusOutOfOwner(m_pendingFocusMoveState);
+    }
+
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
     UpdateFocusedElement();
 }
 
@@ -526,6 +606,7 @@ void ViewManager::OnOwnerUnloaded()
     m_pendingFocusMoveElement.set(nullptr);
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
 }
 
 // Returns the direct child of the owner that has focus or contains the focused element.
@@ -555,8 +636,9 @@ winrt::UIElement ViewManager::GetFocusedChild()
 // Moves focus to the realized element nearest to the cleared index (a descendant of it if the element is not focusable).
 // On a tie, the element that now has the cleared index or follows it wins, because after a removal the next item takes
 // the removed item's index. focusedChild (optional) is the child that contains focus; if the layout reused it, focus is
-// kept in it. Returns true if focus moved or was kept.
-bool ViewManager::TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild)
+// kept in it. Returns true if focus moved or was kept; focusedCandidate (optional) is then the element that focus was moved to
+// or kept in (a GettingFocus handler can have moved focus elsewhere).
+bool ViewManager::TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild, winrt::UIElement* focusedCandidate)
 {
     std::vector<std::pair<int, winrt::UIElement>> candidates;
     const auto children = m_owner->Children();
@@ -585,13 +667,13 @@ bool ViewManager::TryFocusRealizedChild(int clearedIndex, winrt::FocusState focu
     for (const auto& candidate : candidates)
     {
         // The layout reused the focused element for this item. Keep focus in it.
-        if (focusedChild && candidate.second == focusedChild && TryKeepFocusInReusedElement(focusedChild))
+        if ((focusedChild && candidate.second == focusedChild && TryKeepFocusInReusedElement(focusedChild)) ||
+            TryFocusChild(candidate.second, candidate.first < clearedIndex /* focusLastDescendant */, focusState))
         {
-            return true;
-        }
-
-        if (TryFocusChild(candidate.second, candidate.first < clearedIndex /* focusLastDescendant */, focusState))
-        {
+            if (focusedCandidate)
+            {
+                *focusedCandidate = candidate.second;
+            }
             return true;
         }
     }
@@ -638,6 +720,7 @@ bool ViewManager::TryMovePendingFocusToRealizedChild()
     m_pendingFocusMoveElement.set(nullptr);
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
     ReleaseAncestorPinsOfClearedFocusedElement();
 
     const auto focusedChild = GetFocusedChild();
@@ -652,6 +735,7 @@ bool ViewManager::TryMovePendingFocusToRealizedChild()
         m_pendingFocusMoveElement.set(newFocusedChild);
         m_pendingFocusMoveIndex = clearedIndex;
         m_pendingFocusMoveState = focusState;
+        m_pendingFocusMoveClearedByRemove = false;
         return true;
     }
 
