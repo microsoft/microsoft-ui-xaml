@@ -546,6 +546,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             struct IndexChange
             {
                 winrt::UIElement element;
+                winrt::com_ptr<VirtualizationInfo> virtInfo;
                 int oldIndex;
                 int newIndex;
             };
@@ -583,7 +584,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                     if (newIndex != oldIndex)
                     {
                         virtInfo->UpdateIndex(newIndex);
-                        indexChanges.push_back({ element, oldIndex, newIndex });
+                        indexChanges.push_back({ element, virtInfo, oldIndex, newIndex });
                     }
                 }
             }
@@ -592,7 +593,12 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
             for (const auto& indexChange : indexChanges)
             {
-                m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
+                // An earlier handler can clear elements (for example by replacing ItemsSource). Only report
+                // elements that are still realized at their new index.
+                if (indexChange.virtInfo->IsRealized() && indexChange.virtInfo->Index() == indexChange.newIndex)
+                {
+                    m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
+                }
             }
         }
         break;

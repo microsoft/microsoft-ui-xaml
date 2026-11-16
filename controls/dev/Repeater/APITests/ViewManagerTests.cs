@@ -1939,6 +1939,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a fully realized 5-item repeater over an ObservableCollection. The first ElementIndexChanged handler call
+        //           replaces ItemsSource with a new collection while the repeater is still handling the collection change:
+        //           Move(0, 4), and the Insert(0) / RemoveAt(0) precedents.
+        // Expected: no crash. ElementIndexChanged is raised only for elements that are still realized at args.NewIndex, so it
+        //           is not raised again after the new ItemsSource cleared the old elements. After layout the repeater shows the
+        //           new collection.
+        // A failure means: the old ItemsSourceView is destroyed while it is still raising CollectionChanged (crash of the test
+        //                  process), or the repeater reports index changes for elements it has already cleared.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from an ElementIndexChanged handler during a Move does not crash and raises no further ElementIndexChanged for cleared elements.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringMove()
+        {
+            VerifyItemsSourceReplacedInElementIndexChanged("Move(0, 4)", data => data.Move(0, 4));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from an ElementIndexChanged handler during an Insert does not crash.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringInsert()
+        {
+            VerifyItemsSourceReplacedInElementIndexChanged("Insert(0)", data => data.Insert(0, "Inserted"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from an ElementIndexChanged handler during a Remove does not crash.")]
+        public void VerifyItemsSourceReplacedInElementIndexChangedDuringRemove()
+        {
+            VerifyItemsSourceReplacedInElementIndexChanged("RemoveAt(0)", data => data.RemoveAt(0));
+        }
+
+        private void VerifyItemsSourceReplacedInElementIndexChanged(string operation, Action<ObservableCollection<string>> change)
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var newData = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "New #" + i));
+            var repeater = CreateLoadedRepeater(data);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var events = new List<Tuple<int, int, int>>(); // OldIndex, NewIndex, GetElementIndex(args.Element) in the handler.
+                bool replaced = false;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    int reportedIndex = sender.GetElementIndex(args.Element);
+                    Log.Comment($"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}', GetElementIndex = {reportedIndex}");
+                    events.Add(Tuple.Create(args.OldIndex, args.NewIndex, reportedIndex));
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: ItemsSource = new collection");
+                        sender.ItemsSource = newData;
+                    }
+                };
+
+                Log.Comment(operation);
+                change(data);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} raised ElementIndexChanged, so the handler replaced ItemsSource.");
+                foreach (var e in events)
+                {
+                    Verify.AreEqual(e.Item2, e.Item3, $"ElementIndexChanged {e.Item1} -> {e.Item2} is raised only for an element that is realized at its new index.");
+                }
+                Verify.AreEqual(1, events.Count, "No ElementIndexChanged after the new ItemsSource cleared the old elements.");
+
+                repeater.UpdateLayout();
+                Verify.AreSame(newData, repeater.ItemsSource);
+                VerifyRealizedElementsMatchData(repeater, newData, expectAllRealized: true, context: "After layout");
+            });
+        }
+
         private ItemsRepeater CreateLoadedRepeater(object itemsSource, Func<Layout> createLayout = null, string itemContent = MoveItemTemplate)
         {
             ItemsRepeater repeater = null;
