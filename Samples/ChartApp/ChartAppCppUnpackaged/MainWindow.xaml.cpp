@@ -727,7 +727,13 @@ namespace winrt::ChartsSample::implementation
         DispatcherQueue().TryEnqueue(DispatcherQueuePriority::Low, [weak = get_weak(), target]
         {
             if (!weak.get()) return;
-            if (auto peer = Automation::Peers::FrameworkElementAutomationPeer::FromElement(target))
+            // FromElement is null until a UIA client has reached the element; create the peer then.
+            auto peer = Automation::Peers::FrameworkElementAutomationPeer::FromElement(target);
+            if (!peer)
+            {
+                peer = Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(target);
+            }
+            if (peer)
             {
                 peer.RaiseAutomationEvent(Automation::Peers::AutomationEvents::LiveRegionChanged);
             }
@@ -1760,7 +1766,9 @@ namespace winrt::ChartsSample::implementation
             axis.IntervalType(IntervalTypes[index]);
             warning.Text(note);
             warning.Visibility(note.empty() ? Visibility::Collapsed : Visibility::Visible);
-        }, StatusText(), note.empty() ? hstring{ L"Date interval updated." } : hstring{ std::wstring{ L"Date interval updated. " } + note.c_str() }, nullptr,
+            // The note shows in its own live region, so the status stays short and it is read once.
+            AnnounceStatus(warning, note);
+        }, StatusText(), L"Date interval updated.", nullptr,
             [&] { box.SelectedIndex(static_cast<int32_t>(axis.IntervalType())); });
     }
 

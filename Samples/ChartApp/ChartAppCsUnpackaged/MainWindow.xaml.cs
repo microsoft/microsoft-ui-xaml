@@ -1023,14 +1023,22 @@ namespace ChartsSample
         }
 
         // A live-region update is dropped when focus moves at the same time (leaving an edited field,
-        // or a button disabled by the edit), so raise a notification after focus has settled.
+        // or a button disabled by the edit), so raise LiveRegionChanged after focus has settled.
         private void AnnounceStatus(TextBlock target, string message)
         {
             target.Text = message;
             if (string.IsNullOrEmpty(message)) return;
+            RaiseLiveRegionChanged(target);
+        }
+
+        private void RaiseLiveRegionChanged(TextBlock target)
+        {
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                FrameworkElementAutomationPeer.FromElement(target)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+                // FromElement is null until a UIA client has reached the element; create the peer then.
+                var peer = FrameworkElementAutomationPeer.FromElement(target) ??
+                    FrameworkElementAutomationPeer.CreatePeerForElement(target);
+                peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
             });
         }
 
@@ -1115,14 +1123,14 @@ namespace ChartsSample
         private void SetDateInterval(DateTimeAxis axis, ComboBox box, TextBlock warning, TextBlock status, bool daily)
         {
             if (!_ready || _syncing || _closing) return;
-            string note = DateIntervalNote((DateTimeIntervalType)box.SelectedIndex, daily);
-            string success = note.Length > 0 ? $"Date interval updated. {note}" : "Date interval updated.";
             ApplyEdit(() => axis.IntervalType = (DateTimeIntervalType)box.SelectedIndex, () =>
             {
                 box.SelectedIndex = (int)axis.IntervalType;
                 warning.Text = DateIntervalNote(axis.IntervalType, daily);
                 warning.Visibility = warning.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-            }, status, success);
+                // The note shows in its own live region, so the status stays short and it is read once.
+                if (warning.Text.Length > 0) RaiseLiveRegionChanged(warning);
+            }, status, "Date interval updated.");
         }
 
         private static string DateIntervalNote(DateTimeIntervalType interval, bool daily) => interval switch
