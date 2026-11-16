@@ -177,7 +177,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 template <typename TThis>
 void SetDefaultStyleKey(TThis *pThis)
 {
-    SetDefaultStyleKeyWorker(*pThis, pThis->GetRuntimeClassName());
+    SetDefaultStyleKeyWorker(pThis->template as<winrt::IControlProtected>(), pThis->GetRuntimeClassName());
 }
 
 template<typename WinRTReturn>
