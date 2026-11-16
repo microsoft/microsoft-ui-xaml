@@ -2732,8 +2732,10 @@ void NavigationView::UpdateIsChildSelectedForPreparedContainer(const winrt::Navi
     auto const selectedIndex = m_selectionModel.SelectedIndex();
     // Only a selection below the top level (block, index, child...) can make an item child-selected. Items nested under a
     // NavigationViewItem in PaneFooter, PaneHeader, PaneCustomContent or Content aren't in the menu index space.
-    // The model's path can be stale while nothing is selected, so check SelectedItem first.
-    if (SelectedItem() && selectedIndex && selectedIndex.GetSize() > 2 && IsContainerInMenuItemsTree(nvi))
+    // The model's path can be stale (e.g. SelectedItem was cleared or set to an item outside the menu while the old
+    // selection had no realized container), so only use it while it still resolves to SelectedItem.
+    auto const selectedItem = SelectedItem();
+    if (selectedItem && selectedIndex && selectedIndex.GetSize() > 2 && m_selectionModel.SelectedItem() == selectedItem && IsContainerInMenuItemsTree(nvi))
     {
         auto const ip = GetIndexPathForContainer(nvi);
         if (ip.GetSize() >= 2 && ip.GetSize() < selectedIndex.GetSize())
