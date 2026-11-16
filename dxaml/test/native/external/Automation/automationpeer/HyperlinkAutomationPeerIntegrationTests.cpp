@@ -432,4 +432,63 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
+    void HyperlinkAutomationPeerIntegrationTests::VerifyClickablePointHitTestsToHyperlink()
+    {
+        TestCleanupWrapper cleanup;
+
+        // A hyperlink that starts mid-line shares its leading edge with the preceding Run, and a point on that
+        // edge hit-tests to the Run. The ClickablePoint must hit-test back to the hyperlink for wrapping and RTL
+        // links that start mid-line, as well as for a link that starts its line.
+        RunOnUIThread([&]()
+        {
+            auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+                L"<Grid \r\n"
+                L"  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' \r\n"
+                L"  x:Name='root' Background='#000000' Width='480' Height='400' HorizontalAlignment='Left' VerticalAlignment='Top'> \r\n"
+                L"      <StackPanel> \r\n"
+                L"          <TextBlock Width='260' TextWrapping='Wrap' HorizontalAlignment='Left'>Say what can I say to see the full list, or open the <Hyperlink AutomationProperties.Name='wrappingHyperlink'>voice access help article with all commands</Hyperlink> for more.</TextBlock> \r\n"
+                L"          <TextBlock Width='260' TextWrapping='Wrap' HorizontalAlignment='Left' FlowDirection='RightToLeft'>Say what can I say to see the full list, or open the <Hyperlink AutomationProperties.Name='rtlHyperlink'>voice access help article with all commands</Hyperlink> for more.</TextBlock> \r\n"
+                L"          <TextBlock Width='260' TextWrapping='Wrap' HorizontalAlignment='Left'><Hyperlink AutomationProperties.Name='lineStartHyperlink'>Learn more about voice access</Hyperlink></TextBlock> \r\n"
+                L"      </StackPanel> \r\n"
+                L"</Grid>"));
+            TestServices::WindowHelper->WindowContent = root;
+        });
+
+        // Wait for all async activities to be done
+        TestServices::WindowHelper->WaitForIdle();
+
+        for (auto name : { L"wrappingHyperlink", L"rtlHyperlink", L"lineStartHyperlink" })
+        {
+            Automation::AutomationClient::UIAElementInfo uiaInfo;
+            uiaInfo.m_Name = name;
+
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                wrl::ComPtr<IUIAutomation> spAutomation;
+                wrl::ComPtr<IUIAutomationElement> spHyperlink;
+                wrl::ComPtr<IUIAutomationElement> spHitElement;
+                Common::AutoVariant autoVar;
+
+                auto spAutomationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+                spAutomationClientManager->GetCurrentUIAutomationElement(&spHyperlink);
+                spAutomationClientManager->GetAutomation(&spAutomation);
+                VERIFY_IS_NOT_NULL(spHyperlink);
+
+                spHyperlink->GetCurrentPropertyValue(UIA_ClickablePointPropertyId, autoVar.ReleaseAndGetAddressOf());
+                const wf::Point clickablePoint = UIAutomationHelper::PointFromVariant(autoVar.Storage());
+                LOG_OUTPUT(L"%s: ClickablePoint = (%.0f, %.0f)", name, clickablePoint.X, clickablePoint.Y);
+
+                VERIFY_SUCCEEDED(spAutomation->ElementFromPoint(POINT{ static_cast<LONG>(clickablePoint.X), static_cast<LONG>(clickablePoint.Y) }, &spHitElement));
+                VERIFY_IS_NOT_NULL(spHitElement);
+
+                spHitElement->GetCurrentPropertyValue(UIA_NamePropertyId, autoVar.ReleaseAndGetAddressOf());
+                LOG_OUTPUT(L"%s: ElementFromPoint(ClickablePoint) Name = '%s'", name, (autoVar.Storage())->bstrVal);
+                VERIFY_ARE_EQUAL(0, wcscmp(name, (autoVar.Storage())->bstrVal));
+
+                spHitElement->GetCurrentPropertyValue(UIA_ControlTypePropertyId, autoVar.ReleaseAndGetAddressOf());
+                VERIFY_ARE_EQUAL(UIA_HyperlinkControlTypeId, (autoVar.Storage())->lVal);
+            });
+        }
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Automation::AutomationPeer

@@ -333,17 +333,18 @@ IFACEMETHODIMP HyperlinkAutomationPeer::GetClickablePointCore(_Out_ wf::Point* p
 
         if (cBoundRects > 0)
         {
-            // We're looking for the point at the start of the link, so We only care about the first rectangle
+            // We're looking for a point on the first line of the link, so we only care about the first rectangle
             XRECTF pRectBound = pBoundRects[0];
 
             XRECTF_RB rtGlobalBounds = {};
             IFC_RETURN(element->TransformToWorldSpace(&(ToXRectFRB(pRectBound)), &rtGlobalBounds, false /*ignoreClip*/, false /* ignoreClippingOnScrollContentPresenters */, false /* useTargetInformation */));
             pRectBound = ToXRectF(rtGlobalBounds);
 
-            // Return the top left corner of the Hyperlink because we determine the length from there.
-            // Round up the Y pixel so we don't get the previous line when there is more than one line.
-            pReturnValue->X = pRectBound.X;
-            pReturnValue->Y = std::ceil(pRectBound.Y);
+            // Use the center of the first rectangle. It stays on the link's first line (the center of the union can be
+            // whitespace for a wrapped link), and it is away from the leading edge, which hit-tests to the preceding
+            // text when the link starts mid-line.
+            pReturnValue->X = pRectBound.X + (pRectBound.Width / 2);
+            pReturnValue->Y = pRectBound.Y + (pRectBound.Height / 2);
         }
     }
 

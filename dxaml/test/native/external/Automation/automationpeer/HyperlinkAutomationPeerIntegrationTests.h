@@ -47,6 +47,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a hyperlink laid out inside a RichTextBlockOverflow reports IsOffscreen=true with an empty BoundingRectangle when clipped out of its ScrollViewer's viewport.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyClickablePointHitTestsToHyperlink)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that ElementFromPoint(ClickablePoint) returns the hyperlink for wrapping and RTL hyperlinks that start mid-line, and for a hyperlink that starts its line.")
+        END_TEST_METHOD()
+
     private:
         xaml_docs::Hyperlink^ SetupHyperlinkTest();
     };
