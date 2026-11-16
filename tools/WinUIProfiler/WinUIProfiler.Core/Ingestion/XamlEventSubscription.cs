@@ -6,12 +6,12 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's events from the XAML providers and the marker providers, and the kernel's GPU memory and
-// window focus events for it, from a TraceEvent source (an .etl file or a live session), and the launcher providers'
+// Delivers one process's events from the XAML, Direct3D11 and marker providers, and the kernel's GPU memory, allocation
+// and window focus events for it, from a TraceEvent source (an .etl file or a live session), and the launcher providers'
 // events of the process that launched it, when that is known. TraceLogging events carry their own field names and
 // types. Manifest events are decoded with the manifest Windows registers for their provider: system XAML's for
 // Microsoft-Windows-XAML and Microsoft-Windows-XAML-Diagnostics, whose events WinUI shares, and the kernel's for
-// DxgKrnl and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared
+// graphics providers and Win32k. An event that manifest does not describe is not delivered. WinUI's FrameInfo is the one shared
 // event whose fields differ, so it is decoded here. A marker provider's events are decoded the same ways, or with the
 // manifest an EventSource writes into the trace.
 internal static class XamlEventSubscription
@@ -26,6 +26,19 @@ internal static class XamlEventSubscription
     // and usage on one adapter and memory segment group, the values DXGI's QueryVideoMemoryInfo returns.
     private const int VidMmProcessBudgetChange = 366;
     private const int VidMmProcessUsageChange = 367;
+
+    // Direct3D11: Device Start/Stop/DCStart (3-5), Buffer and Texture1D/2D/3D Start/Stop/DCStart (6-17),
+    // and D3D11CoreCreateDevice, KMDDeviceCreate and UMDDeviceCreate Start/Stop (20-25).
+    internal static bool IsDirect3D11Event(int eventId) => eventId is >= 3 and <= 17 or >= 20 and <= 25;
+
+    // DxgKrnl AdapterAllocation Start/Stop/DCStart (33-35) and DeviceAllocation Start/Stop/DCStart (36-38)
+    // carry their owner in hProcessId, including when another process writes the event.
+    internal static string? DxgKrnlProcessField(int eventId) => eventId switch
+    {
+        VidMmProcessBudgetChange or VidMmProcessUsageChange => "ProcessId",
+        >= 33 and <= 38 => "hProcessId",
+        _ => null
+    };
 
     // Microsoft-Windows-Win32k's one event with the Focus keyword (0x2000): a window focus change, with the thread
     // that lost focus and the one that got it.
@@ -70,7 +83,7 @@ internal static class XamlEventSubscription
 
     // Calls match for each event Subscribe delivers, with its provider (and for a marker event, the marker provider) and
     // the process it belongs to, without copying it. TraceEvent reuses the event object after the call. A marker provider
-    // that is a XAML provider, DxgKrnl or Win32k is not read again. For one process, otherProcess, if given, gets the
+    // that is a built-in provider is not read again. For one process, otherProcess, if given, gets the
     // events of the launcher providers (MarkerProviderSettings.Launcher) from every other process.
     internal static void Match(TraceEventDispatcher source, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
         Action<TraceEvent, XamlProvider, MarkerProvider?, int> match, Action<TraceEvent, MarkerProvider>? otherProcess = null)
@@ -88,12 +101,22 @@ internal static class XamlEventSubscription
         IgnoreOtherProviders(source, markerIds);
         source.Dynamic.All += data =>
         {
+            if (data.ProviderGuid == XamlProviders.Direct3D11)
+            {
+                if (IsDirect3D11Event((int)data.ID) && (processId is null || data.ProcessID == processId))
+                {
+                    match(data, XamlProvider.Direct3D11, null, data.ProcessID);
+                }
+
+                return;
+            }
+
             if (data.ProviderGuid == XamlProviders.DxgKrnl)
             {
                 // The System process writes some of a process's rows, such as those written when it exits, so the
-                // ProcessId field names the process, not the event header.
-                if ((int)data.ID is VidMmProcessBudgetChange or VidMmProcessUsageChange &&
-                    PayloadProcessId(data) is { } owner && (processId is null || owner == processId))
+                // payload names the process, not the event header. Never fall back to the writer's PID.
+                if (DxgKrnlProcessField((int)data.ID) is { } field &&
+                    PayloadProcessId(data, field) is { } owner && (processId is null || owner == processId))
                 {
                     match(data, XamlProvider.DxgKrnl, null, owner);
                 }
@@ -194,19 +217,21 @@ internal static class XamlEventSubscription
         }
     }
 
-    private static int? PayloadProcessId(TraceEvent data)
+    internal static int? ProcessIdFromPayload(object? value) => value switch
+    {
+        int id when id > 0 => id,
+        uint id when id is > 0 and <= int.MaxValue => (int)id,
+        long id when id is > 0 and <= int.MaxValue => (int)id,
+        ulong id when id is > 0 and <= int.MaxValue => (int)id,
+        _ => null
+    };
+
+    private static int? PayloadProcessId(TraceEvent data, string field)
     {
         try
         {
-            var index = data.PayloadIndex("ProcessId");
-            return index < 0 ? null : data.PayloadValue(index) switch
-            {
-                int value => value,
-                uint value => (int)value,
-                long value => (int)value,
-                ulong value => (int)value,
-                _ => null
-            };
+            var index = data.PayloadIndex(field);
+            return index < 0 ? null : ProcessIdFromPayload(data.PayloadValue(index));
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
@@ -220,7 +245,8 @@ internal static class XamlEventSubscription
         var timestampQpc = data.TimeStampQPC;
 #pragma warning restore CS0618
         return new(timestampQpc, data.TimeStampRelativeMSec, processId, data.ThreadID, provider,
-            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider), marker);
+            (int)data.Channel == TraceLoggingChannel, data.EventName, (int)data.Opcode, CopyFields(data, provider), marker,
+            (int)data.ID, data.Version);
     }
 
     private static EventField[] CopyFields(TraceEvent data, XamlProvider provider)

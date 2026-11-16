@@ -517,21 +517,26 @@ public static class SessionFile
         string? filter)
     {
         filter = string.IsNullOrWhiteSpace(filter) ? null : filter.Trim();
-        long? number = filter is null ? null
-            : filter.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                ? ulong.TryParse(filter.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex)
-                    ? unchecked((long)hex) : null
+        var isHex = filter?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) == true;
+        ulong? unsigned = filter is null ? null
+            : ulong.TryParse(isHex ? filter.AsSpan(2) : filter.AsSpan(),
+                isHex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var handle)
+                ? handle : null;
+        long? number = isHex ? unsigned is { } hex ? unchecked((long)hex) : null
+            : filter is null ? null
                 : long.TryParse(filter, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
+        // json_each rounds large unsigned integers to REAL; compare their original JSON tokens instead.
         return ($"""
             FROM {scope.From}
             WHERE {scope.Where} AND ($bucket IS NULL OR d.Bucket = $bucket)
                 AND ($like IS NULL OR d.Name LIKE $like ESCAPE '\' OR EXISTS (
                     SELECT 1 FROM json_each(d.Payload) v
-                    WHERE ($number IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
-                        OR (v.type IN ('integer', 'real') AND v.value = $number)))
+                    WHERE ($number IS NULL AND $unsigned IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
+                        OR (v.type IN ('integer', 'real') AND v.value = $number)
+                        OR ($unsigned IS NOT NULL AND v.type = 'integer' AND (d.Payload -> v.key) = $unsigned)))
             """, [.. scope.Parameters, ("$bucket", bucket),
                 ("$like", filter is null ? null : $"%{filter.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_")}%"),
-                ("$number", number)]);
+                ("$number", number), ("$unsigned", unsigned is > long.MaxValue ? unsigned.Value.ToString(CultureInfo.InvariantCulture) : null)]);
     }
 
     // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and then any others, which the sink reads from the
@@ -562,9 +567,10 @@ public static class SessionFile
         var marker = HasColumn(connection, transaction, "EventTypes", "ProviderId") ? "ProviderName, ProviderId" : "NULL, NULL";
         // Files written before launcher events were added have none.
         var launcher = HasColumn(connection, transaction, "EventTypes", "Launcher") ? "Launcher" : "0";
+        var identity = HasColumn(connection, transaction, "EventTypes", "EventId") ? "EventId, Version" : "NULL, NULL";
         var types = new Dictionary<long, StoredType>();
         using (var command = Command(connection, transaction,
-            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher} FROM EventTypes"))
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher}, {identity} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
             long read = 0;
@@ -584,7 +590,8 @@ public static class SessionFile
                     ? new MarkerProvider(reader.GetString(7), Guid.Parse(reader.GetString(8)))
                     : null;
                 types[reader.GetInt64(0)] = new(provider, markerProvider, reader.GetBoolean(6), reader.GetString(2),
-                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9));
+                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9),
+                    reader.IsDBNull(10) ? null : reader.GetInt32(10), reader.IsDBNull(11) ? null : reader.GetInt32(11));
             }
 
             SessionQueries.Report(command, read);
@@ -604,7 +611,7 @@ public static class SessionFile
                 var type = types[reader.GetInt64(2)];
                 sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, type.Launcher ? launcherProcessId : info.ProcessId,
                     reader.GetInt32(1), type.Provider, type.TraceLogging, type.Name, type.Opcode,
-                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker), reader);
+                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker, type.EventId, type.Version), reader);
                 delivered++;
             }
 
@@ -616,7 +623,7 @@ public static class SessionFile
 
     // An EventTypes row.
     private sealed record StoredType(XamlProvider Provider, MarkerProvider? Marker, bool TraceLogging, string Name, int Opcode,
-        string[] Names, FieldType[] Types, bool Launcher)
+        string[] Names, FieldType[] Types, bool Launcher, int? EventId, int? Version)
     {
         public Guid ProviderId => Marker?.Id ?? XamlProviders.IdOf(Provider);
     }
