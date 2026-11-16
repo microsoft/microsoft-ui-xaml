@@ -43,7 +43,10 @@ namespace MUXControlsTestApp
             };
             GotFocus += (sender, args) =>
             {
-                if (FocusManager.GetFocusedElement(XamlRoot) is ListViewItem item)
+                var focusedElement = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
+                FocusEntryFocusedElementType.Text = focusedElement?.GetType().Name ?? "";
+                var item = focusedElement.FindVisualParentByType<ListViewItem>();
+                if (item != null)
                 {
                     FocusEntryFocusedIndex.Text = FocusEntryList.IndexFromContainer(item).ToString(CultureInfo.InvariantCulture);
                     FocusEntryOffsetAtFocus.Text = CurrentOffset.ToString(CultureInfo.InvariantCulture);
@@ -103,6 +106,8 @@ namespace MUXControlsTestApp
             var panel = (ItemsWrapGrid)FocusEntryList.ItemsPanelRoot;
             panel.Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
             panel.CacheLength = CacheLength.SelectedIndex == 0 ? 0 : 2;
+            FocusEntryList.ItemTemplate = FocusableChildren.IsChecked == true ?
+                (DataTemplate)Resources["FocusableChildrenTemplate"] : null;
             FocusEntryList.ItemsSource = Enumerable.Range(1, FiveItems.IsChecked == true ? 5 : 39).Select(value => value.ToString()).ToList();
             FocusEntryList.SelectedIndex = 0;
             FocusEntryList.UpdateLayout();
@@ -162,6 +167,11 @@ namespace MUXControlsTestApp
         private void FocusListFromCode_Click(object sender, RoutedEventArgs args)
         {
             FocusEntryList.Focus(FocusState.Keyboard);
+        }
+
+        private void LeaveListFocusTarget_Click(object sender, RoutedEventArgs args)
+        {
+            ((Control)sender).Focus(FocusState.Keyboard);
         }
     }
 }

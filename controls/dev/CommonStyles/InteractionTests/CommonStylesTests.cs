@@ -467,6 +467,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ListViewTabReentryWithDifferentSelectedAndLastFocusedItems()
+        {
+            foreach (bool focusableChildren in new[] { false, true })
+            foreach (bool fromAfterList in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+                {
+                    Log.Comment($"Tab reentry: focusableChildren={focusableChildren}, fromAfterList={fromAfterList}.");
+                    new CheckBox(FindElement.ById("FiveItems")).Check();
+                    new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
+                    if (focusableChildren)
+                    {
+                        new CheckBox(FindElement.ById("FocusableChildren")).Check();
+                    }
+                    new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+                    Wait.ForIdle();
+
+                    KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                    KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "2");
+                    Verify.AreEqual("0", GetFocusEntryText("FocusEntrySelectedIndex"));
+
+                    new Button(FindElement.ById(fromAfterList ? "AfterListFocusTarget" : "BeforeListFocusTarget")).Invoke();
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "-1");
+                    PressTabIntoList(fromAfterList);
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "0");
+                    Verify.AreEqual("0", GetFocusEntryText("FocusEntrySelectedIndex"));
+                    Verify.AreEqual("0", GetFocusEntryText("FocusEntryFocusedIndex"));
+                    Verify.AreEqual("ListViewItem", GetFocusEntryText("FocusEntryFocusedElementType"),
+                        "The existing GettingFocus redirection must target the selected container, not a different child tab stop.");
+                }
+            }
+        }
+
+        [TestMethod]
         public void ListViewFocusFromCodeRestoresLastFocusedItem()
         {
             using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))

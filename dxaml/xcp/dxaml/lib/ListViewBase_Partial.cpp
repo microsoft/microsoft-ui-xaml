@@ -1146,12 +1146,7 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
             }
             else
             {
-                // Use the eventual focus-entry target so no other item is scrolled into view first.
-                IFC(GetTabEntryTargetIndex(isBackward, &targetFocusedIndex));
-                if (targetFocusedIndex < 0)
-                {
-                    targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
-                }
+                targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
             }
         }
     }
