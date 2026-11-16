@@ -258,7 +258,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     else if (isFocusedAfterPendingMove)
     {
         m_pendingFocusMoveElement.set(element);
-        m_pendingFocusMoveClearedByRemove = IsProcessingRemove();
+        m_pendingFocusMoveOnChangeProcessed = IsProcessingRemove();
     }
 
     if (hasFocus && m_pendingFocusMoveElement)
@@ -306,6 +306,8 @@ bool ViewManager::IsFocusMovePendingFor(const winrt::UIElement& element) const
 // layout the realized range is being updated, so a target picked now could be cleared next.
 void ViewManager::OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex)
 {
+    // False when focus is in a nested repeater inside the element (ContainsNestedFocus).
+    const bool isTrackedElement = m_lastFocusedElement == element;
     m_lastFocusedElement.set(nullptr);
     clearedIndex = AdjustClearedIndexForCollectionChange(clearedIndex);
     const auto focusState = GetFocusStateForMove();
@@ -330,7 +332,11 @@ void ViewManager::OnFocusedElementCleared(const winrt::UIElement& element, int c
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
     m_pendingFocusMoveInterimElement = nullptr;
-    m_pendingFocusMoveClearedByRemove = IsProcessingRemove();
+    // Also after a Replace of the tracked element. Not when focus is in a nested repeater inside the element: the layout
+    // reuses the element for the new item and the nested repeater keeps focus at the same inner position.
+    const auto change = m_owner->ProcessingCollectionChange();
+    m_pendingFocusMoveOnChangeProcessed = IsProcessingRemove() ||
+        (isTrackedElement && change && change.Action() == winrt::NotifyCollectionChangedAction::Replace);
 }
 
 bool ViewManager::IsProcessingRemove()
@@ -459,7 +465,7 @@ bool ViewManager::TryRecordFocusReturnedToClearedElement(const winrt::UIElement&
     m_pendingFocusMoveFocusLeftOwner = false;
     m_pendingFocusMoveFocusAfterClear = nullptr;
     m_pendingFocusMoveInterimElement = nullptr;
-    m_pendingFocusMoveClearedByRemove = false;
+    m_pendingFocusMoveOnChangeProcessed = false;
     return true;
 }
 
@@ -528,7 +534,7 @@ void ViewManager::OnOwnerLayoutUpdated()
         m_pendingFocusMoveElement.set(newFocusedChild);
         m_pendingFocusMoveIndex = clearedIndex;
         m_pendingFocusMoveState = focusState;
-        m_pendingFocusMoveClearedByRemove = false;
+        m_pendingFocusMoveOnChangeProcessed = false;
         return;
     }
 
@@ -537,12 +543,14 @@ void ViewManager::OnOwnerLayoutUpdated()
 
 // The owner processed a change of its items source; this runs outside of the change and of layout. Input that is already
 // queued (keys pressed in a row) is delivered before the next layout pass, so focus must not stay on an element that a
-// Remove cleared until then: move it now to the realized element nearest to the cleared index, among the elements that
-// the change kept (after a Remove, the item that follows the removed one has its index). Not done for a Replace or a
-// Reset: the layout realizes the new item at the cleared index, possibly in the cleared element, which keeps focus then.
+// Remove or a Replace cleared until then: move it now to the realized element nearest to the cleared index, among the
+// elements that the change kept (after a Remove, the item that follows the removed one has its index). The move after the
+// layout pass then moves focus to the item at the cleared index (after a Replace, the new item). Not done for a Reset, or
+// when focus is in a nested repeater inside the element cleared by a Replace: the layout reuses the element for the new
+// item and the nested repeater keeps focus at the same inner position.
 void ViewManager::OnOwnerCollectionChangeProcessed()
 {
-    if (!m_pendingFocusMoveElement || !m_pendingFocusMoveClearedByRemove)
+    if (!m_pendingFocusMoveElement || !m_pendingFocusMoveOnChangeProcessed)
     {
         return;
     }
@@ -735,7 +743,7 @@ bool ViewManager::TryMovePendingFocusToRealizedChild()
         m_pendingFocusMoveElement.set(newFocusedChild);
         m_pendingFocusMoveIndex = clearedIndex;
         m_pendingFocusMoveState = focusState;
-        m_pendingFocusMoveClearedByRemove = false;
+        m_pendingFocusMoveOnChangeProcessed = false;
         return true;
     }
 

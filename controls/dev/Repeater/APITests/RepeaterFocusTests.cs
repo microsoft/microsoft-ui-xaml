@@ -3483,6 +3483,109 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: StackLayout, 8 items, keyboard focus on item 2. The focused item is replaced (data[2] = x), and focus is
+        //           read right after the change, before the next layout pass, as a handler for a queued key would see it.
+        // Expected: right after the Replace focus is on a live item that shows its data; after layout focus is on the
+        //           replacement at index 2 with the keyboard FocusState.
+        // A failure means: focus stays on the cleared, recycled element (index -1, no DataContext) until the layout pass, so
+        //           keys delivered before it reach an element that no longer shows an item.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing the focused item moves focus to a live item before the next layout pass, and to the replacement after it.")]
+        public void VerifyReplacingFocusedItemMovesFocusToLiveItemBeforeLayout()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 8).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            RunOnUIThread.Execute(() =>
+            {
+                data[2] = "Replaced #2";
+                var container = GetFocusedContainer(fixture.Repeater, out var focused);
+                Log.Comment("Right after the Replace: focused " + DescribeElement(fixture.Repeater, focused));
+                Verify.IsNotNull(container, "Focus is inside the repeater.");
+                int index = fixture.Repeater.GetElementIndex(container);
+                Verify.IsTrue(index >= 0, "Right after the Replace focus is on a live item, not on a cleared element.");
+                Verify.AreEqual(data[index], (focused as ContentControl)?.Content?.ToString(), "The focused item shows its data.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i], expectedIndex: 2, expectedFocusState: FocusState.Keyboard);
+            });
+        }
+
+        // Scenario: StackLayout, 8 items, keyboard focus on item 2; the repeater's KeyDown handler replaces the item of the
+        //           element that got a Delete key (data[i] = data[i] + "*"). Three Delete presses are sent at once (one
+        //           SendInput call), so the second and third keys are queued before the layout pass that follows the first Replace.
+        // Expected: every key is delivered to a live item; after layout focus is on a live item.
+        // A failure means: a key is delivered to the cleared, recycled element (index -1, null DataContext).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that Delete keys queued right after the focused item is replaced are delivered to live items, not to the cleared element.")]
+        public void VerifyQueuedKeysAfterReplacingFocusedItemReachLiveItems()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 8).Select(i => "Item #" + i));
+            var fixture = CreateFocusFixture(data);
+            var keyLog = new List<string>();
+            int keysOnClearedElement = 0;
+            var allKeysHandled = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                fixture.Repeater.KeyDown += (s, e) =>
+                {
+                    if (e.Key != global::Windows.System.VirtualKey.Delete)
+                    {
+                        return;
+                    }
+
+                    var current = e.OriginalSource as DependencyObject;
+                    while (current != null && VisualTreeHelper.GetParent(current) != fixture.Repeater)
+                    {
+                        current = VisualTreeHelper.GetParent(current);
+                    }
+
+                    int index = current is UIElement element ? fixture.Repeater.GetElementIndex(element) : -2;
+                    keyLog.Add($"Delete on element index {index}, content '{(current as ContentControl)?.Content}', DataContext '{(current as FrameworkElement)?.DataContext}'");
+                    if (index >= 0)
+                    {
+                        data[index] = data[index] + "*";
+                    }
+                    else
+                    {
+                        keysOnClearedElement++;
+                    }
+
+                    e.Handled = true;
+                    if (keyLog.Count == 3)
+                    {
+                        allKeysHandled.Set();
+                    }
+                };
+            });
+            FocusItemAndWait(fixture.Repeater, 2, FocusState.Keyboard);
+
+            var inputs = new List<InputData>();
+            for (int k = 0; k < 3; k++)
+            {
+                inputs.Add(new InputData { type = 1 /* INPUT_KEYBOARD */, u = new InputUnion { ki = new KeyboardInputData { wVk = 0x2E /* VK_DELETE */ } } });
+                inputs.Add(new InputData { type = 1 /* INPUT_KEYBOARD */, u = new InputUnion { ki = new KeyboardInputData { wVk = 0x2E, dwFlags = 2 /* KEYEVENTF_KEYUP */ } } });
+            }
+            Verify.AreEqual((uint)inputs.Count, SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<InputData>()), "Precondition: the keys are sent.");
+            Verify.IsTrue(allKeysHandled.WaitOne(DefaultWaitTimeInMS), "Precondition: the three Delete keys reached the repeater.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var line in keyLog)
+                {
+                    Log.Comment(line);
+                }
+                Log.Comment("Data: " + string.Join(", ", data));
+                Verify.AreEqual(0, keysOnClearedElement, "No key is delivered to a cleared element.");
+                VerifyFocusOnLiveItem(fixture.Repeater, i => data[i]);
+            });
+        }
+
         // Scenario: no ItemTemplate, 8 UIElement items, keyboard focus on the last item. In the same handler the app removes
         //           the item and focuses the "After" Button. When the element leaves the tree the core already moves focus to
         //           the next tab stop, "After", so the app's Focus call does not change focus.
