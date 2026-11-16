@@ -437,6 +437,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: an ItemsRepeater with a NonVirtualizingLayout uses an element factory whose RecycleElement throws for the
+        //           first element recycled by an ItemsSource replacement (the test catches the exception from the setter).
+        //           ItemsSource is then replaced again, which recycles the remaining elements normally.
+        // Expected: after the second replacement the args object passed to the throwing call no longer holds the element or
+        //           the repeater, and the later RecycleElement calls get their element and the repeater, through the
+        //           repeater's cached args as before the exception.
+        // A failure means: the exception left Element and Parent set on the repeater's cached RecycleElement args, so they
+        //           keep the element and the repeater for the repeater's lifetime and every later recycle uses new args
+        //           (task.ms/62261645).
+        [TestMethod]
+        [TestProperty("Description", "Verifies RecycleElement args are reset after RecycleElement throws during an ItemsSource replacement on a NonVirtualizingLayout repeater.")]
+        public void VerifyRecycleElementArgsAreResetAfterRecycleElementThrowsWithNonVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var elementFactory = new ThrowOnceElementFactory();
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = elementFactory,
+                    Layout = new MyCustomNonVirtualizingStackLayout(),
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var oldElements = elementFactory.Created.ToList();
+                elementFactory.Created.Clear();
+                Verify.AreEqual(3, oldElements.Count);
+
+                elementFactory.ThrowOnNextRecycle = true;
+                int hresult = CaptureHResult(() => repeater.ItemsSource = Enumerable.Range(0, 3).Select(i => "New item #" + i).ToList());
+                Log.Comment($"First ItemsSource replacement (RecycleElement throws) returned HResult=0x{hresult:X8}");
+                Verify.AreEqual(1, elementFactory.Calls.Count, "Only the throwing RecycleElement call ran during the first replacement.");
+                var thrownCall = elementFactory.Calls[0];
+                Verify.IsTrue(thrownCall.Threw, "The first RecycleElement call threw.");
+                Verify.IsTrue(oldElements.Contains(thrownCall.ElementBefore), "args.Element of the throwing call is one of the old elements.");
+                Verify.AreEqual(repeater, thrownCall.ParentBefore, "args.Parent of the throwing call is the repeater.");
+
+                repeater.ItemsSource = Enumerable.Range(0, 2).Select(i => "Last item #" + i).ToList();
+
+                var laterCalls = elementFactory.Calls.Skip(1).ToList();
+                Verify.AreEqual(oldElements.Count - 1, laterCalls.Count, "The second replacement recycles the elements the first one did not reach.");
+                foreach (var call in laterCalls)
+                {
+                    Log.Comment(string.Format("Later RecycleElement for element #{0}: Parent is repeater: {1}, same args object as the throwing call: {2}",
+                        oldElements.IndexOf(call.ElementBefore), call.ParentBefore == repeater, ReferenceEquals(call.Args, thrownCall.Args)));
+                    Verify.IsFalse(call.Threw);
+                    Verify.IsTrue(oldElements.Contains(call.ElementBefore), "args.Element is one of the old elements.");
+                    Verify.AreNotEqual(thrownCall.ElementBefore, call.ElementBefore, "The element whose recycle threw is not recycled again.");
+                    Verify.AreEqual(repeater, call.ParentBefore, "args.Parent is the repeater.");
+                }
+
+                Log.Comment(string.Format("Args of the throwing call after the second replacement: Element set: {0}, Parent set: {1}",
+                    thrownCall.Args.Element != null, thrownCall.Args.Parent != null));
+                Verify.IsNull(thrownCall.Args.Element, "The args of the throwing call no longer hold its element.");
+                Verify.IsNull(thrownCall.Args.Parent, "The args of the throwing call no longer hold the repeater.");
+                foreach (var call in laterCalls)
+                {
+                    Verify.IsTrue(ReferenceEquals(call.Args, thrownCall.Args), "Later recycles use the repeater's cached args again.");
+                    Verify.IsNull(call.Args.Element);
+                    Verify.IsNull(call.Args.Parent);
+                }
+
+                Content.UpdateLayout();
+                Verify.AreEqual(2, elementFactory.Created.Count);
+                Verify.AreEqual(2, VisualTreeHelper.GetChildrenCount(repeater));
+            });
+        }
+
         // Scenario: an ItemsRepeater with a NonVirtualizingLayout uses an element factory that, in RecycleElement, puts the
         //           element in a RecyclePool with args.Parent as owner and hands it to another owner right away (so the
         //           pool removes it from the repeater's children); ItemsSource is replaced.
@@ -2413,6 +2482,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 call.ElementAfter = args.Element;
                 call.ParentAfter = args.Parent;
                 Calls.Add(call);
+            }
+        }
+
+        // Element factory whose RecycleElement throws once when ThrowOnNextRecycle is set, and records the args object
+        // and args.Element and args.Parent of every call.
+        private partial class ThrowOnceElementFactory : ElementFactory
+        {
+            public class RecycleCall
+            {
+                public ElementFactoryRecycleArgs Args;
+                public UIElement ElementBefore;
+                public UIElement ParentBefore;
+                public bool Threw;
+            }
+
+            public bool ThrowOnNextRecycle { get; set; }
+            public List<UIElement> Created { get; } = new List<UIElement>();
+            public List<RecycleCall> Calls { get; } = new List<RecycleCall>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                var element = new ContentControl { Width = 40, Height = 40 };
+                Created.Add(element);
+                return element;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                var call = new RecycleCall { Args = args, ElementBefore = args.Element, ParentBefore = args.Parent, Threw = ThrowOnNextRecycle };
+                Calls.Add(call);
+                if (ThrowOnNextRecycle)
+                {
+                    ThrowOnNextRecycle = false;
+                    Log.Comment("Throwing from RecycleElement");
+                    throw new InvalidOperationException("RecycleElement failed (test).");
+                }
             }
         }
 

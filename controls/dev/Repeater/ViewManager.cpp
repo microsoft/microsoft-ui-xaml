@@ -184,13 +184,18 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
             context = winrt::ElementFactoryRecycleArgs();
         }
 
+        // Reset the args even if RecycleElement throws, so that the cached args do not keep the element and the
+        // repeater, and are not seen as in use by later calls.
+        auto scopeGuard = gsl::finally([context]()
+            {
+                context.Element(nullptr);
+                context.Parent(nullptr);
+            });
+
         context.Element(element);
         context.Parent(*m_owner);
 
         m_owner->ItemTemplateShim().RecycleElement(context);
-
-        context.Element(nullptr);
-        context.Parent(nullptr);
     }
     else
     {
