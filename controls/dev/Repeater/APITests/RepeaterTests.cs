@@ -1004,6 +1004,109 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: an ItemsRepeater with a NonVirtualizingLayout and a custom element factory shows 3 items; its
+        //           ItemsSource is replaced, and the ElementClearing handler for the element X at position 0, 1 or 2
+        //           replaces ItemsSource again (a nested replacement that clears and recycles X while its ElementClearing is
+        //           still running), then realizes X again with GetOrCreateElement(0) (the factory hands X back) and
+        //           replaces ItemsSource a third time, which clears X again - all before the handler returns.
+        // Expected: ElementClearing is raised once for each lifetime of X (twice in total, the second time while X is
+        //           realized at index 0) and once for each other old element; X is recycled once per lifetime.
+        // A failure means: the repeater still treats X as being in the ElementClearing raise of its first lifetime and does
+        //           not raise ElementClearing when X is cleared in its second lifetime (or raises it twice).
+        [TestMethod]
+        [TestProperty("Description", "Verifies ElementClearing is raised again for an element that an ElementClearing handler re-realizes and clears again on a NonVirtualizingLayout repeater.")]
+        public void VerifyElementClearingIsRaisedAgainForElementRealizedAgainFromElementClearingWithNonVirtualizingLayout()
+        {
+            foreach (var position in new[] { 0, 1, 2 })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Element at position " + position + " is cleared, realized again and cleared again from its ElementClearing handler");
+                    UIElement reusedElement = null;
+                    bool reuse = false;
+                    var recycled = new List<UIElement>();
+                    var elementFactory = new MockElementFactory()
+                    {
+                        GetElementFunc = (index, owner) =>
+                        {
+                            if (reuse && reusedElement != null && recycled.Contains(reusedElement))
+                            {
+                                return reusedElement;
+                            }
+                            return new ContentControl { Width = 40, Height = 40 };
+                        },
+                        ClearElementFunc = (element, parent) => recycled.Add(element)
+                    };
+
+                    var repeater = new ItemsRepeater()
+                    {
+                        ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                        ItemTemplate = elementFactory,
+                        Layout = new MyCustomNonVirtualizingStackLayout(),
+                    };
+                    Content = repeater;
+                    Content.UpdateLayout();
+
+                    var oldElements = Enumerable.Range(0, 3).Select(i => repeater.TryGetElement(i)).ToList();
+                    Verify.IsTrue(oldElements.All(e => e != null), "3 elements realized.");
+                    reusedElement = oldElements[position];
+
+                    bool nestedChangesDone = false;
+                    UIElement realizedAgain = null;
+                    int recycledBeforeSecondClear = -1;
+                    var thirdSource = new List<string> { "Third #0", "Third #1" };
+                    var clearing = new List<(UIElement Element, int Index)>();
+                    repeater.ElementClearing += (sender, args) =>
+                    {
+                        var element = args.Element;
+                        clearing.Add((element, repeater.GetElementIndex(element)));
+                        if (!nestedChangesDone && element == reusedElement)
+                        {
+                            nestedChangesDone = true;
+                            Log.Comment("Replacing ItemsSource from ElementClearing");
+                            repeater.ItemsSource = new List<string> { "Nested #0", "Nested #1" };
+                            Log.Comment("Realizing item 0 again from ElementClearing");
+                            reuse = true;
+                            try
+                            {
+                                realizedAgain = repeater.GetOrCreateElement(0);
+                            }
+                            finally
+                            {
+                                reuse = false;
+                            }
+                            recycledBeforeSecondClear = recycled.Count(e => e == reusedElement);
+                            Log.Comment("Replacing ItemsSource a third time from ElementClearing");
+                            repeater.ItemsSource = thirdSource;
+                        }
+                    };
+
+                    repeater.ItemsSource = Enumerable.Range(0, 3).Select(i => "New item #" + i).ToList();
+
+                    Verify.IsTrue(nestedChangesDone);
+                    Verify.AreSame(reusedElement, realizedAgain, "GetOrCreateElement(0) realized the element that started the nested changes again.");
+                    Verify.AreEqual(1, recycledBeforeSecondClear, "The nested replacement recycled the element once before it was realized again.");
+                    for (int i = 0; i < oldElements.Count; i++)
+                    {
+                        var calls = clearing.Where(call => call.Element == oldElements[i]).ToList();
+                        Log.Comment(string.Format("Element {0}: ElementClearing {1} (indices {2}), RecycleElement {3}", i, calls.Count,
+                            string.Join(",", calls.Select(call => call.Index)), recycled.Count(element => element == oldElements[i])));
+                        int lifetimes = i == position ? 2 : 1;
+                        Verify.AreEqual(lifetimes, calls.Count, "ElementClearing is raised once per lifetime of element " + i + ".");
+                        Verify.AreEqual(lifetimes, recycled.Count(element => element == oldElements[i]), "Element " + i + " is recycled once per lifetime.");
+                    }
+                    var secondClearIndex = clearing.Where(call => call.Element == reusedElement).Select(call => call.Index).Skip(1).DefaultIfEmpty(int.MinValue).First();
+                    Verify.AreEqual(0, secondClearIndex, "The second ElementClearing of the element comes while it is realized at index 0.");
+                    Verify.AreEqual(4, clearing.Count);
+                    Verify.AreEqual(0, VisualTreeHelper.GetChildrenCount(repeater));
+
+                    Content.UpdateLayout();
+                    Verify.AreEqual(thirdSource.Count, repeater.ItemsSourceView.Count);
+                    Verify.AreEqual(thirdSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                });
+            }
+        }
+
         // Scenario: an ItemsRepeater with a NonVirtualizingLayout shows 3 items and has two C# ElementClearing handlers. Its
         //           ItemsSource is replaced; the first handler replaces ItemsSource again from the ElementClearing of the
         //           element at position 0, 1 or 2 (a nested replacement that clears the same element while its
