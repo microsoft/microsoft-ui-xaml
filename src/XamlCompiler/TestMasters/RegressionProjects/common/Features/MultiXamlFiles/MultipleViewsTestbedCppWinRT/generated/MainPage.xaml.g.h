@@ -64,16 +64,56 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
         {
             _MyControl = value;
         }
+
+        ::winrt::Microsoft::UI::Xaml::Controls::Grid DeferredContent()
+        {
+            return _DeferredContent;
+        }
+        void DeferredContent(::winrt::Microsoft::UI::Xaml::Controls::Grid value)
+        {
+            _DeferredContent = value;
+        }
+
+        ::winrt::hstring ViewText()
+        {
+            return _ViewText;
+        }
+        void ViewText(::winrt::hstring value)
+        {
+            _ViewText = value;
+        }
+
+        ::winrt::Windows::Foundation::IInspectable SharedText()
+        {
+            return _SharedText;
+        }
+        void SharedText(::winrt::Windows::Foundation::IInspectable value)
+        {
+            _SharedText = value;
+        }
+
+        ::winrt::Windows::Foundation::IInspectable EmptySharedText()
+        {
+            return _EmptySharedText;
+        }
+        void EmptySharedText(::winrt::Windows::Foundation::IInspectable value)
+        {
+            _EmptySharedText = value;
+        }
         
     protected:
         bool _contentLoaded{false};
 
     private:
         struct MainPage_obj1_Bindings;
-        struct MainPage_obj4_Bindings;
+        struct MainPage_obj8_Bindings;
 
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _DisplayText{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::Primitives::ButtonBase _MyControl{nullptr};
+        ::winrt::Microsoft::UI::Xaml::Controls::Grid _DeferredContent{nullptr};
+        ::winrt::hstring _ViewText{};
+        ::winrt::Windows::Foundation::IInspectable _SharedText{nullptr};
+        ::winrt::Windows::Foundation::IInspectable _EmptySharedText{nullptr};
     };
 }
 

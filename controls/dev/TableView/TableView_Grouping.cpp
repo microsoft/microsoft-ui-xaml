@@ -494,7 +494,9 @@ void TableView::ApplyGroupExpansionByIdentity(
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, identity, desired, generation, axis, bulkGeneration, subtree]()
+            QueueCoalescedEditReshape(
+                axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+                [this, identity, desired, generation, axis, bulkGeneration, subtree]()
             {
                 ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
             });
@@ -576,6 +578,54 @@ void TableView::ApplyGroupExpansionByIdentity(
     // focus stranded is the very bug this guards. Matches on identity, so an unrelated queued
     // toggle does not consume this restore.
     RestoreContainerFocusIfPending(identity);
+
+    if (changed && axis == BulkExpansionAxis::Rows && !subtree &&
+        generation == m_rowMetadataGeneration && provider == m_tableViewSourceRowMetadata &&
+        bulkGeneration == BulkExpansionGeneration(axis))
+    {
+        AnnounceRowExpansionChange(identity);
+    }
+}
+
+void TableView::AnnounceRowExpansionChange(winrt::hstring const& identity)
+{
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification) ||
+        !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    {
+        return;
+    }
+
+    try
+    {
+        int32_t index = -1;
+        TableViewRowInfo info{};
+        if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) ||
+            !TryGetTableViewSourceRowInfo(index, info) ||
+            info.Kind != TableViewRowKind::Data || !info.IsExpandable)
+        {
+            return;
+        }
+
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            auto const announcement = ResourceAccessor::GetLocalizedStringResource(
+                info.IsExpanded ? SR_TableViewRowExpanded : SR_TableViewRowCollapsed);
+            if (!announcement.empty())
+            {
+                // Narrator does not voice the DataItem's ExpandCollapse change. Announce the
+                // completed request here, not during row preparation or bulk expansion.
+                peer.RaiseNotificationEvent(
+                    winrt::AutomationNotificationKind::ActionCompleted,
+                    winrt::AutomationNotificationProcessing::MostRecent,
+                    announcement,
+                    L"TableViewRowExpansionChanged");
+            }
+        }
+    }
+    catch (...)
+    {
+        // Narrator feedback is best-effort; announcement failures must not affect row expansion.
+    }
 }
 
 void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
@@ -812,12 +862,22 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // Older deferred work runs first, so a provider it replaces does not make this request look stale.
+    FlushDeferredEditReshapes();
+    // That work may have removed the axis; a documented no-op must not end an open edit.
+    if (!m_tableViewSourceRowMetadata ||
+        !((axis == BulkExpansionAxis::Rows) ? m_tableViewSourceRowMetadata->IsHierarchicalSource() : IsTableViewSourceGrouped()))
+    {
+        return;
+    }
     const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, expand, axis]()
+            QueueCoalescedEditReshape(
+                axis == BulkExpansionAxis::Groups ? TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+                [this, expand, axis]()
             {
                 ApplyBulkExpansion(expand, axis);
             });
@@ -1125,9 +1185,8 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
     }
 
-    // Update the projection in place. Re-pointing Content at a fresh instance every prepare would
-    // re-evaluate every binding in the content template and drop any binding the app made against
-    // the previous instance.
+    // Keep bindings live within a group, but never retarget an object held by an open menu to a
+    // different group when its header is recycled.
     auto const keyText = StringifyGroupKey(groupKey);
     auto const existing = header.Content().try_as<winrt::TableViewGroupInfo>();
 
@@ -1153,7 +1212,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         : isExpanded ? winrt::ExpandCollapseState::Expanded
         : winrt::ExpandCollapseState::Collapsed;
 
-    if (existing)
+    if (sameGroup)
     {
         winrt::get_self<TableViewGroupInfo>(existing)->UpdateInternal(groupKey, itemCount, level, keyText);
     }
@@ -1240,10 +1299,9 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
         return;
     }
 
-    // Leave Content in place: the pooled header is handed back for the next group and
-    // UpdateInternal re-points the same projection, which is the whole reason bindings survive
-    // recycling. Only the app-owned template is dropped, so a GroupHeaderTemplate change while
-    // this header sits in the pool cannot resurface.
+    // Leave Content in place for a same-group prepare. A different group gets a fresh projection,
+    // so references held by an open menu retain their original identity. Drop the app-owned
+    // template so a GroupHeaderTemplate change while this header sits in the pool cannot resurface.
     //
     // The owning-TableView weak ref is deliberately NOT cleared. On the element-factory path the
     // repeater leaves recycled containers parented, so an AT client that holds a provider across a

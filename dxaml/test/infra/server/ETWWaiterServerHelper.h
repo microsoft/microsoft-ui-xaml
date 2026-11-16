@@ -60,6 +60,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         public:
             static void Start(GUID providerGuid, unsigned long eventId);
             static void StartWithTaskName(GUID providerGuid, const wchar_t* taskName);
+            static void StartWithTaskNameAndPayload(GUID providerGuid, const wchar_t* taskName, const wchar_t* payloadCriteria);
             static void StartWithPayloadMatch(GUID providerGuid, unsigned long eventId, const wchar_t* payloadCriteria);
             static void Wait(GUID providerGuid, unsigned long eventId, unsigned int timeoutMs);
             static void WaitForTaskName(GUID providerGuid, const wchar_t* taskName, unsigned int timeoutMs);

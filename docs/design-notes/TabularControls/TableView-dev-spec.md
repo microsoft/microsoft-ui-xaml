@@ -159,6 +159,8 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 
 **Keyboard.** The column header is the keyboard target; the gripper is not a tab stop. `Alt+Left`/`Alt+Right` on a header call `TryKeyboardStep`, which owns direction, the RTL mirror, `KeyboardIncrement` (8) and the `Shift` multiplier (4×). `Alt` is the only resize modifier, as in WPF.
 
+**Double-click to fit.** A mouse double-click on a gripper (counted by the table from `PointerPressed`, handled events too, with press positions compared relative to the `XamlRoot` content, the space of the system double-click rectangle, so the tolerance holds under an ancestor scale) sets the column's `Width` in pixels, even when that leaves an `Auto` or `*` column's size unchanged, to the widest of its header and realized cells measured unconstrained, through the same `BeginDrag`/`TryDrag`/`EndDrag` path, so the gates, announcement and bounds match a drag: `MinWidth`/`MaxWidth` and `ResizeBoundsForColumn` (shrink-only with no donor, capped by the donor), so the result can be narrower than the content.
+
 **Bounds.** `ResizeBoundsForColumn` applies three rules derived by measuring WPF `DataGrid`:
 
 1. **Donor.** Only a resizable `*` column after the dragged one can give width, because only `*` columns are re-divided.
@@ -173,6 +175,12 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 | No donor, dragged column is `Pixel`/`Auto` | Shrink-only |
 
 A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanResize` changes; size changes apply on `DragCompleted`, not mid-drag.
+
+**Locked `*` columns.** A `*` column with `CanResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
+
+- **Start.** The first write of a resize (pointer, keyboard, UIA or double-click fit) holds every locked `*` column before the resized one at its `ActualWidth`, recording the `Auto` columns' total width and `LockedColumnHoldsSignature()`. Resizing an `Auto` column drops its width from the recorded `Auto` total, because it turns `Pixel`.
+- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
+- **Cancel.** A canceled drag puts back the holds that were in place before its first write.
 
 ## Row virtualization and recycling
 
@@ -392,6 +400,10 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
   the category (callback, validation, write, factory or data).
 - An app fault TableView recovers from (a throwing `BeginningEdit` or `CellEditEnding` handler,
   validation read, editing template or display factory) is reported, and the outcome stays TableView's.
+- A sort or expansion deferred past an edit close is replayed later, from a dispatcher callback or ahead of a newer
+  request, where no caller can see its exception. TableView swallows the exception there and reports it as a recovered
+  app fault under that deferred operation (sort, group expansion or hierarchy expansion). A header `Style`'s
+  `ContentTemplateSelector` that throws is reported the same way under the header refresh, and the header falls back to its text.
 - The exception carries the blame. Each call into app code rethrows the app's exception tagged with the category,
   as a `CallerError` with the same HRESULT and error info (running out of memory stays a `std::bad_alloc`), and the
   shaping engine throws the app's collection and contract failures the same way; the catch that decides an outcome

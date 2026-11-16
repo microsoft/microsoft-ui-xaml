@@ -83,6 +83,11 @@
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
       <Type>DefaultStyle</Type>
     </Page>
+    <!-- Also ship the back button styles in XamlControlsResources so that app XAML referencing them gets these
+         styles instead of the older copies in the framework's generic.xaml (#9536, #8636, #10973). -->
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
@@ -94,6 +99,11 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_perf2026.xaml">
       <Type>StylePerf2026</Type>
+    </Page>
+    <!-- Uses NavigationBackButton.xaml rather than the _perf2026 copy: MUXControlsTestApp only allows each file once
+         among the Perf2026 page types. Both copies look the same; the _perf2026 one only swaps Storyboards for Setters. -->
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_themeresources.xaml">
       <Type>ThemeResourcesPerf2026</Type>

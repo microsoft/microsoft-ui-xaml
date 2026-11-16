@@ -44,6 +44,8 @@ public sealed partial class MainWindow : Window
     // Whether the last refresh showed the end of a trace reading, which is announced once.
     private bool traceEndShown;
     private SavedTreeSnapshot? snapshot;
+    // The app named on the command line; its private WinUI DLLs are used while it is still the selected target.
+    private ProfilerCommandLine commandLine = ProfilerCommandLine.Empty;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
     private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
     public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
@@ -61,6 +63,7 @@ public sealed partial class MainWindow : Window
         ObjectsPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
         ObjectsPanel.Source = session;
+        LaunchPanel.Source = session;
         FramesPanel.ObjectRequested += (_, mention) =>
         {
             Tabs.SelectedItem = ObjectsTab;
@@ -82,6 +85,42 @@ public sealed partial class MainWindow : Window
         AppWindow.MoveAndResize(new RectInt32(Math.Clamp(position.X, area.X, area.X + area.Width - width),
             Math.Clamp(position.Y, area.Y, area.Y + area.Height - height), width, height));
     }
+
+    // Fills in the target settings from the command line when the window is shown, and connects if it asks to.
+    public void ApplyCommandLine(ProfilerCommandLine value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        if (value.Kind is not { } kind)
+        {
+            return;
+        }
+
+        Root.Loaded += Apply;
+
+        void Apply(object sender, RoutedEventArgs args)
+        {
+            Root.Loaded -= Apply;
+            // Changing the mode clears the target, so the target is set after it.
+            Mode.SelectedIndex = kind == TargetLaunchKind.Packaged ? 1 : 0;
+            commandLine = value;
+            TargetText.Text = value.Target;
+            ArgumentsText.Text = value.Arguments;
+            Trust.IsChecked = Trust.IsChecked == true || value.TrustLocalBinaries;
+            UpdateTargetSummary();
+            Refresh();
+            if (value.Connect)
+            {
+                Connect_Click(ConnectButton, new RoutedEventArgs());
+            }
+        }
+    }
+
+    public void ReportError(Exception error) => model.ReportError(error);
+
+    // The command line's private WinUI DLLs, while its app is the selected target.
+    private PrivateRuntimeLaunch? PrivateRuntime => !TraceMode && commandLine.Kind == Kind &&
+        string.Equals(commandLine.Target, TargetText.Text.Trim(), StringComparison.OrdinalIgnoreCase)
+            ? commandLine.GetPrivateRuntime(Path.Combine(AppContext.BaseDirectory, "NativeLauncher")) : null;
 
     private async void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
     {
@@ -534,6 +573,8 @@ public sealed partial class MainWindow : Window
     {
         var target = TargetText.Text.Trim();
         TargetSummary.Text = target.Length == 0 ? Text("TargetSettingsHeader")
+            : !TraceMode && PrivateRuntime is { } runtime
+                ? Format("TargetSummaryPrivateFormat", Path.GetFileName(target), ArgumentsText.Text.Trim(), runtime.RuntimeDirectory)
             : !TraceMode ? Format("TargetSummaryFormat", Path.GetFileName(target), ArgumentsText.Text.Trim())
             : SelectedTraceProcess is { } process ? Format("TraceSummaryProcessFormat", Path.GetFileName(target.Trim('"')), process.ProcessId)
             : Format("TraceSummaryFormat", Path.GetFileName(target.Trim('"')));
@@ -566,7 +607,9 @@ Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
 Trust.IsChecked == true,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
-SessionsDirectory);
+SessionsDirectory,
+LaunchPanel.LoadConfig().Providers,
+PrivateRuntime);
             var progress = new Progress<ConnectionProgress>(value => DispatcherQueue.TryEnqueue(() =>
             {
                 if (closing || generation != connectionGeneration || !model.IsBusy)
@@ -576,6 +619,7 @@ SessionsDirectory);
 
                 model.ReportProgress(value);
             }));
+            session.BeginRecording();
             await model.ConnectAsync(options, progress);
             if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
             {
@@ -601,9 +645,10 @@ SessionsDirectory);
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
         Tabs.SelectedItem = FramesTab;
+        session.BeginRecording();
         try
         {
-            await model.OpenTraceAsync(path, process, SessionsDirectory);
+            await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
         catch (Exception error)
         {

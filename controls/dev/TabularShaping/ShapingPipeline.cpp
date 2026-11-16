@@ -179,7 +179,7 @@ namespace ShapingHelpers
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
         KeySelector const& key,
-        winrt::Windows::Foundation::IUnknown const& keyIdentity,
+        void const* keyIdentity,
         winrt::hstring const& sortMemberPath,
         SortDirection direction)
     {
@@ -291,7 +291,7 @@ namespace ShapingHelpers
 
     bool ShapingPipeline::HasMatchingSort(
         winrt::hstring const& axisToken,
-        winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+        void const* keyIdentity) const noexcept
     {
         return std::any_of(
             m_sorts.begin(),

@@ -9,7 +9,9 @@
                 <controls:XamlControlsResources />
             </ResourceDictionary.MergedDictionaries>
             <!-- Wherever a UI element or a visual is listed, an element is blue and a visual amber. The row tints are light enough
-                 to keep the text readable; the badges name the kind, so it shows without the colors too. -->
+                 to keep the text readable; the badges name the kind, so it shows without the colors too. In the Frames tab, a
+                 region of interest and the tick it ends with are teal, and an interesting row that is not a tick is gray; an
+                 accent bar marks them too. -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="ElementRowBackground" Color="#EAF1FB" />
@@ -20,6 +22,11 @@
                     <SolidColorBrush x:Key="VisualBadgeBackground" Color="#F8E0B8" />
                     <SolidColorBrush x:Key="VisualBadgeForeground" Color="#7A4A00" />
                     <SolidColorBrush x:Key="VisualBadgeBorderBrush" Color="#F8E0B8" />
+                    <SolidColorBrush x:Key="RegionRowBackground" Color="#D6EBEB" />
+                    <SolidColorBrush x:Key="RegionTickRowBackground" Color="#E8F4F4" />
+                    <SolidColorBrush x:Key="RegionAccent" Color="#0F6C74" />
+                    <SolidColorBrush x:Key="NonTickRowBackground" Color="#EDEDED" />
+                    <SolidColorBrush x:Key="NonTickAccent" Color="#8A8A8A" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="ElementRowBackground" Color="#213247" />
@@ -30,8 +37,13 @@
                     <SolidColorBrush x:Key="VisualBadgeBackground" Color="#5C4420" />
                     <SolidColorBrush x:Key="VisualBadgeForeground" Color="#F8E3C0" />
                     <SolidColorBrush x:Key="VisualBadgeBorderBrush" Color="#5C4420" />
+                    <SolidColorBrush x:Key="RegionRowBackground" Color="#1D3A3C" />
+                    <SolidColorBrush x:Key="RegionTickRowBackground" Color="#172C2E" />
+                    <SolidColorBrush x:Key="RegionAccent" Color="#4FB8C0" />
+                    <SolidColorBrush x:Key="NonTickRowBackground" Color="#2E2E2E" />
+                    <SolidColorBrush x:Key="NonTickAccent" Color="#9A9A9A" />
                 </ResourceDictionary>
-                <!-- High contrast keeps the system colors; the badges still tell the kinds apart. -->
+                <!-- High contrast keeps the system colors; the badges and accent bars still tell the kinds apart. -->
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="ElementRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="VisualRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
@@ -41,6 +53,11 @@
                     <SolidColorBrush x:Key="VisualBadgeBackground" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="VisualBadgeForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="VisualBadgeBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="RegionRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="RegionTickRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="RegionAccent" Color="{ThemeResource SystemColorHighlightColor}" />
+                    <SolidColorBrush x:Key="NonTickRowBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="NonTickAccent" Color="{ThemeResource SystemColorGrayTextColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
             <Style x:Key="KindBadgeStyle" TargetType="Border">

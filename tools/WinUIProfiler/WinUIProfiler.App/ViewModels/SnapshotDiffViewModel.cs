@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.App.ViewModels;
 
@@ -9,46 +10,6 @@ namespace WinUIProfiler.App.ViewModels;
 public enum SnapshotChange { None = 0, Added = 1, Removed = 2, Properties = 4, Moved = 8, Reordered = 16 }
 
 public sealed record SnapshotPropertyChange(string Name, JsonElement? Before, JsonElement? After);
-
-public sealed record SnapshotResourceRow(string Metric, int? ResourceIndex, bool IsBytes, decimal? Before, decimal? After)
-{
-    public decimal? Delta => Before.HasValue && After.HasValue ? After.Value - Before.Value : null;
-}
-
-public sealed class SnapshotResourceComparison
-{
-    public IReadOnlyList<SnapshotResourceRow> Rows { get; }
-    public bool HasChanges { get; }
-
-    public SnapshotResourceComparison(SnapshotResourceCapture? before, SnapshotResourceCapture? after)
-    {
-        var old = before?.Values;
-        var current = after?.Values;
-        var rows = new List<SnapshotResourceRow>
-        {
-            new("AllocCount", null, false, Available(old?.AllocCount), Available(current?.AllocCount)),
-            new("AllocSize", null, true, Available(old?.AllocSize), Available(current?.AllocSize)),
-            new("AllocatedMemory", null, true, Available(old?.AllocatedMemory), Available(current?.AllocatedMemory)),
-            new("OutstandingAllocCount", null, false, Available(old?.OutstandingAllocCount), Available(current?.OutstandingAllocCount)),
-            new("OutstandingAllocSize", null, true, Available(old?.OutstandingAllocSize), Available(current?.OutstandingAllocSize))
-        };
-        var oldResources = old?.Resources.ToDictionary(resource => resource.Index) ?? [];
-        var newResources = current?.Resources.ToDictionary(resource => resource.Index) ?? [];
-        foreach (var index in oldResources.Keys.Union(newResources.Keys).Order())
-        {
-            oldResources.TryGetValue(index, out var previous);
-            newResources.TryGetValue(index, out var next);
-            rows.Add(new("TotalCreated", index, false, previous?.TotalCreated, next?.TotalCreated));
-            rows.Add(new("TotalDestroyed", index, false, previous?.TotalDestroyed, next?.TotalDestroyed));
-            rows.Add(new("LiveCount", index, false, previous?.LiveCount, next?.LiveCount));
-        }
-        Rows = rows.AsReadOnly();
-        HasChanges = before?.Status != after?.Status || before?.HResult != after?.HResult ||
-            rows.Any(row => row.Before != row.After);
-    }
-
-    private static decimal? Available(long? value) => value is -1 ? null : value;
-}
 
 public sealed class SnapshotNodeDiff(SnapshotTreeNode? before, SnapshotTreeNode? after,
     IReadOnlyList<SnapshotPropertyChange> properties)

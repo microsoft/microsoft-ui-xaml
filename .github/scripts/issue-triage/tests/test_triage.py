@@ -32,6 +32,7 @@ CATALOG = {
 def source(**changes):
     result = {
         "number": 100, "title": "Expander content flashes during first expansion",
+        "node_id": "I_example", "type": {"id": 1, "name": "Bug"},
         "body": BODY, "state": "open", "locked": False, "comments": 0,
         "created_at": "2026-09-01T00:00:00Z",
         "labels": [{"name": "bug"}, {"name": "needs-triage"}],
@@ -90,10 +91,13 @@ class FakeGitHub:
             next(item for item in self.comments if item["id"] == number)["body"] = payload["body"]
         elif suffix == "issues/100/labels" and method == "POST":
             self.issue["labels"] += [{"name": name} for name in payload["labels"]]
+        elif suffix == "issues/100" and method == "PATCH":
+            self.issue["type"] = {"id": 1, "name": payload["type"]}
         else:
             raise AssertionError("Forbidden write: " + suffix)
         if self.after_write:
             self.after_write()
+        return copy.deepcopy(self.issue)
 
 
 def agent_output(evidence, **changes):
@@ -107,6 +111,7 @@ def agent_output(evidence, **changes):
         "reproduction": "SUFFICIENT", "missing_information": "None",
         "missing_information_kind": "NONE",
         "uwp_specific": False, "uwp_reason": "None",
+        "impact": "OTHER", "workaround": False, "priority_reason": "None",
         "duplicate_candidates_json": "[]",
     }
     item.update(changes)
@@ -465,8 +470,15 @@ class ConditionalRoutingTests(TriageFixture):
     def test_conditional_rule_requires_evidence(self):
         with self.assertRaises(t.TriageError):
             self.result(routing_rule="rendering-artifact", routing_reason="None")
+
+    def test_overlong_routing_reason_is_bounded(self):
+        reason = "The reporter identifies the failing boundary and supporting evidence. " * 8
+        result = self.result(routing_reason=reason)
+        self.assertLessEqual(len(result["routing_reason"]), 400)
+        self.assertTrue(result["routing_reason"].endswith("…"))
+
         with self.assertRaises(t.TriageError):
-            self.result(routing_rule="rendering-artifact", routing_reason="x" * 401)
+            self.result(routing_reason="x" * 4097)
 
     def test_default_rule_accepts_explanations_without_changing_its_owner(self):
         result = self.result(routing_reason="This is a control-specific issue.")

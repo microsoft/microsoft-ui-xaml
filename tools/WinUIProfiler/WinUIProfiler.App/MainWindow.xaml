@@ -153,6 +153,9 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabViewItem>
+            <TabViewItem x:Name="LaunchTab" x:Uid="LaunchTab" IsClosable="False">
+                <views:LaunchView x:Name="LaunchPanel" />
+            </TabViewItem>
             <TabViewItem x:Name="FramesTab" x:Uid="FramesTab" IsClosable="False">
                 <views:FramesView x:Name="FramesPanel" />
             </TabViewItem>

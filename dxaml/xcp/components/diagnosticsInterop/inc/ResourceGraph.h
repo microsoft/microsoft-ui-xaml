@@ -182,13 +182,16 @@ namespace Diagnostics
 
         // Mapping of parser context to the style that it refers to.
         std::map<xref::weakref_ptr<CStyle>, StyleContext> m_styleContext;
+        xref::weakref_ptr<CStyle> m_nextStyleContextToInspect;
 
         // Map of template to the pre-resolved dictionary and key. We use the ControlTemplate because
         // at pre-resolve time the CTemplateContent hasn't been assigned to the CControlTempalet yet
         std::multimap<xref::weakref_ptr<CControlTemplate>, ResourceGraphKey> m_preResolveDictionaryMap;
+        xref::weakref_ptr<CControlTemplate> m_nextPreResolvedTemplateToInspect;
 
         using MarkupExtensionTargetMap = std::map<xref::weakref_ptr<CMarkupExtensionBase>, std::pair<KnownPropertyIndex, xref::weakref_ptr<CDependencyObject>>>;
         MarkupExtensionTargetMap m_markupExtensionMap;
+        xref::weakref_ptr<CMarkupExtensionBase> m_nextMarkupExtensionToInspect;
 
 
 #pragma endregion

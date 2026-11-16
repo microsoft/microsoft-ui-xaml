@@ -927,9 +927,9 @@ void InkPresenter::RaiseStrokesErased(winrt::Windows::Foundation::Collections::I
     m_strokesErasedEvent(*this, *winrt::make_self<InkStrokesErasedEventArgs>(strokes));
 }
 
-// Shows/hides the ruler stencil. The InkPresenterRuler is thread-affine to the OS presenter,
-// so it is created on first enable and toggled entirely on the ink thread. m_inkRuler is only
-// ever touched inside these serialized ink-thread work items.
+// Shows/hides the ruler stencil. The InkPresenterRuler is constructed against the OS presenter, so it is
+// created on first enable on the ink thread; m_inkRuler is only assigned inside these serialized
+// ink-thread work items.
 void InkPresenter::SetRulerEnabled(bool enabled)
 {
     // Capture a strong ref to this proxy (rather than raw 'this') so the m_inkRuler member
@@ -948,10 +948,7 @@ void InkPresenter::SetRulerEnabled(bool enabled)
         });
 }
 
-// Shows/hides the protractor stencil. Mirrors SetRulerEnabled: the InkPresenterProtractor is
-// thread-affine to the OS presenter, so it is created on first enable and toggled entirely on
-// the ink thread. m_inkProtractor is only ever touched inside these serialized ink-thread work
-// items.
+// Shows/hides the protractor stencil. Mirrors SetRulerEnabled.
 void InkPresenter::SetProtractorEnabled(bool enabled)
 {
     QueueInkPresenterWorkItem(
@@ -966,4 +963,36 @@ void InkPresenter::SetProtractorEnabled(bool enabled)
                 strongThis->m_inkProtractor.IsVisible(enabled);
             }
         });
+}
+
+inking::InkPresenterRuler InkPresenter::EnsureRuler()
+{
+    inking::InkPresenterRuler ruler{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&ruler, strongThis = get_strong()](inking::InkPresenter const& presenter)
+        {
+            if (!strongThis->m_inkRuler)
+            {
+                strongThis->m_inkRuler = inking::InkPresenterRuler(presenter);
+            }
+            ruler = strongThis->m_inkRuler;
+        },
+        /* pumpMessages */ false);
+    return ruler;
+}
+
+inking::InkPresenterProtractor InkPresenter::EnsureProtractor()
+{
+    inking::InkPresenterProtractor protractor{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&protractor, strongThis = get_strong()](inking::InkPresenter const& presenter)
+        {
+            if (!strongThis->m_inkProtractor)
+            {
+                strongThis->m_inkProtractor = inking::InkPresenterProtractor(presenter);
+            }
+            protractor = strongThis->m_inkProtractor;
+        },
+        /* pumpMessages */ false);
+    return protractor;
 }

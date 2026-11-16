@@ -14,6 +14,7 @@
 #include <TestCleanupWrapper.h>
 #include "TreeHelper.h"
 #include "ETWWaiterProxy.h"
+#include "TraceConsumerSession.h"
 #include "TextBoxGenericTests.h"
 #include <AutomationClient\AutomationGenericTests.h>
 #include <AutomationClient\AutomationEventHandler.h>
@@ -558,6 +559,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         TestServices::WindowHelper->WaitForIdle();
 
+        TraceConsumerSession traceSession(WINDOWS_UI_XAML_ETW_PROVIDER);
+        TraceConsumer::EnableTracingByEventId(SetIhmKeyboardSkinInfo_value);
+        RunOnUIThread([]()
+        {
+            TraceConsumer::BeginCountingForCurrentProcess();
+        });
+
         ETWWaiterProxy etwWaiter;
 
         // Set input scope to NumericPin and check the ETW event to make sure correct IKS mode is set
@@ -565,7 +573,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             Platform::String^ etwValidationString = GetEtwFilterString(L"IKSkinValue", static_cast<int>(::TextInput_KeyboardSkins::Bitlocker));
             etwWaiter.Start(
                 WINDOWS_UI_XAML_ETW_PROVIDER,
-                SetIhmKeyboardSkinInfo_value,
+                L"SetIhmKeyboardSkin",
                 etwValidationString);
         }
 
@@ -589,7 +597,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             Platform::String^ etwValidationString = GetEtwFilterString(L"IKSkinValue", static_cast<int>(::TextInput_KeyboardSkins::Default));
             etwWaiter.Start(
                 WINDOWS_UI_XAML_ETW_PROVIDER,
-                SetIhmKeyboardSkinInfo_value,
+                L"SetIhmKeyboardSkin",
                 etwValidationString);
         }
 
@@ -607,6 +615,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         {
             VERIFY_ARE_EQUAL(passwordBox->InputScope->Names->GetAt(0)->NameValue, Xaml::Input::InputScopeNameValue::Password);
         });
+
+        traceSession.Stop();
+        VERIFY_NO_THROW(TraceConsumer::VerifyEventTraced(SetIhmKeyboardSkinInfo_value, 0));
 
         // Setting inputscope to anything else other than password and numericpin should throw InvalidArg exception
         RunOnUIThread([&]()

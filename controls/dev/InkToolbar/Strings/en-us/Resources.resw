@@ -86,21 +86,21 @@
     <value>button</value>
     <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
   </data>
-  <data name="InkToolbarDropDownButtonControlTypeName" xml:space="preserve">
-    <value>drop down button</value>
-    <comment>Accessible control type for built-in pen buttons with a flyout. UI Automation reports the expanded or collapsed state separately.</comment>
-  </data>
-  <data name="InkToolbarStencilDropDownControlTypeName" xml:space="preserve">
-    <value>dropdown</value>
-    <comment>Concise accessible control type for the measuring-tools dropdown. UI Automation reports the expanded or collapsed state separately.</comment>
-  </data>
   <data name="InkToolbarStencilButtonName" xml:space="preserve">
     <value>Measuring tools</value>
     <comment>Persistent accessible identity of the ruler/protractor dropdown, announced before the selected stencil name.</comment>
   </data>
+  <data name="InkToolbarStencilButtonNameFormat" xml:space="preserve">
+    <value>%1!s!, %2!s!</value>
+    <comment>Accessible name of the measuring-tools button. %1!s! is "Measuring tools" and %2!s! is the current measuring tool, for example "Ruler". Preserve the numbered inserts.</comment>
+  </data>
   <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
     <value>Open to choose a color from the palette</value>
     <comment>Accessible help for the ballpoint-pen, pencil and highlighter dropdowns.</comment>
+  </data>
+  <data name="InkToolbarToolButtonHelpTextFormat" xml:space="preserve">
+    <value>%1!s!, %2!s!</value>
+    <comment>Accessible help for the ballpoint-pen, pencil and highlighter buttons. %1!s! is the pen's existing help text, for example its selected color, and %2!s! is "Open to choose a color from the palette". Preserve the numbered inserts.</comment>
   </data>
   <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
     <value>Stroke eraser</value>
@@ -264,7 +264,11 @@
   </data>
   <data name="InkToolbarToolButtonSelectedStateName" xml:space="preserve">
     <value>selected</value>
-    <comment>Appended to an InkToolbar tool button's accessible name when it is the active tool, so Narrator announces the selected tool. The Custom control type suppresses the native selected-state read.</comment>
+    <comment>Added to an InkToolbar tool button's accessible name when it is the active tool, so Narrator announces the selected tool. The Custom control type suppresses the native selected-state read.</comment>
+  </data>
+  <data name="InkToolbarToolButtonSelectedNameFormat" xml:space="preserve">
+    <value>%1!s!, %2!s!</value>
+    <comment>Accessible name of the active InkToolbar tool button. %1!s! is the tool name, for example "Pencil", and %2!s! is "selected". Preserve the numbered inserts.</comment>
   </data>
   <data name="InkToolbarPenConfigurationSizeSliderName" xml:space="preserve">
     <value>Pen Size</value>
@@ -273,6 +277,10 @@
   <data name="InkToolbarStrokeWidthSliderRangeFormat" xml:space="preserve">
     <value>Minimum %1!s!, maximum %2!s!</value>
     <comment>Narrator help text for the InkToolbar pen-size slider, announcing the smallest and largest stroke width. %1!s! is the minimum value and %2!s! is the maximum value.</comment>
+  </data>
+  <data name="InkToolbarStrokeWidthSliderNameFormat" xml:space="preserve">
+    <value>%1!s!, %2!s!</value>
+    <comment>Accessible name of the InkToolbar pen-size slider. %1!s! is the slider name, for example "Pen Size", and %2!s! is its range, for example "Minimum 1, maximum 24". Preserve the numbered inserts.</comment>
   </data>
   <data name="InkToolbarBallpointPenFlyoutName" xml:space="preserve">
     <value>Ballpoint pen flyout</value>

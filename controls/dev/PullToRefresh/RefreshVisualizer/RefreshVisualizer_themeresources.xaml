@@ -10,7 +10,7 @@
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="HighContrast">
-      <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="{ThemeResource SystemColorHighlightTextColor}" />
+      <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>

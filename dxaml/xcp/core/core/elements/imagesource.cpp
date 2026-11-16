@@ -421,6 +421,34 @@ CImageSource::ResetSurfaces(
 //------------------------------------------------------------------------
 //
 //  Synopsis:
+//      Shows the previous source's hardware surface until this source
+//      decodes, the same way ReloadImage keeps the surface when UriSource
+//      changes. The surface can be shared through the surface cache, so
+//      the decoded bits must go to a new surface.
+//
+//------------------------------------------------------------------------
+void
+CImageSource::UsePreviousHardwareSurface(
+    _In_ CImageSource* previous
+    )
+{
+    // A hardware decode can leave this wrapper locked with no surface; SetHardwareSurface requires it unlocked.
+    if (!m_pImageSurfaceWrapper->HasAnySurface() &&
+        !m_pImageSurfaceWrapper->IsHardwareLocked() &&
+        previous->CheckForHardwareResources())
+    {
+        // Null while a background thread decode holds the hardware surface.
+        if (HWTexture* surface = previous->GetHardwareSurface())
+        {
+            m_pImageSurfaceWrapper->SetHardwareSurface(surface);
+            m_pImageSurfaceWrapper->SetForceRecreateHardwareResources();
+        }
+    }
+}
+
+//------------------------------------------------------------------------
+//
+//  Synopsis:
 //      Returns whether there is a hardware surface or tiles that are lost.
 //
 //------------------------------------------------------------------------
@@ -1527,6 +1555,11 @@ CImageSource::GetPixelHeight() const
     }
 }
 
+bool CImageSource::HasIntrinsicSize() const
+{
+    return IsMetadataAvailable() && m_imageMetadataView->GetImageMetadata()->hasIntrinsicSize;
+}
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -1739,6 +1772,14 @@ CImageSource::ReloadReleasedSoftwareImage()
         //ASSERT(!m_pImageSurfaceWrapper->MustKeepSystemMemory() || (m_spAbortableImageOperation != NULL));
 
         IFC_RETURN(RedecodeEncodedImage(TRUE));
+
+        // RedecodeEncodedImage leaves a DecodeToRenderSize image for the render walk to request, but the alpha mask
+        // path only requests a decode once the software surface exists. Track the image so the decode is requested
+        // after this frame.
+        if (m_fDecodeToRenderSize)
+        {
+            IFC_RETURN(GetContext()->StartTrackingImageForRenderWalk(this));
+        }
     }
 
     return S_OK;
@@ -2638,11 +2679,13 @@ CImageSource::DecodeToRenderSize(
     ASSERT(IsMetadataAvailable() && m_fDecodeToRenderSize);
     auto imageMetadata = m_imageMetadataView->GetImageMetadata();
 
-    // Clamp to the layout size which is the original size of the image.
+    // Clamp to the layout size which is the original size of the image. An SVG with an intrinsic size stays sharp
+    // above that size, so it isn't clamped.
     // Width/Height == 0 indicates full width/height from the render walk, so adjust it to the natural width/height
     if ((width == 0) ||
         ((width > imageMetadata->width) &&
-        (imageMetadata->width != 0)))
+        (imageMetadata->width != 0) &&
+        !imageMetadata->hasIntrinsicSize))
     {
         width = imageMetadata->width;
         height = imageMetadata->height;
@@ -2650,7 +2693,8 @@ CImageSource::DecodeToRenderSize(
 
     if ((height == 0) ||
         ((height > imageMetadata->height) &&
-        (imageMetadata->height != 0)))
+        (imageMetadata->height != 0) &&
+        !imageMetadata->hasIntrinsicSize))
     {
         width = imageMetadata->width;
         height = imageMetadata->height;
@@ -2978,6 +3022,20 @@ CImageSource::DecodeStreamWithSize(
             decodeParams));
 
         xref_ptr<IAbortableImageOperation> spAbortableImageOperation;
+
+        if (decodeToRenderSize)
+        {
+            // Same recovery as RS5 Bug #18515061 below: a request that lost its decoder to another BitmapImage
+            // with the same URI can't decode.
+            if (m_spAbortableImageOperation != nullptr && !m_spAbortableImageOperation->HasDecoder())
+            {
+                m_spAbortableImageOperation.reset();
+            }
+
+            // Don't look up the hardware surface cache with the previous decode's size; upload from the new
+            // software surface instead.
+            m_spPendingDecodeParams = nullptr;
+        }
 
         // For printing purpose we need to do synchronousDecode and it should not affect the
         // already existing long running operation. However for SetSource we may also need to

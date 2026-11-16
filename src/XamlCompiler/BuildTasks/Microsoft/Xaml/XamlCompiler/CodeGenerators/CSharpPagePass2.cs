@@ -234,6 +234,8 @@ this.Write(this.ToStringHelper.ToStringWithCulture(objectInitName));
 
 this.Write(" = ");
 
+this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.UsingCSWinRT && element.Type.IsString() ? "target == null ? null : " : ""));
+
 this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
 this.Write(";\r\n");

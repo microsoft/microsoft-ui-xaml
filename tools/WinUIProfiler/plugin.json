@@ -1,0 +1,36 @@
+{
+  "name": "winui-profiler",
+  "version": "0.1.0",
+  "description": "Answers questions about WinUI Profiler sessions (the .sqlite files the WinUI Profiler app and CLI record) from what the app's processors stored: launch milestones and first frames, UI-thread ticks and slow ticks, regions of interest, and the UI elements and visuals the events mention.",
+  "author": {
+    "name": "Microsoft"
+  },
+  "homepage": "https://github.com/microsoft/microsoft-ui-xaml/tree/main/tools/WinUIProfiler",
+  "repository": "https://github.com/microsoft/microsoft-ui-xaml",
+  "license": "MIT",
+  "keywords": [
+    "winui",
+    "xaml",
+    "performance",
+    "profiler",
+    "etw"
+  ],
+  "skills": "skills/",
+  "mcpServers": {
+    "winui-profiler": {
+      "type": "stdio",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${PLUGIN_ROOT}/scripts/Start-McpServer.ps1"
+      ],
+      "timeout": 600000,
+      "tools": [
+        "*"
+      ]
+    }
+  }
+}

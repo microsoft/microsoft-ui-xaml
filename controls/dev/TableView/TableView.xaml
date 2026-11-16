@@ -14,18 +14,12 @@
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
          the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
-        <!-- The control is a focus SCOPE, not a focus STOP: Tab must land on the header band and
-             then the body, never on the table element itself. Matches the ListView default style
-             (dxaml\xcp\dxaml\themes\generic.xaml), which sets IsTabStop="False" for the same
-             reason. Control.IsTabStop defaults to true, so this has to be stated.
-
-             Deliberately NOT paired with TabNavigation="Once". ListView sets that because it wants
-             exactly ONE stop for the whole control; TableView wants TWO - the header band and the
-             body - and Once here would swallow the body, leaving it unreachable by Tab. The two
-             stops come from the two bands owning their own scopes: KeyboardNavigationMode::Once on
-             PART_HeaderHost (TableView::OnApplyTemplate) and the same mode that ItemsRepeater sets
-             on itself for PART_RowsRepeater. -->
+        <!-- The control is ONE tab stop, not a stop of its own: IsTabStop="False" keeps focus off the
+             table element, and TabNavigation="Once" makes the header row and the body a single stop.
+             TableView redirects Tab and Shift+Tab entry to the header row (or the body when no
+             header is actionable), and the next Tab leaves the table. -->
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
@@ -82,6 +76,7 @@
                                     <ContentControl x:Name="PART_EmptyStatePresenter"
                                                     Visibility="Collapsed"
                                                     IsTabStop="False"
+                                                    TabNavigation="Local"
                                                     HorizontalAlignment="Stretch"
                                                     VerticalAlignment="Stretch"
                                                     HorizontalContentAlignment="Center"
@@ -477,7 +472,9 @@
 
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
         <StackPanel x:Name="TableViewDefaultGroupHeaderContentRoot" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="{Binding KeyText, Mode=OneWay}"
+            <!-- The text comes only from these bindings to TableViewGroupInfo: a restyled copy must keep them. -->
+            <TextBlock x:Name="TableViewGroupHeaderKeyText"
+                       Text="{Binding KeyText, Mode=OneWay}"
                        Style="{StaticResource TableViewGroupHeaderKeyTextStyle}" />
             <!-- Inherits Foreground so it follows the header's states and an app's Foreground. -->
             <TextBlock x:Name="TableViewGroupHeaderItemCountText"

@@ -49,6 +49,14 @@ FrameworkElement::FindNameImpl(
     auto namedObject = pCore->GetHandle()->TryGetElementByName(xephemeral_string_ptr(name), GetHandle());
     if (!namedObject) return S_OK;
 
+    if (namedObject->GetTypeIndex() == KnownTypeIndex::String)
+    {
+        // Return the string value rather than trying to create a DependencyObject peer.
+        CValue value;
+        value.WrapObjectNoRef(namedObject.get());
+        return CValueBoxer::UnboxObjectValue(&value, nullptr, ppReturnValue);
+    }
+
     ctl::ComPtr<DependencyObject> dxamlLayerObject;
     IFC_RETURN(pCore->GetPeer(namedObject.get(), &dxamlLayerObject));
     CValueBoxer::UnwrapExternalObjectReferenceIfPresent(ctl::as_iinspectable(dxamlLayerObject.Get()), ppReturnValue);
