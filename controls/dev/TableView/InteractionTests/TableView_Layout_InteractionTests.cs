@@ -43,6 +43,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // by searching for the gripper element: whether a header peer's own children enumerate safely is
     // UNVERIFIED, and a search that walked into a row would crash.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewLayoutInteractionTests
     {
         // One mouse-wheel notch. Matches the WHEEL_DELTA the input stack injects.

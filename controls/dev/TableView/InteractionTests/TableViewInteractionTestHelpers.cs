@@ -628,22 +628,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // (Application.cs: "Test app process ran for an unexpectedly long time"). A TableView class with ~30 passing
         // tests keeps a single instance alive past that, so the test that happens to straddle the mark fails with
         // 0xE0434352 before it starts. Call from every TestCleanup: once the instance is older than the threshold, the
-        // next TestSetupHelper restarts it. The app is also restarted after every few tests so pages leaked by one test
-        // (#12491) cannot accumulate and slow or destabilize the later ones.
+        // next TestSetupHelper restarts it.
         private static readonly TimeSpan s_appRestartThreshold = TimeSpan.FromMinutes(10);
-        private const int c_testsPerAppInstance = 4;
-        private static int s_testsSinceRestart;
 
         internal static void RestartAppIfLongRunning()
         {
-            if (++s_testsSinceRestart >= c_testsPerAppInstance)
-            {
-                Log.Comment("{0} tests have run in this test app instance; scheduling a restart.", s_testsSinceRestart);
-                s_testsSinceRestart = 0;
-                TestEnvironment.ShouldRestartApplication = true;
-                return;
-            }
-
             try
             {
                 var process = TestEnvironment.Application.Process;
@@ -651,7 +640,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("Test app has run for over {0} minutes; scheduling a restart before the AppWatcherThread limit.",
                         s_appRestartThreshold.TotalMinutes);
-                    s_testsSinceRestart = 0;
                     TestEnvironment.ShouldRestartApplication = true;
                 }
             }

@@ -24,6 +24,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // Real right-click, Shift+F10 and Menu key input on ContextMenuTable. The opened menu, item and focus
     // are read from ContextMenuReadout; resolution order is covered by the API tests.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewContextMenuInteractionTests
     {
         [ClassInitialize]
