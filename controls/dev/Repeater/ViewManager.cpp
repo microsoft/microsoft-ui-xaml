@@ -414,6 +414,27 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         return true;
     };
 
+    // The realized elements are re-indexed (and the realized range updated) before any event is raised, and
+    // ElementIndexChanged is raised at the end. So handlers see the index mapping of the new data, elements they realize
+    // are not re-indexed, and the change is fully applied to the realized elements even if a handler ends it.
+    struct IndexChange
+    {
+        winrt::UIElement element;
+        winrt::com_ptr<VirtualizationInfo> virtInfo;
+        int oldIndex;
+        int newIndex;
+    };
+    std::vector<IndexChange> indexChanges;
+    const auto updateIndex = [&indexChanges](const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int newIndex)
+    {
+        const int oldIndex = virtInfo->Index();
+        if (oldIndex != newIndex)
+        {
+            virtInfo->UpdateIndex(newIndex);
+            indexChanges.push_back({ element, virtInfo, oldIndex, newIndex });
+        }
+    };
+
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.
     switch (args.Action())
@@ -430,18 +451,13 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             const auto childCount = children.Size();
             for (unsigned i = 0u; i < childCount; ++i)
             {
-                if (hasChangeEnded())
-                {
-                    return;
-                }
-
                 const auto element = children.GetAt(i);
                 const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 const auto dataIndex = virtInfo->Index();
 
                 if (virtInfo->IsRealized() && dataIndex >= newIndex)
                 {
-                    UpdateElementIndex(element, virtInfo, dataIndex + newCount);
+                    updateIndex(element, virtInfo, dataIndex + newCount);
                 }
             }
         }
@@ -458,7 +474,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 if (virtInfo->IsRealized() && dataIndex >= newIndex)
                 {
                     auto element = elementInfo.PinnedElement();
-                    UpdateElementIndex(element, virtInfo, dataIndex + newCount);
+                    updateIndex(element, virtInfo, dataIndex + newCount);
                 }
             }
         }
@@ -501,11 +517,6 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             const auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
-                if (hasChangeEnded())
-                {
-                    return;
-                }
-
                 const auto element = children.GetAt(i);
                 const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 const auto dataIndex = virtInfo->Index();
@@ -514,13 +525,13 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 {
                     if (dataIndex >= oldStartIndex + oldCount)
                     {
-                        UpdateElementIndex(element, virtInfo, dataIndex + countChange);
+                        updateIndex(element, virtInfo, dataIndex + countChange);
                     }
                 }
             }
 
-            EnsureFirstLastRealizedIndices();
-            m_lastRealizedElementIndexHeldByLayout += countChange;
+            // The realized range is computed again from the new indices when it is next needed.
+            InvalidateRealizedIndicesHeldByLayout();
         }
         break;
     }
@@ -529,14 +540,10 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     {
         const auto oldStartIndex = args.OldStartingIndex();
         const auto oldCount = static_cast<int>(args.OldItems().Size());
+        std::vector<std::pair<winrt::UIElement, winrt::com_ptr<VirtualizationInfo>>> removedElements;
         const auto children = m_owner->Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
         {
-            if (hasChangeEnded())
-            {
-                return;
-            }
-
             const auto element = children.GetAt(i);
             const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
             const auto dataIndex = virtInfo->Index();
@@ -546,16 +553,30 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 if (virtInfo->AutoRecycleCandidate() && oldStartIndex <= dataIndex && dataIndex < oldStartIndex + oldCount)
                 {
                     // If we are doing the mapping, remove the element who's data was removed.
-                    m_owner->ClearElementImpl(element);
+                    removedElements.emplace_back(element, virtInfo);
                 }
                 else if (dataIndex >= (oldStartIndex + oldCount))
                 {
-                    UpdateElementIndex(element, virtInfo, dataIndex - oldCount);
+                    updateIndex(element, virtInfo, dataIndex - oldCount);
                 }
             }
         }
 
         InvalidateRealizedIndicesHeldByLayout();
+
+        // Clearing raises ElementClearing.
+        for (const auto& [element, virtInfo] : removedElements)
+        {
+            if (hasChangeEnded())
+            {
+                return;
+            }
+
+            if (virtInfo->IsRealized())
+            {
+                m_owner->ClearElementImpl(element);
+            }
+        }
         break;
     }
 
@@ -570,18 +591,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
         if (oldStartIndex != newStartIndex && count > 0)
         {
-            struct IndexChange
-            {
-                winrt::UIElement element;
-                winrt::com_ptr<VirtualizationInfo> virtInfo;
-                int oldIndex;
-                int newIndex;
-            };
-            std::vector<IndexChange> indexChanges;
-
-            // Update every index before raising ElementIndexChanged, so that handlers see a consistent
-            // index mapping and elements they realize are not re-indexed. Pinned elements are children
-            // too, so each realized element is visited exactly once.
+            // Pinned elements are children too, so each realized element is visited exactly once.
             const auto children = m_owner->Children();
             const auto childCount = children.Size();
             for (unsigned i = 0u; i < childCount; ++i)
@@ -608,30 +618,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                         newIndex = oldIndex + count;
                     }
 
-                    if (newIndex != oldIndex)
-                    {
-                        virtInfo->UpdateIndex(newIndex);
-                        indexChanges.push_back({ element, virtInfo, oldIndex, newIndex });
-                    }
+                    updateIndex(element, virtInfo, newIndex);
                 }
             }
 
             InvalidateRealizedIndicesHeldByLayout();
-
-            for (const auto& indexChange : indexChanges)
-            {
-                if (hasChangeEnded())
-                {
-                    return;
-                }
-
-                // An earlier handler can clear elements (for example by replacing ItemsSource). Only report
-                // elements that are still realized at their new index.
-                if (indexChange.virtInfo->IsRealized() && indexChange.virtInfo->Index() == indexChange.newIndex)
-                {
-                    m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
-                }
-            }
         }
         break;
     }
@@ -671,6 +662,21 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         InvalidateRealizedIndicesHeldByLayout();
 
         break;
+    }
+
+    for (const auto& indexChange : indexChanges)
+    {
+        if (hasChangeEnded())
+        {
+            return;
+        }
+
+        // An earlier handler can clear elements (for example by replacing ItemsSource). Only report
+        // elements that are still realized at their new index.
+        if (indexChange.virtInfo->IsRealized() && indexChange.virtInfo->Index() == indexChange.newIndex)
+        {
+            m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
+        }
     }
 }
 

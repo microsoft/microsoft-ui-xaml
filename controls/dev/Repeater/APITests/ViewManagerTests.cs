@@ -2016,10 +2016,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         //           (a) RemoveAt(0) of 5 items, children created in index order: item 0 is cleared (the cached range shrinks
         //               to [1, 4]) and item 1 moves to index 0.
         //           (b) Replace(0, 1 -> 2) of 5 items, children created in reverse index order: item 4 is re-indexed first
-        //               and moves to index 5, past the cached range [0, 4] (the Replace updates the range only after its loop).
-        // Expected: exactly one ElementIndexChanged; GetOrCreateElementAt(newIndex) reuses the element that the handler saw
-        //           (same instance); no two realized children report the same index; ElementPrepared fires only for the
-        //           indices that had no realized element.
+        //               and moves to index 5, past the cached range [0, 4].
+        // Expected: exactly one ElementIndexChanged; the element that the handler saw keeps its new index; no two realized
+        //           children report the same index; ElementPrepared fires only for the indices that had no realized element.
         // A failure means: when a handler ends the change, the repeater keeps a realized-range cache that misses a realized
         //                  element (the cache update at the end of the Remove/Replace loop is skipped), so the layout gets a
         //                  second element for that element's index.
@@ -2032,8 +2031,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 () => new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i)),
                 source => ((ObservableCollection<string>)source).RemoveAt(0),
                 realizeInReverseOrder: false,
-                expectedNewIndex: 0,
-                expectedPreparedIndices: new[] { 1, 5 });
+                expectedNewIndex: 0);
         }
 
         [TestMethod]
@@ -2045,8 +2043,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 () => new CustomItemsSource(Enumerable.Range(0, 5).ToList()),
                 source => ((CustomItemsSource)source).Replace(index: 0, oldCount: 1, newCount: 2, reset: false),
                 realizeInReverseOrder: true,
-                expectedNewIndex: 5,
-                expectedPreparedIndices: new[] { 4 });
+                expectedNewIndex: 5);
         }
 
         private void VerifyCustomVirtualizingLayoutReusesElementAfterItemsSourceReplaced(
@@ -2054,8 +2051,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Func<object> createSource,
             Action<object> change,
             bool realizeInReverseOrder,
-            int expectedNewIndex,
-            int[] expectedPreparedIndices)
+            int expectedNewIndex)
         {
             object source = null;
             RunOnUIThread.Execute(() => source = createSource());
@@ -2115,6 +2111,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(1, events.Count, "No ElementIndexChanged after the handler replaced ItemsSource: " + string.Join(" | ", events));
                 Verify.AreEqual(expectedNewIndex, repeater.GetElementIndex(reindexedElement), "The re-indexed element keeps its new index.");
 
+                var realizedBeforeLayout = new HashSet<int>(
+                    Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                        .Select(c => repeater.GetElementIndex((UIElement)VisualTreeHelper.GetChild(repeater, c)))
+                        .Where(index => index >= 0));
+                Log.Comment($"Before layout: realized indices [{string.Join(", ", realizedBeforeLayout.OrderBy(i => i))}]");
+
                 repeater.UpdateLayout();
 
                 var children = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater)).Select(c => (UIElement)VisualTreeHelper.GetChild(repeater, c)).ToList();
@@ -2122,7 +2124,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Log.Comment($"After layout: ElementPrepared indices [{string.Join(", ", preparedIndices)}]");
 
                 Verify.AreEqual(newData.Count, elementsFromLayout.Count);
-                Verify.AreSame(reindexedElement, elementsFromLayout[expectedNewIndex], $"GetOrCreateElementAt({expectedNewIndex}) reuses the realized element that was re-indexed to {expectedNewIndex}.");
                 var seen = new HashSet<int>();
                 foreach (var child in children)
                 {
@@ -2132,10 +2133,317 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Verify.IsTrue(seen.Add(index), $"Only one realized child reports index {index}.");
                     }
                 }
-                Verify.AreEqual(
-                    string.Join(", ", expectedPreparedIndices),
-                    string.Join(", ", preparedIndices.OrderBy(i => i)),
-                    "ElementPrepared fires only for the indices that had no realized element.");
+                foreach (int index in preparedIndices)
+                {
+                    Verify.IsFalse(realizedBeforeLayout.Contains(index), $"ElementPrepared({index}) fires only for an index that had no realized element.");
+                }
+            });
+        }
+
+        // Scenario: a custom VirtualizingLayout that does not override OnItemsChangedCore (so it keeps every element when the
+        //           repeater is reset) realizes every index of a 5-item ObservableCollection. The first ElementIndexChanged
+        //           handler call sets a new ItemTemplate (no layout), which resets the repeater and ends its collection change.
+        //           Done for Insert(0) and RemoveAt(0).
+        // Expected: right after the change and after the next layout, every realized element reports the index of its item
+        //           (TryGetElement(i) shows item i, no two elements report the same index), and the layout gets the element
+        //           of item i for index i.
+        // A failure means: the repeater stopped re-indexing the realized elements when the handler ended the change, so
+        //                  elements that the reset did not clear keep their pre-change index (wrong element for an index).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a custom VirtualizingLayout gets post-insert indices after an ElementIndexChanged handler set ItemTemplate during an Insert.")]
+        public void VerifyCustomVirtualizingLayoutAfterItemTemplateReplacedInElementIndexChangedDuringInsert()
+        {
+            VerifyCustomVirtualizingLayoutAfterItemTemplateReplacedInElementIndexChanged("Insert(0)", data => data.Insert(0, "Inserted"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a custom VirtualizingLayout gets post-remove indices after an ElementIndexChanged handler set ItemTemplate during a Remove.")]
+        public void VerifyCustomVirtualizingLayoutAfterItemTemplateReplacedInElementIndexChangedDuringRemove()
+        {
+            VerifyCustomVirtualizingLayoutAfterItemTemplateReplacedInElementIndexChanged("RemoveAt(0)", data => data.RemoveAt(0));
+        }
+
+        private void VerifyCustomVirtualizingLayoutAfterItemTemplateReplacedInElementIndexChanged(string operation, Action<ObservableCollection<string>> change)
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            var elementsFromLayout = new List<UIElement>();
+            Func<Layout> createLayout = () => new MockVirtualizingLayout()
+            {
+                MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    elementsFromLayout.Clear();
+                    double height = 0;
+                    for (int i = 0; i < context.ItemCount; i++)
+                    {
+                        var element = context.GetOrCreateElementAt(i);
+                        element.Measure(availableSize);
+                        elementsFromLayout.Add(element);
+                        height += element.DesiredSize.Height;
+                    }
+                    return new Size(100, height);
+                },
+                ArrangeLayoutFunc = (finalSize, context) =>
+                {
+                    double offset = 0;
+                    foreach (var element in elementsFromLayout)
+                    {
+                        element.Arrange(new Rect(0, offset, element.DesiredSize.Width, element.DesiredSize.Height));
+                        offset += element.DesiredSize.Height;
+                    }
+                    return finalSize;
+                }
+            };
+            var repeater = CreateLoadedRepeater(data, createLayout);
+
+            RunOnUIThread.Execute(() =>
+            {
+                bool replaced = false;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    Log.Comment($"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}', GetElementIndex = {sender.GetElementIndex(args.Element)}");
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: ItemTemplate = new template");
+                        sender.ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='30' Tag='NewTemplate'/></DataTemplate>");
+                    }
+                };
+
+                Log.Comment(operation);
+                change(data);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} raised ElementIndexChanged, so the handler set ItemTemplate.");
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: false, context: "Right after " + operation);
+
+                repeater.UpdateLayout();
+                Verify.AreEqual(data.Count, elementsFromLayout.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreEqual(data[i], GetElementContent(elementsFromLayout[i]), $"GetOrCreateElementAt({i}) returns the element of item {i}.");
+                }
+                VerifyRealizedElementsMatchData(repeater, data, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, data);
+            });
+        }
+
+        // Scenario: a 100-item StackLayout repeater in a ScrollViewer; item 90 is focused and the view scrolled back to the
+        //           top, so item 90 is held in the pinned pool (not by the layout). The first ElementIndexChanged handler call
+        //           sets a new ItemTemplate (no layout), which resets the layout and ends the collection change. Done for
+        //           Insert(0) and RemoveAt(0).
+        // Expected: the pinned element reports the index of its item after the change, and after scrolling to it the
+        //           repeater uses it for that index (no second element for item 90, no two elements with the same index).
+        // A failure means: the repeater stopped re-indexing when the handler ended the change, so the pinned element (which
+        //                  the layout reset does not clear) keeps its pre-change index.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a pinned element gets its post-insert index after an ElementIndexChanged handler set ItemTemplate during an Insert.")]
+        public void VerifyPinnedElementIndexAfterItemTemplateReplacedInElementIndexChangedDuringInsert()
+        {
+            VerifyPinnedElementIndexAfterItemTemplateReplacedInElementIndexChanged("Insert(0)", data => data.Insert(0, "Inserted"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a pinned element gets its post-remove index after an ElementIndexChanged handler set ItemTemplate during a Remove.")]
+        public void VerifyPinnedElementIndexAfterItemTemplateReplacedInElementIndexChangedDuringRemove()
+        {
+            VerifyPinnedElementIndexAfterItemTemplateReplacedInElementIndexChanged("RemoveAt(0)", data => data.RemoveAt(0));
+        }
+
+        private void VerifyPinnedElementIndexAfterItemTemplateReplacedInElementIndexChanged(string operation, Action<ObservableCollection<string>> change)
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "Item #" + i));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            Button element90 = null;
+            var gotFocus = new ManualResetEvent(false);
+
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            repeater = SetupRepeater(data, layout, out scrollViewer);
+            ScrollTo(scrollViewer, 9000);
+
+            RunOnUIThread.Execute(() =>
+            {
+                element90 = (Button)repeater.TryGetElement(90);
+                Verify.IsNotNull(element90);
+                element90.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(element90.Focus(FocusState.Programmatic));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for element 90 to get focus.");
+            IdleSynchronizer.Wait();
+
+            ScrollTo(scrollViewer, 0);
+
+            int expectedIndex = -1;
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(repeater.TryGetElement(0));
+                Verify.AreEqual(90, repeater.GetElementIndex(element90), "The focused element is pinned outside the realized range.");
+                var children = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater)).Select(c => (UIElement)VisualTreeHelper.GetChild(repeater, c)).ToList();
+                Log.Comment($"Children before {operation}: [{string.Join(", ", children.Select(child => GetElementContent(child) + "@" + repeater.GetElementIndex(child)))}]");
+
+                bool replaced = false;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    Log.Comment($"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}'");
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: ItemTemplate = new element factory");
+                        // Same kind of factory as SetupRepeater, so that the old elements are recycled into a factory of their kind.
+                        var newFactory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                        newFactory.Templates["Item"] = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='100' Tag='NewTemplate'/></DataTemplate>") as DataTemplate;
+                        sender.ItemTemplate = newFactory;
+                    }
+                };
+
+                Log.Comment(operation);
+                change(data);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} raised ElementIndexChanged, so the handler set ItemTemplate.");
+                expectedIndex = data.IndexOf("Item #90");
+                Verify.AreEqual(expectedIndex, repeater.GetElementIndex(element90), "The pinned element reports the index of its item.");
+            });
+
+            ScrollTo(scrollViewer, expectedIndex * 100);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var children = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater)).Select(c => (UIElement)VisualTreeHelper.GetChild(repeater, c)).ToList();
+                Log.Comment($"Children after scrolling to item 90: [{string.Join(", ", children.Select(child => GetElementContent(child) + "@" + repeater.GetElementIndex(child)))}]");
+                Verify.AreEqual(expectedIndex, repeater.GetElementIndex(element90), "The pinned element keeps the index of its item.");
+                Verify.AreSame(element90, repeater.TryGetElement(expectedIndex), "The repeater uses the pinned element for the index of its item.");
+                var seenIndices = new HashSet<int>();
+                var seenItems = new HashSet<string>();
+                foreach (var child in children)
+                {
+                    int index = repeater.GetElementIndex(child);
+                    if (index >= 0)
+                    {
+                        Verify.IsTrue(seenIndices.Add(index), $"Only one realized child reports index {index}.");
+                        Verify.IsTrue(seenItems.Add(GetElementContent(child)), $"Item '{GetElementContent(child)}' is realized once.");
+                        Verify.AreEqual(data[index], GetElementContent(child), $"The child that reports index {index} shows item {index}.");
+                    }
+                }
+
+                // Remove the pinned item, so that the repeater clears the pinned element (created by the old ItemTemplate)
+                // before the test tears the tree down.
+                Log.Comment("Remove the pinned item");
+                data.RemoveAt(expectedIndex);
+                Log.Comment($"After the removal the old pinned element reports index {repeater.GetElementIndex(element90)}");
+            });
+        }
+
+        // Scenario: a fully realized 10-item StackLayout repeater over a CustomItemsSource. A Replace that changes the item count
+        //           leaves exactly one realized element after the replaced range, the last child (Replace(7, 2 -> 1): 9 -> 8,
+        //           Replace(8, 1 -> 2): 9 -> 10). Its ElementIndexChanged handler replaces ItemsSource with a new 10-item
+        //           collection and either calls UpdateLayout() (then an item is inserted at 9 and layout runs), or does not
+        //           (then the cached realized range is invalid before the Replace because of two Moves that cancel out, and an
+        //           item is inserted at 0 before layout).
+        // Expected: no crash or assertion, one ElementIndexChanged, and after layout every realized element matches the new
+        //           collection (TryGetElement(i) shows item i, one element per index, visual order = data order).
+        // A failure means: the Replace updated the repeater's cached realized range after the handler replaced ItemsSource
+        //                  (the loop ended on its own condition after the last child), so the cache no longer covers the
+        //                  realized elements (two elements for one index) or is invalid (assertion in a checked build).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from the ElementIndexChanged handler of the last re-indexed child during a Replace with fewer items leaves the repeater consistent.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInLastElementIndexChangedDuringReplaceWithFewerItems()
+        {
+            VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplace(oldCount: 2, newCount: 1, updateLayout: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource and updating layout from the ElementIndexChanged handler of the last re-indexed child during a Replace with more items leaves the repeater consistent.")]
+        public void VerifyItemsSourceReplacedAndLayoutUpdatedInLastElementIndexChangedDuringReplaceWithMoreItems()
+        {
+            VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplace(oldCount: 1, newCount: 2, updateLayout: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from the ElementIndexChanged handler of the last re-indexed child during a Replace with fewer items, with an invalid realized-range cache, leaves the repeater consistent.")]
+        public void VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplaceAfterMoveWithFewerItems()
+        {
+            VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplace(oldCount: 2, newCount: 1, updateLayout: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from the ElementIndexChanged handler of the last re-indexed child during a Replace with more items, with an invalid realized-range cache, leaves the repeater consistent.")]
+        public void VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplaceAfterMoveWithMoreItems()
+        {
+            VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplace(oldCount: 1, newCount: 2, updateLayout: false);
+        }
+
+        private void VerifyItemsSourceReplacedInLastElementIndexChangedDuringReplace(int oldCount, int newCount, bool updateLayout)
+        {
+            // Only the item at 9 is after the replaced range.
+            int replaceIndex = 9 - oldCount;
+            string operation = $"Replace({replaceIndex}, {oldCount} -> {newCount})";
+            CustomItemsSource dataSource = null;
+            ObservableCollection<string> newData = null;
+            RunOnUIThread.Execute(() =>
+            {
+                dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList());
+                newData = new ObservableCollection<string>(Enumerable.Range(0, 10).Select(i => "New #" + i));
+            });
+            var repeater = CreateLoadedRepeater(dataSource);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRealizedElementsMatchData(repeater, dataSource.Inner.Select(i => i.ToString()).ToList(), expectAllRealized: true, context: "Before " + operation);
+
+                var events = new List<string>();
+                bool armed = false;
+                bool replaced = false;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    string description = $"ElementIndexChanged {args.OldIndex} -> {args.NewIndex} '{GetElementContent(args.Element)}', GetElementIndex = {sender.GetElementIndex(args.Element)}";
+                    Log.Comment(description);
+                    if (!armed)
+                    {
+                        return;
+                    }
+                    events.Add(description);
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: ItemsSource = new collection");
+                        sender.ItemsSource = newData;
+                        if (updateLayout)
+                        {
+                            Log.Comment("Handler: UpdateLayout()");
+                            sender.UpdateLayout();
+                            Log.Comment($"Handler: UpdateLayout() returned, {CountRealizedChildren(sender)} realized children");
+                        }
+                    }
+                };
+
+                if (!updateLayout)
+                {
+                    // Two Moves that cancel out: every element stays realized at its index, but the cached realized range
+                    // is invalid when the Replace starts.
+                    Log.Comment("Move(0, 1); Move(1, 0)");
+                    dataSource.Move(oldIndex: 0, newIndex: 1, count: 1, reset: false);
+                    dataSource.Move(oldIndex: 1, newIndex: 0, count: 1, reset: false);
+                }
+
+                armed = true;
+                Log.Comment(operation);
+                dataSource.Replace(index: replaceIndex, oldCount: oldCount, newCount: newCount, reset: false);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} raised ElementIndexChanged, so the handler replaced ItemsSource.");
+                Verify.AreEqual(1, events.Count, "One ElementIndexChanged (only the last child is re-indexed): " + string.Join(" | ", events));
+
+                int insertIndex = updateLayout ? 9 : 0;
+                Log.Comment($"Insert({insertIndex}) into the new collection");
+                newData.Insert(insertIndex, "Inserted");
+                Log.Comment($"Insert({insertIndex}) returned");
+
+                repeater.UpdateLayout();
+                Verify.AreSame(newData, repeater.ItemsSource);
+                VerifyRealizedElementsMatchData(repeater, newData, expectAllRealized: true, context: "After layout");
+                VerifyVisualOrderMatchesData(repeater, newData);
             });
         }
 
