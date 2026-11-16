@@ -1004,6 +1004,113 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: an ItemsRepeater with a NonVirtualizingLayout shows 3 items and has two C# ElementClearing handlers. Its
+        //           ItemsSource is replaced; the first handler replaces ItemsSource again from the ElementClearing of the
+        //           element at position 0, 1 or 2 (a nested replacement that clears the same element while its
+        //           ElementClearing is still running). The second handler records what it sees for each element.
+        //           Variants: a custom element factory, and a DataTemplate.
+        // Expected: each handler gets ElementClearing once for each old element, and each old element is recycled once.
+        //           The second handler gets the other elements while they are still realized. C# handlers of one event
+        //           share one native delegate, so the repeater cannot call the second handler before the nested
+        //           replacement recycles the element that started it: the second handler gets that element after it was
+        //           recycled (logged, not verified; see the RadioButtons test for handlers registered separately).
+        // A failure means: a handler got ElementClearing twice or not at all for an old element, an element was recycled
+        //           twice, or the second handler got an element that was not involved in the nested replacement after it
+        //           was recycled.
+        [TestMethod]
+        [TestProperty("Description", "Verifies two ElementClearing handlers each get every element once when the first one replaces ItemsSource on a NonVirtualizingLayout repeater.")]
+        public void VerifyTwoElementClearingHandlersGetEachElementOnceAfterNestedItemsSourceReplacementWithNonVirtualizingLayout()
+        {
+            foreach (bool useDataTemplate in new[] { false, true })
+            {
+                foreach (var position in new[] { 0, 1, 2 })
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment(string.Format("Variant: {0}, nested replacement from the ElementClearing of the element at position {1}",
+                            useDataTemplate ? "DataTemplate" : "custom element factory", position));
+                        var recycled = new List<UIElement>();
+                        var elementFactory = new MockElementFactory()
+                        {
+                            GetElementFunc = (index, owner) => new ContentControl { Width = 40, Height = 40 },
+                            ClearElementFunc = (element, parent) => recycled.Add(element)
+                        };
+
+                        var oldItems = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList();
+                        var repeater = new ItemsRepeater()
+                        {
+                            ItemsSource = oldItems,
+                            ItemTemplate = useDataTemplate ? (object)CreateDataTemplateWithContent(@"<TextBlock Text='{Binding}' Height='40' />") : elementFactory,
+                            Layout = new MyCustomNonVirtualizingStackLayout(),
+                        };
+                        Content = repeater;
+                        Content.UpdateLayout();
+
+                        var oldElements = Enumerable.Range(0, 3).Select(i => repeater.TryGetElement(i)).ToList();
+                        Verify.IsTrue(oldElements.All(e => e != null), "3 elements realized.");
+
+                        bool nestedReplacementDone = false;
+                        var nestedSource = new List<string> { "Nested #0", "Nested #1" };
+                        var firstHandlerCalls = new List<UIElement>();
+                        var secondHandlerCalls = new List<(UIElement Element, object DataContext, int Index, DependencyObject Parent, bool Recycled)>();
+                        repeater.ElementClearing += (sender, args) =>
+                        {
+                            firstHandlerCalls.Add(args.Element);
+                            if (!nestedReplacementDone && args.Element == oldElements[position])
+                            {
+                                nestedReplacementDone = true;
+                                Log.Comment("First handler: replacing ItemsSource from ElementClearing");
+                                repeater.ItemsSource = nestedSource;
+                            }
+                        };
+                        repeater.ElementClearing += (sender, args) =>
+                        {
+                            var element = args.Element;
+                            secondHandlerCalls.Add((
+                                element,
+                                (element as FrameworkElement)?.DataContext,
+                                repeater.GetElementIndex(element),
+                                VisualTreeHelper.GetParent(element),
+                                recycled.Contains(element)));
+                        };
+
+                        repeater.ItemsSource = Enumerable.Range(0, 3).Select(i => "New item #" + i).ToList();
+
+                        Verify.IsTrue(nestedReplacementDone);
+                        foreach (var call in secondHandlerCalls)
+                        {
+                            Log.Comment(string.Format("Second handler: element #{0}, DataContext '{1}', GetElementIndex {2}, parent is repeater {3}, already recycled {4}",
+                                oldElements.IndexOf(call.Element), call.DataContext, call.Index, call.Parent == repeater, call.Recycled));
+                        }
+
+                        for (int i = 0; i < oldElements.Count; i++)
+                        {
+                            Verify.AreEqual(1, firstHandlerCalls.Count(element => element == oldElements[i]), "The first handler gets ElementClearing once for element " + i + ".");
+                            var calls = secondHandlerCalls.Where(call => call.Element == oldElements[i]).ToList();
+                            Verify.AreEqual(1, calls.Count, "The second handler gets ElementClearing once for element " + i + ".");
+                            if (i != position)
+                            {
+                                Verify.AreEqual(oldItems[i], calls[0].DataContext, "Element " + i + " still has its DataContext when the second handler runs.");
+                                Verify.AreEqual(i, calls[0].Index, "GetElementIndex of element " + i + " when the second handler runs.");
+                                Verify.AreEqual(repeater, calls[0].Parent, "Element " + i + " is still a child of the repeater when the second handler runs.");
+                                Verify.IsFalse(calls[0].Recycled, "Element " + i + " was not yet recycled when the second handler runs.");
+                            }
+                            if (!useDataTemplate)
+                            {
+                                Verify.AreEqual(1, recycled.Count(element => element == oldElements[i]), "Element " + i + " should be recycled once.");
+                            }
+                        }
+                        Verify.AreEqual(oldElements.Count, firstHandlerCalls.Count);
+                        Verify.AreEqual(oldElements.Count, secondHandlerCalls.Count);
+                        Verify.AreEqual(0, VisualTreeHelper.GetChildrenCount(repeater));
+
+                        Content.UpdateLayout();
+                        Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                    });
+                }
+            }
+        }
+
         // Scenario: an ItemsRepeater with a NonVirtualizingLayout and a custom element factory shows 3 items from an
         //           ObservableCollection; the first, middle or last item is removed, or the collection is cleared, and the
         //           ElementClearing handler for the element that the collection change clears replaces ItemsSource (a

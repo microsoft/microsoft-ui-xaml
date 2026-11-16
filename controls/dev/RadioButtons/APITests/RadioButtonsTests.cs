@@ -1138,6 +1138,103 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons bound to an ObservableCollection with a custom item factory and the first or middle item
+        //           selected, a SelectionChanged handler that replaces ItemsSource the first time the selection is
+        //           removed, and an app ElementClearing handler on the inner ItemsRepeater (registered after the RadioButtons
+        //           handler). The selected item is removed: the RadioButtons ElementClearing handler clears the selection for
+        //           the removed container, so the nested replacement runs, and clears that container again, before the app
+        //           handler has been called for it.
+        // Expected: the app handler gets ElementClearing once for each old container, and gets the removed container while
+        //           it is still realized: its visual parent is the inner repeater, GetElementIndex is not -1, its DataContext
+        //           is the removed item, and it was not yet returned to the factory. Each old container is recycled once.
+        // A failure means: the app handler got ElementClearing for the removed container only after the nested replacement
+        //           had recycled it (no parent, index -1, DataContext null), or twice.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app ElementClearing handler on the RadioButtons repeater sees the removed selected container realized when SelectionChanged replaces ItemsSource.")]
+        public void VerifyAppElementClearingHandlerSeesRealizedContainerWhenSelectionChangedReplacesItemsSource()
+        {
+            // Removing the selected last item did not start the nested replacement from ElementClearing in this setup, so only
+            // the first and middle items are used.
+            foreach (int selectedIndex in new[] { 0, 1 })
+            {
+                RadioButtons radioButtons = null;
+                RecordingRadioButtonFactory factory = null;
+                var oldItems = new List<string>() { "a", "b", "c" };
+                global::System.Collections.ObjectModel.ObservableCollection<string> data = null;
+                var nestedSource = new List<string>() { "x", "y" };
+                bool nestedReplacementDone = false;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Selected (and removed) index: " + selectedIndex);
+                    factory = new RecordingRadioButtonFactory();
+                    data = new global::System.Collections.ObjectModel.ObservableCollection<string>(oldItems);
+                    radioButtons = new RadioButtons() { ItemsSource = data, ItemTemplate = factory };
+                    Content = radioButtons;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                    Verify.IsNotNull(repeater);
+                    var oldContainers = Enumerable.Range(0, 3).Select(i => radioButtons.ContainerFromIndex(i)).ToList();
+                    Verify.IsTrue(oldContainers.All(c => c != null), "3 containers realized.");
+                    radioButtons.SelectedIndex = selectedIndex;
+
+                    radioButtons.SelectionChanged += (sender, args) =>
+                    {
+                        if (!nestedReplacementDone && args.RemovedItems.Count > 0)
+                        {
+                            nestedReplacementDone = true;
+                            Log.Comment("Replacing ItemsSource from SelectionChanged");
+                            radioButtons.ItemsSource = nestedSource;
+                        }
+                    };
+
+                    var appCalls = new List<(UIElement Element, int Index, DependencyObject Parent, object DataContext, bool Recycled)>();
+                    repeater.ElementClearing += (sender, args) =>
+                    {
+                        var element = args.Element;
+                        appCalls.Add((element, repeater.GetElementIndex(element), VisualTreeHelper.GetParent(element), (element as FrameworkElement)?.DataContext,
+                            factory.Recycled.Any(recycled => ReferenceEquals(recycled.Element, element))));
+                    };
+
+                    Log.Comment("Removing the selected item");
+                    data.RemoveAt(selectedIndex);
+                    Verify.IsTrue(nestedReplacementDone);
+
+                    foreach (var call in appCalls)
+                    {
+                        Log.Comment(string.Format("App handler: container #{0}, GetElementIndex {1}, parent is repeater {2}, DataContext '{3}', already recycled {4}",
+                            oldContainers.IndexOf(call.Element), call.Index, call.Parent == repeater, call.DataContext, call.Recycled));
+                    }
+                    for (int i = 0; i < oldContainers.Count; i++)
+                    {
+                        var calls = appCalls.Where(call => call.Element == oldContainers[i]).ToList();
+                        Verify.AreEqual(1, calls.Count, "The app handler gets ElementClearing once for container " + i + ".");
+                        Verify.AreEqual(repeater, calls[0].Parent, "Container " + i + " is still a child of the repeater when the app handler runs.");
+                        Verify.AreNotEqual(-1, calls[0].Index, "GetElementIndex of container " + i + " when the app handler runs.");
+                        Verify.AreEqual(oldItems[i], calls[0].DataContext, "Container " + i + " still has its DataContext when the app handler runs.");
+                        Verify.IsFalse(calls[0].Recycled, "Container " + i + " was not yet recycled when the app handler runs.");
+                        Verify.AreEqual(1, factory.Recycled.Count(recycled => ReferenceEquals(recycled.Element, oldContainers[i])), "Container " + i + " should be recycled once.");
+                    }
+                    Verify.AreEqual(oldContainers.Count, appCalls.Count);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                    Verify.AreSame(nestedSource, radioButtons.ItemsSource);
+                    Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                    Verify.AreEqual(-1, radioButtons.SelectedIndex);
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         private static void VerifyDependencyPropertyIdentifiers(params DependencyProperty[] properties)
         {
             for (int i = 0; i < properties.Length; i++)

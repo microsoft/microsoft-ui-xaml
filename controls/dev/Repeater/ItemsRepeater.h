@@ -178,8 +178,18 @@ private:
     tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs> m_elementClearingArgs{ this };
     // True while m_elementClearingArgs is passed to ElementClearing handlers.
     bool m_isRaisingElementClearing{ false };
-    // Elements whose ElementClearing event is being raised (more than one when a handler re-enters the repeater).
-    std::vector<winrt::UIElement> m_elementsRaisingElementClearing;
+    // An ElementClearing event being raised: the handlers to call and the next one to call.
+    struct ElementClearingRaise
+    {
+        using EventSource = event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementClearingEventArgs>>;
+        winrt::UIElement element{ nullptr };
+        winrt::ItemsRepeaterElementClearingEventArgs args{ nullptr };
+        std::shared_ptr<const EventSource::handler_map> handlers;
+        EventSource::handler_map::const_iterator next;
+    };
+    void CallElementClearingHandlers(ElementClearingRaise& raise);
+    // ElementClearing events being raised (more than one when a handler re-enters the repeater).
+    std::vector<ElementClearingRaise*> m_elementClearingRaises;
     tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs> m_elementIndexChangedArgs{ this };
 
     // Loaded events fire on the first tick after an element is put into the tree 

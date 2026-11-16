@@ -437,31 +437,43 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
 {
     if (m_elementClearingEventSource)
     {
-        auto const raisingElement = std::find(m_elementsRaisingElementClearing.begin(), m_elementsRaisingElementClearing.end(), element);
-        if (raisingElement != m_elementsRaisingElementClearing.end())
+        auto const isRaiseOfElement = [&element](const ElementClearingRaise* raise) { return raise->element == element; };
+        auto const removeRaise = [this](const ElementClearingRaise* raise)
+            {
+                auto const it = std::find(m_elementClearingRaises.begin(), m_elementClearingRaises.end(), raise);
+                if (it != m_elementClearingRaises.end())
+                {
+                    m_elementClearingRaises.erase(it);
+                }
+            };
+
+        auto const raisingElement = std::find_if(m_elementClearingRaises.begin(), m_elementClearingRaises.end(), isRaiseOfElement);
+        if (raisingElement != m_elementClearingRaises.end())
         {
             // A handler of this element's ElementClearing event re-entered the repeater (for example it replaced ItemsSource)
-            // and that change clears the element before the outer clear recycles it. ElementClearing was already raised
-            // for this clear: do not raise it a second time. A later clear of the element raises it again.
-            m_elementsRaisingElementClearing.erase(raisingElement);
+            // and that change clears the element now, before the outer clear recycles it. Do not raise the event a second
+            // time: call the handlers that have not been called for this element yet, now, while the element is still
+            // realized. The outer raise then has no handler left to call. A later clear of the element raises the event again.
+            auto const raise = *raisingElement;
+            CallElementClearingHandlers(*raise);
+            removeRaise(raise);
             return;
         }
 
-        m_elementsRaisingElementClearing.push_back(element);
-        auto const raisingElementScope = gsl::finally([this, element]()
+        ElementClearingRaise raise{ element, nullptr, m_elementClearingEventSource.handlers() };
+        raise.next = raise.handlers->begin();
+        m_elementClearingRaises.push_back(&raise);
+        auto const raiseScope = gsl::finally([&raise, &removeRaise]()
             {
-                auto const it = std::find(m_elementsRaisingElementClearing.begin(), m_elementsRaisingElementClearing.end(), element);
-                if (it != m_elementsRaisingElementClearing.end())
-                {
-                    m_elementsRaisingElementClearing.erase(it);
-                }
+                removeRaise(&raise);
             });
 
         if (m_isRaisingElementClearing)
         {
             // A handler re-entered the repeater (for example it changed ItemsSource): use new args so that the
             // outer handler's args keep its element.
-            m_elementClearingEventSource(*this, winrt::make<ItemsRepeaterElementClearingEventArgs>(element));
+            raise.args = winrt::make<ItemsRepeaterElementClearingEventArgs>(element);
+            CallElementClearingHandlers(raise);
             return;
         }
 
@@ -479,7 +491,20 @@ void ItemsRepeater::OnElementClearing(const winrt::UIElement& element)
             {
                 m_isRaisingElementClearing = false;
             });
-        m_elementClearingEventSource(*this, m_elementClearingArgs.get());
+        raise.args = m_elementClearingArgs.get();
+        CallElementClearingHandlers(raise);
+    }
+}
+
+// Calls the ElementClearing handlers of 'raise' that have not been called yet, in the order the event calls them.
+void ItemsRepeater::CallElementClearingHandlers(ElementClearingRaise& raise)
+{
+    while (raise.next != raise.handlers->end())
+    {
+        // Move to the next handler before the call: a handler that re-enters the repeater and clears the same element
+        // continues this raise from the handler after it (see OnElementClearing).
+        auto const& handler = (raise.next++)->second;
+        m_elementClearingEventSource.invoke(handler, *this, raise.args);
     }
 }
 
