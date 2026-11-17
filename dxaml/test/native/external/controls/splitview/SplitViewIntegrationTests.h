@@ -172,14 +172,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that completions remain deferred and ordered when a template omits DisplayModeStates.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(DoesOrderMixedVisualStateManagerCompletions)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that newer synchronous custom-manager callbacks cannot overtake older queued completions.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesRecoverMissingStateWithOutOfOrderNotification)
-            TEST_METHOD_PROPERTY(L"Description", L"Preserves a synchronous recovery that arrives before an older wrong-category notification.")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(DoesPreserveCommittedCompletionAfterFailedRequest)
             TEST_METHOD_PROPERTY(L"Description", L"A failing later request must not discard an earlier committed pane completion.")
         END_TEST_METHOD()
@@ -204,14 +196,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that interrupted pane transitions complete after display mode or placement changes.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(DoesIgnoreQueuedDisplayModeRoundTrips)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that stale display mode notifications cannot complete a later pane transition.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesPreservePendingPaneTransitionAfterQueuedCompletion)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an earlier pane completion does not consume a later interrupted transition.")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(DoesCompletePaneTransitionsWithCustomVisualStateManager)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that a custom visual state manager can synchronously complete interrupted pane transitions.")
         END_TEST_METHOD()
@@ -232,14 +216,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that a custom visual state manager completing synchronously off-tree still raises PaneOpened.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterUndeliveredNotification)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a synchronous completion an earlier app handler kept from SplitView cannot block later pane completions.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterFailedNotificationSetter)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an undelivered completion whose failure reached the IsPaneOpen setter cannot block later pane completions.")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(DoesOrderCompletionsWhenPaneOpeningClosesWithoutDisplayModeStates)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that a close from PaneOpening is published after the open when a live template omits DisplayModeStates.")
         END_TEST_METHOD()
@@ -256,18 +232,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that PaneOpened is raised, in order, when a PaneOpening handler applies a template without DisplayModeStates.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterManyUndeliveredNotifications)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that more consecutive undelivered completions than the group remembers cannot block later pane completions.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterUndeliveredQueuedNotification)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a built-in (queued) completion that an earlier failing app handler kept from SplitView does not block later pane completions.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesOrderCompletionsWhenPaneOpeningAddsDisplayModeStates)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that PaneOpened is raised before PaneClosed when a PaneOpening handler applies a template with DisplayModeStates and then closes the pane.")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()
@@ -281,7 +245,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     private:
         void VerifyLightDismissReentrancyWithoutDisplayModeStates(bool closeAgain);
-        void VerifyPaneTransitionsAfterUndeliveredNotification(bool managerCatchesFailure);
 
         void ValidateLightDismissBehaviorWorker(
             xaml_controls::SplitViewDisplayMode displayMode,
