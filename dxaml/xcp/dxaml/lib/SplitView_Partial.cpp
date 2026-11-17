@@ -206,7 +206,7 @@ SplitView::OnLoaded(_In_ IInspectable* /*pSender*/, _In_ xaml::IRoutedEventArgs*
     BOOLEAN isPaneOpen = FALSE;
     IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
 
-    if (isPaneOpen && splitViewCore->CanLightDismiss())
+    if (isPaneOpen && splitViewCore->IsLightDismissible())
     {
         IFC_RETURN(SetupOuterDismissLayer());
     }
@@ -571,7 +571,8 @@ SplitView::OnIsPaneOpenChanged(bool isOpen, bool isLightDismissClose)
 _Check_return_ HRESULT
 SplitView::OnDisplayModeChanged()
 {
-    if (static_cast<CSplitView*>(GetHandle())->CanLightDismiss())
+    auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+    if (splitViewCore->m_isPaneOpen && splitViewCore->IsLightDismissible())
     {
         IFC_RETURN(SetupOuterDismissLayer());
     }
@@ -587,8 +588,9 @@ _Check_return_ HRESULT
 SplitView::SetupOuterDismissLayer() noexcept
 {
     // If we're not in a light-dismissible state, then we can bail out of
-    // setting up this dismiss layer.
-    if (!static_cast<CSplitView*>(GetHandle())->CanLightDismiss())
+    // setting up this dismiss layer. A pending (possibly canceled) light dismiss still needs it.
+    auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+    if (!splitViewCore->m_isPaneOpen || !splitViewCore->IsLightDismissible())
     {
         return S_OK;
     }

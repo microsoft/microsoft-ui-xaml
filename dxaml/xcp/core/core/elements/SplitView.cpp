@@ -269,7 +269,7 @@ _Check_return_ HRESULT CSplitView::ExecuteLightDismiss(_In_ CSplitViewPaneClosin
 bool CSplitView::ConsumeLightDismissClose()
 {
     // A close while an uncanceled light dismiss is pending (from its executor, its PaneClosing
-    // handler or a bound view model) commits that dismiss, whose PaneClosing was already raised.
+    // handler or a bound view model) commits that dismiss, whose PaneClosing is already raised or queued.
     if (m_spPendingLightDismissArgs && !m_spPendingLightDismissArgs->m_cancel)
     {
         SupersedeLightDismiss();

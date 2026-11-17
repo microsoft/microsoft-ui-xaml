@@ -1130,9 +1130,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var (navView, splitView) = CreateNavigationViewWithOpenOverlayPane();
             using var canceled = new ManualResetEvent(false);
             int closingCount = 0;
+            int popupCount = 0;
             bool reopened = false;
             RunOnUIThread.Execute(() =>
             {
+                popupCount = VisualTreeHelper.GetOpenPopupsForXamlRoot(splitView.XamlRoot).Count;
+                Verify.IsTrue(popupCount > 0, "The open overlay pane needs an outside-dismiss popup.");
                 splitView.PaneOpening += (sender, args) =>
                 {
                     if (!reopened)
@@ -1163,6 +1166,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(reopened);
                 Verify.IsTrue(navView.IsPaneOpen, "The superseded executor must not close the reopened pane.");
                 Verify.AreEqual(2, closingCount, "The original dismiss (whose handler closes the pane, committing it) and the canceled new dismiss each notify once.");
+                Verify.AreEqual(popupCount, VisualTreeHelper.GetOpenPopupsForXamlRoot(navView.XamlRoot).Count,
+                    "The reopened pane keeps its outside-dismiss popup after the newer dismiss is canceled.");
             });
         }
 

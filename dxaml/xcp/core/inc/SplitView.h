@@ -93,7 +93,7 @@ private:
     xref::weakref_ptr<CDependencyObject> m_spPrevFocusedElementWeakRef;
     DirectUI::FocusState m_prevFocusState{ DirectUI::FocusState::Unfocused };
 
-    // The light dismiss whose PaneClosing was raised and whose deferred close has not run yet.
+    // The light dismiss whose PaneClosing is raised or queued and whose deferred close has not run yet.
     xref_ptr<CSplitViewPaneClosingEventArgs> m_spPendingLightDismissArgs;
     double m_paneMeasuredLength{ 0.0 };
 
