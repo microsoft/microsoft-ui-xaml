@@ -21,6 +21,8 @@ VectorCollectionView::~VectorCollectionView()
             VERIFYHR(m_epVectorChangedHandler.DetachEventHandler(spSource.Get()));
         }
     }
+
+    DetachSourceList();
 }
 
 

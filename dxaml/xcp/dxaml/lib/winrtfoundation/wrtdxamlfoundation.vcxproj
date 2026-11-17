@@ -164,6 +164,7 @@
         <ClCompile Include="..\CollectionViewSource_Shaping.cpp"/>
         <ClCompile Include="..\CollectionView_Partial.cpp"/>
         <ClCompile Include="..\VectorCollectionView_Partial.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_Shaping.cpp"/>
         <ClCompile Include="..\IterableCollectionView_Partial.cpp"/>
         <ClCompile Include="..\CollectionViewManager.cpp"/>
         <ClCompile Include="..\GroupedDataCollectionView_Partial.cpp"/>
