@@ -29,6 +29,11 @@ parameters:
   # exclusions. Only for dependency binaries the pipeline redistributes but does not sign itself.
   # Empty (default) = default exclusions only.
   codeSignValidationExcludes: []
+  # Optional. When true, the Nightly CodeQL Init/Finalize steps skip the Release_x64 BuildMUX job, the only
+  # job that also runs the SDLNativeRules (PREfast) rebuilds. On a night CodeQL traces that job, the build plus
+  # the traced PREfast rebuilds can exceed timeoutInMinutes before Finalize. The other jobs, including
+  # Debug_x64, still run CodeQL. false (default) = CodeQL on every BuildMUX job.
+  skipCodeQLOnReleaseX64: false
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -181,9 +186,13 @@ stages:
     # The non-official pipeline template does not auto-inject CodeQL into managed pool jobs.
     # Explicitly add CodeQL Init/Finalize for Nightly builds so that the core product code
     # (Microsoft.UI.Xaml.dll, Microsoft.UI.Xaml.Controls.dll) gets scanned.
+    # skipCodeQLOnReleaseX64 matches Release_x64 by matrix variables because buildConfiguration is only set
+    # later, by WinUI-BuildMUXProject-Steps.yml. Keep the Init and Finalize conditions identical.
     - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
       - task: CodeQL3000Init@0
         displayName: Initialize CodeQL
+        ${{ if eq(parameters.skipCodeQLOnReleaseX64, true) }}:
+          condition: and(succeeded(), not(and(eq(variables['buildPlatform'], 'x64'), eq(variables['normalizedConfiguration'], 'fre'))))
 
     - template: WinUI-BuildMUXProject-Steps.yml
       parameters:
@@ -202,3 +211,5 @@ stages:
     - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
       - task: CodeQL3000Finalize@0
         displayName: Finalize CodeQL
+        ${{ if eq(parameters.skipCodeQLOnReleaseX64, true) }}:
+          condition: and(succeeded(), not(and(eq(variables['buildPlatform'], 'x64'), eq(variables['normalizedConfiguration'], 'fre'))))
