@@ -1006,12 +1006,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
                     "a cancelled sort must leave the row order alone");
 
-                var indicator = FindSortIndicator(tableView, 0);
-                if (indicator != null)
-                {
-                    Verify.AreEqual(SortIndicatorDirection.None, indicator.Direction,
-                        "The header glyph is suppressed along with the sort state.");
-                }
+                var header = (Control)GetHeaderCell(tableView, 0);
+                var sortState = GetCurrentVisualState(header, "SortStates");
+                Verify.IsTrue(sortState == "Unsorted" || sortState == "UnsortedSortAvailable",
+                    "A cancelled sort must keep the header unsorted, allowing its hover or keyboard-focus affordance.");
             });
         }
 
