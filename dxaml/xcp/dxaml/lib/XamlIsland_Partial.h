@@ -46,7 +46,14 @@ namespace DirectUI
         _Check_return_ xaml_hosting::IXamlIslandRoot *GetXamlIslandRootNoRef();
         void PrepareToClose();
 
+        // Called in test scenarios when the ContentIsland is being disposed or recreated
+        _Check_return_ HRESULT UpdateContentIsland(bool initialize);
+
     private:
+        _Check_return_ HRESULT InitializeContentIsland();
+        void ReleaseContentIslandResources();
+        _Check_return_ HRESULT UpdateSystemBackdrop(bool connected);
+        
         bool m_bClosed = false;
 
         ctl::ComPtr<WindowsXamlManager> m_spXamlCore;
@@ -61,4 +68,3 @@ namespace DirectUI
         ctl::ComPtr<xaml::Media::ISystemBackdrop> m_systemBackdrop;
     };
 }
-

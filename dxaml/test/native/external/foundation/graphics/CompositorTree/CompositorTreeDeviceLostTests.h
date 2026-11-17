@@ -67,6 +67,16 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(RebuildContentIslandAfterDeviceLost)
+        TEST_METHOD_PROPERTY(L"Description", L"Repeated full device resets rebuild the ContentIsland while preserving XAML content and keyboard input.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(RebuildContentIslandPreservesUIAProviders)
+        TEST_METHOD_PROPERTY(L"Description", L"Main-island UIA providers remain usable across repeated full ContentIsland rebuilds.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+    END_TEST_METHOD()
+
 private:
 
     typedef void(*RENDERACTION)(Microsoft::UI::Xaml::Controls::Panel^ rootPanel);
@@ -81,4 +91,3 @@ private:
 };
 
 } } } } } }
-

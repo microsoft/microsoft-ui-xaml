@@ -42,8 +42,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     //     public for exactly this reason.
     //
     //   * Providers are opaque to a C# test. Anything typed IRawElementProviderSimple can only be
-    //     asserted for null / non-null / count / reference identity. No test in this repo prises one
-    //     open with raw UIA pattern ids, and these do not start.
+    //     asserted for null / non-null / count / reference identity, unless a test opens it through
+    //     a peer subclass's protected PeerFromProvider (the GetSelection tests). No test in this repo
+    //     prises one open with raw UIA pattern ids, and these do not start.
     //
     // NOT COVERED HERE, deliberately:
     //   * The Value pattern on cells - Category 10 owns the advertisement gate in full (four tests).
@@ -179,8 +180,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, empty == null ? 0 : empty.Length, "With nothing selected the selection array must be empty.");
 
                 // Row 1 is realized at this size, so this asserts the selection report rather than the
-                // virtualization behaviour - a selected row scrolled out of realization reports as
-                // unselected here by design.
+                // virtualization behaviour; VerifyGetSelectionReportsUnrealizedSelectedRow covers that.
                 tableView.Select(1);
                 tableView.UpdateLayout();
 
@@ -191,8 +191,751 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroll pattern is answered by the body scroller's peer and never by the TableView peer itself.")]
-        public void VerifyScrollPatternIsForwardedToBodyScrollerNotThePeer()
+        [TestProperty("Description", "Verifies GetSelection reports an off-screen selected row through a data-item peer, without realizing the row or moving the viewport.")]
+        public void VerifyGetSelectionReportsUnrealizedSelectedRow()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            string unrealizedName = null;
+            var items = MakeNamedPeople(200);
+            int target = -1;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var repeater = GetRowsRepeater(tableView);
+                Verify.IsGreaterThan(scroller.VerticalOffset, 0.0, "Precondition: the body must have scrolled.");
+
+                target = Math.Min(RealizedRowIndices(tableView).Max() + 50, items.Count - 1);
+                tableView.Select(target);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(target), "Precondition: the selected row must not be realized.");
+
+                var offset = scroller.VerticalOffset;
+                var realized = string.Join(",", RealizedRowIndices(tableView));
+
+                // Report the selected row without realizing it, which would re-anchor the repeater.
+                var selected = RequireSelectionProvider(tableView).GetSelection();
+                tableView.UpdateLayout();
+
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length,
+                    "GetSelection must report the selected row even when it is not realized.");
+                Verify.AreEqual(offset, scroller.VerticalOffset, "GetSelection must not scroll.");
+                Verify.AreEqual(realized, string.Join(",", RealizedRowIndices(tableView)),
+                    "GetSelection must not change which rows are realized.");
+                Verify.IsNull(repeater.TryGetElement(target), "GetSelection must not realize the selected row.");
+
+                itemPeer = new ProviderPeerProbe().ToPeer(selected[0]);
+                Verify.IsNotNull(itemPeer, "The reported provider must resolve to a peer.");
+                unrealizedName = itemPeer.GetName();
+                Verify.IsTrue(unrealizedName.Contains(items[target].Name), $"The data-item peer must be named from its item (got '{unrealizedName}').");
+                Verify.AreEqual(AutomationControlType.DataItem, itemPeer.GetAutomationControlType(), "A row is a DataItem.");
+                Verify.IsTrue(itemPeer.IsOffscreen(), "An unrealized row is off screen.");
+                var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsNotNull(selectionItem, "The data-item peer must offer SelectionItem.");
+                Verify.IsTrue(selectionItem.IsSelected, "The data-item peer must report itself selected.");
+                Verify.IsNotNull(itemPeer.GetPattern(PatternInterface.VirtualizedItem) as IVirtualizedItemProvider,
+                    "An unrealized row must offer VirtualizedItem.");
+                Verify.AreSame(itemPeer, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "Repeated GetSelection calls must hand back the same provider.");
+
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+                // Realize is synchronous: a client re-queries the provider as soon as it returns.
+                Verify.IsNotNull(GetRowsRepeater(tableView).TryGetElement(target), "Realize must create the selected row before it returns.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var row = GetRowsRepeater(tableView).TryGetElement(target) as TableViewRow;
+                Verify.IsNotNull(row, "Realize must create the selected row.");
+                var top = row.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    $"Realize must bring the row into view (top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}).");
+                Verify.IsNull(itemPeer.GetPattern(PatternInterface.VirtualizedItem),
+                    "Once realized, the data-item peer must stop offering VirtualizedItem.");
+
+                // A client may keep the provider it was handed; it must now describe the realized row.
+                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+                var bounds = itemPeer.GetBoundingRectangle();
+                Verify.IsTrue(bounds.Width > 0 && bounds.Height > 0, $"The held peer must report the row's bounds (got {bounds}).");
+                Verify.IsFalse(itemPeer.IsOffscreen(), "The held peer must not report an on-screen row as off screen.");
+                Verify.AreEqual(rowPeer.GetName(), itemPeer.GetName(), "The held peer must report the row's name.");
+                Verify.AreEqual(unrealizedName, itemPeer.GetName(), "Realizing the row must not change the data-item peer's name.");
+                Verify.AreSame(rowPeer.Navigate(AutomationNavigationDirection.Parent), itemPeer.Navigate(AutomationNavigationDirection.Parent),
+                    "The data-item peer must have the same parent as a realized row.");
+
+                // Walking the held peer's children must not take the row's cell peers away from the row.
+                var cells = rowPeer.GetChildren();
+                Verify.IsTrue(cells != null && cells.Count > 0, "The realized row must expose its cells.");
+                itemPeer.GetChildren();
+                Verify.AreSame(rowPeer, cells[0].Navigate(AutomationNavigationDirection.Parent),
+                    "A cell's parent must still be its row after the data-item peer's children were read.");
+
+                Verify.AreSame(rowPeer, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "A realized selected row must be reported through its own peer.");
+                scroller.ChangeView(null, 0.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(target), "Precondition: the selected row must be unrealized again.");
+                Verify.AreSame(itemPeer, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "An item that scrolls back out must be reported through the same data-item peer as before.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer for an unrealized selected row reports ElementNotAvailable once its item leaves the source.")]
+        public void VerifyGetSelectionDataItemPeerForRemovedItemIsNotAvailable()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(200));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsTrue(selectionItem.IsSelected, "Precondition: the data-item peer reports itself selected.");
+
+                items.RemoveAt(150);
+                tableView.UpdateLayout();
+
+                VerifyElementNotAvailable(() => _ = selectionItem.IsSelected, "IsSelected");
+                VerifyElementNotAvailable(() => _ = selectionItem.SelectionContainer, "SelectionContainer");
+                VerifyElementNotAvailable(() => selectionItem.RemoveFromSelection(), "RemoveFromSelection");
+                VerifyElementNotAvailable(() => _ = itemPeer.GetName(), "GetName");
+                Verify.IsNull(itemPeer.GetPattern(PatternInterface.SelectionItem), "A removed item must stop offering SelectionItem.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer follows the selected occurrence of an item that appears twice in the source.")]
+        public void VerifyGetSelectionDataItemPeerTracksSelectedDuplicate()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+            items[180] = items[150];
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the selected row must not be realized.");
+                RequireSelectionProvider(tableView).GetSelection();
+
+                // The same item, now selected at its other unrealized occurrence.
+                tableView.Select(180);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(180), "Precondition: the selected row must not be realized.");
+
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                Verify.IsTrue(((ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem)).IsSelected,
+                    "The peer for the selected occurrence must report itself selected.");
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+                Verify.IsNotNull(repeater.TryGetElement(180), "Realize must create the selected occurrence.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer of a scrolled-out selected row from a source that boxes values keeps its name after a garbage collection.")]
+        public void VerifyGetSelectionDataItemPeerForBoxedValuesKeepsNameAfterCollection()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(new BoxingIntList(200), 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Value", "."));
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(2);
+                tableView.UpdateLayout();
+                GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(2), "Precondition: the selected row must have scrolled out of realization.");
+                var view = GetRowsRepeater(tableView).ItemsSourceView;
+                Log.Comment($"The source hands out the same object on re-read: {ReferenceEquals(view.GetAt(2), view.GetAt(2))}.");
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+            });
+
+            // The box the peer was created for is referenced by nothing else.
+            for (int i = 0; i < 2; ++i)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("2", itemPeer.GetName(), "The data-item peer must keep its name after the boxed item is collected.");
+                Verify.IsTrue(((ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem)).IsSelected,
+                    "The data-item peer must still report itself selected.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held data-item peer keeps its name when its row is realized, then forwards the row's enabled state, culture and ScrollItem.")]
+        public void VerifyRealizedDataItemPeerForwardsRowState()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            string unrealizedName = null;
+            // No ToString override, so the item's own string is its type name.
+            var items = Enumerable.Range(0, 200).Select(i => new PlainPerson { Name = $"Person {i}", Role = $"Role {i}" }).ToList();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                unrealizedName = itemPeer.GetName();
+                Verify.IsNull(itemPeer.GetPattern(PatternInterface.ScrollItem), "An unrealized row has no element to scroll into view.");
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsNotNull(row, "Realize must create the selected row.");
+                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+                Verify.AreEqual(rowPeer.GetName(), unrealizedName, "An unrealized row must be named as it is once realized.");
+                Verify.AreEqual(rowPeer.GetCulture(), itemPeer.GetCulture(), "The held peer must report the row's culture.");
+
+                Verify.IsTrue(itemPeer.IsEnabled(), "Precondition: the row is enabled.");
+                row.IsEnabled = false;
+                Verify.IsFalse(itemPeer.IsEnabled(), "The held peer must report a disabled row as disabled.");
+                row.IsEnabled = true;
+
+                Verify.IsNotNull(itemPeer.GetPattern(PatternInterface.ScrollItem) as IScrollItemProvider, "A realized row must offer ScrollItem.");
+                var scroller = GetBodyScroller(tableView);
+                scroller.ChangeView(null, scroller.VerticalOffset + scroller.ViewportHeight + 1, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: the row must still be realized.");
+                Verify.IsFalse(IsInViewport(row, GetBodyScroller(tableView)), "Precondition: the row must be out of view.");
+                ((IScrollItemProvider)itemPeer.GetPattern(PatternInterface.ScrollItem)).ScrollIntoView();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsTrue(row != null && IsInViewport(row, GetBodyScroller(tableView)), "ScrollIntoView must bring the row into view.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a held data-item peer is parented with the realized rows after the TableView template is reapplied.")]
+        public void VerifyDataItemPeerParentFollowsReappliedTemplate()
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            ItemsRepeater oldRepeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                oldRepeater = GetRowsRepeater(tableView);
+
+                var template = tableView.Template;
+                tableView.Template = null;
+                tableView.UpdateLayout();
+                tableView.Template = template;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                Verify.AreNotSame(oldRepeater, repeater, "Precondition: reapplying the template must replace the rows repeater.");
+                var row = repeater.TryGetElement(0);
+                Verify.IsNotNull(row, "Precondition: the first row must be realized.");
+                Verify.AreSame(FrameworkElementAutomationPeer.CreatePeerForElement(row).Navigate(AutomationNavigationDirection.Parent),
+                    itemPeer.Navigate(AutomationNavigationDirection.Parent),
+                    "A held data-item peer must have the same parent as the current realized rows.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Realize fails, without scrolling or pinning the layout, when an ElementPrepared handler rebinds the data-item peer to another occurrence.")]
+        public void VerifyDataItemPeerRealizeFailsWhenReboundDuringCreation()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+            items[180] = items[150];
+            double offset = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the selected row must not be realized.");
+
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var virtualized = (IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem);
+                offset = GetBodyScroller(tableView).VerticalOffset;
+
+                bool rebound = false;
+                global::Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> handler = (sender, args) =>
+                {
+                    if (args.Index == 150 && !rebound)
+                    {
+                        rebound = true;
+                        tableView.Select(180);
+                        RequireSelectionProvider(tableView).GetSelection();
+                    }
+                };
+                repeater.ElementPrepared += handler;
+                try
+                {
+                    VerifyElementNotAvailable(() => virtualized.Realize(), "Realize of a rebound peer");
+                }
+                finally
+                {
+                    repeater.ElementPrepared -= handler;
+                }
+                Verify.IsTrue(rebound, "Precondition: the handler must have rebound the peer.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                Verify.AreEqual(offset, scroller.VerticalOffset, "A failed Realize must not scroll.");
+                scroller.ChangeView(null, 3000.0, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var repeater = GetRowsRepeater(tableView);
+                Verify.IsTrue(RealizedRowIndices(tableView).Any(i => IsInViewport((FrameworkElement)repeater.TryGetElement(i), scroller)),
+                    "After a failed Realize, realized rows must follow the viewport.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an empty selection drops the cached data-item peer, so a later selection of the same row gets a new one.")]
+        public void VerifyGetSelectionDropsDataItemPeerOnEmptySelection()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+                var first = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+
+                tableView.Deselect(150);
+                var empty = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(0, empty == null ? 0 : empty.Length, "Precondition: the selection must be empty.");
+
+                tableView.Select(150);
+                Verify.AreNotSame(first, new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]),
+                    "An empty selection must release the cached data-item peer.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the data-item peer follows the selected occurrence when an insert moves another occurrence of its item to the index it last had.")]
+        public void VerifyDataItemPeerPrefersSelectedOccurrenceAfterInsert()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(200));
+            items[149] = items[150];
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+                var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                var selectionItem = (ISelectionItemProvider)itemPeer.GetPattern(PatternInterface.SelectionItem);
+
+                items.Insert(0, new NamedPerson { Name = "Inserted", Role = "Inserted" });
+                tableView.UpdateLayout();
+                Verify.AreEqual(151, tableView.SelectedIndex, "Precondition: the selection must move with the inserted row.");
+
+                Verify.IsTrue(selectionItem.IsSelected, "The data-item peer must follow the selected occurrence, not the one now at its old index.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectionItem calls on the data-item peer of an unrealized row fail with UIA_E_ELEMENTNOTENABLED on a disabled table, as the row peer's do.")]
+        public void VerifyDataItemPeerSelectionItemFailsWhenTableIsDisabled()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItem = RequireUnrealizedDataItemSelectionItem(tableView, 150);
+
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.RemoveFromSelection(), "RemoveFromSelection() on a disabled table must fail.");
+                Verify.AreEqual(150, tableView.SelectedIndex, "A failed RemoveFromSelection() must leave the row selected.");
+
+                tableView.IsEnabled = true;
+                tableView.Select(0);
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.Select(), "Select() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selectionItem.AddToSelection(), "AddToSelection() on a disabled table must fail.");
+                Verify.AreEqual(0, tableView.SelectedIndex, "Failed calls on a disabled table must leave the selection unchanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection on the data-item peer of an unrealized row fails with UIA_E_INVALIDOPERATION in Single mode when another row is selected, as the row peer's does.")]
+        public void VerifyDataItemPeerAddToSelectionFailsWhenAnotherRowIsSelectedInSingleMode()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionItem = RequireUnrealizedDataItemSelectionItem(tableView, 150);
+
+                selectionItem.AddToSelection();
+                Verify.AreEqual(150, tableView.SelectedIndex, "AddToSelection() on the selected row must succeed.");
+
+                tableView.Select(0);
+                tableView.UpdateLayout();
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => selectionItem.AddToSelection(),
+                    "AddToSelection() on another row of a single-select table must fail.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(0, tableView.SelectedIndex, "A failed AddToSelection() must leave the selection on row 0.");
+                Verify.IsFalse(selectionItem.IsSelected, "The data-item peer's row must not become selected.");
+                Verify.AreEqual(0, selectionChangedCount, "A failed AddToSelection() must not raise SelectionChanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row peer's SelectionItem calls act on its own row when an app-derived IsEnabledCore inserts a row before it.")]
+        public void VerifyRowPeerSelectionItemResolvesRowAfterEnabledCheck()
+        {
+            TableView tableView = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<NamedPerson>(MakeNamedPeople(20));
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = items[3];
+                var row = GetRowsRepeater(tableView).TryGetElement(3) as TableViewRow;
+                Verify.IsNotNull(row, "Precondition: the target row must be realized.");
+                var peer = new InsertingOnEnabledQueryRowPeer(row);
+                var selectionItem = (ISelectionItemProvider)peer;
+                int inserted = 0;
+                Action insertBefore = () => items.Insert(0, new NamedPerson { Name = $"Inserted {++inserted}", Role = "Inserted" });
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.Select();
+                Verify.AreEqual(1, inserted, "Precondition: the enabled check must have inserted a row.");
+                Verify.AreSame(target, tableView.SelectedItem, "Select() must select the peer's own row.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.AddToSelection();
+                Verify.AreSame(target, tableView.SelectedItem, "AddToSelection() on the selected row must succeed and keep it selected.");
+
+                peer.OnEnabledQuery = insertBefore;
+                selectionItem.RemoveFromSelection();
+                Verify.AreEqual(3, inserted, "Precondition: each call must have inserted a row.");
+                Verify.AreEqual(-1, tableView.SelectedIndex, "RemoveFromSelection() must deselect the peer's own row.");
+            });
+        }
+
+        private sealed class InsertingOnEnabledQueryRowPeer : TableViewRowAutomationPeer
+        {
+            public InsertingOnEnabledQueryRowPeer(TableViewRow owner) : base(owner) { }
+
+            public Action OnEnabledQuery { get; set; }
+
+            protected override bool IsEnabledCore()
+            {
+                var action = OnEnabledQuery;
+                OnEnabledQuery = null;
+                action?.Invoke();
+                return base.IsEnabledCore();
+            }
+        }
+
+        private static ISelectionItemProvider RequireUnrealizedDataItemSelectionItem(TableView tableView, int index)
+        {
+            tableView.Select(index);
+            tableView.UpdateLayout();
+            Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(index), "Precondition: the selected row must not be realized.");
+            var itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+            Verify.IsTrue(itemPeer.IsOffscreen(), "Precondition: the selection must be reported through the off-screen data-item peer.");
+            var selectionItem = itemPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+            Verify.IsNotNull(selectionItem, "The data-item peer must offer SelectionItem.");
+            return selectionItem;
+        }
+
+        private static bool IsInViewport(FrameworkElement element, ScrollViewer scroller)
+        {
+            var top = element.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0, 0)).Y;
+            return top >= -0.5 && top + element.ActualHeight <= scroller.ViewportHeight + 0.5;
+        }
+
+        private sealed class PlainPerson
+        {
+            public string Name { get; set; }
+
+            public string Role { get; set; }
+        }
+
+        // A non-generic list that hands out a new box on every read, so its items have no stable identity.
+        private sealed class BoxingIntList : global::System.Collections.IList
+        {
+            private readonly int[] _values;
+
+            public BoxingIntList(int count) { _values = Enumerable.Range(0, count).ToArray(); }
+
+            public object this[int index] { get => (object)_values[index]; set => throw new global::System.NotSupportedException(); }
+            public bool IsFixedSize => true;
+            public bool IsReadOnly => true;
+            public int Count => _values.Length;
+            public bool IsSynchronized => false;
+            public object SyncRoot => this;
+            public int Add(object value) => throw new global::System.NotSupportedException();
+            public void Clear() => throw new global::System.NotSupportedException();
+            public bool Contains(object value) => IndexOf(value) >= 0;
+            public int IndexOf(object value) => value is int i ? global::System.Array.IndexOf(_values, i) : -1;
+            public void Insert(int index, object value) => throw new global::System.NotSupportedException();
+            public void Remove(object value) => throw new global::System.NotSupportedException();
+            public void RemoveAt(int index) => throw new global::System.NotSupportedException();
+            public void CopyTo(global::System.Array array, int index) => _values.CopyTo(array, index);
+            public global::System.Collections.IEnumerator GetEnumerator() => _values.GetEnumerator();
+        }
+
+        private static void VerifyElementNotAvailable(Action action, string what)
+        {
+            int hr = 0;
+            try
+            {
+                action();
+            }
+            catch (global::System.Exception e)
+            {
+                hr = e.HResult;
+            }
+            Verify.AreEqual(unchecked((int)0x80040201), hr, $"{what} must fail with UIA_E_ELEMENTNOTAVAILABLE for a removed item.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies GetSelection reports a realized selected row through that row's own peer.")]
+        public void VerifyGetSelectionReturnsRealizedRowPeer()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(MakeNamedPeople(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => GetBodyScroller(tableView).ChangeView(null, 2000.0, null, true));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var index = RealizedRowIndices(tableView).First();
+                tableView.Select(index);
+                tableView.UpdateLayout();
+
+                var row = GetRowsRepeater(tableView).TryGetElement(index);
+                Verify.IsNotNull(row, "Precondition: the selected row must be realized.");
+
+                var selected = RequireSelectionProvider(tableView).GetSelection();
+                Verify.AreEqual(1, selected == null ? 0 : selected.Length, "GetSelection must report the selected row.");
+                Verify.AreSame(FrameworkElementAutomationPeer.CreatePeerForElement(row), new ProviderPeerProbe().ToPeer(selected[0]),
+                    "A realized selected row must be reported through its own row peer, as Grid.GetItem and tree navigation do.");
+            });
+        }
+
+        // AutomationPeer.PeerFromProvider is protected; a peer subclass is the only way to open a provider here.
+        private sealed class ProviderPeerProbe : FrameworkElementAutomationPeer
+        {
+            public ProviderPeerProbe() : base(new Border()) { }
+
+            public AutomationPeer ToPeer(IRawElementProviderSimple provider) => PeerFromProvider(provider);
+        }
+
+        private sealed class NamedPerson
+        {
+            public string Name { get; set; }
+
+            public string Role { get; set; }
+
+            public override string ToString() => Name;
+        }
+
+        private static List<NamedPerson> MakeNamedPeople(int count) => Enumerable
+            .Range(0, count)
+            .Select(i => new NamedPerson { Name = $"Person {i}", Role = $"Role {i}" })
+            .ToList();
+
+        private static TableView CreateNamedPeopleTable(object items)
+        {
+            var tableView = CreateTableViewShell(items, 600, 300);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            tableView.Columns.Add(MakeTextColumn("Role"));
+            tableView.SelectionMode = TableViewSelectionMode.Single;
+            return tableView;
+        }
+
+        private static ISelectionProvider RequireSelectionProvider(TableView tableView)
+        {
+            var selection = RequireTablePeer(tableView).GetPattern(PatternInterface.Selection) as ISelectionProvider;
+            Verify.IsNotNull(selection, "Selection must be advertised while SelectionMode is Single.");
+            return selection;
+        }
+
+        private static List<int> RealizedRowIndices(TableView tableView)
+        {
+            var repeater = GetRowsRepeater(tableView);
+            return GetRealizedRows(tableView)
+                .Select(row => repeater.GetElementIndex(row))
+                .Where(index => index >= 0)
+                .OrderBy(index => index)
+                .ToList();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the Scroll pattern is answered by the TableView peer itself, so repeated lookups return one stable provider.")]
+        public void VerifyScrollPatternIsAnsweredByTheStablePeer()
         {
             TableView tableView = null;
 
@@ -217,14 +960,227 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                // The negative half is IDL-backed: TableView.idl:617-624 lists four provider interfaces
-                // and IScrollProvider is NOT among them, so the peer must not answer as itself. A peer
-                // claiming a pattern it does not implement fails at the cast in every client.
-                Verify.IsFalse(ReferenceEquals(provider, peer),
-                    "Scroll must be forwarded to the body scroller's peer; TableView.idl does not declare IScrollProvider on the TableView peer.");
-                Verify.IsNotNull(provider as IScrollProvider,
-                    "The forwarded Scroll provider must cast to IScrollProvider.");
+                // A fresh non-peer object per lookup would be kept by the framework until the peer is torn down.
+                Verify.IsTrue(ReferenceEquals(provider, peer), "Scroll must be answered by the TableView peer itself.");
+                Verify.IsTrue(ReferenceEquals(provider, peer.GetPattern(PatternInterface.Scroll)), "Repeated Scroll lookups must return the same provider.");
+                Verify.IsNotNull(provider as IScrollProvider, "The Scroll provider must cast to IScrollProvider.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when rows near the end are taller than the estimate (#12449), 0 returns to the top, and 50 lands mid-extent.")]
+        public void VerifySetScrollPercentReachesLastRowWithVariableHeightRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = Enumerable.Range(0, 200)
+                    .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Border Height=""{Binding RowHeight}"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
+                Verify.IsNotNull(first, "Precondition: row 0 is realized.");
+                Log.Comment($"Row 0 ActualHeight={first.ActualHeight}");
+                Verify.IsLessThan(first.ActualHeight, 60.0, "Precondition: the early rows are short.");
+            });
+
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 140.0, verifyMidpoint: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Non-regression control: one SetScrollPercent(NoScroll, 100) still lands on the last row with fixed-height rows, and 0 returns to the top.")]
+        public void VerifySetScrollPercentReachesLastRowWithFixedHeightRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable(TableViewRowTestHelpers.MakeManyItems(200));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 0.0, verifyMidpoint: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies one SetScrollPercent(NoScroll, 100) lands on the last row when a few very tall rows follow many short ones.")]
+        public void VerifySetScrollPercentReachesLastRowWithShortThenTallRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateShortThenTallTable(width: 600);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+            VerifySetScrollPercentToEndAndBack(tableView, minLastRowHeight: 100.0, verifyMidpoint: false);
+        }
+
+        // 50 one-line rows, then 10 rows of wrapped text well over 100px tall, as on the sample's Fix demos page. Rows
+        // re-measured above the viewport shift the ScrollViewer's anchor element while aiming for the end.
+        private TableView CreateShortThenTallTable(double width)
+        {
+            var items = Enumerable.Range(1, 60)
+                .Select(i => new SizedPerson
+                {
+                    Name = $"Row {i}",
+                    Notes = i <= 50 ? "Short note." : string.Concat(Enumerable.Repeat("This row has a long note that wraps onto several lines, so it is much taller than the rows above it. ", 4 + (i % 3))),
+                })
+                .ToList();
+            var tableView = CreateTableViewShell(items, width, 320);
+            tableView.Columns.Add(MakeTextColumn("Name"));
+            var notes = MakeTemplateColumn("Notes", (DataTemplate)XamlReader.Load(
+                @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                      <TextBlock Text=""{Binding Notes}"" TextWrapping=""Wrap"" />
+                  </DataTemplate>"));
+            notes.Width = new GridLength(320);
+            tableView.Columns.Add(notes);
+            return tableView;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a SetScrollPercent(100) retry stops once a newer Scroll request arrives during its layout pass.")]
+        public void VerifySetScrollPercentRetryYieldsToNewerRequest()
+        {
+            TableView tableView = null;
+            double noScroll = ScrollPatternIdentifiers.NoScroll;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = Enumerable.Range(0, 200)
+                    .Select(i => new SizedPerson { Name = $"Person {i}", RowHeight = i < 150 ? 24.0 : 140.0 + (i % 4) * 20.0 })
+                    .ToList();
+                tableView = CreateTableViewShell(items, 600, 300);
+                tableView.Columns.Add(MakeTextColumn("Name"));
+                tableView.Columns.Add(MakeTemplateColumn("Body", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Border Height=""{Binding RowHeight}"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                bool issued = false;
+                EventHandler<object> handler = null;
+                handler = (s, e) =>
+                {
+                    if (!issued && scroller.VerticalOffset > 0)
+                    {
+                        issued = true;
+                        scroller.LayoutUpdated -= handler;
+                        ((IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll)).SetScrollPercent(noScroll, 0.0);
+                    }
+                };
+                scroller.LayoutUpdated += handler;
+                ((IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll)).SetScrollPercent(noScroll, 100.0);
+                scroller.LayoutUpdated -= handler;
+                Verify.IsTrue(issued, "Precondition: the newer request was issued during the first request's layout.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                Log.Comment($"After the superseding request: table={scroll.VerticalScrollPercent} offset={GetBodyScroller(tableView).VerticalOffset}");
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "The newer SetScrollPercent(NoScroll, 0) must win.");
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be at the top.");
+            });
+        }
+
+        private static IScrollProvider BodyScrollProvider(TableView tableView) =>
+            (IScrollProvider)FrameworkElementAutomationPeer.CreatePeerForElement(GetBodyScroller(tableView)).GetPattern(PatternInterface.Scroll);
+
+        private static void VerifySetScrollPercentToEndAndBack(TableView tableView, double minLastRowHeight, bool verifyMidpoint)
+        {
+            double noScroll = ScrollPatternIdentifiers.NoScroll;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll) as IScrollProvider;
+                Verify.IsNotNull(scroll, "The TableView peer must answer the Scroll pattern.");
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "Precondition: the table starts at the top.");
+                scroll.SetScrollPercent(noScroll, 100.0);
+                Log.Comment($"Right after SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent}");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                var scroller = GetBodyScroller(tableView);
+                Log.Comment($"After SetScrollPercent(100): table={scroll.VerticalScrollPercent} bodyScroller={BodyScrollProvider(tableView).VerticalScrollPercent} offset={scroller.VerticalOffset} scrollable={scroller.ScrollableHeight}");
+                Verify.AreEqual(100.0, scroll.VerticalScrollPercent, "One SetScrollPercent(NoScroll, 100) must report 100.");
+                Verify.IsLessThanOrEqual(Math.Abs(scroller.ScrollableHeight - scroller.VerticalOffset), 0.5, "The body must be at the end of its extent.");
+                var lastIndex = GetRowsRepeater(tableView).ItemsSourceView.Count - 1;
+                var last = GetRowsRepeater(tableView).TryGetElement(lastIndex) as FrameworkElement;
+                Verify.IsTrue(last != null && IsInViewport(last, scroller), "The last row must be realized and fully visible.");
+                Log.Comment($"Last row ActualHeight={last?.ActualHeight}");
+                Verify.IsGreaterThanOrEqual(last.ActualHeight, minLastRowHeight, "The last row must have its own height.");
+                scroll.SetScrollPercent(noScroll, 0.0);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                Verify.AreEqual(0.0, scroll.VerticalScrollPercent, "SetScrollPercent(NoScroll, 0) must return to the top.");
+                Verify.AreEqual(0.0, GetBodyScroller(tableView).VerticalOffset, "The body must be back at offset 0.");
+                var first = GetRowsRepeater(tableView).TryGetElement(0) as FrameworkElement;
+                Verify.IsTrue(first != null && IsInViewport(first, GetBodyScroller(tableView)), "The first row must be visible again.");
+                if (verifyMidpoint)
+                {
+                    scroll.SetScrollPercent(noScroll, 50.0);
+                }
+            });
+
+            if (!verifyMidpoint)
+            {
+                return;
+            }
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                var scroller = GetBodyScroller(tableView);
+                Log.Comment($"After SetScrollPercent(50): table={scroll.VerticalScrollPercent} offset={scroller.VerticalOffset} scrollable={scroller.ScrollableHeight}");
+                // The percent is of the estimated extent, which can still move after the one correction.
+                var percent = scroll.VerticalScrollPercent;
+                Verify.IsLessThanOrEqual(Math.Abs(percent - 50.0), 5.0, $"SetScrollPercent(NoScroll, 50) must land mid-extent; got {percent}.");
+            });
+        }
+
+        public sealed class SizedPerson
+        {
+            public string Name { get; set; }
+
+            public double RowHeight { get; set; }
+
+            public string Notes { get; set; }
         }
 
         [TestMethod]
@@ -1275,12 +2231,167 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(2, tableView.SelectedIndex, "Select() on a row peer must make that row the control's selection.");
 
                 // UIA forbids Select() from meaning "toggle": a client calling it twice would clear the
-                // selection. The single-select AddToSelection == Select mapping follows in-box
-                // precedent (ListViewItemAutomationPeer behaves the same rather than failing).
+                // selection. AddToSelection on the row that is already the selection is a no-op.
                 provider.AddToSelection();
                 tableView.UpdateLayout();
                 Verify.AreEqual(2, tableView.SelectedIndex, "AddToSelection() on the already selected row must leave it selected, not toggle it off.");
                 Verify.IsTrue(provider.IsSelected, "The row must still report itself selected.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection in Single mode fails with UIA_E_INVALIDOPERATION when another row is selected, and leaves the selection alone (#12448).")]
+        public void VerifyRowPeerAddToSelectionFailsWhenAnotherRowIsSelectedInSingleMode()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = RequireSelectionItemProvider(tableView, 1);
+                var second = RequireSelectionItemProvider(tableView, 2);
+                if (first == null || second == null)
+                {
+                    return;
+                }
+
+                first.AddToSelection();
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "AddToSelection() with nothing selected must select the row.");
+
+                int selectionChangedCount = 0;
+                tableView.SelectionChanged += (s, e) => selectionChangedCount++;
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => second.AddToSelection(),
+                    "AddToSelection() on another row of a single-select table must fail.");
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "A failed AddToSelection() must leave the selection on the first row.");
+                Verify.IsFalse(second.IsSelected, "The second row must not become selected.");
+                Verify.AreEqual(0, selectionChangedCount, "A failed AddToSelection() must not raise SelectionChanged.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies AddToSelection in Single mode, called while a row's IsSelected change is being raised, follows the selection model rather than the not-yet-updated SelectedIndex.")]
+        public void VerifyRowPeerAddToSelectionDuringIsSelectedCallbackUsesModelSelection()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rowOne = (TableViewRow)RequireRowPeer(tableView, 1).Owner;
+                var first = RequireSelectionItemProvider(tableView, 1);
+                var second = RequireSelectionItemProvider(tableView, 2);
+                var zero = RequireSelectionItemProvider(tableView, 0);
+                if (first == null || second == null || zero == null)
+                {
+                    return;
+                }
+
+                first.Select();
+                tableView.UpdateLayout();
+                Verify.AreEqual(1, tableView.SelectedIndex, "Precondition: row 1 is the selection.");
+
+                // Moving the selection to row 2 deselects row 1 first; at that point the model already
+                // selects row 2 while SelectedIndex still names row 1.
+                ISelectionItemProvider addFromCallback = second;
+                int callbackCount = 0;
+                global::System.Exception callbackError = null;
+                long token = rowOne.RegisterPropertyChangedCallback(TableViewRow.IsSelectedProperty, (s, dp) =>
+                {
+                    if (rowOne.IsSelected || addFromCallback == null)
+                    {
+                        return;
+                    }
+                    var target = addFromCallback;
+                    addFromCallback = null;
+                    callbackCount++;
+                    try
+                    {
+                        target.AddToSelection();
+                    }
+                    catch (global::System.Exception ex)
+                    {
+                        callbackError = ex;
+                    }
+                });
+
+                try
+                {
+                    second.Select();
+                    tableView.UpdateLayout();
+                    Verify.AreEqual(1, callbackCount, "Row 1's IsSelected callback must run once.");
+                    Verify.IsNull(callbackError, "AddToSelection() on the row the model already selects must not fail: " + callbackError?.Message);
+                    Verify.AreEqual(2, tableView.SelectedIndex, "The selection must end on row 2.");
+
+                    // Clearing the selection: the model is empty while SelectedIndex still names row 1.
+                    first.Select();
+                    tableView.UpdateLayout();
+                    Verify.AreEqual(1, tableView.SelectedIndex, "Precondition: row 1 is the selection again.");
+                    addFromCallback = zero;
+                    callbackCount = 0;
+                    first.RemoveFromSelection();
+                    tableView.UpdateLayout();
+                    Verify.AreEqual(1, callbackCount, "Row 1's IsSelected callback must run once on the clear.");
+                    Verify.IsNull(callbackError, "AddToSelection() with an empty selection model must not fail: " + callbackError?.Message);
+                    Verify.AreEqual(0, tableView.SelectedIndex, "AddToSelection() from the callback must select row 0.");
+                }
+                finally
+                {
+                    rowOne.UnregisterPropertyChangedCallback(TableViewRow.IsSelectedProperty, token);
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectionItem calls on a row of a disabled table fail with UIA_E_ELEMENTNOTENABLED and leave the selection alone.")]
+        public void VerifyRowPeerSelectionItemFailsWhenTableIsDisabled()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var selected = RequireSelectionItemProvider(tableView, 1);
+                var other = RequireSelectionItemProvider(tableView, 2);
+                if (selected == null || other == null)
+                {
+                    return;
+                }
+
+                selected.Select();
+                tableView.IsEnabled = false;
+                tableView.UpdateLayout();
+
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => other.Select(), "Select() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => other.AddToSelection(), "AddToSelection() on a disabled table must fail.");
+                VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => selected.RemoveFromSelection(), "RemoveFromSelection() on a disabled table must fail.");
+                Verify.AreEqual(1, tableView.SelectedIndex, "Failed calls on a disabled table must leave the selection unchanged.");
             });
         }
 
@@ -1667,6 +2778,566 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 column.CanSort = false;
                 Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, column).GetPattern(PatternInterface.Invoke),
                     "Invoke must be withheld while the column's CanSort is false.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header is keyboard-focusable only while actionable, and Invoke is offered only when the column has a sort key.")]
+        public void VerifyHeaderKeyboardFocusabilityAndInvokeTrackActionability()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn { Header = "NoSortKey" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
+                    "A column with CanSort but no sort key must not offer Invoke.");
+                tableView.CanUserResizeColumns = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0));
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "Sorting alone makes a header keyboard-focusable.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 3)).IsKeyboardFocusable(),
+                    "A header that can neither sort nor resize is not keyboard-focusable.");
+
+                tableView.CanUserSortColumns = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (Control)GetHeaderCell(tableView, 0);
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                Verify.IsFalse(peer.IsKeyboardFocusable(), "A header with nothing to do is not keyboard-focusable.");
+                header.Focus(FocusState.Programmatic);
+                Verify.AreNotEqual<object>(header, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(header.XamlRoot), "Programmatic focus on a non-actionable header never lands on it.");
+
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "A header tooltip makes the header actionable.");
+                header.Focus(FocusState.Programmatic);
+                Verify.AreEqual<object>(header, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(header.XamlRoot), "An actionable header takes focus.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies TableView.Focus aimed at a non-actionable header lands on the table's entry header instead of failing.")]
+        public void VerifyTableFocusSkipsNonActionableHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Focus(FocusState.Programmatic);
+                Verify.AreEqual<object>(GetHeaderCell(tableView, 1), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    "Focus must land on the first actionable header, not the non-actionable first header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing the only HeaderContextFlyout of a focused header takes it out of the tab order and hands focus to the next actionable header.")]
+        public void VerifyClearingFocusedHeaderContextFlyoutMovesFocus()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].HeaderContextFlyout = new MenuFlyout();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (Control)GetHeaderCell(tableView, 0);
+                Verify.IsTrue(header.Focus(FocusState.Keyboard), "Precondition: a header with a context flyout takes focus.");
+                tableView.Columns[0].HeaderContextFlyout = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "The header with nothing left to do leaves the tab order.");
+                Verify.AreEqual<object>(GetHeaderCell(tableView, 1), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
+                    "Focus must move to the next actionable header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a directional focus move aimed at a row of a collapsed group, still parented in the repeater's pool, is refused and focus stays on the group header.")]
+        public void VerifyDirectionalFocusNeverLandsOnCollapsedGroupRow()
+        {
+            TableView tableView = null;
+            TableViewGroupHeader groupHeader = null;
+            TableViewRow hiddenRow = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.CollapseAllGroups());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(repeater); i++)
+                {
+                    var child = VisualTreeHelper.GetChild(repeater, i) as UIElement;
+                    int index = repeater.GetElementIndex(child);
+                    if (child is TableViewGroupHeader header && index == 0)
+                    {
+                        groupHeader = header;
+                    }
+                    else if (child is TableViewRow row && index < 0 && row.Visibility == Visibility.Visible)
+                    {
+                        hiddenRow = row;
+                    }
+                }
+                Verify.IsNotNull(groupHeader, "Precondition: the first group header is realized.");
+                Verify.IsNotNull(hiddenRow, "Precondition: a collapsed row container is still parented in the repeater.");
+                Verify.IsTrue(groupHeader.Focus(FocusState.Keyboard), "Precondition: the first group header takes focus.");
+
+                bool redirected = false;
+                EventHandler<Microsoft.UI.Xaml.Input.GettingFocusEventArgs> redirect = (s, e) =>
+                {
+                    if (!redirected && e.Direction == Microsoft.UI.Xaml.Input.FocusNavigationDirection.Up)
+                    {
+                        redirected = true;
+                        e.TrySetNewFocusedElement(hiddenRow);
+                    }
+                };
+                Microsoft.UI.Xaml.Input.FocusManager.GettingFocus += redirect;
+                try
+                {
+                    Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(Microsoft.UI.Xaml.Input.FocusNavigationDirection.Up,
+                        new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+                }
+                finally
+                {
+                    Microsoft.UI.Xaml.Input.FocusManager.GettingFocus -= redirect;
+                }
+                Verify.IsTrue(redirected, "Precondition: an Up move was raised.");
+
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.AreNotEqual<object>(hiddenRow, focused, "A directional move must never land on a row of a collapsed group.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies replacing ItemsSource while a row has focus does not pull focus onto the header row.")]
+        public void VerifyItemsSourceReplacementKeepsFocusOffHeaders()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetRealizedRows(tableView)[0].Focus(FocusState.Keyboard), "Precondition: the first row takes focus.");
+                tableView.ItemsSource = MakeItems();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                bool inRow = false;
+                for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+                {
+                    Verify.AreNotEqual<object>(GetHeaderHost(tableView), node, "The focus rescue must not land on the header row.");
+                    inRow |= node is TableViewRow;
+                }
+                Verify.IsTrue(inRow, "The focus rescue must land in the body.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell whose only interactive content is an inline Hyperlink is keyboard-focusable.")]
+        public void VerifyCellWithInlineHyperlinkIsActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Link",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock><Run Text=""See ""/><Hyperlink><Run Text=""details""/></Hyperlink></TextBlock>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A cell with an inline Hyperlink is actionable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell is actionable when its only interactive content is a Hyperlink inside nested Spans, a focusable non-Control element, or content past the per-level scan cap, and not when the focusable element is under a disabled Control.")]
+        public void VerifyCellActionabilityCoversNestedLinksFocusablePanelsAndUnscannedChildren()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "NestedLink",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock><Bold><Italic><Hyperlink><Run Text=""details""/></Hyperlink></Italic></Bold></TextBlock>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Tile",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <Grid IsTabStop=""True"" Background=""Transparent""><TextBlock Text=""tile""/></Grid>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Many",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <StackPanel Orientation=""Horizontal"">" +
+                                  string.Concat(Enumerable.Repeat(@"<TextBlock Text=""x""/>", 40)) +
+                                  @"<Button Content=""Go""/>
+                              </StackPanel>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "DisabledTile",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <ContentControl IsEnabled=""False""><Grid IsTabStop=""True"" Background=""Transparent""><TextBlock Text=""tile""/></Grid></ContentControl>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A Hyperlink inside nested Bold/Italic spans makes the cell actionable.");
+                Verify.IsTrue(GetCellPeer(row, 4).IsKeyboardFocusable(), "A focusable Grid (IsTabStop) makes the cell actionable.");
+                Verify.IsTrue(GetCellPeer(row, 5).IsKeyboardFocusable(), "Children past the per-level scan cap are assumed actionable.");
+                Verify.IsFalse(GetCellPeer(row, 6).IsKeyboardFocusable(), "A focusable Grid under a disabled Control does not make the cell actionable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a read-only cell whose TextBlock has a ContextFlyout binding that resolves to null, or fails and falls back to the built-in menu, is not actionable.")]
+        public void VerifyNullContextFlyoutBindingDoesNotMakeCellActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "NullMenu",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Name}"" ContextFlyout=""{Binding Tag, RelativeSource={RelativeSource Self}}""/>
+                          </DataTemplate>"),
+                });
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "MissingMenu",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Name}"" ContextFlyout=""{Binding MissingMenu}""/>
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                var nullMenu = FindVisualChildrenByType<TextBlock>(GetRowCell(row, 3)).First();
+                Verify.IsNotNull(nullMenu.GetBindingExpression(UIElement.ContextFlyoutProperty), "Precondition: the TextBlock's ContextFlyout is a local binding.");
+                Verify.IsFalse(nullMenu.ContextFlyout is MenuFlyout, "Precondition: the binding supplies no app menu.");
+                Verify.IsFalse(GetCellPeer(row, 3).IsKeyboardFocusable(), "A ContextFlyout binding that resolves to null is not a menu.");
+                Verify.IsFalse(GetCellPeer(row, 4).IsKeyboardFocusable(), "A failed ContextFlyout binding's built-in menu is not an app menu.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies refreshing the header tab stops keeps an app's local IsTabStop binding and honors an app's local IsTabStop=false.")]
+        public void VerifyHeaderTabStopRefreshKeepsAppLocalIsTabStop()
+        {
+            TableView tableView = null;
+            Control boundHeader = null;
+            Control optedOutHeader = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                boundHeader = (Control)GetHeaderCell(tableView, 0);
+                optedOutHeader = (Control)GetHeaderCell(tableView, 1);
+                boundHeader.SetBinding(UIElement.IsTabStopProperty, new Binding { Source = true });
+                optedOutHeader.IsTabStop = false;
+                // Restamps the header tab stops.
+                tableView.Columns[2].HeaderToolTip = "Tip";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(boundHeader.GetBindingExpression(UIElement.IsTabStopProperty), "The app's IsTabStop binding must survive the refresh.");
+                Verify.IsFalse(optedOutHeader.IsTabStop, "The app's local IsTabStop=false must survive the refresh.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(optedOutHeader).IsKeyboardFocusable(),
+                    "A header the app took out of the tab order is not keyboard-focusable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header whose only action would be resizing is not actionable while the column is resize-pinned (MinWidth equals MaxWidth, or a lone Star column), and becomes a tab stop once it can resize.")]
+        public void VerifyResizePinnedHeaderIsNotActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                var fixedColumn = MakeTextColumn("Name", width: new GridLength(120));
+                fixedColumn.CanSort = false;
+                fixedColumn.MinWidth = 120;
+                fixedColumn.MaxWidth = 120;
+                var starColumn = MakeTextColumn("Role", width: new GridLength(1, GridUnitType.Star));
+                starColumn.CanSort = false;
+                tableView.Columns.Add(fixedColumn);
+                tableView.Columns.Add(starColumn);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.CanUserResizeColumns, "Precondition: columns are user-resizable.");
+                for (int i = 0; i < 2; i++)
+                {
+                    var header = (Control)GetHeaderCell(tableView, i);
+                    Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(header).IsKeyboardFocusable(), $"Resize-pinned header {i} is not keyboard-focusable.");
+                    Verify.IsFalse(header.IsTabStop, $"Resize-pinned header {i} is not a tab stop.");
+                }
+                tableView.Columns[0].MaxWidth = 300;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A header that can resize again is a tab stop.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app ToolTip that renders through its own Template with null Content makes a header actionable, and an empty app ToolTip does not.")]
+        public void VerifyTemplatedAppToolTipWithoutContentMakesHeaderActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[0].CanSort = false;
+                tableView.Columns[1].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var templated = GetHeaderCell(tableView, 0);
+                var empty = GetHeaderCell(tableView, 1);
+                ToolTipService.SetToolTip(templated, new ToolTip
+                {
+                    Template = (ControlTemplate)XamlReader.Load(
+                        @"<ControlTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" TargetType=""ToolTip"">
+                              <TextBlock Text=""Templated help""/>
+                          </ControlTemplate>"),
+                });
+                ToolTipService.SetToolTip(empty, new ToolTip());
+                Verify.IsTrue(FrameworkElementAutomationPeer.CreatePeerForElement(templated).IsKeyboardFocusable(),
+                    "A templated app ToolTip with null Content makes the header actionable.");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(empty).IsKeyboardFocusable(),
+                    "An app ToolTip with neither Content nor a Template is not an action.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a retained header peer reports IsKeyboardFocusable=false while HeadersVisibility hides the column headers, and the header is a tab stop again once they are shown.")]
+        public void VerifyHiddenHeaderIsNotKeyboardFocusable()
+        {
+            TableView tableView = null;
+            AutomationPeer peer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0));
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "Precondition: a sortable header is keyboard-focusable.");
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(peer.IsKeyboardFocusable(), "A hidden header is not keyboard-focusable.");
+                // Restamps the header tab stops while the headers are hidden.
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(peer.IsKeyboardFocusable(), "A shown header is keyboard-focusable again.");
+                Verify.IsTrue(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A shown actionable header is a tab stop again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a text column with no Binding has no editor, so its cells are not actionable in an editable table, and UIA SetFocus on an editable cell focuses that exact cell.")]
+        public void VerifyUnboundTextColumnCellIsNotActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.IsReadOnly = false;
+                tableView.Columns.Add(new TableViewTextColumn { Header = "Unbound" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsFalse(GetCellPeer(row, 3).IsKeyboardFocusable(), "An unbound text column has no editor, so its cell is inactive.");
+                Verify.IsTrue(GetCellPeer(row, 0).IsKeyboardFocusable(), "A bound text cell in an editable table is actionable.");
+                GetCellPeer(row, 0).SetFocus();
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Verify.IsFalse(focused is TableViewRow, "UIA SetFocus on a cell must not leave focus on the row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that in a read-only table a cell hosting a nested TableView is keyboard-focusable, while a plain text cell is not and refuses UIA SetFocus.")]
+        public void VerifyCellHostingNestedTableIsActionable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.Columns.Add(new TableViewTemplateColumn
+                {
+                    Header = "Nested",
+                    CellTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                        xmlns:t=""using:Microsoft.UI.Xaml.Controls.Tabular"">
+                              <t:TableView Height=""40"" />
+                          </DataTemplate>"),
+                });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsReadOnly, "Precondition: TableView is read-only by default.");
+                var row = GetRealizedRows(tableView)[0];
+                Verify.IsFalse(GetCellPeer(row, 0).IsKeyboardFocusable(), "A read-only text cell with no tooltip is inactive.");
+                Verify.IsTrue(GetCellPeer(row, 3).IsKeyboardFocusable(), "A cell hosting a nested TableView is actionable.");
+
+                bool threw = false;
+                try { GetCellPeer(row, 0).SetFocus(); } catch (Exception) { threw = true; }
+                Verify.IsTrue(threw, "UIA SetFocus on an inactive cell must fail.");
             });
         }
 

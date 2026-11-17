@@ -570,15 +570,23 @@
     </ItemGroup>
   </Target>
   <Target Name="GetExistingGeneratedFilesForDependencyPropertyCodeGen" BeforeTargets="RunDependencyPropertyCodeGen">
-    <CreateItem Include="$(MSBuildProjectDirectory)\..\Generated\*">
-      <Output TaskParameter="Include" ItemName="DependencyPropertyCodeGenOutputs" />
-    </CreateItem>
+    <!-- MUXC and Tabular share the directory, but not ownership of its generated files. -->
+    <ReadLinesFromFile File="$(IntDir)DependencyPropertyCodeGen.outputs" Condition="Exists('$(IntDir)DependencyPropertyCodeGen.outputs')">
+      <Output TaskParameter="Lines" ItemName="DependencyPropertyCodeGenOutputs" />
+    </ReadLinesFromFile>
   </Target>
-  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(UnstrippedMetadataWinmdPath);@(ReferenceWinMDs)" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
+  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(UnstrippedMetadataWinmdPath);@(ReferenceWinMDs)" Outputs="@(DependencyPropertyCodeGenOutputs);$(IntDir)DependencyPropertyCodeGen.outputs">
+    <!-- A failed generation must not leave a previous completion manifest reusable. -->
+    <Delete Files="$(IntDir)DependencyPropertyCodeGen.outputs" />
     <DependencyPropertyCodeGen WinMDInput="$(UnstrippedMetadataWinmdPath)" References="@(_MidlReferencesDistinct);@(ReferenceWinMDs)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated">
       <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill" />
+      <Output TaskParameter="FilesWritten" ItemName="_DependencyPropertyCodeGenFiles" />
     </DependencyPropertyCodeGen>
-    <Touch Files="@(DependencyPropertyCodeGenOutputs)" />
+    <Touch Files="@(_DependencyPropertyCodeGenFiles)" />
+    <WriteLinesToFile File="$(IntDir)DependencyPropertyCodeGen.outputs" Lines="@(_DependencyPropertyCodeGenFiles)" Overwrite="true" />
+    <ItemGroup>
+      <FileWrites Include="$(IntDir)DependencyPropertyCodeGen.outputs" />
+    </ItemGroup>
   </Target>
   <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />

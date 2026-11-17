@@ -78,6 +78,8 @@ public sealed partial class SnapshotViewerWindow : Window
             AutomationProperties.SetItemStatus(Identity, Entry.CaptureId);
             AutomationProperties.SetItemStatus(XamlTree, Data.Xaml.Nodes.Count.ToString(CultureInfo.InvariantCulture));
             AutomationProperties.SetItemStatus(CompositionTree, Data.Composition.Nodes.Count.ToString(CultureInfo.InvariantCulture));
+            ResourceSnapshot.Show(null, Data.Document.ResourceSnapshot, false);
+            ResourceSnapshot.Visibility = Visibility.Visible;
             Viewer.Visibility = Visibility.Visible;
         }
         catch (OperationCanceledException) when (closed) { }

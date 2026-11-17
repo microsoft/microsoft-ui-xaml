@@ -58,8 +58,8 @@ public sealed partial class SnapshotDiffWindow : Window
             InitializeComponent();
             Title = Text("SnapshotDiffTitle");
             AppWindow.Resize(new SizeInt32(1520, 1000));
-            BeforeIdentity.Text = Format("SnapshotDiffBeforeFormat", before.Title, before.CaptureId);
-            AfterIdentity.Text = Format("SnapshotDiffAfterFormat", after.Title, after.CaptureId);
+            BeforeIdentity.Text = Format("SnapshotDiffBeforeFormat", before.Process.ProcessId, before.CaptureId);
+            AfterIdentity.Text = Format("SnapshotDiffAfterFormat", after.Process.ProcessId, after.CaptureId);
             Root.Loaded += OnLoaded;
         }
         catch
@@ -88,7 +88,9 @@ public sealed partial class SnapshotDiffWindow : Window
             AutomationProperties.SetItemStatus(CompositionSummary, Counts(data.Composition));
             AutomationProperties.SetItemStatus(BeforeIdentity, before.CaptureId);
             AutomationProperties.SetItemStatus(AfterIdentity, after.CaptureId);
-            NoDifferences.Visibility = data.Xaml.Nodes.Concat(data.Composition.Nodes)
+            ResourceSnapshot.Show(data.Before.Document.ResourceSnapshot, data.After.Document.ResourceSnapshot, true);
+            ResourceSnapshot.Visibility = Visibility.Visible;
+            NoDifferences.Visibility = data.Resources.HasChanges || data.Xaml.Nodes.Concat(data.Composition.Nodes)
                 .Any(node => node.Change != SnapshotChange.None) ? Visibility.Collapsed : Visibility.Visible;
             RebuildTrees();
             Viewer.Visibility = Visibility.Visible;

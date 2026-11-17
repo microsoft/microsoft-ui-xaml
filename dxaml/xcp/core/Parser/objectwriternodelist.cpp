@@ -327,7 +327,61 @@ void ObjectWriterNodeList::Optimize_BeginInit(
 {
     std::vector<ObjectWriterNode> poppedList;
 
-    if (TryPopRequiredElements<2>({ { ObjectWriterNodeType::PushScopeCreateType, ObjectWriterNodeType::BeginInit } }, nodeList, poppedList))
+    auto tryPopCreationWithSavedAssignments = [&nodeList, &poppedList]
+    {
+        if (nodeList.size() < 3)
+        {
+            return false;
+        }
+
+        const auto searchBegin = std::next(nodeList.rbegin());
+        const auto creationCandidate = std::find_if(searchBegin, nodeList.rend(), [](const ObjectWriterNode& node)
+        {
+            return node.GetNodeType() != ObjectWriterNodeType::SetName &&
+                node.GetNodeType() != ObjectWriterNodeType::SetValueConstant;
+        });
+
+        if (creationCandidate == searchBegin || creationCandidate == nodeList.rend() ||
+            (creationCandidate->GetNodeType() != ObjectWriterNodeType::PushScopeCreateType &&
+             creationCandidate->GetNodeType() != ObjectWriterNodeType::CreateType))
+        {
+            return false;
+        }
+
+        const auto firstNode = std::prev(creationCandidate.base());
+        poppedList.clear();
+        poppedList.reserve(std::distance(firstNode, nodeList.end()));
+        std::move(firstNode, nodeList.end(), back_inserter(poppedList));
+        nodeList.erase(firstNode, nodeList.end());
+        return true;
+    };
+
+    if (tryPopCreationWithSavedAssignments())
+    {
+        // Transform:
+        //     [PushScope]CreateType
+        //       SetName / SetValueConstant (one or more)
+        //       BeginInit
+        // To:
+        //     [PushScope]CreateTypeBeginInit
+        //       SetName / SetValueConstant (same order)
+        //
+        // The assignments carry their own values, so initialization can precede them.
+        auto& createTypeNode = poppedList.front();
+        auto lineInfo = createTypeNode.GetLineInfo();
+        auto& spType = createTypeNode.GetXamlType();
+
+        if (createTypeNode.GetNodeType() == ObjectWriterNodeType::PushScopeCreateType)
+        {
+            nodeList.push_back(ObjectWriterNode::MakePushScopeCreateTypeBeginInitNode(lineInfo, spType));
+        }
+        else
+        {
+            nodeList.push_back(ObjectWriterNode::MakeCreateTypeBeginInitNode(lineInfo, spType));
+        }
+        std::move(std::next(poppedList.begin()), std::prev(poppedList.end()), back_inserter(nodeList));
+    }
+    else if (TryPopRequiredElements<2>({ { ObjectWriterNodeType::PushScopeCreateType, ObjectWriterNodeType::BeginInit } }, nodeList, poppedList))
     {
         // Transform:
         //     PushScopeCreateType
@@ -469,25 +523,6 @@ void ObjectWriterNodeList::Optimize_BeginInit(
 
         nodeList.push_back(ObjectWriterNode::MakeCreateTypeWithTypeConvertedConstantBeginInitNode(lineInfo, spType, spTypeConverter, spValue));
     }
-    else if (TryPopRequiredElements<3>({ { ObjectWriterNodeType::PushScopeCreateType, ObjectWriterNodeType::SetName, ObjectWriterNodeType::BeginInit } }, nodeList, poppedList))
-    {
-        // Transform:
-        //     PushScopeCreateType
-        //         SetName
-        //         BeginInit
-        // To:
-        //     PushScopeCreateTypeBeginInit
-        //         SetName
-        auto& createTypeNode = poppedList[0];
-        auto& setNameNode = poppedList[1];
-
-        // Retain line information from the creation node
-        auto lineInfo = createTypeNode.GetLineInfo();
-        auto& spType = createTypeNode.GetXamlType();
-
-        nodeList.push_back(ObjectWriterNode::MakePushScopeCreateTypeBeginInitNode(lineInfo, spType));
-        nodeList.push_back(std::move(setNameNode));
-    }
     else if (TryPopRequiredElements<4>({ {
                 ObjectWriterNodeType::PushScopeCreateType,
                 ObjectWriterNodeType::BeginConditionalScope,
@@ -520,25 +555,6 @@ void ObjectWriterNodeList::Optimize_BeginInit(
         nodeList.push_back(ObjectWriterNode::MakePushScopeCreateTypeBeginInitNode(lineInfo, spType));
         nodeList.push_back(std::move(setNameNode));
         nodeList.push_back(std::move(BeginConditionalScopeNode));
-    }
-    else if (TryPopRequiredElements<3>({ { ObjectWriterNodeType::CreateType, ObjectWriterNodeType::SetName, ObjectWriterNodeType::BeginInit } }, nodeList, poppedList))
-    {
-        // Transform:
-        //     CreateType
-        //     SetName
-        //     BeginInit
-        // To:
-        //     CreateTypeBeginInit
-        //     SetName
-        auto& createTypeNode = poppedList[0];
-        auto& setNameNode = poppedList[1];
-
-        // Retain line information from the creation node
-        auto lineInfo = createTypeNode.GetLineInfo();
-        auto& spType = createTypeNode.GetXamlType();
-
-        nodeList.push_back(ObjectWriterNode::MakeCreateTypeBeginInitNode(lineInfo, spType));
-        nodeList.push_back(std::move(setNameNode));
     }
     else
     {
@@ -775,7 +791,7 @@ void ObjectWriterNodeList::Optimize_SetDirectiveProperty(
     std::vector<ObjectWriterNode> poppedList;
 
     // Transform:
-    //     PushConstant (string)
+    //     PushConstant (string or connection ID)
     //     SetDirectiveProperty
     // To:
     //     CheckPeerType (if x:Class)
@@ -786,16 +802,21 @@ void ObjectWriterNodeList::Optimize_SetDirectiveProperty(
         auto& directiveNode = poppedList[1];
         auto directiveProperty = std::static_pointer_cast<DirectiveProperty>(directiveNode.GetXamlProperty());
 
+        // A saved connection directive may already contain its converted integer ID.
         ASSERT(directiveProperty->IsDirective());
-        ASSERT(constantNode.GetValue()->GetValue().GetType() == valueString);
+        ASSERT(constantNode.GetValue()->GetValue().GetType() == valueString ||
+            (directiveProperty->get_DirectiveKind() == XamlDirectives::xdConnectionId &&
+             constantNode.GetValue()->GetValue().GetType() == valueSigned));
         ASSERT(directiveProperty->get_DirectiveKind() == XamlDirectives::xdKey
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdName
+            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdLang
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdClass
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdDeferLoadStrategy
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdLoad
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdFieldModifier
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdClassModifier
-            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdSpace);
+            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdSpace
+            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdConnectionId);
 
         if (directiveProperty->get_DirectiveKind() == XamlDirectives::xdClass)
         {
@@ -1570,5 +1591,3 @@ _Check_return_ HRESULT ObjectWriterNodeList::Dump(
 }
 
 #endif
-
-

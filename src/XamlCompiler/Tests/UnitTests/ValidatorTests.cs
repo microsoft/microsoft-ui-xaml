@@ -242,6 +242,23 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void WMC0020_ExplicitStringInTextBlockInlines()
+        {
+            // Naming a string must not make it assignable to TextBlock's Inline collection.
+            foreach (string name in new[] { "", "x:Name='named'" })
+            {
+                string xaml = @"
+<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock><x:String " + name + @">Text</x:String></TextBlock>
+</Page>";
+                var validator = _testHelper.ValidateXAML(xaml);
+                string result = _testHelper.MatchErrors(validator, new[] { "WMC0020" }, null);
+                Assert.IsNull(result, result);
+            }
+        }
+
+        [TestMethod]
         public void WMC0021_CantAddToCollectionObject()
         {
             string xaml = @"

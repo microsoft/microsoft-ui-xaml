@@ -30,6 +30,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             static void VerifyEventTraced(int eventId);
 
         private:
+            struct ProcessTraceTask;
+
+            static void StartProcessing();
+            static void WaitUntilProcessingEvents();
+            static HRESULT StopProcessing();
             static void DecodeEtwEvents(const PEVENT_RECORD pevent_record);
             static GUID s_xamlProviderGuid;
             static std::unique_ptr<Etw::Processor::EtwRealtimeConsumer> s_consumer;
@@ -40,7 +45,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             static std::map<int, unsigned int> s_IdCountMap;
             static std::mutex s_eventMutex;
             static TraceEventScope s_eventScope;
-            static Event s_syncEvent;
+            static std::shared_ptr<ProcessTraceTask> s_processTraceTask;
+            static Event s_processingConfirmedEvent;
+            static const GUID s_processingCheckProviderGuid;
+            static REGHANDLE s_processingCheckProvider;
         };
     }
 } } } }

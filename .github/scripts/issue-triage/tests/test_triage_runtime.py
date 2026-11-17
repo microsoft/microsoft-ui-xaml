@@ -12,7 +12,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import triage as t
 from find_duplicates import MAX_CANDIDATES
-from test_triage import FakeGitHub, MAPPING, REPO, event
+from test_triage import FakeGitHub, MAPPING, REPO, agent_output, event
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -135,7 +135,8 @@ class PromptHandoffTests(unittest.TestCase):
     def test_untrusted_text_stays_data_and_does_not_change_trusted_rules(self):
         t.attach_context(str(self.context), str(self.prompt))
         rendered = self.prompt.read_text(encoding="utf-8")
-        self.assertTrue(rendered.startswith("Trusted prefix\n" + t.CONTEXT_START + "\n"))
+        policy, _ = t.load_priority_policy()
+        self.assertTrue(rendered.startswith("Trusted prefix\n" + policy + "\n\n" + t.CONTEXT_START + "\n"))
         self.assertTrue(rendered.endswith(t.CONTEXT_END + "\nTrusted rules stay last\n"))
         self.assertEqual(rendered.count(t.CONTEXT_START), 1)
         self.assertEqual(rendered.count(t.CONTEXT_END), 1)
@@ -297,6 +298,53 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertNotIn("team-parent-map.json", self.source)
         self.assertIn("Never emit a team name.", self.source)
 
+    def test_confidence_policy_agrees_in_source_compiled_tools_and_publication(self):
+        metadata, _ = json.JSONDecoder().raw_decode(
+            self.lock.split("GH_AW_TOOLS_META_JSON: |\n", 1)[1].lstrip()
+        )
+        tool = next(item for item in metadata["dynamic_tools"]
+                    if item["name"] == "publish_triage_summary")
+        encoded_config = re.search(r'(?m)^\s+GH_AW_SAFE_OUTPUTS_CONFIG: (".*")$', self.lock)[1]
+        inputs = json.loads(json.loads(encoded_config))["publish-triage-summary"]["inputs"]
+        confidence = tool["inputSchema"]["properties"]["area_confidence"]
+        description = re.search(
+            r"(?m)^        area_confidence:\n          description: (.+)$", self.source
+        )[1]
+        self.assertEqual(confidence["description"], description)
+        self.assertEqual(inputs["area_confidence"]["description"], description)
+        self.assertEqual(confidence["enum"], inputs["area_confidence"]["options"])
+        for policy in (
+            "MEDIUM/HIGH can add the winning area and its configured team",
+            "team-only routes without an area require HIGH",
+            "LOW/NONE add no area or team",
+        ):
+            self.assertIn(policy, description)
+        reason = tool["inputSchema"]["properties"]["routing_reason"]["description"]
+        self.assertEqual(reason, inputs["routing_reason"]["description"])
+        self.assertIn("None is allowed only for non-HIGH default routing", reason)
+        output = self.source.split("## Output\n", 1)[1]
+        self.assertIn("Only non-HIGH default\n  routing may use `None`.", output)
+
+        expected = {
+            "HIGH": ["area-Expander", "team-Controls"],
+            "MEDIUM": ["area-Expander", "needs-triage", "team-Controls"],
+            "LOW": ["needs-triage"],
+            "NONE": ["needs-triage"],
+        }
+        self.assertEqual(set(confidence["enum"]), set(expected))
+        for value in confidence["enum"]:
+            with self.subTest(confidence=value):
+                client = FakeGitHub()
+                client.issue["labels"] = [{"name": "bug"}]
+                evidence = t.prepare(client, event(), MAPPING)
+                result = t.validate(agent_output(
+                    evidence, area="None" if value == "NONE" else "area-Expander",
+                    area_confidence=value,
+                ), evidence)
+                plan = t.publish(client, result, evidence, MAPPING, write=False)
+                self.assertEqual(plan["add_labels"], expected[value])
+                self.assertEqual(client.writes, [])
+
     def test_reporter_diagnosis_supports_provisional_routing_without_claiming_verification(self):
         routing = self.source.split("## Routing\n", 1)[1].split("## Reproduction", 1)[0]
         self.assertIn("This is first-level triage, not root-cause verification.", routing)
@@ -305,7 +353,11 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("support HIGH `area-TitleBar` routing", routing)
         self.assertIn("A bare label request or unsupported guess is not a technical diagnosis.", routing)
         self.assertIn("If the diagnosis conflicts with the supplied observations, use MEDIUM/LOW", routing)
-        self.assertIn("Unresolved competing areas also remain advisory unless", routing)
+        self.assertIn("MEDIUM and HIGH", routing)
+        self.assertIn("suggestions can add the winning area label and the configured team for its\nselected routing rule", routing)
+        self.assertIn("LOW suggestions remain advisory and add no area or team.", routing)
+        self.assertNotIn("still requires HIGH confidence", routing)
+        self.assertIn("Do not inflate confidence merely to obtain a label.", routing)
         self.assertIn("Existing area and team labels always take", routing)
         self.assertIn("Never emit a team name.", routing)
 
@@ -325,6 +377,33 @@ class WorkflowRuntimeTests(unittest.TestCase):
         for area in ("area-AppWindow", "area-XamlWindow"):
             self.assertNotIn("facade", mapping[area]["note"])
             self.assertIn("initial investigation", mapping[area]["note"])
+
+    def test_type_priority_policy_and_project_secret_stay_in_trusted_publisher(self):
+        policy = self.source.split("## Repository issue Type and WinUI project priority\n", 1)[1]
+        policy = policy.split("## UWP-specific", 1)[0]
+        for guidance in (
+            "Existing Type", "priority-policy.md", "single source of",
+            "assess_priority", "same table",
+            "number 1868", "Existing project", "not performed during preview",
+        ):
+            self.assertIn(guidance, policy)
+        _, rules = t.load_priority_policy()
+        choices = re.search(r"(?ms)^        impact:\n.*?          options: \[([^\]]+)\]", self.source)
+        self.assertEqual(list(rules), [choice.strip() for choice in choices[1].split(",")])
+        agent = re.search(r"(?ms)^  agent:\n.*?(?=^  \w|\Z)", self.lock).group()
+        detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
+        publisher = re.search(r"(?ms)^  publish_triage_summary:\n.*?(?=^  \w|\Z)", self.lock).group()
+        for job in (agent, detection):
+            self.assertNotIn("WINUI_TRIAGE_PROJECT_TOKEN", job)
+        self.assertNotIn("WINUI_TRIAGE_APP_PRIVATE_KEY", self.lock)
+        self.assertNotIn("create-github-app-token", self.lock)
+        self.assertIn("TRIAGE_PROJECT_TOKEN: ${{ secrets.WINUI_TRIAGE_PROJECT_TOKEN }}", publisher)
+        self.assertIn("GITHUB_TOKEN: ${{ github.token }}", publisher)
+        self.assertIn("It never adds project items", policy)
+        self.assertIn("credential failures do not block normal triage", policy)
+        for name in ("impact", "workaround", "priority_reason"):
+            self.assertIn(f'"{name}"', self.lock)
+        self.assertNotIn("regression_release", self.lock)
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

@@ -32,6 +32,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ScrollingTable = "ScrollingTableView";
         internal const string HierarchyTable = "HierarchyTable";
         internal const string HierarchyRtlTable = "HierarchyRtlTable";
+        internal const string CellControlsTable = "CellControlsTableView";
+        internal const string ToggleCellControlsHeadersButton = "ToggleCellControlsHeadersButton";
 
         // ---- Page controls (AutomationId) ----
 
@@ -40,15 +42,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string AddColumnButton = "AddColumnButton";
         internal const string RemoveColumnButton = "RemoveColumnButton";
         internal const string ToggleScorePinButton = "ToggleScorePinButton";
+        internal const string ToggleBasicFlowDirectionButton = "ToggleBasicFlowDirectionButton";
+        internal const string ToggleNameCanResizeButton = "ToggleNameCanResizeButton";
+        internal const string SetAgeAutoScoreStarButton = "SetAgeAutoScoreStarButton";
+        internal const string ReportBasicColumnWidthsButton = "ReportBasicColumnWidthsButton";
+        internal const string ScaleBasicTableVerticallyButton = "ScaleBasicTableVerticallyButton";
         internal const string FilterSourceButton = "FilterSourceButton";
+        internal const string SingleGroupedRowFilterButton = "SingleGroupedRowFilterButton";
+        internal const string SelectScrollingRow3Button = "SelectScrollingRow3Button";
         internal const string ExpandAllGroupsButton = "ExpandAllGroupsButton";
         internal const string CollapseAllGroupsButton = "CollapseAllGroupsButton";
         internal const string DelayedUnloadButton = "DelayedUnloadButton";
         internal const string DelayedGripperCaptureLossButton = "DelayedGripperCaptureLossButton";
         internal const string DelayedDisableButton = "DelayedDisableButton";
+        internal const string PinNameOnHeaderToolTipDetachButton = "PinNameOnHeaderToolTipDetachButton";
+        internal const string PinNameRebuildOnHeaderToolTipAttachButton = "PinNameRebuildOnHeaderToolTipAttachButton";
         internal const string SelectionModeComboBox = "SelectionModeComboBox";
         internal const string SortCycleComboBox = "SortCycleComboBox";
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
+        internal const string IsReadOnlyCheckBox = "IsReadOnlyCheckBox";
+        internal const string CanUserResizeColumnsCheckBox = "CanUserResizeColumnsCheckBox";
+        internal const string HideColumnHeadersCheckBox = "HideColumnHeadersCheckBox";
+        internal const string EmptyBasicCheckBox = "EmptyBasicCheckBox";
+        internal const string EmptyStateButton = "EmptyStateButton";
+        internal const string EmptyStateImportButton = "EmptyStateImportButton";
+        internal const string ScrollFixturesCheckBox = "ScrollFixturesCheckBox";
+        internal const string ScrollCityMenuCheckBox = "ScrollCityMenuCheckBox";
+        internal const string ScrollScrollingBodyButton = "ScrollScrollingBodyButton";
+        internal const string CellHyperlink = "CellHyperlink";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
         internal const string ResetHierarchyButton = "ResetHierarchy";
@@ -60,6 +81,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string GroupedPagingPivotItem = "GroupedPaging";
         internal const string ScrollingPivotItem = "Scrolling";
         internal const string HierarchyPivotItem = "Hierarchy";
+        internal const string CellControlsPivotItem = "CellControls";
 
         internal static string GoToButton(string pivotItem) => "GoTo" + pivotItem + "Button";
 
@@ -197,7 +219,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 
         // ---- Context menu fixture (ContextMenuTable) ----
         // Name: CellMenu + HeaderMenu; City: TemplateMenu on its template root; Age: none (row menu applies).
-        // Rows: RowMenu via implicit style; table: TableMenu. Blank space right of the columns and below the rows.
+        // Rows: RowMenu via implicit style (plus RowTemplateMenu on the template root, on request); table: TableMenu.
+        // Blank space right of the columns and below the rows.
 
         internal const string ContextMenuTable = "ContextMenuTable";
         internal const string ContextMenuPivotItem = "ContextMenu";
@@ -207,11 +230,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         // Reset undoes both.
         internal const string GroupContextMenuTableButton = "GroupContextMenuTable";
         internal const string MirrorContextMenuTableButton = "MirrorContextMenuTable";
+        internal const string CancelEditorMenuCloseButton = "CancelEditorMenuClose";
+
+        // Puts RowTemplateMenu on each realized row's template root. Reset removes it.
+        internal const string AttachRowTemplateMenuButton = "AttachRowTemplateMenu";
 
         internal const string CellMenu = "CellMenu";
         internal const string HeaderMenu = "HeaderMenu";
         internal const string TemplateMenu = "TemplateMenu";
         internal const string RowMenu = "RowMenu";
+        internal const string RowTemplateMenu = "RowTemplateMenu";
         internal const string TableMenu = "TableMenu";
 
         // Each menu's single item has AutomationId "<menu>Item".
@@ -221,6 +249,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static readonly int[] ContextMenuColumnWidths = { 160, 160, 100 };
         internal const int ContextMenuTableWidth = 600;
         internal const int ContextMenuItemCount = 6;
+        internal const int CellControlsItemCount = 12;
 
         internal const int ContextMenuNameColumn = 0;
         internal const int ContextMenuCityColumn = 1;
@@ -259,7 +288,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         }
 
         // Read-only TextBox for the last menu opened, as "key=value;...": menu, open, opens, item, target,
-        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>), editing, selected.
+        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>),
+        // editorMenuOpen/editorMenuClosings, editing, selected.
         internal const string ContextMenuReadout = "ContextMenuReadout";
 
         internal const string MenuField = "menu";
@@ -268,6 +298,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ItemField = "item";
         internal const string TargetField = "target";
         internal const string FocusField = "focus";
+        internal const string EditorMenuOpenField = "editorMenuOpen";
+        internal const string EditorMenuClosingsField = "editorMenuClosings";
 
         internal static string CellFocus(int id, int column) => "cell:" + ContextMenuName(id) + "/" + column;
         internal static string RowFocus(int id) => "row:" + ContextMenuName(id);

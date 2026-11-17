@@ -1673,6 +1673,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's CornerRadius is kept while the header is keyboard-focused.")]
+        public void VerifyHeaderStyleCornerRadiusSurvivesKeyboardFocus()
+        {
+            TableView tableView = null;
+            var styleRadius = new CornerRadius(7);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                var style = new Style(typeof(TableViewColumnHeader));
+                style.Setters.Add(new Setter(Control.CornerRadiusProperty, styleRadius));
+                tableView.ColumnHeaderStyle = style;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.AreNotEqual(styleRadius, tableView.CornerRadius, "Precondition: the style radius differs from the table's.");
+                Verify.AreEqual(styleRadius, header.CornerRadius, "Precondition: the style radius reaches the header.");
+                Verify.IsTrue(header.Focus(FocusState.Keyboard), "Precondition: the header takes keyboard focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.AreEqual(FocusState.Keyboard, header.FocusState, "Precondition: the header is keyboard-focused.");
+                Verify.AreEqual(styleRadius, header.CornerRadius, "A keyboard-focused header must keep its Style's CornerRadius.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies data cells are rounded only while keyboard-focused, so their system focus visual is rounded without clipping.")]
         public void VerifyCellCornerRadiusMatchesControlCornerRadius()
         {

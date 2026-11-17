@@ -105,6 +105,7 @@ HRESULT CWindowsServices::GetAutomationProvider(
     CUIAWrapper* pWrapper = NULL;
 
     IFC(pSite->GetUIAWindow(pElement, pSite->GetXcpControlWindow(), false /*onlyGet*/, &pWindow));
+    IFCEXPECT(pWindow);
     pAutomationPeer = pElement->OnCreateAutomationPeer();
 
     IFCPTR(pAutomationPeer);

@@ -347,7 +347,6 @@ void TableView::CompleteFocusLossCommit()
             {
                 if (auto strongThis = weakThis.get())
                 {
-                    strongThis->m_editorFlyoutClosingRevoker.revoke();
                     strongThis->MarkEditorFlyoutClosing();
                 }
             });
@@ -355,9 +354,14 @@ void TableView::CompleteFocusLossCommit()
         m_editorFlyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
             [weakThis = get_weak()](auto&&, auto&&)
             {
-                if (auto strongThis = weakThis.get(); strongThis && !strongThis->m_focusLossCommitQueued)
+                if (auto strongThis = weakThis.get())
                 {
-                    strongThis->QueueFocusLossCommit();
+                    strongThis->m_editorFlyoutClosingRevoker.revoke();
+                    strongThis->m_editorFlyoutClosedRevoker.revoke();
+                    if (!strongThis->m_focusLossCommitQueued)
+                    {
+                        strongThis->QueueFocusLossCommit();
+                    }
                 }
             });
         return;

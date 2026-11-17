@@ -59,7 +59,7 @@
             <TextBlock x:Uid="SnapshotDiffHeading" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock x:Name="BeforeIdentity" x:Uid="SnapshotDiffBeforeIdentity" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
             <TextBlock x:Name="AfterIdentity" x:Uid="SnapshotDiffAfterIdentity" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
-            <TextBlock x:Uid="SnapshotDiffScope" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" />
+            <views:SnapshotResourceView x:Name="ResourceSnapshot" Visibility="Collapsed" />
         </StackPanel>
         <Grid Grid.Row="1">
             <ProgressRing x:Name="Loading" x:Uid="SnapshotDiffLoading" IsActive="True" Width="28" Height="28" />

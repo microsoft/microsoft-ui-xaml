@@ -43,7 +43,7 @@
                 <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="50" OffsetY="50" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <Visual Tag="PrependVisual" SizeX="100" SizeY="1200">
+                <Visual Tag="PrependVisual">
                   <TransformMatrix>
                     <Translate X="50" Y="50" />
                   </TransformMatrix>

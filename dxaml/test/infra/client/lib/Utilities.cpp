@@ -1469,6 +1469,19 @@ namespace Private { namespace Infrastructure {
 
     }
 
+    HRESULT Utilities::SetMaxTextureSizeOverride(_In_ int maxTextureSize)
+    {
+        COM_START
+        {
+            RunOnUIThread([&]()
+            {
+                wrl::ComPtr<IXamlTestHooks> testHooks = WindowHelper::GetTestHooks();
+                testHooks->SetMaxTextureSizeOverride(maxTextureSize);
+            });
+        }
+        COM_END
+    }
+
     bool Utilities::DoVerification(
         _In_ PCWSTR fileExtension,
         _In_opt_ HSTRING variation,

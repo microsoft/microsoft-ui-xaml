@@ -102,7 +102,7 @@ up to three dumps per process. Pull one back through PowerShell Direct:
 ```powershell
 $vmName = "<vm>"
 $credentialKey = $vmName -replace '[^a-zA-Z0-9]', '_'
-$cred = Import-Clixml (Join-Path $env:USERPROFILE ".winui-test\vmcred-$credentialKey.xml")
+$cred = Import-Clixml "~\.winui-test\vmcred-$credentialKey.xml"
 $destination = Join-Path $env:TEMP "WinUIDumps"
 New-Item -ItemType Directory -Path $destination -Force | Out-Null
 
@@ -115,6 +115,9 @@ finally {
     Remove-PSSession $session
 }
 ```
+
+Always access ".winui-test\" via "~\.winui-test", without changing the "~\" to some other form.
+
 
 For a quick local analysis:
 

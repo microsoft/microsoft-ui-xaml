@@ -12,6 +12,8 @@ namespace AppAnalysis {
         BEGIN_TEST_CLASS(EventProcessorTests)
         END_TEST_CLASS()
 
+        TEST_METHOD(ValidateTraceLoggingVirtualizationDispatch)
+
         BEGIN_TEST_METHOD(ValidateBasicProperties)
             TEST_METHOD_PROPERTY(L"Classification", L"Integration")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")

@@ -129,6 +129,7 @@ public:
     TEST_METHOD(ReinitializeXamlIslandOnUIThread_CustomApplication_KeepApplicationAlive)
 
     TEST_METHOD(IslandSystemBackdrop)
+    TEST_METHOD(IslandSystemBackdropBeforeContent)
 
     TEST_METHOD(IslandWithMuxcDoesntPoisonThread)
 
@@ -201,6 +202,11 @@ public:
 
     TEST_METHOD(CloseIslandWhileAsbPopupOpening)
     TEST_METHOD(ValidateUiaAfterVisualTreeReset)
+    BEGIN_TEST_METHOD(ValidateIslandCloseDuringUiaInitialization)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        TEST_METHOD_PROPERTY(L"Description", L"Inject synchronous island closure before UiaLookupId returns to CUIAWindow::InitIds; initialization must not access released UIA state.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateUiaConcurrentWithIslandClose)
         TEST_METHOD_PROPERTY(L"Description", L"Regression test: a UIA query racing with XamlIsland::Close must not AV inside CXamlIslandRoot::GetScreenOffset / CUIAWindow::get_BoundingRectangle.")
     END_TEST_METHOD()

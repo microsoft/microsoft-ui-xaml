@@ -11,6 +11,7 @@
 #include "wil\resource.h"
 #include "RuleTester.h"
 #include <TestEvent.h>
+#include "EventProcessor.h"
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace AppAnalysis::Test;
@@ -32,6 +33,69 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {  namespace Tools { namespace AppAnalysis {
+
+void EventProcessorTests::ValidateTraceLoggingVirtualizationDispatch()
+{
+    namespace engine = Microsoft::Diagnostics::AppAnalysis;
+    wrl::ComPtr<engine::EventProcessor> processor;
+    VERIFY_SUCCEEDED(wrl::MakeAndInitialize<engine::EventProcessor>(&processor));
+    wrl::ComPtr<appanalysis::IEventProcessorStatics> registrations;
+    VERIFY_SUCCEEDED(processor.As(&registrations));
+    wrl::ComPtr<engine::IEventProcessorPrivate> events;
+    VERIFY_SUCCEEDED(processor.As(&events));
+
+    // Registration only needs a provider identity; avoid loading an external manifest.
+    wrl::ComPtr<engine::EtwProvider> provider;
+    VERIFY_SUCCEEDED(wrl::MakeAndInitialize<engine::EtwProvider>(&provider, WINDOWS_UI_XAML_ETW_PROVIDER, UINT32{0}));
+    wrl::ComPtr<engine::EtwEvent> observation;
+    VERIFY_SUCCEEDED(engine::EtwEvent::CreateInstance(
+        { VirtualizationIsEnabledByLayoutInfo_value, 1 }, provider.Get(), &observation));
+
+    unsigned int count = 0;
+    auto callback = wrl::Callback<appanalysis::IEtwEventRecordCallback>(
+        [&](appanalysis::IEtwEventRecord*) { ++count; return S_OK; });
+    VERIFY_SUCCEEDED(registrations->RegisterEvent(observation.Get(), callback.Get()));
+
+    // TraceLogging metadata is a two-byte size, a tag byte, and a terminated event name.
+    const char name[] = "VirtualizationIsEnabledByLayout";
+    std::vector<BYTE> schema(3 + sizeof(name));
+    schema[0] = static_cast<BYTE>(schema.size());
+    memcpy(schema.data() + 3, name, sizeof(name));
+    const char providerName[] = "Microsoft-Windows-XAML";
+    std::vector<BYTE> traits(2 + sizeof(providerName));
+    traits[0] = static_cast<BYTE>(traits.size());
+    memcpy(traits.data() + 2, providerName, sizeof(providerName));
+    EVENT_HEADER_EXTENDED_DATA_ITEM extensions[2]{};
+    extensions[0].ExtType = EVENT_HEADER_EXT_TYPE_EVENT_SCHEMA_TL;
+    extensions[0].DataSize = static_cast<USHORT>(schema.size());
+    extensions[0].DataPtr = reinterpret_cast<ULONGLONG>(schema.data());
+    extensions[1].ExtType = EVENT_HEADER_EXT_TYPE_PROV_TRAITS;
+    extensions[1].DataSize = static_cast<USHORT>(traits.size());
+    extensions[1].DataPtr = reinterpret_cast<ULONGLONG>(traits.data());
+
+    EVENT_RECORD record{};
+    record.EventHeader.Size = sizeof(EVENT_HEADER);
+    record.EventHeader.ProviderId = WINDOWS_UI_XAML_ETW_PROVIDER;
+    record.EventHeader.Flags = EVENT_HEADER_FLAG_64_BIT_HEADER | EVENT_HEADER_FLAG_EXTENDED_INFO;
+    record.EventHeader.EventDescriptor.Channel = 11;
+    record.ExtendedDataCount = _countof(extensions);
+    record.ExtendedData = extensions;
+    VERIFY_SUCCEEDED(events->ProcessEvent(&record));
+    VERIFY_ARE_EQUAL(1u, count);
+
+    schema[3] = 'X';
+    VERIFY_SUCCEEDED(events->ProcessEvent(&record));
+    VERIFY_ARE_EQUAL(1u, count);
+
+    record.ExtendedDataCount = 0;
+    VERIFY_SUCCEEDED(events->ProcessEvent(&record));
+    VERIFY_ARE_EQUAL(1u, count);
+
+    record.EventHeader.EventDescriptor.Id = VirtualizationIsEnabledByLayoutInfo_value;
+    record.EventHeader.EventDescriptor.Version = 1;
+    VERIFY_SUCCEEDED(events->ProcessEvent(&record));
+    VERIFY_ARE_EQUAL(2u, count);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ValidateBasicProperties: Tests that properties on ETWEvent work for the golden path.

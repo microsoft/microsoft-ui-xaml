@@ -1074,6 +1074,11 @@ namespace DirectUI
                 _In_ xaml::FocusState focusState,
                 _In_ ListViewBaseItem* pItem);
 
+            // The focusable selected item that Tab entry will be redirected to, or -1.
+            _Check_return_ HRESULT GetTabEntryTargetIndex(
+                _In_ bool isBackward,
+                _Out_ INT* index);
+
             _Check_return_ HRESULT ScrollIntoViewWithFocusPadding(
                 _In_ UIElement* element,
                 _In_ INT itemIndex);

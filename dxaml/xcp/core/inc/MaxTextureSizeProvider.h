@@ -14,6 +14,12 @@ public:
 
     uint32_t GetMaxTextureSize() const;
 
+    void SetMaxTextureSizeOverride(int maxTextureSize)
+    {
+        m_maxTextureSizeOverride = maxTextureSize > 0 ? static_cast<uint32_t>(maxTextureSize) : 0;
+    }
+
 private:
     CCoreServices* m_pCoreNoRef = nullptr;
+    uint32_t m_maxTextureSizeOverride = 0;
 };

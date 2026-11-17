@@ -159,7 +159,8 @@ grid.Children().Append(canvas);
   is the recommended configuration. If an app does not opt in to the system compositor, `InkCanvas`
   renders ink as lifted external content. In that case, rendering is subject to the Visual Layer
   [external content](https://learn.microsoft.com/windows/apps/develop/composition/visual-layer#external-content)
-  limitations.
+  limitations. If the app opts in to the system compositor but `InkCanvas` cannot attach to it,
+  `InkCanvas` falls back to lifted rendering instead of rendering no ink.
 
 ## Custom drying (app-rendered dry ink)
 

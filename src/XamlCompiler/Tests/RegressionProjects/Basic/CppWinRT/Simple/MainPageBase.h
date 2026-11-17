@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MainPageBase.g.h"
+#include "winrt/Microsoft.UI.Xaml.Navigation.h"
 
 namespace winrt::Simple::implementation
 {
@@ -13,6 +14,9 @@ namespace winrt::Simple::implementation
         void EventHandlerOnBase(IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
 
         hstring PageName() { return pageName; }
+
+        // Forward navigation virtually so derived C++ pages receive the callback.
+        virtual void OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e);
 
     private:
         hstring pageName;
@@ -25,4 +29,3 @@ namespace winrt::Simple::factory_implementation
     {
     };
 }
-

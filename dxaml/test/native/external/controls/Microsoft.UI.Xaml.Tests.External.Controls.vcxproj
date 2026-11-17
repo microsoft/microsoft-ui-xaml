@@ -320,6 +320,7 @@
     <ClCompile Include="usercontrol\UserControlIntegrationTests.cpp" />
     <ClCompile Include="variablesizedwrapgrid\VariableSizedWrapGridIntegrationTests.cpp" />
     <ClCompile Include="window\WindowIntegrationTests.cpp" />
+    <ClCompile Include="window\WindowIntegrationTests_Placement.cpp" />
     <ClCompile Include="wrapgrid\WrapGridIntegrationTests.cpp" />
     <ClCompile Include="TypeInfo.cpp" />
   </ItemGroup>
