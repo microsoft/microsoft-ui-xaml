@@ -110,8 +110,9 @@ namespace
         bool m_isSortDescriptions = false;
     };
 
-    // Read-only vector whose contents are replaced wholesale and announced with a single Reset.
-    class __declspec(novtable) ShapedVector : public ReadOnlyObservableTrackerCollection<IInspectable*>
+    // The shaped list the view wraps (WPF: ListCollectionView.InternalList). Read-only; a recompute
+    // replaces its contents wholesale and announces a single Reset.
+    class __declspec(novtable) InternalList : public ReadOnlyObservableTrackerCollection<IInspectable*>
     {
     public:
         _Check_return_ HRESULT ReplaceAll(_In_ const std::vector<ctl::ComPtr<IInspectable>>& items)
@@ -128,18 +129,19 @@ namespace
         }
 
     protected:
-        ShapedVector() = default;
+        InternalList() = default;
     };
 
-    // A computed group. It is its own item list (as with IsSourceGrouped and no ItemsPath) and exposes
-    // Key (IGrouping<K,T> idiom) and Name (WPF CollectionViewGroup) to bindings.
-    class __declspec(novtable) ShapedGroup :
-        public ShapedVector,
+    // A computed group (WPF: MS.Internal.Data.CollectionViewGroupInternal). It is its own item list
+    // (as with IsSourceGrouped and no ItemsPath) and exposes Key (IGrouping<K,T> idiom) and Name
+    // (WPF CollectionViewGroup) to bindings.
+    class __declspec(novtable) CollectionViewGroupInternal :
+        public InternalList,
         public xaml_data::ICustomPropertyProvider
     {
-        BEGIN_INTERFACE_MAP(ShapedGroup, ShapedVector)
-            INTERFACE_ENTRY(ShapedGroup, xaml_data::ICustomPropertyProvider)
-        END_INTERFACE_MAP(ShapedGroup, ShapedVector)
+        BEGIN_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
+            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICustomPropertyProvider)
+        END_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
 
     public:
         void SetKey(_In_opt_ IInspectable* pKey)
@@ -166,7 +168,7 @@ namespace
             *ppValue = nullptr;
             if (wrl_wrappers::HStringReference(L"Key") == name || wrl_wrappers::HStringReference(L"Name") == name)
             {
-                IFC_RETURN(CustomProperty::CreateObjectProperty(name, &ShapedGroup::GetKeyPropertyValue, ppValue));
+                IFC_RETURN(CustomProperty::CreateObjectProperty(name, &CollectionViewGroupInternal::GetKeyPropertyValue, ppValue));
             }
             return S_OK;
         }
@@ -188,7 +190,7 @@ namespace
         }
 
     protected:
-        ShapedGroup() = default;
+        CollectionViewGroupInternal() = default;
 
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override
         {
@@ -198,7 +200,7 @@ namespace
             }
             else
             {
-                return ShapedVector::QueryInterfaceImpl(iid, ppObject);
+                return InternalList::QueryInterfaceImpl(iid, ppObject);
             }
 
             AddRefOuter();
@@ -211,7 +213,7 @@ namespace
             ctl::ComPtr<IInspectable> spTarget(pTarget);
             ctl::ComPtr<xaml_data::ICustomPropertyProvider> spProvider;
             IFC_RETURN(spTarget.As(&spProvider));
-            IFC_RETURN(spProvider.Cast<ShapedGroup>()->m_spKey.CopyTo(ppValue));
+            IFC_RETURN(spProvider.Cast<CollectionViewGroupInternal>()->m_spKey.CopyTo(ppValue));
             return S_OK;
         }
 
@@ -377,69 +379,102 @@ namespace
         return 0;
     }
 
-    _Check_return_ HRESULT CreateSortSelectors(
-        _In_opt_ wfc::IVector<xaml_data::SortDescription*>* pDescriptions,
-        _Inout_ std::vector<ShapingKeySelector>* pSelectors)
+    // Orders items by the SortDescriptions, or by the CustomSort when set (WPF: MS.Internal.Data.SortFieldComparer).
+    // Ties fall back to the source index, so the full sort is stable and the incremental placement
+    // matches it.
+    class SortFieldComparer
     {
-        UINT count = 0;
-        if (pDescriptions)
+    public:
+        _Check_return_ HRESULT Initialize(
+            _In_opt_ wfc::IVector<xaml_data::SortDescription*>* pDescriptions,
+            _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort)
         {
-            IFC_RETURN(pDescriptions->get_Size(&count));
-        }
+            UINT count = 0;
 
-        for (UINT i = 0; i < count; ++i)
-        {
-            ctl::ComPtr<xaml_data::ISortDescription> spDescription;
-            IFC_RETURN(pDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
-            if (!spDescription)
+            m_fields.clear();
+            m_spCustomSort = pCustomSort;
+            if (m_spCustomSort || !pDescriptions)
             {
-                continue;
+                return S_OK;
             }
 
-            wrl_wrappers::HString path;
-            xaml_data::ListSortDirection direction = xaml_data::ListSortDirection_Ascending;
-            ShapingKeySelector selector;
-            IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
-            IFC_RETURN(spDescription->get_Direction(&direction));
-            IFC_RETURN(CreateKeySelector(path.Get(), &selector));
-            selector.isDescending = (direction == xaml_data::ListSortDirection_Descending);
-            pSelectors->push_back(std::move(selector));
+            IFC_RETURN(pDescriptions->get_Size(&count));
+            for (UINT i = 0; i < count; ++i)
+            {
+                ctl::ComPtr<xaml_data::ISortDescription> spDescription;
+                IFC_RETURN(pDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
+                if (!spDescription)
+                {
+                    continue;
+                }
+
+                wrl_wrappers::HString path;
+                xaml_data::ListSortDirection direction = xaml_data::ListSortDirection_Ascending;
+                ShapingKeySelector field;
+                IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+                IFC_RETURN(spDescription->get_Direction(&direction));
+                IFC_RETURN(CreateKeySelector(path.Get(), &field));
+                field.isDescending = (direction == xaml_data::ListSortDirection_Descending);
+                m_fields.push_back(std::move(field));
+            }
+
+            return S_OK;
         }
 
-        return S_OK;
-    }
+        bool IsEmpty() const
+        {
+            return !m_spCustomSort && m_fields.empty();
+        }
 
-    // Where a flat shaped view places one item: the sort keys (or the CustomSort), then the source
-    // index, which is the order the full recompute's stable sort produces.
-    struct ShapedPlacement
-    {
-        std::vector<ShapingKeySelector> selectors;
-        ctl::ComPtr<xaml_data::ICollectionViewComparer> customSort;
+        // The sort keys Compare reads for an item; none with a CustomSort.
+        _Check_return_ HRESULT EvaluateKeys(_In_opt_ IInspectable* pItem, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pKeys) const
+        {
+            pKeys->clear();
+            pKeys->reserve(m_fields.size());
+            for (const auto& field : m_fields)
+            {
+                ctl::ComPtr<IInspectable> spKey;
+                IFC_RETURN(EvaluateKey(field, pItem, spKey.ReleaseAndGetAddressOf()));
+                pKeys->push_back(std::move(spKey));
+            }
 
+            return S_OK;
+        }
+
+        // pRightKeys null: the right item's keys are evaluated as needed.
         _Check_return_ HRESULT Compare(
             _In_opt_ IInspectable* pLeft,
             const std::vector<ctl::ComPtr<IInspectable>>& leftKeys,
             UINT leftSourceIndex,
             _In_opt_ IInspectable* pRight,
+            _In_opt_ const std::vector<ctl::ComPtr<IInspectable>>* pRightKeys,
             UINT rightSourceIndex,
             _Out_ int* pResult) const
         {
             *pResult = 0;
 
-            if (customSort)
+            if (m_spCustomSort)
             {
                 INT32 result = 0;
-                IFC_RETURN(customSort->Invoke(pLeft, pRight, &result));
+                IFC_RETURN(m_spCustomSort->Invoke(pLeft, pRight, &result));
                 *pResult = (result > 0) - (result < 0);
             }
             else
             {
-                for (size_t i = 0; i < selectors.size() && *pResult == 0; ++i)
+                for (size_t i = 0; i < m_fields.size() && *pResult == 0; ++i)
                 {
                     ctl::ComPtr<IInspectable> spRightKey;
-                    IFC_RETURN(EvaluateKey(selectors[i], pRight, spRightKey.ReleaseAndGetAddressOf()));
+                    if (pRightKeys)
+                    {
+                        spRightKey = (*pRightKeys)[i];
+                    }
+                    else
+                    {
+                        IFC_RETURN(EvaluateKey(m_fields[i], pRight, spRightKey.ReleaseAndGetAddressOf()));
+                    }
+
                     const int result = CompareKeys(leftKeys[i].Get(), spRightKey.Get());
-                    *pResult = selectors[i].isDescending ? -result : result;
+                    *pResult = m_fields[i].isDescending ? -result : result;
                 }
             }
 
@@ -450,6 +485,60 @@ namespace
 
             return S_OK;
         }
+
+    private:
+        std::vector<ShapingKeySelector> m_fields;
+        ctl::ComPtr<xaml_data::ICollectionViewComparer> m_spCustomSort;
+    };
+
+    // Builds the top-level groups in order of first appearance of their key (WPF: MS.Internal.Data.CollectionViewGroupRoot).
+    class CollectionViewGroupRoot
+    {
+    public:
+        _Check_return_ HRESULT AddToSubgroups(_In_opt_ IInspectable* pItem, _In_opt_ IInspectable* pKey)
+        {
+            size_t groupIndex = m_groups.size();
+            for (size_t g = 0; g < m_groups.size(); ++g)
+            {
+                bool areEqual = false;
+                IFC_RETURN(DirectUI::PropertyValue::AreEqual(m_groups[g]->GetKeyNoRef(), pKey, &areEqual));
+                if (areEqual)
+                {
+                    groupIndex = g;
+                    break;
+                }
+            }
+
+            if (groupIndex == m_groups.size())
+            {
+                ctl::ComPtr<CollectionViewGroupInternal> spGroup;
+                IFC_RETURN(ctl::ComObject<CollectionViewGroupInternal>::CreateInstance(spGroup.ReleaseAndGetAddressOf()));
+                spGroup->SetKey(pKey);
+                m_groups.push_back(std::move(spGroup));
+                m_groupItems.emplace_back();
+            }
+
+            m_groupItems[groupIndex].emplace_back(pItem);
+            return S_OK;
+        }
+
+        // Fills each group with its items and returns the groups, in order.
+        _Check_return_ HRESULT GetGroups(_Out_ std::vector<ctl::ComPtr<IInspectable>>* pGroups)
+        {
+            pGroups->clear();
+            pGroups->reserve(m_groups.size());
+            for (size_t g = 0; g < m_groups.size(); ++g)
+            {
+                IFC_RETURN(m_groups[g]->ReplaceAll(m_groupItems[g]));
+                pGroups->push_back(ctl::as_iinspectable(m_groups[g].Get()));
+            }
+
+            return S_OK;
+        }
+
+    private:
+        std::vector<ctl::ComPtr<CollectionViewGroupInternal>> m_groups;
+        std::vector<std::vector<ctl::ComPtr<IInspectable>>> m_groupItems;
     };
 
     template <typename T>
@@ -749,7 +838,7 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
     // A shaped View is reshaped in place, so a consumer holding View (for example through
     // ICollectionViewShaping) keeps a live view. Only switching between flat and grouped output
     // needs a different view class and therefore a new View.
-    if (m_tpShapedOutput)
+    if (m_tpInternalList)
     {
         UINT groupCount = 0;
         if (m_tpGroupDescriptions)
@@ -766,13 +855,13 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
 
     // Leave an unshaped View untouched unless shaping is now requested.
     IFC_RETURN(IsShapingRequested(spSource.Get(), &isShapingRequested));
-    if (!m_tpShapedOutput && !isShapingRequested)
+    if (!m_tpInternalList && !isShapingRequested)
     {
         return S_OK;
     }
 
     // Flat shaping starting on a View that already offers ICollectionViewShaping keeps that View.
-    if (!m_tpShapedOutput)
+    if (!m_tpInternalList)
     {
         UINT groupCount = 0;
         ctl::ComPtr<xaml_data::ICollectionView> spView;
@@ -849,14 +938,14 @@ _Check_return_ HRESULT CollectionViewSource::IsShapingRequested(_In_ IInspectabl
 _Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable* pSource, _In_opt_ xaml_data::ICollectionView* pExistingView, _Outptr_ xaml_data::ICollectionView** ppView)
 {
     ctl::ComPtr<wfc::IVector<IInspectable*>> spSourceVector;
-    ctl::ComPtr<ShapedVector> spOutput;
+    ctl::ComPtr<InternalList> spOutput;
     UINT groupCount = 0;
     HRESULT hr = S_OK;
 
     *ppView = nullptr;
 
     IFC_RETURN(CollectionViewManager::GetVectorFromSource(pSource, spSourceVector.ReleaseAndGetAddressOf()));
-    IFC_RETURN(ctl::ComObject<ShapedVector>::CreateInstance(spOutput.ReleaseAndGetAddressOf()));
+    IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(spOutput.ReleaseAndGetAddressOf()));
 
     if (m_tpGroupDescriptions)
     {
@@ -865,7 +954,7 @@ _Check_return_ HRESULT CollectionViewSource::CreateShapedView(_In_ IInspectable*
 
     m_isShapedOutputGrouped = (groupCount > 0);
     SetPtrValue(m_tpShapedSource, spSourceVector.Get());
-    SetPtrValue(m_tpShapedOutput, spOutput.Get());
+    SetPtrValue(m_tpInternalList, spOutput.Get());
 
     m_isComputingShape = true;
     hr = ComputeShapedOutput();
@@ -920,24 +1009,20 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
         UINT sourceIndex = 0;
     };
 
-    std::vector<ShapingKeySelector> sortSelectors;
+    SortFieldComparer sortComparer;
     ShapingKeySelector groupSelector;
     bool hasGroupSelector = false;
     ctl::ComPtr<xaml_data::IValueConverter> spGroupConverter;
     wrl_wrappers::HStringReference groupKeyTypeName(L"Object");
     wxaml_interop::TypeName groupKeyType = { groupKeyTypeName.Get(), wxaml_interop::TypeKind_Primitive };
     ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
-    ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort = m_tpCustomSort.Get();
     std::vector<Entry> entries;
     std::vector<ctl::ComPtr<IInspectable>> outputItems;
     std::vector<UINT> outputSourceIndices;
     const UINT sourceChangeCount = m_shapedSourceChangeCount;
     UINT size = 0;
 
-    if (!spCustomSort)
-    {
-        IFC_RETURN(CreateSortSelectors(m_tpSortDescriptions.Get(), &sortSelectors));
-    }
+    IFC_RETURN(sortComparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
 
     // ICollectionViewGroup is single level, so only the first group description is used.
     if (m_isShapedOutputGrouped)
@@ -978,12 +1063,7 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
             }
         }
 
-        for (const auto& selector : sortSelectors)
-        {
-            ctl::ComPtr<IInspectable> spKey;
-            IFC_RETURN(EvaluateKey(selector, entry.item.Get(), spKey.ReleaseAndGetAddressOf()));
-            entry.sortKeys.push_back(std::move(spKey));
-        }
+        IFC_RETURN(sortComparer.EvaluateKeys(entry.item.Get(), &entry.sortKeys));
 
         if (hasGroupSelector)
         {
@@ -999,35 +1079,20 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
         entries.push_back(std::move(entry));
     }
 
-    if (spCustomSort)
+    if (!sortComparer.IsEmpty())
     {
-        // A comparer that fails ends the sort and the recompute; the previous output stays.
+        // A CustomSort that fails ends the sort and the recompute; the previous output stays.
         HRESULT hrCompare = S_OK;
-        std::stable_sort(entries.begin(), entries.end(), [&spCustomSort, &hrCompare](const Entry& left, const Entry& right)
+        std::stable_sort(entries.begin(), entries.end(), [&sortComparer, &hrCompare](const Entry& left, const Entry& right)
         {
-            INT32 result = 0;
+            int result = 0;
             if (SUCCEEDED(hrCompare))
             {
-                hrCompare = spCustomSort->Invoke(left.item.Get(), right.item.Get(), &result);
+                hrCompare = sortComparer.Compare(left.item.Get(), left.sortKeys, left.sourceIndex, right.item.Get(), &right.sortKeys, right.sourceIndex, &result);
             }
             return SUCCEEDED(hrCompare) && result < 0;
         });
         IFC_RETURN(hrCompare);
-    }
-    else if (!sortSelectors.empty())
-    {
-        std::stable_sort(entries.begin(), entries.end(), [&sortSelectors](const Entry& left, const Entry& right)
-        {
-            for (size_t i = 0; i < sortSelectors.size(); ++i)
-            {
-                const int result = CompareKeys(left.sortKeys[i].Get(), right.sortKeys[i].Get());
-                if (result != 0)
-                {
-                    return sortSelectors[i].isDescending ? (result > 0) : (result < 0);
-                }
-            }
-            return false;
-        });
     }
 
     if (!m_isShapedOutputGrouped)
@@ -1042,48 +1107,20 @@ _Check_return_ HRESULT CollectionViewSource::ComputeShapedOutput()
     }
     else
     {
-        std::vector<ctl::ComPtr<ShapedGroup>> groups;
-        std::vector<std::vector<ctl::ComPtr<IInspectable>>> groupItems;
-
-        for (auto& entry : entries)
+        CollectionViewGroupRoot root;
+        for (const auto& entry : entries)
         {
-            size_t groupIndex = groups.size();
-            for (size_t g = 0; g < groups.size(); ++g)
-            {
-                bool areEqual = false;
-                IFC_RETURN(DirectUI::PropertyValue::AreEqual(groups[g]->GetKeyNoRef(), entry.groupKey.Get(), &areEqual));
-                if (areEqual)
-                {
-                    groupIndex = g;
-                    break;
-                }
-            }
-
-            if (groupIndex == groups.size())
-            {
-                ctl::ComPtr<ShapedGroup> spGroup;
-                IFC_RETURN(ctl::ComObject<ShapedGroup>::CreateInstance(spGroup.ReleaseAndGetAddressOf()));
-                spGroup->SetKey(entry.groupKey.Get());
-                groups.push_back(std::move(spGroup));
-                groupItems.emplace_back();
-            }
-
-            groupItems[groupIndex].push_back(std::move(entry.item));
+            IFC_RETURN(root.AddToSubgroups(entry.item.Get(), entry.groupKey.Get()));
         }
 
-        outputItems.reserve(groups.size());
-        for (size_t g = 0; g < groups.size(); ++g)
-        {
-            IFC_RETURN(groups[g]->ReplaceAll(groupItems[g]));
-            outputItems.push_back(ctl::as_iinspectable(groups[g].Get()));
-        }
+        IFC_RETURN(root.GetGroups(&outputItems));
     }
 
     // Recorded before ReplaceAll raises, so a handler that changes the source sees consistent state.
     m_shapedSourceIndices = std::move(outputSourceIndices);
     m_shapedSourceSize = size;
     m_areShapedSourceIndicesValid = !m_isShapedOutputGrouped && (sourceChangeCount == m_shapedSourceChangeCount);
-    IFC_RETURN(static_cast<ShapedVector*>(m_tpShapedOutput.Get())->ReplaceAll(outputItems));
+    IFC_RETURN(static_cast<InternalList*>(m_tpInternalList.Get())->ReplaceAll(outputItems));
     return S_OK;
 }
 
@@ -1095,7 +1132,7 @@ _Check_return_ HRESULT CollectionViewSource::RefreshShapedView()
     HRESULT hr = S_OK;
 
     // Changes raised while computing (for example from a Filter callback) are ignored.
-    if (!m_tpShapedOutput || m_isComputingShape)
+    if (!m_tpInternalList || m_isComputingShape)
     {
         return S_OK;
     }
@@ -1150,7 +1187,7 @@ void CollectionViewSource::DetachShapedSource()
 
     m_tpShapedSourceObservable.Clear();
     m_tpShapedSource.Clear();
-    m_tpShapedOutput.Clear();
+    m_tpInternalList.Clear();
     m_isShapedOutputGrouped = false;
     m_shapedSourceIndices.clear();
     m_areShapedSourceIndicesValid = false;
@@ -1166,7 +1203,7 @@ _Check_return_ HRESULT CollectionViewSource::OnShapedSourceVectorChanged(_In_ wf
 
     // A change raised while computing (for example from a Filter callback) is not applied, and
     // the next change recomputes fully.
-    if (!m_tpShapedOutput || m_isComputingShape)
+    if (!m_tpInternalList || m_isComputingShape)
     {
         m_areShapedSourceIndicesValid = false;
         return S_OK;
@@ -1205,7 +1242,7 @@ _Check_return_ HRESULT CollectionViewSource::OnShapedSourceVectorChanged(_In_ wf
 // full recompute is needed instead.
 _Check_return_ HRESULT CollectionViewSource::ApplyShapedSourceChange(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied)
 {
-    auto pOutput = static_cast<ShapedVector*>(m_tpShapedOutput.Get());
+    auto pOutput = static_cast<InternalList*>(m_tpInternalList.Get());
     const UINT sourceChangeCount = m_shapedSourceChangeCount;
     const UINT notFound = static_cast<UINT>(-1);
     UINT sourceSize = 0;
@@ -1258,7 +1295,7 @@ _Check_return_ HRESULT CollectionViewSource::ApplyShapedSourceChange(wfc::Collec
         hr = [&]() -> HRESULT
         {
             ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
-            ShapedPlacement placement;
+            SortFieldComparer comparer;
             std::vector<ctl::ComPtr<IInspectable>> keys;
 
             if (spFilter)
@@ -1271,17 +1308,8 @@ _Check_return_ HRESULT CollectionViewSource::ApplyShapedSourceChange(wfc::Collec
                 }
             }
 
-            placement.customSort = m_tpCustomSort.Get();
-            if (!placement.customSort)
-            {
-                IFC_RETURN(CreateSortSelectors(m_tpSortDescriptions.Get(), &placement.selectors));
-                for (const auto& selector : placement.selectors)
-                {
-                    ctl::ComPtr<IInspectable> spKey;
-                    IFC_RETURN(EvaluateKey(selector, spItem.Get(), spKey.ReleaseAndGetAddressOf()));
-                    keys.push_back(std::move(spKey));
-                }
-            }
+            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
+            IFC_RETURN(comparer.EvaluateKeys(spItem.Get(), &keys));
 
             // Upper bound over the output without the replaced item.
             const UINT count = static_cast<UINT>(m_shapedSourceIndices.size()) - ((oldPosition != notFound) ? 1 : 0);
@@ -1294,7 +1322,7 @@ _Check_return_ HRESULT CollectionViewSource::ApplyShapedSourceChange(wfc::Collec
                 ctl::ComPtr<IInspectable> spOther;
                 int result = 0;
                 IFC_RETURN(pOutput->GetAt(position, spOther.ReleaseAndGetAddressOf()));
-                IFC_RETURN(placement.Compare(spItem.Get(), keys, index, spOther.Get(), m_shapedSourceIndices[position], &result));
+                IFC_RETURN(comparer.Compare(spItem.Get(), keys, index, spOther.Get(), nullptr /* pRightKeys */, m_shapedSourceIndices[position], &result));
                 if (result < 0)
                 {
                     high = middle;

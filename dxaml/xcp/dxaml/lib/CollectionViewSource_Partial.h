@@ -80,7 +80,7 @@ namespace DirectUI
         // Non-null only while View is a shaped view.
         TrackerPtr<wfc::IVector<IInspectable*>> m_tpShapedSource;
         TrackerPtr<wfc::IObservableVector<IInspectable*>> m_tpShapedSourceObservable;
-        TrackerPtr<wfc::IVector<IInspectable*>> m_tpShapedOutput;
+        TrackerPtr<wfc::IVector<IInspectable*>> m_tpInternalList;
         ctl::EventPtr<VectorChangedEventCallback> m_epShapedSourceVectorChangedHandler;
         bool m_isShapedOutputGrouped = false;
         bool m_isComputingShape = false;
