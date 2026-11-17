@@ -26,6 +26,9 @@
 // - Items must not change their key while they are in the list, except through replace().
 // - A key must not point into its item, like a string_view of a string member: items move between blocks.
 // - Not thread safe, not even for reads: lookups update a mutable hint.
+// - insert, erase, push_back, pop_back and clear can move any item, so a reference or pointer from operator[], back()
+//   or for_each is valid only until the next of these calls. replace() moves nothing: a reference to the replaced
+//   position stays valid and refers to the new item.
 // - A position out of range is a programming error and fails fast.
 // - insert() and replace() leave the list unchanged if an allocation fails. erase() never allocates or throws.
 /////////////////////////////////////
