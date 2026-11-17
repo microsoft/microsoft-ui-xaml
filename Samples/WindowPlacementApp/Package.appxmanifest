@@ -9,7 +9,7 @@
   <Identity
     Name="WindowPlacementApp"
     Publisher="CN=WinUITest"
-    Version="1.0.0.0" />
+    Version="1.0.2.0" />
 
   <Properties>
     <DisplayName>WindowPlacementApp</DisplayName>
