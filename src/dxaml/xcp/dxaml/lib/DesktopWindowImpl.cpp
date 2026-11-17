@@ -25,6 +25,12 @@
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
 #include <Microsoft.UI.Interop.h>
+#include <FrameworkUdk/Containment.h>
+
+#ifndef WINAPPSDK_CHANGEID_64885475
+// Bug 64885475: [2.0 Servicing] Keep Window.DispatcherQueue safe after XAML shutdown (RCC: Window_DispatcherQueueAfterXamlShutdown)
+#define WINAPPSDK_CHANGEID_64885475 64885475
+#endif
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -47,16 +53,39 @@ static const wchar_t s_windowClassName[]    = L"WinUIDesktopWin32WindowClass";
 // Default window title for top-level WinUI desktop windows
 static const wchar_t s_defaultWindowTitle[] = L"WinUI Desktop";
 
+static wrl::WeakRef AsWeakDispatcherQueue(_In_opt_ msy::IDispatcherQueue* dispatcherQueue)
+{
+    wrl::WeakRef weakDispatcherQueue;
+    if (dispatcherQueue)
+    {
+        IFCFAILFAST(wrl::AsWeak(dispatcherQueue, &weakDispatcherQueue));
+    }
+    return weakDispatcherQueue;
+}
+
 // Note that win32 class registration, win32 window and DesktopWindowXamlSource
 // creation, and DWXS::Initialize failures are non-recoverable errors.
 //
 // Additionally, DXamlCore must exist before Microsoft::UI::XAML::Window can be
-// created, and DXamlCore will outlive any Microsoft::UI::XAML::Window instances.
-// DXamlCore::GetCurrent() will always return a valid DXamlCore instance when
-// called from a non-static Microsoft::UI::XAML::Window method.
-DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow) : m_dxamlWindowInstance(parentWindow)
+// created, so DXamlCore::GetCurrent() returns a valid instance here. The Window
+// can outlive that DXamlCore, though: an app can keep a reference to it after its
+// thread's XAML has shut down, and m_dxamlCoreNoRef is not cleared when that
+// happens. Code that can run after the core is deleted (off-thread getters, or
+// teardown of a Window that outlives its thread's XAML) must not dereference it.
+DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow)
+    : m_dxamlWindowInstance(parentWindow)
+    , m_weakDispatcherQueue(
+        WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64885475>()
+            ? AsWeakDispatcherQueue(DirectUI::DXamlCore::GetCurrent()->GetDispatcherQueueNoRef())
+            : wrl::WeakRef())
 {
     XamlTelemetry::CreateDesktopWindow(true, reinterpret_cast<uint64_t>(this));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64885475>())
+    {
+        // The XAML dispatcher fails fast at startup if the thread has no DispatcherQueue.
+        ASSERT(m_weakDispatcherQueue.Get() != nullptr);
+    }
 
     // Cache DXamlCore instance for this thread
     m_dxamlCoreNoRef = DirectUI::DXamlCore::GetCurrent();
@@ -285,6 +314,22 @@ _Check_return_ HRESULT DesktopWindowImpl::get_DispatcherImpl(_Outptr_result_mayb
     // current thread and use that instead.  Dispatcher will return NULL on WinUI
     // Desktop to prevent misuse.
     *ppValue = nullptr;
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue)
+{
+    // Window::get_DispatcherQueueImpl calls this only when WINAPPSDK_CHANGEID_64885475 is enabled.
+    if (nullptr == ppValue) { IFC_RETURN(E_INVALIDARG); }
+    *ppValue = nullptr;
+
+    // Don't walk m_dxamlCoreNoRef: this getter can run on any thread, after the core has been deleted. The core holds
+    // the queue while it's alive, so this always resolves then; afterwards it resolves for as long as the queue lives.
+    if (m_weakDispatcherQueue)
+    {
+        IFC_RETURN(m_weakDispatcherQueue.CopyTo(ppValue));
+    }
 
     return S_OK;
 }

@@ -5,6 +5,12 @@
 
 #include "Window.g.h"
 #include "JupiterWindow.h" // Required for WindowType
+#include <FrameworkUdk/Containment.h>
+
+#ifndef WINAPPSDK_CHANGEID_64885475
+// Bug 64885475: [2.0 Servicing] Keep Window.DispatcherQueue safe after XAML shutdown (RCC: Window_DispatcherQueueAfterXamlShutdown)
+#define WINAPPSDK_CHANGEID_64885475 64885475
+#endif
 
 namespace DirectUI
 {
@@ -20,6 +26,8 @@ namespace DirectUI
             virtual _Check_return_ HRESULT put_ContentImpl(_In_opt_ xaml::IUIElement* value) = 0;
             virtual _Check_return_ HRESULT get_CoreWindowImpl(_Outptr_result_maybenull_ wuc::ICoreWindow** pValue) = 0;
             virtual _Check_return_ HRESULT get_DispatcherImpl(_Outptr_result_maybenull_ wuc::ICoreDispatcher** pValue) = 0;
+            // Reached only through the containment-enabled branch in Window::get_DispatcherQueueImpl.
+            virtual _Check_return_ HRESULT get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue) = 0;
             virtual _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue) = 0;
             virtual _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) = 0;
             IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken)  = 0;

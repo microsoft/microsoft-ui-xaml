@@ -3,6 +3,10 @@
 
 #include "precomp.h"
 #include "Popup.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 64638252: [2.0 servicing] Fix ContentDialog entrance animation with OptimizeApplyStyles
+#define WINAPPSDK_CHANGEID_64638252 64638252
 
 CItemsControl::~CItemsControl()
 {
@@ -375,7 +379,14 @@ _Check_return_ HRESULT CItemsControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
     CItemsPresenter* pItemsPresenter = NULL;
     CREATEPARAMETERS cp(GetContext());
 
-    IFC( CFrameworkElement::ApplyTemplate(fAddedVisuals) );
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64638252>())
+    {
+        IFC( CControl::ApplyTemplate(fAddedVisuals) );
+    }
+    else
+    {
+        IFC( CFrameworkElement::ApplyTemplate(fAddedVisuals) );
+    }
     if (!GetFirstChildNoAddRef())
     {
         // When the spec issue 29744 is ready bring the checking for

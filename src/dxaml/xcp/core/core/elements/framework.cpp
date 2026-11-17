@@ -654,6 +654,17 @@ CFrameworkElement::ApplyStyle()
     return S_OK;
 }
 
+_Check_return_ HRESULT
+CFrameworkElement::EnsureInitialStyleApplied()
+{
+    if (!m_initialStyleApplied)
+    {
+        IFC_RETURN(ApplyStyle());
+    }
+
+    return S_OK;
+}
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:

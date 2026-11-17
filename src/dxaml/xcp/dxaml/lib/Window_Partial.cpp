@@ -26,6 +26,12 @@
 #include "host.h"
 #include <XamlOneCoreTransforms.h>
 #include <Windows.UI.Composition.h>
+#include <FrameworkUdk/Containment.h>
+
+#ifndef WINAPPSDK_CHANGEID_64885475
+// Bug 64885475: [2.0 Servicing] Keep Window.DispatcherQueue safe after XAML shutdown (RCC: Window_DispatcherQueueAfterXamlShutdown)
+#define WINAPPSDK_CHANGEID_64885475 64885475
+#endif
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -454,23 +460,32 @@ _Check_return_ HRESULT Window::SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWindow)
 
 _Check_return_ HRESULT Window::get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue)
 {
-    if (nullptr == ppValue) { IFC_RETURN(E_INVALIDARG); }
-    *ppValue = nullptr;
-
-    auto xamlCore = GetDXamlCore();
-    if (xamlCore)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_64885475>())
     {
-        auto coreServices = xamlCore->GetHandle();
-        if (coreServices)
+        // Callable from any thread: the generated getter has no CheckThread, and apps do read it from background threads.
+        // m_spWindowImpl is only assigned in the constructor, so reading it here is safe.
+        IFC_RETURN(m_spWindowImpl->get_DispatcherQueueImpl(ppValue));
+    }
+    else
+    {
+        if (nullptr == ppValue) { IFC_RETURN(E_INVALIDARG); }
+        *ppValue = nullptr;
+
+        auto xamlCore = GetDXamlCore();
+        if (xamlCore)
         {
-            auto hostSite = coreServices->GetHostSite();
-            if (hostSite)
+            auto coreServices = xamlCore->GetHandle();
+            if (coreServices)
             {
-                auto xcpDispatcher = hostSite->GetXcpDispatcher();
-                if (xcpDispatcher)
+                auto hostSite = coreServices->GetHostSite();
+                if (hostSite)
                 {
-                    *ppValue = xcpDispatcher->GetDispatcherQueueNoRef();
-                    AddRefInterface(*ppValue);
+                    auto xcpDispatcher = hostSite->GetXcpDispatcher();
+                    if (xcpDispatcher)
+                    {
+                        *ppValue = xcpDispatcher->GetDispatcherQueueNoRef();
+                        AddRefInterface(*ppValue);
+                    }
                 }
             }
         }
@@ -821,4 +836,3 @@ _Check_return_ HRESULT Window::get_AppWindowImpl(_Outptr_result_maybenull_ ixp::
     IFC_RETURN(m_spWindowImpl->get_AppWindowImpl(ppValue));
     return S_OK;
 }
-

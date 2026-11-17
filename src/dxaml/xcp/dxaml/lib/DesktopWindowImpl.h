@@ -9,7 +9,12 @@
 #include <DesktopWindowXamlSource_partial.h>
 #include "CWindowChrome.h"
 #include "BaseWindow.h"
+#include <FrameworkUdk/Containment.h>
 
+#ifndef WINAPPSDK_CHANGEID_64885475
+// Bug 64885475: [2.0 Servicing] Keep Window.DispatcherQueue safe after XAML shutdown (RCC: Window_DispatcherQueueAfterXamlShutdown)
+#define WINAPPSDK_CHANGEID_64885475 64885475
+#endif
 
 namespace DirectUI
 {
@@ -29,6 +34,8 @@ namespace DirectUI
         _Check_return_ HRESULT put_ContentImpl(_In_opt_ xaml::IUIElement* value) override;
         _Check_return_ HRESULT get_CoreWindowImpl(_Outptr_result_maybenull_ wuc::ICoreWindow** pValue) override;
         _Check_return_ HRESULT get_DispatcherImpl(_Outptr_result_maybenull_ wuc::ICoreDispatcher** pValue) override;
+        // Reached only through the containment-enabled branch in Window::get_DispatcherQueueImpl.
+        _Check_return_ HRESULT get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue) override;
         _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) override;
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
@@ -146,6 +153,13 @@ namespace DirectUI
         bool m_bIsClosing = false;
         Window* m_dxamlWindowInstance = nullptr;
         DXamlCore* m_dxamlCoreNoRef = nullptr;
+        // The thread's DispatcherQueue, captured only when WINAPPSDK_CHANGEID_64885475 is enabled.
+        // Captured in the constructor's initializer list (on the UI thread, while the
+        // DXamlCore is alive) and never modified. Window.DispatcherQueue has no thread check, so get_DispatcherQueueImpl
+        // resolves this from any thread, possibly after this window's DXamlCore has been deleted, which m_dxamlCoreNoRef
+        // cannot detect. It's weak so the window doesn't extend the queue's lifetime: a DispatcherQueue keeps its event
+        // handlers until it's destroyed, so a handler that captures the window would otherwise form a reference cycle.
+        const wrl::WeakRef m_weakDispatcherQueue;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
         EventRegistrationToken m_takeFocusRequestedEventToken;
@@ -182,4 +196,3 @@ namespace DirectUI
         ctl::ComPtr<DirectUI::DesktopWindowXamlSource> m_desktopWindowXamlSource;
     };
 }
-
