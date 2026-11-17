@@ -1358,7 +1358,13 @@ _Check_return_ HRESULT BaseContentRenderer::ImageRenderContent(
                 myRP.pRenderTarget,
                 myRP.pHWWalk->GetSurfaceCache()));
 
-            if (brush->GetHardwareSurface() == nullptr && fallbackBrush->GetHardwareSurface() != nullptr)
+            // Stop drawing the previous picture once the current source can't produce one: it has no URI
+            // (cleared UriSource) or it already failed (an already-failed BitmapImage raises no new ImageFailed).
+            CImageSource* source = brush->m_pImageSource;
+            bool available = false;
+            const bool sourceDone = source == nullptr || source->m_strSource.IsNull() || source->IsImageDecoded(&available);
+
+            if (!sourceDone && brush->GetHardwareSurface() == nullptr && fallbackBrush->GetHardwareSurface() != nullptr)
             {
                 brush = fallbackBrush;
             }
