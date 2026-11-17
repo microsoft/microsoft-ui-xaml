@@ -2661,6 +2661,389 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Content = null;
         }
 
+        // Makes 5 x 250 random edits at any depth: insert a new subtree, insert a removed node again, remove a node,
+        // clear children, and expand or collapse. After each edit, the rows must match the visible nodes in pre-order.
+        [TestMethod]
+        public void TreeViewFlatListMatchesTreeAfterRandomEdits()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                for (int seed = 1; seed <= 5; seed++)
+                {
+                    RunRandomEdits(seed, 250);
+                }
+            });
+        }
+
+        // Checks the exact row events of the flat list in node mode. "+i" inserts row i, and "-i" removes it.
+        // Selection, focus and automation react to each event, so review them if this order changes.
+        [TestMethod]
+        public void TreeViewFlatListRaisesRowEventsInExpectedOrder()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var r = MakeNode("R", true, MakeNode("A", true, MakeNode("A0"), MakeNode("A1")), MakeNode("B"));
+                var a = r.Children[0];
+                var n = MakeNode("N", true, MakeNode("N0"), MakeNode("N1"));
+                var treeView = ShowTreeView(r, MakeNode("Q"));
+                using (var recorder = new FlatListRecorder(treeView))
+                {
+                    Verify.AreEqual("R,A,A0,A1,B,Q", recorder.Rows);
+                    recorder.VerifyEdit("Collapse R", () => treeView.Collapse(r), "-2,-2,-1,-1", "R,Q");
+                    recorder.VerifyEdit("Expand R", () => treeView.Expand(r), "+1,+2,+3,+4", "R,A,A0,A1,B,Q");
+                    recorder.VerifyEdit("Remove A", () => r.Children.Remove(a), "-2,-2,-1", "R,B,Q");
+                    recorder.VerifyEdit("Insert expanded N(N0,N1) before B", () => r.Children.Insert(0, n), "+1,+2,+3", "R,N,N0,N1,B,Q");
+                    recorder.VerifyEdit("Clear N's children", () => n.Children.Clear(), "-3,-2", "R,N,B,Q");
+                    Verify.IsFalse(n.IsExpanded);
+                    recorder.VerifyEdit("Replace B with X", () => r.Children[1] = MakeNode("X"), "-2,+2", "R,N,X,Q");
+                    recorder.VerifyEdit("Remove root R", () => treeView.RootNodes.Remove(r), "-1,-1,-0", "Q");
+                }
+            });
+        }
+
+        // The same as TreeViewFlatListRaisesRowEventsInExpectedOrder, in content mode, with edits to the data items.
+        [TestMethod]
+        public void TreeViewContentModeFlatListRaisesRowEventsInExpectedOrder()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TreeViewItemSource Item(string content, params TreeViewItemSource[] children)
+                {
+                    var item = new TreeViewItemSource() { Content = content };
+                    foreach (var child in children)
+                    {
+                        item.Children.Add(child);
+                    }
+                    return item;
+                }
+
+                var a = Item("a", Item("a0"), Item("a1"));
+                var data = new ObservableCollection<TreeViewItemSource>() { a, Item("b", Item("b0")), Item("c") };
+                var treeView = (TreeView)XamlReader.Load(@"
+                    <TreeView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='400' Height='800'>
+                        <TreeView.ItemTemplate>
+                            <DataTemplate>
+                                <TreeViewItem ItemsSource='{Binding Children}' Content='{Binding Content}'/>
+                            </DataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>");
+                treeView.ItemsSource = data;
+                Content = treeView;
+                Content.UpdateLayout();
+                var nodeA = treeView.RootNodes[0];
+                using (var recorder = new FlatListRecorder(treeView))
+                {
+                    Verify.AreEqual("a,b,c", recorder.Rows);
+                    recorder.VerifyEdit("Expand a", () => treeView.Expand(nodeA), "+1,+2", "a,a0,a1,b,c");
+                    recorder.VerifyEdit("Insert d at 1", () => data.Insert(1, Item("d")), "+3", "a,a0,a1,d,b,c");
+                    recorder.VerifyEdit("Remove a0", () => a.Children.RemoveAt(0), "-1", "a,a1,d,b,c");
+                    recorder.VerifyEdit("Add a2", () => a.Children.Add(Item("a2")), "+2", "a,a1,a2,d,b,c");
+                    recorder.VerifyEdit("Replace b with e", () => data[2] = Item("e"), "-4,+4", "a,a1,a2,d,e,c");
+                    recorder.VerifyEdit("Collapse a", () => treeView.Collapse(nodeA), "-1,-1", "a,d,e,c");
+                    recorder.VerifyEdit("Remove a", () => data.RemoveAt(0), "-0", "d,e,c");
+                    recorder.VerifyEdit("Clear the data", () => data.Clear(), "-2,-1,-0", "");
+                }
+            });
+        }
+
+        // Collapsing R while A1 has focus moves focus through B to Q, the first row after the collapsed rows.
+        [TestMethod]
+        public void TreeViewCollapseMovesFocusToTheRowAfterTheCollapsedRows()
+        {
+            TreeView treeView = null;
+            TreeViewNode r = null, q = null;
+            RunOnUIThread.Execute(() =>
+            {
+                r = MakeNode("R", true, MakeNode("A", true, MakeNode("A0"), MakeNode("A1")), MakeNode("B"));
+                q = MakeNode("Q");
+                treeView = ShowTreeView(r, q);
+                var containerA1 = (TreeViewItem)treeView.ContainerFromNode(r.Children[0].Children[1]);
+                Verify.IsTrue(containerA1.Focus(FocusState.Keyboard), "A1 takes focus");
+            });
+
+            // The list control learns the focused row from GotFocus, which is asynchronous.
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focusedRows = new List<string>();
+                treeView.GettingFocus += (sender, args) => focusedRows.Add(args.NewFocusedElement is TreeViewItem item ?
+                    DescribeItem(treeView.NodeFromContainer(item)) : args.NewFocusedElement?.GetType().Name);
+                treeView.Collapse(r);
+                Content.UpdateLayout();
+                Verify.AreEqual("B,Q", String.Join(",", focusedRows), "Focus goes through B, then Q");
+                Verify.AreSame(treeView.ContainerFromNode(q), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(treeView.XamlRoot), "Focus is on Q");
+            });
+        }
+
+        // Benchmark. It never fails on timing, and only logs the time in ms, including layout, to collapse and expand a
+        // root with 2,000 children.
+        [TestMethod]
+        public void TreeViewExpandCollapseBenchmark()
+        {
+            const int children = 2000;
+            MeasureExpandCollapse("no other rows", children, rowsBefore: 0, rowsAfter: 0);
+            MeasureExpandCollapse(children + " rows after", children, rowsBefore: 0, rowsAfter: children);
+            MeasureExpandCollapse(children + " rows before", children, rowsBefore: children, rowsAfter: 0);
+        }
+
+        private void RunRandomEdits(int seed, int editCount)
+        {
+            var random = new Random(seed);
+            int nextId = 0;
+            TreeViewNode CreateSubtree(int depth)
+            {
+                var node = MakeNode("N" + nextId++, random.Next(2) == 0);
+                for (int i = depth > 0 ? random.Next(4) : 0; i > 0; i--)
+                {
+                    node.Children.Add(CreateSubtree(depth - 1));
+                }
+                return node;
+            }
+
+            var treeView = ShowTreeView(CreateSubtree(3), CreateSubtree(3), CreateSubtree(3));
+            var removedNodes = new List<TreeViewNode>();
+
+            // Applies one random edit and returns a description of it.
+            string ApplyRandomEdit()
+            {
+                // Every node in the tree, shown or not, with the collection that holds it.
+                var slots = new List<(TreeViewNode Node, IList<TreeViewNode> Siblings)>();
+                void AddSlots(IList<TreeViewNode> siblings)
+                {
+                    foreach (var node in siblings)
+                    {
+                        slots.Add((node, siblings));
+                        AddSlots(node.Children);
+                    }
+                }
+                AddSlots(treeView.RootNodes);
+
+                int kind = slots.Count == 0 ? 0 : random.Next(5);
+                if (kind == 1 && removedNodes.Count == 0)
+                {
+                    kind = 0;
+                }
+                if (kind == 0 && slots.Count > 120)
+                {
+                    kind = 2;
+                }
+
+                if (kind <= 1)
+                {
+                    var node = kind == 0 ? CreateSubtree(random.Next(3)) : removedNodes[random.Next(removedNodes.Count)];
+                    removedNodes.Remove(node);
+                    int pick = random.Next(slots.Count + 1);
+                    var target = pick == slots.Count ? treeView.RootNodes : slots[pick].Node.Children;
+                    int index = random.Next(target.Count + 1);
+                    target.Insert(index, node);
+                    return $"insert {DescribeItem(node)} at {index}";
+                }
+
+                var slot = slots[random.Next(slots.Count)];
+                if (kind == 2)
+                {
+                    slot.Siblings.Remove(slot.Node);
+                    removedNodes.Add(slot.Node);
+                    return $"remove {DescribeItem(slot.Node)}";
+                }
+                if (kind == 3 && slot.Node.Children.Count > 0)
+                {
+                    removedNodes.AddRange(slot.Node.Children);
+                    slot.Node.Children.Clear();
+                    return $"clear the children of {DescribeItem(slot.Node)}";
+                }
+                slot.Node.IsExpanded = !slot.Node.IsExpanded;
+                return $"set IsExpanded={slot.Node.IsExpanded} on {DescribeItem(slot.Node)}";
+            }
+
+            using (var recorder = new FlatListRecorder(treeView))
+            {
+                for (int edit = 0; edit < editCount; edit++)
+                {
+                    string description = ApplyRandomEdit();
+                    if (edit % 10 == 9)
+                    {
+                        treeView.UpdateLayout();
+                    }
+                    recorder.VerifyRowsMatchTree($"Seed {seed}, edit {edit}, {description}");
+                }
+            }
+        }
+
+        private void MeasureExpandCollapse(string scenario, int children, int rowsBefore, int rowsAfter)
+        {
+            TreeViewNode CreateRoot(string name, int childCount) =>
+                MakeNode(name, true, Enumerable.Range(0, childCount).Select(i => MakeNode(name + "." + i)).ToArray());
+
+            RunOnUIThread.Execute(() =>
+            {
+                var root = CreateRoot("Measured", children);
+                var rootNodes = new List<TreeViewNode>() { root };
+                if (rowsBefore > 0)
+                {
+                    rootNodes.Insert(0, CreateRoot("Before", rowsBefore));
+                }
+                if (rowsAfter > 0)
+                {
+                    rootNodes.Add(CreateRoot("After", rowsAfter));
+                }
+                ShowTreeView(rootNodes.ToArray());
+
+                double Time(Action change)
+                {
+                    var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                    change();
+                    Content.UpdateLayout();
+                    return stopwatch.Elapsed.TotalMilliseconds;
+                }
+
+                double collapse = Time(() => root.IsExpanded = false);
+                double expand = Time(() => root.IsExpanded = true);
+                Log.Comment($"A root with {children} children, {scenario}: collapse {collapse:F0} ms, expand {expand:F0} ms");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        private static TreeViewNode MakeNode(string content, bool isExpanded = false, params TreeViewNode[] children)
+        {
+            var node = new TreeViewNode() { Content = content, IsExpanded = isExpanded };
+            foreach (var child in children)
+            {
+                node.Children.Add(child);
+            }
+            return node;
+        }
+
+        // Shows a laid out TreeView with the given root nodes. Must be called on the UI thread.
+        private TreeView ShowTreeView(params TreeViewNode[] rootNodes)
+        {
+            var treeView = new TreeView() { Width = 400, Height = 400 };
+            foreach (var node in rootNodes)
+            {
+                treeView.RootNodes.Add(node);
+            }
+            Content = treeView;
+            Content.UpdateLayout();
+            return treeView;
+        }
+
+        // The rows that the flat list should hold: every node whose ancestors are all expanded, in pre-order.
+        private static IEnumerable<object> GetVisibleNodesInPreOrder(IEnumerable<TreeViewNode> nodes)
+        {
+            return nodes.SelectMany(node => new object[] { node }.Concat(
+                node.IsExpanded ? GetVisibleNodesInPreOrder(node.Children) : Enumerable.Empty<object>()));
+        }
+
+        // A row name: the node Content, or the TreeViewItemSource.Content for a data item or a content mode node.
+        private static string DescribeItem(object item)
+        {
+            if (item is TreeViewNode node)
+            {
+                item = node.Content;
+            }
+            return (item as TreeViewItemSource)?.Content ?? item as string ?? item?.ToString() ?? "null";
+        }
+
+        private static string DescribeItems(IEnumerable<object> items)
+        {
+            return String.Join(",", items.Select(DescribeItem));
+        }
+
+        // Records the flat list's row events as "+i", "-i", "=i" or "reset", and replays each one on a copy. The list
+        // control applies each event when it is raised, so the copy must match the rows after every event.
+        private sealed class FlatListRecorder : IDisposable
+        {
+            private readonly TreeView m_treeView;
+            private readonly IObservableVector<object> m_list;
+            private readonly List<object> m_copy;
+            private readonly List<string> m_events = new List<string>();
+            private string m_firstError;
+
+            public FlatListRecorder(TreeView treeView)
+            {
+                m_treeView = treeView;
+                var listControl = (TreeViewList)VisualTreeUtils.FindVisualChildByName(treeView, "ListControl");
+                m_list = (IObservableVector<object>)listControl.ItemsSource;
+                m_copy = ReadList();
+                m_list.VectorChanged += OnVectorChanged;
+            }
+
+            public string Rows => DescribeItems(ReadList());
+
+            public void Dispose()
+            {
+                m_list.VectorChanged -= OnVectorChanged;
+            }
+
+            // Fails if an event did not replay to the rows, or if the rows differ from the visible nodes.
+            public void VerifyRowsMatchTree(string when)
+            {
+                string expected = DescribeItems(GetVisibleNodesInPreOrder(m_treeView.RootNodes));
+                string rows = Rows;
+                if (m_firstError != null || rows != expected)
+                {
+                    Verify.Fail($"{when}: {m_firstError ?? "rows [" + rows + "], expected [" + expected + "]"}");
+                }
+            }
+
+            // Applies one edit, then checks the events that it raised and the rows after it.
+            public void VerifyEdit(string edit, Action action, string expectedEvents, string expectedRows)
+            {
+                action();
+                m_treeView.UpdateLayout();
+                VerifyRowsMatchTree(edit);
+                Verify.AreEqual(expectedEvents, String.Join(",", m_events), edit + ": row events");
+                Verify.AreEqual(expectedRows, Rows, edit + ": rows");
+                m_events.Clear();
+            }
+
+            private List<object> ReadList()
+            {
+                return Enumerable.Range(0, m_list.Count).Select(i => m_list[i]).ToList();
+            }
+
+            private void OnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs args)
+            {
+                int index = (int)args.Index;
+                var rows = ReadList();
+                string error = null;
+                try
+                {
+                    switch (args.CollectionChange)
+                    {
+                        case CollectionChange.ItemInserted:
+                            m_events.Add("+" + index);
+                            m_copy.Insert(index, rows[index]);
+                            break;
+                        case CollectionChange.ItemRemoved:
+                            m_events.Add("-" + index);
+                            m_copy.RemoveAt(index);
+                            break;
+                        case CollectionChange.ItemChanged:
+                            m_events.Add("=" + index);
+                            m_copy[index] = rows[index];
+                            break;
+                        default:
+                            m_events.Add("reset");
+                            m_copy.Clear();
+                            m_copy.AddRange(rows);
+                            break;
+                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    error = "the index is out of range";
+                }
+
+                if (m_firstError == null && (error != null || !m_copy.SequenceEqual(rows)))
+                {
+                    m_firstError = $"event {m_events.Last()} ({error ?? "replayed [" + DescribeItems(m_copy) + "]"}), but the rows are [{DescribeItems(rows)}]";
+                }
+            }
+        }
+
         // Reads the glyph text, font size and foreground from a TreeViewItem chevron glyph template part, which is a
         // TextBlock (Text) today and may be a FontIcon (Glyph); fails clearly for any other part type.
         private static (string Glyph, double FontSize, Brush Foreground) ReadGlyphPart(FrameworkElement part, string partName)
