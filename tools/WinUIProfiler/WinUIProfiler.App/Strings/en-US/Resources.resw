@@ -421,4 +421,5 @@
   <data name="SnapshotVisualNotFoundFormat" xml:space="preserve"><value>{0} isn't in this session file. The recording may have started after it was inserted, or its events were trimmed.</value></data>
   <data name="SnapshotXamlTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its element's history in the Objects tab.</value></data>
   <data name="SnapshotCompositionTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its visual's history in the Objects tab.</value></data>
+  <data name="TelemetryNotice.Title" xml:space="preserve"><value>Usage data</value></data>
 </root>

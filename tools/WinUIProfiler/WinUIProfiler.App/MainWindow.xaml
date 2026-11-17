@@ -89,6 +89,7 @@
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
             <StackPanel Spacing="4">
+                <InfoBar x:Name="TelemetryNotice" x:Uid="TelemetryNotice" IsOpen="False" IsClosable="True" />
                 <InfoBar x:Name="ConnectionStatus" x:Uid="ConnectionStatus" IsOpen="True" IsClosable="False" Visibility="Collapsed" />
                 <ProgressBar x:Name="TraceProgress" Minimum="0" Maximum="1" Visibility="Collapsed" />
                 <TextBlock x:Name="ConnectionIdentity" Visibility="Collapsed" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
@@ -142,8 +143,9 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <TabView x:Name="Tabs" Grid.Row="3" VerticalAlignment="Stretch" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent">
-            <TabViewItem x:Uid="LiveMetricsTab" IsClosable="False">
+        <TabView x:Name="Tabs" Grid.Row="3" VerticalAlignment="Stretch" IsAddTabButtonVisible="False" TabWidthMode="SizeToContent"
+                 SelectionChanged="Tabs_SelectionChanged">
+            <TabViewItem x:Name="LiveMetricsTab" x:Uid="LiveMetricsTab" IsClosable="False">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="12" Padding="0,8,8,0">
                         <TextBlock x:Name="TraceMetricsNote" x:Uid="TraceMetricsNote" TextWrapping="Wrap" Visibility="Collapsed" />

@@ -330,7 +330,8 @@
       "winuiprofiler.cli": {
         "type": "Project",
         "dependencies": {
-          "WinUIProfiler.Core": "[1.0.0, )"
+          "WinUIProfiler.Core": "[1.0.0, )",
+          "WinUIProfiler.Telemetry": "[1.0.0, )"
         }
       },
       "winuiprofiler.core": {
@@ -345,8 +346,12 @@
         "dependencies": {
           "Microsoft.Extensions.Hosting": "[10.0.14, 10.0.14]",
           "ModelContextProtocol": "[2.2.0, 2.2.0]",
-          "WinUIProfiler.Core": "[1.0.0, )"
+          "WinUIProfiler.Core": "[1.0.0, )",
+          "WinUIProfiler.Telemetry": "[1.0.0, )"
         }
+      },
+      "winuiprofiler.telemetry": {
+        "type": "Project"
       },
       "xamltimeline": {
         "type": "Project"
