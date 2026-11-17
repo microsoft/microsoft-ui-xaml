@@ -7,6 +7,7 @@
 
 namespace DirectUI
 {
+    class VectorCollectionView;
 
     typedef CFrameworkEventSource<
         ICVSViewChangedEventSource,
@@ -44,6 +45,10 @@ namespace DirectUI
         _Check_return_ HRESULT OnSortDescriptionsChanged();
         _Check_return_ HRESULT EndDeferRefresh();
 
+        // The shaping view's output switches between flat and grouped. Consumers read CollectionGroups once
+        // per ItemsSource, so View is replaced. *pIsHandled is false if pView is not this source's View.
+        _Check_return_ HRESULT OnShapingViewGroupingChanged(_In_ VectorCollectionView* pView, _Out_ bool* pIsHandled);
+
     private:
 
         _Check_return_ HRESULT OnSourceChanged(_In_ IInspectable *pOldSource, _In_ IInspectable *pNewSource);
@@ -55,13 +60,9 @@ namespace DirectUI
 
         // Implemented in CollectionViewSource_Shaping.cpp.
         _Check_return_ HRESULT IsShapingRequested(_In_ IInspectable *pSource, _Out_ bool *pIsRequested);
-        _Check_return_ HRESULT CreateShapedView(_In_ IInspectable *pSource, _In_opt_ xaml_data::ICollectionView *pExistingView, _Outptr_ xaml_data::ICollectionView **ppView);
-        _Check_return_ HRESULT OfferShapingOnView(_In_ IInspectable *pSource, _In_ xaml_data::ICollectionView *pView);
-        _Check_return_ HRESULT ComputeShapedOutput();
-        _Check_return_ HRESULT RefreshShapedView();
-        _Check_return_ HRESULT OnShapedSourceVectorChanged(_In_ wfc::IVectorChangedEventArgs* pArgs);
-        _Check_return_ HRESULT ApplyShapedSourceChange(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
-        void DetachShapedSource();
+        _Check_return_ HRESULT EnsureShapingDescriptions();
+        _Check_return_ HRESULT ApplyPropertiesToView(_In_ VectorCollectionView* pView);
+        _Check_return_ HRESULT DetachShapingView();
 
     protected:
 
@@ -71,29 +72,21 @@ namespace DirectUI
 
         CVSViewChangedEventSource *m_pCVSViewChangedEventSource;
 
+        // The rules live here only while there is no shaping view; the view owns them while it is View.
+        // The descriptor collections are shared with the view.
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
         TrackerPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
         TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
         TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
         bool m_isApplyingCustomSort = false;
 
-        // Non-null only while View is a shaped view.
-        TrackerPtr<wfc::IVector<IInspectable*>> m_tpShapedSource;
-        TrackerPtr<wfc::IObservableVector<IInspectable*>> m_tpShapedSourceObservable;
-        TrackerPtr<wfc::IVector<IInspectable*>> m_tpInternalList;
-        ctl::EventPtr<VectorChangedEventCallback> m_epShapedSourceVectorChangedHandler;
-        bool m_isShapedOutputGrouped = false;
-        bool m_isComputingShape = false;
+        // View, when it is a VectorCollectionView that shapes (WPF: the view of the ViewRecord).
+        TrackerPtr<xaml_data::ICollectionView> m_tpShapingView;
 
-        // Flat output only: the source index of each output item, so a source Add, Remove or
-        // Replace updates the view incrementally. Invalid after a change that was not applied.
-        std::vector<UINT> m_shapedSourceIndices;
-        bool m_areShapedSourceIndicesValid = false;
-        UINT m_shapedSourceSize = 0;
-        UINT m_shapedSourceChangeCount = 0;
-
-        // Open DeferRefresh deferrals; a change made while any is open recomputes once, when the last closes.
+        // Open DeferRefresh deferrals taken through this source. While any is open, the shaping view holds
+        // one deferral of its own (m_spViewDeferral).
         UINT m_deferRefreshLevel = 0;
         bool m_isRefreshPending = false;
+        Microsoft::WRL::ComPtr<wf::IClosable> m_spViewDeferral;
     };
 }

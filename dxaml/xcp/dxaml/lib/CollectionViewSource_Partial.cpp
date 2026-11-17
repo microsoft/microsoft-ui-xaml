@@ -5,6 +5,7 @@
 #include "CollectionViewSource.g.h"
 #include "PropertyPath.g.h"
 #include "CollectionViewManager.h"
+#include "VectorCollectionView.g.h"
 
 using namespace DirectUI;
 using namespace xaml_data;
@@ -17,15 +18,6 @@ DirectUI::CollectionViewSource::CollectionViewSource():
 DirectUI::CollectionViewSource::~CollectionViewSource()
 {
     ctl::release_interface(m_pCVSViewChangedEventSource);
-
-    if (m_epShapedSourceVectorChangedHandler)
-    {
-        auto spSource = m_tpShapedSourceObservable.GetSafeReference();
-        if (spSource)
-        {
-            VERIFYHR(m_epShapedSourceVectorChangedHandler.DetachEventHandler(spSource.Get()));
-        }
-    }
 }
 
 _Check_return_ HRESULT DirectUI::CollectionViewSource::GetValue(_In_ const CDependencyProperty* pProperty, _Out_ IInspectable** ppValue)
@@ -164,27 +156,25 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
     ICollectionView *pView = NULL;
     BOOLEAN valid = false;
     bool isShapingRequested = false;
+    bool isShapeable = false;
 
-    DetachShapedSource();
+    IFC(DetachShapingView());
 
     // Only try to create a collection view if we have a source
     // otherwise we will just set the value to NULL
     if (pNewSource != NULL)
     {
         IFC(IsShapingRequested(pNewSource, &isShapingRequested));
-        if (isShapingRequested)
-        {
-            IFC(CreateShapedView(pNewSource, nullptr /* pExistingView */, &pView));
-        }
-        else
-        {
-            IFC(CollectionViewManager::GetViewRecord(pNewSource, this, &pView));
-            IFC(OfferShapingOnView(pNewSource, pView));
-        }
+        IFC(CollectionViewManager::GetViewRecord(pNewSource, this, isShapingRequested, &pView, &isShapeable));
 
         // A view should have been created by now, or we would have failed
         // if the source is not supported
         IFCEXPECT(pView);
+
+        if (isShapeable)
+        {
+            IFC(ApplyPropertiesToView(static_cast<VectorCollectionView*>(static_cast<CollectionView*>(pView))));
+        }
 
         // Move the item to the first position on the newly created collection
         // if we have one
