@@ -217,6 +217,21 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
    other way does not offer it. Every member forwards to the owning CVS, so the view and the CVS share
    one set of descriptor collections.
 
+### Internal names follow WPF
+
+The engine's internal classes (`CollectionViewSource_Shaping.cpp`) are named after their WPF counterparts so the
+logic can be read side by side with dotnet/wpf. Public API names are unaffected.
+
+| WinUI internal | WPF counterpart | Role |
+|---|---|---|
+| `InternalList` (`CollectionViewSource::m_tpInternalList`) | `ListCollectionView.InternalList` | The shaped list the view wraps. |
+| `CollectionViewGroupInternal` | `MS.Internal.Data.CollectionViewGroupInternal` | A computed group; exposes `Key` / `Name`. |
+| `CollectionViewGroupRoot` | `MS.Internal.Data.CollectionViewGroupRoot` | Builds the top-level groups (`AddToSubgroups`). |
+| `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison, used by the full sort and the incremental placement. |
+
+`VectorCollectionView`, `GroupedDataCollectionView`, `CollectionView` and `CollectionViewManager` are pre-existing
+WinUI classes and keep their names.
+
 ## How controls consume it
 
 - **ListView / GridView / ItemsControl.** Unchanged. They read `ICollectionView.CollectionGroups` when a `GroupStyle`
