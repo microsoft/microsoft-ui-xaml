@@ -216,13 +216,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "In a read-only table a cell whose only action is a context menu still takes keyboard focus, and Shift+F10 opens its menu.")]
-        public void ShiftF10OnReadOnlyCellWithOnlyAMenuOpensCellMenu()
+        [TestProperty("Description", "Verifies a text cell whose only action is a context menu takes keyboard focus while the other cells are inactive, and Shift+F10 opens its menu.")]
+        public void ShiftF10OnCellWithOnlyAMenuOpensCellMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (SelectContextMenuHostAndGetTable() == null) { return; }
-                if (!SetPageCheckBox(IsReadOnlyCheckBox, true)) { return; }
+                if (!SetPageCheckBox(InactiveCellsCheckBox, true)) { return; }
                 if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
 
                 KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
@@ -407,194 +407,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
-        #region Editing
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies Escape preserves the edit after a cancelled CommandBarFlyout Closing and a later actual close without animations.")]
-        public void CancelledEditorMenuClosingKeepsLaterEscapeFromCancellingEdit()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!InvokeHostButton(CancelEditorMenuCloseButton)) { return; }
-                if (!BeginEditOnNameCell(3)) { return; }
-
-                RightClickRow(table, 3, ContextMenuNameTextX);
-                Verify.AreEqual("True", WaitForContextMenuField(EditorMenuOpenField, "True"),
-                    "Precondition: the animation-free editor CommandBarFlyout must open.");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Verify.AreEqual("1", WaitForContextMenuField(EditorMenuClosingsField, "1"),
-                    "The first Escape must attempt to close the editor menu.");
-                Verify.AreEqual("True", ReadContextMenuField(EditorMenuOpenField),
-                    "Cancelling Closing must leave the menu open.");
-                VerifyStillEditing("A cancelled Closing must preserve the edit.");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Verify.AreEqual("2", WaitForContextMenuField(EditorMenuClosingsField, "2"),
-                    "The second Escape must attempt to close the same menu.");
-                Verify.AreEqual("False", WaitForContextMenuField(EditorMenuOpenField, "False"),
-                    "The second Closing must close the menu.");
-                VerifyStillEditing("The later menu-closing Escape must not also cancel the edit.");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
-                    "A separate Escape in the editor must still cancel the edit.");
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu, and that the editor's own menu neither ends the edit while open nor when Escape closes it.")]
-        public void RightClickOnEditorOpensNoTableViewMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!BeginEditOnNameCell(3)) { return; }
-
-                RightClickRow(table, 3, ContextMenuNameTextX);
-                VerifyNoMenuOpened();
-                VerifyEditorMenuOpen();
-
-                // Escape inside the editor's menu closes only the menu; focus returns to the editor.
-                KeyboardHelper.PressKey(Key.Escape);
-                VerifyStillEditing("Closing the editor's menu must not end the edit.");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
-                    "Escape in the editor must still cancel the edit.");
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a command picked from the editor's own menu closes the menu without ending the edit, and Escape still cancels afterwards.")]
-        public void EditorMenuCommandKeepsEdit()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!BeginEditOnNameCell(3)) { return; }
-
-                RightClickRow(table, 3, ContextMenuNameTextX);
-                VerifyEditorMenuOpen();
-
-                FindElement.ByName<Button>(EditorMenuSelectAll).InvokeAndWait();
-                VerifyStillEditing("Picking a command from the editor's menu must not end the edit.");
-
-                KeyboardHelper.PressKey(Key.Escape);
-                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
-                    "Escape in the editor must still cancel the edit.");
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies that after the editor's own menu closes, moving to another cell still commits the typed value.")]
-        public void ClickAwayAfterEditorMenuCommitsEdit()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!BeginEditOnNameCell(3)) { return; }
-
-                RightClickRow(table, 3, ContextMenuNameTextX);
-                VerifyEditorMenuOpen();
-                KeyboardHelper.PressKey(Key.Escape);
-                VerifyStillEditing("Closing the editor's menu must not end the edit.");
-
-                const string typed = "EditedAfterMenu";
-                KeyboardHelper.PressKey(Key.a, ModifierKey.Control);
-                TextInput.SendText(typed);
-                Wait.ForIdle();
-
-                ClickRowAtColumnOffset(GetRow(table, 5), ContextMenuColumnCentreX(ContextMenuAgeColumn));
-                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
-                    "Moving to another cell must end the edit.");
-
-                // The row menu reports its row's item, so it shows whether the typed name was kept.
-                ElementCache.Clear();
-                RightClickRow(GetTable(ContextMenuTable), 3, ContextMenuColumnCentreX(ContextMenuAgeColumn));
-                VerifyMenuOpened(RowMenu, typed, "cell:" + typed + "/" + ContextMenuAgeColumn);
-                CloseMenu();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a right-click on another row's cell while a cell is editing opens no menu: neither the cell's, the row's nor the table's.")]
-        public void RightClickOnOtherRowWhileEditingOpensNoMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!BeginEditOnNameCell(1)) { return; }
-
-                RightClickRow(table, 4, ContextMenuNameTextX);
-                VerifyNoMenuOpened();
-
-                RightClickRow(table, 4, ContextMenuColumnCentreX(ContextMenuAgeColumn));
-                VerifyNoMenuOpened();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a right-click on a column header while a cell is editing opens no menu: neither the header's nor the table's.")]
-        public void RightClickOnHeaderWhileEditingOpensNoMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                if (SelectContextMenuHostAndGetTable() == null) { return; }
-                if (!BeginEditOnNameCell(2)) { return; }
-
-                RightClickHeader(ContextMenuColumns[ContextMenuNameColumn]);
-                VerifyNoMenuOpened();
-
-                RightClickHeader(ContextMenuColumns[ContextMenuAgeColumn]);
-                VerifyNoMenuOpened();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a right-click on the empty area below the rows while a cell is editing does not open the table's ContextFlyout.")]
-        public void RightClickBelowRowsWhileEditingOpensNoMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!BeginEditOnNameCell(2)) { return; }
-
-                var bounds = table.BoundingRectangle;
-                RightClickPoint(new Point(bounds.Left + 80, bounds.Top + bounds.Height - 24));
-                VerifyNoMenuOpened();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a right-click on a group header while a cell is editing opens no menu.")]
-        public void RightClickOnGroupHeaderWhileEditingOpensNoMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-                if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
-
-                // Child 0 of the rows host is the first group header; child 1 is its first row.
-                if (!BeginEditOnNameCell(1)) { return; }
-
-                UIObject header = GetGroupHeaderAt(GetRowsHost(GetTable(ContextMenuTable)), 1);
-                if (header == null) { Verify.Fail("The second group header was not found."); return; }
-                RightClickPoint(CentreOf(header));
-                VerifyNoMenuOpened();
-            }
-        }
-
-        #endregion
-
         #region Touch
 
         [TestMethod]
@@ -683,50 +495,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
             ElementCache.Clear();
             return true;
-        }
-
-        // Focuses the row's Name cell and opens its editor with F2.
-        private static bool BeginEditOnNameCell(int rowIndex)
-        {
-            if (!DrillIntoRow(ContextMenuTable, rowIndex)) { return false; }
-
-            KeyboardHelper.PressKey(Key.F2);
-            Wait.ForIdle();
-            if (WaitForContextMenuField(EditingField, "True") != "True")
-            {
-                Verify.Fail(string.Format("Precondition: F2 must open the editor on row {0}'s Name cell.", rowIndex));
-                return false;
-            }
-            return true;
-        }
-
-        // No TableView menu opened since the reset, and the cell is still being edited.
-        private static void VerifyNoMenuOpened()
-        {
-            Wait.ForIdle();
-            Log.Comment("Readout: {0}", ReadPageReadout(ContextMenuReadout));
-            Verify.AreEqual("0", ReadContextMenuField(OpensField), "No TableView menu may open while a cell is editing.");
-            VerifyStillEditing("The request must not end the edit.");
-        }
-
-        // The editing readout refreshes on a dispatcher hop after the edit ends, so one read can be stale. Watch it
-        // across several idles and fail if it ever reports the edit ended.
-        private static void VerifyStillEditing(string message)
-        {
-            for (int attempt = 0; attempt < 4; attempt++)
-            {
-                Wait.ForIdle();
-                Verify.AreEqual("True", ReadContextMenuField(EditingField), message);
-            }
-        }
-
-        // The text editor's own menu (TextCommandBarFlyout) is open.
-        private const string EditorMenuSelectAll = "Select All";
-
-        private static void VerifyEditorMenuOpen()
-        {
-            ElementCache.Clear();
-            Verify.IsNotNull(FindElement.ByName(EditorMenuSelectAll), "The editor's own menu must open.");
         }
 
         // Switches to the ContextMenu host, resets its readout and selection, and returns ContextMenuTable.

@@ -99,8 +99,8 @@ layout; register it with `Add-AppxPackage -Register <outdir>\AppxManifest.xml` a
 
 ## The C# and C++ apps bind identically
 
-All four apps use the same markup and the same code-behind shape: `TableViewTextColumn.Binding`
-with a classic `{Binding}`. Keeping the matrix identical is the point — a difference between the
+All four apps use the same markup and the same code-behind shape: a `TableViewTemplateColumn`
+whose `CellTemplate` is a `TextBlock` with a classic `{Binding}`. Keeping the matrix identical is the point — a difference between the
 cells would make it unclear whether a rendering difference came from the language, the packaging,
 or the control.
 

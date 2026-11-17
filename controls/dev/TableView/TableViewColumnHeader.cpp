@@ -43,7 +43,6 @@ void TableViewColumnHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
-    m_templateRootContextRequestedRevoker.revoke();
 
     if (auto const oldGripperHost = m_resizeGripperHost.get())
     {
@@ -74,19 +73,6 @@ void TableViewColumnHeader::OnApplyTemplate()
             gripperHost.Child(gripper);
         }
     }
-
-    // Keeps a Style-set ContextFlyout closed while a cell is editing.
-    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
-        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                if (auto const owner = strongThis->GetOwningTableView())
-                {
-                    winrt::get_self<TableView>(owner)->SuppressContextRequestWhileEditing(args);
-                }
-            }
-        });
 
     m_isEnabledChangedRevoker = IsEnabledChanged(
         winrt::auto_revoke,

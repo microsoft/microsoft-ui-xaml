@@ -72,7 +72,6 @@ private:
     tracker_ref<winrt::ResizeGripper> m_resizeGripper{ this };
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
 
     winrt::Thickness m_templateContentMargin{};
     double m_indicatorReserve{ 0.0 };

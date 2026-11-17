@@ -59,7 +59,7 @@ namespace
         // Identity, not just index: a recycled container can still report an index while it has
         // already been re-bound to a different item, so either announcement - selected or removed
         // from selection - would name the wrong record.
-        auto const actualItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(row.DataContext());
+        auto const actualItem = winrt::get_self<TableView>(owner)->UnwrapDataItem(row.DataContext());
         return element == row && actualItem && TableView::SameInspectableIdentity(actualItem, expectedItem);
     }
 }
@@ -266,7 +266,7 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
     // SelectionModel indexes but does not look items up, so resolving a held item on reload still
     // needs this. Linear scan: it runs at most once per reload.
-    auto const target = UnwrapEditingDataItem(item);
+    auto const target = UnwrapDataItem(item);
     const bool isValue = static_cast<bool>(target.try_as<winrt::IPropertyValue>());
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
@@ -284,7 +284,7 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 // equality. Group headers are projection entries, never app items.
 bool TableView::IsDisplayedItemMatch(winrt::IInspectable const& row, winrt::IInspectable const& target, bool targetIsValue) const
 {
-    auto const candidate = UnwrapEditingDataItem(row);
+    auto const candidate = UnwrapDataItem(row);
     if (!candidate || !target || TryGetGroupedEntry(candidate))
     {
         return false;
@@ -374,8 +374,8 @@ try
 {
     const int32_t newIndex = SelectedIndexInternal();
     auto const newItem = SelectedItemInternal();
-    auto const deselectedItem = UnwrapEditingDataItem(SelectedItem());
-    auto const selectedItem = UnwrapEditingDataItem(newItem);
+    auto const deselectedItem = UnwrapDataItem(SelectedItem());
+    auto const selectedItem = UnwrapDataItem(newItem);
 
     auto const deselectedRow = FindRealizedRowForIndex(m_lastPublishedIndex);
     auto const selectedRow = FindRealizedRowForIndex(newIndex);
@@ -988,7 +988,7 @@ int32_t TableView::IndexOf(winrt::IInspectable const& item)
         return -1;
     }
 
-    auto const target = UnwrapEditingDataItem(item);
+    auto const target = UnwrapDataItem(item);
     const bool isValue = static_cast<bool>(target.try_as<winrt::IPropertyValue>());
 
     // The view's own lookup answers for reference items when it finds the same object. A boxed value

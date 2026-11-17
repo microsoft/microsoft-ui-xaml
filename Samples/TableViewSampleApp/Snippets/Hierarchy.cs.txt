@@ -109,8 +109,8 @@ public static ParentRelation Mentor { get; } = new(
     row => (row as Person)?.MentorId);
 
 // From Models\Person.cs
-// The Name column binds FullName, so it needs a setter to be editable: the first word becomes
-// FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
+// The Name column binds FullName. Its setter lets page actions rename a person: the first word
+// becomes FirstName and the rest LastName. Each part raises PropertyChanged, and so does FullName.
 public string FullName
 {
     get => $"{_firstName} {_lastName}".Trim();

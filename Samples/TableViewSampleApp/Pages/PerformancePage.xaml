@@ -19,20 +19,49 @@
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
-            <!-- Salary is formatted by a converter yet sorts by number: a text column sorts by its Binding path. -->
+            <!-- Salary is formatted by a converter yet sorts by number: SortMemberPath names the raw Salary value. -->
             <tv:TableView
                 x:Name="PerfTable"
                 AutomationProperties.AutomationId="PerformanceTable"
                 AutomationProperties.Name="Performance run dataset"
                 SelectionMode="Single"
-                IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="80" Binding="{Binding EmployeeId}"/>
-                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
-                <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="140" Binding="{Binding Department}"/>
-                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140" Binding="{Binding Office}"/>
-                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+                <tv:TableViewTemplateColumn x:Name="IdColumn" Header="#" Width="80" SortMemberPath="EmployeeId">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding EmployeeId}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTemplateColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTemplateColumn x:Name="DepartmentTextColumn" Header="Department" Width="140" SortMemberPath="Department">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Department}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="140" SortMemberPath="Office">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Office}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
+                <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="100" SortMemberPath="Salary">
+                    <tv:TableViewTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" Style="{StaticResource CellTextStyle}" />
+                        </DataTemplate>
+                    </tv:TableViewTemplateColumn.CellTemplate>
+                </tv:TableViewTemplateColumn>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -42,7 +71,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Column set"
-                    Description="Text columns render one TextBlock per cell. Template columns add the shared Photo (PersonPicture) and Department chip templates, so each realized row builds more elements. Every Load run reports which set it measured.">
+                    Description="Text columns render one templated TextBlock per cell. Template columns add the shared Photo (PersonPicture) and Department chip templates, so each realized row builds more elements. Every Load run reports which set it measured.">
                     <ComboBox
                         x:Name="ColumnSetSelector"
                         AutomationProperties.AutomationId="PerformanceColumnSetSelector"

@@ -4,7 +4,6 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
-#include "TableViewTextColumn.h"
 #include "TableViewRow.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
@@ -100,17 +99,6 @@ winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternIn
         patternInterface == winrt::PatternInterface::TableItem)
     {
         return *this;
-    }
-
-    // Offered only where SetValue can honour it: the cell must be editable and its column must
-    // produce a TextBox editor. Advertising it elsewhere tells assistive technology it can set a
-    // value, then fails after opening an edit.
-    if (patternInterface == winrt::PatternInterface::Value && SupportsValuePattern())
-    {
-        if (auto const row = m_row.get(); row && GetTrackedTableForRow(row))
-        {
-            return *this;
-        }
     }
 
     if (patternInterface == winrt::PatternInterface::VirtualizedItem && IsVirtualized())
@@ -227,10 +215,6 @@ hstring TableViewCellAutomationPeer::GetNameCore()
 
     UpdateNameItem(row && tableView
         ? row.DataContext() : nullptr);
-    if (m_editName)
-    {
-        return *m_editName;
-    }
     if (auto const cell = Owner().try_as<winrt::FrameworkElement>();
         GetCachedHasInteractiveCellContent(cell))
     {
@@ -238,15 +222,6 @@ hstring TableViewCellAutomationPeer::GetNameCore()
         auto const name = GetColumnHeaderText(tableView);
         m_lastName = name;
         return name;
-    }
-    if (row)
-    {
-        if (auto const display = winrt::get_self<TableViewRow>(row)->GetDisplayElementForAutomation(Owner()))
-        {
-            auto const name = ReadDisplayName(tableView, display.try_as<winrt::FrameworkElement>());
-            m_lastName = name;
-            return name;
-        }
     }
     auto const name = ReadDisplayName(tableView);
     m_lastName = name;
@@ -263,27 +238,11 @@ winrt::IVector<winrt::AutomationPeer> TableViewCellAutomationPeer::GetChildrenCo
     return __super::GetChildrenCore();
 }
 
-winrt::hstring TableViewCellAutomationPeer::ReadNameForEdit()
-{
-    auto const row = m_row.get();
-    auto const tableView = row ? GetTrackedTableForRow(row) : nullptr;
-    if (row && !tableView)
-    {
-        ThrowElementNotAvailable();
-    }
-
-    UpdateNameItem(row && tableView
-        ? row.DataContext() : nullptr);
-    auto const name = ReadDisplayName(tableView);
-    m_lastName = name;
-    return name;
-}
-
 void TableViewCellAutomationPeer::UpdateNameItem(winrt::IInspectable const& item)
 {
     if (!TableView::SameInspectableIdentity(m_nameItem.get(), item))
     {
-        ResetEditName();
+        ResetNameState();
         m_nameItem.set(item);
         m_item.Track(item);
         m_lastKnownRowIndex = -1;
@@ -292,150 +251,10 @@ void TableViewCellAutomationPeer::UpdateNameItem(winrt::IInspectable const& item
     }
 }
 
-void TableViewCellAutomationPeer::BeginEditName()
+void TableViewCellAutomationPeer::ResetNameState()
 {
-    ++m_nameGeneration;
-    m_nameLayoutUpdatedRevoker.revoke();
-    m_editName = m_lastName;
-}
-
-void TableViewCellAutomationPeer::ResetEditName()
-{
-    ++m_nameGeneration;
-    m_nameLayoutUpdatedRevoker.revoke();
-    m_editName.reset();
     m_lastName.reset();
     m_nameItem.set(nullptr);
-}
-
-void TableViewCellAutomationPeer::EndEditName()
-{
-    m_nameLayoutUpdatedRevoker.revoke();
-    auto const generation = m_nameGeneration;
-    auto const weakThis = get_weak();
-    auto const cell = Owner().try_as<winrt::FrameworkElement>();
-    if (!cell)
-    {
-        m_editName.reset();
-        return;
-    }
-    auto cleanupOnFailure = wil::scope_exit([this]() noexcept
-    {
-        m_nameLayoutUpdatedRevoker.revoke();
-        m_editName.reset();
-    });
-
-    // Released by whichever of the three paths below resolves first. Owned by the backstop's
-    // lambda, so the subscription cannot outlive one frame.
-    auto const unloadRevoker = std::make_shared<winrt::FrameworkElement::Unloaded_revoker>();
-
-    // LayoutUpdated precedes the framework's automatic-property pass. Queue
-    // release from that event, leaving the held old Name intact for the pass.
-    m_nameLayoutUpdatedRevoker = cell.LayoutUpdated(winrt::auto_revoke,
-        [weakThis, generation](auto const&, auto const&)
-        {
-            if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
-            {
-                peer->m_nameLayoutUpdatedRevoker.revoke();
-                try
-                {
-                    peer->QueueFinalName(generation);
-                }
-                catch (...)
-                {
-                    peer->m_editName.reset();
-                    TVDiag::LogRetailF(L"[TableView] Optional post-layout name publication could not be queued.");
-                }
-            }
-        });
-
-    // An unloaded, collapsed, or hidden-column cell never sees another LayoutUpdated, so the pinned
-    // pre-edit name would otherwise be returned by GetNameCore forever.
-    *unloadRevoker = cell.Unloaded(winrt::auto_revoke,
-        [weakThis, generation](auto const&, auto const&)
-        {
-            if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
-            {
-                peer->m_nameLayoutUpdatedRevoker.revoke();
-                peer->m_editName.reset();
-                try
-                {
-                    peer->InvalidatePeer();
-                }
-                catch (...)
-                {
-                    TVDiag::LogRetailF(L"[TableView] Optional cell-name invalidation on unload failed.");
-                }
-            }
-        });
-
-    cell.InvalidateMeasure();
-
-    // Backstop: LayoutUpdated is not guaranteed to run for this cell at all. An armed layout
-    // revoker at end of frame means it did not, so release rather than stay pinned.
-    auto const queue = DispatcherQueue();
-    if (!queue || !queue.TryEnqueue(winrt::DispatcherQueuePriority::Low,
-        [weakThis, generation, unloadRevoker]()
-        {
-            unloadRevoker->revoke();
-            if (auto const peer = weakThis.get();
-                peer && peer->m_nameGeneration == generation && peer->m_nameLayoutUpdatedRevoker)
-            {
-                peer->m_nameLayoutUpdatedRevoker.revoke();
-                peer->m_editName.reset();
-                try
-                {
-                    peer->InvalidatePeer();
-                }
-                catch (...)
-                {
-                    TVDiag::LogRetailF(L"[TableView] Optional cell-name backstop invalidation failed.");
-                }
-            }
-        }))
-    {
-        // Without the backstop the one-frame bound cannot be honoured, so do not pin at all.
-        TVDiag::LogRetailF(L"[TableView] Optional cell-name release backstop could not be queued.");
-        return;
-    }
-
-    cleanupOnFailure.release();
-}
-
-void TableViewCellAutomationPeer::QueueFinalName(uint64_t generation)
-{
-    auto const weakThis = get_weak();
-    auto const queue = DispatcherQueue();
-    if (queue && queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis, generation]()
-    {
-        if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
-        {
-            try
-            {
-                auto const row = peer->m_row.get();
-                auto const cell = peer->Owner();
-                if (!row || !winrt::get_self<TableViewRow>(row)->GetOwningTableView() ||
-                    !TableView::SameInspectableIdentity(row.DataContext(), peer->m_nameItem.get()) ||
-                    winrt::VisualTreeHelper::GetParent(cell).try_as<winrt::Panel>() !=
-                        winrt::get_self<TableViewRow>(row)->GetCellsHostPanelInternal())
-                {
-                    peer->ResetEditName();
-                    return;
-                }
-                peer->m_editName.reset();
-                peer->InvalidatePeer();
-            }
-            catch (...)
-            {
-                TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation failed.");
-            }
-        }
-    }))
-    {
-        return;
-    }
-    m_editName.reset();
-    TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation could not be queued.");
 }
 
 namespace
@@ -521,12 +340,6 @@ bool TableViewCellAutomationPeer::IsColumnHeaderReachable(winrt::TableView const
 
 std::optional<winrt::hstring> TableViewCellAutomationPeer::TakeLastNameInternal()
 {
-    // An edit pins the pre-edit name; EndEditName publishes the final one.
-    if (m_editName)
-    {
-        return std::nullopt;
-    }
-
     auto lastName = std::move(m_lastName);
     m_lastName.reset();
     return lastName;
@@ -608,7 +421,7 @@ winrt::IInspectable TableViewCellAutomationPeer::GetCurrentAutomationContentItem
 
     if (auto const tableView = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
     {
-        return winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+        return winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
     }
 
     return row.DataContext();
@@ -958,7 +771,7 @@ int32_t TableViewCellAutomationPeer::GetTrackedItemIndex(winrt::TableView const&
     const int32_t count = view.Count();
     if (m_lastKnownRowIndex >= 0 && m_lastKnownRowIndex < count)
     {
-        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(m_lastKnownRowIndex));
+        if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(m_lastKnownRowIndex));
             m_item.SameIdentityAs(candidate))
         {
             return m_lastKnownRowIndex;
@@ -968,7 +781,7 @@ int32_t TableViewCellAutomationPeer::GetTrackedItemIndex(winrt::TableView const&
     int32_t occurrence = 0;
     for (int32_t index = 0; index < count; ++index)
     {
-        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+        if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(index));
             m_item.SameIdentityAs(candidate))
         {
             if (m_trackedItemOccurrence < 0 || occurrence == m_trackedItemOccurrence)
@@ -1003,7 +816,7 @@ int32_t TableViewCellAutomationPeer::GetItemOccurrenceAtIndex(
     int32_t occurrence = 0;
     for (int32_t index = 0; index <= targetIndex; ++index)
     {
-        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+        if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(index));
             candidate && TableView::SameInspectableIdentity(candidate, item))
         {
             if (index == targetIndex)
@@ -1024,7 +837,7 @@ bool TableViewCellAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, w
         return false;
     }
 
-    auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
     if (!rowItem)
     {
         return false;
@@ -1062,7 +875,7 @@ void TableViewCellAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, w
 {
     if (row && tableView)
     {
-        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
+        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext()))
         {
             auto const previousOccurrence = m_trackedItemOccurrence;
             auto const sameItem = m_item.SameIdentityAs(item);
@@ -1282,89 +1095,13 @@ winrt::hstring TableViewCellAutomationPeer::Value()
     return GetCellValueText();
 }
 
+// Editing is not part of this release, so the value is never settable.
 bool TableViewCellAutomationPeer::IsReadOnly()
 {
-    return !SupportsValuePattern();
+    return true;
 }
 
-void TableViewCellAutomationPeer::SetValue(winrt::hstring const& value)
+void TableViewCellAutomationPeer::SetValue(winrt::hstring const& /*value*/)
 {
-    if (IsReadOnly())
-    {
-        throw winrt::hresult_error(E_NOTIMPL, L"This cell is read-only.");
-    }
-
-    auto const row = m_row.get();
-    auto const column = m_column.get();
-    if (!row || !column || !GetTrackedTableForRow(row))
-    {
-        throw winrt::hresult_error(E_FAIL, L"The cell is no longer realized.");
-    }
-
-    auto const owner = winrt::get_self<TableViewColumn>(column)->GetOwningTableView();
-    if (!owner)
-    {
-        throw winrt::hresult_error(E_FAIL, L"The cell has no owning TableView.");
-    }
-
-    auto const item = GetTrackedItem();
-    if (!item)
-    {
-        ThrowElementNotAvailable();
-    }
-    auto ownerImpl = winrt::get_self<TableView>(owner);
-
-    // Drive the real edit lifecycle rather than writing the source directly, so a BeginningEdit
-    // handler can still veto and CellEditEnding/validation still run - a programmatic set must not
-    // be able to do what a user cannot.
-    if (!ownerImpl->BeginEdit(item, column))
-    {
-        throw winrt::hresult_error(E_FAIL, L"The cell could not be opened for editing.");
-    }
-
-    bool wrote = false;
-    if (auto const editingElement = ownerImpl->CurrentEditingElement())
-    {
-        if (auto const textBox = editingElement.try_as<winrt::TextBox>())
-        {
-            textBox.Text(value);
-            wrote = true;
-        }
-    }
-
-    if (!wrote)
-    {
-        // Nothing we can type into - do not leave the editor open.
-        ownerImpl->CancelEdit();
-        throw winrt::hresult_error(E_NOTIMPL, L"This cell's editor does not support setting a text value.");
-    }
-
-    if (!ownerImpl->CommitEdit())
-    {
-        // Vetoed, rejected by validation, or waiting on a deferral; the edit stays open and the
-        // caller must not be told the value was applied.
-        throw winrt::hresult_error(E_FAIL, L"The value was not accepted.");
-    }
-}
-
-bool TableViewCellAutomationPeer::SupportsValuePattern()
-{
-    auto const column = m_column.get();
-    if (!column || column.IsReadOnly())
-    {
-        return false;
-    }
-
-    auto const owner = winrt::get_self<TableViewColumn>(column)->GetOwningTableView();
-    if (!owner || owner.IsReadOnly())
-    {
-        return false;
-    }
-
-    // SetValue writes text, so the column must produce a TextBox. A text column no longer implies
-    // one: CellEditingTemplate lives on the base column now, so an app can replace any column's
-    // editor with an arbitrary template. Advertising the pattern then tells assistive technology it
-    // can set a value, and the attempt fails only after an edit has been opened on screen.
-    auto const textColumn = column.try_as<winrt::TableViewTextColumn>();
-    return textColumn != nullptr && column.CellEditingTemplate() == nullptr;
+    throw winrt::hresult_error(E_NOTIMPL, L"This cell is read-only.");
 }

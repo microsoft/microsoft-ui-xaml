@@ -10,12 +10,29 @@
     x:Name="FileTable"
     AutomationProperties.Name="Folder contents"
     ItemsSource="{x:Bind Source}"
-    SelectionMode="Single"
-    IsReadOnly="True">
+    SelectionMode="Single">
     <!-- Name, Type and Size sort by a folders-first key; Date modified sorts by the DateModified value,
          not its display text. -->
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
-    <tv:TableViewTextColumn Header="Type" Width="140" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
-    <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="150" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
-    <tv:TableViewTextColumn Header="Size" Width="100" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
+    <tv:TableViewTemplateColumn Header="Type" Width="140" SortMemberPath="TypeSortKey">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding TypeDisplay}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
+    <tv:TableViewTemplateColumn x:Name="DateModifiedColumn" Header="Date modified" Width="150" SortMemberPath="DateModified">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding DateModifiedDisplay}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
+    <tv:TableViewTemplateColumn Header="Size" Width="100" SortMemberPath="SizeSortKey">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding SizeDisplay}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
 </tv:TableView>

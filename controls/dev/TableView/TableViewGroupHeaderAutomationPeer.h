@@ -32,7 +32,7 @@ public:
     // Lands keyboard focus for UIA SetFocus; see the definition.
     void SetFocusCore();
 
-    // No menu while a cell is editing.
+    // Rejects a pooled header before the native owner-menu path runs.
     void ShowContextMenuCore();
 
     // IExpandCollapseProvider

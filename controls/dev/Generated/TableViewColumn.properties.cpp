@@ -17,7 +17,6 @@ GlobalDependencyProperty TableViewColumnProperties::s_ActualWidthProperty{ nullp
 GlobalDependencyProperty TableViewColumnProperties::s_CanUserResizeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CanUserSortProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CellContextFlyoutProperty{ nullptr };
-GlobalDependencyProperty TableViewColumnProperties::s_CellEditingTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderContextFlyoutProperty{ nullptr };
@@ -25,7 +24,6 @@ GlobalDependencyProperty TableViewColumnProperties::s_HeaderStyleProperty{ nullp
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateSelectorProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderToolTipProperty{ nullptr };
-GlobalDependencyProperty TableViewColumnProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MaxWidthProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MinWidthProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_SortCycleProperty{ nullptr };
@@ -84,17 +82,6 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
                 nullptr);
-    }
-    if (!s_CellEditingTemplateProperty)
-    {
-        s_CellEditingTemplateProperty =
-            InitializeDependencyProperty(
-                L"CellEditingTemplate",
-                winrt::name_of<winrt::DataTemplate>(),
-                winrt::name_of<winrt::TableViewColumn>(),
-                false /* isAttached */,
-                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCellEditingTemplatePropertyChanged));
     }
     if (!s_FrozenEdgeProperty)
     {
@@ -172,17 +159,6 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnHeaderToolTipPropertyChanged));
-    }
-    if (!s_IsReadOnlyProperty)
-    {
-        s_IsReadOnlyProperty =
-            InitializeDependencyProperty(
-                L"IsReadOnly",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::TableViewColumn>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnIsReadOnlyPropertyChanged));
     }
     if (!s_MaxWidthProperty)
     {
@@ -269,7 +245,6 @@ void TableViewColumnProperties::ClearProperties()
     s_CanUserResizeProperty = nullptr;
     s_CanUserSortProperty = nullptr;
     s_CellContextFlyoutProperty = nullptr;
-    s_CellEditingTemplateProperty = nullptr;
     s_FrozenEdgeProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HeaderContextFlyoutProperty = nullptr;
@@ -277,7 +252,6 @@ void TableViewColumnProperties::ClearProperties()
     s_HeaderTemplateProperty = nullptr;
     s_HeaderTemplateSelectorProperty = nullptr;
     s_HeaderToolTipProperty = nullptr;
-    s_IsReadOnlyProperty = nullptr;
     s_MaxWidthProperty = nullptr;
     s_MinWidthProperty = nullptr;
     s_SortCycleProperty = nullptr;
@@ -296,14 +270,6 @@ void TableViewColumnProperties::OnCanUserResizePropertyChanged(
 }
 
 void TableViewColumnProperties::OnCanUserSortPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TableViewColumn>();
-    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
-}
-
-void TableViewColumnProperties::OnCellEditingTemplatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -352,14 +318,6 @@ void TableViewColumnProperties::OnHeaderTemplateSelectorPropertyChanged(
 }
 
 void TableViewColumnProperties::OnHeaderToolTipPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TableViewColumn>();
-    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
-}
-
-void TableViewColumnProperties::OnIsReadOnlyPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -459,19 +417,6 @@ winrt::FlyoutBase TableViewColumnProperties::CellContextFlyout()
     return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CellContextFlyoutProperty));
 }
 
-void TableViewColumnProperties::CellEditingTemplate(winrt::DataTemplate const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableViewColumn*>(this)->SetValue(s_CellEditingTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::DataTemplate TableViewColumnProperties::CellEditingTemplate()
-{
-    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CellEditingTemplateProperty));
-}
-
 void TableViewColumnProperties::FrozenEdge(winrt::TableViewFrozenEdge const& value)
 {
     [[gsl::suppress(con)]]
@@ -561,19 +506,6 @@ void TableViewColumnProperties::HeaderToolTip(winrt::IInspectable const& value)
 winrt::IInspectable TableViewColumnProperties::HeaderToolTip()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderToolTipProperty));
-}
-
-void TableViewColumnProperties::IsReadOnly(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableViewColumn*>(this)->SetValue(s_IsReadOnlyProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool TableViewColumnProperties::IsReadOnly()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_IsReadOnlyProperty));
 }
 
 void TableViewColumnProperties::MaxWidth(double value)

@@ -15,7 +15,6 @@ using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
-using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Pages;
 
@@ -53,11 +52,12 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     // ---- Column factories ---------------------------------------------------------------
 
     // <snippet>
-    private static TableViewTextColumn Text(string header, string path, GridLength width) =>
+    // A text column is a template column whose cell is a TextBlock bound to the property.
+    private static TableViewTemplateColumn Text(string header, string path, GridLength width) =>
         new()
         {
             Header = header,
-            Binding = new Binding { Path = new PropertyPath(path) },
+            CellTemplate = SampleColumns.TextCellTemplate(path),
             Width = width,
             CanUserSort = false,
         };
@@ -76,7 +76,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    private static TableViewTextColumn LockedRole(GridLength width)
+    private static TableViewTemplateColumn LockedRole(GridLength width)
     {
         var column = Text(LockedRoleHeader, nameof(Person.Role), width);
         // Per-column opt-out of the resize gripper. Setting Width from code still applies.

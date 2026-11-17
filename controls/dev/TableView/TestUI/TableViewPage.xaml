@@ -10,6 +10,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <local:TestPage.Resources>
+        <DataTemplate x:Key="AgeTextCellTemplate">
+            <TextBlock Text="{Binding Age}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="CityTextCellTemplate">
+            <TextBlock Text="{Binding City}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="DeptTextCellTemplate">
+            <TextBlock Text="{Binding Dept}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="IdTextCellTemplate">
+            <TextBlock Text="{Binding Id}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="NameTextCellTemplate">
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="ScoreTextCellTemplate">
+            <TextBlock Text="{Binding Score}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+    </local:TestPage.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="8" Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -35,12 +56,12 @@
                     AutomationProperties.Name="DelayedUnloadButton"
                     AutomationProperties.AutomationId="DelayedUnloadButton"
                     Click="OnDelayedUnloadClick" />
-            <CheckBox Content="IsReadOnly"
-                      AutomationProperties.Name="IsReadOnlyCheckBox"
-                      AutomationProperties.AutomationId="IsReadOnlyCheckBox"
+            <CheckBox Content="Inactive cells"
+                      AutomationProperties.Name="InactiveCellsCheckBox"
+                      AutomationProperties.AutomationId="InactiveCellsCheckBox"
                       IsChecked="False"
-                      Checked="OnIsReadOnlyToggled"
-                      Unchecked="OnIsReadOnlyToggled" />
+                      Checked="OnInactiveCellsToggled"
+                      Unchecked="OnInactiveCellsToggled" />
             <CheckBox Content="CanUserSortColumns"
                       AutomationProperties.Name="CanUserSortColumnsCheckBox"
                       AutomationProperties.AutomationId="CanUserSortColumnsCheckBox"
@@ -231,7 +252,6 @@
                 <controls:TableView x:Name="BasicTableView"
                                     AutomationProperties.Name="BasicTableView"
                                     AutomationProperties.AutomationId="BasicTableView"
-                                    IsReadOnly="False"
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
@@ -247,32 +267,32 @@
                             </StackPanel>
                         </DataTemplate>
                     </controls:TableView.EmptyTemplate>
-                    <controls:TableViewTextColumn x:Name="NameColumn"
-                                                  Header="Name"
-                                                  Width="160"
-                                                  MinWidth="60"
-                                                  CanUserSort="True"
-                                                  SortMemberPath="Name"
-                                                  Binding="{Binding Name}"
-                                                  CellToolTipBinding="{Binding Name}"
-                                                  HeaderToolTip="The person's name" />
-                    <controls:TableViewTextColumn x:Name="AgeColumn"
-                                                  Header="Age"
-                                                  Width="100"
-                                                  CanUserSort="True"
-                                                  SortMemberPath="Age"
-                                                  Binding="{Binding Age}" />
-                    <controls:TableViewTextColumn Header="ReadOnlyCity"
-                                                  Width="160"
-                                                  IsReadOnly="True"
-                                                  CanUserSort="False"
-                                                  Binding="{Binding City}" />
-                    <controls:TableViewTextColumn x:Name="ScoreColumn"
-                                                  Header="Score"
-                                                  Width="100"
-                                                  CanUserSort="True"
-                                                  SortMemberPath="Score"
-                                                  Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn x:Name="NameColumn"
+                                                      Header="Name"
+                                                      Width="160"
+                                                      MinWidth="60"
+                                                      CanUserSort="True"
+                                                      SortMemberPath="Name"
+                                                      CellToolTipBinding="{Binding Name}"
+                                                      HeaderToolTip="The person's name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn x:Name="AgeColumn"
+                                                      Header="Age"
+                                                      Width="100"
+                                                      CanUserSort="True"
+                                                      SortMemberPath="Age"
+                                                      CellTemplate="{StaticResource AgeTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ReadOnlyCity"
+                                                      Width="160"
+                                                      CanUserSort="False"
+                                                      SortMemberPath="City"
+                                                      CellTemplate="{StaticResource CityTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn x:Name="ScoreColumn"
+                                                      Header="Score"
+                                                      Width="100"
+                                                      CanUserSort="True"
+                                                      SortMemberPath="Score"
+                                                      CellTemplate="{StaticResource ScoreTextCellTemplate}" />
                     <controls:TableViewTemplateColumn x:Name="TemplateColumn" Header="Template" Width="200">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
@@ -281,13 +301,6 @@
                                            VerticalAlignment="Center" />
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
-                        <controls:TableViewTemplateColumn.CellEditingTemplate>
-                            <DataTemplate x:DataType="local:TableViewTestPerson">
-                                <TextBox Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         AutomationProperties.Name="TemplateCellEditor"
-                                         AutomationProperties.AutomationId="TemplateCellEditor" />
-                            </DataTemplate>
-                        </controls:TableViewTemplateColumn.CellEditingTemplate>
                     </controls:TableViewTemplateColumn>
                     <controls:TableViewTemplateColumn Header="Action" Width="120">
                         <controls:TableViewTemplateColumn.CellTemplate>
@@ -303,7 +316,6 @@
 
             <Grid x:Name="RtlTableHost" Visibility="Collapsed">
                 <controls:TableView x:Name="RtlTableView"
-                                    IsReadOnly="False"
                                     AutomationProperties.Name="RtlTableView"
                                     AutomationProperties.AutomationId="RtlTableView"
                                     FlowDirection="RightToLeft"
@@ -313,12 +325,13 @@
                                     CanUserSortColumns="True"
                                     CanUserResizeColumns="True"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="RtlName"
-                                                  Width="180"
-                                                  MinWidth="60"
-                                                  Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlCity" Width="220" CanUserSort="False" Binding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="RtlAge" Width="220" Binding="{Binding Age}" />
+                    <controls:TableViewTemplateColumn Header="RtlName"
+                                                      Width="180"
+                                                      MinWidth="60"
+                                                      SortMemberPath="Name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlCity" Width="220" CanUserSort="False" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlAge" Width="220" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -327,8 +340,8 @@
                                     AutomationProperties.Name="GroupedTableView"
                                     AutomationProperties.AutomationId="GroupedTableView"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="GroupedName" Width="200" Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="GroupedCity" Width="160" Binding="{Binding City}" />
+                    <controls:TableViewTemplateColumn Header="GroupedName" Width="200" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="GroupedCity" Width="160" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -352,28 +365,28 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="PagerName" Width="200" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="PagerName" Width="200" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
             <Grid x:Name="ScrollingTableHost" Visibility="Collapsed">
                 <StackPanel Orientation="Vertical" Spacing="4">
                 <controls:TableView x:Name="ScrollingTableView"
-                                    IsReadOnly="False"
                                     AutomationProperties.Name="ScrollingTableView"
                                     AutomationProperties.AutomationId="ScrollingTableView"
                                     Height="300"
                                     Width="520"
                                     HorizontalAlignment="Left"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="FrozenName"
-                                                  Width="180"
-                                                  FrozenEdge="Leading"
-                                                  Binding="{Binding Name}"
-                                                  CellToolTipBinding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="ScrollCity" Width="220" Binding="{Binding City}" />
-                    <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
-                    <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
+                    <controls:TableViewTemplateColumn Header="FrozenName"
+                                                      Width="180"
+                                                      FrozenEdge="Leading"
+                                                      CellToolTipBinding="{Binding City}"
+                                                      SortMemberPath="Name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ScrollCity" Width="220" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ScrollAge" Width="220" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="ScrollId" Width="220" SortMemberPath="Id" CellTemplate="{StaticResource IdTextCellTemplate}" />
                 </controls:TableView>
                 <!-- Publishes PART_BodyScroller's offsets and the frozen band's rendered geometry for
                      out-of-process tests. See ReportScrollOffsets in the code-behind. -->
@@ -428,15 +441,13 @@
                                     Width="400"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
-                                    IsReadOnly="False"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name, Mode=TwoWay}" />
-                    <controls:TableViewTextColumn Header="Dept" Width="100" Binding="{Binding Dept, Mode=TwoWay}" />
-                    <controls:TableViewTextColumn Header="Score" Width="100" Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn Header="Name" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Dept" Width="100" SortMemberPath="Dept" CellTemplate="{StaticResource DeptTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="Score" Width="100" SortMemberPath="Score" CellTemplate="{StaticResource ScoreTextCellTemplate}" />
                 </controls:TableView>
 
                 <controls:TableView x:Name="HierarchyRtlTable"
-                                    IsReadOnly="False"
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     AutomationProperties.Name="HierarchyRtlTable"
@@ -447,9 +458,9 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="RtlName" Width="160" Binding="{Binding Name}" />
-                    <controls:TableViewTextColumn Header="RtlDept" Width="100" Binding="{Binding Dept}" />
-                    <controls:TableViewTextColumn Header="RtlScore" Width="100" Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn Header="RtlName" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlDept" Width="100" SortMemberPath="Dept" CellTemplate="{StaticResource DeptTextCellTemplate}" />
+                    <controls:TableViewTemplateColumn Header="RtlScore" Width="100" SortMemberPath="Score" CellTemplate="{StaticResource ScoreTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -499,10 +510,6 @@
                             AutomationProperties.Name="AttachRowTemplateMenu"
                             AutomationProperties.AutomationId="AttachRowTemplateMenu"
                             Click="OnAttachRowTemplateMenuClick" />
-                    <Button Content="Cancel first editor menu close"
-                            AutomationProperties.Name="CancelEditorMenuClose"
-                            AutomationProperties.AutomationId="CancelEditorMenuClose"
-                            Click="OnCancelEditorMenuCloseClick" />
                 </StackPanel>
 
                 <!-- Format documented on TableViewTestPageFacts.ContextMenuReadout. -->
@@ -524,7 +531,6 @@
                                     Width="600"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
-                                    IsReadOnly="False"
                                     SelectionMode="Single"
                                     ContextFlyout="{StaticResource TableMenu}">
                     <controls:TableView.Resources>
@@ -532,11 +538,12 @@
                             <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}" />
                         </Style>
                     </controls:TableView.Resources>
-                    <controls:TableViewTextColumn Header="Name"
-                                                  Width="160"
-                                                  Binding="{Binding Name, Mode=TwoWay}"
-                                                  CellContextFlyout="{StaticResource CellMenu}"
-                                                  HeaderContextFlyout="{StaticResource HeaderMenu}" />
+                    <controls:TableViewTemplateColumn Header="Name"
+                                                      Width="160"
+                                                      CellContextFlyout="{StaticResource CellMenu}"
+                                                      HeaderContextFlyout="{StaticResource HeaderMenu}"
+                                                      SortMemberPath="Name"
+                                                      CellTemplate="{StaticResource NameTextCellTemplate}" />
                     <controls:TableViewTemplateColumn Header="City" Width="160">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
@@ -547,7 +554,7 @@
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
                     </controls:TableViewTemplateColumn>
-                    <controls:TableViewTextColumn Header="Age" Width="100" Binding="{Binding Age}" />
+                    <controls:TableViewTemplateColumn Header="Age" Width="100" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
                 </controls:TableView>
             </Grid>
 
@@ -561,7 +568,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
                                     SelectionMode="Single">
-                    <controls:TableViewTextColumn Header="ControlsName" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="ControlsName" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
                     <controls:TableViewTemplateColumn Header="ControlsActive" Width="84">
                         <controls:TableViewTemplateColumn.CellTemplate>
                             <DataTemplate x:DataType="local:TableViewTestPerson">
@@ -645,17 +652,6 @@
                        AutomationProperties.AutomationId="StatusTextBlock"
                        VerticalAlignment="Center"
                        Text="Ready" />
-            <!-- Reports which column an edit opened on, from the public BeginningEdit event. Tests read this
-                 instead of locating the editor: finding an editor means descending into a row's children,
-                 which fail-fasts the app (product finding #13). -->
-            <TextBox x:Name="EditColumnReportTextBlock"
-                     AutomationProperties.Name="EditColumnReportTextBlock"
-                     AutomationProperties.AutomationId="EditColumnReportTextBlock"
-                     VerticalAlignment="Center"
-                     Width="120"
-                     IsReadOnly="True"
-                     IsTabStop="False"
-                     Text="" />
             <Button Content="Hook Row States"
                     AutomationProperties.Name="HookRowStatesButton"
                     AutomationProperties.AutomationId="HookRowStatesButton"
@@ -692,38 +688,6 @@
                      AutomationProperties.AutomationId="GroupToggleReportTextBlock"
                      VerticalAlignment="Center"
                      Width="240"
-                     IsReadOnly="True"
-                     IsTabStop="False"
-                     Text="" />
-            <!-- One entry per opened edit, "<EditorType>|<EditorAutomationName>|<EditorText>|focus=<bool>|align=<...>;".
-                 Written by an IN-PROCESS visual-tree walk posted from BeginningEdit, so no out-of-process
-                 client ever asks a row peer for its children (finding #13). The walk itself creates no
-                 automation peers, exactly like the row/group-header state hooks above. It runs at Low
-                 dispatcher priority so the editor is generated, laid out and focused before it is read. -->
-            <TextBox x:Name="EditorProbeTextBlock"
-                     AutomationProperties.Name="EditorProbeTextBlock"
-                     AutomationProperties.AutomationId="EditorProbeTextBlock"
-                     VerticalAlignment="Center"
-                     Width="280"
-                     IsReadOnly="True"
-                     IsTabStop="False"
-                     Text="" />
-            <!-- One entry per CellEditEnding, "<EditAction>;" - Commit or Cancel, from the public args. -->
-            <TextBox x:Name="EditEndReportTextBlock"
-                     AutomationProperties.Name="EditEndReportTextBlock"
-                     AutomationProperties.AutomationId="EditEndReportTextBlock"
-                     VerticalAlignment="Center"
-                     Width="140"
-                     IsReadOnly="True"
-                     IsTabStop="False"
-                     Text="" />
-            <!-- Live value of the first bound item's Name, updated from its own PropertyChanged. This is the
-                 DATA side of an edit, not a product state readout: it says whether the edit reached the item. -->
-            <TextBox x:Name="FirstItemNameTextBlock"
-                     AutomationProperties.Name="FirstItemNameTextBlock"
-                     AutomationProperties.AutomationId="FirstItemNameTextBlock"
-                     VerticalAlignment="Center"
-                     Width="140"
                      IsReadOnly="True"
                      IsTabStop="False"
                      Text="" />

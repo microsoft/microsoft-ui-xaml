@@ -615,7 +615,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateAutomationTable();
                 // Alias over Role, so a cell's name shows which column it belongs to.
                 tableView.Columns.RemoveAt(2);
-                tableView.Columns.Add(MakeTextColumn("Alias", "Role"));
+                tableView.Columns.Add(MakeTextTemplateColumn("Alias", "Role"));
                 LoadContent(tableView);
             });
 

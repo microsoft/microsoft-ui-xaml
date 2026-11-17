@@ -9,6 +9,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <local:TestPage.Resources>
+        <DataTemplate x:Key="AgeTextCellTemplate">
+            <TextBlock Text="{Binding Age}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="CityTextCellTemplate">
+            <TextBlock Text="{Binding City}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="IdTextCellTemplate">
+            <TextBlock Text="{Binding Id}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+        <DataTemplate x:Key="NameTextCellTemplate">
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Padding="8,4,8,4" TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+    </local:TestPage.Resources>
+
     <!-- Everything stays left of ~940px: the lab frame clips at 1024px and clipped controls miss touch input. -->
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="8" ColumnSpacing="12">
         <Grid.ColumnDefinitions>
@@ -26,8 +41,8 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             SelectionMode="Single">
-            <controls:TableViewTextColumn Header="TouchName" Width="130" Binding="{Binding Name}" />
-            <controls:TableViewTextColumn Header="TouchAge" Width="90" Binding="{Binding Age}" />
+            <controls:TableViewTemplateColumn Header="TouchName" Width="130" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+            <controls:TableViewTemplateColumn Header="TouchAge" Width="90" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
         </controls:TableView>
 
         <controls:TableView x:Name="TouchGroupedTableView"
@@ -39,8 +54,8 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             SelectionMode="Single">
-            <controls:TableViewTextColumn Header="TouchGroupedName" Width="130" Binding="{Binding Name}" />
-            <controls:TableViewTextColumn Header="TouchGroupedCity" Width="90" Binding="{Binding City}" />
+            <controls:TableViewTemplateColumn Header="TouchGroupedName" Width="130" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+            <controls:TableViewTemplateColumn Header="TouchGroupedCity" Width="90" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
         </controls:TableView>
 
         <StackPanel Grid.Column="2" Orientation="Vertical" Spacing="4" VerticalAlignment="Top">
@@ -51,10 +66,10 @@
                                 Width="360"
                                 HorizontalAlignment="Left"
                                 SelectionMode="Single">
-                <controls:TableViewTextColumn Header="TouchScrollName" Width="160" Binding="{Binding Name}" />
-                <controls:TableViewTextColumn Header="TouchScrollCity" Width="160" Binding="{Binding City}" />
-                <controls:TableViewTextColumn Header="TouchScrollAge" Width="160" Binding="{Binding Age}" />
-                <controls:TableViewTextColumn Header="TouchScrollId" Width="160" Binding="{Binding Id}" />
+                <controls:TableViewTemplateColumn Header="TouchScrollName" Width="160" SortMemberPath="Name" CellTemplate="{StaticResource NameTextCellTemplate}" />
+                <controls:TableViewTemplateColumn Header="TouchScrollCity" Width="160" SortMemberPath="City" CellTemplate="{StaticResource CityTextCellTemplate}" />
+                <controls:TableViewTemplateColumn Header="TouchScrollAge" Width="160" SortMemberPath="Age" CellTemplate="{StaticResource AgeTextCellTemplate}" />
+                <controls:TableViewTemplateColumn Header="TouchScrollId" Width="160" SortMemberPath="Id" CellTemplate="{StaticResource IdTextCellTemplate}" />
             </controls:TableView>
             <!-- "H=<h>;V=<v>;HeaderH=<h>" from PART_BodyScroller / PART_HeaderScroller; see ReportScrollOffsets. -->
             <TextBlock x:Name="TouchScrollOffsetTextBlock"

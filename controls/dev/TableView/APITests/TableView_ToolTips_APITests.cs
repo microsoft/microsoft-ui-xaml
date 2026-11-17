@@ -20,7 +20,6 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewEditingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewRowTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewToolTipTestHelpers;
 
@@ -368,7 +367,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyItemPropertyChangeUpdatesCellToolTipInPlace()
         {
             TableView tableView = null;
-            var items = MakeEditableItems("Asha", "Diego", "Mei");
+            var items = MakeNotifyingItems();
             ToolTip original = null;
 
             RunOnUIThread.Execute(() =>
@@ -409,7 +408,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyClearingFocusedCellsOnlyToolTipHandsFocusToRow()
         {
             TableView tableView = null;
-            var items = MakeEditableItems("Asha", "Diego", "Mei");
+            var items = MakeNotifyingItems();
 
             RunOnUIThread.Execute(() =>
             {
@@ -422,7 +421,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var row = RequireFirstRow(tableView);
-                Verify.IsTrue(tableView.IsReadOnly, "Precondition: the tooltip is the cell's only action.");
                 GetCellPeer(row, 0).SetFocus();
                 Verify.AreEqual<object>(GetRowCell(row, 0), Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
                     "Precondition: the tooltip cell takes focus.");
@@ -437,49 +435,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(GetRowCell(row, 0).IsTabStop, "A cell with no action left leaves the tab order.");
                 Verify.AreEqual<object>(row, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot),
                     "Focus must move from the inactive cell to its row.");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a cell tooltip is present again once an edit on that cell closes.")]
-        public void VerifyCellToolTipIsRestoredAfterAnEditCloses()
-        {
-            TableView tableView = null;
-            var items = MakeEditableItems("Asha", "Diego", "Mei");
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView = CreateEditableTable(items);
-                tableView.IsReadOnly = false;
-                tableView.Columns[0].CellToolTipBinding =
-                    new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
-
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual("Designer", RequireToolTipContent(GetRowCell(RequireFirstRow(tableView), 0), "row 0"),
-                    "Precondition: the editable cell starts with its tooltip.");
-
-                // SetValue runs BeginEdit -> write -> CommitEdit inside one call, so the mid-edit state
-                // is not observable from here. The spec says nothing about tooltips during editing;
-                // only the restoration is asserted, which holds under any reading - a display cell must
-                // carry its tooltip.
-                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Asha Kapoor");
-                Verify.IsTrue(error == null, $"The edit must succeed for this test to say anything. Instead: {error?.Message}");
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsFalse(tableView.IsEditing, "The edit must have closed.");
-
-                Verify.AreEqual("Designer", RequireToolTipContent(GetRowCell(RequireFirstRow(tableView), 0), "row 0"),
-                    "A cell must carry its tooltip again once the edit closes; losing it permanently is a state the user cannot escape.");
             });
         }
 
@@ -565,19 +520,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Column 0: tooltip repeats what the cell shows - the most common authoring shape for
                 // this feature, since you tooltip the column you truncate.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = "Name",
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Name"),
                     CellToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
                 });
 
                 // Column 1: same tooltip text over a different cell value. Without this arm, a peer that
                 // returned empty unconditionally would pass.
-                tableView.Columns.Add(new TableViewTextColumn
+                tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = "Role",
-                    Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay },
+                    CellTemplate = MakeTextCellTemplate("Role"),
                     CellToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
                 });
 
@@ -904,7 +859,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewToolTipTestHelpers
     {
-        // One text column showing Name, optionally tooltipped from another path. cellToolTipPath null
+        internal static List<NotifyingPerson> MakeNotifyingItems() => new List<NotifyingPerson>
+        {
+            new NotifyingPerson { Name = "Asha", Role = "Designer" },
+            new NotifyingPerson { Name = "Diego", Role = "Engineer" },
+            new NotifyingPerson { Name = "Mei", Role = "Architect" },
+        };
+
+        // One text template column showing Name, optionally tooltipped from another path. cellToolTipPath null
         // means the column opts out entirely, which is its own tested behaviour.
         internal static TableView CreateToolTipTable(
             IList items,
@@ -912,7 +874,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IValueConverter converter = null)
         {
             var tableView = CreateTableViewWithColumns(items, height: 300);
-            var column = (TableViewTextColumn)tableView.Columns[0];
+            var column = tableView.Columns[0];
 
             if (cellToolTipPath != null)
             {

@@ -3223,7 +3223,6 @@ void ShapedItemsSource::ClearLiveShapingSubscriptions()
     // Nothing tracked, so nothing live is pending: a posted restore finds the flag clear and
     // returns, and a later re-enable starts from a fresh restore.
     m_liveShapingDirty = false;
-    m_liveShapingHeld = false;
     m_liveShapingChangeDropped->store(false);
 }
 
@@ -3305,17 +3304,6 @@ void ShapedItemsSource::EnsureLiveShapingRestore()
         return;
     }
 
-    if (m_liveShapingHeld)
-    {
-        // A held restore normally waits for ResumeHeldLiveShaping. If the hold has since lifted
-        // without one (the owner was destroyed mid-edit), re-post so live shaping does not stall.
-        if (m_liveShapingHold && m_liveShapingHold())
-        {
-            return;
-        }
-        m_liveShapingHeld = false;
-    }
-
     // Posted: coalesces a turn's writes into one rebuild and stays out of the app's
     // PropertyChanged handler.
     PostLiveShapingRestore();
@@ -3378,13 +3366,6 @@ void ShapedItemsSource::RestoreLiveShaping()
         return;
     }
 
-    if (m_liveShapingHold && m_liveShapingHold())
-    {
-        // Moving rows would end the edit; stay dirty until the owner resumes.
-        m_liveShapingHeld = true;
-        return;
-    }
-
     if (IsRefreshDeferred())
     {
         // Stays dirty; the rebuild when the deferral ends recaptures every snapshot.
@@ -3396,16 +3377,4 @@ void ShapedItemsSource::RestoreLiveShaping()
 
     // No verb ran, so notify UIA; rows may have regrouped or filtered, not just reordered.
     RaiseShapingChanged(false /* reorderOnly */);
-}
-
-void ShapedItemsSource::ResumeHeldLiveShaping()
-{
-    if (!std::exchange(m_liveShapingHeld, false))
-    {
-        return;
-    }
-
-    // Posted: caller is closing an edit, often inside app callbacks or layout. Skips the post when a
-    // refresh in the meantime already satisfied the restore.
-    EnsureLiveShapingRestore();
 }

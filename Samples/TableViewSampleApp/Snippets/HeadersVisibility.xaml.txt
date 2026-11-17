@@ -24,12 +24,22 @@
     AutomationProperties.Name="Support tickets"
     ItemsSource="{x:Bind Source}"
     HeadersVisibility="Column"
-    SelectionMode="Single"
-    IsReadOnly="True">
-    <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
-    <tv:TableViewTextColumn Header="Ticket" Width="80" Binding="{Binding TicketId}"/>
+    SelectionMode="Single">
+    <tv:TableViewTemplateColumn Header="Ticket" Width="80" SortMemberPath="TicketId">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding TicketId}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn Header="Assignee" Width="100" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}"/>
-    <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="140" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
+    <tv:TableViewTemplateColumn Header="Summary" Width="*" MinWidth="140" CellToolTipBinding="{Binding Summary}" SortMemberPath="Summary">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Summary}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn Header="Priority" Width="100" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority"/>
     <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="170" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due"/>
     <tv:TableViewTemplateColumn Header="Resolved" Width="96" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved"/>

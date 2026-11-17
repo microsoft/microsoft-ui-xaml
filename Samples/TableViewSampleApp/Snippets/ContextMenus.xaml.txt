@@ -67,16 +67,32 @@
     <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
                                  CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
-    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="160"
-                             Binding="{Binding FullName}"
-                             CellContextFlyout="{StaticResource NameCellMenu}"/>
+    <tv:TableViewTemplateColumn x:Name="NameColumn" Header="Name" Width="160"
+                             CellContextFlyout="{StaticResource NameCellMenu}"
+                             SortMemberPath="FullName">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130"
                                  CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
     <!-- Shows the IsActive value that the row menu's Deactivate and Reactivate items change. -->
     <tv:TableViewTemplateColumn x:Name="StatusColumn" Header="Status" Width="120"
                                  CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
-    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="140"
-                             Binding="{Binding Office}"/>
-    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="100"
-                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="140" SortMemberPath="Office">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Office}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
+    <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="100" SortMemberPath="Salary">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" Style="{StaticResource CellTextStyle}" />
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
 </tv:TableView>

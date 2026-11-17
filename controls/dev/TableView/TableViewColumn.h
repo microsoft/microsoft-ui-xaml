@@ -51,10 +51,6 @@ public:
 
     // Internal: the display cell, through the overridable GenerateElementCore.
     winrt::FrameworkElement GenerateDisplayElement(const winrt::IInspectable& dataItem);
-    winrt::FrameworkElement GenerateEditingElement(const winrt::IInspectable& dataItem);
-    winrt::IInspectable PrepareCellForEdit(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs);
-    bool CommitCellEdit(const winrt::FrameworkElement& editingElement);
-    void CancelCellEdit(const winrt::FrameworkElement& editingElement, const winrt::IInspectable& uneditedValue);
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
@@ -68,13 +64,6 @@ public:
     // Overridable
     virtual winrt::hstring GetSortMemberPathCore();
     virtual winrt::FrameworkElement GenerateElementCore(const winrt::IInspectable& dataItem);
-    virtual winrt::FrameworkElement GenerateEditingElementCore(const winrt::IInspectable& dataItem);
-    virtual winrt::IInspectable PrepareCellForEditCore(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs);
-    virtual bool CommitCellEditCore(const winrt::FrameworkElement& editingElement);
-    virtual void CancelCellEditCore(const winrt::FrameworkElement& editingElement, const winrt::IInspectable& uneditedValue);
-
-    // Binding expressions on an editor subtree, for the properties an editor realistically writes.
-    static std::vector<winrt::BindingExpression> CollectEditingBindingExpressions(const winrt::FrameworkElement& element);
 
     // Property-changed callback (single dispatch in IDL)
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -104,7 +93,13 @@ public:
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
 
-    // Setter lets XAML pass the Binding object through without evaluating it.
+    // Setters let XAML pass the Binding object through without evaluating it.
+    winrt::Microsoft::UI::Xaml::Data::Binding DisplayMemberBinding();
+    void DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
+
+    // Internal: the read-only text cell for DisplayMemberBinding, or null when it is not set.
+    winrt::FrameworkElement GenerateDisplayMemberElementInternal();
+
     winrt::Microsoft::UI::Xaml::Data::Binding CellToolTipBinding();
     void CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
 
@@ -153,6 +148,7 @@ private:
     bool m_cellContentChangeQueued{ false };
     bool m_queuedCellContentResetAutoWidth{ false };
 
+    tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_displayMemberBinding{ this };
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };

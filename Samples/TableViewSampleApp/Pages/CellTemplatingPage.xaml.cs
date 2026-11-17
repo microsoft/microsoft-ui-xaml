@@ -7,17 +7,21 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableViewSampleApp.Templates;
+using Windows.System;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
 /// Cell templating: TableViewTemplateColumn cells that are read-only visuals (avatar, chip) or
-/// two-way bound editors (CheckBox, date and time pickers, ComboBox, Button + Flyout), the
-/// templates shared from Templates\PersonCellTemplates.xaml, and a run-time CellTemplate swap.
+/// two-way bound editors (CheckBox, TextBox, date and time pickers, ComboBox, Button + Flyout),
+/// an app-owned edit-on-demand Role cell (F2 / double-tap), the templates shared from
+/// Templates\PersonCellTemplates.xaml, and a run-time CellTemplate swap.
 /// </summary>
 public sealed partial class CellTemplatingPage : SamplePageBase
 {
@@ -28,6 +32,11 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         InitializeComponent();
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
+
+        // <snippet>
+        // TableView has no edit gesture, so F2 reaches this handledEventsToo handler.
+        PeopleTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
+        // </snippet>
 
         // The editors are two-way bound; the page only observes the model to report each commit.
         TrackItems(People, OnPersonChanged);
@@ -66,6 +75,184 @@ public sealed partial class CellTemplatingPage : SamplePageBase
     }
     // </snippet>
 
+    // ---- Role: edit on demand -----------------------------------------------------------
+
+    // <snippet>
+    private Person? _editingRole;
+
+    public static Visibility CollapsedWhen(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
+    private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        // The focused cell's row, else the selected row.
+        if (e.Key == VirtualKey.F2
+            && ((e.OriginalSource as FrameworkElement)?.DataContext as Person ?? PeopleTable.SelectedItem as Person) is { } person)
+        {
+            e.Handled = true;
+            BeginRoleEdit(person);
+        }
+    }
+
+    private void OnRoleCellDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is Person person)
+        {
+            e.Handled = true;
+            BeginRoleEdit(person);
+        }
+    }
+
+    private void BeginRoleEdit(Person person)
+    {
+        if (person.IsEditingRole)
+        {
+            return;
+        }
+
+        if (_editingRole is { } previous)
+        {
+            CommitRoleEdit(previous, editor: null);
+        }
+
+        _editingRole = person;
+        person.PendingRole = person.Role;
+        person.IsEditingRole = true;    // x:Load realizes the TextBox
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Editing the role of {0}. Enter commits, Esc cancels.", person.FullName));
+    }
+
+    private void OnRoleBoxLoaded(object sender, RoutedEventArgs e)
+    {
+        var box = (TextBox)sender;
+        box.Focus(FocusState.Programmatic);
+        box.SelectAll();
+    }
+
+    // Preview: Enter and Esc are claimed before TableView's own cell keys see them.
+    private void OnRoleBoxPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not Person person)
+        {
+            return;
+        }
+
+        if (e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            CommitRoleEdit(person, (TextBox)sender);
+        }
+        else if (e.Key == VirtualKey.Escape)
+        {
+            e.Handled = true;
+            EndRoleEdit(person, (TextBox)sender);
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cancelled the role edit; {0} is still {1}", person.FullName, person.Role));
+        }
+    }
+
+    private void OnRoleBoxLostFocus(object sender, RoutedEventArgs e)
+    {
+        // Focus that moved into a popup (the TextBox's context menu, the error tip) comes back.
+        if (((FrameworkElement)sender).DataContext is Person person && !IsFocusInPopup((UIElement)sender))
+        {
+            CommitRoleEdit(person, editor: null);
+        }
+    }
+
+    private void OnRoleBoxTextChanged(object sender, TextChangedEventArgs e) => RoleErrorTip.IsOpen = false;
+
+    // editor is the TextBox for Enter, which keeps the editor open on invalid input; null for
+    // focus loss, which has nowhere to keep it open and discards the invalid value instead.
+    private void CommitRoleEdit(Person person, TextBox? editor)
+    {
+        if (!person.IsEditingRole || !ReferenceEquals(person, _editingRole))
+        {
+            return;
+        }
+
+        var role = person.PendingRole.Trim();
+        if (role.Length == 0 && editor is not null)
+        {
+            RoleErrorTip.Target = editor;
+            RoleErrorTip.IsOpen = true;
+            SetLastAction("Role can't be empty. Type a role and press Enter, or press Esc to keep the current one.");
+            return;
+        }
+
+        EndRoleEdit(person, editor);
+        if (role.Length > 0 && role != person.Role)
+        {
+            person.Role = role;         // OnPersonChanged reports it; a Role sort re-sorts on it
+            return;
+        }
+
+        SetLastAction(role.Length == 0
+            ? string.Format(CultureInfo.CurrentCulture, "Discarded an empty role; {0} is still {1}", person.FullName, person.Role)
+            : string.Format(CultureInfo.CurrentCulture, "Role unchanged for {0}", person.FullName));
+    }
+
+    private void EndRoleEdit(Person person, TextBox? editor)
+    {
+        _editingRole = null;
+        RoleErrorTip.IsOpen = false;
+        if (editor is not null)
+        {
+            FocusCellOf(editor);        // before x:Load removes the focused TextBox
+        }
+
+        person.IsEditingRole = false;
+    }
+    // </snippet>
+
+    private static void FocusCellOf(DependencyObject element)
+    {
+        for (DependencyObject? child = element, parent; child is not null; child = parent)
+        {
+            parent = VisualTreeHelper.GetParent(child);
+            if (parent is TableViewCellsPanel && child is UIElement cell)
+            {
+                cell.Focus(FocusState.Keyboard);
+                return;
+            }
+        }
+    }
+
+    private static bool IsFocusInPopup(UIElement element)
+    {
+        if (element.XamlRoot is null || FocusManager.GetFocusedElement(element.XamlRoot) is not DependencyObject focused)
+        {
+            return false;
+        }
+
+        foreach (var popup in VisualTreeHelper.GetOpenPopupsForXamlRoot(element.XamlRoot))
+        {
+            for (var node = focused; node is not null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (ReferenceEquals(node, popup.Child))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void OnEditRoleClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var index = PeopleTable.IndexOf(person);
+        if (index >= 0)
+        {
+            PeopleTable.StartBringItemIntoView(index, null);
+        }
+
+        BeginRoleEdit(person);
+    }
+
     // ---- In-cell edits ------------------------------------------------------------------
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
@@ -86,6 +273,12 @@ public sealed partial class CellTemplatingPage : SamplePageBase
                 break;
             case nameof(Person.ShiftStart):
                 SetLastAction(string.Format(CultureInfo.CurrentCulture, "Shift start -> {0:hh\\:mm} for {1}", person.ShiftStart, person.FullName));
+                break;
+            case nameof(Person.Role):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Role -> {0} for {1}", person.Role, person.FullName));
+                break;
+            case nameof(Person.Notes):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Notes -> \"{0}\" for {1}", person.Notes, person.FullName));
                 break;
             case nameof(Person.Office):
             case nameof(Person.Department):

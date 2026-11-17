@@ -9,7 +9,7 @@
 #include "TableViewTelemetry.h"
 
 // TiP: one initialization test per template application and one test per key operation (TableViewTipTests.h).
-// A sort, filter or edit commit that ran also marks its feature used on TableView_Instance.
+// A sort or filter that ran also marks its feature used on TableView_Instance.
 namespace TableViewTip
 {
     // An exception's HRESULT and, when app code threw it, which app code (AppFaultKind::None otherwise).

@@ -186,8 +186,6 @@ Live-off staleness and the default flag value are covered by existing tests (§1
 | LS18 P1 | `ThrowingSelectorNoCrash` | App selector throws during live reshape. | No crash; 4 rows. | Unhandled exception from a dispatcher callback. |
 | LS19 P1 | `DisableStopsTracking` | Turning off unsubscribes. | Edits after off: `A B C D`. | Leaked subscriptions keep reshaping. |
 | LS20 P1 | `TurnOnPicksUpUntrackedEdit` | Turning on runs one catch-up reshape. | `off=A B C D; on=B C D A`. | Edits made while off are never reflected. |
-| LS21 P0 | `HeldWhileEditing` | Live reshape waits for an open cell edit. | During edit `A B C D`, still editing; after commit `B C D A`. | Live data ends the user's edit or moves the edited row. |
-| LS22 P1 | `BulkOnFlatDoesNotEndEdit` | Bulk changes during an edit do not cancel it. | `editing=True kept=True endings=0`. | Edit is cancelled by background updates. |
 
 ### 4.3 Custom comparer (`CustomSortComparer`)
 
@@ -276,13 +274,13 @@ Pointer and keyboard tests use the existing `TableViewInteractionTestHelpers`, p
 | ID | Test | Intent | Expected | Failure means |
 | --- | --- | --- | --- | --- |
 | P01 P0 | `ChevronClickToggles` | Clicking the chevron toggles the node. | Ada expands, then collapses; peer state matches. | Chevron is not hit-testable or toggles twice. |
-| P02 P0 | `ChevronClickDoesNotSelectOrEdit` | The chevron is not a cell. | Selection unchanged; double-press does not begin an edit (`beginning=0`). | Clicking the chevron enters edit mode or changes selection. |
+| P02 P0 | `ChevronClickDoesNotSelect` | The chevron is not a cell. | Selection unchanged after a click and a double-press. | Clicking the chevron changes selection. |
 Chevron clipping is checked at API level (V02), so there is no pointer duplicate.
 
 ### 5.4 Live shaping end to end
 
-No interaction tests. Live behaviour is fully observable at API level (LS17 selection, LS21 edit
-hold, LT02 reparent plus expansion). Focus across a reshape is governed by the existing dev-spec
+No interaction tests. Live behaviour is fully observable at API level (LS17 selection, LT02
+reparent plus expansion). Focus across a reshape is governed by the existing dev-spec
 rule (§1.1), not by this feature.
 
 ## 6. Out of scope for this plan

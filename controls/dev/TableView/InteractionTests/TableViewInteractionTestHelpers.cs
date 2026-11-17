@@ -785,14 +785,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return value == expected;
         }
 
-        internal static string ReadEditReport() => ReadPageReadout(EditColumnReport);
-
-        internal static string ReadEditorProbe() => ReadPageReadout(EditorProbe);
-
-        internal static string ReadEditEndReport() => ReadPageReadout(EditEndReport);
-
-        internal static string ReadFirstItemName() => ReadPageReadout(FirstItemName);
-
         // Reads the page's scroll/frozen-geometry readout (format: TableViewPage.ReportScrollOffsets).
         // Header-sync and frozen-column tests assert on these page-published values, not UIA
         // BoundingRectangle: the header scrolls via PART_HeaderScroller's offset and frozen cells are

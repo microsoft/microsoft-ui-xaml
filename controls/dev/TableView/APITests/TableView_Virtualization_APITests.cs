@@ -409,7 +409,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             for (var i = 0; i < columnCount; i++)
             {
-                tableView.Columns.Add(MakeTextColumn($"Column {i}", "Name", new GridLength(120)));
+                tableView.Columns.Add(MakeTextTemplateColumn($"Column {i}", "Name", new GridLength(120)));
             }
 
             return tableView;

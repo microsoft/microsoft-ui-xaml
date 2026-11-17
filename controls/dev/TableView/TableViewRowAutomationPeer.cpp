@@ -332,7 +332,7 @@ int32_t TableViewRowAutomationPeer::GetTrackedItemIndex(winrt::TableView const& 
     const int32_t count = view.Count();
     if (m_lastKnownRowIndex >= 0 && m_lastKnownRowIndex < count)
     {
-        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(m_lastKnownRowIndex));
+        if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(m_lastKnownRowIndex));
             m_item.SameIdentityAs(candidate))
         {
             return m_lastKnownRowIndex;
@@ -342,7 +342,7 @@ int32_t TableViewRowAutomationPeer::GetTrackedItemIndex(winrt::TableView const& 
     int32_t occurrence = 0;
     for (int32_t index = 0; index < count; ++index)
     {
-        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+        if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(index));
             m_item.SameIdentityAs(candidate))
         {
             if (m_trackedItemOccurrence < 0 || occurrence == m_trackedItemOccurrence)
@@ -377,7 +377,7 @@ int32_t TableViewRowAutomationPeer::GetItemOccurrenceAtIndex(
     int32_t occurrence = 0;
     for (int32_t index = 0; index <= targetIndex; ++index)
     {
-        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+        if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(index));
             candidate && TableView::SameInspectableIdentity(candidate, item))
         {
             if (index == targetIndex)
@@ -398,7 +398,7 @@ bool TableViewRowAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, wi
         return false;
     }
 
-    auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
     if (!rowItem)
     {
         return false;
@@ -436,7 +436,7 @@ void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, wi
 {
     if (row && tableView)
     {
-        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
+        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext()))
         {
             m_item.Track(item);
             m_trackedItemOccurrence = -1;
@@ -466,7 +466,7 @@ bool TableViewRowAutomationPeer::CanReuseForRowItem(
         return true;
     }
 
-    auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    auto const item = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
     return m_item.SameIdentityAs(item);
 }
 

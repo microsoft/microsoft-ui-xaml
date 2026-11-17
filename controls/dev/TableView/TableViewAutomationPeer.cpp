@@ -27,39 +27,62 @@ namespace
     template <typename D, typename... I>
     using ComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
 
-    // A realized row's name as composed from its text cells, read from the item without realizing the row.
-    winrt::hstring ComposeTextColumnValues(TableView& table, winrt::IInspectable const& item)
+    // An unrealized row's name, composed from the visible columns' SortMemberPath values so it does not
+    // fall back to the item's type name. Read from the item without realizing the row.
+    winrt::hstring ComposeSortMemberPathValues(TableView& table, winrt::IInspectable const& item)
     {
         std::wstring composed;
+        if (!item)
+        {
+            return {};
+        }
         auto const separator = LocalizedOrFallbackForTableViewAutomation(SR_TableViewCellTextSeparator, L", ");
         winrt::TextBlock probe{ nullptr };
         for (auto const& column : table.Columns())
         {
-            auto const textColumn = IsVisibleColumn(column) ? column.try_as<winrt::TableViewTextColumn>() : nullptr;
-            auto const binding = textColumn ? textColumn.Binding() : nullptr;
-            // A detached probe cannot resolve element-relative sources.
-            if (!binding || !binding.ElementName().empty() || binding.RelativeSource())
+            if (!IsVisibleColumn(column))
+            {
+                continue;
+            }
+            winrt::hstring path;
+            try
+            {
+                // Projected dispatch: GetSortMemberPathCore is overridable.
+                path = column.GetSortMemberPathCore();
+            }
+            catch (...)
+            {
+            }
+            if (path.empty())
             {
                 continue;
             }
             if (!probe)
             {
                 probe = winrt::TextBlock{};
-                // Converters and StringFormat format for the target's language, which a cell inherits.
                 probe.Language(table.Language());
             }
             winrt::hstring text;
             try
             {
+                winrt::Binding binding;
+                binding.Path(winrt::PropertyPath{ path });
+                binding.Mode(winrt::BindingMode::OneTime);
                 winrt::BindingOperations::SetBinding(probe, winrt::TextBlock::TextProperty(), binding);
                 probe.DataContext(item);
                 text = probe.Text();
+            }
+            catch (winrt::hresult_error const&)
+            {
+                // A getter that throws only costs that column's text.
+            }
+            try
+            {
                 probe.ClearValue(winrt::TextBlock::TextProperty());
                 probe.DataContext(nullptr);
             }
             catch (winrt::hresult_error const&)
             {
-                // An app converter that throws only costs that column's text.
             }
             if (text.empty())
             {
@@ -183,8 +206,8 @@ namespace
             }
             // Read from the source: m_item may be a weak reference to a box nothing else keeps alive.
             auto const tableImpl = winrt::get_self<TableView>(m_table.get());
-            auto const item = tableImpl->UnwrapEditingDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
-            if (auto const composed = ComposeTextColumnValues(*tableImpl, item); !composed.empty())
+            auto const item = tableImpl->UnwrapDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
+            if (auto const composed = ComposeSortMemberPathValues(*tableImpl, item); !composed.empty())
             {
                 return composed;
             }
@@ -292,7 +315,7 @@ namespace
             auto const matches = [&](int32_t index)
             {
                 return index >= 0 && index < count &&
-                    m_item.SameIdentityAs(tableImpl->UnwrapEditingDataItem(view.GetAt(index)));
+                    m_item.SameIdentityAs(tableImpl->UnwrapDataItem(view.GetAt(index)));
             };
             // The selected index first: after an insert, m_lastIndex can hold another occurrence of the item.
             for (const int32_t hint : { selectedIndex, m_lastIndex })
@@ -325,7 +348,7 @@ namespace
         bool IsItemRow(winrt::TableViewRow const& row)
         {
             return m_byIndex ||
-                m_item.SameIdentityAs(winrt::get_self<TableView>(m_table.get())->UnwrapEditingDataItem(row.DataContext()));
+                m_item.SameIdentityAs(winrt::get_self<TableView>(m_table.get())->UnwrapDataItem(row.DataContext()));
         }
 
         winrt::TableViewRow RealizedRow(int32_t index)
@@ -618,18 +641,6 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     return clipped;
 }
 
-void TableViewAutomationPeer::ShowContextMenuCore()
-{
-    // The base raises ContextRequested on the TableView itself, which shows its own
-    // ContextFlyout before the template-root suppression hook can see it.
-    if (auto const impl = GetImpl(); impl && impl->AreContextMenusSuppressed())
-    {
-        return;
-    }
-
-    __super::ShowContextMenuCore();
-}
-
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.
@@ -844,7 +855,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         winrt::IInspectable item{ nullptr };
         if (auto const view = repeater.ItemsSourceView(); view && selectedIndex < view.Count())
         {
-            item = impl->UnwrapEditingDataItem(view.GetAt(selectedIndex));
+            item = impl->UnwrapDataItem(view.GetAt(selectedIndex));
         }
         auto const rowElement = repeater.TryGetElement(selectedIndex);
         if (rowElement)
@@ -903,7 +914,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
         }
         auto const repeater = table.GetRowsRepeaterInternal();
         const bool byIndex = !TableView::SameInspectableIdentity(
-            item, table.UnwrapEditingDataItem(repeater.ItemsSourceView().GetAt(index)));
+            item, table.UnwrapDataItem(repeater.ItemsSourceView().GetAt(index)));
         peer = winrt::make_self<TableViewRowItemAutomationPeer>(
             table.get_strong().as<winrt::TableView>(), item, index, byIndex).as<winrt::AutomationPeer>();
     }

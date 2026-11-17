@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 // #44 enum unification: TableViewSortDirection was removed in favor of the shared Data enum.
 using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -116,11 +115,8 @@ internal static class SampleShape
         return perType.GetOrAdd(path, p => BuildSelector(rootType, p));
     }
 
-    private static string? ResolveSortMemberPath(TableViewColumn col)
-    {
-        if (!string.IsNullOrEmpty(col.SortMemberPath)) return col.SortMemberPath;
-        return col is TableViewTextColumn t ? t.Binding?.Path?.Path : null;
-    }
+    private static string? ResolveSortMemberPath(TableViewColumn col) =>
+        string.IsNullOrEmpty(col.SortMemberPath) ? null : col.SortMemberPath;
 
     private static Func<object, IComparable?>? BuildSelector(Type rootType, string path)
     {

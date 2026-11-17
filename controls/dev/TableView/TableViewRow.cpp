@@ -127,27 +127,6 @@ TableViewRow::TableViewRow()
 
     auto weakRow = get_weak();
 
-    RegisterPropertyChangedCallback(winrt::UIElement::ContextFlyoutProperty(),
-        [weakRow](auto&&, auto&&)
-        {
-            if (auto const strongRow = weakRow.get())
-            {
-                strongRow->m_contextFlyoutOpeningRevoker = TableViewDetails::HookContextFlyoutSuppression(*strongRow);
-            }
-        });
-
-    // handledEventsToo: a row that participates in selection marks the press handled, which also
-    // suppresses XAML's gesture recognizer - this registration is what keeps begin-edit reachable.
-    m_editingPointerPressedHandler = winrt::PointerEventHandler(
-        [weakRow](winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
-        {
-            if (auto strongRow = weakRow.get())
-            {
-                strongRow->OnPointerPressedForEditing(sender, args);
-            }
-        });
-    AddHandler(winrt::UIElement::PointerPressedEvent(), winrt::box_value(m_editingPointerPressedHandler), true /* handledEventsToo */);
-
     // auto_revoke owns this self-event subscription until row destruction.
     m_dataContextChangedRevoker = DataContextChanged(
         winrt::auto_revoke,
@@ -345,7 +324,7 @@ bool TableViewRow::IsContextMenuTargetCurrent(
 
     auto* ownerImpl = winrt::get_self<TableView>(owner);
     if (!TableView::SameInspectableIdentity(
-            ownerImpl->UnwrapEditingDataItem(target.Row.DataContext()),
+            ownerImpl->UnwrapDataItem(target.Row.DataContext()),
             target.Item))
     {
         return false;
@@ -361,7 +340,7 @@ bool TableViewRow::IsContextMenuTargetCurrent(
     auto const view = repeater.ItemsSourceView();
     if (!view || index < 0 || index >= view.Count() ||
         !TableView::SameInspectableIdentity(
-            ownerImpl->UnwrapEditingDataItem(view.GetAt(index)),
+            ownerImpl->UnwrapDataItem(view.GetAt(index)),
             target.Item))
     {
         return false;
@@ -573,12 +552,6 @@ bool TableViewRow::IsCellActionableInternal(const winrt::UIElement& cell) const
     if (!IsVisibleColumn(column))
     {
         return false;
-    }
-
-    if (auto const owner = m_owningTableView.get();
-        owner && winrt::get_self<TableView>(owner)->IsColumnCellEditableInternal(column))
-    {
-        return true;
     }
 
     if (column.CellContextFlyout() || TableViewDetails::HasEffectiveToolTip(cellElement))
@@ -973,11 +946,6 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
         // chrome onto its next item. RefreshRowSelectionState restamps it on the way back in.
         IsSelected(false);
 
-        // Begin-edit gesture state must go too. A row recycled away and back to the SAME item
-        // inside the double-click interval would otherwise turn the next single click into an
-        // edit, and the stale trackers keep the previous item and column alive.
-        ResetPressState();
-
         // Recycled rows return at row level; otherwise a drilled row can reappear unreachable by Tab.
         m_isCellLevel = false;
 
@@ -1175,8 +1143,8 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     auto props = pointerPoint.Properties();
 
     // Right-button focus must precede native template menus opening, without arming selection.
-    // Touch reports no pressed button, so it is admitted on device type instead, matching the
-    // begin-edit gesture. Without this a touch press never arms the release-time selection.
+    // Touch reports no pressed button, so it is admitted on device type instead. Without this a
+    // touch press never arms the release-time selection.
     const auto deviceType = args.Pointer().PointerDeviceType();
     if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
         !props.IsLeftButtonPressed())
@@ -1795,7 +1763,7 @@ void TableViewRow::ResetCellAutomationNames()
                 if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
                     .try_as<winrt::TableViewCellAutomationPeer>())
                 {
-                    winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
+                    winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetNameState();
                 }
             }
             catch (...)
@@ -1931,30 +1899,6 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     };
     if (!columns)
     {
-        // Columns went away entirely. Clearing here without closing the edit first would rip a live
-        // editor out of the tree while the control still believed it was editing - and it wedges
-        // permanently: the next pass sees zero children AND zero columns, takes the restamp
-        // fast-path below, and returns before ever reaching the teardown. IsEditing would stay true
-        // for the lifetime of the control, with no editor and no way for the app to recover.
-        if (m_editingCellWrapper.get())
-        {
-            if (auto const editOwner = GetOwningTableView())
-            {
-                winrt::get_self<TableView>(editOwner)->TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
-            }
-            else
-            {
-                AbandonCellEdit();
-            }
-
-            // Refused to close (an edit still in its Beginning window). Leave the cells alone
-            // rather than orphan the editor; the next pass retries once the edit has closed.
-            if (m_editingCellWrapper.get())
-            {
-                return false;
-            }
-        }
-
         ResetCellAutomationNames();
         host.Children().Clear();
         return false;
@@ -1978,31 +1922,6 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     }
 
     bool canRestampCells = children.Size() == nonNullColumnCount;
-
-    // The fast-path reuses cells and deliberately does not close an open edit. That is only sound
-    // while the editor is still one of those cells. If it has been orphaned - its wrapper is no
-    // longer a child - reusing them would leave the control editing an element outside the tree,
-    // so force the rebuild path, which tears the edit down.
-    if (canRestampCells)
-    {
-        if (auto const editingWrapper = m_editingCellWrapper.get())
-        {
-            bool stillAttached = false;
-            for (uint32_t i = 0; i < children.Size(); ++i)
-            {
-                if (children.GetAt(i) == editingWrapper)
-                {
-                    stillAttached = true;
-                    break;
-                }
-            }
-
-            if (!stillAttached)
-            {
-                canRestampCells = false;
-            }
-        }
-    }
 
     uint32_t childIndex = 0;
     if (canRestampCells)
@@ -2078,33 +1997,6 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     // Column adds/removes/reorders or template changes rebuild cells; width-only changes are picked
     // up automatically by the cell panel's arrange (it reads each column's resolved ActualWidth), so
     // no cell rebuild is needed for those.
-    //
-    // This path destroys every cell, so an open editor cannot survive it. The restamp fast-path above
-    // deliberately does NOT tear the edit down: it reuses the cells, so an editor opened on this row
-    // stays valid through the routine re-measure that installing it provokes.
-    //
-    // The teardown must not restore the display child - RebuildCells can run inside the repeater's
-    // measure pass. See AbandonCellEdit.
-    if (m_editingCellWrapper.get())
-    {
-        if (auto const editOwner = GetOwningTableView())
-        {
-            winrt::get_self<TableView>(editOwner)->TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
-        }
-        else
-        {
-            AbandonCellEdit();
-        }
-
-        // If the edit still refuses to close, clearing the children would rip the live editor out
-        // of the tree while the control still believes it is editing. Leave the cells alone; the
-        // rebuild happens on the next pass once the edit has actually closed.
-        if (m_editingCellWrapper.get())
-        {
-            return false;
-        }
-    }
-
     ResetCellAutomationNames();
     host.Children().Clear();
 
@@ -2126,8 +2018,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         cellWrapper.MinHeight(rowMinHeight);
         ownerImpl->AttachFocusCornerRadius(cellWrapper);
 
-        // A null Background does not hit-test; Transparent keeps the full cell pressable so clicks
-        // in padding still set current cell and support double-click-to-edit.
+        // A null Background does not hit-test; Transparent keeps the full cell pressable.
         if (!m_cellWrapperBackground)
         {
             m_cellWrapperBackground = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
@@ -2187,13 +2078,11 @@ void TableViewRow::RefreshCellToolTips()
         return;
     }
 
-    auto const editingWrapper = m_editingCellWrapper.get();
     auto const children = host.Children();
     const uint32_t count = children.Size();
     for (uint32_t i = 0; i < count; ++i)
     {
-        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Grid>();
-            cellWrapper && cellWrapper != editingWrapper)
+        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Grid>())
         {
             // Usually the value changed with the DataContext and the tooltip is already live.
             auto const record = TableViewDetails::GetRecord(cellWrapper);
@@ -2487,497 +2376,6 @@ void TableViewRow::SyncExpanderGutterWithLeadCell(winrt::Panel const& host)
     }
 }
 
-// ----- Editing -----
-//
-// The row owns its cells, so the control delegates the display/editor swap here. The swap replaces
-// Child on the existing cell wrapper Border: keeping the wrapper means column width, visibility,
-// frozen pinning and grid lines keep applying while the cell is edited, with no layout re-plumbing.
-
-bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem)
-{
-    if (!column)
-    {
-        return false;
-    }
-
-    // An edit already open on this row is closed first. Committing it is the control's job, not
-    // the row's; by this point the control has already ended it, so anything still open here is
-    // stale visual state.
-    EndCellEdit(winrt::TableViewEditAction::Cancel);
-
-    auto const host = m_cellsHost.get();
-    if (!host)
-    {
-        return false;
-    }
-
-    winrt::Grid cellWrapper{ nullptr };
-    for (auto const& child : host.Children())
-    {
-        if (auto const cell = child.try_as<winrt::Grid>())
-        {
-            if (cell.Tag().try_as<winrt::TableViewColumn>() == column)
-            {
-                cellWrapper = cell;
-                break;
-            }
-        }
-    }
-
-    if (!cellWrapper)
-    {
-        return false;
-    }
-
-    // A throw past here must restore the display element and drop the half-captured edit state, or
-    // the cell is left blank and the row half-editing.
-    auto const displayElement = TableViewCell::Child(cellWrapper);
-    auto const focusRoot = XamlRoot();
-    auto const restoreFocusState = [&]()
-    {
-        auto const focused = focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot) : nullptr;
-        if (!TableViewDetails::IsWithinElementPopupAware(focused, cellWrapper, focusRoot))
-        {
-            return winrt::FocusState::Unfocused;
-        }
-        auto const focusedElement = focused.try_as<winrt::UIElement>();
-        return focusedElement && focusedElement.FocusState() != winrt::FocusState::Unfocused
-            ? focusedElement.FocusState() : winrt::FocusState::Programmatic;
-    }();
-    auto unwindOnThrow = wil::scope_exit([this, cellWrapper, displayElement, focusRoot, restoreFocusState]() noexcept
-    {
-        try
-        {
-            if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
-                .try_as<winrt::TableViewCellAutomationPeer>())
-            {
-                winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
-            }
-        }
-        catch (...)
-        {
-            TVDiag::LogRetailF(L"[TableView] Optional abandoned-cell name state could not be reset.");
-        }
-        try
-        {
-            if (TableViewCell::Child(cellWrapper) != displayElement)
-            {
-                TableViewCell::Child(cellWrapper, displayElement);
-                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
-            }
-        }
-        catch (...)
-        {
-            TVDiag::LogRetailF(L"[TableView] A failed BeginCellEdit could not restore the display cell.");
-        }
-        m_editingAutomationPeer = nullptr;
-        m_editingAutomationItem.set(nullptr);
-        m_editingAutomationValue = {};
-        m_editingAutomationName = {};
-        m_editingRowAutomationName.reset();
-        m_editingColumn.set(nullptr);
-        m_editingCellWrapper.set(nullptr);
-        m_editingElement.set(nullptr);
-        m_editingDisplayElement.set(nullptr);
-
-        // Not a layout pass (unlike AbandonCellEdit's callers), so focus the editor took or dropped
-        // can go back to the cell.
-        try
-        {
-            if (restoreFocusState != winrt::FocusState::Unfocused &&
-                !TableViewDetails::IsWithinElementPopupAware(
-                    focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot) : nullptr, cellWrapper, focusRoot))
-            {
-                SetCellLevelInternal(true);
-                if (!cellWrapper.Focus(restoreFocusState))
-                {
-                    SetCellLevelInternal(false);
-                    Focus(restoreFocusState);
-                }
-            }
-        }
-        catch (...)
-        {
-            TVDiag::LogRetailF(L"[TableView] A failed BeginCellEdit could not restore focus to the cell.");
-        }
-    });
-
-    auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
-    if (!editingElement)
-    {
-        unwindOnThrow.release();
-        return false;
-    }
-
-    // No local DataContext on the editing element, for the same reason the display cell sets none:
-    // it inherits from the wrapper, which tracks the item across row recycle.
-    // Observe only a provider a client already obtained. Creating peers here would turn every
-    // ordinary edit into a UIA-tree allocation and could give the event a different identity.
-    try
-    {
-        // Gate the snapshot work, not the edit: this function's return value starts the edit.
-        auto const peer = winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
-            ? TableViewCell::TryGetExistingPeer(cellWrapper).try_as<winrt::TableViewCellAutomationPeer>()
-            : nullptr;
-        if (peer && peer.GetPattern(winrt::PatternInterface::Value))
-        {
-            auto const value = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
-            auto const name = winrt::get_self<TableViewCellAutomationPeer>(peer)->ReadNameForEdit();
-            auto const weakPeer = winrt::make_weak(peer);
-            m_editingAutomationItem.set(dataItem);
-            m_editingAutomationValue = value;
-            m_editingAutomationName = name;
-            m_editingAutomationPeer = weakPeer;
-        }
-        m_editingRowAutomationName.reset();
-        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
-        {
-            if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
-            {
-                m_editingRowAutomationName = rowPeer.GetName();
-            }
-        }
-    }
-    catch (...)
-    {
-        m_editingAutomationPeer = nullptr;
-        m_editingAutomationItem.set(nullptr);
-        m_editingAutomationValue = {};
-        m_editingAutomationName = {};
-        m_editingRowAutomationName.reset();
-        TVDiag::LogRetailF(L"[TableView] Optional pre-edit UIA snapshot could not be captured.");
-    }
-    try
-    {
-        if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
-            .try_as<winrt::TableViewCellAutomationPeer>())
-        {
-            winrt::get_self<TableViewCellAutomationPeer>(peer)->BeginEditName();
-        }
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Optional stable cell-name capture failed.");
-    }
-    m_editingDisplayElement.set(displayElement);
-    m_pendingEditingCell = winrt::make_weak(cellWrapper.as<winrt::UIElement>());
-    auto pendingCellGuard = wil::scope_exit([this]() noexcept { m_pendingEditingCell = nullptr; });
-    TableViewCell::Child(cellWrapper, editingElement);
-
-    m_editingColumn.set(column);
-    m_editingCellWrapper.set(cellWrapper);
-    TableViewDetails::ClearOwnedToolTip(cellWrapper);
-    m_editingElement.set(editingElement);
-
-    unwindOnThrow.release();
-    return true;
-}
-
-void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure, bool* applicationFault)
-{
-    auto const cellWrapper = m_editingCellWrapper.get();
-    auto const weakPeer = m_editingAutomationPeer;
-    winrt::IInspectable originalItem{ nullptr };
-    winrt::hstring oldValue;
-    winrt::hstring oldName;
-    try
-    {
-        originalItem = m_editingAutomationItem.get();
-        oldValue = std::move(m_editingAutomationValue);
-        oldName = std::move(m_editingAutomationName);
-    }
-    catch (...)
-    {
-        originalItem = nullptr;
-        TVDiag::LogRetailF(L"[TableView] Optional edit UIA snapshot could not be retrieved.");
-    }
-    m_editingAutomationPeer = nullptr;
-    m_editingAutomationItem.set(nullptr);
-    m_editingAutomationValue = {};
-    m_editingAutomationName = {};
-    auto const oldRowName = std::move(m_editingRowAutomationName);
-    m_editingRowAutomationName.reset();
-    if (!cellWrapper)
-    {
-        m_editingColumn.set(nullptr);
-        m_editingElement.set(nullptr);
-        m_editingDisplayElement.set(nullptr);
-        return;
-    }
-
-    // Move focus off the editor before it leaves the tree. Dropping a focused element causes XAML
-    // to fall back to whatever it can find, which can scroll the list; the row is the correct
-    // landing spot and is where keyboard navigation expects focus to be.
-    if (auto const editingElement = m_editingElement.get())
-    {
-        bool editorHasFocus = false;
-        auto restoreState = winrt::FocusState::Programmatic;
-        if (auto const root = XamlRoot())
-        {
-            auto const focused = winrt::FocusManager::GetFocusedElement(root);
-            editorHasFocus = TableViewDetails::IsWithinElementPopupAware(focused, editingElement, root);
-            if (editorHasFocus)
-            {
-                // Read from the focused element: inside a dropdown the editor itself reports Unfocused.
-                if (auto const focusedElement = focused.try_as<winrt::UIElement>();
-                    focusedElement && focusedElement.FocusState() != winrt::FocusState::Unfocused)
-                {
-                    restoreState = focusedElement.FocusState();
-                }
-            }
-        }
-
-        TableViewDetails::CloseOpenDropDowns(editingElement);
-
-        if (editorHasFocus)
-        {
-            // Restore focus to the cell, not row, and preserve Keyboard focus state so the focus
-            // rectangle survives Enter-commit.
-            // Closing edit returns to cell level, so re-arm cells before restoring focus.
-            SetCellLevelInternal(true);
-
-            if (!cellWrapper.Focus(restoreState))
-            {
-                SetCellLevelInternal(false);
-                Focus(restoreState);
-            }
-        }
-    }
-
-    // Regenerate the display cell on commit rather than re-parenting the one that was parked when
-    // the edit opened.
-    //
-    // The parked element still holds the OneWay binding it was created with, and a OneWay binding
-    // only re-reads its source when that source raises PropertyChanged. For an item that does not
-    // implement INotifyPropertyChanged the committed value would therefore never appear - the user
-    // types, presses Enter, the item is updated, and the cell keeps showing the old text. A freshly
-    // generated element evaluates its binding immediately against the current value, so the commit
-    // is visible for plain POCOs too. This is what WPF's DataGrid does for the same reason.
-    //
-    // Only on Commit: a cancel wrote nothing, so the parked element is still correct and
-    // regenerating it would be pure churn.
-    winrt::UIElement displayElement = m_editingDisplayElement.get();
-    if (action == winrt::TableViewEditAction::Commit)
-    {
-        if (auto const column = m_editingColumn.get())
-        {
-            bool factoryReturned = false;
-            winrt::FrameworkElement refreshed{ nullptr };
-            try
-            {
-                refreshed = winrt::get_self<TableViewColumn>(column)->GenerateDisplayElement(DataContext());
-                factoryReturned = true;
-                if (refreshed)
-                {
-                    AttachCellContent(cellWrapper, refreshed);
-                    displayElement = nullptr;
-                }
-            }
-            catch (...)
-            {
-                if (displayFailure) { *displayFailure = winrt::to_hresult(); }
-                // An app-derived column's factory threw, or returned an element that already has a parent: both
-                // are the app's. TableView's own columns build a new element.
-                if (applicationFault)
-                {
-                    *applicationFault = TableViewDetails::IsAppDerivedColumn(column) &&
-                        (!factoryReturned || HasForeignParent(refreshed, cellWrapper));
-                }
-                // A column that throws while regenerating must not strand the row in edit mode;
-                // fall back to the parked element, which is stale but present.
-                displayElement = m_editingDisplayElement.get();
-            }
-        }
-    }
-
-    if (displayElement)
-    {
-        TableViewCell::Child(cellWrapper, displayElement);
-    }
-
-    m_editingColumn.set(nullptr);
-    m_editingCellWrapper.set(nullptr);
-    m_editingElement.set(nullptr);
-    m_editingDisplayElement.set(nullptr);
-
-    // The bound value did not change, so only an explicit re-apply restores what the edit retracted.
-    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
-
-    try
-    {
-        if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
-            .try_as<winrt::TableViewCellAutomationPeer>())
-        {
-            winrt::get_self<TableViewCellAutomationPeer>(peer)->EndEditName();
-        }
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation could not be prepared.");
-    }
-
-    try
-    {
-        if (action == winrt::TableViewEditAction::Commit && originalItem &&
-            TableView::SameInspectableIdentity(DataContext(), originalItem))
-        {
-            if (auto const peer = weakPeer.get())
-            {
-                auto const newValue = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
-                auto const newName = winrt::get_self<TableViewCellAutomationPeer>(peer)->ReadNameForEdit();
-                if (oldValue != newValue || oldName != newName)
-                {
-                    // Publish after Ending; reject recycled cells and superseded values.
-                    if (auto const queue = DispatcherQueue())
-                    {
-                        auto const weakThis = get_weak();
-                        auto const weakCell = winrt::make_weak(cellWrapper);
-                        if (!queue.TryEnqueue([weakThis, weakPeer, weakCell, originalItem, oldValue, newValue, newName]()
-                        {
-                            try
-                            {
-                                auto const row = weakThis.get();
-                                auto const currentPeer = weakPeer.get();
-                                auto const cell = weakCell.get();
-                                if (!row || !currentPeer || !cell ||
-                                    currentPeer.Owner() != cell ||
-                                    winrt::VisualTreeHelper::GetParent(cell).try_as<winrt::Panel>() != row->GetCellsHostPanelInternal() ||
-                                    !TableView::SameInspectableIdentity(row->DataContext(), originalItem))
-                                {
-                                    return;
-                                }
-                                auto const peerImpl = winrt::get_self<TableViewCellAutomationPeer>(currentPeer);
-                                if (peerImpl->GetRowIndexInternal() < 0 || peerImpl->Value() != newValue || peerImpl->ReadNameForEdit() != newName)
-                                {
-                                    return;
-                                }
-                                if (oldValue != newValue)
-                                {
-                                    currentPeer.RaisePropertyChangedEvent(winrt::ValuePatternIdentifiers::ValueProperty(),
-                                        winrt::box_value(oldValue), winrt::box_value(newValue));
-                                }
-                            }
-                            catch (...)
-                            {
-                                TVDiag::LogRetailF(L"[TableView] A committed cell's UIA notification could not be delivered.");
-                            }
-                        }))
-                        {
-                            TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification queue rejected delivery.");
-                        }
-                    }
-                    else
-                    {
-                        TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification has no dispatcher.");
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification could not be prepared.");
-    }
-
-    // Other cells and the row Name can derive from the edited value (a template column bound to a
-    // computed property). Their peers compute names live, but clients that cache need the change.
-    try
-    {
-        if (action == winrt::TableViewEditAction::Commit &&
-            winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
-        {
-            if (auto const queue = DispatcherQueue())
-            {
-                auto const weakThis = get_weak();
-                auto const weakCell = winrt::make_weak(cellWrapper.as<winrt::UIElement>());
-                auto const item = DataContext();
-                if (!queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis, weakCell, item, oldRowName]()
-                {
-                    try
-                    {
-                        auto const row = weakThis.get();
-                        if (!row || !TableView::SameInspectableIdentity(row->DataContext(), item))
-                        {
-                            return;
-                        }
-                        row->RaiseCellAutomationNamesChangedInternal(weakCell.get());
-                        if (oldRowName)
-                        {
-                            if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*row))
-                            {
-                                if (auto const newRowName = rowPeer.GetName(); newRowName != *oldRowName)
-                                {
-                                    rowPeer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
-                                        winrt::box_value(*oldRowName), winrt::box_value(newRowName));
-                                }
-                            }
-                        }
-                    }
-                    catch (...)
-                    {
-                        TVDiag::LogRetailF(L"[TableView] Optional committed-row name notification could not be delivered.");
-                    }
-                }))
-                {
-                    TVDiag::LogRetailF(L"[TableView] Optional committed-row name notification queue rejected delivery.");
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Optional committed-row name notification could not be prepared.");
-    }
-}
-
-void TableViewRow::AbandonCellEdit()
-{
-    try
-    {
-        if (auto const cell = m_editingCellWrapper.get())
-        {
-            if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
-                .try_as<winrt::TableViewCellAutomationPeer>())
-            {
-                winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
-            }
-        }
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Optional abandoned-cell name state could not be reset.");
-    }
-    m_editingAutomationPeer = nullptr;
-    m_editingAutomationItem.set(nullptr);
-    m_editingAutomationValue = {};
-    m_editingAutomationName = {};
-    // Restores the display child, but deliberately does NOT touch focus. Callers run inside a layout
-    // pass, where moving focus re-enters the framework and trips the re-entrancy guard. Replacing
-    // the child does not - and it must happen, or the row keeps showing a TextBox after the edit
-    // closed, and over a different item once recycled.
-    auto const cellWrapper = m_editingCellWrapper.get();
-    if (cellWrapper)
-    {
-        TableViewCell::Child(cellWrapper, m_editingDisplayElement.get());
-    }
-
-    m_editingColumn.set(nullptr);
-    m_editingCellWrapper.set(nullptr);
-    m_editingElement.set(nullptr);
-    m_editingDisplayElement.set(nullptr);
-
-    // The cell is a display cell again; restore the tooltip the edit retracted.
-    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
-}
-
-void TableViewRow::ResetPressState()
-{
-    m_lastPressTimestamp = 0;
-    m_lastPressPosition = {};
-    m_lastPressColumn.set(nullptr);
-    m_lastPressItem.set(nullptr);
-}
-
 void TableViewRow::ProcessContextRequest(
     TableViewDetails::ContextMenuTarget const& target,
     winrt::ContextRequestedEventArgs const& args)
@@ -3067,7 +2465,7 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::MakeRowContextM
 
     TableViewDetails::ContextMenuTarget target;
     target.Row = *this;
-    target.Item = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(DataContext());
+    target.Item = winrt::get_self<TableView>(owner)->UnwrapDataItem(DataContext());
     target.Anchor = *this;
     target.ScopeRoot = host;
     return target;
@@ -3112,157 +2510,4 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     }
 
     return target;
-}
-
-// Pointer entry point for editing, and the only place a pointer establishes the current cell.
-//
-// Lives on the row because the row owns its cells: resolving which cell a press landed on is a
-// question only the row can answer cheaply. The control keeps the edit state machine, so this
-// handler translates a gesture into SetCurrentCell / BeginEdit and nothing more. Mirrors WPF,
-// where DataGridCell handles the gesture and calls DataGrid.BeginEdit.
-//
-// PointerPressed with click counting, not DoubleTapped: marking a press handled suppresses XAML's
-// gesture recognizer entirely, and a row that participates in selection must mark it handled. A
-// DoubleTapped handler would work today and silently break when selection lands.
-void TableViewRow::OnPointerPressedForEditing(
-    const winrt::IInspectable& /*sender*/,
-    const winrt::PointerRoutedEventArgs& args)
-{
-    auto const owner = GetOwningTableView();
-    if (!owner)
-    {
-        return;
-    }
-
-    auto ownerImpl = winrt::get_self<TableView>(owner);
-
-    // Editing is opt-in and read-only by default, so a read-only table pays nothing beyond this.
-    if (ownerImpl->IsReadOnly())
-    {
-        return;
-    }
-
-    // A chevron press is a toggle, not a lead-cell press; otherwise two quick toggles would read as
-    // a double-click and open an editor. Only expandable rows' gutters are hit-testable.
-    if (IsExpandable() && IsWithinExpanderGutter(args.OriginalSource()))
-    {
-        return;
-    }
-
-    auto const pointerPoint = args.GetCurrentPoint(*this);
-    if (!pointerPoint)
-    {
-        return;
-    }
-
-    // Mouse/pen: primary button only - a right-click opens a context menu and must not begin an
-    // edit. Touch reports no pressed button, so it is admitted on device type instead.
-    const auto deviceType = args.Pointer().PointerDeviceType();
-    if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
-        !pointerPoint.Properties().IsLeftButtonPressed())
-    {
-        return;
-    }
-
-    auto const column = ResolvePressedColumn(args.OriginalSource(), args.GetCurrentPoint(nullptr).Position());
-    if (!column)
-    {
-        return;
-    }
-
-    auto const item = ownerImpl->UnwrapEditingDataItem(DataContext());
-    if (!item)
-    {
-        return;
-    }
-
-    const auto timestamp = pointerPoint.Timestamp();
-    const auto position = pointerPoint.Position();
-
-    const double slop = TableView::DoubleClickSlop(*this);
-
-    // Device type is part of the repeat identity so a mouse click following a pen tap is not read
-    // as one double-click. Pointer ID deliberately is NOT: every touch contact gets a fresh id, so
-    // requiring equality would mean the second tap never matches and touch could never begin an
-    // edit at all.
-    const bool isRepeatPress =
-        m_lastPressColumn.get() == column &&
-        TableView::SameInspectableIdentity(m_lastPressItem.get(), item) &&
-        m_lastPressDeviceType == deviceType &&
-        timestamp >= m_lastPressTimestamp &&
-        (timestamp - m_lastPressTimestamp) <= TableView::DoubleClickIntervalMicroseconds() &&
-        std::abs(position.X - m_lastPressPosition.X) <= slop &&
-        std::abs(position.Y - m_lastPressPosition.Y) <= slop;
-
-    // A press inside the cell already being edited belongs to the editor: it is the user placing
-    // the caret, and must not be read as a navigation move or a fresh edit.
-    const bool pressInsideOpenEdit =
-        ownerImpl->IsEditInProgress() &&
-        m_editingColumn.get() == column &&
-        m_editingElement.get() != nullptr;
-
-    if (!pressInsideOpenEdit)
-    {
-        // Move the current cell even when the edit is refused (read-only, or BeginningEdit cancels):
-        // the user pointed here, so a later F2 must not edit a different cell.
-        //
-        // This is also what makes keyboard editing reachable at all - pointer focus lands on the
-        // row, not a tagged cell, so without this the current column stays null.
-        ownerImpl->SetCurrentCell(item, column);
-
-        if (isRepeatPress)
-        {
-            ownerImpl->BeginEdit(item, column);
-
-            // Consume the press so a third click starts a fresh first press rather than
-            // re-entering begin-edit on a cell that is already open.
-            m_lastPressTimestamp = 0;
-            m_lastPressColumn.set(nullptr);
-            m_lastPressItem.set(nullptr);
-                return;
-        }
-    }
-
-    m_lastPressTimestamp = timestamp;
-    m_lastPressPosition = position;
-    m_lastPressColumn.set(column);
-    m_lastPressItem.set(item);
-    m_lastPressDeviceType = deviceType;
-}
-
-// Which of this row's cells a press landed on. Walks up from OriginalSource to the cell wrapper
-// Grid, whose Tag carries the owning column (set in RebuildCells). Once the row itself has focus
-// a press can arrive with the row as OriginalSource and no tagged cell on the chain, so fall back
-// to hit-testing this row's subtree.
-winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
-    const winrt::IInspectable& originalSource,
-    const winrt::Point& hostPoint)
-{
-    auto const source = originalSource.try_as<winrt::DependencyObject>();
-    if (!TableViewDetails::IsOwnRequestSource(source, *this))
-    {
-        return nullptr;
-    }
-
-    // Only a direct child of our cells host can identify a column. Application content can have
-    // its own Tag, including one naming another column in this table.
-    if (auto const cell = FindOwnCellInternal(source, false /* requireExact */))
-    {
-        return GetCellOwningColumn(cell);
-    }
-
-    for (auto const& hit : winrt::VisualTreeHelper::FindElementsInHostCoordinates(hostPoint, *this))
-    {
-        if (!TableViewDetails::IsOwnRequestSource(hit, *this))
-        {
-            return nullptr;
-        }
-
-        if (auto const cell = FindOwnCellInternal(hit, false /* requireExact */))
-        {
-            return GetCellOwningColumn(cell);
-        }
-    }
-
-    return nullptr;
 }

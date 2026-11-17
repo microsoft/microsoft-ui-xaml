@@ -122,6 +122,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // A column far wider than its short text leaves a large slice of the wrapper with no
                 // TextBlock over it, which is exactly the area that used to be dead.
                 tableView = CreateTableViewWithColumns(columns: new[] { ("Name", new GridLength(320.0, GridUnitType.Pixel)) });
+                // Left-aligned so the TextBlock is only as wide as its text, as the former text column's was.
+                ((TableViewTemplateColumn)tableView.Columns[0]).CellTemplate = (DataTemplate)XamlReader.Load(
+                    "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                    "<TextBlock Text='{Binding Name}' HorizontalAlignment='Left' VerticalAlignment='Center' Padding='8,4,8,4'/>" +
+                    "</DataTemplate>");
                 LoadContent(tableView);
             });
 
@@ -131,8 +136,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var row = RequireFirstRow(tableView);
                 var wrapper = GetRowCell(row, 0);
-                var text = GetCellContent(wrapper) as FrameworkElement;
-                Verify.IsNotNull(text, "The cell wrapper should host a generated cell element.");
+                var text = FindVisualChildrenByType<TextBlock>(wrapper).FirstOrDefault();
+                Verify.IsNotNull(text, "The cell wrapper should host the template's TextBlock.");
 
                 Verify.IsGreaterThan(wrapper.ActualWidth, text.ActualWidth + 40.0,
                     "Precondition: the cell must be meaningfully wider than its text, or there is no dead area to probe.");
@@ -218,7 +223,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableViewWithColumns(MakeManyItems(200), height: 200);
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -271,7 +276,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewWithColumns(MakeManyItems(6), height: 400);
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -332,7 +337,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -390,7 +395,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("C", new GridLength(120.0, GridUnitType.Pixel)),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 after = new Button { Content = "After" };
                 var panel = new StackPanel();
                 panel.Children.Add(tableView);
@@ -451,7 +456,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("C", new GridLength(120.0, GridUnitType.Pixel)),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 after = new Button { Content = "After" };
                 var panel = new StackPanel();
                 panel.Children.Add(tableView);
@@ -516,7 +521,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -601,7 +606,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -687,7 +692,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableViewWithColumns(source, height: 200);
                 // Headers hidden: the body is the table's tab stop.
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = new Button { Content = "Before" };
                 var panel = new StackPanel();
                 panel.Children.Add(before);
@@ -935,7 +940,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Role", new GridLength(150.0, GridUnitType.Pixel)),
                 });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 (_, before, panel) = LoadFocusFixture(tableView);
             });
             SettleLayout(tableView);
@@ -990,7 +995,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a one-row, headers-hidden table left at cell level stays reachable by Tab after IsReadOnly makes every cell inactive.")]
+        [TestProperty("Description", "Verifies a one-row, headers-hidden table left at cell level stays reachable by Tab after every cell becomes inactive.")]
         public void VerifyCellLevelRowWithNoActionableCellStaysTabStop()
         {
             TableView tableView = null;
@@ -1000,7 +1005,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewWithColumns(new List<Person> { new Person { Name = "Solo", Role = "Only" } }, height: 200);
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
-                tableView.IsReadOnly = false;
+                MakeCellsActionable(tableView);
                 before = LoadFocusFixture(tableView).Before;
             });
             SettleLayout(tableView);
@@ -1013,7 +1018,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
             RunOnUIThread.Execute(() => Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: Before takes focus."));
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() => tableView.IsReadOnly = true);
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var column in tableView.Columns)
+                {
+                    column.CellContextFlyout = null;
+                }
+            });
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
@@ -1036,54 +1047,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewCellContentTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies generated text cells are vertically centred and trim rather than wrap.")]
-        public void VerifyGeneratedTextCellMetrics()
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                // Row 0 is short, row 1 is far too long for the column. Comparing the two isolates
-                // trimming from every other height contributor.
-                var items = new List<Person>
-                {
-                    new Person { Name = "Al", Role = "R" },
-                    new Person { Name = VeryLongText, Role = "R" },
-                };
-
-                tableView = CreateTableViewWithColumns(items, columns: new[] { ("Name", new GridLength(90.0, GridUnitType.Pixel)) });
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var rows = GetRealizedRows(tableView);
-                Verify.IsGreaterThan(rows.Count, 1, "Both rows should be realized.");
-
-                var shortText = GetCellContent(GetRowCell(rows[0], 0)) as TextBlock;
-                var longText = GetCellContent(GetRowCell(rows[1], 0)) as TextBlock;
-                Verify.IsNotNull(shortText, "A text column should generate a TextBlock.");
-                Verify.IsNotNull(longText, "A text column should generate a TextBlock.");
-
-                Verify.AreEqual(VerticalAlignment.Center, longText.VerticalAlignment,
-                    "Cell text is vertically centred within the row for the standard grid look.");
-                Verify.AreEqual(TextTrimming.CharacterEllipsis, longText.TextTrimming,
-                    "Cell text must trim with an ellipsis rather than wrap.");
-                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Normal.Weight, longText.FontWeight.Weight,
-                    "Cell text uses the Fluent body weight.");
-
-                // The point of CharacterEllipsis: without it the over-long value wraps and grows the
-                // row, so every row with long text becomes a different height and the table stops
-                // looking like a grid.
-                Log.Comment($"Short cell height {shortText.ActualHeight}; long cell height {longText.ActualHeight}.");
-                Verify.AreEqual(shortText.ActualHeight, longText.ActualHeight,
-                    "A value too wide for its column must be trimmed to one line, not wrapped onto several.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies FontWeight set on the TableView reaches generated text cells.")]
         public void VerifyTableViewFontWeightReachesTextCells()
         {
@@ -1101,8 +1064,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var text = GetCellContent(GetRowCell(RequireFirstRow(tableView), 0)) as TextBlock;
-                Verify.IsNotNull(text, "A text column should generate a TextBlock.");
+                var text = GetCellTextBlock(GetRowCell(RequireFirstRow(tableView), 0));
                 Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, text.FontWeight.Weight,
                     "A text cell must not set a local FontWeight that blocks the TableView's value.");
             });
@@ -1154,13 +1116,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewRowRecyclingTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies recycled text and template cells show the values of the items they now represent.")]
+        [TestProperty("Description", "Verifies recycled text-template and template cells show the values of the items they now represent.")]
         public void VerifyRecycledCellsShowNewItemValues()
         {
-            // Both column types are checked in one table because they reach their content by genuinely
-            // different routes - a Text binding set through BindingOperations on the TextBlock, versus a
-            // Content binding sourced from the cell wrapper - so a regression in one would not break the
-            // other. Category 3 covers the third route, an app-authored GenerateElementCore override.
+            // Both template columns are checked in one table: the text template's TextBlock and the
+            // presenter's inherited DataContext. Category 3 covers the other route, an app-authored
+            // GenerateElementCore override.
             TableView tableView = null;
             List<Person> items = null;
 
@@ -1199,8 +1160,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         sawRecycledItem = true;
                     }
 
-                    var text = GetCellContent(GetRowCell(row, 0)) as TextBlock;
-                    Verify.IsNotNull(text, "The text column should generate a TextBlock.");
+                    var text = GetCellTextBlock(GetRowCell(row, 0));
                     Verify.AreEqual(item.Name, text.Text,
                         "A recycled text cell must show the value of the item its row now represents.");
 
