@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
-    TabularShaping — the shared shaping substrate.
+    TabularShaping — helpers shared by TableView's row adapters.
 
-    ShapingHelpers is consumed by three components (TableViewShapingSource/TableView_Sort/
-    GroupedSourceAdapter), so it is build-owned here rather than by any one
-    of them.
+    ShapingHelpers (collection reading, value keys, the group contract) and RowExpansionModel are
+    consumed by GroupedSourceAdapter, HierarchicalSourceAdapter and TableView, so they are
+    build-owned here rather than by any one of them.
 
-    SortDirection.idl is here for the same reason: the enum is named by TableViewShapingSource,
-    TableViewColumn and TableViewSortingEventArgs, so no single consumer should own it.
+    SortDirection.idl is here for the same reason: the enum is named by TableViewColumn and
+    TableViewSortingEventArgs, so no single consumer should own it.
 
     Consumers include it as "ShapingHelpers.h"; this file's AdditionalIncludeDirectories makes
     that resolve for every project that imports it.
@@ -29,16 +29,11 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingDescriptions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingPipeline.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingRevoke.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingHelpers.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ShapingDescriptions.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ShapingPipeline.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel.cpp" />
   </ItemGroup>
   <ItemGroup>

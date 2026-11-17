@@ -156,10 +156,8 @@ private:
     // Subscriptions to XAML's ItemsSourceView are held as raw tokens, not auto-revokers.
     //
     // Teardown is guaranteed on the owning UI thread: every strong owner of this provider is a
-    // ReferenceTracker (TableViewShapingSource, TableView) whose final_release marshals destruction to the
-    // captured DispatcherQueue. So the destructor revokes the subscription directly, with no thread
-    // guard. (Before TableViewShapingSource became a ReferenceTracker a GC could destroy this on the
-    // finalizer thread, which is why a guard used to be needed.)
+    // ReferenceTracker (TableView) whose final_release marshals destruction to the captured
+    // DispatcherQueue. So the destructor revokes the subscription directly, with no thread guard.
     //
     // The weak alive-flag is still held: the destructor resets it first, so a notification that
     // races teardown becomes a no-op under the weak lock -- GC / re-entrancy safety, not threading.

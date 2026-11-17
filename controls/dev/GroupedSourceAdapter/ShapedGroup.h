@@ -11,8 +11,10 @@
 
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 
-// A bucket produced by shaping: a group key, a stable string identity for that key, and the items
-// that fell into it.
+// A group as TableView's grouped adapter reads it: a group key, a stable string identity for that
+// key, and the group's items. It either wraps a group of the view TableView displays (its items are
+// then that group's own GroupItems) or holds rows TableView computed (a tree's roots and their
+// visible descendants, bucketed by group).
 //
 // It presents itself through ICollectionViewGroup — Group() is the key, GroupItems() the items —
 // because that is the DECLARED contract layer 3 and the grouped adapter consume. The previous
@@ -67,7 +69,10 @@ public:
 
     void GroupKey(winrt::hstring const& value);
     void Key(winrt::IInspectable const& value);
+    // Copies `items` into the group's own vector.
     void SetItems(std::vector<winrt::IInspectable> const& items);
+    // Presents `items` itself, so a change inside it reaches a subscriber directly.
+    void SetItemsSource(winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items);
 
 private:
     winrt::IInspectable m_key{ nullptr };

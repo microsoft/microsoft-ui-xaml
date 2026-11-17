@@ -16,8 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)HierarchicalSourceAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex.cpp" />
   </ItemGroup>
 </Project>

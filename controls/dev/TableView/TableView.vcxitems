@@ -41,7 +41,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowTemplateSelector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewShapingSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowProjection.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCollectionViewGroups.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
@@ -91,7 +91,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewShapingSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowProjection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewCollectionViewGroups.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_CurrentCell.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Grouping.cpp" />

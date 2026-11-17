@@ -10,9 +10,8 @@
 // ContentControl is used rather than reflection because it is the same evaluator the cells use,
 // so a path that displays also sorts - including indexers and dotted paths.
 //
-// Shared by both sort front-ends: TableView turns a column's SortMemberPath into a key selector,
-// and TableViewShapingSource turns the path handed to the fluent Sort verb into the same thing. One
-// evaluator means the two front-ends cannot disagree about what a path means.
+// TableView reads ItemKeyPath and ParentKeyPath through it, so a tree's keys resolve exactly like
+// the cells' bindings.
 //
 // Not thread-safe and UI-thread affine (it drives the binding engine). Reuse one instance per
 // path - EnsureBinding rebinds only when the path changes, so repeated Resolve calls on the same

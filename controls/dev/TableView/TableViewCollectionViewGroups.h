@@ -6,58 +6,69 @@
 #include "pch.h"
 #include "common.h"
 
+#include <functional>
 #include <memory>
-
-class TableViewShapingSource;
 #include <unordered_map>
-#include <unordered_set>
+#include <vector>
 
-// Presents an ICollectionView's CollectionGroups through the GroupBy of the TableViewShapingSource
-// the control projects it with: an item's group key is the Group of the ICollectionViewGroup holding
-// it (or that Group's "Key" value), and group order follows the view (each group's items are
-// contiguous in the flat view, so the default SortGroups(None) keeps the view's order). The view
-// stays the owner of its grouping. A group's identity derives from its key value, not the group
-// object, so expansion state survives a view that recreates its groups on every recompute.
+class ShapedGroup;
+
+// Presents an ICollectionView's CollectionGroups in the group contract GroupedSourceAdapter reads.
+// Each view group is wrapped in a ShapedGroup whose items ARE the view group's GroupItems, so a change
+// inside a group reaches the adapter directly; the wrapper list follows CollectionGroups changes.
+// The view stays the owner of its grouping and its group order.
+//
+// A group is identified by its key value (the Group object's "Key" property, the IGrouping<K,T>
+// idiom, else the Group object), not by the group object, so expansion state survives a view that
+// recreates its groups on every recompute (CollectionViewSource does).
 class TableViewCollectionViewGroups final : public std::enable_shared_from_this<TableViewCollectionViewGroups>
 {
 public:
     // Null when the view is not grouped (CollectionGroups is null).
     static std::shared_ptr<TableViewCollectionViewGroups> TryCreate(winrt::Microsoft::UI::Xaml::Data::ICollectionView const& view);
 
-    explicit TableViewCollectionViewGroups(
-        winrt::Microsoft::UI::Xaml::Data::ICollectionView const& view,
-        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& groups);
+    explicit TableViewCollectionViewGroups(winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& groups);
     ~TableViewCollectionViewGroups();
 
-    // Declares the grouping on `source` (throws what GroupBy throws) and then follows CollectionGroups changes.
-    void Attach(winrt::com_ptr<::TableViewShapingSource> const& source);
+    // Reads the groups, then follows CollectionGroups changes.
+    void Start();
+
+    // The wrapped groups, in the view's group order. The vector object is stable.
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& Groups() const noexcept { return m_wrappers; }
+
+    struct GroupInfo
+    {
+        winrt::hstring Identity;
+        winrt::IInspectable Key{ nullptr };
+        winrt::IInspectable Group{ nullptr };
+    };
+    std::vector<GroupInfo> CurrentGroups() const;
+
+    // The identity a group with this key has.
+    static winrt::hstring IdentityForKey(winrt::IInspectable const& key);
+    // The identity of the group that holds `item`; empty when no group holds it.
+    winrt::hstring GroupIdentityForItem(winrt::IInspectable const& item);
+    // A view may move items between its groups without replacing a group; re-read membership.
+    void InvalidateItemIdentities() noexcept { m_identityByItemValid = false; }
+
+    // Raised after the wrapped groups changed (a group added, removed or replaced).
+    void SetChangedHandler(std::function<void()> handler) { m_changed = std::move(handler); }
 
 private:
-    struct Entry
-    {
-        winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup Group{ nullptr };
-        uint32_t Index{};
-        winrt::IInspectable Key{ nullptr };
-    };
+    void Refresh();
+    void OnGroupsChanged();
 
-    winrt::IInspectable KeyFor(winrt::IInspectable const& item);
-    winrt::hstring IdentityFor(winrt::IInspectable const& key) const;
-    winrt::IInspectable TryFind(uintptr_t address) const;
-    void Rebuild();
-    void OnGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change);
-    bool TryRefreshSource();
-
-    winrt::Microsoft::UI::Xaml::Data::ICollectionView m_view{ nullptr };
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_groups{ nullptr };
     winrt::event_token m_groupsChangedToken{};
-    ::TableViewShapingSource* m_source{};
-    std::shared_ptr<bool const> m_sourceDestroyed{};
-    // Keyed by canonical IUnknown address. An entry is trusted only after re-reading its slot,
-    // so a stale map is detected without depending on event handler order.
-    std::unordered_map<uintptr_t, Entry> m_entries{};
-    // View items that no group held at the last rebuild; they share one fallback group.
-    std::unordered_set<uintptr_t> m_ungrouped{};
-    winrt::IInspectable m_ungroupedKey{ winrt::box_value(winrt::hstring{}) };
-    bool m_dirty{ true };
-    bool m_refreshQueued{ false };
+    winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_wrappers{
+        winrt::single_threaded_observable_vector<winrt::IInspectable>() };
+    // Reused by identity, so a group's wrapper (and its expansion state) outlives a recompute.
+    std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_wrapperByIdentity{};
+    std::vector<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>> m_wrappedItems{};
+    // Item address -> identity of the group holding it, built on demand.
+    std::unordered_map<uintptr_t, winrt::hstring> m_identityByItem{};
+    bool m_identityByItemValid{ false };
+    std::function<void()> m_changed{};
+    bool m_refreshing{ false };
+    bool m_refreshPending{ false };
 };

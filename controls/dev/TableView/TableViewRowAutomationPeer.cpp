@@ -8,7 +8,6 @@
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
-#include "TableViewShapingSource.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
@@ -42,7 +41,7 @@ namespace
 
     bool TryGetGroupedRowSetMetadata(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
     {
-        if (!tableImpl || rowIndex < 0 || !tableImpl->IsTableViewShapingSourceGrouped())
+        if (!tableImpl || rowIndex < 0 || !tableImpl->IsGroupedRowSource())
         {
             return false;
         }
@@ -953,7 +952,7 @@ bool TableViewRowAutomationPeer::TryGetSiblingPosition(int32_t& positionInSet, i
     auto const tableViewImpl = winrt::get_self<TableView>(tableView);
 
     TableViewRowInfo info{};
-    if (!tableViewImpl->TryGetTableViewShapingSourceRowInfo(index, info) ||
+    if (!tableViewImpl->TryGetRowInfo(index, info) ||
         info.Kind != TableViewRowKind::Data ||
         info.SizeOfSet == 0)
     {

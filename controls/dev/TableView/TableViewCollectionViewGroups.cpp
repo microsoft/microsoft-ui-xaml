@@ -4,14 +4,13 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewCollectionViewGroups.h"
-#include "TableViewShapingSource.h"
+#include "ShapedGroup.h"
+#include "ShapingHelpers.h"
 #include "TVDiag.h"
 
 #include <cwchar>
 #include <optional>
 #include <string>
-
-#include <winrt/Microsoft.UI.Dispatching.h>
 
 namespace
 {
@@ -26,8 +25,13 @@ namespace
 
     // The group's key value when its Group object exposes one as a "Key" property (the IGrouping<K,T>
     // idiom, and CollectionViewSource's computed groups), else the Group object itself.
-    winrt::IInspectable GroupKey(winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup const& group)
+    winrt::IInspectable GroupKey(winrt::IInspectable const& groupObject)
     {
+        auto const group = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>();
+        if (!group)
+        {
+            return groupObject;
+        }
         auto key = group.Group();
         if (!key)
         {
@@ -93,47 +97,6 @@ namespace
         // The type is part of the identity, so 1 and "1" stay distinct groups.
         return winrt::hstring{ L"cvgroup:v" + std::to_wstring(static_cast<int>(type)) + L":" + text };
     }
-
-    // A view may recreate its group objects on every recompute (CollectionViewSource shaping does), so a
-    // group is identified by its key value rather than by the group object's address. Expansion state
-    // follows the identity, so a collapsed group stays collapsed across a Refresh.
-    winrt::hstring KeyIdentity(winrt::IInspectable const& key)
-    {
-        if (auto identity = ScalarIdentity(key))
-        {
-            return *identity;
-        }
-
-        // A computed group exposes its key as a "Key" property (the IGrouping<K,T> idiom).
-        if (auto const provider = key.try_as<winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider>())
-        {
-            try
-            {
-                if (auto const property = provider.GetCustomProperty(L"Key"); property && property.CanRead())
-                {
-                    auto const value = property.GetValue(key);
-                    if (!value)
-                    {
-                        return L"cvgroup:null";
-                    }
-                    if (auto identity = ScalarIdentity(value))
-                    {
-                        return *identity;
-                    }
-                    wchar_t buffer[48];
-                    swprintf_s(buffer, L"cvgroup:k%p", reinterpret_cast<void*>(CanonicalAddress(value)));
-                    return winrt::hstring{ buffer };
-                }
-            }
-            catch (...)
-            {
-            }
-        }
-
-        wchar_t buffer[48];
-        swprintf_s(buffer, L"cvgroup:%p", reinterpret_cast<void*>(CanonicalAddress(key)));
-        return winrt::hstring{ buffer };
-    }
 }
 
 std::shared_ptr<TableViewCollectionViewGroups> TableViewCollectionViewGroups::TryCreate(
@@ -148,13 +111,11 @@ std::shared_ptr<TableViewCollectionViewGroups> TableViewCollectionViewGroups::Tr
     {
         return nullptr;
     }
-    return std::make_shared<TableViewCollectionViewGroups>(view, groups);
+    return std::make_shared<TableViewCollectionViewGroups>(groups);
 }
 
 TableViewCollectionViewGroups::TableViewCollectionViewGroups(
-    winrt::Microsoft::UI::Xaml::Data::ICollectionView const& view,
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& groups) :
-    m_view(view),
     m_groups(groups)
 {
 }
@@ -173,184 +134,210 @@ TableViewCollectionViewGroups::~TableViewCollectionViewGroups()
     }
 }
 
-void TableViewCollectionViewGroups::Attach(winrt::com_ptr<::TableViewShapingSource> const& source)
+void TableViewCollectionViewGroups::Start()
 {
-    auto self = shared_from_this();
-    source->GroupBy(
-        [self](winrt::IInspectable const& item) -> winrt::IInspectable
-        {
-            return self->KeyFor(item);
-        },
-        [self](winrt::IInspectable const& key) -> winrt::hstring
-        {
-            return self->IdentityFor(key);
-        });
+    Refresh();
 
-    // Not a strong ref: the source holds this object through the selectors above.
-    m_source = source.get();
-    m_sourceDestroyed = source->DestroyedFlag();
-    std::weak_ptr<TableViewCollectionViewGroups> weakSelf = self;
+    std::weak_ptr<TableViewCollectionViewGroups> weakSelf = weak_from_this();
     m_groupsChangedToken = m_groups.VectorChanged(
         [weakSelf](winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const&,
-            winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+            winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const&)
         {
             if (auto strongSelf = weakSelf.lock())
             {
-                strongSelf->OnGroupsChanged(args.CollectionChange());
+                strongSelf->OnGroupsChanged();
             }
         });
 }
 
-winrt::IInspectable TableViewCollectionViewGroups::KeyFor(winrt::IInspectable const& item)
+// A view may recreate its group objects on every recompute (CollectionViewSource shaping does), so a
+// group is identified by its key value rather than by the group object's address.
+winrt::hstring TableViewCollectionViewGroups::IdentityForKey(winrt::IInspectable const& key)
 {
-    bool rebuilt = false;
-    if (m_dirty)
+    if (!key)
     {
-        Rebuild();
-        rebuilt = true;
+        return L"cvgroup:null";
+    }
+    if (auto identity = ScalarIdentity(key))
+    {
+        return *identity;
     }
 
-    auto const address = CanonicalAddress(item);
-    if (!address)
+    // A computed group exposes its key as a "Key" property (the IGrouping<K,T> idiom).
+    if (auto const provider = key.try_as<winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider>())
     {
-        return m_ungroupedKey;
-    }
-    if (auto key = TryFind(address))
-    {
-        return key;
-    }
-
-    // A miss is either an item no group holds, or a change the map has not seen yet.
-    if (!rebuilt && !m_ungrouped.contains(address))
-    {
-        Rebuild();
-        if (auto key = TryFind(address))
+        try
         {
-            return key;
-        }
-    }
-    return m_ungroupedKey;
-}
-
-winrt::IInspectable TableViewCollectionViewGroups::TryFind(uintptr_t address) const
-{
-    if (!address)
-    {
-        return nullptr;
-    }
-    auto const found = m_entries.find(address);
-    if (found == m_entries.end())
-    {
-        return nullptr;
-    }
-
-    auto const& entry = found->second;
-    auto const items = entry.Group.GroupItems();
-    if (!items || entry.Index >= items.Size() || CanonicalAddress(items.GetAt(entry.Index)) != address)
-    {
-        return nullptr;
-    }
-    return entry.Key;
-}
-
-winrt::hstring TableViewCollectionViewGroups::IdentityFor(winrt::IInspectable const& key) const
-{
-    if (!key || winrt::get_abi(key) == winrt::get_abi(m_ungroupedKey))
-    {
-        return L"cvgroup:ungrouped";
-    }
-    return KeyIdentity(key);
-}
-
-void TableViewCollectionViewGroups::Rebuild()
-{
-    m_dirty = false;
-    m_entries.clear();
-    m_ungrouped.clear();
-
-    uint32_t const groupCount = m_groups.Size();
-    for (uint32_t g = 0; g < groupCount; ++g)
-    {
-        auto const group = m_groups.GetAt(g).try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>();
-        if (!group)
-        {
-            continue;
-        }
-        auto const items = group.GroupItems();
-        if (!items)
-        {
-            continue;
-        }
-        auto const key = GroupKey(group);
-        uint32_t const itemCount = items.Size();
-        for (uint32_t i = 0; i < itemCount; ++i)
-        {
-            if (auto const address = CanonicalAddress(items.GetAt(i)))
+            if (auto const property = provider.GetCustomProperty(L"Key"); property && property.CanRead())
             {
-                m_entries.try_emplace(address, Entry{ group, i, key });
+                auto const value = property.GetValue(key);
+                if (!value)
+                {
+                    return L"cvgroup:null";
+                }
+                if (auto identity = ScalarIdentity(value))
+                {
+                    return *identity;
+                }
+                wchar_t buffer[48];
+                swprintf_s(buffer, L"cvgroup:k%p", reinterpret_cast<void*>(CanonicalAddress(value)));
+                return winrt::hstring{ buffer };
             }
         }
-    }
-
-    uint32_t const viewCount = m_view.Size();
-    for (uint32_t i = 0; i < viewCount; ++i)
-    {
-        auto const address = CanonicalAddress(m_view.GetAt(i));
-        if (address && !m_entries.contains(address))
+        catch (...)
         {
-            m_ungrouped.insert(address);
         }
     }
+
+    wchar_t buffer[48];
+    swprintf_s(buffer, L"cvgroup:%p", reinterpret_cast<void*>(CanonicalAddress(key)));
+    return winrt::hstring{ buffer };
 }
 
-void TableViewCollectionViewGroups::OnGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change)
+std::vector<TableViewCollectionViewGroups::GroupInfo> TableViewCollectionViewGroups::CurrentGroups() const
 {
-    m_dirty = true;
+    std::vector<GroupInfo> groups;
+    groups.reserve(m_wrappers.Size());
+    for (auto const& wrapper : m_wrappers)
+    {
+        auto const* const group = winrt::get_self<ShapedGroup>(wrapper.as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>());
+        groups.push_back({ group->StableGroupIdentity(), group->Group(), wrapper });
+    }
+    return groups;
+}
 
-    // A view may report a group's items as removed before it drops the group itself (CollectionViewSource
-    // does), so the rows last read from it can be stale; it is consistent again once the group is gone.
-    if (change == winrt::Windows::Foundation::Collections::CollectionChange::ItemRemoved && TryRefreshSource())
+winrt::hstring TableViewCollectionViewGroups::GroupIdentityForItem(winrt::IInspectable const& item)
+{
+    if (!m_identityByItemValid)
     {
-        return;
-    }
-    if (m_refreshQueued)
-    {
-        return;
-    }
-
-    // Other group changes need not move any item (an empty group, a re-keyed group), so regroup once the
-    // view has finished applying them; queued, so a burst of group changes regroups once.
-    auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
-    if (!queue)
-    {
-        return;
-    }
-    std::weak_ptr<TableViewCollectionViewGroups> weakSelf = weak_from_this();
-    m_refreshQueued = queue.TryEnqueue([weakSelf]()
-    {
-        if (auto const strongSelf = weakSelf.lock())
+        m_identityByItem.clear();
+        for (auto const& wrapper : m_wrappers)
         {
-            strongSelf->m_refreshQueued = false;
-            strongSelf->TryRefreshSource();
+            auto const* const group = winrt::get_self<ShapedGroup>(wrapper.as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>());
+            auto const identity = group->StableGroupIdentity();
+            for (auto const& member : group->GroupItems())
+            {
+                if (auto const address = CanonicalAddress(member))
+                {
+                    m_identityByItem.try_emplace(address, identity);
+                }
+            }
         }
-    });
+        m_identityByItemValid = true;
+    }
+
+    auto const found = m_identityByItem.find(CanonicalAddress(item));
+    return found != m_identityByItem.end() ? found->second : winrt::hstring{};
 }
 
-bool TableViewCollectionViewGroups::TryRefreshSource()
+void TableViewCollectionViewGroups::OnGroupsChanged()
 {
-    if (!m_source || !m_sourceDestroyed || *m_sourceDestroyed)
-    {
-        return true;
-    }
     try
     {
-        m_source->Refresh();
-        return true;
+        Refresh();
     }
     catch (...)
     {
-        TVDiag::LogRetailF(L"[TableView] Regrouping after a CollectionGroups change failed (HRESULT 0x%08X).",
+        TVDiag::LogRetailF(L"[TableView] Reading the view's CollectionGroups failed (HRESULT 0x%08X).",
             static_cast<unsigned int>(winrt::to_hresult()));
-        return false;
+    }
+}
+
+void TableViewCollectionViewGroups::Refresh()
+{
+    // A change raised while the wrappers are being replaced is applied once they are.
+    if (m_refreshing)
+    {
+        m_refreshPending = true;
+        return;
+    }
+
+    auto const keepAlive = shared_from_this();
+    bool changed = false;
+    do
+    {
+        m_refreshing = true;
+        m_refreshPending = false;
+        auto const done = wil::scope_exit([this]() noexcept { m_refreshing = false; });
+
+        std::vector<winrt::IInspectable> wrappers;
+        std::vector<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>> wrappedItems;
+        std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> byIdentity;
+
+        uint32_t const groupCount = m_groups.Size();
+        wrappers.reserve(groupCount);
+        wrappedItems.reserve(groupCount);
+        for (uint32_t g = 0; g < groupCount; ++g)
+        {
+            auto const groupObject = m_groups.GetAt(g);
+            if (!groupObject)
+            {
+                continue;
+            }
+
+            auto const key = GroupKey(groupObject);
+            auto identity = IdentityForKey(key);
+            // Two groups with one key stay two groups.
+            for (uint32_t suffix = 2; byIdentity.contains(identity); ++suffix)
+            {
+                identity = IdentityForKey(key) + L"#" + winrt::to_hstring(suffix);
+            }
+
+            winrt::com_ptr<ShapedGroup> wrapper;
+            if (auto const found = m_wrapperByIdentity.find(identity); found != m_wrapperByIdentity.end())
+            {
+                wrapper = found->second;
+            }
+            else
+            {
+                wrapper = winrt::make_self<ShapedGroup>(key, identity);
+            }
+
+            winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> items{ nullptr };
+            if (auto const viewGroup = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
+            {
+                items = viewGroup.GroupItems();
+            }
+            if (!items)
+            {
+                items = groupObject.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>();
+            }
+            if (items)
+            {
+                wrapper->SetItemsSource(items);
+            }
+            else
+            {
+                // A group that is only enumerable is read once; the next CollectionGroups change re-reads it.
+                wrapper->SetItemsSource(nullptr);
+                wrapper->SetItems(ShapingHelpers::EnumerateInspectableItems(groupObject));
+            }
+
+            wrappedItems.push_back(wrapper->GroupItems());
+            wrappers.push_back(wrapper.as<winrt::IInspectable>());
+            byIdentity.emplace(identity, wrapper);
+        }
+
+        // Unchanged wrappers over unchanged item collections need no Reset.
+        bool same = wrappers.size() == m_wrappers.Size() && wrappedItems == m_wrappedItems;
+        for (uint32_t i = 0; same && i < wrappers.size(); ++i)
+        {
+            same = wrappers[i] == m_wrappers.GetAt(i);
+        }
+
+        m_wrapperByIdentity = std::move(byIdentity);
+        m_wrappedItems = std::move(wrappedItems);
+        m_identityByItemValid = false;
+        if (!same)
+        {
+            m_wrappers.ReplaceAll(wrappers);
+            changed = true;
+        }
+    } while (m_refreshPending);
+
+    if (changed && m_changed)
+    {
+        auto const handler = m_changed;
+        handler();
     }
 }
