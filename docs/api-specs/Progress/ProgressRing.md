@@ -59,7 +59,7 @@ example code with each description. The general format is:
 
 <!-- As an example of this section, see the Examples section for the PasswordBox control 
 (https://docs.microsoft.com/windows/uwp/design/controls-and-patterns/password-box#examples). -->
-[Please see this table of current ProgressBar and ProgressRing modes and states.](https://github.com/microsoft/microsoft-ui-xaml-specs/blob/user/kathyang/progress-styles/active/progress-styles/progress-styles-tables.md)
+[Please see this table of current ProgressBar and ProgressRing modes and states.](progress-styles-tables.md)
 
 The following examples show how to use the IsIndeterminate property to change the mode of the ProgressRing and the Value property to change the proportionate amount indicated. 
 
@@ -123,7 +123,7 @@ ProgressRing should indicate progress based on the Value, relative to the Minimu
 |:--|:-:|
 | Minimum=10, Maximum=18, and Value=16| ![](images/ProgressRing-determinate.PNG) |
 
-*Note that the designs for ProgressRing are not finalized. See [here](https://github.com/microsoft/microsoft-ui-xaml-specs/blob/user/chigy/ControlUpdates/active/ControlUpdates/images/Progress.png) for early designs. 
+*Note that the designs for ProgressRing are not finalized.*
 
 # Remarks
 <!-- Explanation and guidance that doesn't fit into the Examples section. -->

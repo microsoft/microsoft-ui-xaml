@@ -1,41 +1,17 @@
-#include "NativeSupport.h"
-#include <detours.h>
+#include "StartupSession.h"
 #include <shellapi.h>
 #include <shobjidl.h>
 #include <appmodel.h>
 #include <wrl/client.h>
 #include <format>
 #include <map>
-#include <memory>
+#include <array>
 
 using Microsoft::WRL::ComPtr;
 
 namespace
 {
     using Arguments = std::map<std::wstring, std::wstring>;
-
-    struct DebugContext
-    {
-        DWORD size;
-        DWORD version;
-        FILETIME notBefore;
-        DWORD sessionId;
-        volatile LONG claimedPid;
-        volatile LONG error;
-        wchar_t executable[profiler::MaxPathCharacters];
-        wchar_t dll[profiler::MaxPathCharacters];
-        wchar_t result[profiler::MaxPathCharacters];
-        wchar_t package[profiler::MaxPathCharacters];
-    };
-
-    struct UnmapView
-    {
-        void operator()(DebugContext* view) const noexcept
-        {
-            UnmapViewOfFile(view);
-        }
-    };
-    using MappingView = std::unique_ptr<DebugContext, UnmapView>;
 
     struct PackageLaunchState
     {
@@ -44,8 +20,6 @@ namespace
         std::wstring package;
         ComPtr<IPackageDebugSettings> debugging;
         ComPtr<IApplicationActivationManager> activation;
-        profiler::Handle mapping;
-        MappingView context;
 
         HRESULT Close()
         {
@@ -83,13 +57,38 @@ namespace
 
     // A process ID can be reused after the process exits; the ID and its creation time name one process.
     bool SaveResult(const std::wstring& output, DWORD pid, const FILETIME& created, DWORD error,
-        std::wstring_view stage, std::wstring_view package = {}, std::wstring_view aumid = {})
+        std::wstring_view stage, std::wstring_view package = {}, std::wstring_view aumid = {},
+        const profiler::StartupSession* session = nullptr)
     {
         const auto creation = (static_cast<ULONGLONG>(created.dwHighDateTime) << 32) | created.dwLowDateTime;
+        std::string details;
+        if (session)
+        {
+            details = ",\"activationPid\":" + std::to_string(profiler::ReadState(session->data->claimedPid)) +
+                ",\"processes\":[";
+            bool first = true;
+            for (const auto& entry : session->data->processes)
+            {
+                if (!profiler::ReadState(entry.initialized)) continue;
+                if (!first) details += ',';
+                first = false;
+                const DWORD parentPid = entry.parentIndex < profiler::MaxStartupProcesses ?
+                    static_cast<DWORD>(profiler::ReadState(session->data->processes[entry.parentIndex].pid)) : 0;
+                const auto entryCreated = (static_cast<ULONGLONG>(entry.created.dwHighDateTime) << 32) |
+                    entry.created.dwLowDateTime;
+                details += std::format(
+                    R"({{"pid":{},"parentPid":{},"creationTimeFileTime":{},"helperReady":{},)"
+                    R"("runtimeLoaded":{},"error":{}}})",
+                    profiler::ReadState(entry.pid), parentPid, entryCreated,
+                    profiler::ReadState(entry.helperReady) != 0, profiler::ReadState(entry.runtimeLoaded) != 0,
+                    static_cast<DWORD>(profiler::ReadState(entry.error)));
+            }
+            details += ']';
+        }
         const auto line = std::format(
-            R"({{"schemaVersion":1,"pid":{},"creationTimeFileTime":{},"error":{},)"
-            R"("stage":{},"packageFullName":{},"aumid":{}}})" "\n",
-            pid, creation, error, profiler::Json(stage), profiler::Json(package), profiler::Json(aumid));
+            R"({{"schemaVersion":{},"pid":{},"creationTimeFileTime":{},"error":{},)"
+            R"("stage":{},"packageFullName":{},"aumid":{}{}}})" "\n",
+            session ? 2 : 1, pid, creation, error, profiler::Json(stage), profiler::Json(package), profiler::Json(aumid), details);
         const auto temporary = output + L".tmp";
         {
             profiler::Handle file(CreateFileW(temporary.c_str(), GENERIC_WRITE, 0, nullptr,
@@ -104,28 +103,6 @@ namespace
             }
         }
         return MoveFileExW(temporary.c_str(), output.c_str(), MOVEFILE_WRITE_THROUGH) != FALSE;
-    }
-
-    std::vector<wchar_t> ProfileEnvironment(const Arguments& args, const std::wstring& source,
-        const std::wstring& target, const std::wstring& signal)
-    {
-        const std::pair<const wchar_t*, std::wstring> values[] = {
-            {L"WINUI_PROFILER_EXE", Value(args, L"--exe")},
-            {L"WINUI_PROFILER_SOURCE", source},
-            {L"WINUI_PROFILER_PRIVATE", target},
-            {L"WINUI_PROFILER_LOG", Value(args, L"--log")},
-            {L"WINUI_PROFILER_READY", signal},
-            {L"WINUI_PROFILER_CONTROLS", Value(args, L"--controls")}
-        };
-        std::vector<wchar_t> block;
-        for (const auto& [name, value] : values)
-        {
-            std::wstring entry = std::wstring(name) + L"=" + value;
-            block.insert(block.end(), entry.begin(), entry.end());
-            block.push_back(L'\0');
-        }
-        block.push_back(L'\0');
-        return block;
     }
 
     DWORD ProcessIdArgument(const Arguments& args, const wchar_t* name)
@@ -174,13 +151,16 @@ namespace
         const DWORD pid = ProcessIdArgument(args, L"-p");
         const DWORD tid = ProcessIdArgument(args, L"-tid");
         const auto contextName = Value(args, L"--context");
-        if (!pid || !tid || !contextName.starts_with(L"Local\\WinUIPerfTools.Redirect."))
+        if (!pid || !tid || !contextName.starts_with(L"Local\\WinUIProfiler.Redirect."))
         {
             return ERROR_INVALID_PARAMETER;
         }
-        profiler::Handle mapping(OpenFileMappingW(FILE_MAP_READ | FILE_MAP_WRITE, FALSE,
-            contextName.c_str()));
-        if (!mapping)
+        profiler::StartupSession context;
+        profiler::StartupPayload payload{};
+        payload.version = profiler::StartupProtocolVersion;
+        if (contextName.size() >= ARRAYSIZE(payload.mapping)) return ERROR_INVALID_PARAMETER;
+        wcscpy_s(payload.mapping, contextName.c_str());
+        if (!context.Open(payload))
         {
             const DWORD error = GetLastError();
             // The launch can be cancelled before this callback starts. Resume the callback's thread, without injection.
@@ -188,32 +168,13 @@ namespace
             OutputDebugStringW(L"WinUI profiler: launch context expired; startup helper was not inserted.\n");
             return resumed ? resumed : error;
         }
-        MappingView context{ static_cast<DebugContext*>(MapViewOfFile(mapping.get(),
-            FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(DebugContext))) };
-        if (!context)
-        {
-            const DWORD error = GetLastError();
-            const DWORD resumed = ResumeDebugThread(pid, tid);
-            OutputDebugStringW(L"WinUI profiler: failed to map startup callback configuration.\n");
-            return resumed ? resumed : error;
-        }
-        if (context->size != sizeof(DebugContext) || context->version != profiler::ProtocolVersion ||
-            !wmemchr(context->executable, 0, profiler::MaxPathCharacters) ||
-            !wmemchr(context->dll, 0, profiler::MaxPathCharacters) ||
-            !wmemchr(context->result, 0, profiler::MaxPathCharacters) ||
-            !wmemchr(context->package, 0, profiler::MaxPathCharacters))
-        {
-            const DWORD resumed = ResumeDebugThread(pid, tid);
-            OutputDebugStringW(L"WinUI profiler: invalid startup callback configuration.\n");
-            return resumed ? resumed : ERROR_INVALID_DATA;
-        }
-
         profiler::Handle process(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION |
             PROCESS_VM_READ | PROCESS_VM_WRITE | SYNCHRONIZE, FALSE, pid));
         const DWORD processError = process ? ERROR_SUCCESS : GetLastError();
         profiler::Handle thread(OpenThread(THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, tid));
         const DWORD threadError = thread ? ERROR_SUCCESS : GetLastError();
         DWORD error = ERROR_SUCCESS;
+        bool claimed = false;
         std::wstring actual(profiler::MaxPathCharacters, L'\0');
         DWORD length = static_cast<DWORD>(actual.size());
         FILETIME created{}, exited{}, kernel{}, user{};
@@ -231,7 +192,7 @@ namespace
         {
             error = GetLastError();
         }
-        else if (CompareFileTime(&created, &context->notBefore) < 0 || session != context->sessionId)
+        else if (CompareFileTime(&created, &context.data->notBefore) < 0 || session != context.data->sessionId)
         {
             error = ERROR_INVALID_DATA;
         }
@@ -242,7 +203,7 @@ namespace
         else
         {
             actual.resize(length);
-            if (!profiler::EqualPath(actual, context->executable))
+            if (!profiler::SameFile(actual, context.data->executable) || !profiler::SameProcessUser(process.get()))
             {
                 error = ERROR_BAD_EXE_FORMAT;
             }
@@ -262,19 +223,27 @@ namespace
                 else
                 {
                     package.resize(packageLength - 1);
-                    if (package != context->package)
+                    if (package != context.data->package)
                     {
                         error = ERROR_INVALID_DATA;
                     }
                 }
             }
-            if (!error && InterlockedCompareExchange(&context->claimedPid, static_cast<LONG>(pid), 0) != 0)
+            if (!error && InterlockedCompareExchange(&context.data->claimedPid, static_cast<LONG>(pid), 0) != 0)
             {
                 error = ERROR_ALREADY_EXISTS;
             }
             if (!error)
             {
-                const auto dll = profiler::ImportPath(context->dll);
+                claimed = true;
+                if (!context.Register(process.get(), profiler::NoParent) || !context.CopyPayload(process.get()))
+                {
+                    error = GetLastError();
+                }
+            }
+            if (!error)
+            {
+                const auto dll = profiler::ImportPath(context.data->dll);
                 LPCSTR libraries[] = { dll.c_str() };
                 if (dll.empty() || !DetourUpdateProcessWithDll(process.get(), libraries, 1))
                 {
@@ -288,12 +257,110 @@ namespace
         {
             error = GetLastError();
         }
-        if (!SaveResult(context->result, pid, created, error, L"package_debugger") && !error)
+        if (claimed)
         {
-            error = GetLastError();
+            if (!SaveResult(context.data->result, pid, created, error, L"package_debugger") && !error)
+            {
+                error = GetLastError();
+            }
+            if (error) InterlockedCompareExchange(&context.data->error, static_cast<LONG>(error), 0);
+            InterlockedExchange(&context.data->debuggerComplete, 1);
         }
-        InterlockedCompareExchange(&context->error, static_cast<LONG>(error), ERROR_IO_PENDING);
         return error;
+    }
+
+    DWORD WaitForRuntime(profiler::StartupSession& session, HANDLE changed,
+        PackageLaunchState& packageState, DWORD& pid, std::wstring& stage)
+    {
+        const ULONGLONG started = GetTickCount64();
+        while (GetTickCount64() - started < profiler::StartupTimeoutMs)
+        {
+            const LONG64 activity = profiler::ReadState(session.data->active);
+            if (const LONG error = profiler::ReadState(session.data->error)) return static_cast<DWORD>(error);
+            std::array<bool, profiler::MaxStartupProcesses> alive{};
+            bool anyAlive = false;
+            bool anyRegistered = false;
+            DWORD exitError = ERROR_DLL_INIT_FAILED;
+            for (size_t index = 0; index < alive.size(); ++index)
+            {
+                auto& entry = session.data->processes[index];
+                if (!profiler::ReadState(entry.initialized)) continue;
+                anyRegistered = true;
+                if (packageState.enabled && entry.parentIndex == profiler::NoParent &&
+                    profiler::ReadState(entry.helperReady) && profiler::ReadState(session.data->debuggerComplete))
+                {
+                    const HRESULT result = packageState.Close();
+                    if (FAILED(result))
+                    {
+                        stage = L"package_cleanup";
+                        return static_cast<DWORD>(result);
+                    }
+                }
+                const auto process = reinterpret_cast<HANDLE>(entry.controllerHandle);
+                const DWORD state = WaitForSingleObject(process, 0);
+                if (state == WAIT_TIMEOUT) anyAlive = alive[index] = true;
+                else if (state == WAIT_FAILED) return GetLastError();
+                else
+                {
+                    DWORD code = 0;
+                    if (!GetExitCodeProcess(process, &code)) return GetLastError();
+                    if (code) exitError = code;
+                }
+            }
+            DWORD selected = 0;
+            size_t liveLeaves = 0;
+            for (size_t index = 0; index < alive.size(); ++index)
+            {
+                const auto& entry = session.data->processes[index];
+                if (!alive[index]) continue;
+                bool hasDescendant = false;
+                for (size_t child = 0; child < alive.size(); ++child)
+                {
+                    if (!alive[child]) continue;
+                    DWORD parent = session.data->processes[child].parentIndex;
+                    for (size_t depth = 0; parent < alive.size() && depth < alive.size(); ++depth)
+                    {
+                        if (parent == index) hasDescendant = true;
+                        parent = session.data->processes[parent].parentIndex;
+                    }
+                }
+                if (hasDescendant) continue;
+                ++liveLeaves;
+                if (!profiler::ReadState(entry.runtimeLoaded)) continue;
+                if (selected)
+                {
+                    stage = L"runtime_ambiguous";
+                    return ERROR_MORE_DATA;
+                }
+                selected = static_cast<DWORD>(profiler::ReadState(entry.pid));
+            }
+            // A completed creation must invalidate the snapshot, even after its activity reference is released.
+            if (selected && liveLeaves == 1 && !packageState.enabled)
+            {
+#if defined(PROFILER_STARTUP_SELECTION_TEST)
+                const auto barrier = L"Local\\WinUIProfiler.SelectionTest." +
+                    std::to_wstring(profiler::ReadState(session.data->claimedPid));
+                profiler::Handle snapshot(OpenEventW(EVENT_MODIFY_STATE, FALSE, (barrier + L".snapshot").c_str()));
+                if (snapshot)
+                {
+                    profiler::Handle created(OpenEventW(SYNCHRONIZE, FALSE, (barrier + L".created").c_str()));
+                    if (!created || !SetEvent(snapshot.get())) return GetLastError();
+                    const DWORD ready = WaitForSingleObject(created.get(), 10000);
+                    if (ready != WAIT_OBJECT_0) return ready == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError();
+                }
+#endif
+                if (profiler::StartupActivityCount(activity) == 1 &&
+                    InterlockedCompareExchange64(&session.data->active, 0, activity) == activity)
+                {
+                    if (const LONG error = profiler::ReadState(session.data->error)) return static_cast<DWORD>(error);
+                    pid = selected;
+                    return ERROR_SUCCESS;
+                }
+            }
+            if (anyRegistered && !anyAlive) return exitError;
+            if (WaitForSingleObject(changed, 50) == WAIT_FAILED) return GetLastError();
+        }
+        return ERROR_TIMEOUT;
     }
 
     DWORD Launch(const Arguments& args)
@@ -320,6 +387,7 @@ namespace
         }
         if (exe.size() >= profiler::MaxPathCharacters || source.size() >= profiler::MaxPathCharacters ||
             target.size() >= profiler::MaxPathCharacters || output.size() + 32 >= profiler::MaxPathCharacters ||
+            log.size() + 16 >= profiler::MaxPathCharacters || dll.size() >= profiler::MaxPathCharacters ||
             Value(args, L"--package").size() >= profiler::MaxPathCharacters ||
             (Value(args, L"--controls") != L"0" && Value(args, L"--controls") != L"1") ||
             Value(args, L"--aumid").empty() != Value(args, L"--package").empty())
@@ -336,28 +404,34 @@ namespace
         }
         wchar_t guid[40]{};
         StringFromGUID2(id, guid, ARRAYSIZE(guid));
-        const std::wstring eventName = std::wstring(L"Local\\WinUIPerfTools.Redirect.") + guid;
-        profiler::Handle ready(CreateEventW(nullptr, TRUE, FALSE, eventName.c_str()));
+        const std::wstring eventName = std::wstring(L"Local\\WinUIProfiler.Redirect.") + guid;
+        profiler::Handle ready(CreateEventW(nullptr, FALSE, FALSE, eventName.c_str()));
         if (!ready)
         {
             return GetLastError();
         }
-        auto environment = ProfileEnvironment(args, source, target, eventName);
+        profiler::StartupSession session;
+        const auto contextName = eventName + L".Context";
+        if (!session.Create(contextName))
+        {
+            error = GetLastError();
+            SaveResult(output, 0, {}, error, L"configuration");
+            return error;
+        }
+        wcscpy_s(session.data->executable, exe.c_str());
+        wcscpy_s(session.data->dll, dll.c_str());
+        wcscpy_s(session.data->source, source.c_str());
+        wcscpy_s(session.data->target, target.c_str());
+        wcscpy_s(session.data->log, log.c_str());
+        wcscpy_s(session.data->result, (output + L".debugger.json").c_str());
+        wcscpy_s(session.data->package, Value(args, L"--package").c_str());
+        wcscpy_s(session.data->event, eventName.c_str());
+        session.data->redirectControls = Value(args, L"--controls") == L"1";
         PROCESS_INFORMATION processInfo{};
         const auto aumid = Value(args, L"--aumid");
         PackageLaunchState packageState;
         if (aumid.empty())
         {
-            for (const wchar_t* entry = environment.data(); *entry; entry += wcslen(entry) + 1)
-            {
-                const std::wstring_view pair(entry);
-                const auto equal = pair.find(L'=');
-                if (!SetEnvironmentVariableW(std::wstring(pair.substr(0, equal)).c_str(),
-                    std::wstring(pair.substr(equal + 1)).c_str()))
-                {
-                    error = GetLastError();
-                }
-            }
             STARTUPINFOW startup{};
             startup.cb = sizeof(startup);
             std::wstring command = profiler::Quote(exe);
@@ -392,7 +466,14 @@ namespace
             if (!error)
             {
                 pid = processInfo.dwProcessId;
-                if (ResumeThread(processInfo.hThread) == static_cast<DWORD>(-1))
+                InterlockedExchange(&session.data->claimedPid, static_cast<LONG>(pid));
+                if (!session.Register(processInfo.hProcess, profiler::NoParent) || !session.CopyPayload(processInfo.hProcess))
+                {
+                    error = GetLastError();
+                    stage = L"insert_helper";
+                    TerminateProcess(processInfo.hProcess, error);
+                }
+                else if (ResumeThread(processInfo.hThread) == static_cast<DWORD>(-1))
                 {
                     error = GetLastError();
                 }
@@ -411,40 +492,11 @@ namespace
                 packageState.initialized = true;
                 auto& debugging = packageState.debugging;
                 auto& activation = packageState.activation;
-                auto& context = packageState.context;
                 stage = L"package_debug_settings";
                 hr = CoCreateInstance(CLSID_PackageDebugSettings, nullptr, CLSCTX_INPROC_SERVER,
                     IID_PPV_ARGS(&debugging));
                 packageState.package = Value(args, L"--package");
                 const auto& package = packageState.package;
-                const auto debuggerResult = output + L".debugger.json";
-                const auto contextName = eventName + L".Context";
-                packageState.mapping.reset(CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,
-                    0, sizeof(DebugContext), contextName.c_str()));
-                if (packageState.mapping)
-                {
-                    context.reset(static_cast<DebugContext*>(MapViewOfFile(packageState.mapping.get(),
-                        FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, sizeof(DebugContext))));
-                }
-                if (!context)
-                {
-                    hr = HRESULT_FROM_WIN32(GetLastError());
-                }
-                else
-                {
-                    context->size = sizeof(DebugContext);
-                    context->version = profiler::ProtocolVersion;
-                    context->error = ERROR_IO_PENDING;
-                    GetSystemTimeAsFileTime(&context->notBefore);
-                    if (!ProcessIdToSessionId(GetCurrentProcessId(), &context->sessionId))
-                    {
-                        hr = HRESULT_FROM_WIN32(GetLastError());
-                    }
-                    wcscpy_s(context->executable, exe.c_str());
-                    wcscpy_s(context->dll, dll.c_str());
-                    wcscpy_s(context->result, debuggerResult.c_str());
-                    wcscpy_s(context->package, package.c_str());
-                }
                 // Package debugging limits its command line; keep per-run paths in the owned mapping.
                 const auto command = profiler::Quote(profiler::ShortPath(profiler::ModulePath(nullptr))) +
                     L" --debugger --context " + profiler::Quote(contextName);
@@ -455,7 +507,7 @@ namespace
                 if (SUCCEEDED(hr))
                 {
                     stage = L"package_enable_debugging";
-                    hr = debugging->EnableDebugging(package.c_str(), command.c_str(), environment.data());
+                    hr = debugging->EnableDebugging(package.c_str(), command.c_str(), nullptr);
                     packageState.enabled = SUCCEEDED(hr);
                 }
                 if (SUCCEEDED(hr))
@@ -473,15 +525,15 @@ namespace
                 {
                     error = static_cast<DWORD>(hr);
                 }
-                if (context)
+                if (session.data)
                 {
-                    if (!pid && context->claimedPid > 0)
+                    if (!pid && profiler::ReadState(session.data->claimedPid) > 0)
                     {
-                        pid = static_cast<DWORD>(context->claimedPid);
+                        pid = static_cast<DWORD>(profiler::ReadState(session.data->claimedPid));
                     }
-                    if (context->error != ERROR_SUCCESS && context->error != ERROR_IO_PENDING && !error)
+                    if (profiler::ReadState(session.data->error) && !error)
                     {
-                        error = static_cast<DWORD>(context->error);
+                        error = static_cast<DWORD>(profiler::ReadState(session.data->error));
                         stage = L"package_debugger";
                     }
                 }
@@ -505,36 +557,22 @@ namespace
         }
         if (!error && process)
         {
-            stage = L"helper_ready";
-            const HANDLE handles[] = { ready.get(), process.get() };
-            const DWORD result = WaitForMultipleObjects(ARRAYSIZE(handles), handles, FALSE,
-                profiler::StartupTimeoutMs);
-            if (result == WAIT_OBJECT_0)
+            stage = L"runtime_ready";
+            error = WaitForRuntime(session, ready.get(), packageState, pid, stage);
+            if (!error)
             {
                 stage = L"ready";
-            }
-            else if (result == WAIT_OBJECT_0 + 1)
-            {
-                if (!GetExitCodeProcess(process.get(), &error))
-                {
-                    error = GetLastError();
-                }
-                if (!error)
-                {
-                    error = ERROR_DLL_INIT_FAILED;
-                }
-            }
-            else
-            {
-                error = result == WAIT_TIMEOUT ? ERROR_TIMEOUT : GetLastError();
+                process.reset(OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid));
+                if (!process) error = GetLastError();
             }
         }
-        if (packageState.context && !error && packageState.context->error != ERROR_SUCCESS &&
-            packageState.context->error != ERROR_IO_PENDING)
+        const auto closing = GetTickCount64();
+        while (profiler::StartupActivityCount(profiler::ReadState(session.data->active)) > 1 &&
+            GetTickCount64() - closing < 1000)
         {
-            error = static_cast<DWORD>(packageState.context->error);
-            stage = L"package_debugger";
+            Sleep(1);
         }
+        InterlockedExchange64(&session.data->active, 0);
         // Activation may return before the debugger callback runs (notably under WOW64).
         const HRESULT cleanup = packageState.Close();
         if (FAILED(cleanup) && !error)
@@ -592,9 +630,21 @@ namespace
             error = GetLastError();
             stage = L"process_times";
         }
-        if (!SaveResult(output, pid, created, error, stage, actualPackage, actualAumid))
+        if (!SaveResult(output, pid, created, error, stage, actualPackage, actualAumid, &session))
         {
             return GetLastError();
+        }
+        // Keep the registered process objects, even exited bootstraps, until the consumer owns matching handles.
+        // A missing/crashed consumer cannot leave a permanent native launcher behind.
+        if (!error)
+        {
+            const auto accepted = output + L".accepted";
+            const auto published = GetTickCount64();
+            while (GetFileAttributesW(accepted.c_str()) == INVALID_FILE_ATTRIBUTES &&
+                GetTickCount64() - published < 10000)
+            {
+                Sleep(20);
+            }
         }
         return error;
     }

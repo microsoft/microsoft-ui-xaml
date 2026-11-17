@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
+using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Launch;
@@ -9,7 +11,29 @@ using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Storage;
 using WinUIProfiler.Engine.Target;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Cli;
 using XamlTimeline;
+
+if (args is ["--startup-integration", var nativeDirectory])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Startup integration requires Windows.");
+    await StartupIntegration.RunAsync(Path.GetFullPath(nativeDirectory));
+    return;
+}
+
+if (args is ["--graphics-integration"])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");
+    GraphicsCaptureIntegration.Run();
+    return;
+}
+
+if (args is ["--graphics-probe"])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");
+    GraphicsCaptureIntegration.ExerciseDirect3D();
+    return;
+}
 
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
@@ -40,6 +64,13 @@ try
         writer.Process(6, Event("VirtualizationIsEnabledByLayout", false, observation,
             provider: XamlProvider.XamlDiagnostics));
         writer.Process(7, Event("VirtualizationIsEnabledByLayout", false, observation));
+    }
+
+    using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
+    {
+        connection.Open();
+        Expect(Sql.Scalar(connection, "SELECT COUNT(*) FROM EventDetails WHERE Seq = 1 AND Fields = '{}'") == 1,
+            "Fieldless XAML events must retain an empty JSON object rather than an empty-named null field.");
     }
 
     var objects = SessionFile.ReadObjects(path);
@@ -595,6 +626,84 @@ finally
     }
 }
 
+// The default marker configuration is valid, and "repeats" is only for an app's milestone, as true or false.
+{
+    Expect(MarkerConfig.Default.Milestones.Any(milestone => milestone.Repeats),
+        "The default marker configuration must be valid and have milestones whose event repeats.");
+    foreach (var milestone in new[]
+    {
+        """{ "builtin": "FirstFrameDrawn", "repeats": true }""",
+        """{ "label": "Clicked", "provider": "Contoso.Launch", "event": "Clicked", "from": "launcher", "repeats": false }""",
+        """{ "label": "Frame", "provider": "Contoso.Launch", "event": "Frame", "repeats": "yes" }"""
+    })
+    {
+        ExpectThrows<MarkerConfigException>(() => MarkerConfig.Parse($$"""
+            {
+              "version": 1,
+              "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
+              "milestones": [{{milestone}}]
+            }
+            """), $"Must reject the milestone {milestone}.");
+    }
+
+    Console.WriteLine("Passed: the default marker configuration is valid, and \"repeats\" is only for an app's milestone.");
+}
+
+// Attached to a running app, the first event the recording has of a type the app writes again after its launch need not
+// be the launch's, so its milestone is not reached; recorded from the app's start, it is.
+{
+    var marker = new MarkerProvider("Contoso.Launch", Guid.Parse("0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d"));
+    var repeatsConfig = MarkerConfig.Parse("""
+        {
+          "version": 1,
+          "providers": [{ "name": "Contoso.Launch", "guid": "0f9d6b4e-8c1a-4b7e-a2d3-5e6f7a8b9c0d" }],
+          "milestones": [
+          { "label": "Frame", "provider": "Contoso.Launch", "event": "Frame", "repeats": true },
+          { "label": "Ready", "provider": "Contoso.Launch", "event": "Ready" }
+          ]
+        }
+        """);
+    foreach (var (coverage, reached, notReached) in new[]
+    {
+        (SessionCoverage.Connection, "Ready", "Frame"),
+        (SessionCoverage.ProcessStart, "Frame, Ready", "")
+    })
+    {
+        var repeatsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-LaunchRepeats-{Guid.NewGuid():N}.sqlite");
+        try
+        {
+            var frequency = System.Diagnostics.Stopwatch.Frequency;
+            var startQpc = System.Diagnostics.Stopwatch.GetTimestamp();
+            using (var repeatsWriter = SessionWriter.Create(repeatsPath,
+                new(300, "Contoso", DateTime.UtcNow.AddSeconds(-5), frequency, startQpc, coverage)))
+            {
+                string[] names = ["Frame", "Ready", "Frame"];
+                for (var index = 0; index < names.Length; index++)
+                {
+                    repeatsWriter.Process(index + 1, new(startQpc + (index + 1) * frequency / 100, (index + 1) * 10, 300, 1,
+                        XamlProvider.Marker, true, names[index], 0, [], marker));
+                }
+            }
+
+            var timeline = new LaunchTimelineReader(repeatsPath, repeatsConfig).Read();
+            var actual = (string.Join(", ", timeline.Milestones.Select(milestone => milestone.Label)),
+                string.Join(", ", timeline.NotReached.Select(definition => definition.Label)));
+            Expect(actual == (reached, notReached) &&
+                timeline.Notes.HasFlag(LaunchNotes.Attached) == (coverage == SessionCoverage.Connection),
+                $"A {coverage} session must reach '{reached}' and not '{notReached}', not '{actual.Item1}' and '{actual.Item2}'.");
+        }
+        finally
+        {
+            foreach (var file in new[] { repeatsPath, repeatsPath + "-wal", repeatsPath + "-shm" })
+            {
+                File.Delete(file);
+            }
+        }
+    }
+
+    Console.WriteLine("Passed: attached to a running app, a milestone whose event repeats is not reached; recorded from the app's start, it is.");
+}
+
 // A launcher, process 100, whose activities A and B, on its threads 1 and 2, overlap and each launch an app, 201 or 202.
 // The parent of a process's first thread is the thread that created it, so each app's launch has the events of the
 // activity whose thread created its process, or that no other activity's thread did.
@@ -784,6 +893,435 @@ foreach (var json in invalidOwners)
 }
 
 Console.WriteLine("Passed: launcher results are read, and invalid or inconsistent results are rejected.");
+
+if (OperatingSystem.IsWindows())
+{
+    // A launch's launcher is the process that created the target, which ProcessParent finds.
+    using var child = System.Diagnostics.Process.Start(
+        new System.Diagnostics.ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"))
+        {
+            RedirectStandardInput = true,
+            CreateNoWindow = true,
+            UseShellExecute = false
+        })!;
+    long created;
+    try
+    {
+        using var current = System.Diagnostics.Process.GetCurrentProcess();
+        created = child.StartTime.ToFileTimeUtc();
+        Expect(ProcessParent.Find(child) == (Environment.ProcessId, current.ProcessName),
+            "A process's parent must be the process that created it, named while it runs.");
+        Expect(ProcessParent.Find(child.Id, created) == (Environment.ProcessId, current.ProcessName) &&
+            ProcessParent.Find(child.Id, created + 1) is null,
+            "A process instance's parent must be found only by that instance's creation time.");
+        // A process that started after the child only reused its parent's ID, so it doesn't name the parent.
+        Expect(ProcessParent.FindName(Environment.ProcessId, DateTime.UtcNow) == current.ProcessName &&
+            ProcessParent.FindName(Environment.ProcessId, DateTime.UnixEpoch) is null,
+            "A parent's ID must be named only by a process that started before the child.");
+    }
+    finally
+    {
+        child.Kill(entireProcessTree: true);
+    }
+
+    // As for a startup's exited bootstrap, which the launch's handles keep.
+    child.WaitForExit();
+    Expect(ProcessParent.Find(child.Id, created)?.ProcessId == Environment.ProcessId,
+        "An exited process's parent must be found while a handle to it is open.");
+
+    Console.WriteLine("Passed: a process's parent is the process that created it, and a process that reused its ID doesn't name it.");
+}
+
+const string startupResult = """
+    {"schemaVersion":2,"pid":20,"creationTimeFileTime":200,"error":0,"stage":"ready","activationPid":10,
+     "processes":[
+       {"pid":10,"parentPid":0,"creationTimeFileTime":100,"helperReady":true,"runtimeLoaded":false,"error":0},
+       {"pid":20,"parentPid":10,"creationTimeFileTime":200,"helperReady":true,"runtimeLoaded":true,"error":0}]}
+    """;
+var nativeStartup = NativeLaunchProtocol.ParseResult(startupResult);
+Expect(nativeStartup.ProcessId == 20 && nativeStartup.ActivationProcessId == 10 && nativeStartup.Processes.Count == 2 &&
+    nativeStartup.Processes[1].ParentProcessId == 10 && !nativeStartup.Processes[0].RuntimeLoaded &&
+    NativeLaunchProtocol.LogFileFor(nativeStartup) == "redirect.20.jsonl" &&
+    NativeLaunchProtocol.LogFileFor(nativeStartup, 10) == "redirect.jsonl",
+    "A handoff must retain its bootstrap and select the child's identity and redirect log.");
+Action<JsonNode>[] invalidStartupResults =
+[
+    node => node["processes"]![1]!["pid"] = 10,
+    node => node["processes"]![1]!["parentPid"] = 99,
+    node => node["processes"]![0]!["parentPid"] = 20,
+    node => node["processes"]![1]!["parentPid"] = 0,
+    node => node["processes"]![1]!["creationTimeFileTime"] = 0,
+    node => node["processes"]![1]!["creationTimeFileTime"] = 99,
+    node => node["processes"]![1]!["creationTimeFileTime"] = long.MaxValue,
+    node => node["processes"]![1]!["helperReady"] = false,
+    node => node["processes"]![1]!["runtimeLoaded"] = false,
+    node => node["processes"]![0]!["error"] = 5,
+    node => node["creationTimeFileTime"] = 201,
+    node => node["pid"] = 99,
+    node => node["activationPid"] = 99,
+    node => node["processes"] = new JsonArray(),
+    node => node["processes"] = new JsonArray(Enumerable.Range(0, 9)
+        .Select(_ => node["processes"]![0]!.DeepClone()).ToArray())
+];
+foreach (var mutate in invalidStartupResults)
+{
+    var node = JsonNode.Parse(startupResult)!;
+    mutate(node);
+    ExpectThrows<InvalidDataException>(() => NativeLaunchProtocol.ParseResult(node.ToJsonString()),
+        "Malformed ancestry, reused identities, unready selections and oversized inventories must fail.");
+}
+Expect(NativeLaunchProtocol.ParseResult(startupResult.Replace("\"error\":0,\"stage\":\"ready\"",
+    "\"error\":234,\"stage\":\"runtime_ambiguous\"")).Processes.Count == 2,
+    "A failed launch must retain its process inventory for exact-identity cleanup.");
+Console.WriteLine("Passed: startup ancestry, selected runtime identity, bounded inventories and child logs are validated.");
+
+IReadOnlyDictionary<int, long?> startupIdentities = new Dictionary<int, long?> { [10] = 100, [20] = 200 };
+Expect(XamlEventSubscription.MatchesProcess(startupIdentities, 10, 100) &&
+    XamlEventSubscription.MatchesProcess(startupIdentities, 20, 201) &&
+    !XamlEventSubscription.MatchesProcess(startupIdentities, 20, 199) &&
+    !XamlEventSubscription.MatchesProcess(startupIdentities, 30, 201),
+    "Capture must accept each exact startup lifetime and reject earlier or unrelated same-image events.");
+
+var groupDirectory = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-ProcessIsolation-{Guid.NewGuid():N}");
+var groupPaths = new List<string>();
+try
+{
+    SessionStart[] sources =
+    [
+        new(10, "StartupTests", null, 1_000_000, 0, SessionCoverage.ProcessStart, LauncherProcessId: 99),
+        new(20, "StartupTests", null, 1_000_000, 0, SessionCoverage.ProcessStart, LauncherProcessId: 99),
+        new(40, "StartupTests", null, 1_000_000, 0, SessionCoverage.ProcessStart, LauncherProcessId: 99)
+    ];
+    using var group = new ProcessRecordingGroup(sources, 20, 99, groupDirectory);
+    groupPaths.AddRange(group.Processes.Select(item => item.Recording!.Path));
+    ProfilerEvent ProcessEvent(int pid, string name) =>
+        new(1000, 1, pid, 7, XamlProvider.Xaml, true, "FrameworkElement_ApplyTemplate", 0,
+        [
+            new("ObjectPointer", element), new("Name", name), new("ClassName", name + "Control")
+        ]);
+    group.Post(ProcessEvent(10, "Parent"));
+    group.Post(ProcessEvent(20, "Child"));
+    group.Post(ProcessEvent(30, "Unrelated"));
+    foreach (var pid in new[] { 10, 20, 30 })
+    {
+        group.Post(new(1000, 1, pid, 7, XamlProvider.Direct3D11, false, "Texture2D/Start", 1,
+            [new("pID3D11Resource", 0xfedcba9876543210UL), new("hKMResource", 0xf1234567U)],
+            EventId: 12, Version: 0));
+        var ownerPid = XamlEventSubscription.ProcessIdFromPayload((ulong)pid)!.Value;
+        group.Post(new(1000, 1, ownerPid, 70, XamlProvider.DxgKrnl, false, "DeviceAllocation/Start", 1,
+        [
+            new("hProcessId", (ulong)pid), new("hThunkResource", 0xf1234567UL), new("hVidMmGlobalAlloc", 0xffff800000001234UL),
+            new("hVidMmAlloc", 0xffff800000005678UL), new("hDevice", 0xffff900000001234UL),
+            new("pDxgAdapter", 0xffffa00000001234UL)
+        ],
+            EventId: 36, Version: 2));
+    }
+    group.Post(new(500, 0.5, 99, 7, XamlProvider.Marker, true, "Launch", 0, [], new("Launcher", Guid.NewGuid())));
+    group.Close("Test complete", 2);
+
+    Expect(group.Primary.Source.ProcessId == 20 && group.Primary.XamlEvents == 1 && group.Primary.GpuMemoryEvents == 0 &&
+        group.Primary.Recording!.StoredEvents == 4 && group.RecordingError is null,
+        "The UI child must remain primary; external launcher markers must not become target XAML.");
+    foreach (var item in group.Processes)
+    {
+        var saved = item.Recording!.Path;
+        var info = SessionFile.ReadInfo(saved);
+        Expect(info.ProcessId == item.Source.ProcessId && info.LostByEtw == 2 && info.DroppedByProfiler == 0,
+            "Each file must preserve its own process scope and capture health.");
+        if (info.ProcessId == 40)
+        {
+            Expect(info.StoredEvents == 0 && item.XamlEvents == 0 && SessionFile.ReadObjects(saved).Count == 0,
+                "A process without telemetry must not inherit UI events or fabricated objects.");
+            continue;
+        }
+        var objects = SessionFile.ReadObjects(saved);
+        var expected = info.ProcessId == 10 ? "Parent" : "Child";
+        Expect(objects.Count == 1 && objects[0].Address == element && objects[0].Name == expected,
+            "Equal process-local addresses must remain distinct in separate recordings.");
+        var events = new List<ProfilerEvent>();
+        SessionFile.Read(saved, events.Add);
+        Expect(events.All(item => item.ProcessId == info.ProcessId ||
+            info.ProcessId == 20 && item.ProcessId == 99 && item.Provider == XamlProvider.Marker),
+            "No startup member or unrelated same-image process may be relabeled as another process's event.");
+        Expect(events.Single(item => item.Provider == XamlProvider.Direct3D11).Fields[0].Value is 0xfedcba9876543210UL &&
+            events.Single(item => item.Provider == XamlProvider.DxgKrnl).Fields[0].Value is ulong ownerPid &&
+            ownerPid == (ulong)info.ProcessId,
+            "Equal graphics IDs must stay process-local and allocation payload ownership must survive storage.");
+        using var graphicsConnection = new SqliteConnection($"Data Source={saved};Pooling=False");
+        graphicsConnection.Open();
+        Expect(Sql.Scalar(graphicsConnection, "SELECT COUNT(*) FROM GraphicsLifetimes WHERE ProcessId = $pid", null,
+            ("$pid", info.ProcessId)) == 2 &&
+            Sql.Scalar(graphicsConnection, "SELECT COUNT(*) FROM GraphicsResourceAllocations WHERE ProcessId = $pid", null,
+                ("$pid", info.ProcessId)) == 1,
+            "Derived graphics lifetimes and equal-handle allocation links must remain isolated in each process's file.");
+    }
+}
+finally
+{
+    foreach (var saved in groupPaths)
+    {
+        foreach (var file in new[] { saved, saved + "-wal", saved + "-shm" }) File.Delete(file);
+    }
+    if (Directory.Exists(groupDirectory)) Directory.Delete(groupDirectory);
+}
+Console.WriteLine("Passed: parent/child recordings, equal addresses, launcher markers and absent telemetry stay process-isolated.");
+
+int[] direct3D11Events = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25];
+Expect(Enumerable.Range(0, 40).Where(XamlEventSubscription.IsDirect3D11Event).SequenceEqual(direct3D11Events) &&
+    !XamlEventSubscription.IsDirect3D11Event(-1) && !XamlEventSubscription.IsDirect3D11Event(65535),
+    "D3D11 capture must retain device/resource lifetimes, rundown and creation phases, not unrelated events.");
+foreach (var id in new[] { 33, 34, 35, 36, 37, 38 })
+{
+    Expect(XamlEventSubscription.DxgKrnlProcessField(id) == "hProcessId",
+        "Allocation starts, stops and rundown must use the payload owner, not the event-header process.");
+}
+Expect(XamlEventSubscription.DxgKrnlProcessField(366) == "ProcessId" &&
+    XamlEventSubscription.DxgKrnlProcessField(367) == "ProcessId" &&
+    XamlEventSubscription.DxgKrnlProcessField(32) is null && XamlEventSubscription.DxgKrnlProcessField(39) is null,
+    "Existing GPU budget/usage ownership must remain unchanged and unrelated kernel events must be ignored.");
+foreach (var pid in new object[] { 10, 10U, 10L, 10UL, int.MaxValue })
+{
+    Expect(XamlEventSubscription.ProcessIdFromPayload(pid) == Convert.ToInt32(pid),
+        "Manifest UInt32 and pointer-sized process IDs must decode without changing their identity.");
+}
+foreach (var invalidPid in new object?[] { null, 0, -1, uint.MaxValue, long.MaxValue, ulong.MaxValue, 0x10000000aUL, "10", 10.0 })
+{
+    Expect(XamlEventSubscription.ProcessIdFromPayload(invalidPid) is null,
+        "Missing, invalid or oversized payload PIDs must not wrap or fall back to the event-header process.");
+}
+Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation/budget/usage ownership filters.");
+
+{
+    var counter = new EventCounter();
+    var tally = new OfflineEtlSource.ProcessTally(10, null, 0);
+    foreach (var id in Enumerable.Range(33, 6))
+    {
+        counter.Process(id, new(id, id, 10, 7, XamlProvider.DxgKrnl, false, "Allocation", 0, [], EventId: id));
+        tally.Count(XamlProvider.DxgKrnl, id, id);
+    }
+    Expect(counter.GpuMemoryEvents == 0 && tally.GpuMemoryEvents == 0 && tally.XamlEvents == 0 && tally.ProfilerEvents == 0,
+        "Allocation-only capture must not report GPU usage/budget events or turn allocations into XAML events.");
+    foreach (var id in new int?[] { 366, 367, null })
+    {
+        counter.Process(40, new(40, 40, 10, 7, XamlProvider.DxgKrnl, false, "GpuMemory", 0, [], EventId: id));
+        tally.Count(XamlProvider.DxgKrnl, 40, id);
+    }
+    counter.Process(41, new(41, 41, 10, 7, XamlProvider.Xaml, false, "Xaml", 0, []));
+    tally.Count(XamlProvider.Xaml, 41, null);
+    counter.Process(42, new(42, 42, 10, 7, XamlProvider.XamlProfiler, false, "Profiler", 0, []));
+    tally.Count(XamlProvider.XamlProfiler, 42, null);
+    Expect(counter.GpuMemoryEvents == 3 && tally.GpuMemoryEvents == 3 &&
+        counter.XamlEvents == 1 && tally.XamlEvents == 1 && counter.ProfilerEvents == 1 && tally.ProfilerEvents == 1,
+        "Live/offline counters must preserve budget, usage, legacy unidentified memory events and XAML provider totals.");
+}
+Console.WriteLine("Passed: live/offline memory counters exclude allocations without losing budget, usage or legacy counts.");
+
+foreach (var reverse in new[] { false, true })
+{
+    (XamlProvider Provider, double Time)[] observations =
+    [
+        (XamlProvider.Direct3D11, 1), (XamlProvider.Xaml, 2), (XamlProvider.Direct3D11, 3)
+    ];
+    if (reverse) Array.Reverse(observations);
+    var tally = new OfflineEtlSource.ProcessTally(10, null, observations[0].Time);
+    foreach (var (provider, time) in observations) tally.Count(provider, time, null);
+    tally.Count(XamlProvider.Win32k, 0, null);
+    tally.Count(XamlProvider.Win32k, 4, null);
+    Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
+        tally.XamlEvents == 1 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
+        "D3D events must extend both process time bounds without changing counts or Win32k focus semantics.");
+}
+{
+    var tally = new OfflineEtlSource.ProcessTally(10, null, 2);
+    tally.Count(XamlProvider.Direct3D11, 1, 12);
+    tally.Count(XamlProvider.Direct3D11, 3, 13);
+    Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
+        tally.XamlEvents == 0 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
+        "D3D-only processes must track their event bounds without becoming eligible for the XAML process list.");
+}
+Console.WriteLine("Passed: D3D events extend offline process bounds in either order without affecting discovery or counters.");
+
+foreach (var failure in new Guid?[] { null, XamlProviders.Direct3D11, XamlProviders.DxgKrnl })
+{
+    List<string> calls = [];
+    var enabled = LiveEtwSource.EnableDirect3D(() => { });
+    var gpuEnabled = LiveEtwSource.EnableGpuMemory(options =>
+        Expect(options.EventIDsToEnable.SequenceEqual([33, 34, 35, 36, 37, 38, 366, 367]) &&
+            options.ProcessIDFilter is null && options.ProcessNameFilter is null,
+            "The kernel provider must enable only allocation/rundown and memory IDs, without filtering event-header ownership."));
+    LiveEtwSource.CaptureGraphicsState((provider, _) =>
+    {
+        calls.Add(provider == XamlProviders.Direct3D11 ? "D3D11" : "DxgKrnl");
+        if (provider == failure) throw new InvalidOperationException("Capture state failed after enabling.");
+    }, () => calls.Add("RestoreD3D11"), () => calls.Add("RestoreDxgKrnl"), enabled, gpuEnabled);
+    Expect(calls.SequenceEqual(["D3D11", "RestoreD3D11", "DxgKrnl", "RestoreDxgKrnl"]),
+        "Each enabled graphics provider's filters must be restored immediately after successful or failed capture state.");
+}
+foreach (var d3dEnabled in new[] { false, true })
+foreach (var gpuEnabled in new[] { false, true })
+{
+    var enabledD3D = LiveEtwSource.EnableDirect3D(() =>
+    {
+        if (!d3dEnabled) throw new InvalidOperationException("Provider enable failed.");
+    });
+    var enabledGpu = LiveEtwSource.EnableGpuMemory(_ =>
+    {
+        if (!gpuEnabled) throw new InvalidOperationException("Provider enable failed.");
+    });
+    List<Guid> requested = [];
+    LiveEtwSource.CaptureGraphicsState((provider, _) => requested.Add(provider),
+        () => Expect(d3dEnabled, "A disabled D3D11 provider must not be restored."),
+        () => Expect(gpuEnabled, "A disabled kernel provider must not be restored."), enabledD3D, enabledGpu);
+    Expect(enabledD3D == d3dEnabled && enabledGpu == gpuEnabled &&
+        requested.SequenceEqual(new[] { XamlProviders.Direct3D11, XamlProviders.DxgKrnl }
+            .Where(provider => provider == XamlProviders.Direct3D11 ? d3dEnabled : gpuEnabled)),
+        "Optional provider enable failures must skip only that provider's rundown and restoration.");
+}
+ExpectThrows<InvalidOperationException>(() => LiveEtwSource.EnableDirect3D(
+    () => throw new InvalidOperationException("Filter update failed."), previouslyEnabled: true),
+    "Updating an enabled provider's filter must fail closed instead of leaving an apparently successful broader capture.");
+ExpectThrows<InvalidOperationException>(() => LiveEtwSource.EnableGpuMemory(
+    _ => throw new InvalidOperationException("Filter update failed."), previouslyEnabled: true),
+    "Updating an enabled kernel provider's filter must fail closed instead of leaving a broader capture.");
+ExpectThrows<OutOfMemoryException>(() => LiveEtwSource.EnableGpuMemory(_ => throw new OutOfMemoryException()),
+    "Optional provider handling must not suppress resource exhaustion.");
+foreach (var kernelFailure in new[] { false, true })
+{
+    ExpectThrows<InvalidOperationException>(() => LiveEtwSource.CaptureGraphicsState((_, _) => { },
+        () => { if (!kernelFailure) throw new InvalidOperationException("D3D11 filter restoration failed."); },
+        () => { if (kernelFailure) throw new InvalidOperationException("Kernel filter restoration failed."); }),
+        "Either failed filter restoration must propagate rather than leave an apparently successful unfiltered capture.");
+}
+Console.WriteLine("Passed: optional graphics enable failures preserve capture; enabled-provider filters fail closed.");
+
+var graphicsPath = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsIdentity-{Guid.NewGuid():N}.sqlite");
+try
+{
+    const ulong resourceId = 0xffff800000001234;
+    const ulong deviceId = 0xfedcba9876543210;
+    const uint kernelResource = 0xf1234567;
+    const ulong allocationId = 0xffff900000005678;
+    ProfilerEvent Texture(ulong resource, int version = 0, int eventId = 12) =>
+        new(1000, 1, 10, 7, XamlProvider.Direct3D11, false, "Texture2D/Start", 1,
+        [
+            new("pID3D11Resource", resource), new("pID3D11Device", deviceId), new("hKMResource", kernelResource),
+            new("Width", 64U), new("Label", "quoted \"texture\""), new("Shared", true), new("Missing", null)
+        ], EventId: eventId, Version: version);
+    ProfilerEvent[] graphics =
+    [
+        Texture(resourceId),
+        Texture(resourceId + 1),
+        Texture(resourceId, version: 1),
+        Texture(resourceId, eventId: 112),
+        new(2000, 2, 10, 70, XamlProvider.DxgKrnl, false, "DeviceAllocation/Start", 1,
+        [
+            new("hProcessId", 10UL), new("hThunkResource", (ulong)kernelResource),
+            new("hVidMmGlobalAlloc", allocationId), new("pDxgAdapter", 0xffffa00000001234UL)
+        ], EventId: 36, Version: 2),
+        new(3000, 3, 10, 70, XamlProvider.DxgKrnl, false, "AdapterAllocation/Start", 1,
+        [
+            new("hProcessId", 10UL), new("hVidMmGlobalAlloc", allocationId), new("allocSize", ulong.MaxValue)
+        ], EventId: 33, Version: 3),
+        new(4000, 4, 10, 7, XamlProvider.Direct3D11, false, "D3D11CoreCreateDevice/Stop", 2, [], EventId: 21, Version: 0),
+        new(5000, 5, 10, 7, XamlProvider.Direct3D11, false, "Device/Stop", 2,
+            [new("pID3D11Device", deviceId)], EventId: 4, Version: 0)
+    ];
+    using (var writer = SessionWriter.Create(graphicsPath, new(10, "GraphicsTests", null, 1_000_000, 0, SessionCoverage.Trace)))
+    {
+        for (var i = 0; i < graphics.Length; i++) writer.Process(i + 1, graphics[i]);
+        writer.Close("Test complete");
+        Expect(writer.Failure is null, "Graphics event recording must complete without a writer error.");
+    }
+    var restored = new List<ProfilerEvent>();
+    SessionFile.Read(graphicsPath, restored.Add);
+    Expect(restored.Count == graphics.Length && restored.Zip(graphics).All(pair =>
+        pair.First.ProcessId == pair.Second.ProcessId && pair.First.ProviderId == pair.Second.ProviderId &&
+        pair.First.EventId == pair.Second.EventId && pair.First.Version == pair.Second.Version &&
+        pair.First.Name == pair.Second.Name && pair.First.Opcode == pair.Second.Opcode &&
+        pair.First.Fields.SequenceEqual(pair.Second.Fields)),
+        "Provider/ETW identities and original resource, device, kernel-resource and allocation IDs must round-trip exactly.");
+    Expect(SessionFile.ReadObjects(graphicsPath).Count == 0,
+        "Graphics device/resource pointers must not be indexed as XAML elements.");
+    using var connection = new SqliteConnection($"Data Source={graphicsPath};Pooling=False");
+    connection.Open();
+    using (var command = connection.CreateCommand())
+    {
+        command.CommandText = "SELECT Fields, EventId, Version FROM EventDetails ORDER BY Seq";
+        using var rows = command.ExecuteReader();
+        for (var i = 0; i < graphics.Length; i++)
+        {
+            Expect(rows.Read() && rows.GetInt32(1) == graphics[i].EventId && rows.GetInt32(2) == graphics[i].Version,
+                "Readable events must retain their original ETW ID and version.");
+            var fields = JsonNode.Parse(rows.GetString(0))!;
+            if (i < 4)
+            {
+                Expect(fields["pID3D11Resource"]!.GetValue<ulong>() == (i == 1 ? resourceId + 1 : resourceId) &&
+                    fields["pID3D11Device"]!.GetValue<ulong>() == deviceId &&
+                    fields["hKMResource"]!.GetValue<uint>() == kernelResource &&
+                    fields["Label"]!.GetValue<string>() == "quoted \"texture\"" &&
+                    fields["Shared"]!.GetValue<bool>() && fields["Missing"] is null,
+                    "Readable JSON must preserve adjacent 64-bit handles, numeric domains, strings, Booleans and nulls.");
+            }
+            if (i == 5)
+            {
+                Expect(fields["hVidMmGlobalAlloc"]!.GetValue<ulong>() == allocationId &&
+                    fields["allocSize"]!.GetValue<ulong>() == ulong.MaxValue,
+                    "Readable allocation fields must retain full-width unsigned IDs and sizes.");
+            }
+            if (i == 6)
+            {
+                Expect(fields.AsObject().Count == 0,
+                    "Fieldless device-creation phases must expose an empty JSON object.");
+            }
+        }
+    }
+    Expect(Sql.Scalar(connection,
+        "SELECT COUNT(*) FROM EventTypes WHERE Provider = 'Direct3D11' AND Name = 'Texture2D/Start'") == 3,
+        "Events with the same name/layout but different ETW IDs or versions must not share a database type.");
+
+    using (var output = new StringWriter())
+    using (var error = new StringWriter())
+    {
+        Expect(CliApplication.Run(["processes", graphicsPath], output, error, CancellationToken.None) == 0,
+            "The CLI must list a recorded graphics session successfully.");
+        var columns = output.ToString().Split(Environment.NewLine)[0].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        Expect(columns.Count(column => column == "Direct3D11") == 1 && columns.Count(column => column == "DxgKrnl") == 1,
+            "CLI summaries must label Direct3D11 separately rather than duplicate the DxgKrnl column.");
+        output.GetStringBuilder().Clear();
+        Expect(CliApplication.Run(["dump", graphicsPath, "--max", "1"], output, error, CancellationToken.None) == 0 &&
+            output.ToString().Contains("Direct3D11", StringComparison.Ordinal) &&
+            output.ToString().Contains("Texture2D/Start", StringComparison.Ordinal),
+            "CLI event output must retain the runtime provider name.");
+    }
+
+    // A legacy recording has neither identity column. Reading it must leave the identity unknown.
+    var legacyViews = new List<(string Name, string Sql)>();
+    using (var command = connection.CreateCommand())
+    {
+        command.CommandText = "SELECT name, sql FROM sqlite_master WHERE type = 'view'";
+        using var rows = command.ExecuteReader();
+        while (rows.Read()) legacyViews.Add((rows.GetString(0), rows.GetString(1)));
+    }
+    foreach (var view in legacyViews) Sql.Execute(connection, $"DROP VIEW \"{view.Name}\"");
+    Sql.Execute(connection, "ALTER TABLE EventTypes DROP COLUMN EventId; ALTER TABLE EventTypes DROP COLUMN Version;");
+    foreach (var view in legacyViews)
+    {
+        Sql.Execute(connection, view.Sql.Replace("t.EventId, t.Version,", "").Replace("d.EventId, d.Version,", ""));
+    }
+    restored.Clear();
+    SessionFile.Read(graphicsPath, restored.Add);
+    Expect(restored.Count == graphics.Length && restored.All(item => item.EventId is null && item.Version is null),
+        "Existing recordings without ETW identity columns must remain readable without inventing identities.");
+}
+finally
+{
+    foreach (var file in new[] { graphicsPath, graphicsPath + "-wal", graphicsPath + "-shm" }) File.Delete(file);
+}
+Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
+
+GraphicsIndexTests.Run();
+Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
+Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
 
 static void Expect(bool condition, string message)
 {

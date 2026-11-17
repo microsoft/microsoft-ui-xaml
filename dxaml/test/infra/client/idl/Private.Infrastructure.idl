@@ -314,6 +314,9 @@ namespace Private.Infrastructure
 
         // XamlOptionalChanges test hooks
         HRESULT ResetOptionalChanges();
+
+        // Positive values limit texture size; zero or negative values restore the device limit.
+        HRESULT SetMaxTextureSizeOverride([in] int maxTextureSize);
    }
 
     [version(NTDDI_WINTHRESHOLD)]

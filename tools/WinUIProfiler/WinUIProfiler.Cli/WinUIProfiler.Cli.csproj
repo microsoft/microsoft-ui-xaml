@@ -7,4 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WinUIProfiler.Tests" />
+  </ItemGroup>
 </Project>

@@ -6,12 +6,21 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-if (!(Test-Path -LiteralPath $vswhere)) { throw 'Visual Studio C++ build tools and MSBuild are required.' }
-$msbuild = @(& $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\amd64\MSBuild.exe') |
-    Select-Object -First 1
-if (!$msbuild) { throw 'Visual Studio x64 MSBuild was not found.' }
+$missingVisualStudio = 'Visual Studio 2022 or 2026 with MSBuild and the C++ x64 and ARM64 build tools is required. ' +
+    'Run .\scripts\Install-Prerequisites.ps1 to install it.'
+if (!(Test-Path -LiteralPath $vswhere)) { throw $missingVisualStudio }
+$msbuild = @(& $vswhere -latest -products '*' -version '[17.0,19.0)' -requires Microsoft.Component.MSBuild `
+        Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.Tools.ARM64 `
+        -find 'MSBuild\**\Bin\amd64\MSBuild.exe') | Select-Object -First 1
+if (!$msbuild) { throw $missingVisualStudio }
+if (!(Get-Command dotnet -CommandType Application -ErrorAction SilentlyContinue)) {
+    throw 'The .NET SDK is required. Run .\scripts\Install-Prerequisites.ps1 to install it.'
+}
 $appProject = Join-Path $root 'WinUIProfiler.App\WinUIProfiler.App.csproj'
-& $msbuild $appProject /t:Restore "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:quiet
+# dotnet takes the SDK from the global.json above the working directory, so it runs from this tool's folder.
+Push-Location -LiteralPath $root
+try { & dotnet restore $appProject "-p:Configuration=$Configuration" "-p:Platform=$Platform" -nologo -v:quiet }
+finally { Pop-Location }
 if ($LASTEXITCODE -ne 0) { throw 'Restoring the SDK metadata for the app and tree snapshot TAP failed.' }
 foreach ($architecture in @('x64', 'ARM64')) {
     foreach ($project in @('WinUIProfiler.Tap', 'WinUIProfiler.Injector')) {
@@ -23,8 +32,11 @@ foreach ($architecture in @('x64', 'ARM64')) {
 & $msbuild (Join-Path $root 'WinUIProfiler.Native\WinUIProfiler.Native.vcxproj') /t:Build `
     "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:quiet
 if ($LASTEXITCODE -ne 0) { throw 'Building the native process metrics library failed.' }
-& $msbuild $appProject /t:Build `
-    "/p:Configuration=$Configuration" "/p:Platform=$Platform" /nologo /v:minimal
+Push-Location -LiteralPath $root
+try {
+    & dotnet build $appProject --no-restore "-p:Configuration=$Configuration" "-p:Platform=$Platform" -nologo -v:minimal
+}
+finally { Pop-Location }
 if ($LASTEXITCODE -ne 0) { throw 'Building the self-contained profiler executable failed.' }
 $outputFile = Join-Path $root "WinUIProfiler.App\obj\ProfilerAppOutput.$Platform.$Configuration.txt"
 $output = (Get-Content -LiteralPath $outputFile -Raw).Trim()

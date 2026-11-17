@@ -119,7 +119,7 @@ public static class OfflineEtlSource
                 order.Add(tally);
             }
 
-            tally.Count(provider, time);
+            tally.Count(provider, time, (int)data.ID);
         });
         var lastMilliseconds = 0.0;
         source.AllEvents += data =>
@@ -213,7 +213,7 @@ public static class OfflineEtlSource
         return new(delivered, source.EventsLost, source.SessionDuration);
     }
 
-    private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
+    internal sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
     {
         public int ProcessId { get; } = processId;
         public string? Name { get; } = name;
@@ -224,7 +224,7 @@ public static class OfflineEtlSource
         public long GpuMemoryEvents { get; private set; }
 
         // Grouped as EventCounter groups them.
-        public void Count(XamlProvider provider, double milliseconds)
+        public void Count(XamlProvider provider, double milliseconds, int? eventId)
         {
             switch (provider)
             {
@@ -232,11 +232,13 @@ public static class OfflineEtlSource
                     ProfilerEvents++;
                     break;
                 case XamlProvider.DxgKrnl:
-                    GpuMemoryEvents++;
+                    if (eventId is not (>= 33 and <= 38)) GpuMemoryEvents++;
                     break;
                 case XamlProvider.Win32k:
-                    // Every process with windows has focus events; they don't make it a XAML process.
                     return;
+                case XamlProvider.Direct3D11:
+                    // Track time without making graphics-only processes eligible for the XAML process list.
+                    break;
                 default:
                     XamlEvents++;
                     break;

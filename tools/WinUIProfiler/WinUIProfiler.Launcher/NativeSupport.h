@@ -3,6 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
+#include <cstring>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -235,4 +236,27 @@ namespace profiler
     private:
         HANDLE m_value;
     };
+
+    // QueryFullProcessImageNameW reports the path with junctions and symbolic links resolved, so a launch path
+    // that differs from it as text is compared by volume and file ID.
+    inline bool SameFile(std::wstring_view left, std::wstring_view right)
+    {
+        if (EqualPath(left, right))
+        {
+            return true;
+        }
+        FILE_ID_INFO ids[2]{};
+        const std::wstring_view paths[] = { left, right };
+        for (int index = 0; index < 2; ++index)
+        {
+            Handle file(CreateFileW(std::wstring(paths[index]).c_str(), FILE_READ_ATTRIBUTES,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, 0, nullptr));
+            if (!file || !GetFileInformationByHandleEx(file.get(), FileIdInfo, &ids[index], sizeof(ids[index])))
+            {
+                return false;
+            }
+        }
+        return ids[0].VolumeSerialNumber == ids[1].VolumeSerialNumber &&
+            std::memcmp(&ids[0].FileId, &ids[1].FileId, sizeof(ids[0].FileId)) == 0;
+    }
 }

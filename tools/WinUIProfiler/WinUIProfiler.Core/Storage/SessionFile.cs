@@ -67,7 +67,8 @@ public sealed record LaunchFrame(long FrameNumber, double Milliseconds, bool Fro
 // ended, in milliseconds from the start of the recording.
 public sealed record DrawnFrame(long TickId, int ThreadId, double EndMilliseconds);
 
-// Reads a session file written by SessionWriter, also while it is still being written.
+// Reads a session file written by SessionWriter, also while it is still being written. Each statement a read runs is
+// reported to SessionQueries once its rows are read.
 public static class SessionFile
 {
     public static SessionFileInfo ReadInfo(string path)
@@ -134,6 +135,7 @@ public static class SessionFile
             {
                 var value = command.ExecuteScalar();
                 lastSeq = value is null or DBNull ? null : Convert.ToInt64(value, CultureInfo.InvariantCulture);
+                SessionQueries.Report(command, 1);
             }
 
             SessionFile.ReadEvents(connection, transaction, Info, frequency, startQpc, (_, _, types) =>
@@ -158,7 +160,9 @@ public static class SessionFile
             using var command = Command(connection, transaction,
                 "SELECT TickId, ThreadId, EndMs FROM LaunchSummary ORDER BY Position LIMIT 1");
             using var reader = command.ExecuteReader();
-            return reader.Read() ? new(reader.GetInt64(0), reader.GetInt32(1), reader.GetDouble(2)) : null;
+            DrawnFrame? frame = reader.Read() ? new(reader.GetInt64(0), reader.GetInt32(1), reader.GetDouble(2)) : null;
+            SessionQueries.Report(command, frame is null ? 0 : 1);
+            return frame;
         }
 
         public void Dispose()
@@ -197,6 +201,7 @@ public static class SessionFile
                 (reader.GetInt64(7) - start) * 1000.0 / frequency));
         }
 
+        SessionQueries.Report(command, objects.Count);
         return objects;
     }
 
@@ -230,7 +235,9 @@ public static class SessionFile
         using var connection = Open(path);
         using var command = Command(connection, null, "SELECT COUNT(DISTINCT Seq) FROM ObjectEvents WHERE ObjectId = $id",
             ("$id", objectId));
-        return (long)command.ExecuteScalar()!;
+        var count = (long)command.ExecuteScalar()!;
+        SessionQueries.Report(command, 1);
+        return count;
     }
 
     // The UI element a tree snapshot node was when the snapshot was taken, from the WinRT object addresses the snapshot
@@ -254,8 +261,10 @@ public static class SessionFile
             $"SELECT TypeId, Name, FieldNames FROM EventTypes WHERE Provider <> '{XamlProvider.Marker}'"))
         {
             using var reader = command.ExecuteReader();
+            long read = 0;
             while (reader.Read())
             {
+                read++;
                 var names = reader.GetString(2).Split(',');
                 foreach (var pair in pairs.Where(pair => pair.Event == reader.GetString(1)))
                 {
@@ -267,6 +276,8 @@ public static class SessionFile
                     }
                 }
             }
+
+            SessionQueries.Report(command, read);
         }
 
         if (shapes.Count == 0 || addresses.Count == 0)
@@ -288,8 +299,10 @@ public static class SessionFile
             """, ("$addresses", $"[{string.Join(",", addresses.Select(address => address.ToString(CultureInfo.InvariantCulture)))}]")))
         {
             using var reader = command.ExecuteReader();
+            long read = 0;
             while (reader.Read())
             {
+                read++;
                 if (reader.GetInt64(0) <= qpc)
                 {
                     before = reader.GetInt64(1);
@@ -300,6 +313,9 @@ public static class SessionFile
                     break;
                 }
             }
+
+            // The rows read, up to the first after the snapshot.
+            SessionQueries.Report(command, read);
         }
 
         if ((before ?? after) is not { } elementAddress)
@@ -333,14 +349,17 @@ public static class SessionFile
             """, ("$address", address), ("$kind", kind.ToString()));
         using var rows = objects.ExecuteReader();
         long? found = null;
+        long read = 0;
         while (rows.Read())
         {
+            read++;
             if (found is null || rows.GetInt64(1) <= qpc)
             {
                 found = rows.GetInt64(0);
             }
         }
 
+        SessionQueries.Report(objects, read);
         return found;
     }
 
@@ -363,6 +382,7 @@ public static class SessionFile
                 reader.GetInt64(10), reader.GetBoolean(11)));
         }
 
+        SessionQueries.Report(command, frames.Count);
         return frames;
     }
 
@@ -393,6 +413,7 @@ public static class SessionFile
             items.Add(new(reader.GetInt64(0), type, tick, row, NullableInt64(reader, 3), reader.GetBoolean(19), reader.GetBoolean(20)));
         }
 
+        SessionQueries.Report(command, items.Count);
         return items;
     }
 
@@ -416,6 +437,7 @@ public static class SessionFile
                 NullableInt64(reader, 9), NullableInt64(reader, 10)));
         }
 
+        SessionQueries.Report(command, rows.Count);
         return rows;
     }
 
@@ -431,6 +453,7 @@ public static class SessionFile
             frames.Add(new(reader.GetInt64(0), reader.GetDouble(1), reader.GetString(2) == "ProcessStart"));
         }
 
+        SessionQueries.Report(command, frames.Count);
         return frames;
     }
 
@@ -483,7 +506,9 @@ public static class SessionFile
         using var connection = Open(path);
         var (where, parameters) = EventsQuery(scope, bucket, filter);
         using var command = Command(connection, null, $"SELECT COUNT(*) {where}", parameters);
-        return (long)command.ExecuteScalar()!;
+        var count = (long)command.ExecuteScalar()!;
+        SessionQueries.Report(command, 1);
+        return count;
     }
 
     // A filter keeps the events whose name contains its text, case-insensitively. Text also matches string field values
@@ -492,21 +517,26 @@ public static class SessionFile
         string? filter)
     {
         filter = string.IsNullOrWhiteSpace(filter) ? null : filter.Trim();
-        long? number = filter is null ? null
-            : filter.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                ? ulong.TryParse(filter.AsSpan(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex)
-                    ? unchecked((long)hex) : null
+        var isHex = filter?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) == true;
+        ulong? unsigned = filter is null ? null
+            : ulong.TryParse(isHex ? filter.AsSpan(2) : filter.AsSpan(),
+                isHex ? NumberStyles.AllowHexSpecifier : NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var handle)
+                ? handle : null;
+        long? number = isHex ? unsigned is { } hex ? unchecked((long)hex) : null
+            : filter is null ? null
                 : long.TryParse(filter, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value) ? value : null;
+        // json_each rounds large unsigned integers to REAL; compare their original JSON tokens instead.
         return ($"""
             FROM {scope.From}
             WHERE {scope.Where} AND ($bucket IS NULL OR d.Bucket = $bucket)
                 AND ($like IS NULL OR d.Name LIKE $like ESCAPE '\' OR EXISTS (
                     SELECT 1 FROM json_each(d.Payload) v
-                    WHERE ($number IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
-                        OR (v.type IN ('integer', 'real') AND v.value = $number)))
+                    WHERE ($number IS NULL AND $unsigned IS NULL AND v.type = 'text' AND v.value LIKE $like ESCAPE '\')
+                        OR (v.type IN ('integer', 'real') AND v.value = $number)
+                        OR ($unsigned IS NOT NULL AND v.type = 'integer' AND (d.Payload -> v.key) = $unsigned)))
             """, [.. scope.Parameters, ("$bucket", bucket),
                 ("$like", filter is null ? null : $"%{filter.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_")}%"),
-                ("$number", number)]);
+                ("$number", number), ("$unsigned", unsigned is > long.MaxValue ? unsigned.Value.ToString(CultureInfo.InvariantCulture) : null)]);
     }
 
     // Runs a query whose columns are Qpc, ThreadId, TypeId, Payload and then any others, which the sink reads from the
@@ -537,13 +567,16 @@ public static class SessionFile
         var marker = HasColumn(connection, transaction, "EventTypes", "ProviderId") ? "ProviderName, ProviderId" : "NULL, NULL";
         // Files written before launcher events were added have none.
         var launcher = HasColumn(connection, transaction, "EventTypes", "Launcher") ? "Launcher" : "0";
+        var identity = HasColumn(connection, transaction, "EventTypes", "EventId") ? "EventId, Version" : "NULL, NULL";
         var types = new Dictionary<long, StoredType>();
         using (var command = Command(connection, transaction,
-            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher} FROM EventTypes"))
+            $"SELECT TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, {marker}, {launcher}, {identity} FROM EventTypes"))
         {
             using var reader = command.ExecuteReader();
+            long read = 0;
             while (reader.Read())
             {
+                read++;
                 var names = reader.GetString(4).Split(',', StringSplitOptions.RemoveEmptyEntries);
                 var fieldTypes = reader.GetString(5).Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(EventPayload.ParseType).ToArray();
@@ -557,8 +590,11 @@ public static class SessionFile
                     ? new MarkerProvider(reader.GetString(7), Guid.Parse(reader.GetString(8)))
                     : null;
                 types[reader.GetInt64(0)] = new(provider, markerProvider, reader.GetBoolean(6), reader.GetString(2),
-                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9));
+                    reader.GetInt32(3), names, fieldTypes, reader.GetBoolean(9),
+                    reader.IsDBNull(10) ? null : reader.GetInt32(10), reader.IsDBNull(11) ? null : reader.GetInt32(11));
             }
+
+            SessionQueries.Report(command, read);
         }
 
         // A launcher event in a file that doesn't name the launcher has process ID 0, which is never the target's.
@@ -575,9 +611,11 @@ public static class SessionFile
                 var type = types[reader.GetInt64(2)];
                 sink(new(qpc, (qpc - startQpc.Value) * 1000.0 / frequency, type.Launcher ? launcherProcessId : info.ProcessId,
                     reader.GetInt32(1), type.Provider, type.TraceLogging, type.Name, type.Opcode,
-                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker), reader);
+                    EventPayload.Read(reader.GetFieldValue<byte[]>(3), type.Names, type.Types), type.Marker, type.EventId, type.Version), reader);
                 delivered++;
             }
+
+            SessionQueries.Report(command, delivered);
         }
 
         return delivered;
@@ -585,7 +623,7 @@ public static class SessionFile
 
     // An EventTypes row.
     private sealed record StoredType(XamlProvider Provider, MarkerProvider? Marker, bool TraceLogging, string Name, int Opcode,
-        string[] Names, FieldType[] Types, bool Launcher)
+        string[] Names, FieldType[] Types, bool Launcher, int? EventId, int? Version)
     {
         public Guid ProviderId => Marker?.Id ?? XamlProviders.IdOf(Provider);
     }
@@ -670,19 +708,17 @@ public static class SessionFile
     private static (SessionFileInfo Info, long Frequency, long? StartQpc) ReadSession(SqliteConnection connection,
         SqliteTransaction? transaction)
     {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
         // Files written before ProcessStartQpc was added are otherwise the same.
         var processStartQpc = HasColumn(connection, transaction, "SessionInfo", "ProcessStartQpc") ? "ProcessStartQpc" : "NULL";
         var launcher = HasColumn(connection, transaction, "SessionInfo", "LauncherProcessId") ? "LauncherProcessId, LauncherName" : "NULL, NULL";
-        command.CommandText = $"""
+        using var command = Command(connection, transaction, $"""
             SELECT ProcessId, ProcessName, Source, EtlPath, Coverage, StartedUtc, EndedUtc, EndReason, CompleteFromSeq,
                 LostByEtw, DroppedByProfiler, LimitBytes, QpcFrequency, StartQpc,
                 (SELECT COALESCE(MAX(Seq) - MIN(Seq) + 1, 0) FROM Events), (SELECT COUNT(*) FROM Objects WHERE Kind = 'Element'),
                 (SELECT COUNT(*) FROM Frames), ProcessCreatedUtc, StartedQpc, (SELECT COUNT(*) FROM Objects WHERE Kind = 'Visual'),
                 {processStartQpc}, {launcher}
             FROM SessionInfo
-            """;
+            """);
         using var reader = command.ExecuteReader();
         if (!reader.Read())
         {
@@ -705,6 +741,9 @@ public static class SessionFile
             reader.GetInt64(14), reader.IsDBNull(8) ? null : reader.GetInt64(8), reader.IsDBNull(9) ? null : reader.GetInt32(9),
             reader.IsDBNull(10) ? null : reader.GetInt64(10), reader.GetInt64(11), reader.GetInt64(15), reader.GetInt64(19),
             reader.GetInt64(16), processStart, reader.IsDBNull(21) ? null : reader.GetInt32(21), NullableString(reader, 22));
+
+        // The one row read; SessionInfo has no other.
+        SessionQueries.Report(command, 1);
         return (info, frequency, startQpc);
     }
 

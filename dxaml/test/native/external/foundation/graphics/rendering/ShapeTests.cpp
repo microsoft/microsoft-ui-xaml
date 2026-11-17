@@ -1621,6 +1621,45 @@ void ShapeTests::ClippedPath()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
+void ShapeTests::PathMaskSurfaceSizeAtFractionalScale()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /* resizeWindow */);
+    auto windowHelper = TestServices::WindowHelper;
+    windowHelper->SetWindowSizeOverrideWithWindowScale(Size(400, 300), 1.75f);
+
+    const struct
+    {
+        const wchar_t* data;
+        const wchar_t* variation;
+    } testCases[] =
+    {
+        { L"M3,9H12V18H3Z", L"IntegralBounds" },
+        { L"M14,14.5H22V16H14Z", L"FractionalBounds" },
+        { L"M-2.5,-8.5H6.5V0.5H-2.5Z", L"NegativeBounds" },
+    };
+
+    for (const auto& testCase : testCases)
+    {
+        RunOnUIThread([&]()
+        {
+            auto path = safe_cast<xaml_shapes::Path^>(XamlReader::Load(
+                L"<Path xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"Width='28' Height='28' Stretch='None' Fill='Black' Data='" +
+                ref new Platform::String(testCase.data) + L"'/>"));
+
+            auto root = ref new Canvas();
+            root->Children->Append(path);
+            Canvas::SetLeft(path, 40);
+            Canvas::SetTop(path, 40);
+            windowHelper->WindowContent = root;
+        });
+        windowHelper->WaitForIdle();
+
+        TestServices::Utilities->VerifyMockDCompOutput(
+            MockDComp::SurfaceComparison::ReferencedOnly, ref new Platform::String(testCase.variation));
+    }
+}
+
 void ShapeTests::MaxTextureSize()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1640,6 +1679,59 @@ void ShapeTests::MaxTextureSize()
     TestServices::WindowHelper->WaitForIdle();
 
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
+}
+
+void ShapeTests::PathMaskOffsetWhenClampedToMaxTextureSize()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /* resizeWindow */);
+    auto windowHelper = TestServices::WindowHelper;
+    windowHelper->SetWindowSizeOverrideWithWindowScale(Size(400, 300), 1.0f);
+
+    // Force a max texture size of 128. We'll render paths larger than this and have WinUI scale them back down
+    // to max texture size, then confirm that nothing is rendering outside the scaled down surface.
+    TestServices::Utilities->SetMaxTextureSizeOverride(128);
+
+    const struct
+    {
+        const wchar_t* data;
+        float width;
+        float height;
+    } testCases[] =
+    {
+        { L"M128,128H640V160H128Z", 512.0f, 32.0f },    // Too wide
+        { L"M128,128H160V640H128Z", 32.0f, 512.0f },    // Too tall
+        { L"M128,128H640V640H128Z", 512.0f, 512.0f },   // Both
+    };
+
+    for (const auto& testCase : testCases)
+    {
+        xaml_shapes::Path^ path;
+        RunOnUIThread([&]()
+        {
+            path = safe_cast<xaml_shapes::Path^>(XamlReader::Load(
+                L"<Path xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"Width='640' Height='640' Stretch='None' Fill='Black' Data='" +
+                ref new Platform::String(testCase.data) + L"'/>"));
+            path->RasterizationScale = 0.5f;
+
+            auto root = ref new Canvas();
+            root->Children->Append(path);
+            windowHelper->WindowContent = root;
+        });
+        windowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // A 512-unit span at scale 0.5 needs 256 pixels, which is clamped down to the 128-pixel cap.
+            // Its surface offset was originally calculated to be (Path offset 128 * scale 0.5 = 64), but keeping this
+            // offset would put the shape outside the surface (Path offset 128 * scale 0.25 - surface offset 64 = -32).
+            // The surface offset must be updated to (Path offset 128 * scale 0.5 * fit-to-max-texture-size scale 0.5 = 32).
+            // That puts the element at the correct visual offset of (32 / scale 0.25 = 128).
+            auto verifier = VisualTreeVerifier::CreateFromElement(path);
+            verifier->VerifyVisualOffset(128.0f, 128.0f);
+            verifier->VerifyVisualSize(testCase.width, testCase.height);
+        });
+    }
 }
 
 } } } } } }
