@@ -396,6 +396,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header sort on a tree over a plain list orders each sibling set through the table's own view, leaves the list's order alone, and places a later child by its key.")]
+        public void VerifyHeaderSortOnPlainListTreeKeepsListOrder()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
+
+            Toggle(tableView, "Ada", true);
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Name descending sorts."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "Gus1 Eve1+ Ada1- Cy2 Ben2+", "Name descending");
+                Verify.AreEqual("Ada Ben Cy Dan Eve Fay Gus", string.Join(" ", list.Select(e => e.Name)), "The list keeps its order.");
+                list.Add(new TreeEmployee { Id = 8, ManagerId = 1, Name = "Bo", Dept = "Eng" });
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Gus1 Eve1+ Ada1- Cy2 Bo2 Ben2+", "a new child lands at its sorted place"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header sort on a tree over a CollectionViewSource View writes the view's SortDescriptions and orders each sibling set.")]
+        public void VerifyHeaderSortOnCollectionViewTreeSortsTheView()
+        {
+            Microsoft.UI.Xaml.Data.CollectionViewSource cvs = null;
+            RunOnUIThread.Execute(() => cvs = MakeShapingView(MakeTree()));
+            object view = null;
+            RunOnUIThread.Execute(() => view = cvs.View);
+            var tableView = Place(view);
+
+            Toggle(tableView, "Ada", true);
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Name descending sorts."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, cvs.SortDescriptions.Count, "The sort is the view's.");
+                Verify.AreEqual("Name", cvs.SortDescriptions[0].PropertyName);
+                VerifyTree(tableView, "Gus1 Eve1+ Ada1- Cy2 Ben2+", "Name descending");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a CollectionViewSource sort orders each sibling set, since siblings follow the view's order.")]
         public void VerifyCollectionViewSortOrdersSiblings()
         {
