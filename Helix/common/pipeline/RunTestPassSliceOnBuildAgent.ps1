@@ -20,6 +20,10 @@ param(
 
     [int]$RerunPassesRequiredToAvoidFailure = 5,
 
+    # Time limit for each te.exe run, in minutes; 0 turns it off. A healthy work item takes at most about 25 minutes,
+    # including reruns, and the 9x rerun loop of one test that keeps timing out can take about 50.
+    [double]$TeHangTimeoutMinutes = 60,
+
     [switch]$SkipCopyTestResultsXml
 )
 
@@ -174,6 +178,7 @@ try
         }
     }
 
+    $hungWorkItems = @()
     foreach($workItem in $workItemsToRun)
     {
         $command = $workItem.Command
@@ -189,6 +194,7 @@ try
         $env:HELIX_WORKITEM_UPLOAD_ROOT = $workItemUploadRoot
         $env:rerunPassesRequiredToAvoidFailure = $RerunPassesRequiredToAvoidFailure
         $env:HELIX_DUMP_FOLDER = $dumpsDir
+        $env:WINUI_TE_HANG_TIMEOUT_MINUTES = $TeHangTimeoutMinutes.ToString([Globalization.CultureInfo]::InvariantCulture)
 
         Write-Host "Running $workItemName work item"
 
@@ -217,7 +223,20 @@ try
             Move-Item .\testResults.xml $resultsFileName
         }
 
+        # RunHelixWorkItem.ps1 writes TaefHang.txt when the hang watchdog had to end te.exe. Keep going so the rest of
+        # the slice still runs, and fail once it has.
+        if (Test-Path -LiteralPath (Join-Path $workItemUploadRoot "TaefHang.txt"))
+        {
+            $hungWorkItems += $workItemName
+            Write-Host "##vso[task.logissue type=error]$workItemName hung: te.exe was ended after $TeHangTimeoutMinutes minutes. Its dumps and logs are in the $workItemName folder of this job's test output artifact."
+        }
+
         Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
+    }
+
+    if ($hungWorkItems.Count -gt 0)
+    {
+        Throw "te.exe hung in $($hungWorkItems.Count) work item(s) and was ended after $TeHangTimeoutMinutes minutes: $($hungWorkItems -join ', ')"
     }
 }
 finally

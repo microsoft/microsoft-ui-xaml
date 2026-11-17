@@ -84,6 +84,7 @@ Here's how the pipelines and scripts are organized to do this work:
         * Each test command calls **RunHelixWorkItem.ps1**
           * Run the test command (a TAEF query that runs multiple tests)
           * For each failed test, re-run once.  If the re-run failed, run the test 9x in a loop.          
+          * If a te.exe run is still going after 60 minutes, dump and end it, and record the hang as a failed test (see [Hung TAEF runs](#hung-taef-runs)).
       * PublishTestResults
       * Call **UpdateUnreliableTests.ps1**
 
@@ -145,6 +146,14 @@ in these scripts:
 
 In the case where a test fails, we re-run it 10 more times. If it passes 5/10 times or more, we consider the test 
 'unreliable'. If it passes fewer than 5/10 times we consider the test a failure.
+
+### Hung TAEF runs
+
+On the pipeline agents, each te.exe run has a time limit, set by `-TeHangTimeoutMinutes` on
+**RunTestPassSliceOnBuildAgent.ps1** (60 minutes by default). If te.exe is still running when it expires,
+[TaefHangWatchdog.ps1](../../Helix/common/test/TaefHangWatchdog.ps1) writes dumps of te.exe and its test hosts to the
+work item's upload folder, ends them, and records the hang as a failed `<work item>.TaefHang` test. The rest of the
+slice still runs, and then the job fails.
 
 ### Publish Test Results
 
