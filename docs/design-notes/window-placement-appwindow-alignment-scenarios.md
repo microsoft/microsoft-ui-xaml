@@ -82,7 +82,7 @@ window.Activate();
 | `fixed-size-window` | Supported | `WindowPlacementRespectsFixedSizing`, HL 10 |
 | `display-changes` | Supported | `WindowPlacementPreferSameNameDisplay`, `WindowPlacementAdaptToReplacementDisplay`, `WindowPlacementPreserveLogicalSize`, `WindowPlacementMigratesChangedWorkArea` |
 | `launch-on-display-hint` | Open | Not tested |
-| `fallback-to-primary-display` | Open | Needs the proposed display-selection helpers (not implemented). Not tested. |
+| `fallback-to-primary-display` | Open | Needs the proposed display-selection helpers (not in the prototype yet). Not tested. |
 | `no-flash-on-apply` | Open | HL 6 (hidden contract only) |
 | `restore-z-order` | Open | Not tested |
 | `compact-overlay` | Open | `WindowPlacementSkipsUnsupportedPresenters` |
@@ -630,7 +630,7 @@ Scenario `launch-on-display-hint`
 Scenario `fallback-to-primary-display`
 
 > **Open.** Needs the proposed `TryGetDisplayArea()` and `MoveToDisplayArea(DisplayArea)`
-> helpers on `AppWindowPlacementDetails`. Neither is implemented. By default, a window
+> helpers on `AppWindowPlacementDetails`. Neither is in the prototype yet. By default, a window
 > whose saved display is gone opens on the
 > nearest display (see `display-changes`). Some apps want the primary display instead. Today the
 > app can't tell that the saved display is gone, and can't redo PlacementEx's work-area and DPI
@@ -651,10 +651,10 @@ window.PlacementMode = WindowPlacementMode.SaveOnClose;
 AppWindowPlacementDetails saved = window.TryLoadPlacementDetails();
 if (saved != null)
 {
-    // Proposed API, not implemented. Null if the saved display is not connected.
+    // Proposed API, not in the prototype yet. Null if the saved display is not connected.
     if (saved.TryGetDisplayArea() == null)
     {
-        // Proposed API, not implemented. Returns new details fitted to that display.
+        // Proposed API, not in the prototype yet. Returns new details fitted to that display.
         saved = saved.MoveToDisplayArea(DisplayArea.Primary);
     }
     window.AppWindow.SetCurrentPlacement(saved, isFirstWindow: true);
