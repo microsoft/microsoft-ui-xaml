@@ -13,6 +13,7 @@
     "Microsoft.VisualStudio.Component.Roslyn.Compiler",
     "Microsoft.VisualStudio.Component.TextTemplating",
     "Microsoft.VisualStudio.Component.UWP.VC.ARM64",
+    "Microsoft.VisualStudio.Component.UWP.VC.ARM64EC",
     "Microsoft.VisualStudio.Component.VC.ATL",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
     "Microsoft.VisualStudio.Component.VC.CoreIde",
