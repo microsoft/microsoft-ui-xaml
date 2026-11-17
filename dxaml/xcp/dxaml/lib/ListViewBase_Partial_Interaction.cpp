@@ -1489,34 +1489,11 @@ _Check_return_ HRESULT ListViewBase::ScrollIntoViewWithFocusPadding(
         }
     }
 
-    auto coreElement = static_cast<CUIElement*>(element->GetHandle());
-    auto visualTree = VisualTree::GetContentRootForElement(coreElement)->GetVisualTreeNoRef();
-    CUIElement* rootElement = visualTree->GetRootScrollViewer();
-    if (!rootElement)
-    {
-        rootElement = visualTree->GetPublicRootVisual();
-    }
-    XRECTF_RB globalBounds = {};
-    XRECTF focusBounds = {};
-    XRECTF localFocusBounds = {};
-    IFC_RETURN(CBringIntoViewHandler::GetFocusedElementBoundingRect(
-        rootElement, rootElement->GetActualHeight(), false /*isIHMShowing*/,
-        coreElement, CBringIntoViewHandler::GetInnerScroller(coreElement),
-        globalBounds, focusBounds));
-    UIElement* scrollTarget = element;
+    // Header heights are in panel coordinates, not the item's transformed coordinates.
+    UIElement* scrollTarget = headerHeight > 0 ? itemsHost.Cast<ModernCollectionBasePanel>() : element;
     XRECTF elementBoundsInPanel = {};
-    if (headerHeight > 0)
-    {
-        // Header heights are in panel coordinates, not the item's transformed coordinates.
-        scrollTarget = itemsHost.Cast<ModernCollectionBasePanel>();
-        IFC_RETURN(CBringIntoViewHandler::TransformGlobalToLocal(
-            static_cast<CUIElement*>(scrollTarget->GetHandle()),
-            {globalBounds.left, globalBounds.top,
-             globalBounds.right - globalBounds.left, globalBounds.bottom - globalBounds.top},
-            &elementBoundsInPanel));
-    }
-    IFC_RETURN(CBringIntoViewHandler::TransformGlobalToLocal(
-        static_cast<CUIElement*>(scrollTarget->GetHandle()), focusBounds, &localFocusBounds));
+    XRECTF localFocusBounds = {};
+    IFC_RETURN(GetFocusBounds(element, scrollTarget, &elementBoundsInPanel, &localFocusBounds));
     if (headerHeight > 0)
     {
         // Merge header clearance with focus padding, rather than scrolling twice.
@@ -1541,12 +1518,156 @@ _Check_return_ HRESULT ListViewBase::ScrollIntoViewWithFocusPadding(
     return S_OK;
 }
 
+// Gets the element's bounds and the focus-padded bounds keyboard focus brings into view, in the target's coordinates.
+_Check_return_ HRESULT ListViewBase::GetFocusBounds(
+    _In_ UIElement* element,
+    _In_ UIElement* target,
+    _Out_ XRECTF* elementBounds,
+    _Out_ XRECTF* focusBounds)
+{
+    auto coreElement = static_cast<CUIElement*>(element->GetHandle());
+    auto visualTree = VisualTree::GetContentRootForElement(coreElement)->GetVisualTreeNoRef();
+    CUIElement* rootElement = visualTree->GetRootScrollViewer();
+    if (!rootElement)
+    {
+        rootElement = visualTree->GetPublicRootVisual();
+    }
+    XRECTF_RB globalBounds = {};
+    XRECTF globalFocusBounds = {};
+    IFC_RETURN(CBringIntoViewHandler::GetFocusedElementBoundingRect(
+        rootElement, rootElement->GetActualHeight(), false /*isIHMShowing*/,
+        coreElement, CBringIntoViewHandler::GetInnerScroller(coreElement),
+        globalBounds, globalFocusBounds));
+    auto coreTarget = static_cast<CUIElement*>(target->GetHandle());
+    IFC_RETURN(CBringIntoViewHandler::TransformGlobalToLocal(
+        coreTarget,
+        {globalBounds.left, globalBounds.top,
+         globalBounds.right - globalBounds.left, globalBounds.bottom - globalBounds.top},
+        elementBounds));
+    IFC_RETURN(CBringIntoViewHandler::TransformGlobalToLocal(coreTarget, globalFocusBounds, focusBounds));
+    return S_OK;
+}
+
+// Computes the offset for the ScrollIntoView that realizes an item ahead of a keyboard focus change, so the item
+// lands directly at its padded focus position rather than at the viewport edge, which ScrollIntoViewWithFocusPadding
+// would then correct with a second scroll. The padding does not depend on position, so it is measured on the item's
+// own container when it has one (possibly recycled), or else on the nearest realized one. Callers still apply
+// ScrollIntoViewWithFocusPadding afterwards; it is a no-op unless the estimate differs from the item's actual padding.
+_Check_return_ HRESULT ListViewBase::GetFocusPaddingScrollOffset(
+    _In_ INT itemIndex,
+    _Out_ DOUBLE* offset)
+{
+    *offset = 0.0;
+    if (itemIndex < 0 || !m_tpScrollViewer || m_tpScrollViewer.Cast<ScrollViewer>()->IsInManipulation())
+    {
+        return S_OK;
+    }
+
+    BOOLEAN bringIntoViewOnFocusChange = FALSE;
+    IFC_RETURN(m_tpScrollViewer->get_BringIntoViewOnFocusChange(&bringIntoViewOnFocusChange));
+    ctl::ComPtr<IScrollInfo> scrollInfo;
+    IFC_RETURN(m_tpScrollViewer.Cast<ScrollViewer>()->get_ScrollInfo(&scrollInfo));
+    ctl::ComPtr<IPanel> itemsHost;
+    IFC_RETURN(get_ItemsHost(&itemsHost));
+    auto panel = itemsHost.AsOrNull<IModernCollectionBasePanel>();
+    if (!bringIntoViewOnFocusChange || !scrollInfo.AsOrNull<IScrollContentPresenter>() || !panel)
+    {
+        return S_OK;
+    }
+
+    // The panel applies the offset after aligning the item with the viewport edge it is beyond, preferring the leading edge.
+    bool isLeading = false;
+    ctl::ComPtr<IDependencyObject> container;
+    IFC_RETURN(ContainerFromIndex(itemIndex, &container));
+    ctl::ComPtr<IUIElement> paddingSource = container.AsOrNull<IUIElement>();
+    if (paddingSource && !ModernCollectionBasePanel::ElementIsPositionedInGarbageSection(paddingSource))
+    {
+        FLOAT headerHeight = 0;
+        bool headerAvailable = false;
+        IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->GetStickyHeaderHeightForItem(itemIndex, &headerHeight, &headerAvailable));
+        if (!headerAvailable)
+        {
+            return S_OK;
+        }
+
+        bool isFullyVisible = false;
+        IFC_RETURN(IsElementFullyVisibleInViewport(paddingSource.Cast<UIElement>(), itemIndex, &isFullyVisible, &isLeading));
+        if (isFullyVisible)
+        {
+            // ScrollIntoView leaves a visible item in place.
+            return S_OK;
+        }
+    }
+    else
+    {
+        int cacheStart = -1;
+        int cacheEnd = -1;
+        IFC_RETURN(GetCacheStartAndEnd(false /*isForGroupIndexes*/, &cacheStart, &cacheEnd));
+        if (cacheStart < 0 || (itemIndex >= cacheStart && itemIndex <= cacheEnd))
+        {
+            return S_OK;
+        }
+        isLeading = itemIndex < cacheStart;
+
+        if (!paddingSource)
+        {
+            ctl::ComPtr<IDependencyObject> nearestContainer;
+            IFC_RETURN(ContainerFromIndex(isLeading ? cacheStart : cacheEnd, &nearestContainer));
+            paddingSource = nearestContainer.AsOrNull<IUIElement>();
+        }
+    }
+
+    if (!paddingSource || !paddingSource.Cast<UIElement>()->IsInLiveTree())
+    {
+        return S_OK;
+    }
+
+    xaml_controls::Orientation physicalOrientation = xaml_controls::Orientation_Vertical;
+    IFC_RETURN(GetItemsHostOrientations(&physicalOrientation, nullptr /*pLogicalOrientation*/));
+    const bool isVertical = physicalOrientation == xaml_controls::Orientation_Vertical;
+
+    XRECTF elementBounds = {};
+    XRECTF focusBounds = {};
+    IFC_RETURN(GetFocusBounds(paddingSource.Cast<UIElement>(), panel.Cast<ModernCollectionBasePanel>(), &elementBounds, &focusBounds));
+    const FLOAT leadingPadding = isVertical ? elementBounds.Y - focusBounds.Y : elementBounds.X - focusBounds.X;
+    const FLOAT trailingPadding = isVertical ?
+        (focusBounds.Y + focusBounds.Height) - (elementBounds.Y + elementBounds.Height) :
+        (focusBounds.X + focusBounds.Width) - (elementBounds.X + elementBounds.Width);
+    if (leadingPadding < 0 || trailingPadding < 0)
+    {
+        // Focus bounds were reduced to fit an element larger than the viewport.
+        return S_OK;
+    }
+
+    if (isLeading)
+    {
+        // The panel already clears the item's sticky header, which overlaps the padding.
+        FLOAT headerHeight = 0;
+        bool headerAvailable = false;
+        IFC_RETURN(panel.Cast<ModernCollectionBasePanel>()->GetStickyHeaderHeightForItem(itemIndex, &headerHeight, &headerAvailable));
+        if (headerAvailable)
+        {
+            *offset = -std::max(0.0f, leadingPadding - headerHeight);
+        }
+    }
+    else
+    {
+        *offset = trailingPadding;
+    }
+    return S_OK;
+}
+
 _Check_return_ HRESULT ListViewBase::IsElementFullyVisibleInViewport(
     _In_ UIElement* element,
     _In_ INT itemIndex,
-    _Out_ bool* isFullyVisible)
+    _Out_ bool* isFullyVisible,
+    _Out_opt_ bool* startsBeforeViewport)
 {
     *isFullyVisible = false;
+    if (startsBeforeViewport)
+    {
+        *startsBeforeViewport = false;
+    }
     if (!m_tpScrollViewer)
     {
         return S_OK;
@@ -1605,6 +1726,10 @@ _Check_return_ HRESULT ListViewBase::IsElementFullyVisibleInViewport(
         bounds.Y >= headerHeight - tolerance &&
         bounds.X + bounds.Width <= viewportWidth + tolerance &&
         bounds.Y + bounds.Height <= viewportHeight + tolerance;
+    if (startsBeforeViewport)
+    {
+        *startsBeforeViewport = bounds.X < -tolerance || bounds.Y < headerHeight - tolerance;
+    }
     return S_OK;
 }
 

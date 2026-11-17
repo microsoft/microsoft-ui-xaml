@@ -35,6 +35,8 @@
         <StackPanel Orientation="Horizontal" Spacing="16">
             <CheckBox x:Name="DisableFocusScrolling" Content="Disable focus scrolling" />
             <CheckBox x:Name="DisableFocusScrollingDuringFocus" Content="Disable scrolling in GettingFocus" />
+            <CheckBox x:Name="LocalTabNavigation" Content="Local tab navigation" />
+            <CheckBox x:Name="ListHeaderFooter" Content="60-pixel list header and footer" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="16">
             <CheckBox x:Name="CancelFocusChanges" Content="Cancel focus changes at the viewport edge" />
@@ -129,6 +131,8 @@
             <TextBlock x:Name="KeyboardScrollSelectedCount" Text="0" />
             <TextBlock x:Name="KeyboardScrollKeysProcessed" Text="0" />
             <TextBlock x:Name="KeyboardScrollPreparedIndices" Text="" />
+            <TextBlock x:Name="KeyboardScrollFirstContainerRealizedNow" Text="" />
+            <TextBlock x:Name="KeyboardScrollLastContainerRealizedNow" Text="" />
             <TextBlock x:Name="KeyboardScrollFocusSequence" Text="" />
         </StackPanel>
     </StackPanel>

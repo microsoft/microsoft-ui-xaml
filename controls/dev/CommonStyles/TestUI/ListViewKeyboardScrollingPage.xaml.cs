@@ -248,6 +248,10 @@ namespace MUXControlsTestApp
             KeyboardScrollFocusSequence.Text = "";
             KeyboardScrollOffsetAtFocus.Text = "";
             KeyboardScrollOffsetHistory.Text = "";
+            KeyboardScrollFirstContainerRealizedNow.Text =
+                (KeyboardScrollingList.ContainerFromIndex(0) != null).ToString();
+            KeyboardScrollLastContainerRealizedNow.Text =
+                (KeyboardScrollingList.ContainerFromIndex(KeyboardScrollingList.Items.Count - 1) != null).ToString();
         }
 
         private void UpdateFocusedBounds()
@@ -367,6 +371,24 @@ namespace MUXControlsTestApp
                 KeyboardScrollingList.ItemContainerStyle = null;
             }
             _scrollViewer.BringIntoViewOnFocusChange = DisableFocusScrolling.IsChecked != true;
+            if (LocalTabNavigation.IsChecked == true)
+            {
+                KeyboardScrollingList.TabNavigation = KeyboardNavigationMode.Local;
+            }
+            else
+            {
+                KeyboardScrollingList.ClearValue(Control.TabNavigationProperty);
+            }
+            if (ListHeaderFooter.IsChecked == true)
+            {
+                KeyboardScrollingList.Header = new Border { Width = 60, Height = 60 };
+                KeyboardScrollingList.Footer = new Border { Width = 60, Height = 60 };
+            }
+            else
+            {
+                KeyboardScrollingList.ClearValue(ListViewBase.HeaderProperty);
+                KeyboardScrollingList.ClearValue(ListViewBase.FooterProperty);
+            }
             if (ZoomContent.IsChecked == true)
             {
                 _scrollViewer.ZoomMode = ZoomMode.Enabled;

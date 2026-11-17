@@ -1078,10 +1078,22 @@ namespace DirectUI
                 _In_ UIElement* element,
                 _In_ INT itemIndex);
 
+            _Check_return_ HRESULT GetFocusBounds(
+                _In_ UIElement* element,
+                _In_ UIElement* target,
+                _Out_ XRECTF* elementBounds,
+                _Out_ XRECTF* focusBounds);
+
+            // Offset for the ScrollIntoView realizing an item ahead of a keyboard focus change, so it lands at its padded position.
+            _Check_return_ HRESULT GetFocusPaddingScrollOffset(
+                _In_ INT itemIndex,
+                _Out_ DOUBLE* offset);
+
             _Check_return_ HRESULT IsElementFullyVisibleInViewport(
                 _In_ UIElement* element,
                 _In_ INT itemIndex,
-                _Out_ bool* isFullyVisible);
+                _Out_ bool* isFullyVisible,
+                _Out_opt_ bool* startsBeforeViewport = nullptr);
 
             // Whether keyboard navigation already scrolled this item into view and its container is still fully visible.
             _Check_return_ HRESULT IsAlreadyScrolledForKeyboardFocus(

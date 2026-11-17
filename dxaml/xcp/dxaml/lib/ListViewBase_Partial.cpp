@@ -1164,13 +1164,17 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
         {
             ctl::ComPtr<IDependencyObject> itemContainerCandidate = spFirstFocusableResult;
 
+            // Realize the target directly at the padded position keyboard focus brings it to, in a single scroll.
+            DOUBLE focusPaddingOffset = 0.0;
+            IFC(GetFocusPaddingScrollOffset(targetFocusedIndex, &focusPaddingOffset));
+
             // Make sure the target index is realized and prepared so it can be declared focusable and tabbed into.
             // Since this method brings the target index into view, it is only invoked when the FocusManager is processing
             // the Tab key to actually navigate to an element (as opposed to only accessing a tab stop).
-            IFC(GetScrolledIntoViewAndPreparedContainer(targetFocusedIndex, itemContainerCandidate.Detach(), &spFirstFocusableResult));
+            IFC(GetScrolledIntoViewAndPreparedContainer(targetFocusedIndex, itemContainerCandidate.Detach(), &spFirstFocusableResult, focusPaddingOffset));
 
-            // With Local or Cycle, focus is not redirected (see OnGettingFocus), so this target gets focus: scroll it once,
-            // directly to the padded position the focus change would otherwise correct to.
+            // With Local or Cycle, focus is not redirected (see OnGettingFocus), so this target gets focus. Bring it to its
+            // exact padded position, normally a no-op after the offset scroll above, so the focus change does not scroll again.
             if (!isUsingTabNavigationOnce)
             {
                 if (auto targetElement = spFirstFocusableResult.AsOrNull<IUIElement>())
@@ -2211,6 +2215,14 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
 
                 if (newFocusIndex >= 0 && newFocusIndex < (isGroupHeader ? groupCount : static_cast<int>(itemCount)))
                 {
+                    // Place the item directly at its padded focus position, so neither the padding below (Local and Cycle)
+                    // nor the one OnGettingFocus applies (Once) scrolls again.
+                    DOUBLE focusPaddingOffset = 0.0;
+                    if (!isGroupHeader)
+                    {
+                        IFC_RETURN(GetFocusPaddingScrollOffset(newFocusIndex, &focusPaddingOffset));
+                    }
+
                     IFC_RETURN(Selector::ScrollIntoView(
                         newFocusIndex,
                         isGroupHeader ? TRUE : FALSE /*isGroupItemIndex*/,
@@ -2219,7 +2231,8 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                         FALSE /*isFromPublicAPI*/,
                         TRUE  /*ensureContainerRealized*/,
                         FALSE /*animateIfBringIntoView*/,
-                        xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default));
+                        xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default,
+                        focusPaddingOffset));
 
                     if (isGroupHeader)
                     {
@@ -3001,6 +3014,10 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
                 // just-applied padded position: the panel may not have caught up with it and would realign the item.
                 if (!isTargetFullyVisible)
                 {
+                    // Realize the target directly at its padded focus position, so the padding below does not scroll again.
+                    DOUBLE focusPaddingOffset = 0.0;
+                    IFC_RETURN(GetFocusPaddingScrollOffset(focusIndex, &focusPaddingOffset));
+
                     IFC_RETURN(Selector::ScrollIntoView(
                         focusIndex,
                         FALSE /*isGroupItemIndex*/,
@@ -3009,7 +3026,8 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
                         FALSE /*isFromPublicAPI*/,
                         TRUE  /*ensureContainerRealized*/,
                         FALSE /*animateIfBringIntoView*/,
-                        xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default));
+                        xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default,
+                        focusPaddingOffset));
                 }
 
                 ctl::ComPtr<IDependencyObject> focusIndexContainer;

@@ -901,10 +901,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Math.Abs(offsetAtFocus - expectedOffset) < 0.1,
                     $"The viewport must already be at {expectedOffset} when the item gets focus, not {offsetAtFocus}; " +
                     $"a later correction is visible as a jump; {diagnostics}.");
-                if (itemVisible)
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText(),
+                    (itemVisible ?
+                        "A fully visible item at the viewport edge must only be moved once, by the focus padding" :
+                        "A hidden item must be brought to its padded position in one scroll, not aligned with the edge first") +
+                    $"; {diagnostics}.");
+            }
+        }
+
+        [TestMethod]
+        public void ListViewLocalTabEntryRealizesItemWithPaddingOnce()
+        {
+            foreach (bool fromAfterList in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
                 {
+                    Log.Comment($"Local tab entry: fromAfterList={fromAfterList}.");
+                    new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                    new CheckBox(FindElement.ById("LocalTabNavigation")).Check();
+                    new CheckBox(FindElement.ById("ListHeaderFooter")).Check();
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+
+                    // Scroll far from the target (the first item for Tab, the last for Shift+Tab), so it must be realized.
+                    new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(fromAfterList ? "Before" : "After");
+                    new Button(FindElement.ById(fromAfterList ? "PrepareFocusEntryAfter" : "PrepareFocusEntryBefore")).Invoke();
+                    double initialOffset = fromAfterList ? 0 : 1500;
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        IsKeyboardScrollOffsetNear(initialOffset) &&
+                        new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText() == "0");
+                    VerifyKeyboardScrollOffset(initialOffset);
+                    Log.Comment("Target realized before Tab: " + new TextBlock(FindElement.ById(
+                        fromAfterList ? "KeyboardScrollLastContainerRealizedNow" : "KeyboardScrollFirstContainerRealizedNow")).GetText());
+
+                    KeyboardHelper.PressKey(Key.Tab, fromAfterList ? ModifierKey.Shift : ModifierKey.None);
+                    string targetIndex = fromAfterList ? "38" : "0";
+                    Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                        new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText() == targetIndex);
+                    Wait.ForIdle();
+
+                    // The 60-pixel list header and footer leave room for the 20-pixel focus padding beyond the target.
+                    double expectedOffset = fromAfterList ? 60 + 39 * 100 + 20 - 300 : 60 - 20;
+                    string diagnostics =
+                        $"offset history={new TextBlock(FindElement.ById("KeyboardScrollOffsetHistory")).GetText()}, " +
+                        $"offset at focus={new TextBlock(FindElement.ById("KeyboardScrollOffsetAtFocus")).GetText()}, " +
+                        $"focus sequence={new TextBlock(FindElement.ById("KeyboardScrollFocusSequence")).GetText()}";
+                    Verify.AreEqual(targetIndex, new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText(),
+                        $"Local tab navigation must enter at the edge item; {diagnostics}.");
+                    VerifyKeyboardScrollOffset(expectedOffset, message: diagnostics);
+                    VerifyKeyboardScrollOffset(expectedOffset, "KeyboardScrollOffsetAtFocus", diagnostics);
                     Verify.AreEqual("1", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText(),
-                        $"A fully visible item at the viewport edge must only be moved once, by the focus padding; {diagnostics}.");
+                        $"Realizing the tab target must scroll directly to its padded position; {diagnostics}.");
                 }
             }
         }
