@@ -277,34 +277,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyGridLineAndOuterBorderBrushDefaults()
         {
+            var keys = new[]
+            {
+                "TabularSurfaceGridLineBrush",
+                "TabularSurfaceOuterBorderBrush",
+                "TabularSurfaceHeaderSeparatorBrush",
+            };
+            VerifyBrushesAcrossThemes(keys, (theme, brushes) =>
+            {
+                var expected = theme == ElementTheme.Dark
+                    ? Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF)
+                    : Color.FromArgb(0x0F, 0x00, 0x00, 0x00);
+                foreach (var key in keys)
+                {
+                    Verify.AreEqual(expected, brushes[key].Color,
+                        $"{theme}: {key} must use DividerStrokeColorDefault.");
+                }
+            });
+
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
-
-                var dark = RequireBrush(resources, "Default", "TabularSurfaceGridLineBrush");
-                var light = RequireBrush(resources, "Light", "TabularSurfaceGridLineBrush");
-                var darkBorder = RequireBrush(resources, "Default", "TabularSurfaceOuterBorderBrush");
-                var lightBorder = RequireBrush(resources, "Light", "TabularSurfaceOuterBorderBrush");
-                var darkHeader = RequireBrush(resources, "Default", "TabularSurfaceHeaderSeparatorBrush");
-                var lightHeader = RequireBrush(resources, "Light", "TabularSurfaceHeaderSeparatorBrush");
                 var highContrast = RequireBrush(resources, "HighContrast", "TabularSurfaceGridLineBrush");
                 var highContrastHeader = RequireBrush(resources, "HighContrast", "TabularSurfaceHeaderSeparatorBrush");
                 var highContrastSection = RequireBrush(resources, "HighContrast", "TabularSurfaceGroupHeaderBorderBrush");
                 var highContrastBorder = RequireBrush(resources, "HighContrast", "TabularSurfaceOuterBorderBrush");
-                if (dark == null || light == null || darkBorder == null || lightBorder == null || darkHeader == null || lightHeader == null || highContrast == null || highContrastHeader == null || highContrastSection == null || highContrastBorder == null)
-                {
-                    return;
-                }
-
-                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), dark.Color,
-                    "Dark TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#15FFFFFF).");
-                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), light.Color,
-                    "Light TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#0F000000).");
-                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), darkBorder.Color,
-                    "The default Dark outer border must use DividerStrokeColorDefault (#15FFFFFF).");
-                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), lightBorder.Color,
-                    "The default Light outer border must use DividerStrokeColorDefault (#0F000000).");
                 Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorGrayTextColorBrush"), highContrastBorder),
                     "High Contrast outer borders must match the body's system disabled color.");
                 Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorGrayTextColorBrush"), highContrast),
@@ -317,8 +314,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(new Thickness(0, 0, 0, 1),
                     (Thickness)highContrastResources["TabularSurfaceGroupHeaderBorderThickness"],
                     "High Contrast section headers must have only a bottom divider, not an extra top rule.");
-                Verify.AreEqual(dark.Color, darkHeader.Color, "Dark header lines must match the body grid lines (DividerStrokeColorDefault).");
-                Verify.AreEqual(light.Color, lightHeader.Color, "Light header lines must match the body grid lines (DividerStrokeColorDefault).");
             });
         }
 
@@ -392,6 +387,84 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"{theme}: the shared brush must follow the requested theme.");
                 });
             }
+        }
+
+        [TestMethod]
+        public void VerifyTabularBrushesReuseSharedResourcesAcrossThemes()
+        {
+            var brushPairs = new[]
+            {
+                ("TabularSurfaceRowForegroundBrush", "TextFillColorPrimaryBrush"),
+                ("TabularSurfaceHeaderForegroundBrush", "TextFillColorSecondaryBrush"),
+                ("TabularSurfaceRowForegroundDisabledBrush", "TextFillColorDisabledBrush"),
+                ("TabularSurfaceRowBackgroundBrush", "SubtleFillColorTransparentBrush"),
+                ("TabularSurfaceRowBackgroundPointerOverBrush", "SubtleFillColorSecondaryBrush"),
+                ("TabularSurfaceRowBackgroundPressedBrush", "SubtleFillColorTertiaryBrush"),
+                ("TabularSurfaceRowBackgroundAlternatingBrush", "SubtleFillColorTertiaryBrush"),
+                ("TabularSurfaceGridLineBrush", "DividerStrokeColorDefaultBrush"),
+                ("TabularSurfaceSelectionIndicatorBrush", "AccentFillColorDefaultBrush"),
+                ("TabularSurfaceSelectionIndicatorDisabledBrush", "AccentFillColorDisabledBrush"),
+                ("TabularSurfaceBorderlessOuterBorderBrush", "SubtleFillColorTransparentBrush"),
+                ("ResizeGripperSeparatorBrush", "ControlStrongStrokeColorDefaultBrush"),
+            };
+            VerifyBrushesAcrossThemes(brushPairs.SelectMany(pair => new[] { pair.Item1, pair.Item2 }),
+                (theme, brushes) =>
+                {
+                    foreach (var pair in brushPairs)
+                    {
+                        Verify.IsTrue(ReferenceEquals(brushes[pair.Item2], brushes[pair.Item1]),
+                            $"{theme}: {pair.Item1} must reuse {pair.Item2} on a loaded element.");
+                    }
+                });
+        }
+
+        private void VerifyBrushesAcrossThemes(
+            IEnumerable<string> keys,
+            Action<ElementTheme, IReadOnlyDictionary<string, SolidColorBrush>> verify)
+        {
+            var resourceKeys = keys.Distinct().ToArray();
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                string probes = string.Concat(resourceKeys.Select(key =>
+                    $"<Border Background='{{ThemeResource {key}}}' />"));
+                host = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' RequestedTheme='Light'>" +
+                    probes + "</Grid>");
+                LoadContent(host);
+            });
+            IdleSynchronizer.Wait();
+
+            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+            {
+                RunOnUIThread.Execute(() => host.RequestedTheme = theme);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(theme, host.ActualTheme, "The loaded probes must follow the requested theme.");
+                    var brushes = new Dictionary<string, SolidColorBrush>();
+                    for (int i = 0; i < resourceKeys.Length; i++)
+                    {
+                        var brush = ((Border)host.Children[i]).Background as SolidColorBrush;
+                        Verify.IsNotNull(brush, $"{theme}: {resourceKeys[i]} must resolve.");
+                        brushes.Add(resourceKeys[i], brush);
+                    }
+                    verify(theme, brushes);
+                });
+            }
+        }
+
+        private static Color RequireRowBackgroundColor(string themeName, string state)
+        {
+            string key = state switch
+            {
+                "Normal" or "Disabled" => "SubtleFillColorTransparent",
+                "PointerOver" or "Selected" or "SelectedPressed" or "SelectedDisabled" => "SubtleFillColorSecondary",
+                "Pressed" or "SelectedPointerOver" => "SubtleFillColorTertiary",
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unexpected row visual state."),
+            };
+            return RequireThemeColor(themeName, key);
         }
 
         [TestMethod]
@@ -1300,56 +1373,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyResizeGripperDefaultSeparatorBrushesResolve()
         {
-            RunOnUIThread.Execute(() =>
+            VerifyBrushesAcrossThemes(new[] { "ResizeGripperSeparatorBrush" }, (theme, brushes) =>
             {
-                EnsureTabularControlsResources();
-                var resources = new TabularControlsResources();
-
                 var expectedLight = RequireThemeColor("Light", "ControlStrongStrokeColorDefault");
                 var expectedDark = RequireThemeColor("Default", "ControlStrongStrokeColorDefault");
                 Verify.AreNotEqual(expectedLight, expectedDark,
                     "ControlStrongStrokeColorDefault must differ between Light and Dark, or a swap could not be detected.");
 
-                var light = RequireBrush(resources, "Light", "ResizeGripperSeparatorBrush");
-                Verify.AreEqual(expectedLight, light.Color,
-                    "The Light ResizeGripperSeparatorBrush must be the neutral ControlStrongStrokeColorDefault.");
-
-                var dark = RequireBrush(resources, "Default", "ResizeGripperSeparatorBrush");
-                Verify.AreEqual(expectedDark, dark.Color,
-                    "The Dark ResizeGripperSeparatorBrush must be the neutral ControlStrongStrokeColorDefault.");
-
+                var separator = brushes["ResizeGripperSeparatorBrush"];
+                Verify.AreEqual(theme == ElementTheme.Light ? expectedLight : expectedDark, separator.Color,
+                    $"{theme}: the separator must be the neutral ControlStrongStrokeColorDefault.");
                 var accents = new[] { "SystemAccentColorDark1", "SystemAccentColorLight2" }
                     .Select(RequireApplicationColor).ToList();
-                Verify.IsFalse(accents.Contains(light.Color) || accents.Contains(dark.Color),
-                    "The gripper separator must not use an accent colour.");
+                Verify.IsFalse(accents.Contains(separator.Color), "The gripper separator must not use an accent colour.");
+            });
 
+            RunOnUIThread.Execute(() =>
+            {
+                var resources = new TabularControlsResources();
                 var highContrast = RequireBrush(resources, "HighContrast", "ResizeGripperSeparatorBrush");
                 var systemColors = CollectSystemColors();
                 Verify.IsGreaterThan(systemColors.Count, 0,
                     "SystemColor* resources must resolve from the application resources before validating HighContrast.");
                 Verify.IsTrue(systemColors.Contains(highContrast.Color),
-                    "The HighContrast default ResizeGripperSeparatorBrush must resolve through a system colour, not a hardcoded accent or cross-dictionary StaticResource alias.");
+                    "The HighContrast default ResizeGripperSeparatorBrush must resolve through a system colour, not a hardcoded accent.");
             });
         }
 
         [TestMethod]
         public void VerifySelectionIndicatorBrushFollowsAccentFillTiers()
         {
-            RunOnUIThread.Execute(() =>
+            VerifyBrushesAcrossThemes(new[] { "TabularSurfaceSelectionIndicatorBrush" }, (theme, brushes) =>
             {
-                EnsureTabularControlsResources();
-                var resources = new TabularControlsResources();
-
                 var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
                 var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
                 Verify.AreNotEqual(expectedLight, expectedDark,
                     "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
 
-                Verify.AreEqual(expectedLight, RequireBrush(resources, "Light", "TabularSurfaceSelectionIndicatorBrush").Color,
-                    "The Light TabularSurfaceSelectionIndicatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
-                Verify.AreEqual(expectedDark, RequireBrush(resources, "Default", "TabularSurfaceSelectionIndicatorBrush").Color,
-                    "The Default/Dark TabularSurfaceSelectionIndicatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
+                Verify.AreEqual(theme == ElementTheme.Light ? expectedLight : expectedDark,
+                    brushes["TabularSurfaceSelectionIndicatorBrush"].Color,
+                    $"{theme}: selection must follow AccentFillColorDefaultBrush's accent tier.");
+            });
 
+            RunOnUIThread.Execute(() =>
+            {
+                var resources = new TabularControlsResources();
                 foreach (var themeName in new[] { "Default", "Light", "HighContrast" })
                 {
                     var dictionary = (ResourceDictionary)resources.ThemeDictionaries[themeName];
@@ -1364,34 +1432,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyHeaderPointerStateBrushesResolveInEveryTheme()
         {
+            VerifyBrushesAcrossThemes(new[]
+            {
+                "TabularSurfaceRowBackgroundPointerOverBrush",
+                "TabularSurfaceHeaderBackgroundPointerOverBrush",
+                "TabularSurfaceRowBackgroundPressedBrush",
+                "TabularSurfaceHeaderBackgroundPressedBrush",
+                "TabularSurfaceHeaderBackgroundBrush",
+                "TabularSurfaceHeaderForegroundBrush",
+                "TabularSurfaceHeaderForegroundPointerOverBrush",
+                "TabularSurfaceHeaderForegroundPressedBrush",
+            }, (theme, brushes) =>
+            {
+                Verify.AreEqual(brushes["TabularSurfaceRowBackgroundPointerOverBrush"].Color,
+                    brushes["TabularSurfaceHeaderBackgroundPointerOverBrush"].Color,
+                    $"{theme}: header pointer-over fill must match the row pointer-over fill.");
+                Verify.AreEqual(brushes["TabularSurfaceRowBackgroundPressedBrush"].Color,
+                    brushes["TabularSurfaceHeaderBackgroundPressedBrush"].Color,
+                    $"{theme}: header pressed fill must match the row pressed fill.");
+                Verify.AreEqual((byte)0, brushes["TabularSurfaceHeaderBackgroundBrush"].Color.A,
+                    $"{theme}: the header band must be transparent at rest.");
+                var restForeground = brushes["TabularSurfaceHeaderForegroundBrush"].Color;
+                Verify.AreEqual(RequireThemeColor(theme == ElementTheme.Light ? "Light" : "Default",
+                    "TextFillColorSecondary"), restForeground, $"{theme}: headers must use secondary text.");
+                Verify.AreEqual(restForeground, brushes["TabularSurfaceHeaderForegroundPointerOverBrush"].Color,
+                    $"{theme}: header text must keep its rest colour on hover.");
+                Verify.AreEqual(restForeground, brushes["TabularSurfaceHeaderForegroundPressedBrush"].Color,
+                    $"{theme}: header text must keep its rest colour when pressed.");
+            });
+
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
-
-                foreach (var themeName in new[] { "Default", "Light" })
-                {
-                    Verify.AreEqual(
-                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPointerOverBrush").Color,
-                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPointerOverBrush").Color,
-                        $"'{themeName}' header pointer-over fill must match the row pointer-over fill.");
-                    Verify.AreEqual(
-                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPressedBrush").Color,
-                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPressedBrush").Color,
-                        $"'{themeName}' header pressed fill must match the row pressed fill.");
-
-                    Verify.AreEqual((byte)0, RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundBrush").Color.A,
-                        $"'{themeName}' header band must be transparent at rest.");
-                    var restForeground = RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundBrush").Color;
-                    Verify.AreEqual(RequireThemeColor(themeName, "TextFillColorSecondary"), restForeground,
-                        $"'{themeName}' headers must use secondary text.");
-                    Verify.AreEqual(restForeground,
-                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPointerOverBrush").Color,
-                        $"'{themeName}' header text must keep its rest colour on hover.");
-                    Verify.AreEqual(restForeground,
-                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPressedBrush").Color,
-                        $"'{themeName}' header text must keep its rest colour when pressed.");
-                }
 
                 var systemColors = CollectSystemColors();
                 Verify.IsGreaterThan(systemColors.Count, 0,
@@ -2212,13 +2284,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var title = FindVisualChildrenByType<TextBlock>(presenter).First(text => text != count);
                         var expectedWeight = (ushort)(strong ? 600 : 400);
                         var themeName = theme == ElementTheme.Light ? "Light" : "Default";
-                        var resources = new TabularControlsResources();
                         Verify.IsNotNull(header.Template, "Both weights retain the built-in template.");
                         Verify.AreEqual(expectedWeight, header.FontWeight.Weight);
                         Verify.AreEqual(expectedWeight, title.FontWeight.Weight);
                         Verify.AreEqual(expectedWeight, count.FontWeight.Weight);
                         Verify.AreEqual(14.0, title.FontSize, "Section typography size is unchanged.");
-                        Verify.AreEqual(RequireBrush(resources, themeName, "TabularSurfaceGroupHeaderForegroundBrush").Color,
+                        Verify.AreEqual(RequireThemeColor(themeName, "TextFillColorPrimary"),
                             ((SolidColorBrush)title.Foreground).Color, "Weight must not change the title color.");
                         Verify.AreEqual(((SolidColorBrush)title.Foreground).Color, ((SolidColorBrush)count.Foreground).Color,
                             "The count must keep inheriting the title foreground.");
@@ -4796,12 +4867,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 resources = new TabularControlsResources();
-                foreach (var themeName in new[] { "Light", "Default" })
-                {
-                    Verify.AreEqual(RequireThemeColor(themeName, "SubtleFillColorSecondary"),
-                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundSelectedDisabledBrush").Color,
-                        $"{themeName}: disabled selection must retain the subtle selected fill.");
-                }
                 Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorWindowColorBrush"),
                     RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundSelectedDisabledBrush")),
                     "HighContrast must preserve the window background behind gray disabled text.");
@@ -4859,16 +4924,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var border = outline.BorderBrush as SolidColorBrush;
                         Verify.IsNotNull(background);
                         Verify.IsNotNull(border);
-                        var backgroundKey = state == "Normal"
-                            ? "TabularSurfaceRowBackgroundBrush"
-                            : $"TabularSurfaceRowBackground{state}Brush";
                         Verify.AreEqual(
-                            RequireBrush(resources, themeName, backgroundKey).Color,
+                            RequireRowBackgroundColor(themeName, state),
                             background.Color,
                             $"{theme}/{state} must use its backplate brush.");
                         Verify.AreEqual(
                             state == "SelectedDisabled" ? RequireThemeColor(themeName, "AccentFillColorDisabled") :
-                                RequireBrush(resources, themeName, "TabularSurfaceSelectionIndicatorBrush").Color,
+                                RequireApplicationColor(theme == ElementTheme.Light
+                                    ? "SystemAccentColorDark1" : "SystemAccentColorLight2"),
                             border.Color,
                             $"{theme}/{state}: hover and press must preserve the selection outline; disabled has its own brush.");
                         if (state == "Disabled" || state == "SelectedDisabled")
@@ -7028,16 +7091,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyBandedTableStyleBrushesMatchSubtleTertiaryAndHighContrast()
         {
+            VerifyBrushesAcrossThemes(new[] { "TabularSurfaceRowBackgroundAlternatingBrush" }, (theme, brushes) =>
+            {
+                Verify.AreEqual(RequireThemeColor(theme == ElementTheme.Light ? "Light" : "Default",
+                    "SubtleFillColorTertiary"), brushes["TabularSurfaceRowBackgroundAlternatingBrush"].Color,
+                    $"{theme}: banding must match Figma's Subtle/Tertiary token.");
+            });
+
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
-                foreach (var themeName in new[] { "Light", "Default" })
-                {
-                    Verify.AreEqual(RequireThemeColor(themeName, "SubtleFillColorTertiary"),
-                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundAlternatingBrush").Color,
-                        $"{themeName}: banding must match Figma's Subtle/Tertiary token.");
-                }
                 Verify.IsTrue(ReferenceEquals(RequireApplicationBrush("SystemColorWindowColorBrush"),
                     RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundAlternatingBrush")),
                     "High Contrast banding must preserve the window-text/window-background pairing.");
@@ -7082,7 +7145,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     var themeName = theme == ElementTheme.Dark ? "Default" : "Light";
-                    var expected = RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundAlternatingBrush").Color;
+                    var expected = RequireThemeColor(themeName, "SubtleFillColorTertiary");
                     var oddRow = GetProjectedRow(bandedTable, 1);
                     Verify.IsNotNull(oddRow);
                     Verify.AreEqual(theme, oddRow.ActualTheme);
@@ -7109,14 +7172,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     RunOnUIThread.Execute(() =>
                     {
                         var themeName = theme == ElementTheme.Dark ? "Default" : "Light";
-                        var key = state == "Normal"
-                            ? "TabularSurfaceRowBackgroundAlternatingBrush"
-                            : $"TabularSurfaceRowBackground{state}Brush";
                         var backplate = GetProjectedRow(bandedTable, 1).FindVisualChildByName("PART_RootBorder") as Border;
                         Verify.IsNotNull(backplate);
                         var fill = backplate.Background as SolidColorBrush;
                         Verify.IsNotNull(fill);
-                        Verify.AreEqual(RequireBrush(resources, themeName, key).Color, fill.Color,
+                        Verify.AreEqual(state == "Normal"
+                            ? RequireThemeColor(themeName, "SubtleFillColorTertiary")
+                            : RequireRowBackgroundColor(themeName, state), fill.Color,
                             $"{theme}/{state}: interaction fills must override banding, and Normal must restore it.");
                     });
                 }

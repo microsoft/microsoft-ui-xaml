@@ -12,14 +12,14 @@
     <ResourceDictionary.ThemeDictionaries>
         <!-- ControlStrongStrokeColorDefault. "Default" means Dark once "Light" is defined. -->
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#72000000" />
+            <StaticResource x:Key="ResizeGripperSeparatorBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#8BFFFFFF" />
+            <StaticResource x:Key="ResizeGripperSeparatorBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- Not the accent brush: under High Contrast it matches the window background. -->
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <StaticResource x:Key="ResizeGripperSeparatorBrush" ResourceKey="SystemColorHighlightColorBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
