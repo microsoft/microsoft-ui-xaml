@@ -2842,6 +2842,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             MeasureExpandCollapse(children + " rows before", children, rowsBefore: children, rowsAfter: 0);
         }
 
+        // Benchmark. It never fails on timing, and only logs the time in ms, including layout, to add 2,000 children
+        // one at a time to an expanded root. Apps do this when they fill an expanded node.
+        [TestMethod]
+        public void TreeViewAddChildrenToExpandedNodeBenchmark()
+        {
+            const int children = 2000;
+            RunOnUIThread.Execute(() =>
+            {
+                var root = MakeNode("Root", true);
+                ShowTreeView(root);
+
+                var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < children; i++)
+                {
+                    root.Children.Add(MakeNode("Root." + i));
+                }
+                Content.UpdateLayout();
+                Log.Comment($"Add {children} children to an expanded root: {stopwatch.Elapsed.TotalMilliseconds:F0} ms");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         private void RunRandomEdits(int seed, int editCount)
         {
             var random = new Random(seed);
