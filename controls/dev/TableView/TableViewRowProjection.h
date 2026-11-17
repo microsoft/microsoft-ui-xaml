@@ -81,6 +81,8 @@ private:
 
     // Rebuilds for the current declaration; coalesces requests raised while it runs.
     void Update();
+    // Under a grouped view: rebuilds on a later dispatcher turn, once the view has finished regrouping.
+    void ScheduleUpdate();
     void UpdateCore();
     void UpdateTree(Kind kind);
     std::vector<winrt::IInspectable> ReadViewItems() const;
@@ -119,5 +121,7 @@ private:
 
     bool m_updating{ false };
     bool m_updatePending{ false };
+    bool m_updateQueued{ false };
+    uint64_t m_updateCount{ 0 };
     std::function<void()> m_projectionChanged{};
 };
