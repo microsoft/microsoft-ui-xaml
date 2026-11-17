@@ -1995,11 +1995,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
+                var flyoutClosed = new global::System.Threading.ManualResetEvent(false);
                 RunOnUIThread.Execute(() =>
                 {
                     holdClose = false;
+                    flyout.Closed += (s, e) => flyoutClosed.Set();
                     flyout.Hide();
                 });
+                Verify.IsTrue(flyoutClosed.WaitOne(TimeSpan.FromSeconds(5)), "The flyout must finish closing.");
                 IdleSynchronizer.Wait();
 
                 var completed = (Open: false, Editing: false, Attempts: 0, Name: (string)null);
@@ -2055,6 +2058,183 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 popup.IsOpen = false;
             });
             IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a focus-loss commit queued for an edit that ends before it runs does not commit or disturb a replacement edit opened in the same UI turn.")]
+        [TestProperty("data:EndAction", "{Cancel, Commit}")]
+        public void VerifyStaleFocusLossCommitSkipsReplacementEdit()
+        {
+            bool commitFirst = ((string)TestContext.DataRow["EndAction"]).Trim() == "Commit";
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            string replacementName = null;
+            int replacementCommitAttempts = 0;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetEditorTextBox(tableView, items[0]).Text = "Bea";
+                items[1].RejectPrefix = InvalidPrefix;
+                replacementName = items[1].Name;
+
+                // Focus leaving the editor posts the focus-loss commit rather than committing now.
+                Verify.IsTrue(focusSink.Focus(FocusState.Programmatic), "Precondition: focus moves off the editor.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the focus-loss commit is still queued.");
+
+                Verify.IsTrue(commitFirst ? tableView.CommitEdit() : tableView.CancelEdit(), "The first edit must close.");
+                CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 0), InvalidPrefix + "Held");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the replacement edit is open before the queued commit runs.");
+
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (e.EditAction == TableViewEditAction.Commit)
+                    {
+                        replacementCommitAttempts++;
+                    }
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, replacementCommitAttempts, "The first edit's queued commit must not try to commit the replacement edit.");
+                Verify.IsTrue(tableView.IsEditing, "The replacement edit must stay open.");
+                Verify.AreEqual(1, FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[1])).Count,
+                    "The replacement editor must stay on the second row.");
+                Verify.AreEqual(replacementName, items[1].Name, "The replacement edit must not write to its item.");
+                Verify.AreEqual(commitFirst ? "Bea" : "Asha", items[0].Name, "Only the first edit's own close decides its value.");
+                tableView.CancelEdit();
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Tab that moved focus into an editor-owned flyout is not replayed as a Tab departure when the flyout later closes onto the editing cell.")]
+        public void VerifyEditorFlyoutCloseDoesNotReplayEntryTab()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            TextBox editor = null;
+            Flyout flyout = null;
+            Button flyoutButton = null;
+            bool moved = false;
+            bool holdClose = true;
+            var closed = new global::System.Threading.ManualResetEvent(false);
+            int commitAttempts = 0;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    editor = GetEditorTextBox(tableView, items[0]);
+                    editor.Text = "Bea";
+                    tableView.CellEditEnding += (s, e) =>
+                    {
+                        if (e.EditAction == TableViewEditAction.Commit)
+                        {
+                            commitAttempts++;
+                        }
+                    };
+                    flyoutButton = new Button { Content = "Inside" };
+                    flyout = new Flyout { Content = flyoutButton };
+                    FlyoutBase.SetAttachedFlyout(editor, flyout);
+                    FlyoutBase.ShowAttachedFlyout(editor);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(editor.Focus(FocusState.Keyboard), "Precondition: the editor takes focus back.");
+
+                    // Model a Tab from the editor that lands in its flyout.
+                    TypedEventHandler<UIElement, LosingFocusEventArgs> redirect = (s, e) =>
+                    {
+                        if (e.Direction == FocusNavigationDirection.Next)
+                        {
+                            e.TrySetNewFocusedElement(flyoutButton);
+                        }
+                    };
+                    editor.LosingFocus += redirect;
+                    try
+                    {
+                        moved = FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                            new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+                    }
+                    finally
+                    {
+                        editor.LosingFocus -= redirect;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                var entered = (InFlyout: false, Open: false, Editing: false);
+                RunOnUIThread.Execute(() => entered = (
+                    flyoutButton.FocusState != FocusState.Unfocused, flyout.IsOpen, tableView.IsEditing));
+                Verify.IsTrue(moved, "Precondition: Tab must move focus.");
+                Verify.IsTrue(entered.InFlyout, "Precondition: the Tab must land inside the editor's flyout.");
+                Verify.IsTrue(entered.Open, "Precondition: the flyout stays open.");
+                Verify.IsTrue(entered.Editing, "Focus inside the editor's flyout must keep the edit open.");
+                if (!moved || !entered.InFlyout || !entered.Open || !entered.Editing)
+                {
+                    return;
+                }
+
+                // Dismissing the flyout drops focus on the editing cell, as Escape or a light dismiss can.
+                // Hold the close so focus is on the cell, not handed back to the editor, when it completes.
+                RunOnUIThread.Execute(() =>
+                {
+                    flyout.Closing += (s, e) => e.Cancel = holdClose;
+                    flyout.Hide();
+                    GetCellPeer(tableView, items[0], columnIndex: 0).SetFocus();
+                });
+                IdleSynchronizer.Wait();
+
+                var dismissed = (Open: false, FocusOnCell: false, Attempts: 0);
+                RunOnUIThread.Execute(() => dismissed = (
+                    flyout.IsOpen,
+                    ReferenceEquals(GetRowCell(GetRowForItem(tableView, items[0]), 0), FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    commitAttempts));
+                Verify.IsTrue(dismissed.Open, "Precondition: the flyout close is still held.");
+                Verify.IsTrue(dismissed.FocusOnCell, "Precondition: focus is on the editing cell.");
+                Verify.AreEqual(0, dismissed.Attempts, "Leaving the flyout must not commit before it closes.");
+                if (!dismissed.Open || !dismissed.FocusOnCell)
+                {
+                    return;
+                }
+
+                // The close finishes after its animation, so wait for Closed rather than idle.
+                RunOnUIThread.Execute(() =>
+                {
+                    holdClose = false;
+                    flyout.Closed += (s, e) => closed.Set();
+                    flyout.Hide();
+                });
+                Verify.IsTrue(closed.WaitOne(TimeSpan.FromSeconds(5)), "The flyout must close.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0, commitAttempts, "Closing the flyout must not replay the Tab that entered it as a commit.");
+                    Verify.IsTrue(tableView.IsEditing, "The edit must stay open.");
+                    Verify.AreNotEqual(FocusState.Unfocused, editor.FocusState, "Focus must return to the editor.");
+                    Verify.AreEqual("Asha", items[0].Name, "The pending value must not reach the item.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    holdClose = false;
+                    flyout?.Hide();
+                    tableView.CancelEdit();
+                });
+                IdleSynchronizer.Wait();
+            }
         }
 
         // Opens an edit on the first item that stays open because its value fails validation.

@@ -662,6 +662,16 @@ void TableView::CompleteFocusLossCommit()
         }
     }
 
+    // A Tab direction describes the move that left the editor. When that move went into a popup, a
+    // later close is not a Tab departure - focus inside the popup is not tracked, so replaying the
+    // entry direction would turn an Escape or light dismiss onto the cell into a commit. Keep the
+    // direction only while focus is outside any popup other than one hosting the table itself (a
+    // selection flyout still closing).
+    auto const focusedPopup = FindOpenPopupContaining(focused, root);
+    const auto retryDirection = focusedPopup && focusedPopup != FindOpenPopupContaining(editingElement, root)
+        ? winrt::FocusNavigationDirection::None
+        : direction;
+
     // Focus went into the editor's own menu (a TextBox's copy/paste flyout): the user is still
     // working in the editor. Decide again once the menu closes - it hands focus back.
     if (auto const flyout = FindOpenEditorFlyout(editingElement))
@@ -679,7 +689,7 @@ void TableView::CompleteFocusLossCommit()
             });
 
         m_editorFlyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
-            [weakThis = get_weak(), generation, direction](auto&&, auto&&)
+            [weakThis = get_weak(), generation, retryDirection](auto&&, auto&&)
             {
                 if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
@@ -687,7 +697,7 @@ void TableView::CompleteFocusLossCommit()
                     strongThis->m_editorFlyoutClosedRevoker.revoke();
                     if (!strongThis->m_focusLossCommitQueued)
                     {
-                        strongThis->QueueFocusLossCommit(direction);
+                        strongThis->QueueFocusLossCommit(retryDirection);
                     }
                 }
             });
@@ -700,7 +710,7 @@ void TableView::CompleteFocusLossCommit()
     {
         const auto generation = m_editFocusGeneration;
         m_editorPopupClosedRevoker = popup.Closed(winrt::auto_revoke,
-            [weakThis = get_weak(), generation, direction](auto&&, auto&&)
+            [weakThis = get_weak(), generation, retryDirection](auto&&, auto&&)
             {
                 if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
@@ -708,7 +718,7 @@ void TableView::CompleteFocusLossCommit()
                     strongThis->MarkEditorFlyoutClosing();
                     if (!strongThis->m_focusLossCommitQueued)
                     {
-                        strongThis->QueueFocusLossCommit(direction);
+                        strongThis->QueueFocusLossCommit(retryDirection);
                     }
                 }
             });
