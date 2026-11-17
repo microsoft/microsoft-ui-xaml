@@ -14,6 +14,8 @@
 
 #include <cwchar>
 
+#include <winrt/Microsoft.UI.Dispatching.h>
+
 namespace
 {
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
@@ -151,6 +153,7 @@ void TableViewRowProjection::Update()
     }
 
     auto const keepAlive = shared_from_this();
+    ++m_updateCount;
     {
         m_updating = true;
         auto const done = wil::scope_exit([this]() noexcept { m_updating = false; });
@@ -500,10 +503,61 @@ void TableViewRowProjection::ReleaseTree()
 void TableViewRowProjection::OnViewChanged()
 {
     // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items.
-    if (m_kind == Kind::Tree || m_kind == Kind::GroupedTree)
+    if (m_kind == Kind::Tree)
     {
         Update();
     }
+    else if (m_kind == Kind::GroupedTree)
+    {
+        ScheduleUpdate();
+    }
+}
+
+void TableViewRowProjection::ScheduleUpdate()
+{
+    if (m_updateQueued)
+    {
+        return;
+    }
+
+    std::weak_ptr<TableViewRowProjection> weakThis = weak_from_this();
+    auto const run = [weakThis]()
+    {
+        auto const strongThis = weakThis.lock();
+        if (!strongThis)
+        {
+            return;
+        }
+        strongThis->m_updateQueued = false;
+        try
+        {
+            // The view's groups first: a change to them rebuilds the tree (OnGroupsChanged).
+            auto const before = strongThis->m_updateCount;
+            if (strongThis->m_groups)
+            {
+                strongThis->m_groups->RefreshNow();
+            }
+            if (strongThis->m_updateCount == before)
+            {
+                strongThis->Update();
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Rebuilding the rows after a view change failed (HRESULT 0x%08X).",
+                static_cast<unsigned int>(winrt::to_hresult()));
+        }
+    };
+
+    if (auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
+    {
+        m_updateQueued = queue.TryEnqueue(run);
+        if (m_updateQueued)
+        {
+            return;
+        }
+    }
+    run();
 }
 
 void TableViewRowProjection::OnGroupsChanged()

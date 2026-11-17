@@ -12,6 +12,8 @@
 #include <optional>
 #include <string>
 
+#include <winrt/Microsoft.UI.Dispatching.h>
+
 namespace
 {
     uintptr_t CanonicalAddress(winrt::IInspectable const& value)
@@ -231,6 +233,34 @@ winrt::hstring TableViewCollectionViewGroups::GroupIdentityForItem(winrt::IInspe
 }
 
 void TableViewCollectionViewGroups::OnGroupsChanged()
+{
+    // A view replaces its groups in several notifications (CollectionViewSource clears and refills them on
+    // a recompute). Read them once it has finished, so the grouped rows never see a partial group set: that
+    // would drop the expansion state of the groups missing from it.
+    if (m_refreshQueued)
+    {
+        return;
+    }
+    if (auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
+    {
+        std::weak_ptr<TableViewCollectionViewGroups> weakSelf = weak_from_this();
+        m_refreshQueued = queue.TryEnqueue([weakSelf]()
+        {
+            if (auto const strongSelf = weakSelf.lock())
+            {
+                strongSelf->m_refreshQueued = false;
+                strongSelf->RefreshNow();
+            }
+        });
+        if (m_refreshQueued)
+        {
+            return;
+        }
+    }
+    RefreshNow();
+}
+
+void TableViewCollectionViewGroups::RefreshNow() noexcept
 {
     try
     {

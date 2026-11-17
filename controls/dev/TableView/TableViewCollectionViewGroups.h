@@ -15,7 +15,8 @@ class ShapedGroup;
 
 // Presents an ICollectionView's CollectionGroups in the group contract GroupedSourceAdapter reads.
 // Each view group is wrapped in a ShapedGroup whose items ARE the view group's GroupItems, so a change
-// inside a group reaches the adapter directly; the wrapper list follows CollectionGroups changes.
+// inside a group reaches the adapter directly; the wrapper list follows CollectionGroups changes once the
+// view has finished making them (on a later dispatcher turn).
 // The view stays the owner of its grouping and its group order.
 //
 // A group is identified by its key value (the Group object's "Key" property, the IGrouping<K,T>
@@ -54,6 +55,9 @@ public:
     // Raised after the wrapped groups changed (a group added, removed or replaced).
     void SetChangedHandler(std::function<void()> handler) { m_changed = std::move(handler); }
 
+    // Re-reads CollectionGroups now; raises the changed handler when the wrapped groups changed.
+    void RefreshNow() noexcept;
+
 private:
     void Refresh();
     void OnGroupsChanged();
@@ -71,4 +75,5 @@ private:
     std::function<void()> m_changed{};
     bool m_refreshing{ false };
     bool m_refreshPending{ false };
+    bool m_refreshQueued{ false };
 };
