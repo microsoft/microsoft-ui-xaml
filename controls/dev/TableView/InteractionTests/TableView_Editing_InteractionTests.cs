@@ -709,7 +709,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("ShiftTabbed", ReadFirstItemName(), "The commit must write the value.");
                 Verify.AreEqual("Name;", ReadEditReport(), "No new edit may open.");
                 Verify.IsFalse(inEditor, "Focus must leave the editor.");
-                Verify.IsFalse(IsFocusInRow(), "Focus must leave the rows, as Shift+Tab from the first cell does. Focus: " + focus);
+                Verify.IsFalse(IsFocusWithin(BasicTable), "Focus must leave the table, as Shift+Tab from the first cell does. Focus: " + focus);
             }
         }
 
@@ -861,7 +861,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (firstVisible < 0) { return; }
 
                 Log.Comment("Escape follows Shift+Tab without idling, so it arrives while the move may still be pending.");
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, skipWait: true);
                 KeyboardHelper.PressKey(Key.Escape);
                 Wait.ForIdle();
 
@@ -872,7 +872,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a second Tab pressed while a Tab move waits for an off-screen row leaves exactly one editor open, in the table.")]
+        [TestProperty("Description", "Verifies a second Tab pressed while a Tab move waits for an off-screen row leaves exactly one editor open in the table.")]
         public void SecondTabDuringOffscreenTabMoveKeepsSingleEditInTable()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -881,7 +881,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (firstVisible < 0) { return; }
 
                 Log.Comment("Tab follows Shift+Tab without idling, so it arrives while the move may still be pending.");
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, skipWait: true);
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
 
@@ -1087,7 +1087,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies F2 then Escape pressed while a Tab move waits for an off-screen row leave no editor open, in the table.")]
+        [TestProperty("Description", "Verifies F2 then Escape pressed while a Tab move waits for an off-screen row leaves no editor open in the table.")]
         public void F2ThenEscapeDuringOffscreenTabMoveLeavesNoEditor()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -1096,7 +1096,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (firstVisible < 0) { return; }
 
                 Log.Comment("F2 follows Shift+Tab without idling, so it arrives while the move may still be pending.");
-                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, skipWait: true);
                 KeyboardHelper.PressKey(Key.F2);
                 Wait.ForIdle();
                 Log.Comment("Focus after Shift+Tab, F2: {0}.", DescribeFocused());
@@ -1285,21 +1285,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             for (int depth = 0; node != null && depth < 24; depth++, node = node.Parent)
             {
                 if (node.AutomationId == automationId)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        // True when UIA focus is on, or inside, a TableViewRow.
-        private static bool IsFocusInRow()
-        {
-            UIObject node = UIObject.Focused;
-            for (int depth = 0; node != null && depth < 24; depth++, node = node.Parent)
-            {
-                if (node.ClassName == "TableViewRow")
                 {
                     return true;
                 }

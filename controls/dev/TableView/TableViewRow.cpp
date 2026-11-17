@@ -2946,7 +2946,11 @@ void TableViewRow::EndCellEdit(
             // A Tab move to a cell in this row lands there directly, so a screen reader hears one
             // focus change for the cell instead of a pass through the cell just left.
             winrt::UIElement handoffCell{ nullptr };
-            if (focusColumn && IsVisibleColumn(focusColumn))
+            // A CellEditEnding handler can lock the target, and a locked cell with a context flyout
+            // still takes focus, so check editability as TryMoveEditToAdjacentCell does.
+            auto const owner = GetOwningTableView();
+            if (focusColumn && owner && IsVisibleColumn(focusColumn) &&
+                winrt::get_self<TableView>(owner)->IsColumnCellEditableInternal(focusColumn))
             {
                 if (auto const host = m_cellsHost.get())
                 {

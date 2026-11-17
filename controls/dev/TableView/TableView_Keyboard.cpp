@@ -2114,9 +2114,19 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
-    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
+    if (m_reshapeFocusArmedThisTurn)
+    {
+        return;
+    }
+    if (m_pendingReshapeFocusRow >= 0)
     {
         CancelReshapeFocusRestore();
+    }
+    else if (m_tabEditMovePending)
+    {
+        // The restore landed and handed its Tab move to a posted BeginEdit; input before that
+        // runs is still newer intent.
+        EndPendingTabEditMove();
     }
 }
 

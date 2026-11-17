@@ -3185,6 +3185,226 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
     }
 
+    // FocusManager.TryMoveFocus never raises the Tab KeyDown that moves an edit between cells, so these
+    // tests inject real key presses. The test app must be the foreground window to receive them.
+    internal static class InjectedKeyboard
+    {
+        private const byte VkShift = 0x10;
+        private const uint KeyEventKeyUp = 0x2;
+
+        private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr hwnd);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hwnd, int command);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern void SwitchToThisWindow(IntPtr hwnd, bool altTab);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hwnd);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);
+
+        internal static void PressTab(bool shift = false) => Press(0x09, shift);
+
+        internal static void PressF2() => Press(0x71, false);
+
+        // Called off the UI thread; waits for idle so the key's handlers have run.
+        private static void Press(byte virtualKey, bool shift)
+        {
+            EnsureForeground();
+            if (shift)
+            {
+                keybd_event(VkShift, 0, 0, UIntPtr.Zero);
+            }
+            keybd_event(virtualKey, 0, 0, UIntPtr.Zero);
+            keybd_event(virtualKey, 0, KeyEventKeyUp, UIntPtr.Zero);
+            if (shift)
+            {
+                keybd_event(VkShift, 0, KeyEventKeyUp, UIntPtr.Zero);
+            }
+
+            // A Tab move to an off-screen row lands over several layout passes and posted callbacks.
+            for (int i = 0; i < 4; i++)
+            {
+                IdleSynchronizer.Wait();
+                global::System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        private static bool IsForegroundOurs()
+        {
+            GetWindowThreadProcessId(GetForegroundWindow(), out uint processId);
+            return processId == (uint)global::System.Diagnostics.Process.GetCurrentProcess().Id;
+        }
+
+        private static void EnsureForeground()
+        {
+            if (IsForegroundOurs())
+            {
+                return;
+            }
+
+            uint self = (uint)global::System.Diagnostics.Process.GetCurrentProcess().Id;
+            IntPtr window = IntPtr.Zero;
+            EnumWindows((hwnd, lParam) =>
+            {
+                GetWindowThreadProcessId(hwnd, out uint processId);
+                if (processId == self && IsWindowVisible(hwnd))
+                {
+                    window = hwnd;
+                    return false;
+                }
+                return true;
+            }, IntPtr.Zero);
+
+            for (int attempt = 0; attempt < 3 && window != IntPtr.Zero && !IsForegroundOurs(); attempt++)
+            {
+                const int SwMinimize = 6;
+                const int SwRestore = 9;
+                ShowWindow(window, SwMinimize);
+                ShowWindow(window, SwRestore);
+                SwitchToThisWindow(window, true);
+                SetForegroundWindow(window);
+                global::System.Threading.Thread.Sleep(500);
+            }
+
+            Verify.IsTrue(IsForegroundOurs(), "The test app must be the foreground window to receive injected keys.");
+        }
+    }
+
+    [TestClass]
+    public class TableViewTabEditMoveTests : TableViewApiTestBase
+    {
+        private static bool IsSelfOrDescendant(DependencyObject element, DependencyObject ancestor)
+        {
+            for (var current = element; current != null; current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current))
+            {
+                if (ReferenceEquals(current, ancestor))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // A Button ahead of the table gives focus somewhere outside the body to go.
+        private (TableView Table, List<EditablePerson> Items, Button Outside) CreateTableAfterButton(int count)
+        {
+            TableView table = null;
+            List<EditablePerson> items = null;
+            Button outside = null;
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems(Enumerable.Range(0, count).Select(i => "P" + i).ToArray());
+                table = CreateEditableTable(items);
+                table.IsReadOnly = false;
+                outside = new Button { Content = "Outside" };
+                var host = new StackPanel();
+                host.Children.Add(outside);
+                host.Children.Add(table);
+                LoadContent(host);
+            });
+            SettleLayout(table);
+            return (table, items, outside);
+        }
+
+        private static void OpenEditor(TableView table, object item, int columnIndex)
+        {
+            RunOnUIThread.Execute(() => GetCellPeer(table, item, columnIndex).SetFocus());
+            IdleSynchronizer.Wait();
+            InjectedKeyboard.PressF2();
+            RunOnUIThread.Execute(() => Verify.IsTrue(table.IsEditing, "Precondition: F2 must open the editor."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Shift+Tab move to a realized row above the viewport selects nothing when GettingFocus redirects it out of the table.")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void VerifyRedirectedOffscreenTabMoveDoesNotSelectTargetRow()
+        {
+            var (table, items, outside) = CreateTableAfterButton(60);
+            double rowHeight = 0;
+            RunOnUIThread.Execute(() => rowHeight = ((FrameworkElement)GetRowsRepeater(table).TryGetElement(0)).ActualHeight);
+            // Row 19 sits just above the viewport but stays realized in the repeater's cache, so the move
+            // focuses it at once and then waits for it to scroll into view.
+            ScrollBodyTo(table, ScrollAxis.Vertical, 20 * rowHeight);
+            OpenEditor(table, items[20], 0);
+
+            bool redirected = false;
+            int selectedBefore = -2;
+            RunOnUIThread.Execute(() =>
+            {
+                selectedBefore = table.SelectedIndex;
+                var targetRow = GetRowsRepeater(table).TryGetElement(19);
+                Verify.IsNotNull(targetRow, "Precondition: row 19 must be realized above the viewport.");
+                table.GettingFocus += (s, e) =>
+                {
+                    if (!redirected && e.NewFocusedElement is DependencyObject next && IsSelfOrDescendant(next, targetRow))
+                    {
+                        redirected = e.TrySetNewFocusedElement(outside);
+                    }
+                };
+            });
+
+            InjectedKeyboard.PressTab(shift: true);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(table.XamlRoot);
+                Log.Comment($"redirected={redirected} selected {selectedBefore} -> {table.SelectedIndex} editing={table.IsEditing}");
+                Verify.IsTrue(redirected, "Precondition: the move must try to focus row 19.");
+                Verify.IsTrue(ReferenceEquals(focused, outside), "Focus must stay where GettingFocus sent it.");
+                Verify.IsFalse(table.IsEditing, "No editor may open once focus leaves the table.");
+                Verify.AreEqual(selectedBefore, table.SelectedIndex, "Selection must not move to a row focus never reached.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab keeps focus on the edited cell when a CellEditEnding handler locks the target column, even though a context flyout keeps that cell focusable.")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void VerifyTabToColumnLockedDuringCommitStaysOnEditedCell()
+        {
+            var (table, items, _) = CreateTableAfterButton(3);
+            RunOnUIThread.Execute(() =>
+            {
+                var role = table.Columns[1];
+                role.CellContextFlyout = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Copy" } } };
+                table.CellEditEnding += (s, e) =>
+                {
+                    if (e.EditAction == TableViewEditAction.Commit && ReferenceEquals(e.Column, table.Columns[0]))
+                    {
+                        role.IsReadOnly = true;
+                    }
+                };
+            });
+            OpenEditor(table, items[0], 0);
+
+            InjectedKeyboard.PressTab();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(table.XamlRoot);
+                var row = GetRowForItem(table, items[0]);
+                Verify.IsFalse(table.IsEditing, "No editor may open in the locked column.");
+                Verify.IsFalse(ReferenceEquals(focused, GetRowCell(row, 1)), "Focus must not move to the locked Role cell.");
+                Verify.IsTrue(ReferenceEquals(focused, GetRowCell(row, 0)), "Focus must return to the Name cell that was edited.");
+            });
+        }
+    }
+
     // GH #12354: swapping the display TextBlock for the built-in TextBox editor must not move the text.
     [TestClass]
     public class TableViewEditorAlignmentTests : TableViewApiTestBase

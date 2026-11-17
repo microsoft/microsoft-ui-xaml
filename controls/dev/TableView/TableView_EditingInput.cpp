@@ -393,6 +393,13 @@ bool TableView::TryMoveEditToAdjacentCell(bool forward)
         }
         row = GetFocusedRowIndex();
     }
+    else if (IsFocusOnNonBodyElement())
+    {
+        // A GettingFocus redirect out of the body during the synchronous part of FocusCell: the
+        // pending restore would never land, so neither select the row nor arm the edit.
+        CancelReshapeFocusRestore();
+        return true;
+    }
     if (!inRow)
     {
         SelectRowIndexFromKeyboardFocus(row);
