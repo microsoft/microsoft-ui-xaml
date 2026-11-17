@@ -7,6 +7,8 @@ parameters:
   pipelineKind: '' # can be: Nightly, CI, PR, BuildAndTest, TestLocalBuild, ValidateWindowsAppSDK
   testPayloadArtifactName: 'TestPayload'
   includeWinUIGallery: true
+  compositionEngineType: ''
+  wpfExcludedTestsManifestPath: ''
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -18,7 +20,13 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
+      ${{ if and(eq(parameters.testSuite, 'DevTestSuite'), eq(parameters.compositionEngineType, 'System')) }}:
+        22H2_x86chk:
+          testOS: Win10-22H2
+          buildPlatform: 'x86'
+          buildOutput: 'x86'
+          normalizedConfiguration: 'chk'
+      ${{ if and(eq(parameters.testSuite, 'DevTestSuite'), ne(parameters.compositionEngineType, 'System')) }}:
         25H2_x86chk:
           testOS: Win11-25H2
           buildPlatform: 'x86'
@@ -219,6 +227,8 @@ jobs:
         outputProjFileName: 'RunTestsInHelix-MUXCoreTests-WPF.proj'
         testBinaryPath: $(testBinaryPath)
         taefQuery: $(taefQuery)
+        compositionEngineType: "${{ parameters.compositionEngineType }}"
+        excludedTestsManifestPath: "${{ parameters.wpfExcludedTestsManifestPath }}"
         hostingMode: WPF
         targetOsVersion: $(targetOsVersion)
         taefExePath: $(taefExePath)
