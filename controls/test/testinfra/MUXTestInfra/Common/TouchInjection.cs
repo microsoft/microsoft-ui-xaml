@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -47,7 +48,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
         private static void RunAttempt(string gesture, Action inject, int attempt)
         {
-            var frames = new List<string>();
+            // MITA's log hook is process-wide, so other threads (for example UI Automation event callbacks) can log
+            // through it while the gesture runs.
+            var frames = new ConcurrentQueue<string>();
             var clock = Stopwatch.StartNew();
             DateTime startTime = DateTime.Now;
             string screenAtStart = DescribeScreen();
@@ -56,7 +59,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Action<string, object[]> previousOut = MitaLog.OutImplementation;
             MitaLog.OutImplementation = (format, args) =>
             {
-                frames.Add($"+{clock.Elapsed.TotalMilliseconds:F1} ms: {Format(format, args)}");
+                frames.Enqueue($"+{clock.Elapsed.TotalMilliseconds:F1} ms: {Format(format, args)}");
                 previousOut?.Invoke(format, args);
             };
 
@@ -66,7 +69,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
             catch (Win32Exception e)
             {
-                LogFailure(gesture, attempt, e, clock.Elapsed, frames, startTime, screenAtStart, foregroundAtStart);
+                LogFailure(gesture, attempt, e, clock.Elapsed, frames.ToArray(), startTime, screenAtStart, foregroundAtStart);
                 throw;
             }
             finally
@@ -75,7 +78,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
         }
 
-        private static void LogFailure(string gesture, int attempt, Win32Exception e, TimeSpan elapsed, List<string> frames,
+        private static void LogFailure(string gesture, int attempt, Win32Exception e, TimeSpan elapsed, string[] frames,
             DateTime startTime, string screenAtStart, IntPtr foregroundAtStart)
         {
             try
@@ -129,13 +132,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             return started.OrderBy(p => p.Start).ToList();
         }
 
+        // This runs inside MITA's logging, on whichever thread logged, so it must never throw.
         private static string Format(string format, object[] args)
         {
             try
             {
                 return args == null || args.Length == 0 ? format : string.Format(format, args);
             }
-            catch (FormatException)
+            catch (Exception)
             {
                 return format;
             }
