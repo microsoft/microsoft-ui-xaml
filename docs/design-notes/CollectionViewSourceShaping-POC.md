@@ -143,9 +143,10 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 - **Comparison.** Strings use `CompareStringEx` with the user locale. Numeric types compare as numbers, and
   `DateTime`, `TimeSpan` and `Boolean` are also ordered. `null` sorts first. Anything else compares equal, so source
   order is kept.
-- **Output.** The view is read-only and never writes to the source. Ungrouped output is a `VectorCollectionView`;
-  grouped output is a `GroupedDataCollectionView` whose `CollectionGroups` contain `ICollectionViewGroup` entries.
-  `Group` is the computed group object (`Key`, `Name`), and `GroupItems` are the group's items.
+- **Output.** The view is read-only and never writes to the source. Both flat and grouped output are presented by
+  the same view class (`VectorCollectionView`, WinUI's `ListCollectionView`); grouped output's `CollectionGroups`
+  contain `ICollectionViewGroup` entries. `Group` is the computed group object (`Key`, `Name`), and `GroupItems` are
+  the group's items.
 - **Source changes.** `IObservableVector` sources and `IBindableVector` + `INotifyCollectionChanged` sources (for
   example `ObservableCollection<T>`) update the view automatically. On a **flat** shaped view (sort, filter and/or
   `CustomSort`, no groups) an `Add`, `Remove` or `Replace` is applied **incrementally**: the item is filtered, then
@@ -161,8 +162,9 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. When flat shaping first
   starts on a `View` that already answers `ICollectionViewShaping`, that same `View` is retargeted to the shaped
   output (one `Reset`; currency follows the item). A new `View` is created only when shaping first starts on any
-  other view, or when output switches between flat and grouped (a different view class), the same way changing
-  `IsSourceGrouped` does today. Clearing every descriptor of a flat shaped view keeps that view, in
+  other view, or when output switches between flat and grouped, the same way changing `IsSourceGrouped` does today
+  (controls read `CollectionGroups` once per `ItemsSource`; see "Architecture"). Clearing every descriptor of a flat
+  shaped view keeps that view, in
   source order; clearing the last `GroupDescription` returns a new `View` (unshaped if no sort or filter remains).
   Wrap several changes in `DeferRefresh()` to recompute (and raise `Reset`) once.
 - **Currency.** After a source-driven refresh, the previous `CurrentItem` is restored if it is still in the view.
@@ -172,7 +174,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 
 1. **Extend CVS rather than add a type.** This is what the reviewer and #4307 ask for. `ICollectionView` is frozen at
    `WinUIContract 1` (`dxaml/xcp/dxaml/idl/winrt/core/microsoft.ui.xaml.coretypes2.idl`, `interface ICollectionView`),
-   so shaping state lives on CVS, the way WPF's CVS proxies its view.
+   so the shaping API is on CVS (and on its view through the optional `ICollectionViewShaping`), the way WPF's CVS
+   proxies its view. The shaping itself is done by the view (see "Architecture").
 2. **Experimental members on an existing framework class.** This follows the `Window.Width`/`MinWidth` and
    `XamlIsland.ShouldConstrainPopupsToWorkArea` precedent:
    - The model uses `[Platform("Feature_ExperimentalApi", ...)]` on the class and `[VelocityFeature("Feature_ExperimentalApi")]`
@@ -200,31 +203,63 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
    `PropertyChangedEventArgs` (`Microsoft.UI.Xaml.Data.cs:57`). The enum follows `XamlChangeId`
    (`Microsoft.UI.Xaml.Settings.cs:11-16`): experimental, excluded from the type tables.
 6. **Reuse the existing view classes; no new internal view type.**
-   - The engine writes into a read-only observable vector. The flat case wraps it with `VectorCollectionView`. The
-     grouped case passes a vector of computed group objects to `GroupedDataCollectionView` with no `ItemsPath`, which
-     is exactly what `IsSourceGrouped = true` does (`CollectionViewManager.cpp:43`).
-   - A new `CollectionView` subclass would need a `KnownTypeIndex` and metadata-table changes.
+   - `VectorCollectionView`, the view a CVS already creates over a vector, carries the engine and plays WPF's
+     `ListCollectionView` (see "Architecture" below).
+   - A new `CollectionView` subclass would need a `KnownTypeIndex` and metadata-table changes: framework views are
+     `DependencyObject`s activated by type index, so a C++-only subclass cannot be created.
 7. **Property paths use the framework's `PropertyPathListener`**, the same way `GroupedDataCollectionView` resolves
    `ItemsPath` (`GroupedDataCollectionView_Partial.cpp:302-323`). Paths therefore resolve exactly like `{Binding}`.
 8. **Rebuild on descriptor change** copies `OnIsSourceGroupedChanged` → `EnsureView`
-   (`CollectionViewSource_Partial.cpp:73`, `:122`), but only to start shaping or to switch between flat and grouped
-   output. Otherwise the shaped view is reshaped in place.
+   (`CollectionViewSource_Partial.cpp:73`, `:122`), but only to start shaping a view that cannot shape or to switch
+   between flat and grouped output. Otherwise the shaped view is reshaped in place.
 9. **`ICollectionViewShaping` is an optional interface on the view**, not a change to the frozen `ICollectionView`.
-   It follows the `ICollectionViewFactory` / `ISupportIncrementalLoading` pattern of QI-able capabilities. The
-   existing `CollectionView` base implements it, and `QueryInterfaceImpl` answers it only when a CVS has set itself
-   as the view's shaping owner (`CollectionView::SetShapingOwner`). That is every shaped view, plus the CVS's unshaped
-   flat `VectorCollectionView` over a vector source; an `IsSourceGrouped` view, a factory view, or a view created any
-   other way does not offer it. Every member forwards to the owning CVS, so the view and the CVS share
-   one set of descriptor collections.
+   It follows the `ICollectionViewFactory` / `ISupportIncrementalLoading` pattern of QI-able capabilities.
+   `VectorCollectionView` implements it directly, and `QueryInterfaceImpl` answers it only when a CVS created the
+   view to shape (`EnableShaping`): every view a CVS creates over a vector source (shaped or not), and the view it
+   creates over a snapshot of any other source once a rule is set. An `IsSourceGrouped` view, a factory view, or a
+   view created any other way does not offer it. The view and the CVS share one set of descriptor collections.
+
+### Architecture: the view owns the engine
+
+As in WPF, the view does the shaping and `CollectionViewSource` is a proxy over it.
+
+| WPF | WinUI POC |
+|---|---|
+| `CollectionViewSource.EnsureView` → `ViewManager.GetViewRecord` creates a `ListCollectionView` for an `IList` | `CollectionViewSource::EnsureView` → `CollectionViewManager::GetViewRecord` creates a `VectorCollectionView` for an `IVector` / `IBindableVector` (and, once a rule is set, for a snapshot of any other enumerable) and reports it shapeable |
+| `CollectionViewSource.ApplyPropertiesToView` copies `SortDescriptions`, `GroupDescriptions` and `Filter` onto the view | `CollectionViewSource::ApplyPropertiesToView` hands the view the CVS's descriptor collections (shared, not copied), `Filter` and `CustomSort` |
+| `ListCollectionView` owns `InternalList`, sorting, filtering, grouping, `DeferRefresh` | `VectorCollectionView` owns the source subscription, the rules, `InternalList`, `RefreshOverride`, `ProcessCollectionChanged`, the `DeferRefresh` level and the groups |
+
+- **The view owns the rules while it is `View`.** The descriptor collections are shared objects: `cvs.SortDescriptions`
+  and `((ICollectionViewShaping)cvs.View).SortDescriptions` are the same collection, and a change to it is reported
+  to the view (or, while there is no shaping view, to the CVS). `cvs.Filter` / `cvs.CustomSort` / `cvs.Refresh()`
+  forward to the view; when `Source` changes, the CVS takes `Filter` and `CustomSort` back and applies them to the
+  next view. A view the CVS has replaced keeps answering `ICollectionViewShaping` through that CVS, so it still
+  shapes the CVS's current `View`.
+- **Lifetime.** The CVS holds its view (`View`); the view holds the CVS only weakly. A consumer that holds only
+  `cvs.View` (for example TableView's `ItemsSource`) keeps a working, shapeable view after the app drops the CVS,
+  because the engine is the view. (Before, the view held its CVS strongly because the engine lived there.)
+- **`DeferRefresh`.** The level lives on the view. A deferral taken on the CVS takes one on its view while any CVS
+  deferral is open (also on a view created while one is open), so deferrals from either side batch together.
+- **Flat and grouped in one class.** A shaping view presents flat output directly and grouped output through an
+  internal `GroupedDataCollectionView` over its `InternalList`, whose `CollectionGroups` it exposes. When the CVS
+  publishes the view, switching between flat and grouped output still gives the CVS a new `View`: ListView, GridView,
+  `ItemsControl` and TableView read `CollectionGroups` once per `ItemsSource`, so a view that started or stopped
+  grouping in place would not be regrouped by them. A view no CVS publishes (its CVS was collected) switches in place.
 
 ### Internal names follow WPF
 
-The engine's internal classes (`CollectionViewSource_Shaping.cpp`) are named after their WPF counterparts so the
-logic can be read side by side with dotnet/wpf. Public API names are unaffected.
+The engine (`VectorCollectionView_Shaping.cpp`) and the CVS proxy (`CollectionViewSource_Shaping.cpp`) use the names
+of their WPF counterparts so the logic can be read side by side with dotnet/wpf. Public API names are unaffected.
 
 | WinUI internal | WPF counterpart | Role |
 |---|---|---|
-| `InternalList` (`CollectionViewSource::m_tpInternalList`) | `ListCollectionView.InternalList` | The shaped list the view wraps. |
+| `VectorCollectionView` (with shaping enabled) | `ListCollectionView` | The view over a vector; owns the engine and answers `ICollectionViewShaping`. Keeps its WinUI name (see decision 6). |
+| `InternalList` (`VectorCollectionView::m_tpInternalList`) | `ListCollectionView.InternalList` | The shaped list the view presents. |
+| `VectorCollectionView::RefreshOverride` | `ListCollectionView.RefreshOverride` | Full recompute: filter, stable sort, group. |
+| `VectorCollectionView::RefreshOrDefer` | `CollectionView.RefreshOrDefer` | Recompute now, or once the last `DeferRefresh` closes; keeps currency. |
+| `VectorCollectionView::ProcessCollectionChanged` / `ProcessCollectionChangedWithAdjustedIndex` | `ListCollectionView.ProcessCollectionChanged` / `ProcessCollectionChangedWithAdjustedIndex` | A source change: applied incrementally on a flat view, else a full recompute. |
+| `CollectionViewSource::ApplyPropertiesToView` | `CollectionViewSource.ApplyPropertiesToView` | Gives a new view the CVS's rules. |
+| `CollectionViewManager::GetViewRecord` | `ViewManager.GetViewRecord` | Picks the view class for a source. |
 | `CollectionViewGroupInternal` | `MS.Internal.Data.CollectionViewGroupInternal` | A computed group; exposes `Key` / `Name`. |
 | `CollectionViewGroupRoot` | `MS.Internal.Data.CollectionViewGroupRoot` | Builds the top-level groups (`AddToSubgroups`). |
 | `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison, used by the full sort and the incremental placement. |
@@ -351,7 +386,7 @@ None of these are in public IDL or the XAML metadata provider.
 
 | Component | Role |
 |---|---|
-| `CollectionViewSource` / `ICollectionViewShaping` (framework) | The one engine: sort, filter, group, `CustomSort`, `DeferRefresh`, incremental flat updates. |
+| `CollectionViewSource` view / `ICollectionViewShaping` (framework) | The one engine, owned by the view (`VectorCollectionView`; the CVS is a proxy over it): sort, filter, group, `CustomSort`, `DeferRefresh`, incremental flat updates. |
 | `TableViewRowProjection` | Chooses flat, grouped or tree rows over the view and owns the adapters below. No shaping. |
 | `GroupedSourceAdapter` | Flattens groups into header and data rows; owns group expansion state. |
 | `HierarchicalSourceAdapter` + `ParentKeyIndex` | Builds the key / parent-key index of the view's items, flattens the tree and owns row expansion state. |
@@ -426,7 +461,7 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
   getter) are not applied; the view's incremental bookkeeping is invalidated, so the next source change or
   `Refresh()` recomputes fully.
 - **Deferral lifetime.** A `DeferRefresh` deferral that is never closed keeps the view stale (WPF behaves the same).
-  It holds the CVS strongly until closed.
+  It holds the view (or, for a deferral taken on the CVS, the CVS) strongly until closed.
 - **Lifetime.** The group key is held with a `ComPtr`, not a `TrackerPtr`: `ObservableTrackerCollection`'s reference
   tracker walk is `final`. A managed key object is kept alive by its group until the next refresh.
 - **API shape.** Decide `GroupDescription` (abstract base) vs. `PropertyGroupDescription` before leaving experimental.
@@ -453,9 +488,10 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 | `dxaml/xcp/dxaml/idl/winrt/main/microsoft.ui.xaml.idl` | None | Add `declare` entries only if MIDL does not emit `IVector`/`IIterable` of the descriptor types |
 | `packaging/Intellisense/*` | None | Regenerate docs XML when promoting |
 
-Hand-written files: `CollectionViewSource_Partial.h/.cpp` (hook in `EnsureView`), `CollectionViewSource_Shaping.cpp`
-(engine, descriptor factories and the `ICollectionViewShaping` forwarders), `CollectionView_Partial.h`
-(`ICollectionViewShaping` on the view base), and `wrtdxamlfoundation.vcxproj`.
+Hand-written files: `CollectionViewSource_Partial.h/.cpp` (`EnsureView`), `CollectionViewSource_Shaping.cpp`
+(the CVS proxy: rule properties, `ApplyPropertiesToView`, `DeferRefresh`, descriptor factories),
+`VectorCollectionView_Partial.h` and `VectorCollectionView_Shaping.cpp` (the engine and `ICollectionViewShaping`),
+`CollectionViewManager.h/.cpp` (`GetViewRecord`), `CollectionViewRefreshDeferral.h`, and `wrtdxamlfoundation.vcxproj`.
 
 ## Test
 
