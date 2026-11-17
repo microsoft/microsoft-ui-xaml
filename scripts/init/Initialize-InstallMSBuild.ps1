@@ -3,11 +3,11 @@ param(
     [string]$Verbosity = 'quiet',
     [string]$logsDir,
     [switch]$ignoreInstalledVS, # set this flag if you never want to use the installed VS from program files
-    [ValidateSet("BuildTools169", "Latest16x", "Release17x", "Preview17x")][string]$VsVersionToInstall
+    [ValidateSet("BuildTools169", "Latest16x", "Release17x", "Preview17x", "Release18x", "Preview18x")][string]$VsVersionToInstall = "Release18x"
 )
 
 
-Import-Module -Name $PSScriptRoot\..\MSBuildFunctions.psm1 -DisableNameChecking
+Import-Module -Name $PSScriptRoot\..\MSBuildFunctions.psm1 -DisableNameChecking -ArgumentList $VsVersionToInstall -Force
 
 #is VS installed on this machine?
 if (Test-Path -Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\") {

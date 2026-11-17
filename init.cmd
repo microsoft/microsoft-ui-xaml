@@ -276,7 +276,7 @@ goto :SkipDevCmd
     if errorlevel 1 (echo Could not set up a developer command prompt && exit /b %ERRORLEVEL%)
 :SkipDevCmd
 
-if "%VisualStudioVersion%" == "16.0" (echo Visual Studio 2019 is not supported. && exit /b /1)
+if "%VisualStudioVersion%" LSS "18.0" (echo Visual Studio 2026 or later is required for the .NET 10 SDK. && exit /b 1)
 
 set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\amd64;%RepoRoot%\.tools;%RepoRoot%\.tools\VSS.NuGet.AuthHelper;%RepoRoot%\tools;%RepoRoot%\dxaml\scripts;%PATH%
 

@@ -22,18 +22,19 @@ Follow these steps:
    git checkout main
    ```
 
-4. Install the required Visual Studio components:
+4. Install Visual Studio 2026 or later and the required components. The .NET 10 SDK requires
+   MSBuild 18 or later:
 
    * If you have Visual Studio 2026, use Visual Studio Installer to import the `.vsconfig` file
      from the root of the repository into your existing installation.
-   * Otherwise, run the following command to install or configure Visual Studio 2022 Build Tools:
+   * Otherwise, run the following command to install or configure Visual Studio 2026 Build Tools:
 
    ```
    cd C:\winui3
    .\OneTimeSetup.cmd -Install MSBuild
    ```
 
-   `OneTimeSetup.cmd -Install MSBuild` always targets Visual Studio 2022 Build Tools. Do not run it
+   `OneTimeSetup.cmd -Install MSBuild` targets Visual Studio 2026 Build Tools. Do not run it
    to configure an existing Visual Studio 2026 installation.
 
    Click the various "Yes", "Continue", and "Modify"/"Install" buttons as needed to complete
