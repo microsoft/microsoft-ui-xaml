@@ -92,7 +92,7 @@ window.Activate();
 | `fixed-size-window` | Supported | `WindowPlacementRespectsFixedSizing`, HL 10 |
 | `display-changes` | Supported | `WindowPlacementPreferSameNameDisplay`, `WindowPlacementAdaptToReplacementDisplay`, `WindowPlacementPreserveLogicalSize`, `WindowPlacementMigratesChangedWorkArea` |
 | `launch-on-display-hint` | Open | Not tested |
-| `fallback-to-primary-display` | Open | Needs the proposed display-selection helpers (not in the prototype yet). Not tested. |
+| `fallback-to-primary-display` | Open | Display-selection helpers are in the prototype. Sample app only, on one display with a faked `DeviceName`. No integration test. |
 | `no-flash-on-apply` | Open | HL 6 (hidden contract only) |
 | `restore-z-order` | Open | Not tested |
 | `compact-overlay` | Open | `WindowPlacementSkipsUnsupportedPresenters` |
@@ -308,14 +308,15 @@ If the app wants the window to come back full screen, see `app-restores-fullscre
 
 Scenario `app-restores-fullscreen`
 
-An app that wants full screen back stores that bit itself, then sets the presenter after
-`Activate`. WinUI restores the Overlapped state underneath, so leaving full screen goes back to
-it.
+An app that wants full screen back stores that bit itself. Before `Activate`, it adds
+`PlacementInfo.FullScreen` to the saved details and applies them. `SetCurrentPlacement` keeps the
+window hidden, so the window first appears already full screen. The Overlapped state sits
+underneath, so leaving full screen goes back to it.
 
 1. Open window, move and resize it, maximize it
 2. Switch to the FullScreen presenter, then close the window
-3. Re-open window. The app sets the FullScreen presenter after `Activate`.
-4. Expected: Window is full screen
+3. Re-open window. The app applies the saved details with `FullScreen` added, then calls `Activate`.
+4. Expected: Window first appears full screen. It never shows Overlapped first.
 5. Switch to the Overlapped presenter
 6. Expected: Window is maximized. Restore gives the bounds from (1).
 
@@ -323,20 +324,32 @@ it.
 var settings = ApplicationData.Current.LocalSettings.Values;
 var window = new VideoWindow();
 window.PlacementId = "Video";
+window.PlacementMode = WindowPlacementMode.SaveOnClose; // The app applies placement.
 window.Closed += (s, e) =>
 {
     settings["Video.WasFullScreen"] =
         window.AppWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen;
 };
 
-window.Activate();
-if (settings["Video.WasFullScreen"] is true)
+AppWindowPlacementDetails saved = window.TryLoadPlacementDetails();
+if (saved != null)
 {
-    window.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+    if (settings["Video.WasFullScreen"] is true)
+    {
+        saved = AppWindowPlacementDetails.Create(
+            saved.NormalRect, saved.WorkArea, saved.Dpi, saved.ShowCmd,
+            saved.ArrangeRect, saved.Flags | PlacementInfo.FullScreen, saved.DeviceName);
+        // The default behavior doesn't apply full screen.
+        window.AppWindow.PlacementRestorationBehavior |=
+            PlacementRestorationBehavior.AllowShowFullScreen;
+    }
+    window.AppWindow.SetCurrentPlacement(saved, isFirstWindow: true);
 }
+window.Activate();
 ```
 
-> Not tested. The window may show Overlapped for a moment before it goes full screen.
+> Calling `SetPresenter(FullScreen)` after `Activate` instead shows the window Overlapped first,
+> then switches to full screen.
 
 Scenario `fullscreen-before-first-activate`
 
@@ -642,12 +655,22 @@ Scenario `launch-on-display-hint`
 
 Scenario `fallback-to-primary-display`
 
-> **Open.** Needs the proposed `TryGetDisplayArea()` and `MoveToDisplayArea(DisplayArea)`
-> helpers on `AppWindowPlacementDetails`. Neither is in the prototype yet. By default, a window
-> whose saved display is gone opens on the
-> nearest display (see `display-changes`). Some apps want the primary display instead. Today the
-> app can't tell that the saved display is gone, and can't redo PlacementEx's work-area and DPI
-> math itself.
+> **Open.** Uses the new `TryGetDisplayArea()` and `MoveToDisplayArea(DisplayArea)`
+> helpers on `AppWindowPlacementDetails`. Both are in the prototype as experimental APIs.
+> By default, a window whose saved display is gone opens on the
+> nearest display (see `display-changes`). Some apps want the primary display instead. Without
+> the helpers, the app can't tell that the saved display is gone, and can't redo PlacementEx's
+> work-area and DPI math itself.
+>
+> WindowPlacementApp runs this code with Setup `ManualSaveInClosed` and "Fake missing display".
+> That option gives the loaded details a fake `DeviceName`, so `TryGetDisplayArea` returns null.
+> It passed on a VM with one display at 96 DPI, for a normal window and a snapped window.
+> It also passed on a VM with a real second display: the display was removed, and the
+> primary display was at 96 DPI and then at 144 DPI. The normal and snapped windows both
+> landed on the primary display with scaled rects.
+> Still open: the maximized case below through `MoveToDisplayArea` (a maximized
+> `RestoreAndSave` record did open maximized on the primary display), and an
+> integration test.
 
 1. Save a placement on display 2, maximized
 2. Disconnect display 2
@@ -664,10 +687,10 @@ window.PlacementMode = WindowPlacementMode.SaveOnClose;
 AppWindowPlacementDetails saved = window.TryLoadPlacementDetails();
 if (saved != null)
 {
-    // Proposed API, not in the prototype yet. Null if the saved display is not connected.
+    // Experimental API. Null if the saved display is not connected.
     if (saved.TryGetDisplayArea() == null)
     {
-        // Proposed API, not in the prototype yet. Returns new details fitted to that display.
+        // Experimental API. Returns new details fitted to that display.
         saved = saved.MoveToDisplayArea(DisplayArea.Primary);
     }
     window.AppWindow.SetCurrentPlacement(saved, isFirstWindow: true);

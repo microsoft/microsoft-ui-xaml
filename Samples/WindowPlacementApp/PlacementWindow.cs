@@ -35,9 +35,16 @@ namespace WindowPlacementApp
         private ComboBox m_newSetup;
         private CheckBox m_newKeepMinimized;
         private CheckBox m_newFixedSize;
+        private CheckBox m_newLaunchFullScreen;
+        private CheckBox m_newFakeMissingDisplay;
 
-        // AllowShowMinimized is a proposed AppWindow flag. Not in the WinUI winmd yet.
+#if IXP_PROTOTYPE_PROJECTION
+        private const PlacementRestorationBehavior AllowShowMinimized = PlacementRestorationBehavior.AllowShowMinimized;
+#else
+        // AllowShowMinimized is a proposed AppWindow flag. The NuGet IXP projection doesn't have it.
+        // Build with IxpProjectionPath (see the csproj) to use the prototype projection instead.
         private const PlacementRestorationBehavior AllowShowMinimized = (PlacementRestorationBehavior)16;
+#endif
 
         public static PlacementWindow Open(LaunchOptions options, bool isMain)
         {
@@ -118,6 +125,10 @@ namespace WindowPlacementApp
 
             AppWindow.Changed += (sender, args) =>
             {
+                if (args.DidPresenterChange)
+                {
+                    Log.Write($"{Title}: Presenter changed. {StatusLine()}");
+                }
                 if (args.DidPositionChange || args.DidSizeChange || args.DidPresenterChange)
                 {
                     RefreshStatus();
@@ -125,7 +136,10 @@ namespace WindowPlacementApp
             };
             Closed += (sender, args) =>
             {
-                Log.Write($"{Title}: Closed. Saved state is written by WinUI during close.");
+                bool winuiSaves = !string.IsNullOrEmpty(PlacementId) && PlacementMode != WindowPlacementMode.Manual;
+                Log.Write(winuiSaves
+                    ? $"{Title}: Closed. WinUI saves the placement during close."
+                    : $"{Title}: Closed. WinUI does not save on close (Manual mode or no PlacementId).");
                 m_closed = true;
                 m_savedTimer.Stop();
                 Log.Changed -= RefreshLog;
@@ -136,14 +150,20 @@ namespace WindowPlacementApp
 
         private void SetUpPlacementAndActivate()
         {
-            if (m_options.Setup != PlacementSetup.None)
+            if (m_options.Setup is not (PlacementSetup.None or PlacementSetup.AppStorage))
             {
                 PlacementId = m_options.Id;
             }
 
-            // Restart: a saved minimized window stays minimized. Works in both modes.
-            if (m_options.KeepMinimized || m_options.Restart)
+            if (m_options.Restart)
             {
+                // Spec example 2 (session restore). Allow minimized restoration too.
+                // WinUI still does not restore full screen.
+                AppWindow.PlacementRestorationBehavior = PlacementRestorationBehavior.All;
+            }
+            else if (m_options.KeepMinimized)
+            {
+                // A saved minimized window stays minimized. Works in every mode.
                 AppWindow.PlacementRestorationBehavior |= AllowShowMinimized;
             }
 
@@ -152,12 +172,82 @@ namespace WindowPlacementApp
                 Overlapped().IsResizable = false;
             }
 
-            ApplySetup();
+            if (m_options.LaunchFullScreen)
+            {
+                ApplyFullScreenIfItWasLastTime();
+            }
+            else
+            {
+                ApplySetup();
+            }
 
-
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            bool visibleBeforeActivate = IsWindowVisible(hwnd);
+            AppWindowPresenterKind presenterBeforeActivate = AppWindow.Presenter.Kind;
             Activate();
-            Log.Write($"{Title}: Activate() done. {StatusLine()}");
+            Log.Write($"{Title}: Activate() done. Before Activate: visible={visibleBeforeActivate} presenter={presenterBeforeActivate}. {StatusLine()}");
+            if (m_options.LaunchFullScreen && visibleBeforeActivate)
+            {
+                Log.Write($"{Title}: FAIL: the window was visible before Activate, so it can flash at its normal size.");
+            }
             RefreshStatus();
+        }
+
+        // Spec example 4: start full screen if the window was full screen last time.
+        // Same calls as the example, with the key based on this window's id. The app applies
+        // placement itself, so this path always uses SaveOnClose, whatever Setup says.
+        private void ApplyFullScreenIfItWasLastTime()
+        {
+            var settings = ApplicationData.Current.LocalSettings.Values;
+            string wasFullScreenKey = $"{m_options.Id}.WasFullScreen";
+
+            PlacementId = m_options.Id;
+            PlacementMode = WindowPlacementMode.SaveOnClose;
+            Log.Write($"{Title}: Example 4. PlacementMode = SaveOnClose (Setup {m_options.Setup} is ignored on this path).");
+
+            // Not in spec example 4 yet. The default behavior (A7) doesn't include
+            // AllowShowFullScreen, and SetCurrentPlacement honors it (A4). Without this line,
+            // SetCurrentPlacement drops PlacementInfo.FullScreen and the window opens normal.
+            AppWindow.PlacementRestorationBehavior |= PlacementRestorationBehavior.AllowShowFullScreen;
+            Log.Write($"{Title}: PlacementRestorationBehavior |= AllowShowFullScreen -> {AppWindow.PlacementRestorationBehavior}");
+
+            Closed += (s, e) =>
+            {
+                settings[wasFullScreenKey] =
+                    AppWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen;
+                Log.Write($"{Title}: Closed. settings[\"{wasFullScreenKey}\"] = {settings[wasFullScreenKey]}");
+            };
+
+            try
+            {
+                AppWindowPlacementDetails saved = TryLoadPlacementDetails();
+                Log.Write($"{Title}: TryLoad -> {Describe(saved)}");
+                if (saved != null)
+                {
+                    if (settings[wasFullScreenKey] is true)
+                    {
+                        saved = AppWindowPlacementDetails.Create(
+                            saved.NormalRect, saved.WorkArea, saved.Dpi, saved.ShowCmd,
+                            saved.ArrangeRect, saved.Flags | PlacementInfo.FullScreen, saved.DeviceName);
+                        Log.Write($"{Title}: settings[\"{wasFullScreenKey}\"] is true. Added PlacementInfo.FullScreen -> {Describe(saved)}");
+                    }
+                    else
+                    {
+                        Log.Write($"{Title}: settings[\"{wasFullScreenKey}\"] = {settings[wasFullScreenKey] ?? "null"}. Not adding full screen. " +
+                            "It wasn't full screen when it last closed. To test example 4: Full screen, close, then open it again.");
+                    }
+                    bool applied = AppWindow.SetCurrentPlacement(saved, isFirstWindow: true);
+                    Log.Write($"{Title}: SetCurrentPlacement(saved, isFirstWindow:true) -> {applied}. presenter={AppWindow.Presenter.Kind}");
+                }
+                else
+                {
+                    Log.Write($"{Title}: Nothing saved yet. Opening normal. To test example 4: Full screen, close, then open it again.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write($"{Title}: FAIL: example 4 threw 0x{ex.HResult:X8} {ex.GetType().Name}: {ex.Message}");
+            }
         }
 
         private void ApplySetup()
@@ -173,8 +263,9 @@ namespace WindowPlacementApp
                 case PlacementSetup.Manual:
                 {
                     // Same calls that RestoreAndSave makes, written by the app.
-                    // SaveOnClose: WinUI saves on close. Manual: only the Save button saves.
-                    PlacementMode = m_options.Setup == PlacementSetup.Manual ? WindowPlacementMode.Manual : WindowPlacementMode.SaveOnClose;
+                    // SaveOnClose: WinUI saves on close. Manual (spec example 7): only the Save
+                    // button saves.
+                    PlacementMode = m_options.Setup == PlacementSetup.SaveOnClose ? WindowPlacementMode.SaveOnClose : WindowPlacementMode.Manual;
                     AppWindowPlacementDetails saved = TryLoadPlacementDetails();
                     Log.Write($"{Title}: {PlacementMode}. TryLoad -> {Describe(saved)}");
                     if (saved != null)
@@ -184,8 +275,43 @@ namespace WindowPlacementApp
                     }
                     break;
                 }
+                case PlacementSetup.ManualSaveInClosed:
+                {
+                    // Overview "Manual placement" sample. Same calls as the doc, plus logging.
+                    PlacementMode = WindowPlacementMode.Manual;
+                    AppWindowPlacementDetails saved = TryLoadPlacementDetails();
+                    Log.Write($"{Title}: Manual. TryLoad -> {Describe(saved)}");
+                    if (saved != null)
+                    {
+                        if (m_options.FakeMissingDisplay)
+                        {
+                            saved = FakeMissingDisplay(saved);
+                            Log.Write($"{Title}: Fake missing display -> {Describe(saved)}");
+                        }
+#if IXP_PROTOTYPE_PROJECTION
+                        DisplayArea savedDisplay = saved.TryGetDisplayArea();
+                        Log.Write($"{Title}: TryGetDisplayArea() -> {Describe(savedDisplay)}");
+                        if (savedDisplay == null)
+                        {
+                            saved = saved.MoveToDisplayArea(DisplayArea.Primary);
+                            Log.Write($"{Title}: MoveToDisplayArea(DisplayArea.Primary) -> {Describe(saved)}");
+                        }
+#else
+                        Log.Write($"{Title}: Skipped the display check. TryGetDisplayArea and MoveToDisplayArea need a build with IxpProjectionPath.");
+#endif
+                        bool applied = AppWindow.SetCurrentPlacement(saved, isFirstWindow: true);
+                        Log.Write($"{Title}: SetCurrentPlacement(saved, isFirstWindow:true) -> {applied}");
+                    }
+                    Closed += (s, e) =>
+                    {
+                        SavePlacementDetails();
+                        Log.Write($"{Title}: Closed. SavePlacementDetails() done.");
+                    };
+                    break;
+                }
                 case PlacementSetup.SaveOnCloseCentered:
                 {
+                    // Spec example 3.
                     PlacementMode = WindowPlacementMode.SaveOnClose;
                     AppWindowPlacementDetails saved = TryLoadPlacementDetails();
                     Log.Write($"{Title}: SaveOnClose. TryLoad -> {Describe(saved)}");
@@ -201,6 +327,24 @@ namespace WindowPlacementApp
                         bool applied = AppWindow.SetCurrentPlacement(centered, isFirstWindow);
                         Log.Write($"{Title}: SetCurrentPlacement(centered, isFirstWindow:{isFirstWindow}) -> {applied}");
                     }
+                    else
+                    {
+                        AppWindow.Resize(new SizeInt32(1200, 800));
+                        Log.Write($"{Title}: Nothing saved. Resize(1200x800).");
+                    }
+                    break;
+                }
+                case PlacementSetup.AppStorage:
+                {
+                    // Spec example 5. No PlacementId, so WinUI does nothing extra.
+                    AppWindowPlacementDetails saved = MyStore.Load(m_options.Id);
+                    Log.Write($"{Title}: AppStorage. MyStore.Load -> {Describe(saved)}");
+                    if (saved != null)
+                    {
+                        bool applied = AppWindow.SetCurrentPlacement(saved, isFirstWindow);
+                        Log.Write($"{Title}: SetCurrentPlacement(saved, isFirstWindow:{isFirstWindow}) -> {applied}");
+                    }
+                    Closed += (s, e) => SaveToMyStore();
                     break;
                 }
                 case PlacementSetup.SaveOnCloseFixedRect:
@@ -230,11 +374,23 @@ namespace WindowPlacementApp
             AutomationProperties.SetAutomationId(m_newKeepMinimized, "NewKeepMinimizedCheck");
             m_newFixedSize = new CheckBox { Content = "Not resizable", IsChecked = false, VerticalAlignment = VerticalAlignment.Bottom };
             AutomationProperties.SetAutomationId(m_newFixedSize, "NewFixedSizeCheck");
+            m_newLaunchFullScreen = new CheckBox { Content = "Full screen if it was last time (ex. 4)", IsChecked = false, VerticalAlignment = VerticalAlignment.Bottom };
+            ToolTipService.SetToolTip(m_newLaunchFullScreen,
+                "Spec example 4. Uses SaveOnClose, whatever Setup says. The window opens full screen only if it was full screen when it last closed. " +
+                "To test: open it, click Full screen, close it, then open it again with this box checked.");
+            AutomationProperties.SetAutomationId(m_newLaunchFullScreen, "NewLaunchFullScreenCheck");
+            m_newFakeMissingDisplay = new CheckBox { Content = "Fake missing display", IsChecked = false, VerticalAlignment = VerticalAlignment.Bottom };
+            ToolTipService.SetToolTip(m_newFakeMissingDisplay, "ManualSaveInClosed only: the loaded details name a display that doesn't exist, so TryGetDisplayArea returns null.");
+            AutomationProperties.SetAutomationId(m_newFakeMissingDisplay, "NewFakeMissingDisplayCheck");
             row.Children.Add(m_newId);
             row.Children.Add(m_newSetup);
-            row.Children.Add(m_newKeepMinimized);
-            row.Children.Add(m_newFixedSize);
             panel.Children.Add(row);
+            var checks = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            checks.Children.Add(m_newKeepMinimized);
+            checks.Children.Add(m_newFixedSize);
+            checks.Children.Add(m_newLaunchFullScreen);
+            checks.Children.Add(m_newFakeMissingDisplay);
+            panel.Children.Add(checks);
 
             var buttons = new VariableSizedWrapGrid { Orientation = Orientation.Horizontal, ItemWidth = 150, ItemHeight = 40 };
             AddButton(buttons, "Open window", "OpenWindowButton", () => Open(NewOptions(), isMain: false));
@@ -246,6 +402,7 @@ namespace WindowPlacementApp
             AddButton(buttons, "Minimize + relaunch", "MinimizeRelaunchButton", () => _ = Relaunch(minimizeFirst: true, restart: false));
             AddButton(buttons, "Restart app", "RestartButton", () => _ = Relaunch(minimizeFirst: false, restart: true));
             AddButton(buttons, "Minimize + restart", "MinimizeRestartButton", () => _ = Relaunch(minimizeFirst: true, restart: true));
+            AddButton(buttons, "Kill + relaunch", "KillRelaunchButton", KillAndRelaunch);
             AddButton(buttons, "Clear all data", "ClearDataButton", ClearAllData);
             panel.Children.Add(buttons);
             panel.Children.Add(new Expander
@@ -263,7 +420,7 @@ namespace WindowPlacementApp
             "1. Move or resize, then Relaunch. Same rect.\n" +
             "2. Maximize, then Relaunch. Maximized.\n" +
             "3. Minimize + relaunch. Restored and active (default behavior drops minimized).\n" +
-            "4. Minimize + restart. Minimized and not active (--restart adds AllowShowMinimized).\n" +
+            "4. Minimize + restart. Minimized and not active (--restart sets PlacementRestorationBehavior = All).\n" +
             "5. Maximize, Full screen, then Relaunch. Maximized, not full screen (TryLoad strips FullScreen).\n" +
             "6. Full screen, then Copy to new window. The copy uses GetCurrentPlacement (keeps FullScreen) and behavior All. " +
             "The log shows it stayed hidden and inactive during SetCurrentPlacement. It opens full screen. Try it from maximized too.\n" +
@@ -272,7 +429,26 @@ namespace WindowPlacementApp
             "9. Open process min with Setup SaveOnClose: main window honors STARTUPINFO (minimized). With RestoreAndSave: not minimized.\n" +
             "9b. Setup Manual: Open window, move it, Close, Open window again. Old rect (no save on close). Save button saves.\n" +
             "10. Setup None: no PlacementId, nothing saved or restored.\n" +
-            "11. Clear all data, then Relaunch. OS default position.";
+            "11. Clear all data, then Relaunch. OS default position.\n" +
+            "\n" +
+            "Spec examples (window-placement-spec.md, \"Examples\"). Each runs the same calls as the doc:\n" +
+            "Ex1 RestoreAndSave: Setup RestoreAndSave. Move, then Relaunch. Same rect.\n" +
+            "Ex2 Session restore: Minimize + restart. --restart sets PlacementRestorationBehavior = All. Comes back minimized. " +
+            "Full screen + Restart app: comes back Overlapped (WinUI doesn't restore full screen).\n" +
+            "Ex3 SaveOnClose, adjust, apply: Setup SaveOnCloseCentered. Open window. Centered saved size. " +
+            "After Clear all data: Resize(1200x800).\n" +
+            "Ex4 Full screen if it was: check Full screen if it was last time, Open process. Uses SaveOnClose. It opens normal the first time. " +
+            "In it: Full screen, then Relaunch. It first appears already full screen, on the same display, with no normal-size flash. Overlapped goes back to the normal or maximized state from before full screen. " +
+            "Leave full screen, Relaunch again: opens Overlapped. Open window works the same way inside one process.\n" +
+            "Ex5 App's own storage: Setup AppStorage. Open window, move, Close, Open window. Same rect. " +
+            "No PlacementId. Saved record panel shows MyStore.\n" +
+            "Ex6 Save before close: Save, move the window, then Kill + relaunch. Opens at the saved rect, not the moved one.\n" +
+            "Ex7 Manual: Setup Manual. Open window, move, Close, Open window. Old rect. Save button saves.\n" +
+            "Overview \"Automatic placement\": same as Ex1.\n" +
+            "Overview \"Manual placement\": Setup ManualSaveInClosed. Open window, move, Close, Open window. Same rect. " +
+            "The log shows TryGetDisplayArea returned the display. " +
+            "Check Fake missing display too: TryGetDisplayArea returns null and MoveToDisplayArea(DisplayArea.Primary) " +
+            "puts the window back on the primary display. Needs a build with IxpProjectionPath.";
 
         private LaunchOptions NewOptions() => new LaunchOptions
         {
@@ -280,12 +456,27 @@ namespace WindowPlacementApp
             Setup = Enum.Parse<PlacementSetup>((string)m_newSetup.SelectedItem),
             KeepMinimized = m_newKeepMinimized.IsChecked == true,
             FixedSize = m_newFixedSize.IsChecked == true,
+            LaunchFullScreen = m_newLaunchFullScreen.IsChecked == true,
+            FakeMissingDisplay = m_newFakeMissingDisplay.IsChecked == true,
         };
 
         private void Save()
         {
+            if (m_options.Setup == PlacementSetup.AppStorage)
+            {
+                SaveToMyStore();
+                return;
+            }
             SavePlacementDetails();
             Log.Write($"{Title}: SavePlacementDetails(). Stored: {Describe(TryLoadPlacementDetails())}");
+        }
+
+        // Spec example 5: the app saves GetCurrentPlacement in its own store.
+        private void SaveToMyStore()
+        {
+            AppWindowPlacementDetails current = AppWindow.GetCurrentPlacement();
+            MyStore.Save(m_options.Id, current);
+            Log.Write($"{Title}: MyStore.Save(GetCurrentPlacement) -> {Describe(current)}");
         }
 
         private void TryLoad()
@@ -379,6 +570,15 @@ namespace WindowPlacementApp
             StartProcess(args, minimized: false);
         }
 
+        // For spec example 6. Ends this process without closing its windows, so WinUI doesn't save
+        // on close. Only an earlier SavePlacementDetails (the Save button) is kept.
+        private void KillAndRelaunch()
+        {
+            Log.Write("Kill + relaunch: no window closes, so WinUI doesn't save on close.");
+            StartProcess(m_options.ToCommandLine(restart: false), minimized: false);
+            Process.GetCurrentProcess().Kill();
+        }
+
         // WinUI saves each window's placement when it closes. So clearing the data alone isn't
         // enough: the next Relaunch closes the windows and saves them again. Setting PlacementId
         // to "" turns off that save, so the cleared data stays cleared.
@@ -442,13 +642,15 @@ namespace WindowPlacementApp
             string text;
             try
             {
-                text = SavedRecord.Describe(PlacementId);
+                text = m_options.Setup == PlacementSetup.AppStorage
+                    ? $"(AppStorage, from MyStore)\n{Describe(MyStore.Load(m_options.Id), multiline: true)}"
+                    : SavedRecord.Describe(PlacementId);
             }
             catch (Exception ex)
             {
                 text = $"(read failed: 0x{ex.HResult:X8} {ex.Message})";
             }
-            m_saved.Text = $"Saved record for \"{PlacementId}\":\n{text}";
+            m_saved.Text = $"Saved record for \"{(m_options.Setup == PlacementSetup.AppStorage ? m_options.Id : PlacementId)}\":\n{text}";
         }
 
         private void RefreshLog()
@@ -474,6 +676,31 @@ namespace WindowPlacementApp
                 $"ShowCmd={d.ShowCmd}",
                 $"Flags={d.Flags}",
                 $"Device={d.DeviceName}");
+        }
+
+        private static string Describe(DisplayArea area)
+        {
+            if (area == null)
+            {
+                return "null";
+            }
+            RectInt32 w = area.WorkArea;
+            return $"DisplayId={area.DisplayId.Value}; WorkArea=({w.X},{w.Y} {w.Width}x{w.Height}); IsPrimary={area.IsPrimary}";
+        }
+
+        // Pretend the saved display was a second monitor to the right that is gone now.
+        private static AppWindowPlacementDetails FakeMissingDisplay(AppWindowPlacementDetails d)
+        {
+            int dx = d.WorkArea.Width;
+            RectInt32 Shift(RectInt32 r) => (r.Width == 0 && r.Height == 0) ? r : new RectInt32(r.X + dx, r.Y, r.Width, r.Height);
+            return AppWindowPlacementDetails.Create(
+                Shift(d.NormalRect),
+                Shift(d.WorkArea),
+                d.Dpi,
+                d.ShowCmd,
+                Shift(d.ArrangeRect),
+                d.Flags,
+                @"\\.\FAKEDISPLAY9");
         }
 
         private static TextBlock MonoText(string automationId)

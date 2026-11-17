@@ -49,6 +49,41 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
+  <!-- Optional: build against a prototype AppWindow projection from the WinAppSDK monorepo.
+       Set IxpProjectionPath to the folder that holds a locally built
+       Microsoft.InteractiveExperiences.Projection.dll, for example
+       <LiftedIXP>\bin\x64\Release\Published\CSharp\Experimental\net6.0-windows10.0.17763.0.
+       The target swaps the NuGet copy for that one (compile and copy-local, including the
+       HintPath that ResolveAssemblyReference uses) and defines
+       IXP_PROTOTYPE_PROJECTION, which turns on the code that calls prototype-only AppWindow APIs.
+       This swaps only the managed projection. You still need to put the matching
+       Microsoft.UI.Windowing.dll in the app layout. -->
+  <PropertyGroup Condition="'$(IxpProjectionPath)' != ''">
+    <DefineConstants>$(DefineConstants);IXP_PROTOTYPE_PROJECTION</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="UseIxpPrototypeProjection"
+          AfterTargets="ResolvePackageAssets"
+          Condition="'$(IxpProjectionPath)' != ''">
+    <PropertyGroup>
+      <_IxpProjectionName>Microsoft.InteractiveExperiences.Projection.dll</_IxpProjectionName>
+      <_IxpProjectionFile>$([MSBuild]::EnsureTrailingSlash('$(IxpProjectionPath)'))$(_IxpProjectionName)</_IxpProjectionFile>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_IxpProjectionFile)')" Text="IxpProjectionPath is set, but '$(_IxpProjectionFile)' doesn't exist." />
+    <ItemGroup>
+      <_IxpOldCompile Include="@(ResolvedCompileFileDefinitions)" Condition="'%(Filename)%(Extension)' == '$(_IxpProjectionName)'" />
+      <_IxpOldRuntime Include="@(RuntimeCopyLocalItems)" Condition="'%(Filename)%(Extension)' == '$(_IxpProjectionName)'" />
+    </ItemGroup>
+    <Error Condition="'@(_IxpOldCompile)' == '' or '@(_IxpOldRuntime)' == ''" Text="Couldn't find $(_IxpProjectionName) in the resolved package assets, so the prototype projection can't replace it." />
+    <ItemGroup>
+      <ResolvedCompileFileDefinitions Remove="@(_IxpOldCompile)" />
+      <ResolvedCompileFileDefinitions Include="@(_IxpOldCompile->'$(_IxpProjectionFile)')" HintPath="$(_IxpProjectionFile)" />
+      <RuntimeCopyLocalItems Remove="@(_IxpOldRuntime)" />
+      <RuntimeCopyLocalItems Include="@(_IxpOldRuntime->'$(_IxpProjectionFile)')" HintPath="$(_IxpProjectionFile)" />
+    </ItemGroup>
+    <Message Importance="high" Text="WindowPlacementApp: using prototype projection $(_IxpProjectionFile)" />
+  </Target>
+
   <!-- The self-contained msix doesn't get InProcessServer registrations for the WinUI dlls
        (MUX, MUXC, etc.), so activating e.g. XamlControlsXamlMetaDataProvider fails with
        REGDB_E_CLASSNOTREG. Merge them in from the WinUI package's registrations xml. -->
