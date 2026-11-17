@@ -1410,6 +1410,8 @@ private:
     bool IsInUnrealizedBodyContainer(winrt::DependencyObject const& element) const;
     void QueueOrphanedBodyFocusRescue();
     bool m_orphanedBodyFocusRescueQueued{ false };
+    // The pending restore was started by that rescue: it owns focus only while focus stays stranded.
+    bool m_reshapeFocusFromOrphan{ false };
     // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
     void BeginPendingBodyFocus(
         int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio, winrt::IInspectable const& item = nullptr);
@@ -1519,6 +1521,7 @@ private:
     bool m_isProcessingContextMenu{ false };
 
     double ComputeLeadingFrozenWidth();
+    bool IsLeadingFrozenColumn(winrt::TableViewColumn const& column);
     void RefreshFrozenColumns();
 
     double GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const;

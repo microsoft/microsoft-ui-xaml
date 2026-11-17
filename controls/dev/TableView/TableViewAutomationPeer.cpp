@@ -199,8 +199,28 @@ namespace
             return parent;
         }
 
+        // Published as a row's events source before any client opens it; an event redirected to it finds
+        // its window (in an island too) only through a parent. RefreshParent would create row peers, which
+        // re-enters here, so the table stands in until a Parent navigation re-resolves it.
+        void ParentToTable()
+        {
+            if (auto const table = m_table.get())
+            {
+                SetParent(winrt::FrameworkElementAutomationPeer::CreatePeerForElement(table));
+            }
+        }
+
         hstring GetClassNameCore() { return winrt::hstring_name_of<winrt::TableViewRow>(); }
-        winrt::AutomationControlType GetAutomationControlTypeCore() { return winrt::AutomationControlType::DataItem; }
+
+        // Forwarded, like LocalizedControlType, so the row's AutomationProperties.AutomationControlType applies.
+        winrt::AutomationControlType GetAutomationControlTypeCore()
+        {
+            if (auto const p = ContainerPeer())
+            {
+                return p.GetAutomationControlType();
+            }
+            return winrt::AutomationControlType::DataItem;
+        }
 
         // Forwarded so the row's AutomationProperties.LocalizedControlType still applies.
         hstring GetLocalizedControlTypeCore()
@@ -216,7 +236,10 @@ namespace
         {
             if (m_bound)
             {
-                return BoundRow().second.GetName();
+                auto const name = BoundRow().second.GetName();
+                // The forward can run app code (a LabeledBy peer) that rebinds the row to another record.
+                BoundRow();
+                return name;
             }
             const int32_t index = RequireIndex();
             // A realized row composes its name from its cells, so it can differ from ItemToName.
@@ -1088,7 +1111,9 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
 
 winrt::AutomationPeer TableViewAutomationPeer::CreateRowItemPeerInternal(winrt::TableView const& table, winrt::TableViewRow const& row)
 {
-    return winrt::make_self<TableViewRowItemAutomationPeer>(table, row).as<winrt::AutomationPeer>();
+    auto const peer = winrt::make_self<TableViewRowItemAutomationPeer>(table, row);
+    peer->ParentToTable();
+    return peer.as<winrt::AutomationPeer>();
 }
 
 bool TableViewAutomationPeer::CanSelectMultiple()

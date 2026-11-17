@@ -1998,6 +1998,7 @@ void TableView::RestoreBodyFocusAfterReshape()
     }
 
     m_pendingReshapeFocusRow = row;
+    m_reshapeFocusFromOrphan = false;
     m_pendingReshapeFocusAlign.reset();
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
@@ -2093,6 +2094,7 @@ void TableView::ArmReshapeFocusAttempt()
 void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
+    m_reshapeFocusFromOrphan = false;
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
@@ -2154,6 +2156,23 @@ void TableView::OnReshapeFocusAttempt()
     {
         CancelReshapeFocusRestore();
         return;
+    }
+    // The repeater's rescue already had its turn before an orphan restore started, so a live body row
+    // focused since is the app's or user's choice, not one to re-aim.
+    if (m_reshapeFocusFromOrphan)
+    {
+        auto const focusRoot = XamlRoot();
+        auto const focused = focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot).try_as<winrt::DependencyObject>() : nullptr;
+        auto const repeater = m_rowsRepeater.get();
+        auto const rowCount = GetItemsSourceCount();
+        auto const target = repeater && rowCount > 0
+            ? repeater.TryGetElement(std::clamp(m_pendingReshapeFocusRow, 0, rowCount - 1)) : nullptr;
+        if (focused && focused != repeater.try_as<winrt::DependencyObject>() && IsElementInBody(focused) &&
+            !IsInUnrealizedBodyContainer(focused) && !(target && IsBodyFocusInContainer(target)))
+        {
+            CancelReshapeFocusRestore();
+            return;
+        }
     }
 
     bool landed = false;
@@ -2679,8 +2698,7 @@ void TableView::RevealFocusedBodyElement(winrt::UIElement const& element)
         const double width = target.ActualWidth();
         const double viewportWidth = scroller.ViewportWidth();
         // A frozen cell is pinned in the viewport; its position can describe a pending offset.
-        auto const column = target.Tag().try_as<winrt::TableViewColumn>();
-        const bool frozen = column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None;
+        const bool frozen = IsLeadingFrozenColumn(target.Tag().try_as<winrt::TableViewColumn>());
         if (target != element && !frozen && viewportWidth > 0.0 && width <= viewportWidth)
         {
             double delta = 0.0;
@@ -2853,19 +2871,6 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
             args.Handled(true);
             return;
         }
-
-        // A frozen cell is pinned in the viewport, so it never needs a horizontal reveal. Its focus
-        // request, computed at the old offset, would override a pending horizontal ChangeView (Home
-        // from the far end then landed short of the start); only outer scrollers still need it.
-        if (auto const column = target.Tag().try_as<winrt::TableViewColumn>();
-            column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None &&
-            winrt::VisualTreeHelper::GetParent(target).try_as<winrt::TableViewCellsPanel>() &&
-            IsRowElementInViewport(bodyItem))
-        {
-            args.Handled(true);
-            RevealFocusedBodyElement(bodyItem);
-            return;
-        }
     }
 
     if (!std::isnan(args.VerticalAlignmentRatio()) || args.VerticalOffset() != 0.0)
@@ -2898,6 +2903,16 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
     }
     if (!container || winrt::VisualTreeHelper::GetParent(container) != repeater || !IsRowElementInViewport(container))
     {
+        return;
+    }
+
+    // A pinned cell never needs a horizontal reveal. Its focus request, computed at the old offset,
+    // would override a pending horizontal ChangeView (Home from the far end then landed short of the
+    // start); only outer scrollers still need it.
+    if (container != target && IsLeadingFrozenColumn(target.Tag().try_as<winrt::TableViewColumn>()))
+    {
+        args.Handled(true);
+        RevealFocusedBodyElement(container);
         return;
     }
 
@@ -2971,6 +2986,7 @@ void TableView::QueueOrphanedBodyFocusRescue()
             {
                 strongThis->CaptureBodyFocusForReshape();
                 strongThis->RestoreBodyFocusAfterReshape();
+                strongThis->m_reshapeFocusFromOrphan = strongThis->m_pendingReshapeFocusRow >= 0;
             }
         }))
     {

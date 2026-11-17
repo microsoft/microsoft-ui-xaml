@@ -368,8 +368,14 @@ void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, 
     }
     else if (newBinding || !rowPeer.EventsSource())
     {
-        auto const binding = TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this);
-        m_itemAutomationPeer = winrt::make_weak(binding);
+        // Re-prepared for the same item (the caller kept its cells): restore that item's element, which
+        // the cells' peers are parented to and a client may hold. A new item gets a new element.
+        auto binding = newBinding ? nullptr : m_itemAutomationPeer.get();
+        if (!binding)
+        {
+            binding = TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this);
+            m_itemAutomationPeer = winrt::make_weak(binding);
+        }
         rowPeer.EventsSource(binding);
     }
     else

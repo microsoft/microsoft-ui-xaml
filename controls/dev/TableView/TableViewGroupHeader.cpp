@@ -559,10 +559,13 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
     {
         return;
     }
-    queue.TryEnqueue([weakThis = get_weak(), oldState, newState]()
+    // The transition belongs to the group shown now, so it is bound to that group's element: a
+    // header re-prepared for another group while queued no longer routes to it.
+    queue.TryEnqueue([weakThis = get_weak(), groupBinding = m_groupBinding, oldState, newState]()
     {
         auto const strongThis = weakThis.get();
-        if (!strongThis || !strongThis->m_groupEntry.get())
+        auto const binding = groupBinding.get();
+        if (!strongThis || !binding || !strongThis->m_groupEntry.get())
         {
             return;
         }
@@ -571,12 +574,12 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
         // materialize automation objects a client never asked for.
         auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*strongThis);
         auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr;
-        if (!headerPeer)
+        if (!headerPeer || headerPeer.EventsSource() != binding)
         {
             return;
         }
 
-        // Skip if the state moved on (or the header was re-prepared for another group) while queued.
+        // Skip if the state moved on while queued.
         auto const self = winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer);
         if (self->ExpandCollapseState() == newState)
         {
