@@ -386,7 +386,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 case "GroupBy": source.GroupBy(key); break;
                 case "GroupByWithIdentity":
-                    var identity = new TableViewIdentitySelector(k => source == null ? null : (string)k);
+                    var identity = new TableViewGroupIdentitySelector(k => source == null ? null : (string)k);
                     tracked["IdentitySelector"] = new WeakReference(identity);
                     source.GroupBy(key, identity);
                     break;

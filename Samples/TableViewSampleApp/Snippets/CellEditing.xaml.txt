@@ -36,7 +36,7 @@
     SelectionMode="Single"
     IsReadOnly="False"
     CellEditEnding="OnCellEditEnding">
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewTextColumn Header="First name" Width="160" Binding="{Binding FirstName}"/>
     <tv:TableViewTextColumn Header="Last name" Width="160" Binding="{Binding LastName}"/>
     <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}"/>

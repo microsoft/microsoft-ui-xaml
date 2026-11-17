@@ -10,6 +10,10 @@ struct __declspec(uuid("843c3f59-aab0-4bcb-a8a4-12327286a29f")) __declspec(novta
     ITableViewCellAutomationPeerAccess : ::IUnknown
 {
     virtual HRESULT __stdcall GetExistingPeer(_Outptr_result_maybenull_ ::IInspectable** peer) noexcept = 0;
+    virtual HRESULT __stdcall GetCellOwner(
+        _Outptr_result_maybenull_ ::IInspectable** row,
+        _Outptr_result_maybenull_ ::IInspectable** column,
+        _Out_ int32_t* columnIndex) noexcept = 0;
 };
 
 // Border is sealed; use a single-child Grid so framework peer discovery and Grid.GetItem return
@@ -70,6 +74,30 @@ public:
             CheckThread();
             auto peer = m_automationPeer.get();
             *result = reinterpret_cast<::IInspectable*>(winrt::detach_abi(peer));
+            return S_OK;
+        }
+        catch (...)
+        {
+            return winrt::to_hresult();
+        }
+    }
+
+    HRESULT __stdcall GetCellOwner(::IInspectable** row, ::IInspectable** column, int32_t* columnIndex) noexcept
+    {
+        if (!row || !column || !columnIndex)
+        {
+            return E_POINTER;
+        }
+        *row = nullptr;
+        *column = nullptr;
+        *columnIndex = m_columnIndex;
+        try
+        {
+            CheckThread();
+            auto rowRef = m_row.get();
+            auto columnRef = m_column.get();
+            *row = reinterpret_cast<::IInspectable*>(winrt::detach_abi(rowRef));
+            *column = reinterpret_cast<::IInspectable*>(winrt::detach_abi(columnRef));
             return S_OK;
         }
         catch (...)

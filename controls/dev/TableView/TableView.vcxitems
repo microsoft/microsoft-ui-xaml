@@ -46,11 +46,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderToggleRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupExpandingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupCollapsedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupingHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewBeginningEditEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellEditEndingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellEditEndedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewFocusHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewToolTipHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortingEventArgs.h" />

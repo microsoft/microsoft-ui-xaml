@@ -985,19 +985,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies per-column CanResize=false removes only that column's gripper and leaves every header a tab stop.")]
+        [TestProperty("Description", "Verifies per-column CanUserResize=false removes only that column's gripper and leaves every header a tab stop.")]
         public void VerifyPerColumnCanResizeFalseHidesGripper()
         {
             // TableViewColumn.idl:136: "Gates the resize affordance for this column only; the owner's
             // CanUserResizeColumns gates all of them." Both properties gate the *affordance*; neither
             // is documented to block a programmatic Width assignment, so this deliberately does not
-            // assert that CanResize=false prevents setting Width.
+            // assert that CanUserResize=false prevents setting Width.
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 LoadContent(tableView);
             });
 
@@ -1009,7 +1009,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(FindGripper(GetHeaderCell(tableView, 1)), "The opted-out column must lose its gripper.");
                 Verify.IsNotNull(FindGripper(GetHeaderCell(tableView, 2)), "The opt-out must not apply table-wide.");
 
-                // CanResize gates only the gripper: every visible header stays a tab stop.
+                // CanUserResize gates only the gripper: every visible header stays a tab stop.
                 for (int i = 0; i < tableView.Columns.Count; i++)
                 {
                     Verify.IsTrue(GetHeaderCell(tableView, i).IsTabStop,
@@ -1620,7 +1620,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var gripper = RequireGripper(tableView, 2);
                 gripper.KeyboardIncrement = 20.0;
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[2])
+                var transform = CreateColumnHeaderPeer(tableView, tableView.Columns[2])
                     .GetPattern(global::Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Transform) as global::Microsoft.UI.Xaml.Automation.Provider.ITransformProvider;
                 var scale = tableView.XamlRoot.RasterizationScale;
 
@@ -1835,7 +1835,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("First", new GridLength(100.0, GridUnitType.Pixel)),
                     ("Locked", new GridLength(0.0, GridUnitType.Star)),
                     ("Last", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 tableView.Columns[2].MinWidth = 20.0;
                 LoadContent(tableView);
             });
@@ -1871,7 +1871,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Locked", new GridLength(2.0, GridUnitType.Star)),
                     ("Third", new GridLength(1.0, GridUnitType.Star)),
                     ("Fourth", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 tableView.Columns.Add(MakeTemplateColumn("A", CreateFixedWidthTemplate(80.0), GridLength.Auto));
                 LoadContent(tableView);
             });
@@ -1917,7 +1917,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Locked", new GridLength(2.0, GridUnitType.Star)),
                     ("Third", new GridLength(1.0, GridUnitType.Star)),
                     ("Fourth", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[0].CanResize = false;
+                tableView.Columns[0].CanUserResize = false;
                 tableView.Columns.Insert(0, MakeTemplateColumn("A1", CreateFixedWidthTemplate(200.0), GridLength.Auto));
                 tableView.Columns.Add(MakeTemplateColumn("A2", CreateFixedWidthTemplate(80.0), GridLength.Auto));
                 LoadContent(tableView);
@@ -1974,7 +1974,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Locked", new GridLength(2.0, GridUnitType.Star)),
                     ("Third", new GridLength(1.0, GridUnitType.Star)),
                     ("Fourth", new GridLength(1.0, GridUnitType.Star)));
-                tableView.Columns[0].CanResize = false;
+                tableView.Columns[0].CanUserResize = false;
                 tableView.Columns.Insert(0, MakeTemplateColumn("A1", CreateFixedWidthTemplate(200.0), GridLength.Auto));
                 tableView.Columns.Add(MakeTemplateColumn("A2", CreateFixedWidthTemplate(80.0), GridLength.Auto));
                 LoadContent(tableView);
@@ -2078,7 +2078,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 LatchLockedStarHold(tableView);
 
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                var transform = CreateColumnHeaderPeer(tableView, tableView.Columns[0])
                     .GetPattern(global::Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Transform) as global::Microsoft.UI.Xaml.Automation.Provider.ITransformProvider;
                 var first = tableView.Columns[0].ActualWidth;
 
@@ -2103,7 +2103,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 ("MinWidth", t => { t.Columns[3].MinWidth = 30.0; t.Columns[3].ClearValue(TableViewColumn.MinWidthProperty); }),
                 ("authored Width", t => { t.Columns[3].Width = new GridLength(1.0, GridUnitType.Star); t.Columns[3].Width = new GridLength(3.0, GridUnitType.Star); }),
-                ("CanResize", t => { t.Columns[2].CanResize = false; t.Columns[2].CanResize = true; }),
+                ("CanUserResize", t => { t.Columns[2].CanUserResize = false; t.Columns[2].CanUserResize = true; }),
                 ("Columns", t => { var c = t.Columns[3]; t.Columns.RemoveAt(3); t.Columns.Add(c); }),
                 ("held column", t => { var c = t.Columns[1]; t.Columns.RemoveAt(1); t.Columns.Insert(1, c); }),
                 ("CanUserResizeColumns", t => { t.CanUserResizeColumns = false; t.CanUserResizeColumns = true; }),
@@ -2246,7 +2246,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("Locked", new GridLength(2.0, GridUnitType.Star)),
                 ("Third", new GridLength(1.0, GridUnitType.Star)),
                 ("Last", new GridLength(3.0, GridUnitType.Star)));
-            tableView.Columns[1].CanResize = false;
+            tableView.Columns[1].CanUserResize = false;
             return tableView;
         }
 
@@ -2597,9 +2597,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // the cell elements, all of which are readable properties, and the body scroller is an ordinary
     // ScrollViewer that ChangeView drives programmatically. No pointer input is involved.
     //
-    // Spec basis: TableView.idl:4 "Column pinning edge; None scrolls naturally, Leading pins left,
-    // Trailing is reserved", and TableViewColumn.idl:147 "Pins the column during horizontal scroll;
-    // Leading is implemented, Trailing reserved."
+    // Spec basis: TableViewFrozenEdge has None (scrolls naturally) and Leading (pins to the leading
+    // edge during horizontal scroll).
     //
     // Category 4.6 of the TableView test plan: leading frozen columns.
     [TestClass]
@@ -2826,18 +2825,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies FrozenEdge.Trailing roundtrips but has no layout effect while it is reserved.")]
-        public void VerifyTrailingFrozenEdgeIsReservedNoOp()
+        [TestProperty("Description", "Verifies an out-of-range FrozenEdge value (the removed Trailing slot) lays out exactly like None.")]
+        public void VerifyOutOfRangeFrozenEdgeBehavesAsNone()
         {
-            // Asserting the absence of behavior is the right test here precisely because the value is
-            // public API today: if a reserved enum value quietly acquires behavior, that becomes a
-            // compatibility burden the moment Trailing is actually implemented.
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateScrollableTable(columnCount: 5);
-                tableView.Columns[4].FrozenEdge = TableViewFrozenEdge.Trailing;
+                tableView.Columns[4].FrozenEdge = (TableViewFrozenEdge)2;
                 LoadContent(tableView);
             });
 
@@ -2847,17 +2843,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(TableViewFrozenEdge.Trailing, tableView.Columns[4].FrozenEdge,
-                    "The reserved value must roundtrip on the property.");
-
-                Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0,
-                    "Precondition: the body must actually have scrolled horizontally.");
-
-                VerifyNotPinned(GetHeaderCell(tableView, 4), "a Trailing header cell, which must behave exactly like None");
-
+                Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0, "Precondition: the body must actually have scrolled horizontally.");
+                VerifyNotPinned(GetHeaderCell(tableView, 4), "an out-of-range FrozenEdge header cell");
                 foreach (var row in GetRealizedRows(tableView))
                 {
-                    VerifyNotPinned(GetRowCell(row, 4), "a Trailing row cell, which must behave exactly like None");
+                    VerifyNotPinned(GetRowCell(row, 4), "an out-of-range FrozenEdge row cell");
                 }
             });
         }

@@ -177,6 +177,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"GridLinesVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility", statics.GridLinesVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GroupHeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.GroupHeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeadersVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility", statics.HeadersVisibilityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsEditing", L"Boolean", statics.IsEditingProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ItemsSource", L"Object", statics.ItemsSourceProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"RowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.RowBackgroundProperty(), false /* isContent */);
@@ -185,14 +186,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"SelectionMode", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode", statics.SelectionModeProperty(), false /* isContent */);
                     }
 
-                    xamlType.AddMember(
-                        L"IsEditing", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableView>().IsEditing()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -237,8 +230,8 @@ Entry c_typeEntries[] =
                     winrt::ITableViewColumnStatics statics = GetFactory<winrt::ITableViewColumnStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn");
                     {
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"CanResize", L"Boolean", statics.CanResizeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserResize", L"Boolean", statics.CanUserResizeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserSort", L"Boolean", statics.CanUserSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.CellContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
@@ -320,8 +313,8 @@ Entry c_typeEntries[] =
                 /* Arg 2 - CreateFromString func */ 
                 (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
                 {
-                    if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Standard") return box_value(winrt::TableViewDensity::Standard);
+                    if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Comfortable") return box_value(winrt::TableViewDensity::Comfortable);
                     throw winrt::hresult_invalid_argument();
                 });
@@ -363,7 +356,6 @@ Entry c_typeEntries[] =
                 {
                     if (fromString == L"None") return box_value(winrt::TableViewFrozenEdge::None);
                     if (fromString == L"Leading") return box_value(winrt::TableViewFrozenEdge::Leading);
-                    if (fromString == L"Trailing") return box_value(winrt::TableViewFrozenEdge::Trailing);
                     throw winrt::hresult_invalid_argument();
                 });
 
@@ -479,14 +471,6 @@ Entry c_typeEntries[] =
                         L"KeyText", /* propertyName */
                         L"String", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().KeyText()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"Level", /* propertyName */
-                        L"Int32", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().Level()); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
@@ -628,6 +612,14 @@ Entry c_typeEntries[] =
                         L"Boolean", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveShaping()); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveShaping(unbox_value<bool>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"Source", /* propertyName */
+                        L"Object", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewSource>().Source(); },
+                        nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);

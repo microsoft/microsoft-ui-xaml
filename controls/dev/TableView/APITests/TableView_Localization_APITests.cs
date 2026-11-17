@@ -358,7 +358,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(MakeItems(), headers: new[] { "Name", "Role" });
                 tableView.CanUserSortColumns = true;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
 
@@ -382,7 +382,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.SortByColumn(column, direction);
                     tableView.UpdateLayout();
 
-                    var actual = new TableViewColumnHeaderAutomationPeer(tableView, column).GetHelpText();
+                    var actual = CreateColumnHeaderPeer(tableView, column).GetHelpText();
                     Log.Comment($"SortDirection.{direction}: help text '{actual}', {key} '{expected}'.");
 
                     Verify.AreEqual(expected, actual,

@@ -1628,7 +1628,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.Density = testCase.Density;
                     // Sortable headers add the sort indicator's width to their trailing padding; this
                     // test is about density padding, so compare against an unsortable header.
-                    tableView.Columns[0].CanSort = false;
+                    tableView.Columns[0].CanUserSort = false;
                     LoadContent(tableView);
                 });
 
@@ -2805,7 +2805,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -2849,7 +2849,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -2908,7 +2908,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 tableView.RequestedTheme = ElementTheme.Light;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -3115,7 +3115,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();

@@ -28,15 +28,15 @@
     ItemsSource="{x:Bind Source}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
     SelectionMode="Single">
-    <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
     <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
-    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False"/>
+    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanUserResize="False"/>
     <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
     <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="100" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
     <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="150" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
     <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
     <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="220" Binding="{Binding Email}" Visibility="Collapsed"/>
     <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="200" Binding="{Binding Role}" Visibility="Collapsed"/>
-    <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
+    <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False" Visibility="Collapsed"/>
 </tv:TableView>

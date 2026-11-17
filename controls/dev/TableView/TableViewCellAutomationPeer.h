@@ -18,12 +18,9 @@ public:
     // Lets TableViewCell skip the public constructor's argument validation.
     struct TrustedOwnerTag {};
 
-    // Throws E_INVALIDARG for arguments that cannot describe a cell.
-    TableViewCellAutomationPeer(
-        winrt::FrameworkElement const& cell,
-        winrt::TableViewRow const& row,
-        winrt::TableViewColumn const& column,
-        int32_t columnIndex);
+    // Throws E_INVALIDARG unless owner is a prepared TableView cell.
+    explicit TableViewCellAutomationPeer(winrt::FrameworkElement const& owner);
+
     TableViewCellAutomationPeer(
         TrustedOwnerTag,
         winrt::FrameworkElement const& cell,
@@ -79,6 +76,15 @@ public:
     int32_t GetRowIndexInternal();
 
 private:
+    struct CellOwner
+    {
+        winrt::TableViewRow Row{ nullptr };
+        winrt::TableViewColumn Column{ nullptr };
+        int32_t ColumnIndex{ -1 };
+    };
+    static CellOwner CellOwnerForPublicConstructor(winrt::FrameworkElement const& owner);
+    TableViewCellAutomationPeer(winrt::FrameworkElement const& owner, CellOwner const& cell);
+
     // True when this cell is editable AND its column produces a TextBox editor, which is the only
     // editor SetValue can drive today.
     bool SupportsValuePattern();
