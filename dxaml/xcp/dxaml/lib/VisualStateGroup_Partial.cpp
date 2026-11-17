@@ -4,8 +4,6 @@
 #include "precomp.h"
 #include "VisualStateGroup.g.h"
 #include "VisualStateChangedEventArgs.g.h"
-#include "VisualStateChangedEventArgs.h"
-#include "VisualStateGroup.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -132,26 +130,14 @@ VisualStateGroup::RaiseCurrentStateChanged(
     HRESULT hr = S_OK;
     CurrentStateChangedEventSourceType* pChangedEventSource = nullptr;
     ctl::ComPtr<VisualStateChangedEventArgs> spArgs;
-    xref_ptr<CVisualStateChangedEventArgs> coreArgs;
-    auto coreGroup = static_cast<CVisualStateGroup*>(GetHandle());
-    uint64_t sequence = 0;
 
     IFC(ctl::make(&spArgs));
     IFC(spArgs->put_OldState(pOldState));
     IFC(spArgs->put_NewState(pNewState));
     IFC(spArgs->put_Control(pControl));
 
-    coreArgs.attach(static_cast<CVisualStateChangedEventArgs*>(spArgs->GetCorePeer()));
-    sequence = coreGroup->NextCurrentStateChangedSequence();
-    coreArgs->SetCurrentStateChangedSequence(sequence);
-
     IFC(GetCurrentStateChangedEventSourceNoRef(&pChangedEventSource));
-    hr = pChangedEventSource->Raise(pElement, spArgs.Get());
-    if (FAILED(hr))
-    {
-        // A failing handler stops delivery to the handlers after it.
-        coreGroup->MarkCurrentStateChangedUndelivered(sequence);
-    }
+    IFC(pChangedEventSource->Raise(pElement, spArgs.Get()));
 
 Cleanup:
     RRETURN(hr);

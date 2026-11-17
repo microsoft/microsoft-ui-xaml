@@ -51,7 +51,7 @@ public:
     _Check_return_ HRESULT OnPaneClosing(bool isLightDismissClose);
     _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
 
-    _Check_return_ HRESULT ExecuteLightDismiss(uint64_t lightDismissId, bool isCanceled);
+    _Check_return_ HRESULT ExecuteLightDismiss(_In_ CSplitViewPaneClosingEventArgs* args);
     bool ConsumeLightDismissClose();
     void SupersedeLightDismiss();
 
@@ -93,10 +93,8 @@ private:
     xref::weakref_ptr<CDependencyObject> m_spPrevFocusedElementWeakRef;
     DirectUI::FocusState m_prevFocusState{ DirectUI::FocusState::Unfocused };
 
-    uint64_t m_nextLightDismissId{ 0 };
-    uint64_t m_pendingLightDismissId{ 0 };
+    // The light dismiss whose PaneClosing was raised and whose deferred close has not run yet.
     xref_ptr<CSplitViewPaneClosingEventArgs> m_spPendingLightDismissArgs;
-    bool m_isLightDismissClose{ false };
     double m_paneMeasuredLength{ 0.0 };
 
 }; // class CSplitView
