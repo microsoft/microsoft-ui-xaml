@@ -41,4 +41,4 @@ public sealed record CompositionSnapshotNode(ulong Id, ulong RootId, ulong? Pare
     string Type, string ObjectAddress, string VisualAddress, JsonElement Properties);
 public sealed record TreeSnapshotCorrelation(ulong XamlNodeId, ulong VisualNodeId);
 public sealed record SavedTreeSnapshot(string Path, Guid CaptureId, int Roots, int XamlNodes,
-    int CompositionNodes, int Correlations);
+    int CompositionNodes, int Correlations, string? SessionPath = null);

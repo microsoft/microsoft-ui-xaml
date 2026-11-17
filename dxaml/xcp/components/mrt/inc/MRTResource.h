@@ -27,7 +27,6 @@ public:
     _Check_return_ HRESULT Exists(_Out_ bool* pfExists) override;
     IPALUri* GetPhysicalResourceUriNoRef() override;
     _Check_return_ HRESULT TryGetFilePath(_Out_ xstring_ptr* pstrFilePath) override;
-    _Check_return_ HRESULT TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream) override;
     unsigned int GetScalePercentage() override;
 
 private:

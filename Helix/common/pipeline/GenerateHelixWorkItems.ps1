@@ -23,7 +23,13 @@ Param(
 
     [bool]$RunIgnoredTests = $false,
 
-    [string]$TaefExePath
+    [string]$TaefExePath,
+
+    [switch]$FailOnTaefDiscoveryError,
+
+    [hashtable]$ExcludedTestsByWorkItem,
+
+    [switch]$AllowMissingExcludedTests
 )
 
 Class TestCollection
@@ -135,7 +141,8 @@ function Parse-TestInfo([string]$taefOutput)
         }
     }
 
-    [string[]]$lines = $taefOutput.Split(@([Environment]::NewLine, "`n"), [StringSplitOptions]::RemoveEmptyEntries)
+    [string[]]$lineSeparators = @([Environment]::NewLine, "`n")
+    [string[]]$lines = $taefOutput.Split($lineSeparators, [StringSplitOptions]::RemoveEmptyEntries)
     [System.Collections.Generic.List[TestModule]]$testModules = @()
 
     [TestModule]$currentTestModule = $null
@@ -260,10 +267,139 @@ function Combine-TaefQuery([string]$baseQuery, [string]$newClause)
     }
 }
 
+function Get-WorkItemSelection
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$WorkItemName,
+
+        [AllowEmptyString()]
+        [AllowNull()]
+        [string]$BaseQuery,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [object[]]$Tests
+    )
+
+    $testNames = @(
+        $Tests |
+            ForEach-Object { [string]$_.Name } |
+            Sort-Object -Unique
+    )
+
+    if ($null -eq $ExcludedTestsByWorkItem -or
+        -not $ExcludedTestsByWorkItem.ContainsKey($WorkItemName))
+    {
+        return [pscustomobject]@{
+            Include = $true
+            Query = $BaseQuery
+        }
+    }
+
+    $excludedTestNames = @(
+        $ExcludedTestsByWorkItem[$WorkItemName] |
+            ForEach-Object { [string]$_ } |
+            Sort-Object -Unique
+    )
+    foreach ($excludedTestName in $excludedTestNames)
+    {
+        if ($excludedTestName.Contains("'"))
+        {
+            throw (
+                "Excluded test '$excludedTestName' in work item '$WorkItemName' " +
+                "cannot be represented in a TAEF query.")
+        }
+    }
+
+    $applicableExcludedTestNames = @(
+        $excludedTestNames |
+            Where-Object { $testNames -ccontains $_ }
+    )
+    $missingTestNames = @(
+        $excludedTestNames |
+            Where-Object { $testNames -cnotcontains $_ }
+    )
+    if ($missingTestNames.Count -ne 0 -and
+        -not $AllowMissingExcludedTests.IsPresent)
+    {
+        throw (
+            "Work item '$WorkItemName' does not contain excluded test(s): " +
+            "$($missingTestNames -join ', ').")
+    }
+    if ($missingTestNames.Count -ne 0)
+    {
+        Write-Host (
+            "Work item '$WorkItemName' does not select $($missingTestNames.Count) " +
+            "excluded test(s) under the current base query; they will not be applied: " +
+            "$($missingTestNames -join ', ').")
+    }
+
+    foreach ($excludedTestName in $applicableExcludedTestNames)
+    {
+        [void]$script:matchedExcludedTests.Add(
+            "$WorkItemName`t$excludedTestName")
+    }
+
+    $remainingTestNames = @(
+        $testNames |
+            Where-Object { $applicableExcludedTestNames -cnotcontains $_ }
+    )
+    if ($remainingTestNames.Count -eq 0)
+    {
+        return [pscustomobject]@{
+            Include = $false
+            Query = $BaseQuery
+        }
+    }
+    if ($applicableExcludedTestNames.Count -eq 0)
+    {
+        return [pscustomobject]@{
+            Include = $true
+            Query = $BaseQuery
+        }
+    }
+
+    $exclusionClause = (
+        'NOT(' +
+        (@(
+            $applicableExcludedTestNames |
+                ForEach-Object { "@Name='$_'" }
+        ) -join ' OR ') +
+        ')')
+    $negativeQuery = Combine-TaefQuery $BaseQuery $exclusionClause
+    $selectedQuery = $negativeQuery
+
+    $unrepresentableRemainingTestNames = @(
+        $remainingTestNames |
+            Where-Object { $_.Contains("'") }
+    )
+    if ($unrepresentableRemainingTestNames.Count -eq 0)
+    {
+        $inclusionClause = (
+            '(' +
+            (@(
+                $remainingTestNames |
+                    ForEach-Object { "@Name='$_'" }
+            ) -join ' OR ') +
+            ')')
+        $positiveQuery = Combine-TaefQuery $BaseQuery $inclusionClause
+        if ($positiveQuery.Length -lt $negativeQuery.Length)
+        {
+            $selectedQuery = $positiveQuery
+        }
+    }
+
+    return [pscustomobject]@{
+        Include = $true
+        Query = $selectedQuery
+    }
+}
+
 
 $testDllSubDir = [System.IO.Path]::GetDirectoryName($testFilePattern)
 
-$TaefSelectStatement = "/select:`"$TaefBaseQuery`""
+$taefDiscoverySelectStatement = "/select:`"$TaefBaseQuery`""
 $TestFilePathPattern = "$($TestBinaryDirectoryPath)\$TestFilePattern"
 
 $runIgnoredTestsStr = if ($RunIgnoredTests) { "/runIgnoredTests" } else { "" }
@@ -287,21 +423,28 @@ if($TaefExePath)
 Write-Host "Using te.exe from $taefExePathToUse"
 
 
-$taefListPropertiesCommand = "$taefExePathToUse /listproperties $runIgnoredTestsStr $TaefSelectStatement $TestFilePathPattern".Replace("`"", "`"`"`"")
+$taefListPropertiesCommand = "$taefExePathToUse /listproperties $runIgnoredTestsStr $taefDiscoverySelectStatement $TestFilePathPattern".Replace("`"", "`"`"`"")
 
 Write-Host "Running TAEF command: $taefListPropertiesCommand"
 [string]$taefOutput = Invoke-Expression "$taefListPropertiesCommand" | Out-String
+$taefExitCode = $LASTEXITCODE
+if ($FailOnTaefDiscoveryError.IsPresent -and $taefExitCode -ne 0)
+{
+    throw "TAEF /listproperties failed with exit code $taefExitCode for '$TestFilePathPattern'."
+}
 
 [System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
 
+$script:matchedExcludedTests = [System.Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::Ordinal)
+$script:generatedWorkItemCount = 0
+$script:skippedWorkItemCount = 0
 
 
 $global:projFileContent = @"
 <Project>
   <ItemGroup>
 "@
-
-$global:workItemCount = 0
 
 function Add-HelixWorkItemToOutput
 {
@@ -324,7 +467,7 @@ function Add-HelixWorkItemToOutputImpl
 {
     Param ([string]$workItemName, [string]$commandArgs)
 
-    $global:workItemCount++
+    $script:generatedWorkItemCount++
     $global:projFileContent = $global:projFileContent + @"
 
     <HelixWorkItem Include="$($workItemName)" >
@@ -373,10 +516,28 @@ foreach ($testModule in $testModules)
             $workItemName = "$WorkItemPrefix-$workItemName"
         }
 
-
-        $commandArgs = [System.Web.HttpUtility]::HtmlEncode("$testFileName /taefQuery $taefSelectStatement $taefParameters")
-
-        Add-HelixWorkItemToOutput $workItemName $commandArgs
+        $workItemTests = @(
+            $testModule.TestClasses |
+                ForEach-Object { $_.Tests }
+        )
+        $selection = Get-WorkItemSelection `
+            -WorkItemName $workItemName `
+            -BaseQuery $TaefBaseQuery `
+            -Tests $workItemTests
+        if ($selection.Include)
+        {
+            $taefSelectStatement = "/select:`"$($selection.Query)`""
+            $commandArgs = [System.Web.HttpUtility]::HtmlEncode(
+                "$testFileName /taefQuery $taefSelectStatement $taefParameters")
+            Add-HelixWorkItemToOutput $workItemName $commandArgs
+        }
+        else
+        {
+            $script:skippedWorkItemCount++
+            Write-Host (
+                "Skipping Helix work item '$workItemName' because every discovered " +
+                "test is excluded.")
+        }
     }
     else
     {
@@ -441,18 +602,60 @@ foreach ($testModule in $testModules)
                     $taefSuitelessFullQuery = (Combine-TaefQuery $taefSuitelessFullQuery "NOT @TestSuite='*'" )
                 }
 
-                $commandArgs = [System.Web.HttpUtility]::HtmlEncode("$testFileName /taefQuery /select:`"$taefSuitelessFullQuery`" $taefParameters")
-
-                Add-HelixWorkItemToOutput $workItemName $commandArgs
+                $suitelessTests = @(
+                    $testClass.Tests |
+                        Where-Object {
+                            -not $_.Properties.ContainsKey("TestSuite")
+                        }
+                )
+                $selection = Get-WorkItemSelection `
+                    -WorkItemName $workItemName `
+                    -BaseQuery $taefSuitelessFullQuery `
+                    -Tests $suitelessTests
+                if ($selection.Include)
+                {
+                    $commandArgs = [System.Web.HttpUtility]::HtmlEncode(
+                        "$testFileName /taefQuery /select:`"$($selection.Query)`" $taefParameters")
+                    Add-HelixWorkItemToOutput $workItemName $commandArgs
+                }
+                else
+                {
+                    $script:skippedWorkItemCount++
+                    Write-Host (
+                        "Skipping Helix work item '$workItemName' because every " +
+                        "discovered test is excluded.")
+                }
             }
             
             foreach ($testSuiteName in $testSuiteNames)
             {
                 $taefSuiteQuery = (Combine-TaefQuery $TaefBaseQuery "$testNameQuery AND @TestSuite='$testSuiteName'")
 
-                $commandArgs = [System.Web.HttpUtility]::HtmlEncode("$testFileName /taefQuery /select:`"$taefSuiteQuery`" $taefParameters")
-
-                Add-HelixWorkItemToOutput "$($workItemName)-$testSuiteName" $commandArgs
+                $suiteWorkItemName = "$($workItemName)-$testSuiteName"
+                $suiteTests = @(
+                    $testClass.Tests |
+                        Where-Object {
+                            $_.Properties.ContainsKey("TestSuite") -and
+                            $_.Properties["TestSuite"] -eq $testSuiteName
+                        }
+                )
+                $selection = Get-WorkItemSelection `
+                    -WorkItemName $suiteWorkItemName `
+                    -BaseQuery $taefSuiteQuery `
+                    -Tests $suiteTests
+                if ($selection.Include)
+                {
+                    $commandArgs = [System.Web.HttpUtility]::HtmlEncode(
+                        "$testFileName /taefQuery /select:`"$($selection.Query)`" $taefParameters")
+                    Add-HelixWorkItemToOutput $suiteWorkItemName $commandArgs
+                }
+                else
+                {
+                    $script:skippedWorkItemCount++
+                    Write-Host (
+                        "Skipping Helix work item '$suiteWorkItemName' because every " +
+                        "discovered test is excluded.")
+                }
             }
         }
     }
@@ -474,11 +677,23 @@ if (-not (Test-Path $outputDir))
 
 Set-Content $OutputProjFile $global:projFileContent -NoNewline -Encoding UTF8
 
-if ($global:workItemCount -eq 0)
+if ($script:generatedWorkItemCount -eq 0)
 {
     Write-Host "##[warning]No test work items were generated. All tests may have been filtered out by the TAEF query (e.g. MinOSVer > TargetOSVersion=$TargetOSVersion)."
 }
 else
 {
-    Write-Host "Generated $($global:workItemCount) work item(s) in $OutputProjFile"
+    Write-Host "Generated $($script:generatedWorkItemCount) work item(s) in $OutputProjFile"
+}
+
+if ($null -ne $ExcludedTestsByWorkItem)
+{
+    [pscustomobject]@{
+        MatchedExcludedTests = @(
+            $script:matchedExcludedTests |
+                Sort-Object
+        )
+        GeneratedWorkItemCount = $script:generatedWorkItemCount
+        SkippedWorkItemCount = $script:skippedWorkItemCount
+    }
 }

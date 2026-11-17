@@ -47,7 +47,9 @@ internal static class SessionSchema
             TraceLogging INTEGER NOT NULL, -- 1 for a TraceLogging event, 0 for a manifest event
             ProviderName TEXT NOT NULL, -- the ETW provider's name, such as Microsoft.UI.Xaml, or a marker provider's
             ProviderId TEXT NOT NULL,  -- the ETW provider's GUID
-            Launcher INTEGER NOT NULL); -- 1 for a marker event of the launcher (SessionInfo.LauncherProcessId), 0 for the target's
+            Launcher INTEGER NOT NULL, -- 1 for a marker event of the launcher (SessionInfo.LauncherProcessId), 0 for the target's
+            EventId INTEGER,           -- original ETW event ID, not the database-local TypeId; null when unknown
+            Version INTEGER);          -- original ETW event version; null when unknown
         CREATE TABLE Events (
             Seq INTEGER PRIMARY KEY,   -- arrival order: 1, 2, 3...
             Qpc INTEGER NOT NULL,
@@ -79,12 +81,75 @@ internal static class SessionSchema
         CREATE INDEX FrameContents ON FrameEvents (FrameId);
         -- The events the InterestingRows view reads, found by type instead of a scan of every event.
         CREATE INDEX EventsByType ON Events (TypeId);
+        CREATE TABLE GraphicsObjects (
+            GraphicsObjectId INTEGER PRIMARY KEY,
+            Kind TEXT NOT NULL,        -- Device, Buffer, Texture1D/2D/3D, DeviceAllocation or AdapterAllocation
+            Handle TEXT NOT NULL,      -- original unsigned handle, as 0x plus 16 hex digits; never a SQLite REAL
+            Qualifier TEXT NOT NULL,   -- kernel device for a device allocation, adapter for an adapter allocation, empty otherwise
+            FirstSeq INTEGER NOT NULL,
+            FirstQpc INTEGER NOT NULL,
+            KnownFromSeq INTEGER NOT NULL,
+            KnownFromQpc INTEGER NOT NULL, -- earliest accepted observation, not an inferred creation time
+            LastSeq INTEGER NOT NULL,
+            LastQpc INTEGER NOT NULL,
+            FirstObservation TEXT NOT NULL, -- Start, Rundown, Reference or Stop
+            StartSeq INTEGER,          -- only an observed Start establishes creation
+            StartQpc INTEGER,
+            StopSeq INTEGER,           -- only an observed Stop establishes destruction
+            StopQpc INTEGER,
+            EndSeq INTEGER,            -- also bounds a lifetime when handle reuse reveals a missing Stop
+            EndQpc INTEGER,
+            EndReason TEXT,            -- Stop or HandleReuse; null means the end is unknown, not necessarily still alive
+            Trimmed INTEGER NOT NULL DEFAULT 0, -- some original evidence is outside the retained recording
+            DeviceId INTEGER REFERENCES GraphicsObjects (GraphicsObjectId), -- a resource's observed runtime-device lifetime
+            -- Kind-specific metadata; unrelated or unobserved values stay null. Handle columns retain ETW field names.
+            pIDXGIDevice TEXT,
+            pIDXGIAdapter TEXT,
+            hKMAdapter TEXT,
+            hUMAdapter TEXT,
+            hKMDevice TEXT,            -- D3D11 kernel-device handle, not DxgKrnl's hDevice
+            hUMDevice TEXT,
+            hKMResource TEXT,          -- D3D11 resource handle; correlates to hThunkResource within this process
+            hUMResource TEXT,
+            pDxgAdapter TEXT,
+            hDevice TEXT,              -- DxgKrnl kernel-device pointer, not D3D11's hKMDevice
+            hVidMmGlobalAlloc TEXT,
+            hThunkAllocation TEXT,
+            hThunkResource TEXT,
+            hDxgResource TEXT,         -- not D3D11's hKMResource
+            hDxgSharedResource TEXT,
+            SizeBytes TEXT);           -- allocSize as exact unsigned decimal text; null when unknown
+        CREATE INDEX GraphicsIdentity ON GraphicsObjects (Kind, Handle, Qualifier);
+        CREATE INDEX GraphicsEnds ON GraphicsObjects (EndSeq);
+        CREATE INDEX GraphicsResourceDevices ON GraphicsObjects (DeviceId);
+        CREATE TABLE GraphicsObjectEvents (
+            Seq INTEGER NOT NULL REFERENCES Events (Seq),
+            GraphicsObjectId INTEGER NOT NULL REFERENCES GraphicsObjects ON DELETE CASCADE,
+            Role TEXT NOT NULL,        -- Start, Stop, Rundown or Reference
+            PRIMARY KEY (Seq, GraphicsObjectId)) WITHOUT ROWID;
+        CREATE INDEX GraphicsObjectTimeline ON GraphicsObjectEvents (GraphicsObjectId, Seq);
+        CREATE TABLE GraphicsLinks (
+            SourceId INTEGER NOT NULL REFERENCES GraphicsObjects ON DELETE CASCADE,
+            TargetId INTEGER NOT NULL REFERENCES GraphicsObjects ON DELETE CASCADE,
+            Kind TEXT NOT NULL,        -- ResourceAllocation (hKMResource = hThunkResource) or AllocationGlobal
+            Handle TEXT NOT NULL,      -- original bridge handle for this interval, even if later observations change it
+            Qualifier TEXT NOT NULL,   -- adapter for AllocationGlobal, empty for ResourceAllocation
+            StartSeq INTEGER NOT NULL, -- observed correlation interval [StartSeq, EndSeq), not a creation time
+            EndSeq INTEGER,
+            EndReason TEXT,
+            Trimmed INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (SourceId, TargetId, Kind, StartSeq)) WITHOUT ROWID;
+        CREATE INDEX GraphicsLinkTargets ON GraphicsLinks (TargetId, SourceId);
+        CREATE INDEX GraphicsLinkEnds ON GraphicsLinks (EndSeq);
         CREATE VIEW EventDetails AS
         -- Every event, readable: its type, its fields by name, the tick it belongs to (TickId, Bucket) and the UI elements and
         -- visuals it mentions. An event outside every tick is in bucket Other.
         SELECT e.Seq, e.Qpc, e.ThreadId, (e.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS Ms, e.TypeId, t.Provider, t.Name, t.Opcode,
-            (SELECT json_group_object(n.value, CASE v.type WHEN 'true' THEN json('true') WHEN 'false' THEN json('false') ELSE v.value END)
-                FROM json_each('["' || replace(t.FieldNames, ',', '","') || '"]') n JOIN json_each(e.Payload) v ON v.key = n.key) AS Fields,
+            t.EventId, t.Version,
+            -- Keep the original JSON tokens: converting a UInt64 handle through a SQLite value can round it to REAL.
+            (SELECT json_group_object(n.value, json(e.Payload -> n.key))
+                FROM json_each(e.Payload) p
+                JOIN json_each('["' || replace(t.FieldNames, ',', '","') || '"]') n ON n.key = p.key) AS Fields,
             r.FrameId AS TickId, COALESCE(r.Bucket, 'Other') AS Bucket,
             (SELECT json_group_array(json_object('ObjectId', m.ObjectId, 'Kind', o.Kind, 'Type', o.Type, 'Name', o.Name, 'Field',
                     CASE WHEN m.Field >= 0 THEN json_extract('["' || replace(t.FieldNames, ',', '","') || '"]', '$[' || m.Field || ']')
@@ -95,8 +160,8 @@ internal static class SessionSchema
         CREATE VIEW TickEvents AS
         -- The events of each tick (EventDetails' columns), read through the tick's index: a tick's events are
         -- SELECT ... FROM TickEvents WHERE TickId = :tick ORDER BY Seq.
-        SELECT r.FrameId AS TickId, d.Seq, d.Qpc, d.ThreadId, d.Ms, d.TypeId, d.Provider, d.Name, d.Opcode, d.Fields, d.Bucket, d.Mentions,
-            d.Payload
+        SELECT r.FrameId AS TickId, d.Seq, d.Qpc, d.ThreadId, d.Ms, d.TypeId, d.Provider, d.Name, d.Opcode, d.EventId, d.Version,
+            d.Fields, d.Bucket, d.Mentions, d.Payload
         FROM FrameEvents r CROSS JOIN EventDetails d
         WHERE d.Seq = r.Seq;
         CREATE VIEW Ticks AS
@@ -341,6 +406,58 @@ internal static class SessionSchema
             AND k.ThreadId = (SELECT ThreadId FROM TickList ORDER BY TickId LIMIT 1)
         ORDER BY k.TickId
         LIMIT 10;
+        CREATE VIEW GraphicsLifetimes AS
+        -- Observed DirectX lifetimes, scoped to SessionInfo.ProcessId. Null starts/stops are unknown, not time zero.
+        -- EndMs can be an upper bound from handle reuse; DurationMs requires actual, ordered Start and Stop events.
+        -- Trimmed means some evidence has left the rolling recording. Capture loss applies to every derived row.
+        SELECT g.*, s.ProcessId,
+            (g.FirstQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS FirstMs,
+            (g.LastQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS LastMs,
+            (g.StartQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS StartMs,
+            (g.StopQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS StopMs,
+            (g.EndQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS EndMs,
+            g.StartSeq IS NOT NULL AS StartKnown, g.StopSeq IS NOT NULL AS StopKnown,
+            CASE WHEN g.StopQpc >= g.StartQpc THEN (g.StopQpc - g.StartQpc) * 1000.0 / s.QpcFrequency END AS DurationMs,
+            s.LostByEtw, s.DroppedByProfiler
+        FROM GraphicsObjects g CROSS JOIN SessionInfo s;
+        CREATE VIEW GraphicsResourceAllocations AS
+        -- Resource -> device allocation -> adapter allocation, only while the observed links overlap. A missing adapter
+        -- allocation stays null (for example a shared allocation owned by another process); it is not fabricated.
+        -- Historical bridge values come from links, not the objects' mutable latest metadata.
+        WITH ResourceLinks AS (
+            SELECT * FROM GraphicsLinks WHERE Kind = 'ResourceAllocation' AND (EndSeq IS NULL OR StartSeq < EndSeq)),
+        Boundaries AS (
+            SELECT SourceId, TargetId, StartSeq AS ResourceStart, StartSeq AS Seq FROM ResourceLinks
+            UNION
+            SELECT rd.SourceId, rd.TargetId, rd.StartSeq, da.StartSeq
+            FROM ResourceLinks rd JOIN GraphicsLinks da ON da.SourceId = rd.TargetId AND da.Kind = 'AllocationGlobal'
+            WHERE (da.EndSeq IS NULL OR da.StartSeq < da.EndSeq)
+                AND da.StartSeq > rd.StartSeq AND (rd.EndSeq IS NULL OR da.StartSeq < rd.EndSeq)
+            UNION
+            SELECT rd.SourceId, rd.TargetId, rd.StartSeq, da.EndSeq
+            FROM ResourceLinks rd JOIN GraphicsLinks da ON da.SourceId = rd.TargetId AND da.Kind = 'AllocationGlobal'
+            WHERE da.StartSeq < da.EndSeq
+                AND da.EndSeq > rd.StartSeq AND (rd.EndSeq IS NULL OR da.EndSeq < rd.EndSeq)),
+        Intervals AS (
+            SELECT b.SourceId, b.TargetId, b.ResourceStart, b.Seq AS StartSeq,
+                LEAD(b.Seq, 1, rd.EndSeq) OVER (PARTITION BY b.SourceId, b.TargetId, b.ResourceStart ORDER BY b.Seq) AS EndSeq
+            FROM Boundaries b JOIN ResourceLinks rd
+                ON rd.SourceId = b.SourceId AND rd.TargetId = b.TargetId AND rd.StartSeq = b.ResourceStart)
+        SELECT s.ProcessId, r.GraphicsObjectId AS ResourceId, r.DeviceId, r.Kind AS ResourceKind, r.Handle AS ResourceHandle,
+            rd.Handle AS KernelResource, d.GraphicsObjectId AS DeviceAllocationId, d.Handle AS DeviceAllocationHandle,
+            d.hDevice AS KernelDevice, da.Handle AS GlobalAllocation, da.Qualifier AS Adapter,
+            a.GraphicsObjectId AS AdapterAllocationId, a.SizeBytes,
+            i.StartSeq, i.EndSeq,
+            rd.Trimmed OR COALESCE(da.Trimmed, 0) OR r.Trimmed OR d.Trimmed OR COALESCE(a.Trimmed, 0) AS Trimmed
+        FROM Intervals i
+        JOIN ResourceLinks rd ON rd.SourceId = i.SourceId AND rd.TargetId = i.TargetId AND rd.StartSeq = i.ResourceStart
+        JOIN GraphicsObjects r ON r.GraphicsObjectId = rd.SourceId
+        JOIN GraphicsObjects d ON d.GraphicsObjectId = rd.TargetId AND d.Kind = 'DeviceAllocation'
+        LEFT JOIN GraphicsLinks da ON da.SourceId = d.GraphicsObjectId AND da.Kind = 'AllocationGlobal'
+            AND da.StartSeq <= i.StartSeq AND (da.EndSeq IS NULL OR i.StartSeq < da.EndSeq)
+        LEFT JOIN GraphicsObjects a ON a.GraphicsObjectId = da.TargetId AND a.Kind = 'AdapterAllocation'
+        CROSS JOIN SessionInfo s
+        WHERE r.Kind IN ('Buffer', 'Texture1D', 'Texture2D', 'Texture3D');
         CREATE VIEW QueryCatalog (Name, Shows, RowsAreIdentifiedBy, Example) AS
         -- What each view shows, how its rows are identified, and an example. Start here.
         VALUES
@@ -360,6 +477,11 @@ internal static class SessionSchema
                 'SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex'),
             ('LaunchSummary', 'When the first 10 ticks that drew ended, from process start or recording start', 'Position',
                 'SELECT * FROM LaunchSummary'),
+            ('GraphicsLifetimes', 'Observed DirectX lifetimes, unknown endpoints, handle reuse and capture completeness', 'GraphicsObjectId',
+                'SELECT * FROM GraphicsLifetimes WHERE Kind = ''Texture2D'' ORDER BY FirstSeq'),
+            ('GraphicsResourceAllocations', 'Time-bounded process-local resource and allocation correlations',
+                'ResourceId, DeviceAllocationId, AdapterAllocationId, StartSeq',
+                'SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY StartSeq'),
             ('QueryCatalog', 'This list', 'Name', 'SELECT * FROM QueryCatalog');
         """;
 }
