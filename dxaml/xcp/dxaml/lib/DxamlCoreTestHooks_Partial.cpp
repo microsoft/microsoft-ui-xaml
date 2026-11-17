@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "DxamlCoreTestHooks_Partial.h"
 #include "Window.g.h"
+#include "FrameworkApplication.g.h"
 #include "Popup.g.h"
 #include "FlyoutBase.g.h"
 #include "ToolTip.g.h"
@@ -632,6 +633,10 @@ DxamlCoreTestHooks::UnsetApplicationRequestedTheme()
 {
     auto pCore = DXamlCore::GetCurrent()->GetHandle();
     pCore->GetFrameworkTheming()->UnsetRequestedTheme();
+    if (auto application = FrameworkApplication::GetCurrentNoRef())
+    {
+        application->ResetRuntimeRequestedThemeForTesting();
+    }
     return S_OK;
 }
 

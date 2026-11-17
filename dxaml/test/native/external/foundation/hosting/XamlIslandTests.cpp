@@ -2737,6 +2737,79 @@ void XamlIslandTests::TwoUIThreads()
     uiThread1Done.WaitForDefault();
 }
 
+void XamlIslandTests::ApplicationRequestedThemeChangeAppliesToAllUIThreads()
+{
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+
+    auto ih1 = IslandHelper::CreateOnNewUIThreadAndNewWindow(m_windowClassAtom);
+    auto ih2 = IslandHelper::CreateOnNewUIThreadAndNewWindow(m_windowClassAtom);
+
+    auto createRoot = []()
+    {
+        return safe_cast<Grid^>(XamlReader::Load(
+            LR"(<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />)"));
+    };
+    auto getBackground = [](Grid^ grid)
+    {
+        return safe_cast<SolidColorBrush^>(grid->Background)->Color;
+    };
+    auto toElementTheme = [](ApplicationTheme theme)
+    {
+        return theme == ApplicationTheme::Light ? ElementTheme::Light : ElementTheme::Dark;
+    };
+
+    Grid^ root1 = nullptr;
+    Grid^ root2 = nullptr;
+    ::Windows::UI::Color originalBackground2 {};
+    ApplicationTheme newTheme = ApplicationTheme::Light;
+
+    RunOnIslandUIThread(ih1, [&]()
+    {
+        root1 = createRoot();
+        safe_cast<DesktopWindowXamlSource^>(ih1->DesktopWindowXamlSource)->Content = root1;
+    });
+    RunOnIslandUIThread(ih2, [&]()
+    {
+        root2 = createRoot();
+        safe_cast<DesktopWindowXamlSource^>(ih2->DesktopWindowXamlSource)->Content = root2;
+    });
+    LowBudgetWaitForIdle(ih1);
+    LowBudgetWaitForIdle(ih2);
+    VERIFY_IS_NOT_NULL(root1);
+    VERIFY_IS_NOT_NULL(root2);
+
+    RunOnIslandUIThread(ih2, [&]()
+    {
+        originalBackground2 = getBackground(root2);
+        newTheme = (Application::Current->RequestedTheme == ApplicationTheme::Light) ? ApplicationTheme::Dark : ApplicationTheme::Light;
+    });
+
+    LOG_OUTPUT(L"> Setting Application.RequestedTheme on UI thread 1.");
+    RunOnIslandUIThread(ih1, [&]()
+    {
+        Application::Current->RequestedTheme = newTheme;
+        VERIFY_ARE_EQUAL(newTheme, Application::Current->RequestedTheme);
+        VERIFY_ARE_EQUAL(toElementTheme(newTheme), root1->ActualTheme);
+    });
+    LowBudgetWaitForIdle(ih2);
+
+    LOG_OUTPUT(L"> Verifying UI thread 2 picked up the new theme.");
+    RunOnIslandUIThread(ih2, [&]()
+    {
+        VERIFY_ARE_EQUAL(newTheme, Application::Current->RequestedTheme);
+        VERIFY_ARE_EQUAL(toElementTheme(newTheme), root2->ActualTheme);
+        VERIFY_ARE_NOT_EQUAL(originalBackground2, getBackground(root2));
+    });
+
+    LOG_OUTPUT(L"> Verifying a UI thread created after the change starts with the new theme.");
+    auto ih3 = IslandHelper::CreateOnNewUIThreadAndNewWindow(m_windowClassAtom);
+    RunOnIslandUIThread(ih3, [&]()
+    {
+        VERIFY_ARE_EQUAL(newTheme, Application::Current->RequestedTheme);
+    });
+}
+
 void XamlIslandTests::DeviceLostTest()
 {
     XamlIslandTestHelper testHelper(this);

@@ -105,9 +105,19 @@ namespace DirectUI
         _Check_return_ HRESULT InvokeOnWindowCreated();
         _Check_return_ HRESULT InvokeOnLaunchActivated(_In_ waa::ILaunchActivatedEventArgs* uwpLaunchActivatedEventArgs);
 
-        void SetRequestedThemeNotSettable()
+        void SetAppXamlLoadStarted()
         {
-            m_isRequestedThemeSettable = false;
+            m_hasAppXamlLoadStarted = true;
+        }
+
+        // Applies the application RequestedTheme set at runtime to a newly initialized UI thread. App.xaml markup
+        // is parsed on every UI thread and would otherwise override the runtime value with its own RequestedTheme.
+        _Check_return_ HRESULT ApplyRuntimeRequestedThemeToCurrentThread();
+
+        void ResetRuntimeRequestedThemeForTesting()
+        {
+            m_applicationRequestedTheme = Theming::Theme::None;
+            m_isRequestedThemeSetAfterAppXamlLoad = false;
         }
 
         void SetRequiresPointerModeNotSettable()
@@ -172,6 +182,7 @@ namespace DirectUI
         static void RunDesktopWindowMessageLoop();
 
         _Check_return_ HRESULT GetPLMHandlerForCallingThread(_Outptr_ XAML::PLM::PLMHandler** ppHandler);
+        _Check_return_ HRESULT PropagateRequestedThemeToOtherThreads();
         _Check_return_ HRESULT HookBackgroundActivationEvents(bool fRegister);
 
         CFTMEventSource<xaml::IUnhandledExceptionEventHandler, xaml::IApplication, xaml::IUnhandledExceptionEventArgs> m_UnhandledExceptionEventSource;
@@ -183,8 +194,9 @@ namespace DirectUI
         bool m_isRequiresPointerModeSettable { true };
         xaml::ApplicationRequiresPointerMode m_requiresPointerMode { xaml::ApplicationRequiresPointerMode_Auto };
 
-        // Is RequestedTheme settable?
-        bool m_isRequestedThemeSettable { true };
+        // Has App.xaml started loading? Values set after this point override App.xaml's RequestedTheme on new UI threads.
+        std::atomic<bool> m_hasAppXamlLoadStarted { false };
+        std::atomic<bool> m_isRequestedThemeSetAfterAppXamlLoad { false };
 
         // Path from which to load App.xaml
         xstring_ptr m_appXamlPath;
@@ -194,7 +206,8 @@ namespace DirectUI
         // Stores the current FocusVisualKind property value.
         xaml::FocusVisualKind m_focusVisualKind { xaml::FocusVisualKind_DottedLine };
 
-        Theming::Theme m_applicationRequestedTheme { Theming::Theme::None };
+        // Read from every UI thread.
+        std::atomic<Theming::Theme> m_applicationRequestedTheme { Theming::Theme::None };
 
         xaml::ApplicationHighContrastAdjustment m_highContrastAdjustment { xaml::ApplicationHighContrastAdjustment_Auto };
 

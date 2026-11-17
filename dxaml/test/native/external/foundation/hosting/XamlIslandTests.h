@@ -181,6 +181,11 @@ public:
     // Tests that we can support multiple UI threads (specifically around RunOnUIThread calls)
     TEST_METHOD(TwoUIThreads)
 
+    BEGIN_TEST_METHOD(ApplicationRequestedThemeChangeAppliesToAllUIThreads)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")  // Changes the process-wide Application.RequestedTheme.
+        TEST_METHOD_PROPERTY(L"Description", L"Changing Application.RequestedTheme at runtime re-themes UI on every UI thread, including threads created afterwards.")
+    END_TEST_METHOD()
+
     TEST_METHOD(DeviceLostTest)
 
     BEGIN_TEST_METHOD(EnsureDwxsEventOrderDuringTabTraversal)

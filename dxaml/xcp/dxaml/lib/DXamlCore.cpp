@@ -720,7 +720,7 @@ _Check_return_ HRESULT DXamlCore::EnsureCoreApplicationInitialized()
         if (ShouldTryLoadAppXaml(strAppXaml))
         {
             IFCPTR(applicationNoRef);
-            applicationNoRef->SetRequestedThemeNotSettable();
+            applicationNoRef->SetAppXamlLoadStarted();
             applicationNoRef->SetRequiresPointerModeNotSettable();
 
             // Load App.xaml
@@ -737,6 +737,10 @@ _Check_return_ HRESULT DXamlCore::EnsureCoreApplicationInitialized()
             {
                 debugSettings.Cast<DebugSettings>()->OnThreadInitialized();
             }
+
+            // Do this after registering this thread's dispatcher queue, so that a concurrent
+            // RequestedTheme change either reaches this thread through the queue or is read here.
+            IFC(applicationNoRef->ApplyRuntimeRequestedThemeToCurrentThread());
         }
     }
 
