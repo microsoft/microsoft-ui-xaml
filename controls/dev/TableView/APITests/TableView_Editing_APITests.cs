@@ -1620,6 +1620,117 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Shift+Tab still attempts a vetoable commit after the editor's selection flyout finishes closing.")]
+        [TestProperty("data:CancelCommit", "{False, True}")]
+        public void VerifyShiftTabCommitAfterEditorFlyoutCloses()
+        {
+            bool cancelCommit = bool.Parse(((string)TestContext.DataRow["CancelCommit"]).Trim());
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            TextBox editor = null;
+            Grid editingCell = null;
+            Flyout flyout = null;
+            bool holdClose = true;
+            bool moved = false;
+            int closingCount = 0;
+            int commitAttempts = 0;
+            var observedDirection = FocusNavigationDirection.None;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    editor = GetEditorTextBox(tableView, items[0]);
+                    editingCell = GetRowCell(GetRowForItem(tableView, items[0]), 0);
+                    GetCellPeer(tableView, items[0], columnIndex: 0).SetFocus();
+                    editor.Focus(FocusState.Keyboard);
+                    editor.Text = "Bea";
+                    tableView.CellEditEnding += (s, e) =>
+                    {
+                        if (e.EditAction == TableViewEditAction.Commit)
+                        {
+                            commitAttempts++;
+                            e.Cancel = cancelCommit;
+                        }
+                    };
+                    flyout = new Flyout { Content = new TextBlock { Text = "Selection" } };
+                    editor.SelectionFlyout = flyout;
+                    flyout.Closing += (s, e) =>
+                    {
+                        closingCount++;
+                        e.Cancel = holdClose;
+                    };
+                    flyout.ShowAt(editor, new FlyoutShowOptions { ShowMode = FlyoutShowMode.Transient });
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // Hold the close pending like a selection-flyout animation, without timing a keystroke.
+                    flyout.Hide();
+                    TypedEventHandler<UIElement, LosingFocusEventArgs> observeDirection =
+                        (s, e) => observedDirection = e.Direction;
+                    editor.LosingFocus += observeDirection;
+                    try
+                    {
+                        moved = FocusManager.TryMoveFocus(FocusNavigationDirection.Previous,
+                            new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+                    }
+                    finally
+                    {
+                        editor.LosingFocus -= observeDirection;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                var deferred = (Open: false, Editing: false, FocusOnCell: false, Attempts: 0);
+                RunOnUIThread.Execute(() => deferred = (
+                    flyout.IsOpen, tableView.IsEditing,
+                    ReferenceEquals(editingCell, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    commitAttempts));
+                Verify.IsGreaterThan(closingCount, 0, "The flyout must have started closing.");
+                Verify.IsTrue(moved, "Shift+Tab must move focus out of the editor.");
+                Verify.AreEqual(FocusNavigationDirection.Previous, observedDirection);
+                Verify.IsTrue(deferred.Open, "The flyout close must still be pending.");
+                Verify.IsTrue(deferred.Editing, "Commit must wait for the flyout to close.");
+                Verify.IsTrue(deferred.FocusOnCell, "Shift+Tab must land on the editing cell wrapper.");
+                Verify.AreEqual(0, deferred.Attempts, "There must be no commit before Closed.");
+                if (!moved || !deferred.Open || !deferred.Editing || !deferred.FocusOnCell || deferred.Attempts != 0)
+                {
+                    return;
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    holdClose = false;
+                    flyout.Hide();
+                });
+                IdleSynchronizer.Wait();
+
+                var completed = (Open: false, Editing: false, Attempts: 0, Name: (string)null);
+                RunOnUIThread.Execute(() => completed = (
+                    flyout.IsOpen, tableView.IsEditing, commitAttempts, items[0].Name));
+                Verify.IsFalse(completed.Open, "The flyout must finish closing.");
+                Verify.AreEqual(1, completed.Attempts, "The Closed retry must retain the Shift+Tab commit intent.");
+                Verify.AreEqual(cancelCommit, completed.Editing, "Only a veto must keep the edit open.");
+                Verify.AreEqual(cancelCommit ? "Asha" : "Bea", completed.Name,
+                    "The pending value must be written only when the commit is accepted.");
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    holdClose = false;
+                    flyout?.Hide();
+                    tableView.CancelEdit();
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies focus moving into a popup the editor did not open commits the edit.")]
         public void VerifyFocusInUnrelatedPopupCommitsEdit()
         {

@@ -323,6 +323,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Tab from a text editor commits the bound value and closes the editor.")]
+        public void TabFromTextEditorCommitsEdit()
+        {
+            VerifyTabFromTextEditorCommitsEdit(backwards: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+Tab from a text editor commits instead of opening-focus recovery redirecting focus back into the editor.")]
+        public void ShiftTabFromTextEditorCommitsEdit()
+        {
+            VerifyTabFromTextEditorCommitsEdit(backwards: true);
+        }
+
+        private static void VerifyTabFromTextEditorCommitsEdit(bool backwards)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject row = GetFirstRow();
+                if (row == null) { return; }
+
+                ClickRowAtColumnOffset(row, NameCellRelativeX);
+                KeyboardHelper.PressKey(Key.F2);
+                Wait.ForIdle();
+
+                UIObject editor = GetFirstRow().Children[NameColumn].Children.FirstOrDefault(child => child.ClassName == "TextBox");
+                Verify.IsNotNull(editor, "F2 must open the built-in Name editor.");
+                if (editor == null) { return; }
+                Verify.IsTrue(editor.HasKeyboardFocus, "The editor must own focus before typing.");
+                Verify.AreEqual(string.Empty, ReadEditEndReport(), "Opening focus recovery must not close the editor.");
+
+                const string newName = "CommittedByTab";
+                KeyboardHelper.PressKey(Key.a, ModifierKey.Control);
+                TextInput.SendText(newName);
+                Wait.ForIdle();
+
+                // ValuePattern on an open cell reads the editor buffer, not the bound item.
+                Verify.AreEqual(BasicName(0), ReadFirstItemName(), "Typing must leave the bound value unchanged until commit.");
+                Verify.IsTrue(editor.HasKeyboardFocus, "Tab must originate inside the editor.");
+
+                if (backwards)
+                {
+                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                }
+                else
+                {
+                    KeyboardHelper.PressKey(Key.Tab);
+                }
+                Wait.ForIdle();
+
+                Verify.AreEqual("Commit;", ReadEditEndReport(), "Tab departure must attempt one commit.");
+                Verify.AreEqual(newName, ReadFirstItemName(), "The commit must reach the actual bound item.");
+                Verify.IsFalse(GetFirstRow().Children[NameColumn].Children.Any(child => child.ClassName == "TextBox"),
+                    "The editor must close, not receive focus again. No adjacent-cell destination is required.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Escape cancels the open edit and leaves the item's pre-edit value intact.")]
         public void EscapeKeyCancelsEdit()
         {
