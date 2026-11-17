@@ -21,6 +21,16 @@ Three modes, set with `Window.PlacementMode`:
 | `Manual` | Applies nothing, same as `SaveOnClose`. | WinUI doesn't save. The app calls `SavePlacementDetails`. |
 
 Restart behavior comes from `AppWindow.PlacementRestorationBehavior`.
+
+Terms used below:
+
+- **STARTUPINFO** is the launch state Windows passes to a new process. For example, a shortcut
+  set to "Run: Minimized" puts `SW_SHOWMINNOACTIVE` there.
+- **`isFirstWindow`** is a parameter of `AppWindow.SetCurrentPlacement`. `true` means "this is the
+  first window this process shows, so honor STARTUPINFO." Only the app knows that, so only the
+  app passes `true`.
+- **Work-area offset** is the window's position relative to the top-left corner of its display's
+  work area. The work area is the display minus the taskbar.
 Cascading is deferred. See [Cascade](#cascade).
 
 Status key:
@@ -96,7 +106,7 @@ Scenario `first-launch-no-data`
 The first time an app runs on a machine, there's no saved data. That's normal, not an error.
 
 1. Open a window with a `PlacementId` that has no saved record
-2. Assert: Window opens at the app's size (`Width`/`Height`) or the OS default position
+2. Assert: Window opens where the app put it. If the app didn't set a size or position, Windows picks the default.
 3. Assert: `TryLoadPlacementDetails` returns null
 4. Move and resize the window, then close it
 5. Re-open the window with the same id
@@ -201,7 +211,8 @@ user left it. That includes minimized windows.
 5. Restore window
 6. Assert: Window bounds are the bounds from (1)
 
-The app decides that this is a restart. WinUI can't tell on its own. This works in all three modes.
+The app decides that this is a restart, and sets the behavior before the first `Activate` only on
+those launches. WinUI can't tell on its own. This works in all three modes.
 Instead of `All`, the app can add only the proposed `AllowShowMinimized` flag (value 16).
 
 ```cs
@@ -358,8 +369,8 @@ Scenario `restore-snapped`
 
 Scenario `restore-minimized-snapped`
 
-> **Open.** Same as phase 1. WinUI doesn't reliably capture the snapped layout when a snapped
-> window is minimized and then closed without being restored. Restoring from a good
+> **Open.** Same as phase 1. WinUI doesn't reliably capture the snapped bounds, or the fact that
+> the window should return to snapped, when a snapped window is minimized and then closed without being restored. Restoring from a good
 > minimized-from-snapped record works (`WindowPlacementRestoreMinimizedSnapped`). The gap is in
 > saving.
 
@@ -477,7 +488,7 @@ lose the user's layout.
 4. Maximize window, call `SavePlacementDetails`
 5. Assert: The record is maximized, with the normal bounds from (1)
 6. Switch to CompactOverlay, move it, call `SavePlacementDetails`
-7. Assert: The record from (4) is unchanged
+7. Assert: The record is still the one from (4). WinUI doesn't save a CompactOverlay window.
 8. Assert: `SavePlacementDetails` with an empty `PlacementId` does nothing
 9. Assert: `SavePlacementDetails` after the window closes throws `E_INVALID_OPERATION`
 
@@ -595,7 +606,9 @@ Scenario `fixed-size-window`
 2. Open a resizable window with the id
 3. Assert: Window fits inside the work area
 4. Open a window with `IsResizable` = false and the same id
-5. Assert: Window keeps its own size or takes the saved size, not a mix
+5. Assert: Window doesn't shrink to fit. Windows either keeps the size the window had before
+   `Activate`, or applies the saved size. The test accepts either, but not the width from one and
+   the height from the other.
 6. Assert: The title bar is inside the work area, so the user can move the window
 
 > The window's current `IsResizable` decides shrink vs move, not the value saved in the record.
