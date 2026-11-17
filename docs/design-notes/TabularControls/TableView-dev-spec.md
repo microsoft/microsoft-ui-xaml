@@ -391,7 +391,7 @@ Text uses the same divider-free center as selection. `RefreshCellVisualGeometry`
 | `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional), `PART_LayoutRoot` (`FrameworkElement`, optional, arranged inner frame for terminal separator comparison). |
 | `TableViewRow` | Resolved: `PART_CellsHost` (`Panel`, required), `PART_GridLineBorder` and `PART_RowExpanderGutter` (optional). State: `PART_RootBorder`, `PART_CellForegroundPresenter`, `PART_SelectionIndicator`, `PART_RowExpanderIcon`. |
 | `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Background`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
-| `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`. State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
+| `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`, `PART_ExpanderGutter` (`Border`; content padding, and filtered from UIA children). State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
 
 The scrollers are found as the nearest `ScrollViewer` ancestors of the header host and repeater, not by name. Row states are `CommonStates` (including four `Selected*` states), `RowExpansionStates`, `RowExpandabilityStates` and `RowHierarchyStates`, `Row`-prefixed so they cannot collide with an app's `Expanded`/`Collapsed`.
 

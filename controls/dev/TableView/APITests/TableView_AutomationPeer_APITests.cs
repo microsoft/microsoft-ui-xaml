@@ -1431,6 +1431,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             AutomationPeer held = null;
+            ControlTemplate template = null;
+            var tracked = new Dictionary<string, WeakReference>();
 
             RunOnUIThread.Execute(() =>
             {
@@ -1441,19 +1443,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                held = RowPeerOf(GetRowsRepeater(tableView).TryGetElement(0));
+                var header = GetRowsRepeater(tableView).TryGetElement(0);
+                held = RowPeerOf(header);
                 Verify.IsTrue(held.GetName().StartsWith("G0 "), "Precondition: the held element is G0's header.");
-                var template = tableView.Template;
+                tracked["G0 header"] = new WeakReference(header);
+                template = tableView.Template;
                 tableView.Template = null;
                 tableView.UpdateLayout();
+            });
+            TableViewLifetimeTestHelpers.AssertCollected(tracked);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyElementNotAvailable(() => held.GetName(), "Name of a group's element after its header was collected");
+                VerifyElementNotAvailable(() => held.GetPattern(PatternInterface.ExpandCollapse), "ExpandCollapse of a group's element after its header was collected");
                 tableView.Template = template;
             });
             IdleSynchronizer.Wait();
-            for (var i = 0; i < 2; ++i)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
 
             RunOnUIThread.Execute(() =>
             {
@@ -1692,6 +1698,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                var staleCount = 0;
                 foreach (var (item, element) in held)
                 {
                     string name = null;
@@ -1703,8 +1710,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.AreEqual(unchecked((int)0x80040201), e.HResult, $"{item.Name}'s stale element must fail with ElementNotAvailable.");
                     }
+                    staleCount += name == null ? 1 : 0;
                     Verify.IsTrue(name == null || name.StartsWith(item.Name + ","), $"{item.Name}'s held element must not describe another item, saw '{name}'.");
                 }
+                // Reversing the order moves the initially realized items out of their rows, so held
+                // elements that followed their item instead of going stale would leave this at zero.
+                Verify.IsGreaterThan(staleCount, 0, "At least one held element must have gone stale.");
 
                 var repeater = GetRowsRepeater(tableView);
                 foreach (var row in GetRealizedRows(tableView).Where(r => repeater.GetElementIndex(r) >= 0))

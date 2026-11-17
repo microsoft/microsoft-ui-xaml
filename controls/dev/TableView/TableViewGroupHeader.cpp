@@ -117,23 +117,34 @@ namespace
         }
 
         // TableViewBindingAutomationPeerT's hook: the header while it still routes UIA to this binding.
-        winrt::UIElement TryBoundContainer()
-        {
-            auto const header = m_header.get();
-            return header && IsEventsSourceOf(winrt::FrameworkElementAutomationPeer::FromElement(header)) ? header : nullptr;
-        }
+        winrt::UIElement TryBoundContainer() { return TryBoundHeader().first; }
 
     private:
         // The header's own peer while it still routes UIA to this binding.
         winrt::AutomationPeer HeaderPeer()
         {
-            auto const header = m_header.get();
-            auto const peer = header ? winrt::FrameworkElementAutomationPeer::FromElement(header) : nullptr;
-            if (!IsEventsSourceOf(peer))
+            auto const bound = TryBoundHeader();
+            if (!bound.first)
             {
                 ThrowElementNotAvailable();
             }
-            return peer;
+            return bound.second;
+        }
+
+        // The header and its peer while the header is in its table's repeater and its peer still has
+        // this binding as EventsSource; nulls otherwise. A header outside the repeater (its table's
+        // template was replaced, or it is pooled or pinned) no longer shows the group.
+        std::pair<winrt::TableViewGroupHeader, winrt::AutomationPeer> TryBoundHeader()
+        {
+            auto const header = m_header.get();
+            auto const table = header ? winrt::get_self<TableViewGroupHeader>(header)->GetOwningTableView() : nullptr;
+            auto const repeater = table ? winrt::get_self<TableView>(table)->GetRowsRepeaterInternal() : nullptr;
+            auto const peer = repeater ? winrt::FrameworkElementAutomationPeer::FromElement(header) : nullptr;
+            if (!IsEventsSourceOf(peer) || repeater.GetElementIndex(header) < 0)
+            {
+                return { nullptr, nullptr };
+            }
+            return { header, peer };
         }
 
         winrt::weak_ref<winrt::TableViewGroupHeader> m_header{ nullptr };
