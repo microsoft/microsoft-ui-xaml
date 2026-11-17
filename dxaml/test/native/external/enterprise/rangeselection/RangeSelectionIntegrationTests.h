@@ -29,6 +29,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that SelectedRanges functions properly after the SelectedIndex property has changed")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateSelectedRangesAfterUnselectedItemChanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that unselected insertions and removals shift, split, and merge selected ranges")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateSelectedRangesAfterSelectedItemReorder)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that SelectedRanges functions properly after a selected item is clicked and dragged into a different location")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
