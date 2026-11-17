@@ -1,6 +1,9 @@
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
+// TableView has no edit gesture, so F2 reaches this handledEventsToo handler.
+PeopleTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
+
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
 public TableViewSource Source { get; }
@@ -11,4 +14,120 @@ private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
     var resources = Application.Current.Resources;
     JoinDateColumn.CellTemplate = (DataTemplate)resources[full ? "JoinDatePickerTemplate" : "JoinCalendarDateTemplate"];
     JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);
+}
+
+private Person? _editingRole;
+
+public static Visibility CollapsedWhen(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
+private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
+{
+    // The focused cell's row, else the selected row.
+    if (e.Key == VirtualKey.F2
+        && ((e.OriginalSource as FrameworkElement)?.DataContext as Person ?? PeopleTable.SelectedItem as Person) is { } person)
+    {
+        e.Handled = true;
+        BeginRoleEdit(person);
+    }
+}
+
+private void OnRoleCellDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+{
+    if (((FrameworkElement)sender).DataContext is Person person)
+    {
+        e.Handled = true;
+        BeginRoleEdit(person);
+    }
+}
+
+private void BeginRoleEdit(Person person)
+{
+    if (person.IsEditingRole)
+    {
+        return;
+    }
+
+    if (_editingRole is { } previous)
+    {
+        CommitRoleEdit(previous, editor: null);
+    }
+
+    _editingRole = person;
+    person.PendingRole = person.Role;
+    person.IsEditingRole = true;    // x:Load realizes the TextBox
+}
+
+private void OnRoleBoxLoaded(object sender, RoutedEventArgs e)
+{
+    var box = (TextBox)sender;
+    box.Focus(FocusState.Programmatic);
+    box.SelectAll();
+}
+
+// Preview: Enter and Esc are claimed before TableView's own cell keys see them.
+private void OnRoleBoxPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+{
+    if (((FrameworkElement)sender).DataContext is not Person person)
+    {
+        return;
+    }
+
+    if (e.Key == VirtualKey.Enter)
+    {
+        e.Handled = true;
+        CommitRoleEdit(person, (TextBox)sender);
+    }
+    else if (e.Key == VirtualKey.Escape)
+    {
+        e.Handled = true;
+        EndRoleEdit(person, (TextBox)sender);
+    }
+}
+
+private void OnRoleBoxLostFocus(object sender, RoutedEventArgs e)
+{
+    // Focus that moved into a popup (the TextBox's context menu, the error tip) comes back.
+    if (((FrameworkElement)sender).DataContext is Person person && !IsFocusInPopup((UIElement)sender))
+    {
+        CommitRoleEdit(person, editor: null);
+    }
+}
+
+private void OnRoleBoxTextChanged(object sender, TextChangedEventArgs e) => RoleErrorTip.IsOpen = false;
+
+// editor is the TextBox for Enter, which keeps the editor open on invalid input; null for
+// focus loss, which has nowhere to keep it open and discards the invalid value instead.
+private void CommitRoleEdit(Person person, TextBox? editor)
+{
+    if (!person.IsEditingRole || !ReferenceEquals(person, _editingRole))
+    {
+        return;
+    }
+
+    var role = person.PendingRole.Trim();
+    if (role.Length == 0 && editor is not null)
+    {
+        RoleErrorTip.Target = editor;
+        RoleErrorTip.IsOpen = true;
+        return;
+    }
+
+    EndRoleEdit(person, editor);
+    if (role.Length > 0 && role != person.Role)
+    {
+        person.Role = role;         // OnPersonChanged reports it; a Role sort re-sorts on it
+        return;
+    }
+}
+
+private void EndRoleEdit(Person person, TextBox? editor)
+{
+    _editingRole = null;
+    RoleErrorTip.IsOpen = false;
+    if (editor is not null)
+    {
+        FocusCellOf(editor);        // before x:Load removes the focused TextBox
+    }
+
+    person.IsEditingRole = false;
 }

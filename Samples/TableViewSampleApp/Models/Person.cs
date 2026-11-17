@@ -33,6 +33,9 @@ public sealed class Person : INotifyPropertyChanged
     private int? _managerId;
     private int? _mentorId;
     private string _office = string.Empty;
+    private string _notes = string.Empty;
+    private bool _isEditingRole;
+    private string _pendingRole = string.Empty;
 
     public string FirstName
     {
@@ -192,6 +195,30 @@ public sealed class Person : INotifyPropertyChanged
     {
         get => _office;
         set => Set(ref _office, value);
+    }
+
+    /// <summary>Free-text note; edited by an always-live TextBox on the Cell templating page.</summary>
+    public string Notes
+    {
+        get => _notes;
+        set => Set(ref _notes, value);
+    }
+
+    /// <summary>
+    /// App-owned edit state for the Cell templating page's edit-on-demand Role cell. It lives on
+    /// the item, not the element, so a recycled row re-realizes the editor for the right person.
+    /// </summary>
+    public bool IsEditingRole
+    {
+        get => _isEditingRole;
+        set => Set(ref _isEditingRole, value);
+    }
+
+    /// <summary>The Role being typed; copied to <see cref="Role"/> only when the edit commits.</summary>
+    public string PendingRole
+    {
+        get => _pendingRole;
+        set => Set(ref _pendingRole, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
