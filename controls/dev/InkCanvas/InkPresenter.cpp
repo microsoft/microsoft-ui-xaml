@@ -809,10 +809,11 @@ namespace
     }
 
     winrt::Windows::UI::Input::PointerPoint SnapshotPointerPoint(winrt::Windows::UI::Input::PointerPoint const& point,
-        winrt::Windows::Devices::Input::PointerDevice const& device)
+        winrt::Windows::Devices::Input::PointerDevice const& device,
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages)
     {
         return AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPoint>(
-            winrt::make<InkPointerPointSnapshot>(point, device));
+            winrt::make<InkPointerPointSnapshot>(point, device, deviceUsages));
     }
 
     // Must run on the ink thread while 'point' is live. Null if the device can't be read; the point then falls back
@@ -855,7 +856,8 @@ winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::In
         std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(m_supportedUsages)).GetView();
 }
 
-InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties) :
+InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties,
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages) :
     m_pressure(properties.Pressure()),
     m_isInverted(properties.IsInverted()),
     m_isEraser(properties.IsEraser()),
@@ -884,10 +886,21 @@ InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Wind
     {
         m_zDistance = winrt::Windows::Foundation::IReference<float>{ zDistance.Value() };
     }
+
+    // The device lists its HID usages; copy this point's value for each one it reports.
+    m_usages.reserve(deviceUsages.size());
+    for (auto const& usage : deviceUsages)
+    {
+        if (properties.HasUsage(usage.UsagePage, usage.Usage))
+        {
+            m_usages.push_back({ usage.UsagePage, usage.Usage, properties.GetUsageValue(usage.UsagePage, usage.Usage) });
+        }
+    }
 }
 
 InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
-    winrt::Windows::Devices::Input::PointerDevice const& device) :
+    winrt::Windows::Devices::Input::PointerDevice const& device,
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages) :
     m_position(point.Position()),
     m_rawPosition(point.RawPosition()),
     m_pointerId(point.PointerId()),
@@ -895,7 +908,7 @@ InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::Poin
     m_timestamp(point.Timestamp()),
     m_isInContact(point.IsInContact()),
     m_properties(AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPointProperties>(
-        winrt::make<InkPointerPointPropertiesSnapshot>(point.Properties()))),
+        winrt::make<InkPointerPointPropertiesSnapshot>(point.Properties(), deviceUsages))),
     m_device(device)
 {
 }
@@ -922,17 +935,24 @@ InkPointerEventArgsSnapshot::InkPointerEventArgsSnapshot(winrt::Windows::UI::Cor
     m_keyModifiers(args.KeyModifiers()),
     m_handled(args.Handled())
 {
-    // One pointer per event, so the current and intermediate points share one device snapshot.
+    // One pointer per event, so the current and intermediate points share one device snapshot and its usage list.
     auto currentPoint = args.CurrentPoint();
     auto device = SnapshotPointerDevice(currentPoint);
-    m_currentPoint = SnapshotPointerPoint(currentPoint, device);
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> deviceUsages;
+    if (device)
+    {
+        auto usages = device.SupportedUsages();
+        deviceUsages.resize(usages.Size());
+        usages.GetMany(0, deviceUsages);
+    }
+    m_currentPoint = SnapshotPointerPoint(currentPoint, device, deviceUsages);
 
     if (auto intermediatePoints = args.GetIntermediatePoints())
     {
         m_intermediatePoints.reserve(intermediatePoints.Size());
         for (auto const& point : intermediatePoints)
         {
-            m_intermediatePoints.push_back(SnapshotPointerPoint(point, device));
+            m_intermediatePoints.push_back(SnapshotPointerPoint(point, device, deviceUsages));
         }
     }
 }

@@ -179,7 +179,8 @@ struct InkPointerPointPropertiesSnapshot :
         winrt::Windows::UI::Input::IPointerPointProperties,
         winrt::Windows::UI::Input::IPointerPointProperties2>
 {
-    explicit InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties);
+    InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties,
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages);
 
     float Pressure() const noexcept { return m_pressure; }
     bool IsInverted() const noexcept { return m_isInverted; }
@@ -203,9 +204,14 @@ struct InkPointerPointPropertiesSnapshot :
     bool IsXButton1Pressed() const noexcept { return m_isXButton1Pressed; }
     bool IsXButton2Pressed() const noexcept { return m_isXButton2Pressed; }
     winrt::Windows::UI::Input::PointerUpdateKind PointerUpdateKind() const noexcept { return m_pointerUpdateKind; }
-    // Raw HID usages can't be enumerated up front, so they are not part of the snapshot.
-    bool HasUsage(uint32_t, uint32_t) const noexcept { return false; }
-    int32_t GetUsageValue(uint32_t, uint32_t) const noexcept { return 0; }
+    // Raw HID usages: the values of every usage the device reports (PointerDevice.SupportedUsages), read from the live
+    // point on the ink thread. A usage the point did not report is absent (HasUsage false, GetUsageValue 0).
+    bool HasUsage(uint32_t usagePage, uint32_t usageId) const noexcept { return FindUsage(usagePage, usageId) != nullptr; }
+    int32_t GetUsageValue(uint32_t usagePage, uint32_t usageId) const noexcept
+    {
+        auto usage = FindUsage(usagePage, usageId);
+        return usage ? usage->value : 0;
+    }
     winrt::Windows::Foundation::IReference<float> ZDistance() const noexcept { return m_zDistance; }
 
 private:
@@ -232,6 +238,25 @@ private:
     bool m_isXButton2Pressed{};
     winrt::Windows::UI::Input::PointerUpdateKind m_pointerUpdateKind{};
     winrt::Windows::Foundation::IReference<float> m_zDistance{ nullptr };
+
+    struct UsageValue
+    {
+        uint32_t usagePage;
+        uint32_t usageId;
+        int32_t value;
+    };
+    UsageValue const* FindUsage(uint32_t usagePage, uint32_t usageId) const noexcept
+    {
+        for (auto const& usage : m_usages)
+        {
+            if (usage.usagePage == usagePage && usage.usageId == usageId)
+            {
+                return &usage;
+            }
+        }
+        return nullptr;
+    }
+    std::vector<UsageValue> m_usages;
 };
 
 // Taken on the ink thread, so the device is still known when a queued event is handled after the pointer is gone.
@@ -264,7 +289,8 @@ struct InkPointerPointSnapshot :
     winrt::implements<InkPointerPointSnapshot, winrt::Windows::UI::Input::IPointerPoint>
 {
     InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
-        winrt::Windows::Devices::Input::PointerDevice const& device);
+        winrt::Windows::Devices::Input::PointerDevice const& device,
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& deviceUsages);
 
     // The device snapshot taken with the event, or (if that failed) a lookup by id on the calling thread.
     winrt::Windows::Devices::Input::PointerDevice PointerDevice() const;
