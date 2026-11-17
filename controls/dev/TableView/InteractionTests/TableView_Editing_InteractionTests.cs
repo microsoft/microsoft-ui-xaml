@@ -375,7 +375,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("Commit;", ReadEditEndReport(), "Tab departure must attempt one commit.");
                 Verify.AreEqual(newName, ReadFirstItemName(), "The commit must reach the actual bound item.");
                 Verify.IsFalse(GetFirstRow().Children[NameColumn].Children.Any(child => child.ClassName == "TextBox"),
-                    "The editor must close, not receive focus again. No adjacent-cell destination is required.");
+                    "The Name editor must close, not receive focus again.");
             }
         }
 

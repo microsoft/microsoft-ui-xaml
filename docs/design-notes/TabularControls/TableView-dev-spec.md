@@ -247,7 +247,7 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 - `TableViewRow::AbandonCellEdit` never touches focus. `TableView::TerminateEditWithoutVisualRestore` uses it from `OnRowElementClearing`, `RebuildCells`, `OnIsReadOnlyPropertyChanged` and `OnItemsSourcePropertyChanged`.
 - The cell restamp path keeps the edit open, because installing the editor itself triggers a re-measure.
 - The focus-loss commit is posted and re-evaluated once focus settles.
-- An explicit `Tab`/`Shift+Tab` departure is not opening-gesture recovery, even when XAML targets the edited cell's wrapper. It attempts the normal focus-loss commit without redirecting focus back into the editor. Navigation within a composite editor or its owned popups still keeps the edit open; validation can still veto the commit. This does not introduce adjacent-cell editing, wrapping, or automatic editing of a destination. Queued focus work is invalidated when its edit closes or its begin is abandoned.
+- An explicit `Tab`/`Shift+Tab` departure is not opening-gesture recovery, even when XAML targets the edited cell's wrapper. It attempts the normal focus-loss commit without redirecting focus back into the editor. Navigation within a composite editor or its owned popups still keeps the edit open; validation can still veto the commit. A plain `Tab`/`Shift+Tab` in an editor is normally handled on key-down, which commits and moves the edit to the adjacent editable cell, so this path covers departures that still reach focus navigation, such as a programmatic move or a key the editor leaves unhandled. Queued focus work is invalidated when its edit closes or its begin is abandoned.
 
 ## Keyboard navigation
 
