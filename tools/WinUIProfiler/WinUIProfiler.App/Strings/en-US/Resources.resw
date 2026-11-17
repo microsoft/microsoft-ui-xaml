@@ -19,7 +19,7 @@
   <data name="Arguments.Header" xml:space="preserve"><value>Launch arguments</value></data>
   <data name="WorkingDirectory.Header" xml:space="preserve"><value>Working directory (optional; unpackaged only)</value></data>
   <data name="Endpoint.Header" xml:space="preserve"><value>Diagnostics endpoint</value></data>
-  <data name="Trust.Content" xml:space="preserve"><value>Trust local injector and TAP binaries (executes native code in the target)</value></data>
+  <data name="TrustNotice.Text" xml:space="preserve"><value>Connecting from this window automatically trusts the profiler's bundled injector and TAP binaries, which run native code in the selected app.</value></data>
   <data name="TraceProcess.Header" xml:space="preserve"><value>Process</value></data>
   <data name="TraceProcess.PlaceholderText" xml:space="preserve"><value>Select a process with XAML events</value></data>
   <data name="TraceProcessFormat" xml:space="preserve"><value>{0} (PID {1}) | {2:N0} events | {3:F1} s to {4:F1} s</value></data>
@@ -264,7 +264,6 @@
   <data name="ArgumentsAutomation" xml:space="preserve"><value>Launch arguments</value></data>
   <data name="DirectoryAutomation" xml:space="preserve"><value>Working directory</value></data>
   <data name="EndpointAutomation" xml:space="preserve"><value>Diagnostics endpoint</value></data>
-  <data name="TrustAutomation" xml:space="preserve"><value>Trust local injection binaries</value></data>
   <data name="ConnectAutomation" xml:space="preserve"><value>Launch and connect</value></data>
   <data name="DisconnectAutomation" xml:space="preserve"><value>Disconnect</value></data>
   <data name="TraceTargetAutomation" xml:space="preserve"><value>Trace file path</value></data>

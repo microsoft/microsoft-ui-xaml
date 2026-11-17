@@ -97,7 +97,7 @@ public sealed partial class MainWindow : Window
 
         Root.Loaded += Apply;
 
-        void Apply(object sender, RoutedEventArgs args)
+        async void Apply(object sender, RoutedEventArgs args)
         {
             Root.Loaded -= Apply;
             // Changing the mode clears the target, so the target is set after it.
@@ -105,12 +105,11 @@ public sealed partial class MainWindow : Window
             commandLine = value;
             TargetText.Text = value.Target;
             ArgumentsText.Text = value.Arguments;
-            Trust.IsChecked = Trust.IsChecked == true || value.TrustLocalBinaries;
             UpdateTargetSummary();
             Refresh();
             if (value.Connect)
             {
-                Connect_Click(ConnectButton, new RoutedEventArgs());
+                await ConnectAsync(value.TrustLocalBinaries);
             }
         }
     }
@@ -194,7 +193,6 @@ public sealed partial class MainWindow : Window
             (ArgumentsText, "ArgumentsAutomation"),
             (WorkingDirectoryText, "DirectoryAutomation"),
             (Endpoint, "EndpointAutomation"),
-            (Trust, "TrustAutomation"),
             (TraceProcessList, "TraceProcessAutomation"),
             (TraceProgress, "TraceProgressAutomation"),
             (SnapshotButton, "SnapshotAutomation"),
@@ -227,7 +225,7 @@ public sealed partial class MainWindow : Window
         }
 
         LaunchOptions.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
-        Trust.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
+        TrustNotice.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
         TraceOptions.Visibility = trace ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -278,8 +276,7 @@ public sealed partial class MainWindow : Window
                 Mode,
                 TargetText,
                 Browse,
-                Endpoint,
-                Trust
+                Endpoint
             })
             {
                 control.IsEnabled = idle;
@@ -580,7 +577,9 @@ public sealed partial class MainWindow : Window
             : Format("TraceSummaryFormat", Path.GetFileName(target.Trim('"')));
     }
 
-    private async void Connect_Click(object sender, RoutedEventArgs args)
+    private async void Connect_Click(object sender, RoutedEventArgs args) => await ConnectAsync(trustLocalBinaries: true);
+
+    private async Task ConnectAsync(bool trustLocalBinaries)
     {
         if (!model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
         if (TraceMode)
@@ -604,7 +603,7 @@ TargetText.Text.Trim(),
 ArgumentsText.Text,
 WorkingDirectoryText.Text,
 Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
-Trust.IsChecked == true,
+trustLocalBinaries,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
 SessionsDirectory,
