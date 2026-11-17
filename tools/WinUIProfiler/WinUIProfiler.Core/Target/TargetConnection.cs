@@ -502,6 +502,7 @@ History);
 
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
         var token = cancellation.Token;
+        var sessionPath = Recording?.Path;
         TreeSnapshotDocument snapshot;
         await targetCommands.WaitAsync(token).ConfigureAwait(false);
         try
@@ -531,7 +532,7 @@ History);
             File.Move(temporary, path);
             committed = true;
             return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
-                snapshot.CompositionNodes.Count, snapshot.Correlations.Count);
+                snapshot.CompositionNodes.Count, snapshot.Correlations.Count, sessionPath);
         }
         finally
         {
