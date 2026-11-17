@@ -80,6 +80,7 @@ example, if an API was previously experimental before but is currently final, ol
    * Update the SDK version in `\eng\versions.props`, `\controls\dev\dll\packages.config`, and
      `\controls\test\TestAppCX\packages.config`.
      > Updating these numbers is the only thing that needs to happen to consume a new public SDK.
+   * Update the SDK package folder paths in `\controls\tools\CustomTasksTool\Program.cs`.
    * Update the Runtime version and temporary x64 installer source path in
      `\dxaml\test\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec`.
    * Create the temporary directory where the x64 installer must be copied:
