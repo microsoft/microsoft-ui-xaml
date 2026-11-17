@@ -112,6 +112,11 @@ $script:lifetimeTeConsoleLog = Join-Path (Get-Location) "lifetime_te_console.log
 $script:lifetimeTeExitCode = 0
 Delete-IfExists $script:lifetimeTeConsoleLog
 
+# te.exe's console output from the latest run, and a record of each run's exit code and te.wtl state (see Repair-TaefLog).
+$script:teConsoleLog = Join-Path (Get-Location) "te_console.log"
+$script:taefRuns = @()
+Delete-IfExists $script:teConsoleLog
+
 $picturesPath = [Environment]::GetFolderPath("mypictures")
 $xamlTaefOutputPath = Join-Path $picturesPath "XamlTaefOutput"
 Write-Host "xamlTaefOutputPath = $xamlTaefOutputPath"
@@ -138,7 +143,7 @@ function Wiggle-Mouse
 
 function Run-Taef
 {
-    param ([string] $taefAdditionalParams)
+    param ([string] $taefAdditionalParams, [string] $runName = "original")
 
     .\TestPass-EnsureMachineStateCore.ps1
     Wiggle-Mouse
@@ -162,6 +167,7 @@ function Run-Taef
     # extra quotes around parts of the arguments which gives the incorrect behavior since the argument string is already exactly as it needs 
     # to be. I was unable to find a way to disable this behavior, so as a workaround we create a .cmd file and invoke that.
     Out-File -FilePath "run.cmd" -Encoding ascii -InputObject "@$teCommand"
+    $preRunDumps = @(Get-CrashDumpFiles | ForEach-Object { $_.FullName })
     try
     {
         if ($isLifetimeStress)
@@ -169,20 +175,31 @@ function Run-Taef
             # Tee te.exe's output to a log (still streamed to the pipeline) so a crash can be attributed to the
             # in-flight scenario, and capture its exit code as a crash signal.
             & ./run.cmd 2>&1 | Tee-Object -FilePath $script:lifetimeTeConsoleLog -Append
-            $script:lifetimeTeExitCode = $LASTEXITCODE
+            $teExitCode = $LASTEXITCODE
+            $script:lifetimeTeExitCode = $teExitCode
         }
         else
         {
-            & ./run.cmd
+            # Keep te.exe's output (still streamed to the pipeline): if te.exe exits before it finishes writing
+            # te.wtl, Repair-TaefLog takes the missing results from it.
+            & ./run.cmd | Tee-Object -FilePath $script:teConsoleLog
+            $teExitCode = $LASTEXITCODE
         }
     }
     finally
     {
         Remove-Item -LiteralPath ".\run.cmd" -Force
     }
+
+    Write-Host ("te.exe exited with code {0} (0x{0:X8})." -f $teExitCode)
+
+    if (-not $isLifetimeStress)
+    {
+        Repair-TaefLog -runName $runName -teExitCode $teExitCode -preRunDumps $preRunDumps
+    }
 }
 
-function Get-LifetimeDumpFiles
+function Get-CrashDumpFiles
 {
     # Crash dumps currently in the shared per-slice dump folder ($env:HELIX_DUMP_FOLDER).
     if ($env:HELIX_DUMP_FOLDER -and (Test-Path $env:HELIX_DUMP_FOLDER))
@@ -190,6 +207,140 @@ function Get-LifetimeDumpFiles
         return @(Get-ChildItem -Path $env:HELIX_DUMP_FOLDER -Filter *.dmp -ErrorAction SilentlyContinue)
     }
     return @()
+}
+
+function Move-TaefCrashDumps
+{
+    # Move te.exe crash dumps written during this run into the work item's upload folder, so they're uploaded with
+    # its logs even if later work items fill the shared dump folder.
+    param ([string[]] $preRunDumps)
+
+    $movedDumps = @()
+    $newDumps = @(Get-CrashDumpFiles | Where-Object { ($_.Name -like 'te.exe.*') -and ($preRunDumps -notcontains $_.FullName) })
+    foreach ($dump in $newDumps)
+    {
+        try
+        {
+            Move-Item -LiteralPath $dump.FullName -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT -Force -ErrorAction Stop
+            $movedDumps += $dump.Name
+        }
+        catch
+        {
+            Write-Host "Could not move crash dump '$($dump.Name)' to the work item's upload folder: $($_.Exception.Message)"
+        }
+    }
+
+    return $movedDumps
+}
+
+function Repair-TaefLog
+{
+    # If te.exe exits before it finishes writing te.wtl, the log can't be read. Rebuild it from the entries te.exe did
+    # write plus the results it printed (see WttLogRecovery in HelixTestHelpers.cs), so the work item still reports
+    # results. Records the run in TaefRuns.json, which RunTestPassSliceOnBuildAgent.ps1 reads if there are no results.
+    param ([string] $runName, [int] $teExitCode, [string[]] $preRunDumps)
+
+    $workItemName = Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf
+    $exitCodeHex = "0x{0:X8}" -f $teExitCode
+    $runRecord = [ordered]@{
+        run                         = $runName
+        teExitCode                  = $teExitCode
+        teExitCodeHex               = $exitCodeHex
+        logState                    = "NotChecked"
+        logReadError                = $null
+        resultsRecoveredFromLog     = 0
+        resultsRecoveredFromConsole = 0
+        inFlightTests               = @()
+        dumps                       = @()
+    }
+
+    $recovery = $null
+    try
+    {
+        $recovery = [HelixTestHelpers.WttLogRecovery]::RecoverIncompleteLog(
+            (Join-Path (Get-Location) "te.wtl"),
+            $script:teConsoleLog,
+            (Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT "te_$runName.incomplete.wtl"))
+        $runRecord.logState = "$($recovery.State)"
+        $runRecord.logReadError = $recovery.ReadError
+        $runRecord.resultsRecoveredFromLog = $recovery.TestsFromLog
+        $runRecord.resultsRecoveredFromConsole = $recovery.TestsFromConsole
+        $runRecord.inFlightTests = @($recovery.InFlightTests)
+    }
+    catch
+    {
+        Write-Host "Could not check te.wtl from te.exe run '$runName': $($_.Exception.Message)"
+    }
+
+    # te.exe's exit code is the number of failed tests, so only a negative code (an NTSTATUS or HRESULT) means it crashed.
+    $logIncomplete = ($null -ne $recovery) -and ($recovery.State -ne [HelixTestHelpers.WttLogState]::Complete)
+    if ($logIncomplete -or ($teExitCode -lt 0))
+    {
+        $runRecord.dumps = @(Move-TaefCrashDumps -preRunDumps $preRunDumps)
+        if ($runRecord.dumps.Count -gt 0)
+        {
+            $dumpText = "Uploaded te.exe crash dump(s) with the work item: $($runRecord.dumps -join ', ')."
+        }
+        else
+        {
+            $dumpText = "No new te.exe crash dump was found in '$($env:HELIX_DUMP_FOLDER)'."
+        }
+
+        $where = "in work item '$workItemName' (te.exe run '$runName')"
+        if (-not $logIncomplete)
+        {
+            Write-Host "##vso[task.logissue type=warning]te.exe exited abnormally (exit code $exitCodeHex) after it finished writing te.wtl, $where. $dumpText"
+        }
+        else
+        {
+            if ($recovery.LogFileExisted)
+            {
+                $logText = "te.wtl is incomplete ($($recovery.ReadError))"
+            }
+            else
+            {
+                $logText = "te.exe didn't create te.wtl"
+            }
+
+            if ($recovery.State -eq [HelixTestHelpers.WttLogState]::Recovered)
+            {
+                $recoveredText = "$($recovery.TestsFromLog) from te.wtl and $($recovery.TestsFromConsole) from te.exe's console output"
+                if ($recovery.InFlightTests.Count -gt 0)
+                {
+                    $inFlightTests = $recovery.InFlightTests -join ', '
+                    $when = "while running $inFlightTests"
+                    if ($recovery.InFlightTests.Count -gt 1)
+                    {
+                        $recoveredText += ", and $inFlightTests are reported as failed"
+                    }
+                    else
+                    {
+                        $recoveredText += ", and $inFlightTests is reported as failed"
+                    }
+                }
+                else
+                {
+                    $when = "after its last test finished"
+                }
+
+                Write-Host "##vso[task.logissue type=warning]te.exe exited abnormally (exit code $exitCodeHex) $when, $where. $logText, so the results were recovered: $recoveredText. $dumpText"
+            }
+            else
+            {
+                Write-Host "te.exe exited abnormally (exit code $exitCodeHex) $where. $logText, and te.exe reported no test results, so there are none to recover. $dumpText"
+            }
+        }
+    }
+
+    $script:taefRuns += [pscustomobject]$runRecord
+    try
+    {
+        ConvertTo-Json -InputObject @($script:taefRuns) -Depth 3 | Out-File -FilePath (Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT "TaefRuns.json") -Encoding utf8
+    }
+    catch
+    {
+        Write-Host "Could not write TaefRuns.json: $($_.Exception.Message)"
+    }
 }
 
 function Report-LifetimeNativeCrash
@@ -216,7 +367,7 @@ function Report-LifetimeNativeCrash
     $inFlight = @($startedScenarios | Where-Object { $completedScenarios -notcontains $_ } | Select-Object -Unique)
 
     # Dumps produced by *this* work item = whatever is new since the pre-run snapshot.
-    $newDumps = @(Get-LifetimeDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
+    $newDumps = @(Get-CrashDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
 
     # Count "REPORT: scenario 'X' threw" lines - native warnings that didn't crash the host, tracked separately.
     # Also count "REPORT: object 'X' was still alive after forced collection" lines - managed leak warnings from
@@ -398,13 +549,16 @@ Write-Host "(Skipping Get-AppxPackge dump to save time)"
 
 .\TestPass-PreRunCore.ps1
 
+# Loaded before the first run because Run-Taef uses it to recover te.wtl if te.exe exits abnormally.
+Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq,System.Runtime.Serialization,System.Runtime.Serialization.Json (Get-Content .\HelixTestHelpers.cs -Raw)
+
 Write-Host "WorkItemTestStartTime: $(Get-Date)"
 
 # Snapshot dumps before the run so new ones can be attributed to a scenario afterwards.
 $preRunLifetimeDumps = @()
 if ($isLifetimeStress)
 {
-    $preRunLifetimeDumps = @(Get-LifetimeDumpFiles | ForEach-Object { $_.FullName })
+    $preRunLifetimeDumps = @(Get-CrashDumpFiles | ForEach-Object { $_.FullName })
 }
 
 # Run the tests:
@@ -417,7 +571,7 @@ if ($isLifetimeStress -and -not (Test-Path .\te.wtl))
     # te.exe crashed without flushing its log; the non-gating handling below emits a synthetic report.
     Write-Host "Lifetime stress: te.wtl was not produced (TAEF host likely crashed on a native lifetime fault)."
 }
-else
+elseif (Test-Path .\te.wtl)
 {
     Move-Item .\te.wtl te_original.wtl -Force
     Copy-Item .\te_original.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
@@ -425,8 +579,6 @@ else
 Copy-Screenshots
 Copy-IfExists .\*.pgc $env:HELIX_WORKITEM_UPLOAD_ROOT
 Copy-MasterFiles
-
-Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq,System.Runtime.Serialization,System.Runtime.Serialization.Json (Get-Content .\HelixTestHelpers.cs -Raw)
 
 $failedTestQuery = $null
 if (Test-Path (Join-Path (Get-Location) "te_original.wtl"))
@@ -442,16 +594,23 @@ if ($failedTestQuery -and $rerunFailed -and -not $isLifetimeStress)
 {
     Write-Host "WorkItemTestRerunStartTime: $(Get-Date)"
 
-    Run-Taef("/select:`"$failedTestQuery`"")
+    Run-Taef -taefAdditionalParams "/select:`"$failedTestQuery`"" -runName "rerun"
 
     Write-Host "WorkItemTestRerunEndTime: $(Get-Date)"
 
-    Move-Item .\te.wtl te_rerun.wtl -Force
-    Copy-Item .\te_rerun.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    if (Test-Path .\te.wtl)
+    {
+        Move-Item .\te.wtl te_rerun.wtl -Force
+        Copy-Item .\te_rerun.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    }
     Copy-Screenshots
     Copy-MasterFiles
 
-    $failedTestQuery = [HelixTestHelpers.FailedTestDetector]::GetFailedTestQuery((Join-Path (Get-Location) "te_rerun.wtl"))
+    # Without a rerun log, the loop below reruns the tests that failed the first time.
+    if (Test-Path (Join-Path (Get-Location) "te_rerun.wtl"))
+    {
+        $failedTestQuery = [HelixTestHelpers.FailedTestDetector]::GetFailedTestQuery((Join-Path (Get-Location) "te_rerun.wtl"))
+    }
     Write-Host "failedTestQuery = $failedTestQuery"
 }
 
@@ -464,9 +623,12 @@ if ($failedTestQuery -and $rerunFailed -and -not $isLifetimeStress)
 {
     Write-Host "WorkItemTestLoopStartTime: $(Get-Date)"
 
-    Run-Taef("/testmode:Loop /Loop:9 /LoopTest:1 /isolationlevel:test /select:`"$failedTestQuery`"")
-    Move-Item .\te.wtl te_rerun_multiple.wtl -Force
-    Copy-Item .\te_rerun_multiple.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    Run-Taef -taefAdditionalParams "/testmode:Loop /Loop:9 /LoopTest:1 /isolationlevel:test /select:`"$failedTestQuery`"" -runName "rerun_multiple"
+    if (Test-Path .\te.wtl)
+    {
+        Move-Item .\te.wtl te_rerun_multiple.wtl -Force
+        Copy-Item .\te_rerun_multiple.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    }
 
     Copy-Screenshots
     Copy-MasterFiles
@@ -495,9 +657,13 @@ if ($isLifetimeStress)
     }
     Set-LifetimeResultsNonGating -resultsPath (Join-Path (Get-Location) "testResults.xml") -testnameprefix $testnameprefix
 }
-else
+elseif (Test-Path .\te_original.wtl)
 {
     .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl te_rerun_more.wtl testResults.xml $testnameprefix
+}
+else
+{
+    Write-Host "There's no readable te_original.wtl, so this work item has no test results."
 }
 
 Copy-Item .\*_subresults.json $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
@@ -505,11 +671,14 @@ Copy-Item .\*_subresults.json $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
 .\TestPass-PostRunCore.ps1
 
 # Display testResults.xml
-Get-Content .\testResults.xml
+if (Test-Path .\testResults.xml)
+{
+    Get-Content .\testResults.xml
+}
 
 if ((Join-Path $workingDir "") -ne (Join-Path $env:HELIX_CORRELATION_PAYLOAD ""))
 {
-    Copy-Item .\testResults.xml $workingDir -Force
+    Copy-IfExists .\testResults.xml $workingDir
 }
 
 cd $workingDir

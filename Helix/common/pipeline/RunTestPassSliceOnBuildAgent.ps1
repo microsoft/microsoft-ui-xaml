@@ -111,8 +111,46 @@ function Move-CrashDumpsToUploadRoot
     $files = @($lifetimeDumps + $otherDumps) | Select-Object -First 10
     foreach($file in $files)
     {
-        Move-Item $file.FullName $uploadRoot -Force
+        # This runs in a finally block: a dump that can't be moved mustn't hide the original error or the other dumps.
+        try
+        {
+            Move-Item $file.FullName $uploadRoot -Force
+            Write-Host "Uploading crash dump $($file.Name)"
+        }
+        catch
+        {
+            Write-Host "Could not upload crash dump '$($file.Name)': $($_.Exception.Message)"
+        }
     }
+}
+
+function Get-MissingResultsReason
+{
+    # Explains why a work item has no testResults.xml, from the te.exe runs that RunHelixWorkItem.ps1 records.
+    param([String]$WorkItemUploadRoot)
+
+    $runsPath = Join-Path $WorkItemUploadRoot "TaefRuns.json"
+    if (-not (Test-Path -LiteralPath $runsPath))
+    {
+        return "the work item stopped before te.exe finished its first run. See the work item's output above."
+    }
+
+    try
+    {
+        $runs = Get-Content -LiteralPath $runsPath -Raw | ConvertFrom-Json
+        $firstRun = @($runs)[0]
+    }
+    catch
+    {
+        return "TaefRuns.json couldn't be read ($($_.Exception.Message)). See the work item's output above."
+    }
+
+    if ($firstRun.logState -eq 'Unrecoverable')
+    {
+        return "te.exe exited abnormally (exit code $($firstRun.teExitCodeHex)) before reporting any test results, so there were none to recover. te.wtl: $($firstRun.logReadError)"
+    }
+
+    return "te.exe exited with code $($firstRun.teExitCodeHex) and te.wtl was $($firstRun.logState), but its results couldn't be converted to testResults.xml. See the work item's output above."
 }
 
 try
@@ -174,6 +212,7 @@ try
         }
     }
 
+    $workItemsWithoutResults = @()
     foreach($workItem in $workItemsToRun)
     {
         $command = $workItem.Command
@@ -208,16 +247,25 @@ try
 
         if(!$SkipCopyTestResultsXml)
         {
-            if (!(Test-Path ".\testResults.xml"))
+            if (Test-Path ".\testResults.xml")
             {
-                # We expect the work item to produce a 'testResults.xml' file. If it didn't, something bad happened.
-                Throw "Expected testResults.xml to be found. Something unexpected happened."
+                Move-Item .\testResults.xml $resultsFileName
             }
-
-            Move-Item .\testResults.xml $resultsFileName
+            else
+            {
+                # Report it and carry on with the rest of the slice; the step fails after every work item has run.
+                $reason = Get-MissingResultsReason -WorkItemUploadRoot $workItemUploadRoot
+                Write-Host "##vso[task.logissue type=error]Work item '$workItemName' produced no test results: $reason"
+                $workItemsWithoutResults += $workItemName
+            }
         }
 
         Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
+    }
+
+    if ($workItemsWithoutResults.Count -gt 0)
+    {
+        Throw "$($workItemsWithoutResults.Count) work item(s) produced no test results: $($workItemsWithoutResults -join ', '). The errors above say why."
     }
 }
 finally
