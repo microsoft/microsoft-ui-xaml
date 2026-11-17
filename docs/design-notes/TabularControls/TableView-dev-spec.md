@@ -33,19 +33,20 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 # Architectural overview
 
-`TableView` owns columns, row realization, the header band, scroll sync, frozen columns, sort, selection, keyboard navigation and the UIA root. Data shaping lives in a separate stack:
+`TableView` owns columns, row realization, the header band, scroll sync, frozen columns, sort, selection, keyboard navigation and the UIA root. Data shaping has one engine, the framework `CollectionViewSource` view; TableView only turns the view's items into rows:
 
 ```text
 TableView / RowMetadataProvider                    consume visible rows and metadata
     ↑
-GroupedSourceAdapter / HierarchicalSourceAdapter   publish the flat visible projection
+GroupedSourceAdapter / HierarchicalSourceAdapter   publish the flat visible projection (grouped or tree rows)
     ↑
-ShapedItemsSource                                  observes the source; builds shape and indexes
+TableViewRowProjection (internal)                  picks flat, grouped or tree rows over the view
     ↑
-TableViewShapingSource (internal)                  facade TableView drives: header sort, key paths
+ICollectionView                                    sorts, filters and groups (an internal CollectionViewSource
+                                                   over a plain collection, or the app's view)
 ```
 
-Arrows show data flow, not ownership: `TableView` holds an internal, non-projected `TableViewShapingSource`, which owns a `ShapedItemsSource`, which creates the adapter for the active shape. `TabularShaping` (`ShapingPipeline`, `RowExpansionModel`, `ParentKeyIndex`, `SortDirection`) provides the headless algorithms used below `TableView` and has no dependency on the control; the adapters depend only on it. Every `ItemsSource` is wrapped in one internally, so header sorting works over any supported collection and `ItemKeyPath` / `ParentKeyPath` can nest the rows. The exception is an `ICollectionView`, which owns its shape: it is wrapped the same way, but `TableViewCollectionViewGroups` declares a grouping that maps each item to its `ICollectionViewGroup` when `CollectionGroups` is non-null, and control-initiated sorts write the view's `SortDescriptions` through `ICollectionViewShaping` (or stop after raising `Sorting` for any other view). There is no public shaping type: apps shape data with `CollectionViewSource` (the public `TableViewSource` was removed).
+Arrows show data flow, not ownership. Like WPF's `ItemsControl`, `TableView` shows every `ItemsSource` through a view: an `ICollectionView` is used as it is, and any other collection is wrapped in an internal `CollectionViewSource` whose `View` `TableView` shows. Header sorts write the column's sort to the view's `ICollectionViewShaping` (`SortDescriptions`, or `CustomSort` for a `CustomSortComparer` column); a view without it (an app's own view, an `IsSourceGrouped` view) gets `Sorting` only and sorts itself. Flat rows are the view itself, so its fine-grained changes reach the repeater; `TableViewCollectionViewGroups` wraps a grouped view's `CollectionGroups` for `GroupedSourceAdapter`; `ItemKeyPath` / `ParentKeyPath` nest the view's items through `ParentKeyIndex` and `HierarchicalSourceAdapter`. `TabularShaping` (`RowExpansionModel`, value keys, the group contract, `SortDirection`) has no dependency on the control. There is no public shaping type: apps shape data with `CollectionViewSource` (the public `TableViewSource` was removed). See [CollectionViewSource shaping, "One engine"](../CollectionViewSourceShaping-POC.md#one-engine-every-itemssource-goes-through-a-view).
 
 ## Key public components
 
@@ -70,17 +71,15 @@ The full surface, including event args and enums, is in `TableView.idl` and `Tab
 | `TableViewCell` | Cell wrapper: a single-child `Grid` (`Border` is sealed) whose `Tag` is the column. The cell's keyboard and UIA focus target. |
 | `TableViewRowTemplateSelector` | `[MUX_INTERNAL]`. Picks the row or group-header template, so `ItemsRepeater` keeps one recycle pool per kind. |
 | `TableViewRowInfo`, `RowMetadataProvider` | Row kind, level and position metadata, and the row and group identity contract. |
-| `SortMemberPathResolver` | One binding-based path evaluator for both sort front-ends, so a path that displays also sorts. |
+| `SortMemberPathResolver` | Binding-based path evaluator that reads `ItemKeyPath` / `ParentKeyPath`, so a key path resolves like a cell binding. |
 | `GridCoordinateHelper` | Row/column ↔ index math for keyboard navigation. Not projected. |
 | `TableView_ContextMenu.cpp`, `TableViewToolTipHelpers.h` | Context-flyout resolution and cell tooltips. |
-| `TableViewCollectionViewGroups` | Projects an `ICollectionView`'s `CollectionGroups` through the internal grouping: item → owning group (map validated by slot, rebuilt on a miss) and group identity by key value; regroups on `CollectionGroups` changes. |
-| `TableViewShapingSource` | Non-projected facade over `ShapedItemsSource` that `TableView` creates for every `ItemsSource` (formerly the public `TableViewSource`): header sort on plain collections, `ItemKeyPath` / `ParentKeyPath`, and the `ICollectionView` group mapping. |
+| `TableViewCollectionViewGroups` | Wraps an `ICollectionView`'s `CollectionGroups` (`ShapedGroup` over each group's own `GroupItems`) with a group identity by key value, following `CollectionGroups` changes; maps an item to its group for a grouped tree. |
+| `TableViewRowProjection` | Non-projected row generator over the view `TableView` shows: flat rows (the view itself), grouped rows, or tree rows (`ItemKeyPath` / `ParentKeyPath`). Never sorts, filters or groups. |
 | `ResizeGripper` | Framework-internal drag primitive (see [Column resize](#column-resize)). |
-| `ShapedItemsSource` | Live projection: rows, group buckets (`ShapedGroup`), identity index (`RowIdentity`), item subscriptions (`LiveShapingTracker`). |
 | `GroupedSourceAdapter`, `HierarchicalSourceAdapter` | Materialize groups or a tree into one flat row list. |
-| `ShapingPipeline` | The ordered sort, filter and group verbs a caller declared. |
 | `RowExpansionModel` | Expand/collapse intent for groups and tree nodes. |
-| `ParentKeyIndex` | Validated, immutable tree over the unfiltered source for the parent-key relation (`ItemKeyPath` / `ParentKeyPath`). |
+| `ParentKeyIndex` | Validated, immutable tree over the view's items for the parent-key relation (`ItemKeyPath` / `ParentKeyPath`); lives next to `HierarchicalSourceAdapter`. |
 
 ## Visual tree
 
@@ -199,15 +198,15 @@ On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **
 
 ## Shaping: sort, filter, group and hierarchy
 
-Shaping is declared on the **data**, never on the control: apps sort, filter and group with `CollectionViewSource` and bind its `View`; `TableView` renders what the view publishes. For a plain collection, `TableView` sorts from the column headers through its internal `TableViewShapingSource`. Hierarchy is the exception: `ItemKeyPath` / `ParentKeyPath` on `TableView` declare it, over either kind of source.
+Shaping is declared on the **data**, never on the control: apps sort, filter and group with `CollectionViewSource` and bind its `View`; `TableView` renders what the view publishes. A plain collection is shown through an internal `CollectionViewSource` view, so the column headers sort it through that view; the collection itself is never reordered. Hierarchy is the exception: `ItemKeyPath` / `ParentKeyPath` on `TableView` declare it, over either kind of source.
 
-**Row identity** is the item's object identity (under a parent-key relation, its node key). Selection, and `Tab` re-entry into the body from outside the table, follow the item across a reshape. Focus already in the body stays at its row index (see [Keyboard navigation](#keyboard-navigation)). With no shaping in force, a null item or one object on two rows still displays, but control sorts return `false`; with a relation in force, the same data throws `E_INVALIDARG`.
+**Row identity** is the item's object identity (under a parent-key relation, its node key). Selection, and `Tab` re-entry into the body from outside the table, follow the item across a reshape. Focus already in the body stays at its row index (see [Keyboard navigation](#keyboard-navigation)). A null item or one object on two rows displays and sorts (a null item has a null key, which sorts first); with a relation in force, the same data throws `E_INVALIDARG`.
 
 **One sort axis in force.**
 
 - `TableView.SortByColumn`, `ToggleSortDirection` and header clicks declare the control's axis, keyed on column identity so columns sharing a `SortMemberPath` stay separate. The column's `SortDirection` draws the chevron. It is settable but display only: an app write moves the chevron (clearing it on other columns) and never reshapes.
-- Over a `CollectionViewSource` view, a control sort replaces the view's `SortDescriptions` with the column's path, and an app change to `SortDescriptions` lights the column whose path matches the primary level (`ReconcileSortStateWithCollectionView`). A `CustomSortComparer` column cannot sort a view. A `SortDirection` preset in XAML or before attach is applied when the column joins `Columns` (last added wins).
-- Over a plain collection the control's axis is the only sort.
+- A control sort replaces the view's `SortDescriptions` with the column's path (the internal view over a plain collection, or a `CollectionViewSource` view), and an app change to `SortDescriptions` lights the column whose path matches the primary level (`ReconcileSortStateWithSource`). A `CustomSortComparer` column sorts the view through its `CustomSort`. A `SortDirection` preset in XAML or before attach is applied when the column joins `Columns` (last added wins).
+- A view without `ICollectionViewShaping` is not sorted by the control: `Sorting` is raised and the app sorts.
 
 Group order follows the view. Filtering runs first, and an emptied group disappears. `Refresh()` on the view reshapes on demand.
 
@@ -217,9 +216,9 @@ Group order follows the view. Filtering runs first, and an emptied group disappe
 
 **Toggle.** The whole group band is the toggle target. Re-publishing destroys the realized header, so `TableView` queues the expansion by identity with a generation stamp, and restores focus by identity so a collapse does not drop focus to the top. A header's `Content` is a `TableViewGroupInfo` updated in place.
 
-**Hierarchy.** `ItemKeyPath` / `ParentKeyPath` declare the internal parent-key relation (`TableViewShapingSource::MakePathKeySelector` reads each path through a binding probe), which builds a `ParentKeyIndex`. Rows start collapsed, sort applies per sibling set (over a view, siblings keep the view's order), and grouping buckets the roots. Over a view the view's filter runs first, so a match whose parent is filtered out is a root. See the [hierarchy design](Hierarchical-Data-Rows-Parent-Key-Design.md).
+**Hierarchy.** `ItemKeyPath` / `ParentKeyPath` declare the parent-key relation (`SortMemberPathResolver` reads each path through a binding probe); `TableViewRowProjection` builds a `ParentKeyIndex` over the view's items. Rows start collapsed, sort applies per sibling set (over a view, siblings keep the view's order), and grouping buckets the roots. Over a view the view's filter runs first, so a match whose parent is filtered out is a root. See the [hierarchy design](Hierarchical-Data-Rows-Parent-Key-Design.md).
 
-**Live shaping.** None in V1: the engine supports it, but no public switch reaches it now that `TableViewSource.IsLiveShaping` is removed. Keys are read on a reshape (`Refresh()` on the view or a collection change). Collection changes must be raised on the UI thread.
+**Live shaping.** None in V1, and none in the view yet (a follow-up for `CollectionViewSource`). Keys are read on a reshape (`Refresh()` on the view or a collection change). Collection changes must be raised on the UI thread.
 
 ## Selection
 
@@ -382,8 +381,8 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
   app fault under that deferred operation (sort, group expansion or hierarchy expansion). A header `Style`'s
   `ContentTemplateSelector` that throws is reported the same way under the header refresh, and the header falls back to its text.
 - The exception carries the blame. Each call into app code rethrows the app's exception tagged with the category,
-  as a `CallerError` with the same HRESULT and error info (running out of memory stays a `std::bad_alloc`), and the
-  shaping engine throws the app's collection and contract failures the same way; the catch that decides an outcome
+  as a `CallerError` with the same HRESULT and error info (running out of memory stays a `std::bad_alloc`), and
+  reading the app's collection throws its failures the same way; the catch that decides an outcome
   reads the type. A swallowed app exception, or another exception with the same HRESULT, is never blamed on the app.
   `SelectionModel` calls TableView back across the ABI, which keeps an exception's error object but not its C++
   type, so the call into `SelectionModel` tags the exception again when its error object is the one that left

@@ -4,9 +4,15 @@ Status: **implemented** (decisions in §13).
 
 > **Public surface changed.** The public `TableViewSource` is removed (data shaping is
 > `CollectionViewSource`). The relation is now declared with `TableView.ItemKeyPath` and
-> `ParentKeyPath` (property paths), which drive the internal `ParentBy` of the engine described
-> here (`TableViewShapingSource` → `ShapedItemsSource`). Selector-based `ParentBy`, `ClearParentBy`
-> and `IsLiveShaping` below are internal engine verbs, no longer public API.
+> `ParentKeyPath` (property paths).
+>
+> **Engine retired.** TableView's own shaping engine (`TableViewShapingSource` → `ShapedItemsSource`,
+> the layer 2 below) is deleted: every `ItemsSource` is shown through a `CollectionViewSource` view,
+> which sorts, filters and groups. `TableViewRowProjection` builds the `ParentKeyIndex` over the view's
+> items (in the view's order, after its filter) and hands it to `HierarchicalSourceAdapter`; under a
+> grouped view it buckets the roots by the view's groups. The index, the adapter and the expansion
+> model below are unchanged; the sections on the engine's filter, sort, live shaping and incremental
+> paths describe the retired design. See [CollectionViewSource shaping, "One engine"](../CollectionViewSourceShaping-POC.md#one-engine-every-itemssource-goes-through-a-view).
 
 ## 1. Motivation
 

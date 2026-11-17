@@ -258,10 +258,14 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
 - **Row updates.** A source add, remove or replace on a flat shaped view reaches TableView as a fine-grained vector
   change, so selection and realized rows follow the item (Task Manager's periodic edits no longer tear the table
   down). Grouped views still `Reset`; TableView keeps expansion and selection across it by key and identity.
-- **Plain `ICollectionView`.** A view without `ICollectionViewShaping` keeps today's contract: the header click raises
-  `Sorting` only, and the app sorts the view. A descriptor-less CVS `View` over a vector is not such a view: it is
-  shapeable, so `table.ItemsSource = new CollectionViewSource { Source = items }.View` header-sorts with no opt-in,
-  and the table keeps that `View` when the sort starts. An `IsSourceGrouped` CVS view still raises `Sorting` only.
+- **Plain collection.** TableView wraps it in an internal `CollectionViewSource` and shows that `View` (see "One
+  engine" below), so a header click on a plain collection takes exactly the path above.
+- **`ICollectionView` without `ICollectionViewShaping`.** An app's own view (for example the Toolkit's
+  `AdvancedCollectionView`) or an `IsSourceGrouped` CVS view is not wrapped. The header click raises `Sorting` only,
+  and the app sorts the view; TableView neither reorders the rows nor lights the arrow, as WPF's `DataGrid` sorts only
+  a view that `CanSort`. A descriptor-less CVS `View` over a vector is not such a view: it is shapeable, so
+  `table.ItemsSource = new CollectionViewSource { Source = items }.View` header-sorts with no opt-in, and the table
+  keeps that `View` when the sort starts.
 - **Group identity.** A CVS recomputes its group objects on every `Refresh` or source change, so TableView keys a
   group by its key **value** (the group's `Key` property, else `ICollectionViewGroup.Group`; scalars compare by type
   and value), not by the group object's address. Expansion state therefore survives a recompute: a collapsed group
@@ -274,8 +278,8 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
 
 The public `TableViewSource` (and its `TableViewPredicate`, `TableViewKeySelector` and
 `TableViewGroupIdentitySelector` delegates) is removed. Apps shape data with `CollectionViewSource` and hand
-TableView its `View`. A plain collection is still sorted by TableView itself on a header click, through the internal
-engine below.
+TableView its `View`. A plain collection is wrapped in a `CollectionViewSource` of TableView's own, so it is sorted by
+the same view code on a header click (see "One engine").
 
 ### Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)
 
@@ -284,9 +288,8 @@ sibling set and grouping buckets roots only, and `ICollectionViewGroup` has no n
 expandable Apps rows need it.
 
 For V1 the relation is declared on TableView with two string property paths, `ItemKeyPath` and `ParentKeyPath`
-(preview, like the rest of TableView). They drive the internal engine's parent-key relation over whatever
-`ItemsSource` is: a plain collection, or a CVS `View`. Over a view the CVS filter, sort and grouping run first, then
-the rows are nested:
+(preview, like the rest of TableView). TableView nests the items of the view it shows: the internal view over a plain
+collection, or the app's CVS `View`. The view's filter, sort and grouping run first, then the rows are nested:
 
 - Siblings keep the view's order, so `SortDescriptions` sorts each sibling set.
 - The CVS filter runs before nesting: a match whose parent is filtered out is shown as an orphan root (the former
@@ -297,17 +300,82 @@ the rows are nested:
 Hierarchy on CVS itself (a `HierarchyDescription`, or option (b)) is future work; if it is approved, the relation
 moves from TableView into the view and `ItemKeyPath` / `ParentKeyPath` become a shorthand for it.
 
-### Internal components after TableViewSource removal
+### One engine: every ItemsSource goes through a view
+
+TableView has one data-shaping engine: the framework `CollectionViewSource` view. Like WPF, where every
+`ItemsControl` shows its `ItemsSource` through a view, TableView routes every `ItemsSource` through an
+`ICollectionView`, and only the view sorts, filters and groups.
+
+| `ItemsSource` | View TableView shows | Header sort |
+|---|---|---|
+| Plain collection (`IVector`, `IBindableVector`, `ObservableCollection<T>`, `List<T>`) | An internal `CollectionViewSource { Source = list }.View`. An enumerable-only source is read once into a vector first. | Writes the view's `SortDescriptions`, or its `CustomSort` for a `CustomSortComparer` column, under one `DeferRefresh`. |
+| `cvs.View` (answers `ICollectionViewShaping`) | That view, unwrapped. | The same, on the app's view: the sort is the view's, and the app sees it in `cvs.SortDescriptions`. |
+| `ICollectionView` without `ICollectionViewShaping` (an app's own view, an `IsSourceGrouped` view) | That view, unwrapped. | Raises `Sorting` only. The app sorts the view; TableView does not reorder the rows or light the arrow. |
+
+The rows come from the view as follows (`TableViewRowProjection`, TableView's row generator, like WPF's
+`ItemContainerGenerator`; it never sorts, filters or groups):
+
+- **Flat view:** the repeater is bound to the view itself, so a flat view's fine-grained `Add` / `Remove` / `Replace`
+  reach the rows unchanged. After a header sort on a plain `ObservableCollection`, an `Add` arrives as one `Add` at
+  its sorted position, not a `Reset`.
+- **Grouped view** (`CollectionGroups` is not null): `TableViewCollectionViewGroups` wraps each view group (its
+  `GroupItems` as they are) and `GroupedSourceAdapter` turns them into header and data rows. Expansion is keyed by the
+  group's key value.
+- **Tree** (`ItemKeyPath` / `ParentKeyPath`): the view's items, in the view's order, are indexed by key and parent key
+  (`ParentKeyIndex`, next to `HierarchicalSourceAdapter`) and nested by `HierarchicalSourceAdapter`; under a grouped
+  view each root is placed in the group that holds it. The tree is rebuilt when the view changes.
+
+Row identity is the item's COM identity. A header sort keeps the selection on its item (the selected item is found
+again after the view reorders) and restores body focus; `Sorting` / `Sorted`, the arrow reconcile and
+`TableViewGroupInfo` / `ExpandGroup` / `CollapseGroup` work as before. A `GroupExpanding` handler that changes the
+source runs inside the view's `DeferRefresh`, so the view regroups once, after the expansion.
+
+#### Internal components
 
 None of these are in public IDL or the XAML metadata provider.
 
-| Component | Role | V1 | End state |
-|---|---|---|---|
-| `ShapedItemsSource` | Engine: sort, filter, group and live shaping for plain collections, plus the parent-key hierarchy. | Internal, unchanged. | Sort, filter and group retire once CVS has live shaping, comparer sort and incremental updates; TableView then wraps a plain list in an internal CVS. |
-| `TableViewShapingSource` (was `TableViewSource`) | Non-projected facade TableView creates over `ShapedItemsSource` for every `ItemsSource`; header sort on plain collections and `ItemKeyPath` / `ParentKeyPath` go through it. | Internal. | Shrinks with the engine to the hierarchy facade. |
-| `GroupedSourceAdapter` | Flattens groups into header and data rows for the repeater. | Internal, unchanged. | Stays: TableView's presentation layer over `ICollectionView.CollectionGroups`. |
-| `HierarchicalSourceAdapter` | Flattens the tree and tracks row expansion. | Internal, unchanged. | Stays in TableView (`ItemKeyPath` / `ParentKeyPath`), or moves into CVS if hierarchy on CVS is approved. |
-| `TableViewCollectionViewGroups` | Maps CVS `CollectionGroups` to the group contract the adapters read. | Internal, unchanged. | Stays while CVS groups feed the adapters. |
+| Component | Role |
+|---|---|
+| `CollectionViewSource` / `ICollectionViewShaping` (framework) | The one engine: sort, filter, group, `CustomSort`, `DeferRefresh`, incremental flat updates. |
+| `TableViewRowProjection` | Chooses flat, grouped or tree rows over the view and owns the adapters below. No shaping. |
+| `GroupedSourceAdapter` | Flattens groups into header and data rows; owns group expansion state. |
+| `HierarchicalSourceAdapter` + `ParentKeyIndex` | Builds the key / parent-key index of the view's items, flattens the tree and owns row expansion state. |
+| `TableViewCollectionViewGroups` | Wraps the view's `CollectionGroups` in the group contract `GroupedSourceAdapter` reads, keyed by key value. |
+| `RowMetadataProvider` | Per-row kind, level, identity and expansion for grouped and tree rows. |
+
+Retired: `ShapedItemsSource` (TableView's own sort, filter, group and live-shaping engine, with `RowIdentity`,
+`LiveShapingTracker` and `ShapingPipeline`), the `TableViewShapingSource` facade over it, and the comparer rank
+adapter TableView used to sort a `CustomSortComparer` column. `ShapedGroup` moved next to `GroupedSourceAdapter` and
+`ParentKeyIndex` next to `HierarchicalSourceAdapter`.
+
+#### Behavior changes from the retired engine
+
+- A list that holds one object twice, or a `null` item, now sorts (a `null` item has a `null` key, which sorts first).
+  The engine refused such a sort.
+- Values compare as the view compares them (`CompareStringEx` with the user locale; numbers, `DateTime`, `TimeSpan`
+  and `Boolean` by value; anything else equal). The engine's comparer also ordered enums and fell back to `ToString`.
+- An edit to a sorted row's sort key is not tracked: the row moves on `Refresh()` (or a source `Reset`), as with any
+  CVS view. The engine marked such a row and re-placed it on the next collection change.
+- An item of an app's grouped view that no group holds is not shown (the engine showed it in an unnamed group).
+
+#### Dependency on the experimental CVS shaping API
+
+TableView V1 requires the CVS shaping API. Its own header sort on a plain collection works only because the internal
+view answers `ICollectionViewShaping`. That API is `Feature_ExperimentalApi`, which is compiled in for prerelease
+builds (`MUX_PRERELEASE`, the default for dev and test builds, so every test configuration has it) and compiled out
+of final-release builds. Today only the CVS members are gated (`ICollectionViewSourceFeature_ExperimentalApi`); a
+CVS's `View` answers `ICollectionViewShaping` in every configuration, so TableView sorts either way. If the view
+interface is gated too, or the API does not ship, a header click on a plain collection degrades to raising `Sorting`
+only. TableView and the CVS shaping API therefore have to leave experimental together.
+
+#### Follow-ups (not in this change)
+
+- Live shaping in CVS (re-sort, re-filter, re-group on an item's property change).
+- Incremental updates for grouped views (they `Reset` today).
+- Group sort order (groups follow their first item).
+- Hierarchy plus filter: keep the ancestors of a match (the view filters before the tree is built, so a match whose
+  parent is filtered out is shown as a root; `ParentKeyIndex` and `HierarchicalSourceAdapter` keep their filter
+  overlay for this).
 
 ## Out of scope for the POC
 
@@ -419,6 +487,14 @@ The capabilities added after the first POC each have a test in the same class:
   `SortDescriptions` and the `View` stays the same object.
 - `VerifyIncrementalShapingCollectionViewChangesUpdateRows`: add, remove and replace on a sorted, filtered view reach
   the rows with no `Reset`, and the selection stays on its item.
+- `VerifyHeaderSortOnPlainCollectionSortsThroughInternalView`: a header click on a plain `ObservableCollection`
+  sorts the rows, leaves the collection's order alone, and a later add and remove arrive as one `Add` and one
+  `Remove` at their sorted positions.
+- `VerifyHeaderSortOnAppCollectionViewRaisesSortingWithoutReordering`: an app's own `ICollectionView` gets `Sorting`
+  and keeps its order and an unlit arrow.
+- `VerifySelectionFollowsItemAcrossHeaderSort`: the selection follows its item through a sort and a clear.
+- `TableView_Hierarchy_APITests`: `VerifyHeaderSortOnPlainListTreeKeepsListOrder` and
+  `VerifyHeaderSortOnCollectionViewTreeSortsTheView` sort a tree over a plain list and over `cvs.View`.
 
 ## Effort to productize
 
@@ -435,5 +511,5 @@ These are rough estimates for one engineer who knows dxaml.
 | API review, docs, perf and back-compat tests | 1–2 weeks |
 | **Total** | **≈ 5–8.5 engineer-weeks** |
 
-Porting the existing TableView shaping engine (identity-preserving reshapes, coalesced live shaping) into dxaml
-instead of extending this POC is the main lever on the upper half of that range.
+TableView's own shaping engine is retired (see "One engine"); live shaping and grouped incremental updates are now
+needed in the CVS view itself.
