@@ -13,6 +13,8 @@ The IDLs are the source of truth for shape. Behaviour in this document is the im
 
 TableView and TableViewSource are preview API. This review checks whether the proposed surface is ready to stabilize: whether it is complete for the core scenarios, consistent with WinUI conventions, and has precise contracts. Preview-only breaking changes are cheap now and impossible after stabilization, so this PR makes them now.
 
+**What TableView is.** A ListView with real columns: it renders and navigates tabular data and does not shape or edit it as a DataGrid would. Shaping is declared on `TableViewSource` (the data layer) and only rendered by the control; nested rows are rendered without a depth limit, and building the tree (`ParentBy`) is a data-layer verb. Edit transactions, validation UI, add/delete rows, cell selection, clipboard/export, filter UI, aggregates, and row headers/details are non-goals. "Core scenarios" means the goals in [API spec: Definition and scope](../../api-specs/TableView/TableView-spec.md#definition-and-scope), which also holds the control-choice table and the bar for adding features.
+
 **In scope:** every public type in the three IDLs and the two Tabular DLL types. **Out of scope:** the framework-internal primitives `ResizeGripper` and `SortIndicator` (in `Microsoft.UI.Private.Controls`), the `[MUX_INTERNAL]` `TableViewRowTemplateSelector`, and the implicit template/theme-key surface (see §2.9 and §6).
 
 ### 1.1 Changes in this PR vs `main`
@@ -231,7 +233,9 @@ Rationale: the V1 scenarios (Task Manager, File Explorer details view, File prop
 
 ## 3. Parity
 
-Classification: **P** = parity, **I** = intentional difference (§4), **G** = gap (§6). Precedent abbreviations: WinUI = this repo; WPF = `DataGrid` + `ICollectionView`/`CollectionViewSource`; WCT = Windows Community Toolkit `DataGrid` / `AdvancedCollectionView` (ACV); 3P = WinUI.TableView (w-ahmad), Syncfusion `SfDataGrid`, Telerik `RadDataGrid`, DevExpress; Other = AG Grid, TanStack, MUI X, Qt, Swing, JavaFX, Apple. "(unv.)" = not verified in the precedent research. Sources: §3.8.
+The precedents below are mostly DataGrids, and TableView is not one (§1). A missing DataGrid capability is not a backlog item: it is either an intentional non-goal or a presentation feature that waits for a named customer and must meet the bar for adding features.
+
+Classification: **P** = parity, **I** = intentional difference (§4), **D** = deferred, added only when a named scenario meets the bar (§6), **N** = non-goal (DataGrid territory; see [Definition and scope](../../api-specs/TableView/TableView-spec.md#non-goals-datagrid-territory)). Precedent abbreviations: WinUI = this repo; WPF = `DataGrid` + `ICollectionView`/`CollectionViewSource`; WCT = Windows Community Toolkit `DataGrid` / `AdvancedCollectionView` (ACV); 3P = WinUI.TableView (w-ahmad), Syncfusion `SfDataGrid`, Telerik `RadDataGrid`, DevExpress; Other = AG Grid, TanStack, MUI X, Qt, Swing, JavaFX, Apple. "(unv.)" = not verified in the precedent research. Sources: §3.8.
 
 ### 3.1 Data and shaping
 
@@ -241,31 +245,31 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Declaration style | Fluent, mutating, code-only delegates | WPF/ACV: mutable properties/collections, not fluent. LINQ: fluent, immutable. No WinUI IDL returns `this`. | I |
 | Filter | One predicate; replaces | WPF `ICollectionView.Filter`, ACV `Filter`, DevExpress `FilterCriteria` replace. WPF `CollectionViewSource.Filter` event, Swing `andFilter`, MUI `logicOperator`, Syncfusion `FilterPredicates` combine. | P (WPF) |
 | Multi-level sort | `Sort` replaces, `ThenSort` appends | LINQ `OrderBy`/`ThenBy`. WPF/ACV `SortDescriptions`, AG Grid `sortIndex`, TanStack `SortingState[]`, Swing `SortKey` list, `NSSortDescriptor[]`, w-ahmad `SortDescriptions`. | P (LINQ); descriptor list I |
-| Group order | `SortGroups(None)`: by first item in the item-sorted sequence; `SortGroups(Asc/Desc)`: by key | WPF `ListCollectionView` without group sort descriptions orders groups by first item; WPF `GroupDescription.SortDescriptions`/`CustomSort`; w-ahmad `GroupDescription.SortMode`/`Direction`; Telerik `GroupDescriptor.SortOrder`; AG Grid orders by the grouped column's sort. | P (separate declaration); by-count or custom group order G |
+| Group order | `SortGroups(None)`: by first item in the item-sorted sequence; `SortGroups(Asc/Desc)`: by key | WPF `ListCollectionView` without group sort descriptions orders groups by first item; WPF `GroupDescription.SortDescriptions`/`CustomSort`; w-ahmad `GroupDescription.SortMode`/`Direction`; Telerik `GroupDescriptor.SortOrder`; AG Grid orders by the grouped column's sort. | P (separate declaration); by-count or custom group order D |
 | Refresh / batching | `Refresh()`, `IClosable DeferRefresh()` | WPF `Refresh`/`DeferRefresh` (`IDisposable`), ACV `DeferRefresh`; Syncfusion `BeginInit`/`EndInit`; DevExpress `BeginDataUpdate`; w-ahmad `RefreshSorting`/`RefreshFilter`/`RefreshGrouping`; AG Grid transactions; Qt `invalidate()`. No WinUI IDL has a defer API. | P (WPF) |
-| Live shaping | One `IsLiveShaping`, default off | WPF `IsLiveSorting/Filtering/Grouping` + property lists; Qt `dynamicSortFilter` (default on); Swing `sortsOnUpdates` (default off); JavaFX needs an extractor. | I (single switch); property scoping G |
-| Read back source | `Source` (get-only) | WPF `CollectionViewSource.Source` (settable). | P; settable G |
-| Read back declared state | none | WPF `SortDescriptions`/`Filter`/`GroupDescriptions`, ACV, 3P descriptor collections. | G |
-| Index mapping | `TableView.IndexOf` (projection) | WPF `CollectionView.IndexOf`/`GetItemAt`/`Count`; ACV `IndexOf`; `ItemsSourceView.IndexOf`; Swing `convertRowIndexToModel/View`; Qt `mapToSource/FromSource`; JavaFX `getSourceIndex`/`getViewIndex`. | P (item→view); view→item, `Count` G |
+| Live shaping | One `IsLiveShaping`, default off | WPF `IsLiveSorting/Filtering/Grouping` + property lists; Qt `dynamicSortFilter` (default on); Swing `sortsOnUpdates` (default off); JavaFX needs an extractor. | I (single switch); property scoping D |
+| Read back source | `Source` (get-only) | WPF `CollectionViewSource.Source` (settable). | P; settable D |
+| Read back declared state | none | WPF `SortDescriptions`/`Filter`/`GroupDescriptions`, ACV, 3P descriptor collections. | D |
+| Index mapping | `TableView.IndexOf` (projection) | WPF `CollectionView.IndexOf`/`GetItemAt`/`Count`; ACV `IndexOf`; `ItemsSourceView.IndexOf`; Swing `convertRowIndexToModel/View`; Qt `mapToSource/FromSource`; JavaFX `getSourceIndex`/`getViewIndex`. | P (item→view); view→item, `Count` D |
 | Tree from flat list | `ParentBy(key, parentKey)` | DevExpress `KeyFieldName`/`ParentFieldName`; AG Grid `treeDataParentIdField`; Syncfusion `SfTreeGrid` (unv.); MUI `getTreeDataPath`. Filter keeps ancestors = AG Grid default. | P |
-| Custom comparer on source | none (column-level `ITableViewSortComparer` only) | WPF `CustomSort`; w-ahmad `SortDescription(path, dir, IComparer)`; Telerik `DelegateSortDescriptor`; AG Grid `comparator`; TanStack `sortingFn`. | G (deferred, §5) |
+| Custom comparer on source | none (column-level `ITableViewSortComparer` only) | WPF `CustomSort`; w-ahmad `SortDescription(path, dir, IComparer)`; Telerik `DelegateSortDescriptor`; AG Grid `comparator`; TanStack `sortingFn`. | D (§5) |
 | Errors in callbacks/data | Synchronous throw; rollback | WPF `ListCollectionView` propagates (inferred from source); ItemsRepeater throws HRESULTs; no framework documents callback-throw behaviour. | P |
 | Sharing a source | Single owner | WPF shares one view across controls; Qt, JavaFX share models; AG Grid row model per grid. | I |
-| Row identity | Object reference | AG Grid/TanStack/MUI `getRowId`. | G |
+| Row identity | Object reference | AG Grid/TanStack/MUI `getRowId`. | D |
 | Thread model | UI-thread affine | WPF view is dispatcher-affine + `EnableCollectionSynchronization`. | P |
 
 ### 3.2 Columns
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Column types | Base column with `DisplayMemberBinding` (read-only text), `TableViewTemplateColumn`, derivable base | WPF `GridViewColumn.DisplayMemberBinding`/`CellTemplate`; WPF/WCT `DataGridTextColumn`, `DataGridTemplateColumn`, plus check-box and combo-box columns (unv.). | P; editable text and more built-ins G |
+| Column types | Base column with `DisplayMemberBinding` (read-only text), `TableViewTemplateColumn`, derivable base | WPF `GridViewColumn.DisplayMemberBinding`/`CellTemplate`; WPF/WCT `DataGridTextColumn`, `DataGridTemplateColumn`, plus check-box and combo-box columns (unv.). | P; editable text and more built-ins D |
 | Cell factory | `GenerateElementCore` | ItemsRepeater `ElementFactory.GetElement`/`GetElementCore`; WPF `GenerateElement`/`GenerateEditingElement` (unv.). | P |
 | Cell refresh hook | `NotifyCellContentChanged()` | WPF `RefreshCellContent` (unv.). | P |
-| Width type | `GridLength` (Pixel/Auto/Star) | WPF `DataGridLength` (adds `SizeToHeader`/`SizeToCells`); WCT `ColumnWidth`. | I; auto-fit G |
+| Width type | `GridLength` (Pixel/Auto/Star) | WPF `DataGridLength` (adds `SizeToHeader`/`SizeToCells`); WCT `ColumnWidth`. | I; auto-fit D |
 | Resize gates | `CanUserResize` + `CanUserResizeColumns` | WPF `DataGridColumn.CanUserResize`; WCT `CanUserResizeColumns`. | P |
-| Frozen | per-column `FrozenEdge.Leading` (prefix) | WPF/WCT `FrozenColumnCount`. | I; trailing G |
-| Reorder | none; collection order = visual order | WCT `DisplayIndex`, `CanUserReorderColumns`, `ColumnReordered`; WPF `DisplayIndex`. | G |
-| Auto-generate | none | WCT `AutoGenerateColumns`; WPF same (unv.). | G |
+| Frozen | per-column `FrozenEdge.Leading` (prefix) | WPF/WCT `FrozenColumnCount`. | I; trailing D |
+| Reorder | none; collection order = visual order | WCT `DisplayIndex`, `CanUserReorderColumns`, `ColumnReordered`; WPF `DisplayIndex`. | D |
+| Auto-generate | none | WCT `AutoGenerateColumns`; WPF same (unv.). | D |
 
 ### 3.3 Sorting
 
@@ -275,7 +279,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | App-owned sort with arrow | settable display-only `SortDirection` | WCT `SortDirection` settable and cosmetic only; WPF settable; w-ahmad settable; AG Grid SSRM, TanStack `manualSorting`, MUI `sortingMode="server"`. | P |
 | Gate naming / scope | `CanUserSort`, `CanUserSortColumns`: user input only | WPF `CanUserSort`/`CanUserSortColumns`. | P |
 | Sort cycle | `SortCycle` incl. tri-state | WPF/AG Grid cycles (unv.). | P (tri-state is an addition) |
-| Multi-column header sort | none (single axis) | WPF Shift+click; w-ahmad Ctrl+click; AG Grid Shift; TanStack/MUI modifier. | G |
+| Multi-column header sort | none (single axis) | WPF Shift+click; w-ahmad Ctrl+click; AG Grid Shift; TanStack/MUI modifier. | N |
 | Sort direction enum | `SortDirection { None, Ascending, Descending }` | WPF/WCT/ACV `ListSortDirection { Ascending = 0, Descending = 1 }`, no `None`. | I |
 | Clear | `TableView.ClearSort()` (all item sorts) + `TableViewSource.ClearSort()` | WPF `SortDescriptions.Clear()`. | P |
 
@@ -283,18 +287,18 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Modes | `None`, `Single` | `ItemsViewSelectionMode` (+ `Multiple`, `Extended`); WPF/WCT `Single`/`Extended`; WPF `SelectionUnit`. | I (v1); multi G |
+| Modes | `None`, `Single` | `ItemsViewSelectionMode` (+ `Multiple`, `Extended`); WPF/WCT `Single`/`Extended`; WPF `SelectionUnit`. | I (v1); multi D |
 | Selected state | read-only `SelectedItem`/`SelectedIndex`; `Select(Int32)` | ItemsView read-only + `Select`; `Selector`/ListView/WPF/WCT settable. | P (ItemsView) |
 | Item → index | `IndexOf(Object)` | `ItemsView.TryGetItemIndex`; `ItemsSourceView.IndexOf`; ListViewBase `IndexFromContainer`. | P |
-| Bring into view | `StartBringItemIntoView(Int32, BringIntoViewOptions)` | `ItemsView.StartBringItemIntoView`; `ListViewBase.ScrollIntoView`; WCT `ScrollIntoView(Object, DataGridColumn)`; WPF `ScrollIntoView`. | P (ItemsView); by-item/column G |
-| Current cell | internal only | WCT `CurrentItem`/`CurrentColumn`/`CurrentCellChanged`; ItemsView `CurrentItemIndex`; WPF `CurrentCell` (unv.). | G |
+| Bring into view | `StartBringItemIntoView(Int32, BringIntoViewOptions)` | `ItemsView.StartBringItemIntoView`; `ListViewBase.ScrollIntoView`; WCT `ScrollIntoView(Object, DataGridColumn)`; WPF `ScrollIntoView`. | P (ItemsView); by-item/column D |
+| Current cell | internal only | WCT `CurrentItem`/`CurrentColumn`/`CurrentCellChanged`; ItemsView `CurrentItemIndex`; WPF `CurrentCell` (unv.). | D (public current cell); cell selection N |
 | Selection args | platform `SelectionChangedEventArgs` | ListView/WPF/WCT same type; ItemsView own args. | P |
 
 ### 3.5 Editing
 
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
-| Cell editing | none in V1; live controls in `CellTemplate` only | WPF/WCT `DataGrid` editing (`IsReadOnly`, `BeginEdit`, `CellEditEnding`, row editing). | G (deferred to V2 / DataGrid, §2.5) |
+| Cell editing | none in V1; live controls in `CellTemplate` only | WPF/WCT `DataGrid` editing (`IsReadOnly`, `BeginEdit`, `CellEditEnding`, row editing). | D (V2 / future DataGrid, §2.5); row editing and edit transactions N |
 
 ### 3.6 Grouping and hierarchy
 
@@ -304,8 +308,8 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Expand state on element | read-only header DPs | `TreeViewNode.IsExpanded`, `Expander.IsExpanded` settable and drive expansion. | I |
 | Expansion events | `GroupExpanding`/`GroupCollapsed` (`GroupKey`) | TreeView `Expanding`/`Collapsed` (`Node`, `Item`); Expander `Expanding`/`Collapsed`. | P |
 | Group header content | `GroupHeaderTemplate` over `TableViewGroupInfo` | WCT `RowGroupHeaderStyles`, `LoadingRowGroup`; WPF `CollectionViewGroup` (`Name`, `ItemCount`). | P |
-| Multi-level grouping | none | WPF `GroupDescriptions`; Syncfusion `GroupColumnDescriptions`; TanStack grouping array. | G |
-| Tree row expand | `ExpandAllRows`/`CollapseAllRows` only | TreeView `Expand(node)`, events; AG Grid node API (unv.). | G |
+| Multi-level grouping | none | WPF `GroupDescriptions`; Syncfusion `GroupColumnDescriptions`; TanStack grouping array. | D |
+| Tree row expand | `ExpandAllRows`/`CollapseAllRows` only | TreeView `Expand(node)`, events; AG Grid node API (unv.). | D |
 
 ### 3.7 Layout, visuals, automation, packaging
 
@@ -313,13 +317,13 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 |---|---|---|---|
 | Headers / grid lines | `HeadersVisibility` (`None`, `Column`); `GridLinesVisibility` WPF values | WPF `DataGridHeadersVisibility`, `DataGridGridLinesVisibility`. | P (no row headers: I) |
 | Density | `TableViewDensity` | WCT `RowHeight`; none in WPF. | I |
-| Row/cell styles | `ColumnHeaderStyle`, `HeaderStyle` only | WPF/WCT `RowStyle`, `CellStyle`, `RowHeaderStyle`. | G |
-| Row lifecycle | none | WCT `LoadingRow`/`UnloadingRow`; WPF `LoadingRow`; `ItemsRepeater.ElementPrepared`/`ElementClearing` (unv.). | G |
+| Row/cell styles | `ColumnHeaderStyle`, `HeaderStyle` only | WPF/WCT `RowStyle`, `CellStyle`, `RowHeaderStyle`. | D |
+| Row lifecycle | none | WCT `LoadingRow`/`UnloadingRow`; WPF `LoadingRow`; `ItemsRepeater.ElementPrepared`/`ElementClearing` (unv.). | D |
 | Context menus | `CellContextFlyout`, `HeaderContextFlyout` | WinUI `UIElement.ContextFlyout`. | P |
 | Peer ctors | owner element (`TreeViewItemAutomationPeer(TreeViewItem)`) | in-repo convention; test hooks `[MUX_INTERNAL]` (`ItemsViewTestHooks.idl`). | P |
 | Containers unsealed | `TableViewRow`, `TableViewGroupHeader`, panel, columns | `ItemContainer`, `TreeViewItem`, `NavigationViewItem` unsealed with ctors. | P |
 | Separate DLL + resources | `TabularControlsResources` | MUXC `XamlControlsResources`. | P (name asymmetry open) |
-| Incremental loading | none | WCT `IncrementalLoadingTrigger`/`Threshold`, `DataFetchSize`; ListViewBase `ISupportIncrementalLoading` (unv.). | G |
+| Incremental loading | none | WCT `IncrementalLoadingTrigger`/`Threshold`, `DataFetchSize`; ListViewBase `ISupportIncrementalLoading` (unv.). | D |
 
 ### 3.8 Sources
 
@@ -376,6 +380,8 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Keep `TableViewFrozenEdge.Trailing` as reserved | — | Removed | A shipped no-op cannot later change behaviour. |
 
 ## 6. Open questions and future work
+
+Future-work items are deferred, not committed: each is added only when a named scenario meets the bar in [Definition and scope](../../api-specs/TableView/TableView-spec.md#bar-for-adding-features). DataGrid non-goals are not tracked here.
 
 | Topic | Problem | Direction |
 |---|---|---|
