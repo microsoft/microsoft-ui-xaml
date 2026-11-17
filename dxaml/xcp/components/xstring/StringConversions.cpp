@@ -494,10 +494,13 @@ FloatFromString(
         {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-            IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
+            const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-            *peValue = FLOAT(eValue);
-            return S_OK;
+            if (SUCCEEDED(hr))
+            {
+                *peValue = FLOAT(eValue);
+            }
+            return hr;
         }
 
         nLeading *= 10;
@@ -541,10 +544,13 @@ FloatFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-                *peValue = FLOAT(eValue);
-                return S_OK;
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
+                return hr;
             }
 
             nTrailing *= 10;
@@ -587,9 +593,12 @@ FloatFromString(
 
             if (nExponent > 2)
             {
-                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
-                *peValue = FLOAT(eValue);
-                return S_OK;
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
+                return hr;
             }
 
             nExponent *= 10;
@@ -730,10 +739,13 @@ NonSignedFromString(
         {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-            IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
+            const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-            *peValue = FLOAT(eValue);
-            return S_OK;
+            if (SUCCEEDED(hr))
+            {
+                *peValue = FLOAT(eValue);
+            }
+            return hr;
         }
 
         nLeading *= 10;
@@ -759,11 +771,14 @@ NonSignedFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
 
-                *peValue = FLOAT(eValue);
-                return S_OK;
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
+                return hr;
             }
 
             nTrailing *= 10;
@@ -806,10 +821,13 @@ NonSignedFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                IFC_RETURN(ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue));
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-                *peValue = FLOAT(eValue);
-                return S_OK;
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
+                return hr;
             }
 
             nExponent *= 10;
