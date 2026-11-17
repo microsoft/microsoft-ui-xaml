@@ -1314,6 +1314,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header sort on a plain ObservableCollection sorts the rows through the table's own view: the collection keeps its order, and a later add and remove reach the rows as one Add and one Remove at their sorted positions.")]
+        public void VerifyHeaderSortOnPlainCollectionSortsThroughInternalView()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateBindingTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
+                Verify.IsTrue(ReferenceEquals(items, tableView.ItemsSource), "ItemsSource stays the app's collection.");
+                VerifySequence(new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, items.Select(p => p.Name).ToList(),
+                    "the app's collection keeps its order");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "after the header click");
+
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                items.Add(new ShapedPerson("Bea", "Engineer", "Platform"));
+                items.Remove(items.First(p => p.Name == "Owen"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Bea", "Diego", "Ines", "Mei", "Rafa" }, "after an add and a remove");
+                Verify.AreEqual("Add,Remove", string.Join(",", actions), "each change reaches the rows as it happened, not as a Reset");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The arrow stays.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header click on an app's own ICollectionView, which has no ICollectionViewShaping, raises Sorting for the app to sort, and neither reorders the rows nor lights the arrow.")]
+        public void VerifyHeaderSortOnAppCollectionViewRaisesSortingWithoutReordering()
+        {
+            TableView tableView = null;
+            int sorting = 0;
+            int sorted = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var view = new AppCollectionView(MakeShapedPeople());
+                Verify.IsNull((object)view as ICollectionViewShaping, "Precondition: the app's view cannot be sorted through ICollectionViewShaping.");
+                tableView = CreateBindingTable(view);
+                tableView.Sorting += (sender, args) => sorting++;
+                tableView.Sorted += (sender, args) => sorted++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sorting, "The header click raises Sorting so the app can sort its view.");
+                Verify.AreEqual(0, sorted, "Nothing was sorted, so Sorted is not raised.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "No arrow is lit for a sort that did not happen.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "the view's order stands");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the selected row follows its item, not its index, across a header sort and back to source order.")]
+        public void VerifySelectionFollowsItemAcrossHeaderSort()
+        {
+            TableView tableView = null;
+            ShapedPerson owen = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                owen = items.Last();
+                tableView = CreateBindingTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(5);
+                Verify.IsTrue(ReferenceEquals(owen, tableView.SelectedItem), "Precondition: Owen is selected.");
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Name descending sorts.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(owen, tableView.SelectedItem), "The selection stays on Owen.");
+                Verify.AreEqual(1, tableView.SelectedIndex, "Owen is second in Name descending order.");
+                Verify.IsTrue(tableView.ClearSort(), "The sort clears.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(owen, tableView.SelectedItem), "The selection stays on Owen after the sort clears.");
+                Verify.AreEqual(5, tableView.SelectedIndex, "Owen is back at his source index.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a Filter set through ICollectionViewShaping and a Refresh after an item edit update the TableView's rows.")]
         public void VerifyFilterAndRefreshOnShapingCollectionViewUpdateRows()
         {
@@ -1522,5 +1639,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    // An app's own read-only ICollectionView over a fixed list (like a toolkit view): no
+    // ICollectionViewShaping, no groups, and it never changes.
+    internal sealed partial class AppCollectionView : ICollectionView
+    {
+        private readonly List<object> m_items;
+        private int m_current;
+
+        public AppCollectionView(IEnumerable<object> items)
+        {
+            m_items = items.ToList();
+        }
+
+        public event EventHandler<object> CurrentChanged { add { } remove { } }
+        public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged { add { } remove { } }
+
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => null;
+        public object CurrentItem => m_current >= 0 && m_current < m_items.Count ? m_items[m_current] : null;
+        public int CurrentPosition => m_current;
+        public bool HasMoreItems => false;
+        public bool IsCurrentAfterLast => m_current >= m_items.Count;
+        public bool IsCurrentBeforeFirst => m_current < 0;
+        public int Count => m_items.Count;
+        public bool IsReadOnly => true;
+
+        public object this[int index]
+        {
+            get => m_items[index];
+            set => throw new NotSupportedException();
+        }
+
+        public bool MoveCurrentTo(object item) => MoveCurrentToPosition(m_items.IndexOf(item));
+        public bool MoveCurrentToFirst() => MoveCurrentToPosition(0);
+        public bool MoveCurrentToLast() => MoveCurrentToPosition(m_items.Count - 1);
+        public bool MoveCurrentToNext() => MoveCurrentToPosition(m_current + 1);
+        public bool MoveCurrentToPrevious() => MoveCurrentToPosition(m_current - 1);
+
+        public bool MoveCurrentToPosition(int index)
+        {
+            if (index < 0 || index >= m_items.Count)
+            {
+                return false;
+            }
+            m_current = index;
+            return true;
+        }
+
+        public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count) => throw new NotSupportedException();
+
+        public int IndexOf(object item) => m_items.IndexOf(item);
+        public bool Contains(object item) => m_items.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => m_items.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => m_items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Insert(int index, object item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
     }
 }

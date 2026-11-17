@@ -2006,8 +2006,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies invoking a header over a list holding one object twice neither throws nor changes sort state.")]
-        public void VerifySortOverDuplicateItemFailsSafely()
+        [TestProperty("Description", "Verifies invoking a header over a list holding one object twice sorts both rows.")]
+        public void VerifySortOverDuplicateItemSortsBothRows()
         {
             TableView tableView = null;
             int sortingCount = 0;
@@ -2034,18 +2034,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection,
-                    "A refused sort must leave the column unsorted.");
-                VerifySequence(new[] { "Zoe", "Bea", "Zoe", "Cal" }, RowValues(tableView, person => person.Name),
-                    "a refused sort must keep the source order");
-                Verify.AreEqual(0, sortingCount, "Sorting must not be raised for a refused sort.");
-                Verify.AreEqual(0, sortedCount, "Sorted must not be raised for a refused sort.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The header sort applies.");
+                VerifySequence(new[] { "Bea", "Cal", "Zoe", "Zoe" }, RowValues(tableView, person => person.Name),
+                    "both rows of the repeated object sort");
+                Verify.AreEqual(1, sortingCount, "Sorting is raised once.");
+                Verify.AreEqual(1, sortedCount, "Sorted is raised once.");
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies invoking a header over a list holding a null item neither throws nor changes sort state.")]
-        public void VerifySortOverNullItemFailsSafely()
+        [TestProperty("Description", "Verifies invoking a header over a list holding a null item sorts it first.")]
+        public void VerifySortOverNullItemSortsItFirst()
         {
             TableView tableView = null;
             int sortingCount = 0;
@@ -2070,63 +2069,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection,
-                    "A refused sort must leave the column unsorted.");
-                VerifySequence(new[] { "Zoe", "<not a ShapedPerson>", "Bea" }, RowValues(tableView, person => person.Name),
-                    "a refused sort must keep the source order");
-                Verify.AreEqual(0, sortingCount, "Sorting must not be raised for a refused sort.");
-                Verify.AreEqual(0, sortedCount, "Sorted must not be raised for a refused sort.");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies SortByColumn returns false over duplicate rows, and sorts once the duplicate is removed.")]
-        public void VerifySortByColumnReturnsFalseForDuplicateRows()
-        {
-            TableView tableView = null;
-            ObservableCollection<ShapedPerson> items = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                var dup = new ShapedPerson("Zoe", "Engineer", "Platform");
-                items = new ObservableCollection<ShapedPerson>
-                {
-                    dup,
-                    new ShapedPerson("Bea", "Designer", "Studio"),
-                    dup,
-                    new ShapedPerson("Cal", "Architect", "Research"),
-                };
-                tableView = CreateSortTable(items);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsFalse(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
-                    "Sorting rows that include one object twice must be refused.");
-                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection,
-                    "A refused sort must leave the column unsorted.");
-
-                items.RemoveAt(2);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
-                    "With the duplicate gone the sort must apply.");
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection);
-                VerifySequence(new[] { "Bea", "Cal", "Zoe" }, RowValues(tableView, person => person.Name),
-                    "the rows must sort once every row is a distinct object");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The header sort applies.");
+                VerifySequence(new[] { "<not a ShapedPerson>", "Bea", "Zoe" }, RowValues(tableView, person => person.Name),
+                    "a null item has a null key, which sorts first");
+                Verify.AreEqual(1, sortingCount, "Sorting is raised once.");
+                Verify.AreEqual(1, sortedCount, "Sorted is raised once.");
             });
         }
 

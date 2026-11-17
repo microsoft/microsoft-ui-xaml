@@ -43,8 +43,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a TableView whose header sort tracks the rows' sort keys is still collected after unload.")]
-        public void VerifyTableViewIsCollectedAfterShapedSourceWithLiveTracking()
+        [TestProperty("Description", "Verifies a TableView whose header sorted its internal view is still collected after unload.")]
+        public void VerifyTableViewIsCollectedAfterHeaderSort()
         {
             var items = new ObservableCollection<NotifyingPerson>(
                 Enumerable.Range(0, 40).Select(i => new NotifyingPerson { Name = $"Person {i}", Role = $"Role {i % 5}" }));
@@ -177,7 +177,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 400, height: 300);
             LoadContent(tableView);
             tableView.UpdateLayout();
-            // A header sort makes the table's internal shaping track each row's sort key.
+            // A header sort writes a SortDescription to the view the table wraps the collection in.
             Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name column sorts.");
 
             tracked["TableView"] = new WeakReference(tableView);
