@@ -47,6 +47,8 @@ public sealed partial class SnapshotResourceView : UserControl
 
     public SnapshotResourceView() => InitializeComponent();
 
+    public SnapshotTextureView Textures => TextureSnapshot;
+
     public void Show(SnapshotResourceCapture? before, SnapshotResourceCapture? after, bool comparison)
     {
         Status.Visibility = Visibility.Visible;

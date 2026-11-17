@@ -294,7 +294,40 @@ comparisons retain all captured values, including changes back to defaults.
 History remains available across disconnect/reconnect for the current profiler
 session, and the saved JSON files are retained after exit. The history list is
 not reloaded on startup. Missing or invalid snapshot files produce visible errors.
-No recording database, heap capture or MUX changes are required.
+The trees and resource counters do not require a recording database, heap capture,
+or MUX changes. The **Textures** section uses the snapshot's original ETW
+recording, when one is available.
+
+In snapshot viewers and comparisons, expand **Textures** inside
+**Resource allocations**, after the existing resource groups. The section lists
+process-wide D3D11 Texture1D/2D/3D lifetimes at the tree capture's end QPC.
+Select a row for its captured descriptor (including
+dimensions and numeric DXGI format), owning device, and observed resource ->
+device-allocation -> adapter-allocation links. It does not capture texture pixels
+or map textures to XAML nodes. Missing creation or destruction events remain
+unknown; this is recorded evidence, not an exhaustive live-object census.
+Allocation sizes are the linked adapter allocations, not pixel-size estimates.
+The known-byte subtotal deduplicates shared allocations; an incomplete chain has
+unknown size, not zero. Links require retained bridge evidence from both endpoints
+at or before the snapshot QPC, including when ETW events arrive out of timestamp
+order. A resource handle must have a unique recorded claimant across buffers and
+all texture kinds at that QPC; competing claims or lost bridge history leave
+attribution unknown. Allocation sizes and owning-device handles also use
+point-in-time evidence;
+later mappings or metadata enrichment are not copied into earlier snapshots.
+**About texture data** shows these limits and the original recording path.
+
+Texture comparisons match database-local lifetime IDs only within the same
+recording, so reused handles appear as separate removals and additions. They
+show before/after linked bytes and signed deltas, with a changes-only filter.
+Different recordings remain unpaired, and unavailable evidence has no delta.
+The recording must identify the exact process creation time and live QPC clock.
+Older snapshots without an associated recording, old databases, missing files,
+and times already removed by rolling retention show explicit unavailable states
+without preventing tree inspection. Retained lifetimes can have incomplete
+descriptors or link timing after trimming. **Refresh recorded data** rereads the
+original file for late ETW events; it does not recapture the trees. Both sides
+of a same-file comparison use one consistent SQLite read transaction.
 
 Double-clicking a node, in a snapshot's viewer or in a comparison, shows its
 history in the main window's Objects tab: a XAML node's element, or a
